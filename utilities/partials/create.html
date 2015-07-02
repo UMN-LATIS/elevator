@@ -1,0 +1,14 @@
+<section class="createPage">
+	<div class="create">
+		<div class="container">
+	  		<h1>Select text file</h1>
+	    	<input class="form-control" type="file" on-read-file="showContent($fileContent)" />
+			<button class="btn btn-default" ng-show="content" ng-click="content = null">Reset</button>
+	    	<div ng-if="content">
+
+	        	<h2>File content is:</h2>
+	        	<textarea select-on-click cols=100 rows=40>{{ content }}</textarea>
+	    	</div>
+		</div>
+	</div>
+</section>
