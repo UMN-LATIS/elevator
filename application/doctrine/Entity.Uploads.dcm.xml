@@ -1,0 +1,21 @@
+<!-- Entity.Collection.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                    http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+      <entity name="Entity\Uploads" table="uploads">
+          <id name="id" type="integer">
+              <generator strategy="AUTO" />
+          </id>
+
+          <field name="filename" type="string"  nullable='true' />
+          <field name="filesize" type="string"  nullable='true' />
+          <field name="last_modified" type="string"  nullable='true' />
+          <field name="chunks_uploaded" type="text"  nullable='true' />
+          <field name="upload_id" type="string" nullable='true' />
+          <field name="uploadKey" type="string" nullable='true' />
+          <field name="upload_start" type="datetime" nullable='true' />
+          <field name="last_information" type="datetime" nullable='true' />
+      </entity>
+</doctrine-mapping>

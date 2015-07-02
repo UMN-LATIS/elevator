@@ -1,0 +1,237 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class ZipObjHandler extends ZipHandler {
+	protected $supportedTypes = array("obj.zip");
+	protected $noDerivatives = false;
+
+	protected $pathToBlenderStage;
+
+	protected $sourceBlenderScript = "import bpy
+
+bpy.ops.import_mesh.ply(filepath=r'{{PATHTOX3D}}', filter_glob=\"*.ply\")
+
+bpy.ops.material.new()
+
+bpy.data.materials[0].specular_intensity = 0.1
+
+bpy.data.materials[0].use_vertex_color_paint = True
+
+bpy.context.object.data.materials.append(bpy.data.materials[0])
+
+world = bpy.context.scene.world
+
+world.horizon_color = (1, 1, 1)";
+
+
+	public $taskArray = [0=>["taskType"=>"identifyContents", "config"=>array()],
+	1=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
+	2=>["taskType"=>"createDerivative", "config"=>array()],
+	3=>["taskType"=>"createThumbnails", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
+						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
+						  												["width"=>75, "height"=>150, "type"=>"tiny", "path"=>"thumbnail"],
+						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
+						  												]
+						  												]
+	];
+
+
+	public function __construct()
+	{
+		parent::__construct();
+	}
+
+	function identifyTypeOfBundle($localFile) {
+		foreach($localFile as $fileEntry) {
+			$ext = pathinfo($fileEntry, PATHINFO_EXTENSION);
+			if(strtolower($ext) == 'obj') {
+				return true;
+			}
+		}
+	}
+
+	public function allDerivativesForAccessLevel($accessLevel) {
+		$derivative = array();
+
+		/**
+		 * normally, this array should be best to worst, but we pack original in here later so that it
+		 * doesn't get displayed in the view
+		 */
+		// if($accessLevel>=PERM_ORIGINALSWITHOUTDERIVATIVES) {
+		// 	$derivative[] = "original";
+		// }
+
+		if($accessLevel>=$this->getPermission()) {
+			$derivative[] = "ply";
+		}
+		if($accessLevel>PERM_NOPERM) {
+			$derivative[] = "thumbnail";
+			$derivative[] = "thumbnail2x";
+			$derivative[] = "tiny";
+			$derivative[] = "tiny2x";
+		}
+
+		$returnArray = array();
+		foreach($derivative as $entry) {
+			if(isset($this->derivatives[$entry])) {
+				$returnArray[$entry] = $this->derivatives[$entry];
+			}
+		}
+		if(count($returnArray)>0) {
+			return $returnArray;
+		}
+		else {
+			throw new Exception("Derivative not found");
+		}
+	}
+
+	public function extractMetadata($args) {
+
+		$fileObject = $this->sourceFile;
+		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
+
+		if($args['continue'] == true) {
+			$this->queueTask(2);
+		}
+
+		return JOB_SUCCESS;
+	}
+
+
+	public function createDerivative($args) {
+		$meshlabScript = dirname(realpath(NULL)) . "/public/assets/blender/meshlab.mlx";
+
+		$fileStatus = $this->sourceFile->makeLocal();
+
+		if($fileStatus == FILE_GLACIER_RESTORING) {
+			$this->postponeTime = 900;
+			return JOB_POSTPONE;
+		}
+		elseif($fileStatus == FILE_ERROR) {
+			return JOB_FAILED;
+		}
+
+		$this->pheanstalk->touch($this->job);
+
+		$zip = new ZipArchive;
+		$res = $zip->open($this->sourceFile->getPathToLocalFile());
+
+		$targetPath = $this->sourceFile->getPathToLocalFile() . "_extracted";
+		if(!$res) {
+			$this->logging->processingInfo("createDerivative","objHandler","Coudl not extract zip",$this->getObjectId(),$this->job->getId());
+			return JOB_FAILED;
+		}
+
+		$zip->extractTo($targetPath);
+		$zip->close();
+
+		$di = new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS);
+		$it = new RecursiveIteratorIterator($di);
+		$baseFolder = "";
+		$objFile = "";
+		$foundMTL = false;
+		foreach($it as $file) {
+    		if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "obj") {
+    			$objFile = $file;
+    			$baseFolder = pathinfo($file, PATHINFO_DIRNAME);
+    		}
+			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "mtl") {
+				// if we found an mtl, we need ot apply a script for texutre conversion
+				$foundMTL = TRUE;
+    		}
+
+
+		}
+
+
+		$localPath = $this->sourceFile->getPathToLocalFile();
+		$pathparts = pathinfo($localPath);
+
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = 'ply';
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
+
+		putenv("DISPLAY=:99.0");
+
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . "meshlabserver -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
+
+		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
+		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
+
+		$success = true;
+		if(!$derivativeContainer->copyToRemoteStorage()) {
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload ply", $this->getObjectId(), $this->job->getId());
+			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+			$success=false;
+		}
+		else {
+			if(!unlink($derivativeContainer->getPathToLocalFile())) {
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+				$success=false;
+			}
+		}
+		$this->derivatives["ply"] = $derivativeContainer;
+		if($success) {
+			$this->queueTask(3);
+			return JOB_SUCCESS;
+		}
+		else {
+			return JOB_FAILED;
+		}
+
+	}
+
+	public function createThumbnails($args) {
+
+		$objHandler = new ObjHandler;
+		$objHandler->job = $this->job;
+		$objHandler->pheanstalk = $this->pheanstalk;
+		$objHandler->sourceFile = $this->sourceFile;
+
+		$result = $objHandler->createThumbInternal($this->derivatives['ply'], $args);
+		if($result == JOB_POSTPONE) {
+			return JOB_POSTPONE;
+		}
+		if($result == JOB_FAILED) {
+			return JOB_FAILED;
+		}
+		else {
+			$this->derivatives = array_merge($this->derivatives, $result);
+		}
+		return JOB_SUCCESS;
+
+	}
+
+
+	/**
+	 * Override the parent handler and return the obj_handler
+	 */
+
+	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		if(!$this->parentObject && $this->parentObjectId) {
+			$this->parentObject = new Asset_model($this->parentObjectId);
+		}
+
+		$uploadWidget = null;
+		if($this->parentObject) {
+			$uploadObjects = $this->parentObject->getAllWithinAsset("Upload");
+			foreach($uploadObjects as $upload) {
+				foreach($upload->fieldContentsArray as $widgetContents) {
+					if($widgetContents->fileId == $this->objectId) {
+						$uploadWidget = $widgetContents;
+					}
+				}
+			}
+
+		}
+
+		return $this->load->view("fileHandlers/" . "objhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
+}
+
+/* End of file  */
+/* Location: ./application/controllers/ */

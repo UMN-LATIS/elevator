@@ -1,0 +1,21 @@
+INSERT INTO `instances` (`id`, `name`, `domain`, `ownerHomepage`, `amazonS3Key`, `defaultBucket`, `bucketRegion`, `amazonS3Secret`, `encodingcomKey`, `encodingcomUser`, `googleAnalyticsKey`, `introText`, `createdAt`, `modifiedAt`, `useCustomHeader`, `useCustomCSS`, `useHeaderLogo`, `featuredAsset`, `featuredAssetText`)
+VALUES
+	(1, 'DefaultInstance', 'defaultinstance', '', '', '', '', '', '', '', '', '', NULL, NULL, 1, 0, 1, '', '');
+
+/** default password is superuser123, change after setup **/
+INSERT INTO `users` (`id`, `emplid`, `username`, `userType`, `email`, `displayName`, `password`, `isSuperAdmin`, `hasExpiry`, `expires`, `createdAt`, `modifiedAt`, `createdBy_id`, `instance_id`)
+VALUES
+	(1, NULL, 'admin', 'Local', '', '', '43c624f81f01607ba2a4e4b756b0c2d87aece67d', 1, 0, '2014-01-24 00:00:00', '2014-01-24 14:33:39', NULL, 1, 1);
+
+INSERT INTO `field_types` (`id`, `name`, `model_name`, `sample_field_data`)
+VALUES
+	(1, 'Text', 'text', NULL),
+	(2, 'Upload', 'upload', '{ \"extractLocation\":true, \"extractDate\":true}'),
+	(3, 'Date', 'date', NULL),
+	(4, 'Select', 'select', '{\n  \"selectGroup\": [\n    \"Option 1\",\n    \"Option 2\",\n    \"Option 3\"\n  ]\n}\n\nalt:\n\n{\n  \"selectGroup\": \n    {\"Option 1\":\"more text about option 1\",\n    \"Option 2\":\"more text about option 2\",\n    \"Option 3\":\"more text about option 3\"\n}\n  \n}\n'),
+	(5, 'Location', 'location', NULL),
+	(6, 'Multiselect', 'multiselect', '{\n  \"Country\": {\n    \"USA\": {\n      \"State\": {\n        \"Wisconsin\": {\n          \"City\": [\n            \"Madison\",\n            \"Milwaukee\"\n          ]\n        },\n        \"Minnesota\": {\n          \"City\": {\n            \"Minneapolis\": {\n              \"Neighborhood\": [\n                \"Uptown\",\n                \"Downtown\"\n              ]\n            },\n            \"Mankato\": {\n              \"Neighborhood\": [\n                \"Campus\",\n                \"Downtown\"\n              ]\n            }\n          }\n        }\n      }\n    },\n    \"Canada\": {\n      \"State\": {\n        \"Alberta\": {\n          \"City\": [\n            \"Fakeville\",\n            \"Faketown\"\n          ]\n        },\n        \"Quebec\": {\n          \"City\": [\n            \"Montreal\"\n          ]\n        }\n      }\n    }\n  }\n}'),
+	(7, 'Related Asset', 'related_asset', '{\n  \"nestData\": true,\n  \"showLabel\": true,\n  \"collapseNestedChildren\": false,\n  \"thumbnailView\": false,\n  \"defaultTemplate\": 0,\n  \"displayInline\": false\n}'),
+	(8, 'Tag List', 'tags', NULL),
+	(10, 'Text Area', 'textarea', NULL),
+	(11, 'Checkbox', 'checkbox', NULL);
