@@ -1,0 +1,31 @@
+<!-- Entity.Drawer.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+  http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+  <entity name="Entity\Drawer" table="drawers">
+    <id name="id" type="integer">
+      <generator strategy="AUTO" />
+    </id>
+
+    <one-to-many field="permissions" target-entity="DrawerPermission" mapped-by="drawer">
+      <cascade><cascade-remove /></cascade>
+    </one-to-many>
+
+    <many-to-many field="groups" target-entity="DrawerGroup" mapped-by="drawer" />
+
+    <one-to-many field="recentDrawer" target-entity="RecentDrawer" mapped-by="drawer">
+            <cascade><cascade-remove /></cascade>
+    </one-to-many>
+    <field name="title" type="string"  nullable='true' />
+    <field name="changedSinceArchive" type="boolean"  nullable='true' />
+    <field name="createdAt" type="datetime" nullable='true' />
+    <many-to-one field="instance" target-entity="Instance"/>
+    <one-to-many field="items" target-entity="DrawerItem" mapped-by="drawer">
+      <cascade><cascade-remove /></cascade>
+    </one-to-many>
+
+  </entity>
+
+</doctrine-mapping>

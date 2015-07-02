@@ -1,0 +1,42 @@
+<!-- Entity.DrawerGroupDrawerGroup.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+  <entity name="Entity\DrawerGroup" table="drawer_groups">
+    <id name="id" type="integer">
+      <generator strategy="AUTO" />
+    </id>
+
+    <many-to-many field="drawer" target-entity="Drawer" inversed-by="groups">
+      <join-column name="drawer_id" referenced-column-name="id" />
+    </many-to-many>
+
+    <many-to-one field="user" target-entity="User" />
+
+    <one-to-many field="permissions" target-entity="DrawerPermission" mapped-by="group">
+      <cascade><cascade-remove /></cascade>
+    </one-to-many>
+
+   <many-to-many field="group_values" inversed-by="group" target-entity="GroupEntry" orphan-removal="true">
+        <cascade><cascade-persist /></cascade>
+        <join-table name="drawergroup_groupentry">
+            <join-columns>
+                <join-column name="group_id" referenced-column-name="id"  on-delete="CASCADE" on-update="CASCADE"/>
+            </join-columns>
+            <inverse-join-columns>
+                <join-column name="entry_id" referenced-column-name="id" on-delete="CASCADE" on-update="CASCADE" unique="true" />
+            </inverse-join-columns>
+        </join-table>
+    </many-to-many>
+
+
+    <field name="group_type" type="string"  nullable='true' />
+    <field name="group_value" type="string"  nullable='true' />
+    <field name="group_label" type="string"  nullable='true' />
+    <field name="expiration" type="datetime" nullable='true' />
+
+
+  </entity>
+</doctrine-mapping>

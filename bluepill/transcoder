@@ -1,0 +1,22 @@
+Bluepill.application("transcoder") do |app|
+2.times do |i|
+      app.process("transcode-#{i}") do |process|
+        process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php transcoder transcodeTask"
+        process.group = "dcl"
+        process.daemonize = true
+        process.pid_file = "/tmp/transcodeTask-#{i}"
+        process.stdout = process.stderr = "/tmp/transcodeTask.log"
+        process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
+      end
+end
+2.times do |i|
+      app.process("processFiles-#{i}") do |process|
+        process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php beltdrive processFileTask"
+        process.daemonize = true
+        process.group = "dcl"
+        process.pid_file = "/tmp/processFiles-#{i}"
+        process.stdout = process.stderr = "/tmp/processFiles.log"
+        process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
+      end
+end
+end
