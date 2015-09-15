@@ -1,5 +1,6 @@
 <?
-$assetTitle = reset($assetModel->getAssetTitle($collapse=false));
+$titleArray = $assetModel->getAssetTitle($collapse=false);
+$assetTitle = reset($titleArray);
 ?>
 <script>
 var objectId = "<?=$assetModel->getObjectId()?>";
@@ -82,4 +83,4 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 
 
-<?=$this->load->view("handlebarsTemplates");
+<?$this->load->view("handlebarsTemplates");

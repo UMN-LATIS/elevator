@@ -244,7 +244,7 @@ SpiderGL.Version.VERSION_MINOR = 2;
  * @constant
  * @type number
  */
-SpiderGL.Version.VERSION_REVISION = 0;
+SpiderGL.Version.VERSION_REVISION = 1;
 
 /**
  * Version string.
@@ -10014,7 +10014,7 @@ SpiderGL.WebGL.Context._setup_SGL_direct_state_access = function (gl, pubExt) {
  * @see SpiderGL.WebGL.ObjectGL
  */
 SpiderGL.WebGL.Context.hijack = function (gl) {
-	if (!SpiderGL.Type.instanceOf(gl, WebGLRenderingContext)) { return false; }
+//	if (!SpiderGL.Type.instanceOf(gl, WebGLRenderingContext)) { return false; }
 	if (gl._spidergl) { return false; }
 
 	SpiderGL.WebGL.Context._prepareContex(gl);
@@ -10046,6 +10046,7 @@ SpiderGL.WebGL.Context.hijack = function (gl) {
  * @see SpiderGL.WebGL.Context.get
  */
 SpiderGL.WebGL.Context.isHijacked = function (gl) {
+	return !!gl && !!gl._spidergl;
 	return (SpiderGL.Type.instanceOf(gl, WebGLRenderingContext) && gl._spidergl);
 }
 
@@ -15967,10 +15968,11 @@ SpiderGL.UserInterface.CanvasHandler = function (gl, handler, options) {
 	this._animateWithTimeout  = false;
 	this._fastAnimate         = false;
 
-	this._fpsUpdateMS = 1000;
-	this._fpsTime     = Date.now();
-	this._fpsCount    = 0;
-	this._fps         = 0;
+	this._fpsUpdateMS  = 1000;
+	this._fpsTime      = 0;
+	this._fpsCount     = 0;
+	this._fps          = 0;
+	this._delegateDraw = function(t) { that._onDraw(t); };
 
 	/** @private */
 	var handleMessage = function (evt) {
@@ -16006,10 +16008,16 @@ SpiderGL.UserInterface.CanvasHandler = function (gl, handler, options) {
 	window.addEventListener("mouseup",         function (e) { that._onWindowMouseButtonUp (e); }, false);
 	window.addEventListener("mousemove",       function (e) { that._onWindowMouseMove     (e); }, false);
 
-	canvas.addEventListener("touchstart",      SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
-	canvas.addEventListener("touchend",        SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
-	canvas.addEventListener("touchmove",       SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
-	canvas.addEventListener("touchcancel",     SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
+	canvas.addEventListener("touchstart",      SpiderGL.UserInterface.CanvasHandler._touchHandler, false);
+	canvas.addEventListener("touchend",        SpiderGL.UserInterface.CanvasHandler._touchHandler, false);
+	canvas.addEventListener("touchmove",       SpiderGL.UserInterface.CanvasHandler._touchHandler, false);
+
+	window.addEventListener("pointerup",       function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onWindowMouseButtonUp (e); }, false);
+	window.addEventListener("pointermove",     function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onWindowMouseMove     (e); }, false);
+
+	canvas.addEventListener("pointerdown",     function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onMouseButtonDown (e); }, false);
+	canvas.addEventListener("pointerup",       function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onMouseButtonUp   (e); }, false);
+	canvas.addEventListener("pointermove",     function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onMouseMove       (e); }, false);
 
 	var standardGLUnpack = SpiderGL.Utility.getDefaultValue(options.standardGLUnpack, SpiderGL.UserInterface.CanvasHandler.DEFAULT_STANDARD_GL_UNPACK);
 	if (standardGLUnpack) {
@@ -16058,33 +16066,137 @@ SpiderGL.UserInterface.CanvasHandler.DEFAULT_STANDARD_GL_UNPACK = true;
  */
 SpiderGL.UserInterface.CanvasHandler.DEFAULT_PROPERTY_NAME = "ui";
 
+SpiderGL.UserInterface.CanvasHandler._multiTouch = { tmp:0, touches:[], evt:null, pan:false, btn:0, phase:0 };
 SpiderGL.UserInterface.CanvasHandler._touchHandler = function (event) {
-	var touches = event.changedTouches,
-	first = touches[0],
-	type = "";
+
+	var touches, first,
+	diff   = 1,
+	button = 0,
+	type   = "";
+
+	/**IE PATCH**/
+	/**/if (event.type=="pointerdown") SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.push(event);
+	/**/else {
+	/**/	for(i=0; i<SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length; i++) {
+	/**/		if (event.pointerId==SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i].pointerId) SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i] = event;
+	/**/	}
+	/**/}
+	/**/
+	/**/if (navigator.userAgent.toLowerCase().indexOf('trident')>-1) { touches = SpiderGL.UserInterface.CanvasHandler._multiTouch.touches; first = touches[0]; }
+	/**/else { touches = event.touches; first = event.changedTouches[0]; }
+	/**IE PATCH**/
 
 	switch(event.type)
 	{
-		case "touchstart": type = "mousedown"; break;
-		case "touchmove":  type = "mousemove"; break;        
-		case "touchend":   type = "mouseup";   break;
+		case "touchstart": case "pointerdown": type = "mousedown"; break;
+		case "touchmove":  case "pointermove": type = "mousemove"; break;
+		case "touchend":   case "pointerup":   type = "mouseup";   break;
 		default: return;
 	}
 
-	//initMouseEvent(type, canBubble, cancelable, view, clickCount, 
-	//           screenX, screenY, clientX, clientY, ctrlKey, 
-	//           altKey, shiftKey, metaKey, button, relatedTarget);
-
 	var simulatedEvent = document.createEvent("MouseEvent");
-	simulatedEvent.initMouseEvent(
-		type, true, true, window, 1, 
-		first.screenX, first.screenY, 
-		first.clientX, first.clientY, false, 
-		false, false, false, 0/*left*/, null
-	);
 
-	first.target.dispatchEvent(simulatedEvent);
+	if(touches.length>=2) {
+		/**IE PATCH**/
+		/**/if (navigator.userAgent.toLowerCase().indexOf('trident')<=-1) 
+		/**IE PATCH**/
+		{
+			if(touches[0].target.id!="draw-canvas"||touches[1].target.id!="draw-canvas") return;
+		}
+
+		var dist = Math.sqrt(Math.pow((touches[0].clientX - touches[1].clientX),2)+Math.pow((touches[0].clientY - touches[1].clientY),2));
+		var diff = dist - SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp;
+		SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp = dist;
+		/**IE PATCH**/
+		/**/if(event.type=="pointerup") { 
+		/**/	button = SpiderGL.UserInterface.CanvasHandler._multiTouch.btn;
+		/**/	type = "mousedown";
+		/**/}
+		/**IE PATCH**/
+		else if(/*SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp!=0 &&*/ (diff<-0.995||diff>0.995)) {
+			diff>0 ? diff=1 : diff=-1;
+			type = "mousewheel";
+		}
+		else return;
+	}
+	else {
+		/**IE PATCH**/
+		/**/if(event.type=="pointerup"||event.type=="pointermove") if((!first)||(event.pointerId!=first.pointerId)) return;
+		/**IE PATCH**/
+		if(SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp!=0&&event.type=="touchend") {
+			button = SpiderGL.UserInterface.CanvasHandler._multiTouch.btn;
+			type = "mousedown";
+		}
+		//TOUCH PAN START
+		if (type=="mousedown") {
+			SpiderGL.UserInterface.CanvasHandler._multiTouch.evt = event;
+		}
+		else if (type=="mouseup") { 
+			if(SpiderGL.UserInterface.CanvasHandler._multiTouch.pan) {
+				button = 1;
+				SpiderGL.UserInterface.CanvasHandler._multiTouch.pan   = false;
+				SpiderGL.UserInterface.CanvasHandler._multiTouch.phase = 0;
+				/**FIREFOX PATCH**/
+				/**/if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) SpiderGL.UserInterface.CanvasHandler._touchHandler(event);
+				/**FIREFOX PATCH**/
+			}
+		}
+		else if (type=="mousemove") {
+			if(!SpiderGL.UserInterface.CanvasHandler._multiTouch.pan) {
+				var start;
+				/**IE PATCH**/
+				/**/(navigator.userAgent.toLowerCase().indexOf('trident')>-1) ? (start=SpiderGL.UserInterface.CanvasHandler._multiTouch.evt) : (start=SpiderGL.UserInterface.CanvasHandler._multiTouch.evt.touches[0]);
+				/**IE PATCH**/
+				if((Math.sqrt(Math.pow((first.clientX - start.clientX),2)+Math.pow((first.clientY - start.clientY),2))<=2)&&(event.timeStamp-SpiderGL.UserInterface.CanvasHandler._multiTouch.evt.timeStamp>400)) SpiderGL.UserInterface.CanvasHandler._multiTouch.pan = true;
+			}
+			else {
+				switch(SpiderGL.UserInterface.CanvasHandler._multiTouch.phase) {
+					case 0:
+						diff = -1;
+						/**FIREFOX PATCH**/
+						/**/(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) ? (type = "mousemove") : (type = "mouseup");
+						/**FIREFOX PATCH**/
+						SpiderGL.UserInterface.CanvasHandler._multiTouch.phase++;
+						break;
+					case 1:
+						button = 1;
+						type = "mousedown";
+						SpiderGL.UserInterface.CanvasHandler._multiTouch.phase++;
+						break;
+					default:
+						button = 1;
+						break;
+				}
+			}
+		}
+		//TOUCH PAN END
+		SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp = 0;
+		SpiderGL.UserInterface.CanvasHandler._multiTouch.btn = button;
+	}
+
+	if(first){
+		simulatedEvent.initMouseEvent(
+			type, true, true, window, diff, 
+			first.screenX, first.screenY, 
+			first.clientX, first.clientY, false, 
+			false, false, false, button, null
+		);
+		first.target.dispatchEvent(simulatedEvent);
+	}
+
+	/**IE PATCH**/
+	/**/if(event.type=="pointerup") {
+	/**/	for(i=0; i<SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length; i++) {
+	/**/		if (SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i].pointerId>=event.pointerId) {
+	/**/			if (i+1==SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length) SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.pop(); 
+	/**/			else SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i] = SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i+1]; 
+	/**/		}
+	/**/	}
+	/**/}
+	/**IE PATCH**/
+
 	event.preventDefault();
+	event.stopPropagation();
 };
 
 SpiderGL.UserInterface.CanvasHandler.prototype = {
@@ -16108,10 +16220,14 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_postDrawEvent : function () {
-		if (this._drawEventPending) return;
+		this._postDrawCount = 5;
+		if (this._drawEventPending) 
+			return;
+		
 		this._drawEventPending = true;
+		requestAnimationFrame(this._delegateDraw);
 		//setTimeout(this._drawEventHandler, 0);
-		window.postMessage(SpiderGL.UserInterface.CanvasHandler._FAST_DRAW_MESSAGE_NAME, "*");
+		//window.postMessage(SpiderGL.UserInterface.CanvasHandler._FAST_DRAW_MESSAGE_NAME, "*");
 	},
 
 	_getMouseClientPos : function(e) {
@@ -16153,7 +16269,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		var c = e.keyCode;
 		if(((c>=48) && (c<=90)))
 		{
-			var s = String.fromCharCode(c);		
+			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
 
@@ -16168,7 +16284,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		var c = e.keyCode;
 		if(((c>=48) && (c<=90)))
 		{
-			var s = String.fromCharCode(c);		
+			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
 		
@@ -16180,7 +16296,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		var c = e.keyCode;
 		if(((c>=48) && (c<=90)))
 		{
-			var s = String.fromCharCode(c);		
+			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
 		
@@ -16224,7 +16340,6 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._dragStartPos[btn] = [xy[0], xy[1]];
 		this._dispatch("onMouseButtonDown", btn, xy[0], xy[1], e);
 
-		e.preventDefault();
 		e.stopPropagation();
 	},
 
@@ -16234,6 +16349,9 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 
 		var btn = e.button;
 		this._mouseButtonsDown[btn] = false;
+		/**FIREFOX PATCH**/
+		/**/if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) if(!e.isTrusted) return;
+		/**FIREFOX PATCH**/
 		this._dispatch("onMouseButtonUp", btn, xy[0], xy[1], e);
 
 		if (this._dragging[btn]) {
@@ -16253,10 +16371,13 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._cursorPos = xy;
 
 		var btn = e.button;
-		
-		if (!this._mouseButtonsDown[btn]) return;	//really required?		
+
+		if (!this._mouseButtonsDown[btn]) return;
 
 		this._mouseButtonsDown[btn] = false;
+		/**FIREFOX PATCH**/
+		/**/if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) if(!e.isTrusted) return;
+		/**FIREFOX PATCH**/
 		this._dispatch("onMouseButtonUp", btn, xy[0], xy[1], e);
 
 		if (this._dragging[btn]) {
@@ -16272,7 +16393,6 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_onMouseMove : function (e) {
-//NEW CODE START (mpot 13/06/14)
 		this._cursorPrevPos = this._cursorPos;
 
 		var xy = this._getMouseClientPos(e);
@@ -16296,15 +16416,12 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._dispatch("onMouseMove", xy[0], xy[1], e);
 
 		e.stopPropagation();
-//NEW CODE END (mpot 13/06/14)
 	},
 
 	_onWindowMouseMove : function (e) {
-//NEW CODE START (mpot 13/06/14)
 		this._cursorPrevPos = this._cursorPos;
 
 		var xy = this._getMouseClientPos(e);
-
 		this._cursorPos = xy;
 
 		this._cursorDeltaPos = [this._cursorPos[0] - this._cursorPrevPos[0], this._cursorPos[1] - this._cursorPrevPos[1]];
@@ -16322,7 +16439,6 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._dispatch("onMouseMove", xy[0], xy[1], e);
 
 		e.stopPropagation();
-//NEW CODE END (mpot 13/06/14)
 	},
 
 	_onMouseWheel : function (e) {
@@ -16352,10 +16468,8 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_onMouseOut: function(e) {
-//NEW CODE START (mpot 13/06/14)
 		var xy = this._getMouseClientPos(e);
 		this._dispatch("onMouseOut", xy[0], xy[1], e);
-//NEW CODE END (mpot 13/06/14)
 	},
 
 	_onClick : function (e) {
@@ -16387,20 +16501,23 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		}
 	},
 
-	_onDraw : function () {
+	_onDraw : function (timestamp) {
 		this._drawEventPending = false;
 
-		this._fpsCount++;
-
-		var now   = Date.now();
-		var fpsDT = now - this._fpsTime;
-		if (fpsDT >= this._fpsUpdateMS) {
-			this._fps      = SpiderGL.Math.floor(this._fpsCount * 1000 / fpsDT);
-			this._fpsTime  = now;
+		if(!this._fpsTime || this.postDrawCount == 5) { //new run
 			this._fpsCount = 0;
+		} else {
+			this._fpsCount++;
+			var diff = timestamp - this._fpsTime;
+			this._fps = 0.8*this._fps + 0.2 *(1000/diff);
 		}
+		this._fpsTime = timestamp;
 
 		this._dispatch("onDraw");
+		if(this._postDrawCount-- > 0) {
+			this._drawEventPending = true;
+			requestAnimationFrame(this._delegateDraw);
+		}
 	},
 
 	/**
@@ -16596,7 +16713,13 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	 * @returns {bool} True if the dragging operation is active with the specified mouse button, false otherwise.
 	 */
 	isDragging : function (btn) {
-		return this._dragging[btn];
+		var dragging = false;
+		if(btn!==undefined) dragging = this._dragging[btn];
+		else {
+			for(i=0;i<3;i++) if(this._dragging[i]) return true;
+		}
+		return dragging;
+//		return this._dragging[btn];
 	},
 
 	/**

@@ -75,6 +75,7 @@ if(strlen($this->template->collectionId)>0) {
 				<div class="control-group">
 				<div class="panel panel-default widgetContentsContainer">
 					<div class="panel-body widgetContents">
+						<button type="button" class="btn btn-primary toggleTabs pull-right">Toggle Tabs</button>
 						<div class="form-group">
 							<label for="inputObjectId" class="col-sm-2 control-label">Object Id:</label>
 							<div class="col-sm-3">
@@ -101,7 +102,7 @@ if(strlen($this->template->collectionId)>0) {
 							<input type="hidden" name="collectionId" value="<?=$collectionId?>" id="collectionId">
 								<select name="newCollectionId" id="newCollectionId" class="form-control input-large">
 									<option>---</option>
-									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections]);?>
+									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections],true);?>
 
 								</select>
 							</div>

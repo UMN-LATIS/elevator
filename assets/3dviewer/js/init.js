@@ -1,7 +1,7 @@
 /*
 3DHOP - 3D Heritage Online Presenter
 Copyright (c) 2014, Marco Callieri - Visual Computing Lab, ISTI - CNR
-All rights reserved.
+All rights reserved.    
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 function init3dhop() {
 	var interval, id, ismousedown;
 	var button = 0;
-	console.log("spinup");
+
 	$('#toolbar img')
 		.mouseenter(function(e) {
 			id = $(this).attr('id');
@@ -28,7 +28,7 @@ function init3dhop() {
 			else $(this).css("opacity","1.0");
 		})
 		.mouseout(function(e) {
-			clearInterval(interval);
+			clearInterval(interval); 
 			$(this).css("opacity","0.5");
 		})
 		.mousedown(function(e) {
@@ -41,7 +41,7 @@ function init3dhop() {
 					}, 100);
 				}
 				else {
-					clearInterval(interval);
+					clearInterval(interval); 
 				}
 				$(this).css("opacity","1.0");
 				button=0;
@@ -50,36 +50,43 @@ function init3dhop() {
 		.mouseup(function(e) {
 			ismousedown = false;
 			if(e.button==button){
-				clearInterval(interval);
+				clearInterval(interval); 
 				$(this).css("opacity","0.8");
 				button=0;
 			}
 		})
-		.on('touchstart', function(e) {
+		.on('touchstart', function(e) { 
 			button=2;
 		})
 		.on('touchend', function(e) {
 			button=0;
 		});
 
+	$('#measure-output')
+		.on('contextmenu', function(e){ 
+			e.stopPropagation();
+		});
+
 	$('#3dhop')
-		.on('contextmenu', function(e){
-			return false;
+		.on('contextmenu', function(e){ 
+			return false; 
 		})
 		.on('touchstart', function(e) {
 			$('#toolbar img').css("opacity","0.5");
 		})
 		.on('touchend', function(e) {
-			clearInterval(interval);
+			clearInterval(interval); 
 		})
 		.on('touchmove', function(e) {
-			clearInterval(interval);
+			clearInterval(interval); 
 			$('#toolbar img').css("opacity","0.5");
 		});
 
-//	$('#draw-canvas').css("cursor","default");
+	$('#draw-canvas')
+//		.css("cursor","default")
+		.mousedown(function() { $('#toolbar img').css("opacity","0.5"); });
 
-	if (window.navigator.userAgent.indexOf('Trident/') > 0) { //IE fullscreen handler
+	if (window.navigator.userAgent.indexOf('Trident/') > 0) { //IE fullscreen handler 
 		$('#full').click(function(e) {enterFullscreen();});
 		$('#full_on').click(function(e) {exitFullscreen();});
 	}
@@ -87,7 +94,7 @@ function init3dhop() {
 	resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());
 
 	set3dhlg();
-}
+} 
 
 function lightSwitch() {
   var on = presenter.isLightTrackballEnabled();
@@ -103,6 +110,26 @@ function lightSwitch() {
     $('#light').css("visibility", "visible");
     $('#light').css("opacity","1.0");
 //    $('#draw-canvas').css("cursor","default");
+  }
+}
+
+function measurementSwitch() {
+  var on = presenter.isMeasurementToolEnabled();
+
+  if(on){
+    $('#measure').css("visibility", "hidden");
+    $('#measure_on').css("visibility", "visible");
+    $('#measure_on').css("opacity","1.0");
+    $('#measurebox').css("visibility","visible");
+    $('#draw-canvas').css("cursor","crosshair");
+  }
+  else{
+    $('#measure_on').css("visibility", "hidden");
+    $('#measure').css("visibility", "visible");
+    $('#measure').css("opacity","1.0");
+    $('#measurebox').css("visibility","hidden");
+    $('#measure-output').html("0.0");
+    $('#draw-canvas').css("cursor","default");
   }
 }
 
@@ -152,35 +179,40 @@ function exitFullscreen() {
   $('#full').css("opacity","0.5");
   resizeCanvas(presenter.native_width,presenter.native_height);
 
-  if (document.msExitFullscreen) document.msExitFullscreen();
+  if (document.msExitFullscreen) document.msExitFullscreen();  
   else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
   else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
 
-  presenter.ui.postDrawEvent();
+  presenter.ui.postDrawEvent(); 
 }
 
 function moveToolbar(l,t) {
-  $('#toolbar').css('margin-left', l);
-  $('#toolbar').css('margin-top', t);
+  $('#toolbar').css('left', l);
+  $('#toolbar').css('top', t);
+}
+
+function moveMeasurebox(r,t) {
+  $('#measurebox').css('right', r);
+  $('#measurebox').css('top', t);
 }
 
 function resizeCanvas(w,h) {
   $('#draw-canvas').attr('width', w);
   $('#draw-canvas').attr('height',h);
   $('#3dhop').css('width', w);
-  $('#3dhop').css('height', h);
+  $('#3dhop').css('height', h);  
 }
 
 function set3dhlg() {
   $('#tdhlg').html("Powered by 3DHOP</br>&nbsp;C.N.R. &nbsp;&ndash;&nbsp; I.S.T.I.");
   $('#tdhlg').mouseover(function() {
-	 $('#tdhlg').animate({
+	 $('#tdhlg').animate({ 
 		height: "25px"
 	  }, "fast" );
 	 })
 	.mouseout(function() {
-	 $('#tdhlg').animate({
-		height: "15px"
+	 $('#tdhlg').animate({ 
+		height: "13px"
 	  }, "slow" );
 	 });
   $('#tdhlg').click(function() { window.open('http://vcg.isti.cnr.it/3dhop/', '_blank') });

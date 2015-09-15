@@ -309,13 +309,14 @@ class repository_elevator extends repository
 
     // convert the thumbnail link into the full url for embedding
     public function get_link($url) {
-        $assetInfo = $this->elevatorAPI->assetLookup($url);
+        $assetInfo = $this->elevatorAPI->fileLookup($url);
         return $assetInfo["source"];
     }
 
     public function get_file_reference($source) {
         if($this->fileTypes == "zipscorm") {
-            $assetInfo = $this->elevatorAPI->assetLookup($source);
+
+            $assetInfo = $this->elevatorAPI->fileLookup($source);
             return $assetInfo["original"];
         }
         else {

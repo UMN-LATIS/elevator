@@ -84,7 +84,7 @@
 
 
 
-			<?=$this->load->view("mapSelector", ["mapId"=>$formFieldMapId])?>
+			<?=$this->load->view("mapSelector", ["mapId"=>$formFieldMapId], true)?>
 
 
 			<?if($widgetModel->getAllowMultiple()):?>

@@ -7,7 +7,32 @@ var basePath = "<?=$this->template->relativePath?>";
 
 <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
 <script>
+
+
+function inIframe () {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}
+
+function popitup() {
+  newwindow=window.open("https://" + window.location.hostname + "/autoclose.html",'name','height=200,width=150');
+
+  setTimeout(function() { location.reload();}, 1200);
+  return false;
+}
+
 if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
+
+    if(window.location.hash  == "#firstFrame" && inIframe()) {
+        var frames = window.parent.frames;
+        for(index = 0; index < frames.length; index++) {
+            frames[index].postMessage("pageLoaded", "*");
+        }
+    }
+
     // If we have the opensaml::FatalProfileException GET arguments
     // redirect to initial location because isPassive failed
     if (
@@ -20,12 +45,31 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
         window.location = document.cookie.substring(startpos,endpos);
     }
 } else {
-    // Mark browser as being isPassive checked
-    document.cookie = "_check_is_passive=" + window.location;
+    if(window.location.hash  == "#secondFrame" && inIframe()) {
+        window.addEventListener("message", function(event) {
+            if(event.data == "pageLoaded") {
+                location.reload();
+            }
+        }, false);
+    }
+    else {
+        // Mark browser as being isPassive checked
 
-    // Redirect to Shibboleth handler
+        // safari doesn't allow third party cookies unless the user has accessed the site before, so we need to have them click to launch a popup..
+        if(!document.cookie) {
+          window.onload = function(e) {
+            document.body.innerHTML = "To load this resource, please click the button below. <input type=button value='Load Resource' onClick='popitup();'>";
+          }
 
-    window.location.href = "https://" + window.location.hostname + "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?" + window.location);
+        }
+        else {
+          document.cookie = "_check_is_passive=" + window.location;
+          // Redirect to Shibboleth handler
+          window.location.href = "https://" + window.location.hostname + "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?redirect=" + encodeURIComponent(window.location));
+
+        }
+
+    }
 }
 //-->
 </script>
@@ -116,7 +160,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
             <li class="disabled"><a href="#">Recent Searches:</a></li>
             <?if($this->user_model->userLoaded):?>
             <?foreach($this->user_model->getRecentSearches() as $search):?>
-            <li><a href="<?=instance_url("search#". $search->getSearchId())?>"><?=$search->getSearchText()?></a></li>
+            <li><a href="<?=instance_url("search#". $search->getId())?>"><?=$search->getSearchText()?></a></li>
             <?endforeach?>
             <?endif?>
             <?if($this->user_model->userLoaded && $this->user_model->getIsSuperAdmin() || $this->user_model->getAccessLevel("instance",$this->instance)>=PERM_ADDASSETS || $this->user_model->getMaxCollectionPermission() >= PERM_ADDASSETS):?>

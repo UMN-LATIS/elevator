@@ -130,6 +130,20 @@ class elevatorAPI
 
 	}
 
+	function fileLookup($assetId) {
+		$request = "asset/fileLookup/" . $assetId;
+
+		if($result = $this->execute($request)) {
+			$assetInfo = json_decode($result, true);
+		}
+		else {
+			return array();
+		}
+		return $assetInfo;
+
+	}
+
+
 	function getDrawers() {
 		$request = "api_drawers/listDrawers";
 		$drawerList = array();

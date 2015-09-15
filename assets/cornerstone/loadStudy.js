@@ -82,7 +82,6 @@ function loadStudy(studyViewer, studyJSON) {
         cornerstone.enable(element);
 
         // Have cornerstone load and cache the image
-
         cornerstone.loadAndCacheImage(imageId).then(function(image) {
 
             setupViewport(element, imageViewer.stacks[0], image);

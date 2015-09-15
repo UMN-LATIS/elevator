@@ -37,9 +37,9 @@ PanTiltTrackball.prototype = {
 			startDistance : 2.0,
 			minMaxDist    : [0.2, 4.0],
 			minMaxPanX    : [-0.7, 0.7],
-			minMaxPanY    : [-0.7, 0.7],			
-			minMaxAngleX  : [-70.0, 70.0],			
-			minMaxAngleY  : [-70.0, 70.0],						
+			minMaxPanY    : [-0.7, 0.7],
+			minMaxAngleX  : [-70.0, 70.0],
+			minMaxAngleY  : [-70.0, 70.0],
 		}, options);
 		
 		this._action = SGL_TRACKBALL_NO_ACTION;

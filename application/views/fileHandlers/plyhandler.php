@@ -10,11 +10,13 @@ if($this->user_model->userLoaded) {
 ?>
 <?
 
+
 $embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
 $embedLink = str_replace("http:", "", $embedLink);
 $embedLink = str_replace("https:", "", $embedLink);
 
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
+
 
 ?>
 <link type="text/css" rel="stylesheet" href="/assets/3dviewer/stylesheet/3dhop.css"/>
@@ -37,12 +39,12 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <div class="row assetViewRow">
   <div class="col-md-12">
 <?endif?>
-  <?if(!$allowOriginal):?>
-      <p class="alert alert-info">No derivatives found.
-        <?if(!$this->user_model->userLoaded):?>
-        You may have access to additional derivatives if you log in.
-        <?endif?>
-      </p>
+  <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
+    <p class="alert alert-info">No derivatives found.
+      <?if(!$this->user_model->userLoaded):?>
+      You may have access to additional derivatives if you log in.
+      <?endif?>
+    </p>
 
     <?else:?>
     <div class="threedelementcontainer">
@@ -53,12 +55,21 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
   <img id="zoomout"    title="Zoom Out"              src="/assets/3dviewer/skins/dark/zoomout.png"/><br/>
   <img id="light_on"   title="Disable Light Control" src="/assets/3dviewer/skins/dark/light_on.png" style="position:absolute; visibility:hidden;"/>
   <img id="light"      title="Enable Light Control"  src="/assets/3dviewer/skins/dark/light.png"/><br/>
-  <img id="hotspot_on" title="Hide Hotspots"         src="/assets/3dviewer/skins/dark/pin_on.png"   style="position:absolute; visibility:hidden;"/>
+   <img id="measure_on" title="Disable Measure Tool"  src="/assets/3dviewer/skins/dark/measure_on.png"
+                                                          style="position:absolute; visibility:hidden;"/>
+  <img id="measure"    title="Enable Measure Tool"   src="/assets/3dviewer/skins/dark/measure.png"/><br/>
+ <img id="hotspot_on" title="Hide Hotspots"         src="/assets/3dviewer/skins/dark/pin_on.png"   style="position:absolute; visibility:hidden;"/>
   <img id="hotspot"    title="Show Hotspots"         src="/assets/3dviewer/skins/dark/pin.png"    /><br/>
   <img id="full_on"    title="Exit Full Screen"      src="/assets/3dviewer/skins/dark/full_on.png" style="position:absolute; visibility:hidden;"/>
   <img id="full"       title="Full Screen"           src="/assets/3dviewer/skins/dark/full.png"   />
  </div>
+  <div id="measurebox" style="background-color:rgba(125,125,125,0.5);color:#f8f8f8;">Measured length:<br/>
+  <span id="measure-output" onmousedown="event.stopPropagation()">0.0</span>
+ </div>
+ <canvas id="draw-canvas" style="background-image: url(/assets/3dviewer/skins/light/background.png)"/>
+</div>
  <canvas id="draw-canvas"/>
+
  <div id="loadIndicator">
     Loading...
   </div>
@@ -111,7 +122,7 @@ function setup3dhop() {
 
   presenter.setScene({
     meshes: {
-      "targetAsset" : { url: "<?=stripHTTP($fileObject->sourceFile->getProtectedURLForFile())?>" },
+      "targetAsset" : { url: "<?=stripHTTP($fileContainers['nxs']->getProtectedURLForFile())?>#.nxs" },
       "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
     },
     modelInstances : {
@@ -136,6 +147,7 @@ function setup3dhop() {
 
   presenter._onPickedSpot = onPickedSpot;
   presenter._onPickedInstance = onPickedInstance;
+  presenter._onEndMeasurement = onEndMeasure;
   presenter._onLoadedEvent = function() {
     $("#loadIndicator").hide();
   }
@@ -146,6 +158,7 @@ function actionsToolbar(action) {
   else if(action=='zoomin') presenter.zoomIn();
   else if(action=='zoomout') presenter.zoomOut();
   else if(action=='light' || action=='light_on') { presenter.enableLightTrackball(!presenter.isLightTrackballEnabled()); lightSwitch(); }
+  else if(action=='measure' || action=='measure_on') { presenter.enableMeasurementTool(!presenter.isMeasurementToolEnabled()); measurementSwitch(); }
   else if(action=='hotspot'|| action=='hotspot_on') { presenter.toggleSpotVisibility(HOP_ALL, true); presenter.enableOnHover(!presenter.isOnHoverEnabled()); hotspotSwitch(); }
   else if(action=='full'  || action=='full_on') fullscreenSwitch();
 }
@@ -159,6 +172,10 @@ function onPickedSpot(id) {
 
 function onPickedInstance(id) {
   if(presenter._lastPickedSpot!="null") return;
+}
+
+function onEndMeasure(measure) {
+  $('#measure-output').html(Math.round(measure*1000)/(1000));
 }
 
 var timer;
@@ -180,11 +197,13 @@ $(window).resize(function(event) {
 var loadedCallback = function() {
   init3dhop();
   setup3dhop();
+   moveMeasurebox(10,10);
 }
 
 
 
 </script>
+
 
     <?endif?>
 <?if(!$embedded):?>
@@ -202,13 +221,18 @@ var loadedCallback = function() {
 <div class="row infoRow ">
   <div class="col-md-12">
     <span class="glyphicon glyphicon-info-sign infoPopover" data-placement="bottom" data-toggle="popover" title="File Info" data-html=true data-content='<ul class="list-group">
-      <li class="list-group-item"><strong>File Type: </strong> X3D</li>
+      <li class="list-group-item"><strong>File Type: </strong> OBJ</li>
       <li class="list-group-item assetDetails"><strong>Original Name: </strong><?=$fileObject->sourceFile->originalFilename?></li>
       <li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
     </ul>'></span>
       <span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content='
           <ul>
-
+          <?if(isset($fileContainers['nxs'])):?>
+            <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/nxs")?>">Download Derivative (nxs)</a></li>
+          <?endif?>
+          <?if(isset($fileContainers['stl'])):?>
+            <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/stl")?>">Download Derivative (stl)</a></li>
+          <?endif?>
       <?if($allowOriginal):?>
       <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">Download Original</a></li>
       <?endif?>
@@ -222,7 +246,6 @@ var loadedCallback = function() {
 </div>
 
 <script>
-
 $(function ()
 {
   $(".infoPopover").popover({trigger: "focus | click"});
