@@ -11,10 +11,9 @@
   ],
   "require": {
     "markwilson/verbal-expressions-php": "dev-master",
-    "doctrine/common": "2.5.*@dev",
-    "doctrine/dbal": "2.5.*@dev",
-    "doctrine/orm": "2.5.*@dev",
-    "doctrine/data-fixtures": "2.0.*@dev",
+    "doctrine/common": "@dev",
+    "doctrine/dbal": "dev-master",
+    "doctrine/orm": "@dev",
     "pda/pheanstalk": "dev-master",
     "elasticsearch/elasticsearch": "~0.4",
     "smalot/pdfparser": "dev-master",
