@@ -1,4 +1,5 @@
 function setupViewport(element, stack, image) {
+
     // Display the image on the viewer element
     cornerstone.displayImage(element, image);
 
@@ -27,7 +28,16 @@ function setupViewport(element, stack, image) {
     cornerstoneTools.addStackStateManager(element, ['playClip']);
     cornerstoneTools.addToolState(element, 'stack', stack);
     cornerstoneTools.stackScrollWheel.activate(element);
-    cornerstoneTools.stackPrefetch.enable(element);
+
+    // safari currently blows up trying to prefetch JPEG2000, needs investigation.
+    // if(!isSafari()) {
+       cornerstoneTools.stackPrefetch.enable(element);
+    // }
 
 
+
+}
+
+function isSafari() {
+    return (/^((?!chrome).)*safari/i).test(navigator.userAgent);
 }

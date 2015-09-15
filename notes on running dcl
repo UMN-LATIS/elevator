@@ -1,0 +1,9 @@
+Notes On running:
+
+elasticsearch -f
+beanstalkd
+mongod
+
+all from brew
+
+queueit project for visibility into beanstalkd

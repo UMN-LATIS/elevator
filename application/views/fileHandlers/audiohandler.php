@@ -18,6 +18,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 ?>
 <script src="/assets/jwplayer/jwplayer.js"></script>
+<script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
 <?if(!$embedded):?>
 <div class="row assetViewRow">
   <div class="col-md-12">
@@ -32,6 +33,12 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
     <?else:?>
     <div id="videoElement">Loading the player...</div>
 
+    <style>
+    .jwplayer.jw-flag-audio-player .jw-preview {
+      display:block;
+    }
+    </style>
+
     <script type="text/javascript">
     jwplayer("videoElement").setup({
       playlist: [{
@@ -39,6 +46,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
         sources: [
         <?if(isset($fileContainers['mp3'])):?>
         {
+
           type: "mp3",
           file: "<?=isset($fileContainers['mp3'])?stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")):null?>",
           label: "mp3"
@@ -76,11 +84,11 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
       <li class="list-group-item assetDetails"><strong>Description: </strong><?=htmlentities($widgetObject->fileDescription, ENT_QUOTES)?></li>
       <?endif?>
-      <?if($widgetObject && $widgetObject->locationData):?>
-      <li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="<?=$widgetObject->locationData[1]?>" data-longitude="<?=$widgetObject->locationData[0]?>">View Location</a></li>
+      <?if($widgetObject && $widgetObject->getLocationData()):?>
+      <li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="<?=$widgetObject->getLocationData()[1]?>" data-longitude="<?=$widgetObject->getLocationData()[0]?>">View Location</a></li>
       <?endif?>
-      <?if($widgetObject && $widgetObject->dateData):?>
-      <li class="list-group-item assetDetails"><strong>Date: </strong><?=$widgetObject->dateData?></li>
+      <?if($widgetObject && $widgetObject->getDateData()):?>
+      <li class="list-group-item assetDetails"><strong>Date: </strong><?=$widgetObject->getDateData()?></li>
       <?endif?>
       <li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
     </ul>

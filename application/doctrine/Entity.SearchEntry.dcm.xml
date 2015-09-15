@@ -11,7 +11,7 @@
 
           <many-to-one field="user" target-entity="User"/>
           <many-to-one field="instance" target-entity="Instance"/>
-          <field name="searchText" type="string" nullable='true'/>
+          <field name="searchText" type="text" nullable='true'/>
           <field name="searchData" type="json_array" nullable='true' >
             <options>
               <option name="jsonb">true</option>

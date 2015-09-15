@@ -52,7 +52,7 @@ $autoload['packages'] = array();
 |	$autoload['libraries'] = array('database', 'session', 'xmlrpc');
 */
 
-$autoload['libraries'] = array('doctrine', 'filehandler_router', "widget_router", "errorhandler_helper");
+$autoload['libraries'] = array('doctrine', 'filehandler_router', "widget_router", "errorhandler_helper", "template");
 
 
 /*

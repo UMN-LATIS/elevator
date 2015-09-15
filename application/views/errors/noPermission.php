@@ -7,4 +7,4 @@
 		You do not have permission to access this resource.  If you'd like assistance, please get in touch, or use the login form below.
 	</div>
 </div>
-<?=$this->load->view("login/login.php", ["redirectURL"=>current_url()]);?>
+<?=$this->load->view("login/login.php", ["redirectURL"=>current_url()],true);?>

@@ -25,9 +25,9 @@ defined('MOODLE_INTERNAL') || die('Invalid access');
 
 $plugin                     = new StdClass();
 $plugin->component          = 'filter_elevator';
-$plugin->version            = 2015032610;
-$plugin->requires           = 2012062500;
-$plugin->release            = '1.0.0';
+$plugin->version            = 2015032612;
+$plugin->requires           = 2012062501;
+$plugin->release            = '1.0.1';
 $plugin->maturity           = MATURITY_STABLE;
 $plugin->dependencies       = array(
 );

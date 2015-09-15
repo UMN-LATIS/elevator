@@ -36,7 +36,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
     			<div class="imageContainer panzoom-element">
 				<?if(count($fileContainers)>0):?>
-						<img class="img-responsive embedImage imageContent" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" />
+						<img class="img-responsive embedImage imageContent" data-no-retina="true" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" />
 				<?endif?>
 				</div>
 				<?if($embedded):?>
@@ -69,11 +69,11 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 			<?if($widgetObject && $widgetObject->fileDescription ):?>
 			<li class="list-group-item assetDetails"><strong>Description: </strong><?=htmlentities($widgetObject->fileDescription, ENT_QUOTES)?></li>
 			<?endif?>
-			<?if($widgetObject && $widgetObject->locationData):?>
-			<li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="<?=$widgetObject->locationData[1]?>" data-longitude="<?=$widgetObject->locationData[0]?>">View Location</a></li>
+			<?if($widgetObject && $widgetObject->getLocationData()):?>
+			<li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="<?=$widgetObject->getLocationData()[1]?>" data-longitude="<?=$widgetObject->getLocationData()[0]?>">View Location</a></li>
 			<?endif?>
-			<?if($widgetObject && $widgetObject->dateData):?>
-			<li class="list-group-item assetDetails"><strong>Date: </strong><?=$widgetObject->dateData?></li>
+			<?if($widgetObject && $widgetObject->getDateData()):?>
+			<li class="list-group-item assetDetails"><strong>Date: </strong><?=$widgetObject->getDateData()?></li>
 			<?endif?>
 			<li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
 		</ul>'></span>

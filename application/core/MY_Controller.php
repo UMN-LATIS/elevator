@@ -2,6 +2,8 @@
 
 class MY_Controller extends CI_Controller {
 
+	public $doctrineCache = null;
+
 	function __construct() {
 
 		parent::__construct();
@@ -29,15 +31,23 @@ class MY_Controller extends CI_Controller {
 
 		$this->load->library("session");
 
+		// set a forever cookie to help with use in iframes
+		$this->input->set_cookie(["name"=>"ElevatorCookie", "value"=>true, "expire" => 60*60*24*365]);
 		$this->load->driver('cache',  array('adapter' => 'apc', 'backup' => 'file'));
+
 		$this->load->model("user_model");
 
 		//$this->user_model->loadUser(1);
 
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache = new \Doctrine\Common\Cache\ApcCache();
+		}
+
 		$userId = $this->session->userdata('userId');
 		if($userId) {
 			if($this->config->item('enableCaching')) {
-				if($storedObject = $this->cache->get("userCache_" . $userId)) {
+				$this->doctrineCache->setNamespace('userCache_');
+				if($storedObject = $this->doctrineCache->fetch($userId)) {
 				 	$user_model = unserialize($storedObject);
 				 	if(!$user_model) {
 				 		$this->user_model->loadUser($userId);
@@ -48,7 +58,7 @@ class MY_Controller extends CI_Controller {
 				}
 				else {
 					$this->user_model->loadUser($userId);
-					$this->cache->save("userCache_" . $userId, serialize($this->user_model), 300);
+					$this->doctrineCache->save($userId, serialize($this->user_model), 900);
 				}
 			}
 			else {

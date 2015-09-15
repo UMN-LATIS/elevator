@@ -12,14 +12,17 @@ function loadElement(targetElement, studyJSON) {
       studyViewerCopy.find('.imageViewer').append(viewportCopy);
 
 
-      studyViewerCopy.attr("id", 'x' + "monkey");
+      studyViewerCopy.attr("id", 'x' + "dicomViewer");
       studyViewerCopy.appendTo(targetElement);
       // Now load the study.json
 
       loadStudy(studyViewerCopy, studyJSON);
 }
 
-// Prevent scrolling on iOS
-document.body.addEventListener('touchmove', function(e) {
-  e.preventDefault();
+$(document).ready(function() {
+  // Prevent scrolling on iOS
+  $(document).on("mousewheel DOMMouseScroll",".viewer", function(e) {
+    e.preventDefault();
+  });
+
 });
