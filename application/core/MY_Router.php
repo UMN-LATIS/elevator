@@ -42,7 +42,7 @@ class MY_Router extends CI_Router {
 
     function testSegments($segments) {
         // Does the requested controller exist in the root folder?
-        if (file_exists(APPPATH.'controllers/'.$segments[0].EXT))
+        if (file_exists(APPPATH.'controllers/'.ucfirst($segments[0]).".php"))
         {
             return $segments;
         }
@@ -73,7 +73,7 @@ class MY_Router extends CI_Router {
             if (count($segments) > 0)
             {
 
-                if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().'/'.$segments[0].EXT))
+                if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().'/'.ucfirst($segments[0]).".php"))
                 {
                     show_404($this->fetch_directory().$segments[0]);
                 }
@@ -83,7 +83,7 @@ class MY_Router extends CI_Router {
                 $this->set_class($this->default_controller);
                 $this->set_method('index');
 
-                if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().'/' .$this->default_controller.EXT))
+                if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().'/' .ucfirst($this->default_controller).".php"))
                 {
                     $this->directory = '';
                     return array();

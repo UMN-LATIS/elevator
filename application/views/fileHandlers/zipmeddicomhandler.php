@@ -35,8 +35,9 @@ if(isset($fileContainers['dicom'])) {
       continue;
     }
     $instanceList = array();
+
     foreach($series["instanceList"] as $instanceEntry) {
-      $assetURL = $fileContainers['dicom']->getProtectedURLForFile($instanceEntry["imageId"]);
+      $assetURL = $fileContainers['dicom']->getProtectedURLForFile($instanceEntry["imageId"], "+30 minutes");
       $assetURL = "dicomweb:" . stripHTTP($assetURL);
 
       $instanceList[] = ["imageId"=>$assetURL];
@@ -58,7 +59,7 @@ if(isset($fileContainers['dicom'])) {
 
 <script>
 
-if(!objectId) {
+if(typeof objectId === 'undefined') {
     objectId = "<?=$fileObjectId?>";
 }
 
@@ -70,7 +71,7 @@ var masterJson = <?=json_encode($outputJson)?>;
 
 <?if(!$embedded):?>
 <div class="row assetViewRow" >
-  <div class="col-md-12 videoColumn">
+  <div class="col-md-12">
 <?endif?>
 
     <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
@@ -81,17 +82,7 @@ var masterJson = <?=json_encode($outputJson)?>;
       </p>
 
     <?else:?>
-    <style>
-    .dicomEnclosure {
-      height: 500px;
-      width: 100%;
 
-    }
-    .dicomViewer {
-      width: 100%;
-      height: 100%;
-    }
-    </style>
     <div class="dicomEnclosure">
     <div class="dicomViewer">
 
@@ -176,7 +167,7 @@ $(document).ready(function() {
 <link rel="stylesheet" href="/assets/cornerstone/font-awesome.min.css">
 <link href="/assets/cornerstone/cornerstone.min.css" rel="stylesheet">
 <link href="/assets/cornerstone/cornerstoneDemo.css" rel="stylesheet">
-<script src="/assets/cornerstone/jquery.hammer-full.js"></script>
+<script src="/assets/cornerstone/hammer.js"></script>
 
 <!-- include the cornerstone library -->
 <script src="/assets/cornerstone/cornerstone.js"></script>
@@ -187,6 +178,9 @@ $(document).ready(function() {
 <!-- include the cornerstone tools library -->
 <script src="/assets/cornerstone/cornerstoneTools.js"></script>
 
+<script src="/assets/cornerstone/util.js"></script>
+<script src="/assets/cornerstone/arithmetic_decoder.js"></script>
+<script src="/assets/cornerstone/jpx.js"></script>
 <!-- include the cornerstoneWADOImageLoader library -->
 <script src="/assets/cornerstone/cornerstoneWADOImageLoader.js"></script>
 
@@ -206,4 +200,5 @@ $(document).ready(function() {
 <script src="/assets/cornerstone/imageViewer.js"></script>
 <script src="/assets/cornerstone/loadTemplate.js"></script>
 <script src="/assets/cornerstone/setupViewportOverlays.js"></script>
+
 <script src="/assets/cornerstone/cornerstoneDemo.js"></script>

@@ -1,0 +1,44 @@
+FFMpeg 2.1.x required, not in std Debian archives
+* http://johnvansickle.com/ffmpeg/
+* https://packagist.org
+
+# Database setup, Doctrine commands
+* php doctrine.php orm:generate:entities application/models/
+* php doctrine.php orm:schema-tool:update
+
+
+# Docroot
+* base directory for dcl3 repo is docroot, .htaccess handles and will need to
+be templated
+* files in application/config need to be templated appropriately
+  - config.php
+  - database.php
+
+# Elasticsearch/mongo
+* mongo and elasticsearch not currently using auth, doing trust of IP address
+  - need to adjust before production, template appropriately
+* on first connect app will create schema/collections as needed
+
+# Composer/install
+Need to run composer to install required components, will create vendor/ directory 
+under install.  Run as DCL user.
+
+# S3 config
+* S3 config has been modified, see current bucket in test IAM realm
+* Need to automate or document throughly for new installs
+  - can this be automated through cloudformation?
+
+# Beanstalkd (queue)
+* need to instrument for cloudwatch and apply to autoscale group for transcoders
+  - transcoders should stay alive for minimum 45 minutes before dying, since the 
+    minimum billing increment is 1h.  Minimize cost, limit number started.
+
+# other notes
+* shibposeur is enabled in .htaccess statically, needs to be templated
+
+# open questions
+* What shib attributes are required?
+* What instance types for each component?
+* Mongo replication should be done, how to optimize?  
+  - two m3 instances, one m1.small as the third in quorum?
+

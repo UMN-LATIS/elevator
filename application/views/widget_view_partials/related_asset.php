@@ -43,7 +43,7 @@
 					<?if(!$widgetModel->displayInline):?>
 					<a href="<?=instance_url("asset/viewAsset/".$fieldContent->getRelatedAsset()->getObjectId())?>" class="btn btn-primary btn-xs" style="color:white">Open</a>
 					<?endif?>
-					<?=$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$fieldContent->getRelatedAsset()]);?>
+					<?=$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$fieldContent->getRelatedAsset()], true);?>
 				</div>
 
 			<?else:?>

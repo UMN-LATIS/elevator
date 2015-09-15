@@ -29,6 +29,8 @@ class BoxHelper
     		return true;
 		} catch (Box\View\BoxViewException $e) {
 			$this->error = $e->getMessage();
+			var_dump($e->getMessage());
+			die;
 			return false;
 		}
 	}

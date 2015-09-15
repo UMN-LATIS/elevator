@@ -111,8 +111,8 @@ function setupButtons(studyViewer) {
         });
     });
 
-    // Play clip
-    $(buttons[11]).on('click touchstart', function() {
+    // nexdt frame clip
+    $(document).on("click touchstart", ".dicomControls .step-forward", function() {
 
         forEachViewport(function(element) {
             var toolData = cornerstoneTools.getToolState(element, 'stack');
@@ -143,42 +143,54 @@ function setupButtons(studyViewer) {
             });
     });
 
+    // nexdt frame clip
+    $(document).on("click touchstart", ".dicomControls .step-backward", function() {
+
+        forEachViewport(function(element) {
+            var toolData = cornerstoneTools.getToolState(element, 'stack');
+            if(toolData === undefined || toolData.data === undefined || toolData.data.length === 0) {
+             return;
+            }
+
+            var stackData = toolData.data[0];
+
+            var newImageIdIndex = stackData.currentImageIdIndex - 1;
+            if(newImageIdIndex < 0) {
+                newImageIdIndex = stackData.imageIds.length - 1;
+            }
+            newImageIdIndex = Math.min(stackData.imageIds.length - 1, newImageIdIndex);
+            newImageIdIndex = Math.max(0, newImageIdIndex);
+
+            if(newImageIdIndex !== stackData.currentImageIdIndex)
+            {
+                var viewport = cornerstone.getViewport(element);
+                cornerstone.loadAndCacheImage(stackData.imageIds[newImageIdIndex]).then(function(image) {
+                    stackData = toolData.data[0];
+                    if(stackData.newImageIdIndex !== newImageIdIndex) {
+                        stackData.currentImageIdIndex = newImageIdIndex;
+                        cornerstone.displayImage(element, image, viewport);
+                    }
+                });
+            }
+            });
+    });
+
     $(document).on("click touchstart", ".dicomControls .fullscreen", function() {
         if($.fullscreen.isFullScreen()) {
-            $(".dicomViewer").css("background-color", "transparent");
-
             $.fullscreen.exit();
-            $(".dicomEnclosure").width("100%");
-            $(".dicomEnclosure").height("500px");
-            // $(".enclosure").width("800px");
-            // $(".enclosure").height("600px");
-            $(".viewer").width("660px");
-            $(".viewer").height("600px");
-            // var element = $("#xmonkey").find('.viewport')[0];
-
-            // Get first imageID on the current stack
-            // var imageId = imageViewer.stacks[0].imageIds[0];
-
-            // Image enable the dicomImage element
-            // cornerstone.size(element,true);
-
-
         }
         else {
-            $(".dicomViewer").css("background-color", "black");
             $(".dicomEnclosure").width("100%");
             $(".dicomEnclosure").height("100%");
             $(".viewer").width("100%");
             $(".viewer").height("100%");
             $(".dicomViewer").fullscreen();
-            var element = $("#xmonkey").find('.viewport')[0];
-
-            // Get first imageID on the current stack
-            // var imageId = imageViewer.stacks[0].imageIds[0];
-
-            // cornerstone.size(element,true);
-
-
+            $(".dicomViewer").on("fscreenclose", function() {
+                $(".dicomEnclosure").width("100%");
+                $(".dicomEnclosure").height("500px");
+                $(".viewer").width("660px");
+                $(".viewer").height("600px");
+            });
         }
 
 

@@ -55,6 +55,12 @@ SphereTrackball.prototype = {
 		this.reset();
 	},
 
+    clamp: function(value, low, high) {
+      if(value < low) return low;
+      if(value > high) return high;
+      return value;
+    },
+
     _computeMatrix: function() {
       var m = SglMat4.identity();  
 	  
@@ -210,8 +216,8 @@ SphereTrackball.prototype = {
 	},
 
 	scale : function(m, s) {
-		var scaleMat = SglMat4.scaling([s, s, s]);
-		this._sphereMatrix = SglMat4.mul(scaleMat, this._sphereMatrix);
+		this._distance *= s;
+		this._distance = this.clamp(this._distance, this._minMaxDist[0], this._minMaxDist[1]);
 		this._computeMatrix();
 	}
 };

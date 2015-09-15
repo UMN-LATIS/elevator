@@ -1,0 +1,16 @@
+*/models/Entity/*~
+*/models/Proxies/*
+*/config/config.php
+*/config/database.php
+*/config/development
+*/logs/log-*.php
+*/logs/!index.html
+*/cache/*
+*/cache/!index.html
+sourceFiles/*
+composer.phar
+vendor/*
+.tags
+.tags_sorted_by_file
+.DS_Store
+

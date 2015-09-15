@@ -57,11 +57,15 @@ if($widgetModel->fieldContentsArray) {
 	$fileId = $widgetModel->fieldContentsArray[$i]->fileId;
 	$fileType = $widgetModel->fieldContentsArray[$i]->fileType;
 	$fileDescriptionContents = $widgetModel->fieldContentsArray[$i]->fileDescription;
-	$searchData = $widgetModel->fieldContentsArray[$i]->searchData;
+	$searchData = $widgetModel->fieldContentsArray[$i]->getSearchData();
 	if(isset($widgetModel->fieldContentsArray[$i]->sidecars)) {
 		$sidecars = $widgetModel->fieldContentsArray[$i]->sidecars;
 	}
-	$sidecarView = $widgetModel->fieldContentsArray[$i]->fileHandler->getSidecarView($sidecars, $formFieldName . "[sidecars]");
+	$fileHandler = $widgetModel->fieldContentsArray[$i]->getFileHandler();
+	if($fileHandler) {
+		$sidecarView = $fileHandler->getSidecarView($sidecars, $formFieldName . "[sidecars]");
+	}
+
 
 }
 
@@ -106,7 +110,7 @@ if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
 			<div class="form-group uploadInformation">
 				<label class="col-sm-3 control-label">Upload a File:</label>
 				<div class="col-sm-5">
-					<input type="file" multiple class="file form-control" value="Select File" />
+					<input type="file" <?=$widgetModel->getAllowMultiple()?"multiple":null?> class="file form-control" value="Select File" />
 				</div>
 				<div class="col-sm-3">
 					<button type="button" class="deleteFile btn btn-danger">Delete</button>

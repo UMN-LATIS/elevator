@@ -35,7 +35,7 @@ TurnTableTrackball.prototype = {
 			startDistance : 2.0,
 			minMaxDist    : [0.2, 4.0],
 			minMaxPhi     : [-180, 180],
-			minMaxTheta   : [-80.0, 80.0],			
+			minMaxTheta   : [-80.0, 80.0],
 		}, options);
 		
 		

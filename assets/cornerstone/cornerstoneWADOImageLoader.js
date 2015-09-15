@@ -559,6 +559,7 @@ var cornerstoneWADOImageLoader = (function ($, cornerstone, cornerstoneWADOImage
         }
         var tileComponents = jpxImage.tiles[0];
         var pixelData = tileComponents.items;
+
         return pixelData;
     }
 

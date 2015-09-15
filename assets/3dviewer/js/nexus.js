@@ -22,11 +22,13 @@ var Nexus = { };
 Nexus.LITTLE_ENDIAN_DATA = true;
 Nexus.PADDING            = 256;
 
-Nexus.Debug = { };
-Nexus.Debug.tag = 0;
-Nexus.Debug.flags = new Array(10);
-for (var i=0; i<Nexus.Debug.flags.length; ++i) {
-	Nexus.Debug.flags[i] = false;
+Nexus.Debug = {
+	nodes: false,    //color each node
+	culling: false,  //visibility culling disabled
+	draw: false,     //final rendering call disabled
+	extract: false,  //no extraction
+	request: false,  //no network requests
+	worker: false    //no web workers
 }
 
 Nexus.Attribute = function () {
@@ -145,11 +147,11 @@ Nexus.VertexElement = function () {
 
 Nexus.VertexElement.SIZEOF = Nexus.Element.SIZEOF;
 
-Nexus.VertexElement.POSITION = 0;
-Nexus.VertexElement.NORMAL   = 1;
-Nexus.VertexElement.COLOR    = 2;
-Nexus.VertexElement.TEXCOORD = 3;
-Nexus.VertexElement.DATA0    = 4;
+Nexus.VertexElement.POSITION  = 0;
+Nexus.VertexElement.NORMAL    = 1;
+Nexus.VertexElement.COLOR     = 2;
+Nexus.VertexElement.TEXCOORD  = 3;
+Nexus.VertexElement.DATA0     = 4;
 
 Nexus.VertexElement.prototype = {
 	get hasPosition () { return !this.attributes[Nexus.VertexElement.POSITION].isNull; },
@@ -411,6 +413,7 @@ Nexus.NodeIndex.prototype = {
 		for (var i=0; i<nodesCount; ++i) {
 			var node = new Nexus.Node();
 			s += node.import(view, offset + s, littleEndian);
+			node.index = i;
 			this.items[i] = node;
 		}
 		for (var i=0; i<(nodesCount-1); ++i) {
@@ -435,7 +438,7 @@ Nexus.Patch.prototype = {
 	import : function (view, offset, littleEndian) {
 		var s = 0;
 		this.node           = view.getUint32(offset + s, littleEndian); s += Uint32Array.BYTES_PER_ELEMENT;
-		this.lastTriangle = view.getUint32(offset + s, littleEndian); s += Uint32Array.BYTES_PER_ELEMENT;
+		this.lastTriangle   = view.getUint32(offset + s, littleEndian); s += Uint32Array.BYTES_PER_ELEMENT;
 		this.texture        = view.getUint32(offset + s, littleEndian); s += Uint32Array.BYTES_PER_ELEMENT;
 		return s;
 	}
@@ -509,84 +512,63 @@ Nexus.TextureIndex.prototype = {
 	}
 };
 
-Nexus.BoolArray = function (size) {
-	this._size   = size;
-	this._buffer = new Uint8Array(this._size);
-};
-
-Nexus.BoolArray.prototype = {
-	get size() {
-		return this._size;
-	},
-
-	resetAll : function () {
-		this._buffer = new Uint8Array(this._size);
-	},
-
-	set : function (i) {
-		this._buffer[i] = 1;
-	},
-
-	reset : function (i) {
-		this._buffer[i] = 0;
-	},
-
-	test : function (i) {
-		return (this._buffer[i] != 0);
-	}
-};
-
-Nexus.PriorityQueue = function (compareFunction) {
-	this._array   = [ ];
-	this._cmpFunc = compareFunction;
-};
+// takes an array of objects with {data, priority}
+Nexus.PriorityQueue = function() {
+	this.content = [];
+}
 
 Nexus.PriorityQueue.prototype = {
-	_insert : function (x, a, b) {
-		var cmp = this._cmpFunc;
-		var arr = this._array;
-		var a = 0;
-		var b = arr.length - 1;
-		var y, h;
+	push: function(node) {
+		this.bubbleUp(this.content.push(node) -1);
+	},
+	pop: function() {
+		var result = this.content[0];    
+		var end = this.content.pop();
+		if (this.content.length > 0) {
+			this.content[0] = end;
+			this.sinkDown(0);
+		}
+		return result;
+	},
+	size: function() { return this.content.length; },
+	bubbleUp: function(n) {
+		var element = this.content[n];
+		while (n > 0) {
+			var parentN = ((n+1)>>1) -1; 
+			var parent = this.content[parentN];
+			if(parent.node.renderError > element.node.renderError)
+				break;
+			this.content[parentN] = element;
+			this.content[n] = parent;
+			n = parentN;
+		}
+	},
 
-		while (a < b) {
-			h = sglFloor((a + b) / 2);
-			y = arr[h];
-			if (cmp(x, y) > 0) { // --> x > y
-				a = h + 1;
+	sinkDown: function(n) {
+		var length = this.content.length;
+		var element = this.content[n]
+
+		while(true) {
+			var child2N = (n + 1) * 2;
+			var child1N = child2N - 1;
+			var swap = null;
+      		if (child1N < length) {
+				var child1 = this.content[child1N];
+				if(child1.node.renderError > element.node.renderError)
+					swap = child1N;
 			}
-			else {
-				b = h - 1;
+			if (child2N < length) {
+				var child2 = this.content[child2N];
+				if (child2.node.renderError > (swap == null ? element.node.renderError : child1.node.renderError))
+					swap = child2N;
 			}
-		}
-		y = arr[a];
-		if (cmp(x, y) > 0) { // --> x > y
-			a++;
-		}
-		arr.splice(a, 0, x);
-	},
 
-	get length() {
-		return this._array.length;
-	},
+			if (swap == null) break;
 
-	get isEmpty() {
-		return (this._array.length <= 0);
-	},
-
-	push : function (x) {
-		var len = this._array.length;
-		if (len <= 0) {
-			this._array.push(x);
+			this.content[n] = this.content[swap];
+			this.content[swap] = element;
+			n = swap;
 		}
-		else {
-			this._insert(x, 0, len - 1);
-		}
-	},
-
-	pop : function () {
-		if (this._size <= 0) return;
-		return this._array.pop();
 	}
 };
 
@@ -613,8 +595,11 @@ Nexus.Renderer = function (gl) {
 	this._gl = gl;
 
 	this._targetError        = Nexus.Renderer.DEFAULT_TARGET_ERROR;
+	this._targetFps          = null; //Nexus.Renderer.DEFAULT_TARGET_FPS;
 	this._maxPendingRequests = Nexus.Renderer.DEFAULT_MAX_PENDING_REQUESTS;
 	this._maxCacheSize       = Nexus.Renderer.DEFAULT_CACHE_SIZE;
+	this._drawBudget         = Nexus.Renderer.DEFAULT_DRAW_BUDGET;
+	this._minDrawBudget      = Nexus.Renderer.DEFAULT_DRAW_BUDGET / 4;
 	this._onUpdate           = null;
 	this._onSceneReady       = null;
 
@@ -632,9 +617,11 @@ Nexus.Renderer.STATUS_NONE    = 0;
 Nexus.Renderer.STATUS_OPENING = 1;
 Nexus.Renderer.STATUS_OPEN    = 2;
 
-Nexus.Renderer.DEFAULT_TARGET_ERROR         = 3.0;
-Nexus.Renderer.DEFAULT_MAX_PENDING_REQUESTS = 3;
-Nexus.Renderer.DEFAULT_CACHE_SIZE           = 228 * 1024 * 1024;3
+Nexus.Renderer.DEFAULT_TARGET_ERROR         = 1.0;
+Nexus.Renderer.DEFAULT_TARGET_FPS           = 20;
+Nexus.Renderer.DEFAULT_MAX_PENDING_REQUESTS = 3; // 3 is good for uncompressed online work
+Nexus.Renderer.DEFAULT_CACHE_SIZE           = 256 * 1024 * 1024;
+Nexus.Renderer.DEFAULT_DRAW_BUDGET          = 2.0 * 1024 * 1024;
 
 Nexus.Renderer._NODE_NONE    = 0;
 Nexus.Renderer._NODE_PENDING = 1;
@@ -650,7 +637,7 @@ Nexus.Renderer._sortNodesFunction = function (a, b) {
 
 Nexus.Renderer._sortNodeCacheFunction = function (a, b) {
 	return ((a.renderFrame != b.renderFrame) ? (b.renderFrame - a.renderFrame) : (b.renderError - a.renderError));
-    //return b.renderError - a.renderError;
+	//return b.renderError - a.renderError;
 };
 
 
@@ -670,6 +657,9 @@ Nexus.Renderer.prototype = {
 		this._visitedNodes    = null;
 		this._blockedNodes    = null;
 		this._selectedNodes   = null;
+		this._drawSize        = 0; //number of triangle to be rendered
+		this._rendered        = 0; //currently rendered triangles
+		this._estimatedTpS    = 200000; //in million triangles
 		this._cacheSize       = 0;
 		this._cachedNodes     = null;
 		this._readyNodes      = null;
@@ -677,6 +667,14 @@ Nexus.Renderer.prototype = {
 
 		this._pendingRequests = 0;
 		this._candidateNodes  = null;
+		this._redrawOnNewNodes = true;
+
+		var t = this;
+		var path;
+		$('script').each(function(a) { var str = $(this).attr('src'); if(!str) return; if(str.search('nexus.js') >= 0) path = str; });
+		path = path.replace('nexus.js', 'meshcoder_worker.js');
+		this._worker = new Worker(path);
+		this._worker.onmessage = function(e) { t._workerFinished(e); };
 	},
 
 	_requestHeader : function () {
@@ -684,7 +682,13 @@ Nexus.Renderer.prototype = {
 		var size   = Nexus.Header.SIZEOF;
 
 		var that = this;
-		var r = new SglBinaryRequest(this._url, {
+		var url = this._url;
+		/**Safari PATCH**/
+		/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+		/**/  url = this._url + '?' + Math.random();
+		/**/}
+		/**Safari PATCH**/
+		var r = new SglBinaryRequest(url, {
 			range : [offset, offset+size-1],
 			onSuccess : function () {
 				that._handleHeader(r.buffer);
@@ -709,7 +713,13 @@ Nexus.Renderer.prototype = {
 		var size   = header.nodesCount * Nexus.Node.SIZEOF + header.patchesCount * Nexus.Patch.SIZEOF + header.texturesCount * Nexus.Texture.SIZEOF;
 
 		var that = this;
-		var r = new SglBinaryRequest(this._url, {
+		var url = this._url;
+		/**Safari PATCH**/
+		/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+		/**/  url = this._url + '?' + Math.random();
+		/**/}
+		/**Safari PATCH**/
+		var r = new SglBinaryRequest(url, {
 			range : [offset, offset+size-1],
 			onSuccess : function () {
 				that._handleIndex(r.buffer);
@@ -755,9 +765,9 @@ Nexus.Renderer.prototype = {
 		this._pendingNodes = [ ];
 
 		var nodesCount = this._header.nodesCount;
-		this._visitedNodes  = new Nexus.BoolArray(nodesCount);
-		this._blockedNodes  = new Nexus.BoolArray(nodesCount);
-		this._selectedNodes = new Nexus.BoolArray(nodesCount);
+		this._visitedNodes  = new Uint8Array(nodesCount);  //Nexus.BoolArray(nodesCount);
+		this._blockedNodes  = new Uint8Array(nodesCount);  //new Nexus.BoolArray(nodesCount);
+		this._selectedNodes = new Uint8Array(nodesCount);  //new Nexus.BoolArray(nodesCount);
 
 		this._status = Nexus.Renderer.STATUS_OPEN;
 
@@ -848,7 +858,15 @@ Nexus.Renderer.prototype = {
 	},
 
 	set targetError(e) {
-		return this._targetError = e;
+		this._targetError = e;
+	},
+
+	get drawBudget() {
+		return this._drawBudget;
+	},
+
+	set drawBudget(e) {
+		this._drawBudget = e;
 	},
 
 	get modelMatrix() {
@@ -964,10 +982,35 @@ Nexus.Renderer.prototype = {
 
 		for (var i=0, n=newNodes.length; i<n; ++i) {
 			var node    = newNodes[i];
-			var request = node.request;
+			var compressed = Nexus.Signature.MECO + Nexus.Signature.CTM1 + Nexus.Signature.CTM2;
 
-			var buffer = request.buffer;
-			var view   = new DataView(buffer, 0, 2 * Uint16Array.BYTES_PER_ELEMENT);
+			if(Nexus.Debug.worker && this._header.signature.flags & compressed) {
+				var request = node.request;
+				var buffer = request.buffer;
+				var sig = {
+					normals: this._header.signature.vertex.hasNormal,
+					colors:  this._header.signature.vertex.hasColor,
+					indices: this._header.signature.face.hasIndex
+				};
+				var _node = {
+					nvert: node.verticesCount,
+					nface: node.facesCount,
+					firstPatch: 0, 
+					lastPatch: node.lastPatch - node.firstPatch,
+					buffer: node.request.buffer
+				};
+				var p = [];
+				for(var k = node.firstPatch; k < node.lastPatch; k++)
+					p.push(this._patches.items[k].lastTriangle);
+
+				if(this._header.signature.flags & Nexus.Signature.MECO) {
+					var coder = new MeshCoder(sig, _node, p);
+					node.buffer = coder.decode(buffer);
+				} else {
+					node.buffer = ctmDecode(sig, _node, p);
+				}
+			}
+			//this variable is never used.
 			var offset = 0;
 
 			var nv = node.verticesCount;
@@ -978,11 +1021,13 @@ Nexus.Renderer.prototype = {
 			var faceOffset   = vertexOffset + vertexSize;
 			var faceSize     = nf * faceStride;
 
-			var vertices = new Uint8Array(buffer, vertexOffset, vertexSize);
-			var indices  = new Uint8Array(buffer, faceOffset,   faceSize);
+			var vertices = new Uint8Array(node.buffer, vertexOffset, vertexSize);
+			var indices  = new Uint8Array(node.buffer, faceOffset,   faceSize);
 
 			node.vbo = new SglVertexBuffer (gl, {data : vertices});
-			node.ibo = new SglIndexBuffer  (gl, {data : indices });
+			if (this._header.signature.face.hasIndex) {
+				node.ibo = new SglIndexBuffer  (gl, {data : indices });
+			}
 
 			node.request = null;
 			node.status  = Nexus.Renderer._NODE_READY;
@@ -996,11 +1041,15 @@ Nexus.Renderer.prototype = {
 		this._cacheSize   = size;
 	},
 
-	_hierarchyVisit_isVisible : function (sphere) {
-		if (Nexus.Debug.flags[2]) return true;
+	_hierarchyVisit_isVisible : function (center, radius) {
+		if (Nexus.Debug.culling) return true;
 		var planes = this._planes;
-		for (var i=0; i<6; ++i) {
-			if ((planes[i].signedDistanceToPoint(sphere.center) + sphere.radius) < 0.0) return false;
+		for (var i = 0; i < 4; ++i) {
+			var plane = planes[i];
+			var n = plane._normal;
+			var dot = n[0]*center[0] + n[1]*center[1] + n[2]*center[2];
+			if(dot - plane._offset + radius < 0.0)
+				return false;
 		}
 		return true;
 	},
@@ -1008,14 +1057,20 @@ Nexus.Renderer.prototype = {
 	_hierarchyVisit_nodeError : function (n) {
 		var node   = this._nodes.items[n];
 		var sphere = node.sphere;
-
-		var dist = SglVec3.length(SglVec3.sub(sphere.center, this._viewPoint)) - sphere.radius;
+// inline distance computation
+		var a = sphere.center;
+		var b = this._viewPoint;
+		var d0 = a[0] - b[0];
+		var d1 = a[1] - b[1];
+		var d2 = a[2] - b[2];
+		var dist = Math.sqrt(d0*d0 + d1*d1 + d2*d2) - sphere.radius;
+// end inline
 		if (dist < 0.1) dist = 0.1;
 
 		var res   = this._resolution * dist;
 		var error = node.error / res;
 
-		if (!this._hierarchyVisit_isVisible(sphere)) {
+		if (!this._hierarchyVisit_isVisible(sphere.center, sphere.radius)) {
 			error /= 1000.0;
 		}
 
@@ -1025,17 +1080,19 @@ Nexus.Renderer.prototype = {
 	_hierarchyVisit_insertNode : function (n, visitQueue) {
 		if (n == this._nodes.sink) return;
 
-		if (this._visitedNodes.test(n)) return;
-		this._visitedNodes.set(n);
+		if (this._visitedNodes[n]) return;
+		this._visitedNodes[n] = 1;
 
 		var error = this._hierarchyVisit_nodeError(n);
+		if(error < this._targetError*0.8) return;  //2% speed TODO check if needed
+
 		var node  = this._nodes.items[n];
 		node.renderError = error;
 		node.renderFrame = this._frame;
 
 		var nodeData = {
 			node  : node,
-            index : n
+			index : n
 		};
 		visitQueue.push(nodeData);
 	},
@@ -1043,9 +1100,27 @@ Nexus.Renderer.prototype = {
 	_hierarchyVisit_expandNode : function (nodeData) {
 
 		var node  = nodeData.node;
-		if (node.renderError < this._targetError) return false;
+		if(node.renderError < this._targetError) {
+//			console.log("Stop becaouse of error: " + node.renderError + " < " + this._targetError);
+			return false;
+		}
+		if(this._drawSize > this._drawBudget) {
+//			console.log("Stop because of draw budget: " + this._drawSize  + " > " + this._drawBudget);
+			return false;
+		}
 
-		return (node.status == Nexus.Renderer._NODE_READY);
+
+		var sphere = node.sphere
+		if(this._hierarchyVisit_isVisible(sphere.center, node.tightRadius))
+			this._drawSize += node.verticesCount/2; //faces
+
+		if(node.status != Nexus.Renderer._NODE_READY) {
+//			console.log("Stop because node not ready:" + node.status);
+//			here: mark a redraw when new nodes available.
+			this._redrawOnNewNodes = true;
+			return false;
+		}
+		return true;
 	},
 
 	_hierarchyVisit_insertChildren : function (n, visitQueue, block) {
@@ -1053,23 +1128,27 @@ Nexus.Renderer.prototype = {
 		var node         = nodes[n];
 		var patches      = this._patches.items;
 		var blockedNodes = this._blockedNodes;
-		for (var i=node.firstPatch; i<node.lastPatch; ++i) {
+		for(var i = node.firstPatch; i < node.lastPatch; ++i) {
 			var patch = patches[i];
 			var child = patch.node;
-			if (block) blockedNodes.set(child);
+			if (block) blockedNodes[child] = 1;
 			this._hierarchyVisit_insertNode(child, visitQueue);
 		}
 	},
 
 	_hierarchyVisit : function () {
-		var visitQueue    = new Nexus.PriorityQueue(Nexus.Renderer._sortNodesFunction);
-		var visitedNodes  = this._visitedNodes;
-		var blockedNodes  = this._blockedNodes;
-		var selectedNodes = this._selectedNodes;
+        if(Nexus.Debug.extract == true)
+			return;
+		this._redrawOnNewNodes = false;
 
-		visitedNodes  .resetAll();
-		blockedNodes  .resetAll();
-		selectedNodes .resetAll();
+		var visitQueue    = new Nexus.PriorityQueue();
+
+		var nodesCount = this._nodes.length;
+		for(var i = 0; i < nodesCount; i++) {
+			this._visitedNodes[i] = 0; 
+			this._blockedNodes[i] = 0;
+			this._selectedNodes[i] = 0;
+		}
 		this._hierarchyVisit_insertNode(0, visitQueue);
 
 		var nodes = this._nodes.items;
@@ -1078,8 +1157,10 @@ Nexus.Renderer.prototype = {
 		this._candidateNodes = [ ];
 		var candidateNodes = this._candidateNodes;
 
+		this.currentError = 1e20;
+		this._drawSize = 0;
 		var count = 0;
-		while (!visitQueue.isEmpty && (count < 100)) {
+		while (visitQueue.size() && (count < this._maxPendingRequests)) {
 			var nodeData = visitQueue.pop();
 			var n        = nodeData.index;
 			var node     = nodeData.node;
@@ -1087,27 +1168,69 @@ Nexus.Renderer.prototype = {
 				candidatesCount++;
 				candidateNodes.push(node);
 			}
-			var blocked = blockedNodes.test(n) || !this._hierarchyVisit_expandNode(nodeData);
+			var blocked = this._blockedNodes[n] || !this._hierarchyVisit_expandNode(nodeData);
 			if (blocked) {
 				count++;
 			}
 			else {
-				selectedNodes.set(n);
+				this._selectedNodes[n] = 1;
+				this.currentError = nodeData.node.renderError; 
 			}
 			
 			this._hierarchyVisit_insertChildren(n, visitQueue, blocked);
 		}
+//		if(visitQueue.size() == 0)
+//			console.log("Stop because visitQueue finished");
+
+//		if(count == this._maxPendingRequests)
+//			console.log("Too many blocked nodes");
 	},
 
 	_createNodeHandler : function (node) {
+		//compressed use worker:
 		var that = this;
 		return function () {
-			that._readyNodes.push(node);
-			that._signalUpdate();
-		};
+			that._header.signature.flags & compressed
+			var compressed = Nexus.Signature.MECO + Nexus.Signature.CTM1 + Nexus.Signature.CTM2;
+			if(!Nexus.Debug.worker && that._header.signature.flags & compressed) {
+				var sig = {
+					normals: that._header.signature.vertex.hasNormal,
+					colors:  that._header.signature.vertex.hasColor,
+					indices: that._header.signature.face.hasIndex
+				};
+				var _node = {
+					index: node.index,
+					nvert: node.verticesCount,
+					nface: node.facesCount,
+					firstPatch: 0, 
+					lastPatch: node.lastPatch - node.firstPatch,
+					buffer: node.request.buffer
+				};
+				var p = [];
+				for(var k = node.firstPatch; k < node.lastPatch; k++)
+					p.push(that._patches.items[k].lastTriangle);
+				if(that._header.signature.flags & Nexus.Signature.MECO)
+					that._worker.postMessage({signature:sig, node:_node, patches:p });
+			} else {
+				that._workerFinished({data: {index:node.index, buffer:node.request.buffer}});
+			}
+		}
+	},
+
+	_workerFinished: function(_node) {
+		var node = this._nodes.items[_node.data.index];
+		node.buffer = _node.data.buffer;
+		this._readyNodes.push(node);
+		if(this._redrawOnNewNodes) { //redraw only if new nodes might improve rendering
+			this._signalUpdate();
+		}
 	},
 
 	_requestNodes : function () {
+		if(Nexus.Debug.request) {
+			this._candidateNodes = [];
+			return;
+		}
 		var candidateNodes = this._candidateNodes;
 		if (candidateNodes.length <= 0) return;
 
@@ -1146,14 +1269,21 @@ Nexus.Renderer.prototype = {
 			}
 		}
 
+		var url = this._url;
 		for (var i=0; i<nodesToRequest; ++i) {
+			/**Safari PATCH**/
+			/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+			/**/  url = this._url + '?' + Math.random();
+			/**/}
+			/**Safari PATCH**/
 			var node   = candidateNodes[i];
 			node.status  = Nexus.Renderer._NODE_PENDING;
-			node.request = new SglBinaryRequest(this._url, {
+			node.request = new SglBinaryRequest(url, {
 				range : [node.offset, node.lastByte],
 				onSuccess : this._createNodeHandler(node)
 			});
 		}
+		this._candidateNodes = [];
 	},
 
 	_unproject : function (p) {
@@ -1218,7 +1348,6 @@ Nexus.Renderer.prototype = {
 
 	_render : function () {
 		var gl = this._gl;
-
 		gl.glDrawElements = gl._spidergl.wn._ext.glFunctions.drawElements;
 
 		var vertexStride = this._header.signature.vertex.byteLength;
@@ -1233,7 +1362,7 @@ Nexus.Renderer.prototype = {
 
 		gl.vertexAttrib4fv(Nexus.VertexElement.COLOR, [0.8, 0.8, 0.8, 1.0]);
 
-		if (Nexus.Debug.flags[1]) {
+		if (Nexus.Debug.nodes) {
 			if (!vertexAttributes[Nexus.VertexElement.COLOR].isNull) {
 				gl.disableVertexAttribArray(Nexus.VertexElement.COLOR);
 			}
@@ -1243,23 +1372,31 @@ Nexus.Renderer.prototype = {
 		var patches = this._patches.items;
 		var selectedNodes = this._selectedNodes;
 		var nodesCount = nodes.length;
+		this._rendered = 0;
+
 		for (var i=0; i<nodesCount; ++i) {
-			if (!selectedNodes.test(i)) continue;
+			if (!selectedNodes[i]) continue;
 
 			var node    = nodes[i];
-			var skipped = true;
-			for (var p=node.firstPatch; p<node.lastPatch; ++p) {
-				var patch = patches[p];
-				if (!selectedNodes.test(patch.node)) {
-					skipped = false;
-					break;
+			if(this._header.signature.face.hasIndex) {
+				var skipped = true;
+				for (var p = node.firstPatch; p < node.lastPatch; ++p) {
+					var patch = patches[p];
+					if (!selectedNodes[patch.node]) {
+						skipped = false;
+						break;
+					}
 				}
+				if (skipped) continue;
 			}
-			if (skipped) continue;
 
-			if (Nexus.Debug.flags[3]) continue;
+			if(!this._hierarchyVisit_isVisible(node.sphere.center, node.tightRadius)) 
+				continue;
+
 			node.vbo.bind();
-			node.ibo.bind();
+			if(node.ibo) {
+				node.ibo.bind();
+			}
 
 			var attribOffset = 0;
 			for (var j=0; j<vertexAttribsCount; ++j) {
@@ -1269,23 +1406,47 @@ Nexus.Renderer.prototype = {
 				attribOffset += attrib.offset + attrib.stride * node.verticesCount;
 			}
 
-			if (Nexus.Debug.flags[1]) {
+			if (Nexus.Debug.nodes) {
 				gl.vertexAttrib4fv(Nexus.VertexElement.COLOR, node.color);
 			}
-
-			var firstTriangle = 0;
-			for (var p=node.firstPatch; p<node.lastPatch; ++p) {
-				var patch = patches[p];
-				if (!selectedNodes.test(patch.node)) {
-					if (!Nexus.Debug.flags[4]) {
-						gl.glDrawElements(gl.TRIANGLES, (patch.lastTriangle - firstTriangle) * 3, gl.UNSIGNED_SHORT, firstTriangle * 3 * Uint16Array.BYTES_PER_ELEMENT);
-					}
-				}
-				firstTriangle = patch.lastTriangle;
+			if(!this._header.signature.face.hasIndex) {
+                var pointsize = Math.floor(0.30*node.renderError);
+                if(pointsize > 3) pointsize = 3;
+				gl.vertexAttrib1fv(Nexus.VertexElement.DATA0, [pointsize]);
 			}
-		}
+			if (Nexus.Debug.draw) continue;
 
-		for (var i=0; i<vertexAttribsCount; ++i) {
+			//point cloud do not need patches
+			if(!this._header.signature.face.hasIndex) {
+				var fraction = (node.renderError/this.currentError - 1);
+				if(fraction > 1) fraction = 1;
+
+				var count = fraction * (node.verticesCount);
+				gl.drawArrays(gl.POINTS, 0, count);
+				this._rendered += count;
+				continue;
+			}
+
+			//concatenate renderings to remove useless calls.
+			var first = 0;
+			var last = 0;
+			for (var p = node.firstPatch; p < node.lastPatch; ++p) {
+				var patch = patches[p];
+				if(!selectedNodes[patch.node]) { //draw this patch
+					last = patch.lastTriangle;
+					if(p < node.lastPatch-1) 
+						continue;
+				} 
+				//here either we skip or is the last node
+				if(last > first) { //might be a double skip
+					gl.glDrawElements(gl.TRIANGLES, (last - first) * 3, gl.UNSIGNED_SHORT, first * 3 * Uint16Array.BYTES_PER_ELEMENT);
+					this._rendered += last - first;
+				}
+				first = patch.lastTriangle;
+			}
+		} 
+
+		for (var i = 0; i < vertexAttribsCount; ++i) {
 			if (vertexAttributes[i].isNull) continue;
 			gl.disableVertexAttribArray(i);
 		}

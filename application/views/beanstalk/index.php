@@ -9,19 +9,19 @@
             <?php endforeach; ?>
         <?php else: ?>
             <?php if (!$server): ?>
-                <?=$this->load->view("beanstalk/serversList")?>
+                <?$this->load->view("beanstalk/serversList")?>
             <?php elseif (!$tube): ?>
                 <div id="idAllTubes">
-                    <?=$this->load->view("beanstalk/allTubes", ["console"=>$console])?>
+                    <?$this->load->view("beanstalk/allTubes", ["console"=>$console])?>
                 </div>
                 <div id="idAllTubesCopy" style="display:none"></div>
             <?php elseif (!in_array($tube, $tubes)): ?>
                 <?php echo sprintf('Tube "%s" not found or it is empty', $tube) ?>
                 <br><br><a href="./?server=<?php echo $server ?>"> back </a>
             <?php else: ?>
-                <?=$this->load->view("beanstalk/currentTube")?>
+                <?$this->load->view("beanstalk/currentTube")?>
             <?php endif; ?>
-            <?=$this->load->view("beanstalk/modalAddJob", ["tube"=>$tube])?>
+            <?$this->load->view("beanstalk/modalAddJob", ["tube"=>$tube])?>
 
         <?php endif; ?>
 
