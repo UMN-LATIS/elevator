@@ -17,10 +17,7 @@ class Instance_Controller extends MY_Controller
         }
 
 
-
         if(php_sapi_name() == 'cli') {
-
-
             $this->config->set_item("instance_name", "defaultinstance");
             return;
         }

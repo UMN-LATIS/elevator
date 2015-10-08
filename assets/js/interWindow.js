@@ -32,18 +32,17 @@ $( window ).unload(function() {
 
 
 function listener(event) {
-	// if(event.origin !== "http://localhost") {
-	// 	console.log("bad origin: " + event.origin);
-	// 	return;
-	// }
+	if(!(typeof event.data === 'string' || event.data instanceof String)) {
+		return;
+	}
 	var messageObject = JSON.parse(event.data);
-
 	if(event.data ) {
 
 		if(messageObject.status == 'open') {
 			hasParent = true;
 			targetFieldId = messageObject.targetField;
 		}
+		// TODO, update the UI with this info
 		if(messageObject.status == 'saved') {
 			// First Save, don't need to count this one anymore
 			if($("#"+messageObject.targetFieldId).val() != messageObject.objectId) {
