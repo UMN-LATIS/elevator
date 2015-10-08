@@ -99,9 +99,9 @@ if(strlen($this->template->collectionId)>0) {
 						<div class="form-group">
 							<label for="inputCollectionId" class="col-sm-2 control-label">Collection:</label>
 							<div class="col-sm-3">
-							<input type="hidden" name="collectionId" value="<?=$collectionId?>" id="collectionId">
+							<input type="hidden" name="collectionId" value="<?=$collectionId?$collectionId:-1?>" id="collectionId">
 								<select name="newCollectionId" id="newCollectionId" class="form-control input-large">
-									<option>---</option>
+									<option val=-1>---</option>
 									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections],true);?>
 
 								</select>

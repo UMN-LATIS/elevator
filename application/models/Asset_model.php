@@ -897,7 +897,10 @@ class Asset_model extends CI_Model {
 		$files = $this->getAllWithinAsset("Upload");
 		foreach($files as $file) {
 			foreach($file->fieldContentsArray as $entry) {
-				$entry->getFileHandler()->deleteFile();
+				if($fileHandler = $entry->getFileHandler()) {
+					$fileHandler->deleteFile();
+				}
+
 			}
 		}
 

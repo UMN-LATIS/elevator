@@ -272,7 +272,7 @@ $(document).ready(function() {
 		var sourceReference = this;
 		targetCollection = $(sourceReference).val();
 		sourceCollection = $("#collectionId").val();
-		if(sourceCollection === "0" || sourceCollection === "") {
+		if(sourceCollection === "-1" || sourceCollection === "") {
 			$("#collectionId").val(targetCollection);
 			$("#collectionId").trigger("change");
 			return;

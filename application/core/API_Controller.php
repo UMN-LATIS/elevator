@@ -60,7 +60,7 @@ class API_Controller extends MY_Controller {
 
 		if($authUser) {
 			$this->doctrineCache->setNamespace('userCache_');
-			if($storedObject =  $this->doctrineCache->fetch($authUser)) {
+			if($storedObject = $this->doctrineCache->fetch($authUser)) {
 				$user_model = unserialize($storedObject);
 				if(!$user_model) {
 					$this->user_model->loadUser($authUser);

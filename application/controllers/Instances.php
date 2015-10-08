@@ -278,9 +278,22 @@ class Instances extends Instance_Controller {
 				}'
 			]);
 
-
+			$useLifecycle = false;
+			$useStandardIA = false;
+			$transition = array();
 			if($this->input->post("useLifecycle")) {
-				$s3Client->putBucketLifecycle([
+				$useLifecycle = true;
+				$transition[] = ['Days' => 60,
+	                    			'StorageClass' => 'GLACIER'];
+			}
+			if($this->input->post("useStandardIA")) {
+				$useStandardIA = true;
+				$transition[] = ['Days' => 30,
+	                    			'StorageClass' => 'STANDARD_IA'];
+			}
+
+			if($useStandardIA || $useLifecycle) {
+				$s3Client->putBucketLifecycleConfiguration([
 					'Bucket'=>$s3InstanceName,
 					'LifecycleConfiguration' => [
         				'Rules' =>
@@ -295,15 +308,13 @@ class Instances extends Instance_Controller {
 	            			[
 	                			'Prefix' => 'original/', // REQUIRED
 	                			'Status' => 'Enabled',
-	                			'Transition' => [
-	                    			'Days' => 21,
-	                    			'StorageClass' => 'GLACIER',
-	                			],
+	                			'Transitions' => $transition,
 	            			],
         				],
     				],
 				]);
 			}
+
 
 			$newUser = $s3InstanceName . "_bucket_user";
 			$client = new Aws\Iam\IamClient(['region'=>'us-east-1', 'version'=>'2010-05-08', 'credentials'=>['secret'=>$s3Secret, 'key'=>$s3Key]]);

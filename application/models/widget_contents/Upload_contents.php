@@ -23,7 +23,7 @@ class Upload_contents extends Widget_contents_base {
 		}
 
 	public function getAsArray($serializeNestedObjects=false) {
-		if(isset($this->fileHandler)) {
+		if($this->getFileHandler()) {
 			if($this->extractLocation && $this->locationData) {
 				$location = array("type"=>"Point","coordinates"=>[(float)$this->getLocationData()[0],(float)$this->getLocationData()[1]]);
 			}
@@ -57,6 +57,14 @@ class Upload_contents extends Widget_contents_base {
 			$this->fileHandler = $this->filehandler_router->getHandlerForObject($this->fileId);
 			if($this->fileHandler) {
 				$this->fileHandler->loadByObjectId($this->fileId);
+				// because we generate fileHandlers seperately from records, we could end up with fileHandlers taht don't point
+				// back to the parent record.  If we happen upon one of these, go ahead and update it.  There's never a reason we want a
+				// orphan filehandler
+				if($this->fileHandler->parentObjectId == NULL) {
+					$this->logging->logError("updating missing filehandler", $this->fileId);
+					$this->fileHandler->parentObjectId = $this->parentObjectId;
+					$this->fileHandler->save();
+				}
 				return $this->fileHandler;
 			}
 		}
@@ -104,7 +112,7 @@ class Upload_contents extends Widget_contents_base {
 
 	public function loadContentFromArray($value) {
 		if(isset($value["fileId"]) && isset($value["fileType"]) && strlen($value["fileType"])>0) {
-			// we're loading an object we've already seen
+			// we're loading an object from the DB
 			parent::loadContentFromArray($value);
 			$this->fileId = $value['fileId'];
 
@@ -123,7 +131,6 @@ class Upload_contents extends Widget_contents_base {
 				$this->fileHandler->loadByObjectId($value["fileId"]);
 				if($this->parentObjectId != NULL && $this->fileHandler->parentObjectId == NULL) {
 					$this->fileHandler->parentObjectId = $this->parentObjectId;
-					$this->fileHandler->save();
 				}
 				$this->fileHandler->save();
 				if(isset($this->fileHandler->globalMetadata["text"])) {
