@@ -39,6 +39,15 @@
                 <input type="text" name="region" id="inputRegion" class="form-control" value="us-east-1" required="required" pattern="" title="">
               </div>
             </div>
+             <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input name="useStandardIA" type="checkbox">Enable Standard IA
+                  </label>
+                </div>
+              </div>
+            </div>
             <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <div class="checkbox">

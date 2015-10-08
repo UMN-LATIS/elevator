@@ -23,7 +23,6 @@ var uploadFile = function(fileElement, uploadSettings, containerElement) {
     var localContainer = containerElement;
     var chunkSize = 6*1024*1024;
     if(fastUpload) { // if we're in fast upload mode, use big chunks
-        alert("HEH");
         chunkSize = 200*1024*1024;
     }
     var settings = {
@@ -87,7 +86,7 @@ var uploadFile = function(fileElement, uploadSettings, containerElement) {
 
 
 var resetCollection = function() {
-    if($("#collectionId").val() != "---" && $("#collectionId").val() !=="") {
+    if($("#collectionId").val() != "---" && $("#collectionId").val() !=="" && $("#collectionId").val() != -1) {
         $(".uploadInformation").show();
         $(".uploadWarning").hide();
     }
@@ -232,7 +231,8 @@ var fileObjectPreview = function(targetElement) {
 
 $(document).on("change", ".fileObjectId", function() {
     fileObjectPreview(this);
-
+    // force a save when the fileobjectId changes
+    submitForm(true);
 });
 
 $(document).ready(function(){
@@ -316,6 +316,7 @@ function startUpload(targetFrame) {
             var internalTarget = target;
 
             $(fileElement).data('uploader', uploadFile(file, uploadSettings, internalTarget));
+
         });
 
 

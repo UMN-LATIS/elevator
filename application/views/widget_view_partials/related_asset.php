@@ -55,7 +55,7 @@
 							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
 								<img class="relatedThumbContainerImage loadView noResizeRetina" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard?>">
 							</div>
-							<div class="relatedThumbTitle autoTruncate"><?=array_shift($fieldContent->getRelatedObjectTitle())?></div>
+							<div class="relatedThumbTitle autoTruncate"><?$assetTitle = $fieldContent->getRelatedObjectTitle();echo array_shift($assetTitle)?></div>
 						</div>
 					</div>
 

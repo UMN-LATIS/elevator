@@ -23,6 +23,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <div class="row assetViewRow">
   <div class="col-md-12">
 <?endif?>
+
   <? if(!isset($fileContainers) || count($fileContainers) == 0):?>
       <p class="alert alert-info">No derivatives found.
         <?if(!$this->user_model->userLoaded):?>
@@ -41,20 +42,11 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
     <script type="text/javascript">
     jwplayer("videoElement").setup({
-      playlist: [{
-        image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP($fileContainers['thumbnail2x']->getProtectedURLForFile()):"/assets/icons/512px/mp3.png"?>",
-        sources: [
+      image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png"?>",
         <?if(isset($fileContainers['mp3'])):?>
-        {
-
-          type: "mp3",
-          file: "<?=isset($fileContainers['mp3'])?stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")):null?>",
-          label: "mp3"
-        },
+      file: "<?=isset($fileContainers['mp3'])?stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")):null?>",
+      type: "mp3",
         <?endif?>
-        ],
-
-      }],
       width: "100%",
       <?if($embedded):?>
       height: "100%",

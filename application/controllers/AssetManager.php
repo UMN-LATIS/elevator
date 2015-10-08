@@ -257,8 +257,11 @@ class AssetManager extends Admin_Controller {
 			 * Wish we had futures.
 			 */
 
-			$asset->loadAssetById($objectId);
-			$asset->save(true,false);
+			$asset = new Asset_model();
+			if($asset->loadAssetById($objectId)) {
+				$asset->save(true,false);
+			}
+
 
 			/**
 			 * END HACKY STUFF
