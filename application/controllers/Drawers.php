@@ -32,15 +32,19 @@ class Drawers extends Instance_Controller {
 
 		$this->template->content->view("search");
 		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
-		$this->template->javascript->add("http://maps.google.com/maps/api/js?sensor=false");
+		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false&libraries=geometry");
 		$this->template->javascript->add("assets/js/jquery.gomap-1.3.2.js");
 		$this->template->javascript->add("assets/js/markerclusterer.js");
 		$this->template->javascript->add("assets/js/drawers.js");
+		$this->template->javascript->add("assets/js/sugar.min.js");
 		$this->template->addToDrawer->view("drawers/edit_drawer",["drawerId"=>$drawerId]);
 		$this->template->content->view("drawers/drawerModal");
 		$this->template->javascript->add("assets/js/search.js");
 		$this->template->javascript->add("assets/js/galleria-1.3.3.js");
 		$this->template->javascript->add("assets/js/loadDrawer.js");
+
+
+
 		$this->template->publish();
 	}
 
@@ -140,6 +144,7 @@ class Drawers extends Instance_Controller {
 		}
 
 		$drawerItem = $this->doctrine->em->getRepository("Entity\DrawerItem")->findOneBy(['drawer'=>$this->doctrine->em->getReference("Entity\Drawer", $drawerId), 'asset' => $assetId]);
+
 		$this->doctrine->em->remove($drawerItem);
 		$this->doctrine->em->flush();
 		instance_redirect("drawers/viewDrawer/".$drawerId);
@@ -291,7 +296,10 @@ class Drawers extends Instance_Controller {
 
 		$drawerId = $drawer->getId();
 
-		$this->cache->delete("userCache_" . $this->user_model->userId);
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->delete($this->user_model->userId);
+		}
 
 		echo json_encode(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);
 

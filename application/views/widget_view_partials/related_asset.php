@@ -11,10 +11,9 @@
 			$standard = "";
 			$fileHandler = null;
 			try {
-				$fileHandler = $fieldContent->getRelatedAsset()->getPrimaryFilehandler();
-				$retina = $fieldContent->getRelatedAsset()->getPrimaryFilehandler()->getPreviewTiny(true)->getURLForFile();
-				$standard = $fieldContent->getRelatedAsset()->getPrimaryFilehandler()->getPreviewTiny(false)->getURLForFile();
-
+				$fileHandler = $fieldContent->getPrimaryFileHandler();
+				$retina = $fileHandler->getPreviewTiny(true)->getURLForFile();
+				$standard = $fileHandler->getPreviewTiny(false)->getURLForFile();
 			}
 			catch (Exception $e) {
 				if($fileHandler && $fileHandler->icon) {
@@ -28,12 +27,14 @@
 
 			}
 
-			try {
-				$fileObjectId = $fieldContent->getRelatedAsset()->getPrimaryFilehandler()->getObjectId();
+
+			if($fileHandler) {
+				$fileObjectId = $fileHandler->getObjectId();
 			}
-			catch (Exception $e) {
+			else {
 				$fileObjectId = null;
 			}
+
 
 			// display children inline
 			if($widgetModel->collapseNestedChildren && $fieldContent->getRelatedAsset()->getObjectId()):?>
@@ -42,19 +43,19 @@
 					<?if(!$widgetModel->displayInline):?>
 					<a href="<?=instance_url("asset/viewAsset/".$fieldContent->getRelatedAsset()->getObjectId())?>" class="btn btn-primary btn-xs" style="color:white">Open</a>
 					<?endif?>
-					<?=$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$fieldContent->getRelatedAsset()]);?>
+					<?=$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$fieldContent->getRelatedAsset()], true);?>
 				</div>
 
 			<?else:?>
 				<?
 				// thumbnail view
-				if($widgetModel->thumbnailView && $fieldContent->getRelatedAsset()->getObjectId()):?>
+				if($widgetModel->thumbnailView && $fieldContent->getRelatedObjectId()):?>
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
-							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedAsset()->getObjectId()?>">
+							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
 								<img class="relatedThumbContainerImage loadView noResizeRetina" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard?>">
 							</div>
-							<div class="relatedThumbTitle autoTruncate"><?=array_shift($fieldContent->getRelatedAsset()->getAssetTitle())?></div>
+							<div class="relatedThumbTitle autoTruncate"><?$assetTitle = $fieldContent->getRelatedObjectTitle();echo array_shift($assetTitle)?></div>
 						</div>
 					</div>
 

@@ -28,40 +28,24 @@ class Reports extends Admin_Controller {
 			$templateId = $this->input->post("templateId");
 		}
 
-		$map = new MongoCode("function() { emit(this.collectionId,1); }");
-		$reduce = new MongoCode("function(k, vals) { ".
-    		"var sum = 0;".
-    		"for (var i in vals) {".
-        		"sum += vals[i];".
-    		"}".
-    		"return sum; }");
-
-		$knownCollections = array();
-		foreach($this->instance->getCollections() as $collection) {
-			$knownCollections[] = $collection->getId();
-		}
-
-		$command = array(
-    		"mapreduce" => $this->config->item('mongoCollection'),
-    		"map" => $map,
-    		"reduce" => $reduce,
-			"query" => array("collectionId" => array('$in'=>$knownCollections)),
-    		"out" => array("inline" => 1));
+		$qb = $this->doctrine->em->getRepository("Entity\Asset")->createQueryBuilder("a");
+			$qb->select("count(a.collectionId) as colCount", "a.collectionId")
+			->where("a.assetId IS NOT NULL")
+			->groupBy("a.collectionId");
 
 		if($templateId) {
-			$command["query"] = array("templateId"=>(int)$templateId);
+			$qb->where("a.templateId = :templateId")->setParameter(":templateId", $templateId);
 		}
 
-
-		$results = $this->qb->command($command);
+		$results= $qb->getQuery()->execute();
 
 		$collectionInfo = array();
-		foreach($results["results"] as $result) {
-			if(!$this->collection_model->getCollection($result["_id"])) {
+		foreach($results as $result) {
+			if(!$this->collection_model->getCollection($result["collectionId"])) {
 				continue;
 			}
 
-			$collectionInfo[$result["_id"]] = ["collection"=>$this->collection_model->getCollection($result["_id"]), "count"=>$result["value"] ];
+			$collectionInfo[$result["collectionId"]] = ["collection"=>$this->collection_model->getCollection($result["collectionId"]), "count"=>$result["colCount"] ];
 		}
 
 		$this->template->content->view("reports/collectionList", ["collections"=>$collectionInfo]);
@@ -74,13 +58,15 @@ class Reports extends Admin_Controller {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
 		$this->doctrine->extendTimeout();
-		$result = $this->qb->get($this->config->item('fileCollection'), true);
+
+		$results = $this->doctrine->em->getRepository("Entity\FileHandler")->findAll();
+
 		$count = 0;
-		while ($result->hasNext()) {
+		foreach($results as $result) {
 			$fileHandlerBase = new fileHandlerBase();
-			$fileHandlerBase->loadFromObject($result->getNext());
+			$fileHandlerBase->loadFromObject($result);
 			$fileHandlerBase->save();
-			echo $fileHandlerBase->objectId . "\n";
+			echo $fileHandlerBase->getObjectId(). "\n";
 			if($count % 100 == 0) {
 				gc_collect_cycles();
 			}
@@ -116,32 +102,15 @@ class Reports extends Admin_Controller {
 	public function fileStats() {
 
 
-		$map = new MongoCode("function() { emit(this.type.toLowerCase(), {size:this.sourceFile.metadata.filesize, count: 1}); }");
-		$reduce = new MongoCode("function(k, vals) { ".
-    		"var sum = { size:0, count:0};".
-    		"for (var i in vals) {".
-    			"if(parseFloat(vals[i].size)) {".
-        			"sum.size += parseFloat(vals[i].size);".
-        			"sum.count += vals[i].count".
-        		"}".
-    		"}".
-    		"return sum; }");
+		$rsm = new Doctrine\ORM\Query\ResultSetMapping;
+		$rsm->addEntityResult('Entity\FileHandler', 'f');
 
-		$knownCollections = array();
-		foreach($this->instance->getCollections() as $collection) {
-			$knownCollections[] = $collection->getId();
-		}
-
-		$command = array(
-    		"mapreduce" => $this->config->item('fileCollection'),
-    		"map" => $map,
-    		"reduce" => $reduce,
-    		"query" => array("collectionId" => array('$in'=>$knownCollections)),
-    		"out" => array("inline" => 1));
-
-		$results = $this->qb->command($command);
-
-		$this->template->content->view("reports/filetypeList", ["results"=>$results["results"]]);
+		$rsm->addScalarResult('size', 'size');
+		$rsm->addScalarResult('c', 'count');
+		$rsm->addScalarResult('type', 'type');
+		$query = $this->doctrine->em->createNativeQuery('select count(f.id) as c, f.filetype as type, SUM(CAST(f.sourceFile->\'metadata\'->>\'filesize\' AS integer)) as size from filehandlers f group by filetype',$rsm);
+		$results = $query->getResult();
+		$this->template->content->view("reports/filetypeList", ["results"=>$results]);
 		$this->template->publish();
 
 	}

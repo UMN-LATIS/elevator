@@ -7,6 +7,9 @@ class Related_asset_contents extends Widget_contents_base {
 	public $nestData = false;
 	public $label = null;
 	public $displayInline = false;
+	public $relatedObjectId = null;
+	public $relatedObjectTitle = null;
+	public $cachedPrimaryHandler = null;
 
 	public function __construct()
 		{
@@ -16,22 +19,78 @@ class Related_asset_contents extends Widget_contents_base {
 
 
 	public function getAsArray($nestedObjectDepth=0) {
-		if(($nestedObjectDepth>0 || $this->nestData == true) && !($nestedObjectDepth<0)) {
+		// echo $nestedObjectDepth . "\n";
+		// if(($nestedObjectDepth>0 || $this->nestData == true) && !($nestedObjectDepth<=0)) {
 			// decrement to prevent recusion.
 			//return ["targetAssetId"=>new MongoId($this->targetAssetId), "label"=>$this->label, "isPrimary"=>$this->isPrimary];
-			return ["targetAssetId"=>new MongoId($this->targetAssetId), "label"=>$this->label, "targetAsset"=>$this->getRelatedAsset()->getAsArray($nestedObjectDepth-1), "isPrimary"=>$this->isPrimary];
+			// return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
+		// }
+		// else {
+		//
+			$fileHandlerId = null;
+			try {
+				$fileHandler = $this->getRelatedAsset()->getPrimaryFilehandler();
+				$fileHandlerId = $fileHandler->getObjectId();
+			}
+			catch (Exception $e) {
+
+			}
+
+			return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary, "cachedPrimaryHandler"=>$fileHandlerId, "relatedObjectId"=>$this->getRelatedAsset()->getObjectId(), "relatedObjectTitle"=>$this->getRelatedAsset()->getAssetTitle()];
+		// }
+	}
+
+	public function getRelatedObjectId() {
+		if($this->relatedObjectId) {
+			return $this->relatedObjectId;
 		}
 		else {
-			return ["targetAssetId"=>new MongoId($this->targetAssetId), "label"=>$this->label, "isPrimary"=>$this->isPrimary];
+			return $this->getRelatedAsset()->getObjectId();
 		}
 	}
 
-	public function getAsText($nestedObjectDepth=0) {
-		if(!$this->getRelatedAsset()->templateId) {
-			return "";
+	public function getRelatedObjectTitle($collapse = false) {
+		if($this->relatedObjectTitle) {
+			if($collapse) {
+				return implode(" ", $this->relatedObjectTitle);
+			}
+			else {
+				return $this->relatedObjectTitle;
+			}
+		}
+		else {
+			return $this->getRelatedAsset()->getAssetTitle($collapse);
+		}
+	}
+
+	public function getPrimaryFileHandler() {
+
+		if($this->cachedPrimaryHandler) {
+			return $this->filehandler_router->getHandledObject($this->cachedPrimaryHandler);
+		}
+		else {
+			try {
+				$fileHandler = $this->getRelatedAsset()->getPrimaryFilehandler();
+			}
+			catch (Exception $e) {
+				throw new Exception('Primary File Handler Not Found');
+				return;
+			}
+			return $fileHandler;
 		}
 
+	}
+
+	public function getAsText($nestedObjectDepth=0) {
+
+		if($nestedObjectDepth < 0) {
+			return $this->getRelatedObjectTitle(true);
+		}
+
+		// TODO: check this.  nestDAta is used for two things - drawing things with nesting on the display page,
+		// as well as making sure the search engine "deep indexes" content.
 		if(($nestedObjectDepth>0 || $this->nestData == true) && !($nestedObjectDepth<0)) {
+
 			// decrement to prevent recusion.
 			foreach($this->getRelatedAsset()->assetObjects as $object) {
 				$assetText[] = implode(" ", $object->getAsText($nestedObjectDepth-1));
@@ -42,7 +101,7 @@ class Related_asset_contents extends Widget_contents_base {
 			return implode(" ", $assetText);
 		}
 		else {
-			$assetText = $this->getRelatedAsset()->getAssetTitle(true);
+			$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
 		}
 
 		return $assetText;
@@ -54,17 +113,6 @@ class Related_asset_contents extends Widget_contents_base {
 			if($key == "isPrimary" && ($entry == true || $entry == "on")) {
 				$this->isPrimary = true;
 			}
-		}
-	}
-
-	public function getRelatedAsset() {
-		if(!$this->relatedAsset) {
-			$this->relatedAsset = new Asset_model;
-			$this->relatedAsset->loadAssetById($this->targetAssetId);
-			return $this->relatedAsset;
-		}
-		else {
-			return $this->relatedAsset ;
 		}
 	}
 
@@ -81,6 +129,27 @@ class Related_asset_contents extends Widget_contents_base {
 	public function getContent() {
 		return $this->targetAssetId;
 	}
+
+	/**
+	 * IMPORTANT
+	 *
+	 *
+	 * Be very careful when hitting this function
+	 * it can be very expensive if you're calling getRelatedAsset() on everything on a complicated record.
+	 * We do our best to cache things so we're not dealing with this.
+	 *
+	 */
+	public function getRelatedAsset() {
+		if(!$this->relatedAsset) {
+			$this->relatedAsset = new Asset_model;
+			$this->relatedAsset->loadAssetById($this->targetAssetId);
+			return $this->relatedAsset;
+		}
+		else {
+			return $this->relatedAsset ;
+		}
+	}
+
 
 }
 

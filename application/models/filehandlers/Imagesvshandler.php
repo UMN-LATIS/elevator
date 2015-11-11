@@ -3,7 +3,7 @@
 
 class ImageSvsHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("svs");
+	protected $supportedTypes = array("");
 	protected $noDerivatives = false;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
@@ -81,7 +81,6 @@ class ImageSvsHandler extends FileHandlerBase {
 		else {
 			$fileObject = $args['fileObject'];
 		}
-
 		$fileStatus = $this->sourceFile->makeLocal();
 
 		if($fileStatus == FILE_GLACIER_RESTORING) {

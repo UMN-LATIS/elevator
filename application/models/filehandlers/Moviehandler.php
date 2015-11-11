@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once(APPPATH.'controllers/transcoder.php');
+require_once(APPPATH.'controllers/Transcoder.php');
 
 class MovieHandler extends FileHandlerBase {
 
@@ -23,6 +23,7 @@ class MovieHandler extends FileHandlerBase {
 	{
 		parent::__construct();
 		//Do your magic here
+		$this->load->library("TranscoderCommands");
 	}
 
 
@@ -88,7 +89,8 @@ class MovieHandler extends FileHandlerBase {
 		$jobId = $args['jobId'];
 
 
-		$response = Transcoder::checkCompletion($jobId);
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		$response = $transcodeCommands->checkCompletion($jobId);
 		if($response == "working") {
 			return JOB_POSTPONE;
 		}
@@ -131,7 +133,8 @@ class MovieHandler extends FileHandlerBase {
 		}
 
 
-		$jobId = Transcoder::extractMetadata($this->getObjectId());
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		$jobId = $transcodeCommands->extractMetadata($this->getObjectId());
 
 		$this->save();
 		$this->queueTask(1, ["jobId"=>$jobId, "previousTask"=>"metadata"], false);
@@ -158,27 +161,28 @@ class MovieHandler extends FileHandlerBase {
 		$nextDerivative = array_shift($targetDerivatives);
 
 		$jobId = null;
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
 		switch($nextDerivative) {
 			case "thumbnail":
-				$jobId = Transcoder::createThumbnail($this->getObjectId());
+				$jobId = $transcodeCommands->createThumbnail($this->getObjectId());
 				break;
 			case "tiny":
-				$jobId = Transcoder::createTiny($this->getObjectId());
+				$jobId = $transcodeCommands->createTiny($this->getObjectId());
 				break;
 			case "vtt":
-				$jobId = Transcoder::createVTT($this->getObjectId());
+				$jobId = $transcodeCommands->createVTT($this->getObjectId());
 				break;
 			case "sequence":
-				$jobId = Transcoder::createSequence($this->getObjectId());
+				$jobId = $transcodeCommands->createSequence($this->getObjectId());
 				break;
 			case "sd":
-				$jobId = Transcoder::createDerivative($this->getObjectId(), "SD");
+				$jobId = $transcodeCommands->createDerivative($this->getObjectId(), "SD");
 				break;
 			case "hls":
-				$jobId = Transcoder::createDerivative($this->getObjectId(), "HLS");
+				$jobId = $transcodeCommands->createDerivative($this->getObjectId(), "HLS");
 				break;
 			case "hd":
-				$jobId = Transcoder::createDerivative($this->getObjectId(), "HD");
+				$jobId = $transcodeCommands->createDerivative($this->getObjectId(), "HD");
 				break;
 		}
 
@@ -193,8 +197,8 @@ class MovieHandler extends FileHandlerBase {
 	}
 
 	public function cleanupOriginal($args) {
-
-		$jobId = Transcoder::cleanup($this->getObjectId());
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		$jobId = $transcodeCommands->cleanup($this->getObjectId());
 
 		if($jobId) {
 			$this->queueTask(5, ["jobId"=>$jobId, "previousTask"=>"completeDerivatives"], false);

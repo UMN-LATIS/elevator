@@ -38,9 +38,9 @@ class Transcoder extends CI_Controller {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->qb = new \MongoQB\Builder(array('dsn'   =>  $this->config->item('mongoDSN')));
 		$this->pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 		$this->serverId = $this->getMacLinux();
+		$this->config->set_item("enableCaching", false);
 		$this->doctrine->extendTimeout();
 	}
 
@@ -61,58 +61,6 @@ class Transcoder extends CI_Controller {
 
 	}
 
-	public function extractMetadata($objectId)
-	{
-		$newTask = json_encode(["task"=>"extractMetadata", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 50, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-
-	public function extractWaveform($objectId) {
-		$newTask = json_encode(["task"=>"extractWaveform", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-	public function createVTT($objectId) {
-		$newTask = json_encode(["task"=>"createVTT", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-
-	public function createDerivative($objectId, $type) {
-		$newTask = json_encode(["task"=>"createDerivative", "fileHandlerId"=>$objectId, "config"=>["type"=>$type]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-
-	public function createThumbnail($objectId) {
-		$newTask = json_encode(["task"=>"createThumbnail", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-	public function createTiny($objectId) {
-		$newTask = json_encode(["task"=>"createTiny", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-
-	public function createSequence($objectId) {
-		$newTask = json_encode(["task"=>"createSequence", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
-
-	public function cleanup($objectId) {
-		$newTask = json_encode(["task"=>"cleanup", "fileHandlerId"=>$objectId, "config"=>[]]);
-		$jobId= $this->pheanstalk->useTube('transcoder')->put($newTask, 10, 2, $this->videoTTR);
-		return $jobId;
-	}
 
 	public function transcodeTask() {
 
@@ -196,7 +144,7 @@ class Transcoder extends CI_Controller {
 				echo "exiting run due to memory limit";
 				exit;
 			}
-
+			$this->doctrine->em->clear();
 			sleep(1);
 		}
 	}

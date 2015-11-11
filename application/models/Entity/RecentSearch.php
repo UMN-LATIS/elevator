@@ -164,4 +164,33 @@ class RecentSearch
     {
         return $this->instance;
     }
+    /**
+     * @var array
+     */
+    private $searchData;
+
+
+    /**
+     * Set searchData
+     *
+     * @param array $searchData
+     *
+     * @return RecentSearch
+     */
+    public function setSearchData($searchData)
+    {
+        $this->searchData = $searchData;
+
+        return $this;
+    }
+
+    /**
+     * Get searchData
+     *
+     * @return array
+     */
+    public function getSearchData()
+    {
+        return $this->searchData;
+    }
 }

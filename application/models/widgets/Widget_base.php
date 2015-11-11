@@ -66,7 +66,7 @@ class Widget_base extends CI_Model {
 
 	public function getContentContainer() {
 		$containerClass = get_class($this) . "_contents";
-		if(file_exists(APPPATH."models/widget_contents/".strtolower($containerClass).".php")) {
+		if(file_exists(APPPATH."models/widget_contents/".ucfirst(strtolower($containerClass)).".php")) {
 			$this->load->model("widget_contents/" . $containerClass);
 			return new $containerClass;
 		}
@@ -115,6 +115,7 @@ class Widget_base extends CI_Model {
 
 
 	public function addContent($contentObject) {
+		$contentObject->parentWidget = $this;
 		$this->fieldContentsArray[] = $contentObject;
 	}
 

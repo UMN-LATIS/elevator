@@ -16,7 +16,7 @@ class Filehandler_router {
 		sort($fileHandlers);
 		foreach($fileHandlers as $fileHandler) {
     		if( ! is_array($fileHandler)) {
-        		$class = str_replace(EXT, "", $fileHandler);
+        		$class = str_replace(".php", "", $fileHandler);
         		$className = "filehandlers/" . $class;
         		$CI->load->model($className);
         		$this->fileHandlerArray[] = new $class;
@@ -45,7 +45,7 @@ class Filehandler_router {
 	public function getHandlerForObject($objectId) {
 		$CI =& get_instance();
 		try {
-			$asset = $CI->qb->where(['_id'=>new MongoId($objectId)])->getOne("fileRepository");
+			$asset = $CI->doctrine->em->getRepository('Entity\FileHandler')->findOneBy(["fileObjectId"=>$objectId]);
 		}
 		catch (Exception $e) {
 			return false;
@@ -53,12 +53,36 @@ class Filehandler_router {
 		if(!$asset){
 			return false;
 		}
-		if(isset($asset["handler"]) && class_exists($asset["handler"])) {
-			return new $asset["handler"];
+		if($asset->getHandler() !== null && class_exists($asset->getHandler())) {
+			$handlerType = $asset->getHandler();
+			return new $handlerType;
 		}
 		else {
-			return $this->getHandlerForType($asset["type"]);
+			return $this->getHandlerForType($asset->getFileType());
 		}
+	}
+
+	public function getHandledObject($objectId) {
+		$CI =& get_instance();
+		try {
+			$asset = $CI->doctrine->em->getRepository('Entity\FileHandler')->findOneBy(["fileObjectId"=>$objectId]);
+		}
+		catch (Exception $e) {
+			return false;
+		}
+		if(!$asset){
+			return false;
+		}
+		if($asset->getHandler() !== null && class_exists($asset->getHandler())) {
+			$handlerType = $asset->getHandler();
+		}
+		else {
+			$handlerType = $this->getHandlerForType($asset->getFileType());
+		}
+
+		$handler = new $handlerType;
+		$handler->loadFromObject($asset);
+		return $handler;
 
 
 	}

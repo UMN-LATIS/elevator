@@ -25,7 +25,7 @@ var offset = 0;
 					<td><A href="<?=instance_url("/assetManager/editAsset/".$asset['objectId'])?>"><?=$asset['objectId']?></a></td>
 					<?endif?>
 					<td><?=$asset['title']?></td>
-					<td><?=date('m/d/y H:i:s', $asset["modifiedDate"]->sec)?></td>
+					<td><?=$asset["modifiedDate"]->format("m/d/y H:i:s")?></td>
 					<td><span class="glyphicon <?=$asset["readyForDisplay"]?"glyphicon-ok-circle":"glyphicon-ban-circle"?>"></td>
 
 				</tr>

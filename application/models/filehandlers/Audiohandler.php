@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once(APPPATH.'controllers/transcoder.php');
+require_once(APPPATH.'controllers/Transcoder.php');
 
 class AudioHandler extends FileHandlerBase {
 

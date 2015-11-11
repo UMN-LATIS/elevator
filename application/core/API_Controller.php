@@ -19,7 +19,7 @@ class API_Controller extends MY_Controller {
 		// 	$authUser = null;
 		// }
 		// else
-			if(isset($_SERVER['HTTP_AUTHORIZATION_KEY'])) {
+		if(isset($_SERVER['HTTP_AUTHORIZATION_KEY'])) {
 
 			$authKey = $_SERVER['HTTP_AUTHORIZATION_KEY'];
 			$authTimestamp = $_SERVER['HTTP_AUTHORIZATION_TIMESTAMP'];
@@ -59,7 +59,8 @@ class API_Controller extends MY_Controller {
 		$this->apiKey = $apiKey;
 
 		if($authUser) {
-			if($storedObject = $this->cache->get("userCache_" . $authUser)) {
+			$this->doctrineCache->setNamespace('userCache_');
+			if($storedObject = $this->doctrineCache->fetch($authUser)) {
 				$user_model = unserialize($storedObject);
 				if(!$user_model) {
 					$this->user_model->loadUser($authUser);
@@ -71,6 +72,9 @@ class API_Controller extends MY_Controller {
 			else {
 				$this->logging->logError("cache fail" . $authUser);
 				$this->user_model->loadUser($authUser); // we'll give it a try, but we may not have perms if we rely on external auth stuffs.
+				if($this->user_model->getUserType() == "Remote") { // bail
+					$this->user_model->userLoaded = false;
+				}
 			}
 
 
@@ -78,7 +82,7 @@ class API_Controller extends MY_Controller {
 				$this->isAuthenticated = true;
 
 				// extend cache (if we move to a sane caching library we can remove this)
-				$this->cache->save("userCache_" . $this->user_model->getId(), serialize($this->user_model), 900);
+				$this->doctrineCache->save($this->user_model->getId(), serialize($this->user_model), 900);
 
 
 				if(!$this->user_model->getApiInstance()) {

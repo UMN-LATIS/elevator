@@ -16,11 +16,13 @@ class FileHandlerBase extends CI_Model {
 	public $icon = "_blank.png"; // icon File to use if we don't have a thumb
 
 
+	public $asset = null;
+
 	/**
 	 * these will be set by subclasses
 	 */
 	public $metadata;
-	public $objectId = NULL;
+
 	public $sourceFile = NULL; // an object of type fileContainer
 	public $jobIdArray = array(); //beanstalk jobIds
 	public $regenerate = false; // regenerate derivatives
@@ -153,7 +155,13 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function getObjectId() {
-		return $this->objectId;
+		if(isset($this->asset)) {
+			return $this->asset->getFileObjectId();
+		}
+		else {
+			return false;
+		}
+
 	}
 
 
@@ -164,19 +172,23 @@ class FileHandlerBase extends CI_Model {
 	 * @return [type] [description]
 	 */
 	public function getReversedObjectId() {
-		return strrev($this->objectId);
+		return strrev($this->getObjectId());
 	}
 
 	public function removeJob($jobId) {
 		if(($key = array_search($jobId, $this->jobIdArray)) !== false) {
     		unset($this->jobIdArray[$key]);
-    		$this->qb->where('_id', new MongoId($this->objectId))->set(["jobIdArray"=>$this->jobIdArray])->update('fileRepository');
+    		$this->asset->setJobIdArray($this->jobIdArray);
+    		$this->doctrine->em->persist($this->asset);
+    		$this->doctrine->em->flush();
 		}
 	}
 
 	public function addJobId($jobId) {
 		$this->jobIdArray[] = $jobId;
-		$this->qb->where('_id', new MongoId($this->objectId))->set(["jobIdArray"=>$this->jobIdArray])->update('fileRepository');
+    	$this->asset->setJobIdArray($this->jobIdArray);
+    	$this->doctrine->em->persist($this->asset);
+    	$this->doctrine->em->flush();
 	}
 
 	public function performTask($job) {
@@ -193,7 +205,16 @@ class FileHandlerBase extends CI_Model {
 
 
 	public function queueTask($taskId, $appendData=array(), $setHostAffinity=true) {
-		$nextTask = $this->taskArray[$taskId];
+
+		// if we're injecting a new handler, we can't trust $this
+		if($this->overrideHandlerClass) {
+			$newHandler = new $this->overrideHandlerClass;
+			$nextTask = $newHandler->taskArray[$taskId];
+		}
+		else {
+			$nextTask = $this->taskArray[$taskId];
+		}
+
 		if(!$this->pheanstalk) {
 			$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 		}
@@ -252,14 +273,18 @@ class FileHandlerBase extends CI_Model {
 
 	public function save() {
 
-		$objectArray = array();
 
-		if(isset($this->objectId)) {
-			$objectArray["_id"] = new MongoId($this->objectId);
+		if($this->getObjectId()) {
+			$fileObject = $this->doctrine->em->getRepository("Entity\FileHandler")->findOneBy(["fileObjectId"=>$this->getObjectId()]);
+		}
+		else {
+			$fileObject = new Entity\FileHandler;
 		}
 
 
-		$objectArray["sourceFile"] = $this->sourceFile->getAsArray();
+
+
+		$fileObject->setSourceFile($this->sourceFile->getAsArray());
 
 		$derivativeArray = array();
 
@@ -267,25 +292,32 @@ class FileHandlerBase extends CI_Model {
 			$derivativeArray[$type] = $derivative->getAsArray();
 		}
 
-		$objectArray["derivatives"] = $derivativeArray;
-		$objectArray["jobIdArray"] = $this->jobIdArray;
-		$objectArray["type"] = $this->sourceFile->getType();
-		$objectArray["collectionId"] = (int)$this->collectionId;
-		$objectArray['deleted'] = $this->deleted;
-		$objectArray['globalMetadata'] = $this->globalMetadata;
+		$fileObject->setDerivatives($derivativeArray);
+		$fileObject->setJobIdArray($this->jobIdArray);
+		$fileObject->setFileType($this->sourceFile->getType());
+		$fileObject->setCollectionId($this->collectionId);
+		$fileObject->setDeleted($this->deleted);
+		$fileObject->setGlobalMetadata($this->globalMetadata);
+
 		if($this->overrideHandlerClass) {
-			$objectArray['handler'] = $this->overrideHandlerClass;
+			$fileObject->setHandler($this->overrideHandlerClass);
 		}
 		else {
-			$objectArray['handler'] = strtolower(get_class($this));
+			$fileObject->setHandler(strtolower(get_class($this)));
 		}
 
 		if($this->parentObjectId != null) {
-			$objectArray['parentObjectId'] = new MongoId($this->parentObjectId);
+			$fileObject->setParentObjectId($this->parentObjectId);
 		}
 
-   		$this->objectId = (string)$this->qb->save('fileRepository', $objectArray);
+		if(!$this->getObjectId()) {
+			$fileObject->setFileObjectId((string)new MongoId());
+		}
 
+		$this->doctrine->em->persist($fileObject);
+		$this->doctrine->em->flush();
+
+		$this->asset = $fileObject;
 
    		if($this->regenerate && count($this->taskArray)>0) {
 
@@ -296,7 +328,8 @@ class FileHandlerBase extends CI_Model {
    					$derivative->deleteFile();
    				}
    			}
-   			$this->overrideHandlerClass = get_class($this->filehandler_router->getHandlerForType($objectArray['type']));
+
+   			$this->overrideHandlerClass = get_class($this->filehandler_router->getHandlerForType($fileObject->getFileType()));
    			$this->derivatives = array();
    			$this->regenerate = false;
 
@@ -313,7 +346,7 @@ class FileHandlerBase extends CI_Model {
    		}
 
 
-		return $this->objectId;
+		return $this->getObjectId();
 
 	}
 
@@ -322,6 +355,12 @@ class FileHandlerBase extends CI_Model {
 	 */
 	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
 
+		$uploadWidget = $this->getUploadWidget();
+
+		return $this->load->view("fileHandlers/" . strtolower(get_class($this)), ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
+	public function getUploadWidget() {
 		if(!$this->parentObject && $this->parentObjectId) {
 			$this->parentObject = new Asset_model($this->parentObjectId);
 		}
@@ -331,7 +370,7 @@ class FileHandlerBase extends CI_Model {
 			$uploadObjects = $this->parentObject->getAllWithinAsset("Upload");
 			foreach($uploadObjects as $upload) {
 				foreach($upload->fieldContentsArray as $widgetContents) {
-					if($widgetContents->fileId == $this->objectId) {
+					if($widgetContents->fileId == $this->getObjectId()) {
 						$uploadWidget = $widgetContents;
 					}
 				}
@@ -339,7 +378,7 @@ class FileHandlerBase extends CI_Model {
 
 		}
 
-		return $this->load->view("fileHandlers/" . strtolower(get_class($this)), ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+		return $uploadWidget;
 	}
 
 	public function getSidecarView($sidecars, $formFieldName) {
@@ -352,7 +391,8 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function loadByObjectId($objectId) {
-		$asset = $this->qb->where(['_id'=>new MongoId($objectId)])->getOne("fileRepository");
+
+		$asset = $this->doctrine->em->getRepository('Entity\FileHandler')->findOneBy(["fileObjectId"=>$objectId]);
 
 		if(!isset($asset)) {
 			return FALSE;
@@ -375,32 +415,25 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function loadFromObject($asset) {
+		$this->asset = $asset;
 
-		$this->objectId = (string)$asset["_id"];
-		$this->setCollectionId($asset["collectionId"]);
-		if(isset($asset['parentObjectId'])) {
-			$this->parentObjectId = $asset['parentObjectId'];
+		$this->setCollectionId($asset->getCollectionId());
+		if($asset->getParentObjectId() !== null) {
+			$this->parentObjectId = $asset->getParentObjectId();
 		}
 
-		$this->sourceFile = new FileContainerS3($asset["sourceFile"]);
+		$this->sourceFile = new FileContainerS3($asset->getSourceFile());
 		$this->sourceFile->derivativeType = "source";
 		$this->sourceFile->setParent($this);
-		$this->jobIdArray = $asset["jobIdArray"];
-		if(isset($asset['deleted'])) {
-			$this->deleted = $asset['deleted'];
+		$this->jobIdArray = $asset->getJobIdArray();
+		if($asset->getDeleted() !== false) {
+			$this->deleted = true;
 		}
 
+		$this->globalMetadata = $asset->getGlobalMetadata();
 
-		$this->globalMetadata = @$asset["globalMetadata"];
-		// TODO: remove this on production instance
-		if(!is_array($this->globalMetadata)) {
-			$this->globalMetadata = array();
-			$this->globalMetadata["text"] = @$asset["globalMetadata"];
-		}
-
-
-		if(isset($asset["derivatives"])) {
-			foreach($asset["derivatives"] as $type=>$derivative) {
+		if($asset->getDerivatives() !== null) {
+			foreach($asset->getDerivatives() as $type=>$derivative) {
 				$this->derivatives[$type] = new FileContainerS3($derivative);
 				$this->derivatives[$type]->derivativeType = $type;
 				$this->derivatives[$type]->setParent($this);
@@ -409,7 +442,7 @@ class FileHandlerBase extends CI_Model {
 
 		}
 
-		return $this->objectId;
+		return $this->getObjectId();
 	}
 
 
@@ -529,14 +562,24 @@ class FileHandlerBase extends CI_Model {
 		return true;
 	}
 
+	function undeleteFile() {
+		$this->deleted = true;
+		$this->save();
+		return true;
+	}
+
+
 	function findDeletedItems() {
-		return $this->qb->where(["deleted"=>true])->get("fileRepository");
+
+		return $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["deleted"=>true]);
 	}
 
 	function deleteSource($serial=null,$mfa=null) {
 
 		if($mfa && $this->sourceFile->deleteFile($serial, $mfa)) {
-			$this->qb->where(['_id'=>new MongoId($this->getObjectId())])->delete("fileRepository");
+			$asset = $this->doctrine->em->getRepository("Entity\FileHandler")->findOneBy(["fileObjectId"=>$this->getObjectId()]);
+			$this->doctrine->em->remove($asset);
+			$this->doctrine->em->flush();
 			return true;
 		}
 		else {

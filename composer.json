@@ -2,10 +2,6 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/cmcfadden/MongoQB"
-    },
-    {
-      "type": "vcs",
       "url": "https://github.com/cmcfadden/phpvideotoolkit-v2"
     },
     {
@@ -19,15 +15,13 @@
     "doctrine/dbal": "2.5.*@dev",
     "doctrine/orm": "2.5.*@dev",
     "doctrine/data-fixtures": "2.0.*@dev",
-    "aws/aws-sdk-php": "2.*",
-    "alexbilbie/mongoqb": "dev-dclUpdates",
     "pda/pheanstalk": "dev-master",
     "elasticsearch/elasticsearch": "~0.4",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
     "tedivm/stash": "dev-master",
     "umn-community-shib/basic-authenticator": ">=1.1.0",
-    "guzzlehttp/guzzle": "~5.2",
-    "crocodoc/php-box-view": "dev-master"
+    "crocodoc/php-box-view": "dev-master",
+    "aws/aws-sdk-php": ">=3.2.6"
   }
 }
