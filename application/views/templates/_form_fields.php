@@ -29,7 +29,7 @@
 </div>
 <div class="color">
 	<label>
-		<input value="<?=$template->getTemplateColor()?>" name="templateColor">
+		<input value="<?=$template->getTemplateColor()?$template->getTemplateColor():0?>" name="templateColor">
 		Template color (0-8)
 	</label>
 </div>

@@ -70,7 +70,10 @@ class Permissions extends Instance_Controller {
 	public function update()
 	{
 		//TODO Permissions checking
-		$this->cache->clean();
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->deleteAll();
+		}
 		$permissionTypeId = $this->input->post('permissionTypeId');
 		$permissionType = $this->input->post('permissionType');
 
@@ -249,7 +252,10 @@ class Permissions extends Instance_Controller {
 			$this->deleteGroup();
 		}
 		else if($this->input->post("submit") == "edit") {
-			$this->cache->clean();
+			if($this->config->item('enableCaching')) {
+				$this->doctrineCache->setNamespace('userCache_');
+				$this->doctrineCache->deleteAll();
+			}
 			$permissionType = $this->input->post("permissionType");
 			$permissionTypeId = $this->input->post("permissionTypeId");
 			$groupId = $this->input->post("groupId");
@@ -363,7 +369,11 @@ class Permissions extends Instance_Controller {
 
 	public function createGroup()
 	{
-		$this->cache->clean();
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->deleteAll();
+		}
+
 		$instance =  $this->instance;
 
 		$permissionType = $this->input->post('permissionType');
@@ -628,8 +638,16 @@ class Permissions extends Instance_Controller {
 			instance_redirect("errorHandler/error/noPermission");
 		}
 
-		$assets = $this->qb->where("modifiedBy", $user->getId())->orderBy(["modified"=>"DESC"])->limit(20)->get($this->config->item('mongoCollection'));
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.createdBy = :userId")
+			->setParameter(":userId", (int)$this->user_model->userId)
+			->andWhere("a.assetId IS NOT NULL")
+			->orderBy("a.modifiedAt", "DESC")
+			->setMaxResults(20);
 
+		$assets = $qb->getQuery()->execute();
 
 		$this->load->model("asset_model");
 
@@ -701,8 +719,14 @@ class Permissions extends Instance_Controller {
 
 	public function saveUser()
 	{
-		$this->cache->clean();
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+		}
+
 		if(is_numeric($this->input->post("userId"))) {
+			if($this->config->item('enableCaching')) {
+				$this->doctrineCache->delete($this->input->post("userId"));
+			}
 			$user = $this->doctrine->em->find("Entity\User", $this->input->post("userId"));
 			$this->template->content = "User Updated.";
 		}
@@ -863,7 +887,11 @@ class Permissions extends Instance_Controller {
 
 
 	public function instanceHandlerGroups() {
-		$this->cache->clean();
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->deleteAll();
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION, $this->instance);
 		if($accessLevel < PERM_ADMIN) {
 			instance_redirect("errorHandler/error/noPermission");

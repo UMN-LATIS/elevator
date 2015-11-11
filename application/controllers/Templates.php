@@ -144,6 +144,20 @@ class Templates extends Instance_Controller {
 		}
 		$this->doctrine->em->flush();
 
+
+
+		/**
+		 * HACK HACK HACK
+		 * trash the search cahce.  Cause right now we don't have cache namespaces.
+		 * Todo: namespaces.
+		 */
+
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('searchCache_');
+			$this->doctrineCache->deleteAll();
+	   	}
+
+
 		instance_redirect('templates/');
 
 	}

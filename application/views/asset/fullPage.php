@@ -1,5 +1,6 @@
 <?
-$assetTitle = reset($assetModel->getAssetTitle($collapse=false));
+$titleArray = $assetModel->getAssetTitle($collapse=false);
+$assetTitle = reset($titleArray);
 ?>
 <script>
 var objectId = "<?=$assetModel->getObjectId()?>";
@@ -20,7 +21,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 
 		<?foreach($assetModel->assetObjects as $widget):?>
-		<?if($widget->getDisplay() && $widget->hasContents() && implode("", $widget->getAsText(false)) != $assetTitle):?>
+		<?if($widget->getDisplay() && $widget->hasContents() && implode("", $widget->getAsText(-1)) != $assetTitle):?>
 		<div class="row">
 			<div class="col-md-12 assetWidget">
 				<?=$widget->getView()?>
@@ -82,4 +83,4 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 
 
-<?=$this->load->view("handlebarsTemplates");
+<?$this->load->view("handlebarsTemplates");

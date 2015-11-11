@@ -27,10 +27,14 @@ class collection_model extends CI_Model {
 			$collection = $this->getCollection($collectionId);
 
 			$s3Client =  Aws\S3\S3Client::factory(array(
-    		'key'    => $collection->getS3Key(),
-    		'secret' =>  $collection->getS3Secret(),
-    		"scheme" => "http"
+    		'credentials'=> ['key'    => $collection->getS3Key(),
+    		'secret' =>  $collection->getS3Secret()
+    		],
+    		"scheme" => "http",
+    		"region" => $collection->getBucketRegion(),
+    		"version"=> "2006-03-01"
 		));
+
 			$this->s3collectionCache[$collectionId] = $s3Client;
 		}
 

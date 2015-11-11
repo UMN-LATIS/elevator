@@ -25,6 +25,7 @@ $(document).on("click",".searchMap", function() {
 	};
 	// TODO: check query limit
 	var geocoder = new google.maps.Geocoder();
+
 	geocoder.geocode({'address': address}, function(results, status) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			options.position  = results[0].geometry.location;
@@ -52,7 +53,8 @@ $(document).on("click",".searchMap", function() {
 				});
 				latitudeElement.val(latitude);
 				longitudeElement.val(longitude);
-				$(".mainWidgetEntry").trigger("change"); // fire change event so sidebar updates
+				$(latitudeElement).trigger("change"); // fire change event so sidebar updates
+				$(longitudeElement).trigger("change"); // fire change event so sidebar updates
 
 			}
 
@@ -61,6 +63,7 @@ $(document).on("click",".searchMap", function() {
 
 
 });
+
 
 $(document).on("change",".geoField", function() {
 	var mapElement = $(this).find(".mapWidget");

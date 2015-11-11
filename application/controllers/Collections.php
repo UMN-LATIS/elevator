@@ -33,8 +33,18 @@ class Collections extends Instance_Controller {
 		$collection = $this->doctrine->em->find('Entity\Collection', $collectionId);
 		$this->user_model->addRecentCollection($collection);
 
-		$this->searchId = (string)$this->qb->save('searchArchive', $searchArray);
+		$searchArchive = new Entity\SearchEntry;
+		$searchArchive->setUser($this->user_model->user);
+		$searchArchive->setInstance($this->instance);
+		$searchArchive->setSearchText($searchArray['searchText']);
+		$searchArchive->setSearchData($searchArray);
+		$searchArchive->setCreatedAt(new DateTime());
+		$searchArchive->setUserInitiated(false);
 
+		$this->doctrine->em->persist($searchArchive);
+		$this->doctrine->em->flush();
+
+		$this->searchId = $searchArchive->getId();
 		instance_redirect("search#".$this->searchId);
 
 	}

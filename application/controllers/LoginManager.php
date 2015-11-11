@@ -10,11 +10,11 @@ class LoginManager extends Instance_Controller {
 	}
 
 	function force_ssl() {
-	    if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
-	        $url = "https://". $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-	        redirect($url);
-	        exit;
-	    }
+	    // if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
+	    //     $url = "https://". $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+	    //     redirect($url);
+	    //     exit;
+	    // }
 	}
 
 	public function localLogin() {
@@ -62,8 +62,11 @@ class LoginManager extends Instance_Controller {
 	{
 		$this->session->sess_destroy();
 		if($this->config->item('enableCaching')) {
-			$this->cache->delete("userCache_" . $this->user_model->userId);
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->delete($this->user_model->userId);
 		}
+
+
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
 		$umnshib = new \UMNShib\Basic\BasicAuthenticator();

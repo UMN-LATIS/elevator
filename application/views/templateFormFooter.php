@@ -7,4 +7,4 @@
 
 </form>
 
-<?=$this->load->view("handlebarsTemplates");
+<?$this->load->view("handlebarsTemplates");

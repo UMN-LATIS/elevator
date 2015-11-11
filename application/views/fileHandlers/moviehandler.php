@@ -68,7 +68,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 ?>
 <script src="/assets/jwplayer/jwplayer.js"></script>
-<script type="text/javascript">jwplayer.key="27Im/1+SR2YkJ0xdpYPiHRGMnebr35X9D0loSIDW4io=";</script>
+<script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
 <script>
 
 if(!objectId) {
@@ -81,14 +81,6 @@ if(!objectId) {
 <?if(!$embedded):?>
 <div class="row assetViewRow" >
   <div class="col-md-12 videoColumn">
-    <style>
-/* hack to deal with JW / bootstrap conflict */
-.jwoverlay {
-  -webkit-box-sizing: content-box;
-  -moz-box-sizing: content-box;
-  box-sizing: content-box;
-}
-</style>
 
 <?endif?>
     <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
@@ -102,10 +94,13 @@ if(!objectId) {
     <div id="videoElement">Loading the player...</div>
 
     <script type="text/javascript">
+    // NOTE: jwplayer 7.1 is uri-encoding URLs directly within the image preview module.  This sure looks like a bug (it's a recent change) and
+    // it's fair to assume it'll be reverted in the future.
+    // IF PREVIEW IMAGES STOP WORKING IN THE FUTURE, don't do this urldecoding and just pass in the urlencoded string like a sane person.
     jwplayer("videoElement").setup({
       ga: { label:"label"},
       playlist: [{
-        image: "<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>",
+        image: '<?=isset($fileContainers['imageSequence'])?urldecode(stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2"))):null?>',
         sources: [
         <?foreach($derivatives as $entry):?>
         {
@@ -147,6 +142,11 @@ if(!objectId) {
 
       });
     });
+
+    $(".videoColumn").on("remove", function() {
+      jwplayer("videoElement").remove();
+    });
+
     </script>
   <?endif?>
 <?if(!$embedded):?>
@@ -168,11 +168,11 @@ if(!objectId) {
 
       <li class="list-group-item assetDetails"><strong>Description: </strong><?=htmlentities($widgetObject->fileDescription, ENT_QUOTES)?></li>
       <?endif?>
-      <?if($widgetObject && $widgetObject->locationData):?>
-      <li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="<?=$widgetObject->locationData[1]?>" data-longitude="<?=$widgetObject->locationData[0]?>">View Location</a></li>
+      <?if($widgetObject && $widgetObject->getLocationData()):?>
+      <li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="<?=$widgetObject->getLocationData()[1]?>" data-longitude="<?=$widgetObject->getLocationData()[0]?>">View Location</a></li>
       <?endif?>
-      <?if($widgetObject && $widgetObject->dateData):?>
-      <li class="list-group-item assetDetails"><strong>Date: </strong><?=$widgetObject->dateData?></li>
+      <?if($widgetObject && $widgetObject->getDateData()):?>
+      <li class="list-group-item assetDetails"><strong>Date: </strong><?=$widgetObject->getDateData()?></li>
       <?endif?>
       <li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
     </ul>

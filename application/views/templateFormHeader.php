@@ -21,8 +21,8 @@ if(isset($asset)) {
 	$objectId = $asset->getObjectId();
 	$readyForDisplay = $asset->getGlobalValue("readyForDisplay")?"CHECKED":null;
 	$collectionId = $asset->getGlobalValue("collectionId");
-	if($asset->getGlobalValue("availableAfter") && $asset->getGlobalValue("availableAfter")->sec != 0) {
-		$availableAfter = Date("m/d/Y", $asset->getGlobalValue("availableAfter")->sec);
+	if($asset->getGlobalValue("availableAfter") && $asset->getGlobalValue("availableAfter")->getTimestamp() > 0) {
+		$availableAfter = $asset->getGlobalValue("availableAfter")->format("Y-m-d");
 	}
 
 }
@@ -75,6 +75,7 @@ if(strlen($this->template->collectionId)>0) {
 				<div class="control-group">
 				<div class="panel panel-default widgetContentsContainer">
 					<div class="panel-body widgetContents">
+						<button type="button" class="btn btn-primary toggleTabs pull-right">Toggle Tabs</button>
 						<div class="form-group">
 							<label for="inputObjectId" class="col-sm-2 control-label">Object Id:</label>
 							<div class="col-sm-3">
@@ -98,10 +99,10 @@ if(strlen($this->template->collectionId)>0) {
 						<div class="form-group">
 							<label for="inputCollectionId" class="col-sm-2 control-label">Collection:</label>
 							<div class="col-sm-3">
-							<input type="hidden" name="collectionId" value="<?=$collectionId?>" id="collectionId">
+							<input type="hidden" name="collectionId" value="<?=$collectionId?$collectionId:-1?>" id="collectionId">
 								<select name="newCollectionId" id="newCollectionId" class="form-control input-large">
-									<option>---</option>
-									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections]);?>
+									<option val=-1>---</option>
+									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections],true);?>
 
 								</select>
 							</div>

@@ -303,6 +303,11 @@ class User_model extends CI_Model {
 		if($this->userLoaded) {
 			$drawer_groups = array_merge($drawer_groups, $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(['group_type' => 'Authed', 'group_value' => 1]));
 		}
+
+		if($this->user && $this->user->getUserType() == "Remote") {
+			$drawer_groups = array_merge($drawer_groups, $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(['group_type' => 'Authed_remote', 'group_value' => 1]));
+		}
+
 		if($this->user) {
 			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", USER_TYPE, $this->user->getId()));
 		}
@@ -382,60 +387,16 @@ class User_model extends CI_Model {
 
 		$this->doctrine->em->flush();
 
-		$this->cache->delete("userCache_" . $this->userId);
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->delete($this->userId);
+		}
 
 		$this->recentDrawers = null;
 		$this->getRecentDrawers();
 
 	}
 
-/**
-	 * FIFO capped
-	 * @param [recentsearch entity] $drawer [description]
-	 */
-	public function addRecentSearch($searchId, $searchText) {
-
-		if(!$this->user) {
-			return;
-		}
-
-		if(!is_array($this->recentSearches)) {
-			$this->getRecentSearches();
-		}
-
-		foreach($this->recentSearches as $recentSearch) {
-			if($recentSearch->getSearchId() == $searchId) {
-				$recentSearch->setSearchText($searchText);
-				$this->doctrine->em->persist($recentSearch);
-				return;
-			}
-		}
-
-		if(count($this->recentSearches)>=$this->maxRecents) {
-			$recentSearch= reset($this->recentSearches);
-			$this->user->removeRecentSearch($recentSearch);
-		}
-
-
-
-		$recentSearch = new Entity\RecentSearch();
-
-		$recentSearch->setSearchId($searchId);
-		$recentSearch->setSearchText($searchText);
-		$recentSearch->setUser($this->user);
-		$recentSearch->setCreatedAt(new DateTime());
-		$recentSearch->setInstance($this->instance);
-		$this->user->addRecentSearch($recentSearch);
-
-		$this->doctrine->em->persist($this->user);
-
-		$this->doctrine->em->flush();
-
-		$this->cache->delete("userCache_" . $this->userId);
-		$this->recentSearches = null;
-		$this->getRecentSearches();
-
-	}
 
 	/**
 	 * [addRecentCollection description]
@@ -474,7 +435,11 @@ class User_model extends CI_Model {
 
 		$this->doctrine->em->flush();
 
-		$this->cache->delete("userCache_" . $this->userId);
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('userCache_');
+			$this->doctrineCache->delete($this->userId);
+		}
+
 		$this->recentCollections= null;
 		$this->getRecentCollections();
 	}
@@ -560,14 +525,11 @@ class User_model extends CI_Model {
 	{
 		if($this->recentSearches == null && $this->user) {
 
-			$recentSearches = $this->user->getRecentSearches();
+			$recentSearches = $this->doctrine->em->getRepository("Entity\SearchEntry")->findBy(["instance"=>$this->instance, "user"=>$this->user_model->user, "userInitiated"=>true], ["createdAt"=>"desc"], 5,0);
+
 			$this->recentSearches = array();
 			if(count($recentSearches) > 0) {
-				foreach($recentSearches as $search) {
-					if($search->getInstance() == $this->instance) {
-						$this->recentSearches[] = $search;
-					}
-				}
+				$this->recentSearches = $recentSearches;
 			}
 
 		}

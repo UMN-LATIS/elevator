@@ -571,6 +571,7 @@ class Transcoder_Model extends CI_Model {
  				$outputFormat->setH264Preset("veryfast");
         		$outputFormat->setFormat("mp4")->setAudioBitrate("96k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
 				$process->addCommand("-movflags", "faststart");
+				$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
 				$process->addCommand("-crf", 23);
 				$process->addCommand("-pix_fmt", "yuv420p");
 				$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:480,setdar=0", true);
@@ -616,6 +617,7 @@ class Transcoder_Model extends CI_Model {
  				$outputFormat->setH264Preset("veryfast");
 	       		$outputFormat->setFormat("mp4")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
         		$process->addCommand("-movflags", "faststart");
+        		$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
 				$process->addCommand("-crf", 23);
 				$process->addCommand("-pix_fmt", "yuv420p");
 				if($isRotated) {

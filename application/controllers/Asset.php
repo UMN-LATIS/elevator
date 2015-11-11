@@ -23,6 +23,7 @@ class asset extends Instance_Controller {
 		$this->template->javascript->add("assets/js/mapWidget.js");
 		$this->template->javascript->add("assets/js/panzoom.min.js");
 		$this->template->javascript->add("assets/js/jquery.expander.min.js");
+
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
 		$this->template->content->view("drawers/drawerModal");
 
@@ -30,23 +31,23 @@ class asset extends Instance_Controller {
 		$this->load->model("asset_model");
 	}
 
-	public function index()
-	{
-		var_dump(apc_cache_info());
-
-	}
-
-	function viewAsset($objectId) {
-
+	function viewAsset($objectId=null) {
 		$assetModel = new Asset_model;
+		if(!$objectId) {
+			show_404();
+		}
+
 		$assetModel->loadAssetById($objectId);
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
-		$targetObject = null;
-		if($this->accessLevel == PERM_NOPERM) {
 
+		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
+
+		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
+
+		$targetObject = null;
 		try {
 			$fileHandler = $assetModel->getPrimaryFilehandler();
 
@@ -61,16 +62,21 @@ class asset extends Instance_Controller {
 
 		}
 
+		// for subclipping movies
 		$this->template->javascript->add("assets/js/excerpt.js");
+
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
 		$this->template->publish();
 
 
 	}
 
-	function viewRestore($objectId) {
+	function viewRestore($objectId=null) {
+		if(!$objectId) {
+			show_404();
+		}
 
-		$object = $this->qb->where(['_id'=>new MongoId($objectId)])->getOne("history");
+		$object = $this->doctrine->em->find("Entity\Asset", $objectId);
 		$assetModel = new Asset_model;
 		$assetModel->loadAssetFromRecord($object);
 
@@ -112,6 +118,7 @@ class asset extends Instance_Controller {
 			instance_redirect("errorHandler/error/badExcerpt");
 			return;
 		}
+
 		$fileHandler->loadByObjectId($excerpt->getExcerptAsset());
 
 		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
@@ -125,6 +132,10 @@ class asset extends Instance_Controller {
 		$this->template->publish();
 
 	}
+
+	// this is used for inline display of objects
+	// We pass in the parentObject and the targetObject so we can resolve perms properly in cases of things like
+	// objects in drawers, which the user wouldn't otherwise have access to.
 
 	function viewAssetMetadataOnly($parentObject, $targetObject) {
 
@@ -155,7 +166,6 @@ class asset extends Instance_Controller {
 
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
 
-		// TODO: PERM CHECK
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 		if(!$fileHandler) {
 			$embed = $this->load->view("fileHandlers/filenotfound", true);
@@ -170,41 +180,46 @@ class asset extends Instance_Controller {
 			}
 			return;
 		}
+
 		$fileHandler->loadByObjectId($fileObjectId);
 		$assetModel = new Asset_model();
 		if(!$assetModel->loadAssetById($fileHandler->parentObjectId)) {
 			$this->logging->logError("getEmbed", "could not load asset for fileHandler" . $fileHandler->getObjectId());
 			return;
 		}
+
+
+		// We need to see if the user has access to this file's parent object, so we can resolve permissions for drawers/collections.
+		// This is a brute force sort of thing.
+		// Note, this could fail is they somehow have less access to a parent than to a child.
 		$this->accessLevel = PERM_NOPERM;
 		if($parentObject && $parentObject != "null") {
 			$tempAsset = new Asset_model;
 			$tempAsset->loadAssetById($parentObject);
-			$relatedAssets = $tempAsset->getAllWithinAsset("Related_asset");
+
 			$parentMatch = FALSE;
-			foreach($relatedAssets as $asset) {
-
-				foreach($asset->fieldContentsArray as $contents) {
-
-					if($contents->targetAssetId == $fileHandler->parentObjectId) {
-						$parentMatch = true;
-					}
-				}
-			}
 
 			if($fileHandler->parentObjectId == $parentObject) {
 				$parentMatch = true;
 			}
+			else {
+				$relatedAssets = $tempAsset->getAllWithinAsset("Related_asset");
+				foreach($relatedAssets as $asset) {
+					foreach($asset->fieldContentsArray as $contents) {
+						if($contents->targetAssetId == $fileHandler->parentObjectId) {
+							$parentMatch = true;
+						}
+					}
+				}
+			}
 
 			if($parentMatch) {
-
 				$this->accessLevel = $this->user_model->getAccessLevel("asset", $tempAsset);
 			}
 		}
 		else {
 			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 		}
-
 
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
@@ -227,11 +242,12 @@ class asset extends Instance_Controller {
 	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
 
 		$requiredAccessLevel = PERM_NOPERM;
+
 		try {
 			if($fileHandler == null) {
 				$fileHandler = $assetModel->getPrimaryFilehandler();
 			}
-			if($fileHandler->noDerivatives()) {
+			if($fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
 				$requiredAccessLevel = $fileHandler->getPermission();
 			}
 			else {
@@ -271,7 +287,6 @@ class asset extends Instance_Controller {
 		$assetModel->loadAssetById($objectId);
 		$result = $assetModel->getSearchResultEntry();
 		echo json_encode($result);
-
 	}
 
 }

@@ -59,7 +59,7 @@ if(isset($fileContainers['dicom'])) {
 
 <script>
 
-if(!objectId) {
+if(typeof objectId === 'undefined') {
     objectId = "<?=$fileObjectId?>";
 }
 
