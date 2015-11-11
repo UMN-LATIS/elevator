@@ -43,7 +43,7 @@ class dclImporter extends Instance_Controller {
 	public function importFromFile($file) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
-		$this->dcl->query("SET SESSION wait_timeout = 28800 ");
+		$this->db->query("SET SESSION wait_timeout = 28800 ");
 		$contents = file_get_contents($file);
 		$lines = explode("\n", $contents);
 
@@ -57,7 +57,6 @@ class dclImporter extends Instance_Controller {
 			$this->digitalid = null;
 			echo "Importing " . $entry . "\n";
 			$this->importId($entry);
-			$this->doctrine->em->clear();
 			$count++;
 			if($count % 100 == 0) {
 				gc_collect_cycles();
@@ -177,57 +176,15 @@ class dclImporter extends Instance_Controller {
 
 	}
 
-
-	public function getExistingRecord($templateTitle, $baseField, $keyPath, $searchValue) {
-		$template = $this->doctrine->em->getRepository("Entity\Template")->findOneBy(["name"=>$templateTitle]);
-		$templateId = $template->getId();
-
-		$manager = $this->doctrine->em->getConnection();
-
-		$results = $manager->query('select assetid from assets where templateid = ' . $templateId . ' AND widgets @> \'{"' . $baseField. '": [{"' . $keyPath .'":"' . $searchValue . '"}]}\'');
-		if($results) {
-			$records = $results->fetchAll();
-			if(count($records)>0) {
-				foreach($records as $record) {
-					if($record['assetid'] != null) {
-						return $record;
-					}
-				}
-			}
-		}
-
-		return false;
-
-
-	}
-
-	public function testWork() {
-		$this->wkid = "WK1116853";
-		$this->targetCollection = 1;
-		$this->importWork();
-
-	}
-
-	public function getTemplateId($templateName) {
-
-		$result = $this->doctrine->em->getRepository("Entity\Template")->findOneBy(["name"=>$templateName]);
-		if($result) {
-			return $result->getId();
-		}
-		else {
-			return false;
-		}
-
-	}
-
-
 	public function importWork() {
-
-		$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $this->wkid);
-		if($foundRecord) {
+		$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 14)
+			    ->where('work_id.fieldContents', $this->wkid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
-
 		$this->dcl->where("wk_id", $this->wkid);
 		$result = $this->dcl->get("dcl_works", 1);
 		foreach($result->result_array() as $entry) {
@@ -235,45 +192,45 @@ class dclImporter extends Instance_Controller {
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
 
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period1"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period2"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period3"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period4"];
+			$newEntry["work_id"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["style_period"][]["fieldContents"] = $entry["style_period1"];
+			$newEntry["style_period"][]["fieldContents"] = $entry["style_period2"];
+			$newEntry["style_period"][]["fieldContents"] = $entry["style_period3"];
+			$newEntry["style_period"][]["fieldContents"] = $entry["style_period4"];
 			if($entry["type4"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type4"];
+				$newEntry["type"][]["fieldContents"] = $entry["type4"];
 			}
 			if($entry["type3"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type3"];
+				$newEntry["type"][]["fieldContents"] = $entry["type3"];
 			}
 			if($entry["type2"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type2"];
+				$newEntry["type"][]["fieldContents"] = $entry["type2"];
 			}
 			if($entry["type1"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type1"];
+				$newEntry["type"][]["fieldContents"] = $entry["type1"];
 			}
 
-			$newEntry["culture_1"][]["fieldContents"] = $entry["culture1"];
-			$newEntry["culture_1"][]["fieldContents"] = $entry["culture2"];
-			$newEntry["technique_1"][]["fieldContents"] = $entry["technique1"];
-			$newEntry["materials_1"][]["fieldContents"] = $entry["materials"];
-			$newEntry["language_1"][]["fieldContents"] = $entry["language"];
-			$newEntry["stateedition_1"][]["fieldContents"] = $entry["state_edition"];
-			$newEntry["inscription_1"][]["fieldContents"] = $entry["inscription"];
-			$newEntry["repositoryobjectid_1"][]["fieldContents"] = $entry["repository_object_id"];
-			$newEntry["comments_1"][]["fieldContents"] = $entry["comments"];
+			$newEntry["culture"][]["fieldContents"] = $entry["culture1"];
+			$newEntry["culture"][]["fieldContents"] = $entry["culture2"];
+			$newEntry["technique"][]["fieldContents"] = $entry["technique1"];
+			$newEntry["materials"][]["fieldContents"] = $entry["materials"];
+			$newEntry["language"][]["fieldContents"] = $entry["language"];
+			$newEntry["state_edition"][]["fieldContents"] = $entry["state_edition"];
+			$newEntry["inscription"][]["fieldContents"] = $entry["inscription"];
+			$newEntry["repository_object_id"][]["fieldContents"] = $entry["repository_object_id"];
+			$newEntry["comments"][]["fieldContents"] = $entry["comments"];
 			if($entry['primary_view_digital_id']) {
 				$this->primaryViewId = $entry['primary_view_digital_id'];
 			}
 
 			$newEntry["collectionId"] = $this->targetCollection;
-			$newEntry["templateId"] = $this->getTemplateId("Old DCL Works");
+			$newEntry["templateId"] = 14;
 			$newEntry["readyForDisplay"] = true;
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Work:" . $objectId. "\n";
 
 
@@ -294,13 +251,14 @@ class dclImporter extends Instance_Controller {
 
 
 	public function importWorkTitle() {
-
-		$foundRecord = $this->getExistingRecord("Old Work Title", "workid_1", "fieldContents", $this->wkid);
-		if($foundRecord) {
+		$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 16)
+			    ->where('work_id.fieldContents', $this->wkid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
-
-
 		$this->dcl->where("wk_id", $this->wkid);
 		$result = $this->dcl->get("work_titles");
 		foreach($result->result_array() as $entry) {
@@ -312,13 +270,13 @@ class dclImporter extends Instance_Controller {
 				return;
 			}
 
-			$newEntry["worktitleid_1"][]["fieldContents"] = $entry["wkt_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["title_1"][]["fieldContents"] = $entry["title"];
-			$newEntry["type_1"][]["fieldContents"] = $entry["type"];
-			$newEntry["markpreferred_1"][]["fieldContents"] = $entry["mark_preferred"];
+			$newEntry["work_title_id"][]["fieldContents"] = $entry["wkt_id"];
+			$newEntry["work_id"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["title"][]["fieldContents"] = $entry["title"];
+			$newEntry["type"][]["fieldContents"] = $entry["type"];
+			$newEntry["mark_preferred"][]["fieldContents"] = $entry["mark_preferred"];
 			$newEntry["collectionId"] = $this->targetCollection;
-			$newEntry["templateId"] = $this->getTemplateId("Old Work Title");
+			$newEntry["templateId"] = 16;
 			$newEntry["readyForDisplay"] = true;
 
 			if(!$entry["title"] && !$entry["type"]) {
@@ -328,24 +286,28 @@ class dclImporter extends Instance_Controller {
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Work Title:" . $objectId. "\n";
 
-
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $this->wkid);
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 14)
+			    ->where('work_id.fieldContents', $entry['wk_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
+				$tempAsset->loadAssetFromRecord($foundMongo);
 				$assetArray = $tempAsset->getAsArray();
 				$insert = array();
 				$insert["targetAssetId"] = $objectId;
 				if($entry["mark_preferred"] == "Y") {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["worktitle_1"][] = $insert;
-				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$assetArray["work_title"][] = $insert;
+				$tempAsset->loadDataFromObject($assetArray);
+				$tempAsset->save();
+
 			}
 
 
@@ -353,8 +315,12 @@ class dclImporter extends Instance_Controller {
 	}
 
 	public function importWorkEvent() {
-		$foundRecord = $this->getExistingRecord("Old Work Event", "workid_1", "fieldContents", $this->wkid);
-		if($foundRecord) {
+				$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 17)
+			    ->where('work_id.fieldContents', $this->wkid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
 		$this->dcl->where("wk_id", $this->wkid);
@@ -365,63 +331,68 @@ class dclImporter extends Instance_Controller {
 
 			if($this->isArrayEmpty($entry, ["earliest_date", "latest_date", "begin_century", "end_century", "decade", "location_name", "continent", "country", "state", "region", "type", "city_site"])) {
 				echo "Work Event Empty\n";
-				return;
-			}
+ 				return;
+ 			}
 
-			$newEntry["workeventid_1"][]["fieldContents"] = $entry["wke_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["earliestdate_1"][]["fieldContents"] = $entry["earliest_date"];
-			$newEntry["latestdate_1"][]["fieldContents"] = $entry["latest_date"];
-			$newEntry["begincentury_1"][]["fieldContents"] = $entry["begin_century"];
-			$newEntry["endcentury_1"][]["fieldContents"] = $entry["end_century"];
-			$newEntry["decade_1"][]["fieldContents"] = $entry["decade"];
-			$newEntry["locationname_1"][]["fieldContents"] = $entry["location_name"];
-			$newEntry["continent_1"][]["fieldContents"] = $entry["continent"];
-			$newEntry["country_1"][]["fieldContents"] = $entry["country"];
-			$newEntry["state_1"][]["fieldContents"] = $entry["state"];
-			$newEntry["region_1"][]["fieldContents"] = $entry["region"];
-			$newEntry["type_1"][]["fieldContents"] = $entry["type"];
-			$newEntry["citysite_1"][]["fieldContents"] = $entry["city_site"];
-			$newEntry["address_1"][]["fieldContents"] = $entry["address"];
-			$newEntry["county_1"][]["fieldContents"] = $entry["county"];
+			$newEntry["work_event_id"][]["fieldContents"] = $entry["wke_id"];
+			$newEntry["work_id"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["earliest_date"][]["fieldContents"] = $entry["earliest_date"];
+			$newEntry["latest_date"][]["fieldContents"] = $entry["latest_date"];
+			$newEntry["begin_century"][]["fieldContents"] = $entry["begin_century"];
+			$newEntry["end_century"][]["fieldContents"] = $entry["end_century"];
+			$newEntry["decade"][]["fieldContents"] = $entry["decade"];
+			$newEntry["location_name"][]["fieldContents"] = $entry["location_name"];
+			$newEntry["continent"][]["fieldContents"] = $entry["continent"];
+			$newEntry["country"][]["fieldContents"] = $entry["country"];
+			$newEntry["state"][]["fieldContents"] = $entry["state"];
+			$newEntry["region"][]["fieldContents"] = $entry["region"];
+			$newEntry["type"][]["fieldContents"] = $entry["type"];
+			$newEntry["city_site"][]["fieldContents"] = $entry["city_site"];
+			$newEntry["address"][]["fieldContents"] = $entry["address"];
+			$newEntry["county"][]["fieldContents"] = $entry["county"];
 			if($entry['longitude'] && $entry['latitude']) {
 
 				$locArray = ["type"=>"Point", "coordinates"=>[$entry['longitude'], $entry['latitude']]];
 				$locationEntry['loc'] = $locArray;
 				$locationEntry['locationLabel'] = "";
-				$newEntry['locationcoordinates_1'][] = $locationEntry;
+				$newEntry['location'][] = $locationEntry;
 
 			}
 			$newEntry["readyForDisplay"] = true;
 
 			$newEntry["collectionId"] = $this->targetCollection;
-			$newEntry["templateId"] = $this->getTemplateId("Old Work Event");
+			$newEntry["templateId"] = 17;
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Work Event:" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 14)
+			    ->where('work_id.fieldContents', $entry['wk_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-
-				$tempAsset->loadAssetById($foundRecord);
+				$tempAsset->loadAssetFromRecord($foundMongo);
 				$assetArray = $tempAsset->getAsArray();
-				$assetArray["datelocation_1"][]["targetAssetId"] = $objectId;
-				$tempAsset->createObjectFromJSON($assetArray);
-
-				$tempAsset->save(true,false);
+				$assetArray["work_event"][]["targetAssetId"] = $objectId;
+				$tempAsset->loadDataFromObject($assetArray);
+				$tempAsset->save();
 
 			}
 		}
 	}
 
 	public function importWorkMeasure() {
-
-		$foundRecord = $this->getExistingRecord("Old Work Measurement", "workid_1", "fieldContents", $this->wkid);
-		if($foundRecord) {
+				$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 18)
+			    ->where('work_id.fieldContents', $this->wkid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
 		$this->dcl->where("wk_id", $this->wkid);
@@ -433,32 +404,35 @@ class dclImporter extends Instance_Controller {
 			if($this->isArrayEmpty($entry, ["measurement", "extent"])) {
 				echo "Work measure Empty\n";
 				return;
-			}
+ 			}
 
 
-			$newEntry["workmeasurementid_1"][]["fieldContents"] = $entry["wkm_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["measurement_1"][]["fieldContents"] = $entry["measurement"];
-			$newEntry["extent_1"][]["fieldContents"] = $entry["extent"];
+			$newEntry["work_measurement_id"][]["fieldContents"] = $entry["wkm_id"];
+			$newEntry["work_id"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["measurement"][]["fieldContents"] = $entry["measurement"];
+			$newEntry["extent"][]["fieldContents"] = $entry["extent"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["collectionId"] = $this->targetCollection;
-			$newEntry["templateId"] = $this->getTemplateId("Old Work Measurement");
+			$newEntry["templateId"] = 18;
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Work Measure" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
-
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 14)
+			    ->where('work_id.fieldContents', $entry['wk_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
+				$tempAsset->loadAssetFromRecord($foundMongo);
 				$assetArray = $tempAsset->getAsArray();
-				$assetArray["workmeasurement_1"][]["targetAssetId"] = $objectId;
-				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$assetArray["work_measurement"][]["targetAssetId"] = $objectId;
+				$tempAsset->loadDataFromObject($assetArray);
+				$tempAsset->save();
 
 			}
 		}
@@ -466,59 +440,63 @@ class dclImporter extends Instance_Controller {
 
 	// get all the values for a key from a multidimensional array
 	function array_value_recursive($key, array $arr){
-		$val = array();
-		array_walk_recursive($arr, function($v, $k) use($key, &$val){
-			if($k == $key) array_push($val, $v);
-		});
-		return count($val) > 1 ? $val : array_pop($val);
+	    $val = array();
+	    array_walk_recursive($arr, function($v, $k) use($key, &$val){
+	        if($k == $key) array_push($val, $v);
+	    });
+	    return count($val) > 1 ? $val : array_pop($val);
 	}
 
 
 	public function importAgent() {
-		$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_1", "fieldContents", $this->agid);
-		if($foundRecord) {
-			return;
-		}
 
+		$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 15)
+			    ->where('agent_id.fieldContents',  $this->agid)
+			    ->getOne('dcl3');
+			if($foundMongo) {
+				return;
+			}
 		$this->dcl->where("ag_id", $this->agid);
 		$result = $this->dcl->get("dcl_agents");
 		foreach($result->result_array() as $entry) {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["firstnamequalifier_1"][]["fieldContents"] = $entry["first_name_qualifier"];
-			$newEntry["firstname_1"][]["fieldContents"] = $entry["first_name"];
-			$newEntry["lastname_1"][]["fieldContents"] = $entry["last_name"];
-			$newEntry["lastnamequalifier_1"][]["fieldContents"] = $entry["last_name_qualifier"];
-			$newEntry["altname_1"][]["fieldContents"] = $entry["alt_name"];
-			$newEntry["birthdate_1"][]["fieldContents"] = $entry["birth_date"];
-			$newEntry["deathdate_1"][]["fieldContents"] = $entry["death_date"];
-			$newEntry["nationality_1"][]["fieldContents"] = $entry["nationality1"];
-			$newEntry["nationality_1"][]["fieldContents"] = $entry["nationality2"];
-			$newEntry["datesactive_1"][]["fieldContents"] = $entry["dates_active"];
-			$newEntry["notes_1"][]["fieldContents"] = $entry["notes"];
+			$newEntry["first_name_qualifier"][]["fieldContents"] = $entry["first_name_qualifier"];
+			$newEntry["first_name"][]["fieldContents"] = $entry["first_name"];
+			$newEntry["last_name"][]["fieldContents"] = $entry["last_name"];
+			$newEntry["last_name_qualifier"][]["fieldContents"] = $entry["last_name_qualifier"];
+			$newEntry["alt_name"][]["fieldContents"] = $entry["alt_name"];
+			$newEntry["birth_date"][]["fieldContents"] = $entry["birth_date"];
+			$newEntry["death_date"][]["fieldContents"] = $entry["death_date"];
+			$newEntry["nationality"][]["fieldContents"] = $entry["nationality1"];
+			$newEntry["nationality"][]["fieldContents"] = $entry["nationality2"];
+			$newEntry["dates_active"][]["fieldContents"] = $entry["dates_active"];
+			$newEntry["notes"][]["fieldContents"] = $entry["notes"];
 
 			// if we don't have any values up to this point, let's bail.
 			if(!array_filter($this->array_value_recursive("fieldContents", $newEntry))) {
 				return;
 			}
 
-			$newEntry["agentid_1"][]["fieldContents"] = $entry["ag_id"];
+			$newEntry["agent_id"][]["fieldContents"] = $entry["ag_id"];
 
 
-			$newEntry["templateId"] = $this->getTemplateId("Old DCL Agents");
+			$newEntry["templateId"] = 15;
 			$newEntry["collectionId"] = $this->targetCollection;
 			$newEntry["readyForDisplay"] = true;
 
 			$agentNameArray = array($entry["first_name_qualifier"], join($this->removeEmptyElements(array($entry["first_name"], $entry["last_name"])), " "),$entry["last_name_qualifier"]);
 			$agentName = join($this->removeEmptyElements($agentNameArray), ", ");
-			$newEntry["displayname_1"][]["fieldContents"] = $agentName;
+			$newEntry["display_name"][]["fieldContents"] = $agentName;
 
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Agent:" . $objectId. "\n";
 		}
 
@@ -526,19 +504,23 @@ class dclImporter extends Instance_Controller {
 
 	public function removeEmptyElements($myArray) {
 
-		foreach ($myArray as $key => $value) {
-			if (is_null($value) || $value=="") {
-				unset($myArray[$key]);
-			}
-		}
+			foreach ($myArray as $key => $value) {
+		      if (is_null($value) || $value=="") {
+		        unset($myArray[$key]);
+		      }
+		   }
 		return $myArray;
 
 	}
 
 	public function importSourcePublication() {
 
-		$foundRecord = $this->getExistingRecord("Old Source Publication", "sourceid_1", "fieldContents", $this->srcid);
-		if($foundRecord) {
+		$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 19)
+			    ->where('source_id.fieldContents', $this->srcid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
 
@@ -548,54 +530,60 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["sourceid_1"][]["fieldContents"] = $entry["src_id"];
-			$newEntry["author_1"][]["fieldContents"] = $entry["author"];
-			$newEntry["articletitle_1"][]["fieldContents"] = $entry["article_title"];
-			$newEntry["title_1"][]["fieldContents"] = $entry["title"];
-			$newEntry["volume_1"][]["fieldContents"] = $entry["volume"];
-			$newEntry["number_1"][]["fieldContents"] = $entry["number"];
-			$newEntry["year_1"][]["fieldContents"] = $entry["year"];
+			$newEntry["source_id"][]["fieldContents"] = $entry["src_id"];
+			$newEntry["author"][]["fieldContents"] = $entry["author"];
+			$newEntry["article_title"][]["fieldContents"] = $entry["article_title"];
+			$newEntry["title"][]["fieldContents"] = $entry["title"];
+			$newEntry["volume"][]["fieldContents"] = $entry["volume"];
+			$newEntry["number"][]["fieldContents"] = $entry["number"];
+			$newEntry["year"][]["fieldContents"] = $entry["year"];
 			$newEntry["readyForDisplay"] = true;
-			$newEntry["templateId"] = $this->getTemplateId("Old Source Publication");
+			$newEntry["templateId"] = 19;
 			$newEntry["collectionId"] = $this->targetCollection;
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Source Pub:" . $objectId. "\n";
 		}
 
 	}
 
-	public function importOrder() {
+public function importOrder() {
 
-
-		$foundRecord = $this->getExistingRecord("Old Orders", "orderid_1", "fieldContents", $this->ordid);
-		if($foundRecord) {
+	$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 20)
+			    ->where('order_id.fieldContents', $this->ordid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
 
-		$this->dcl->where("ord_id", $this->ordid);
+	$this->dcl->where("ord_id", $this->ordid);
 		$result = $this->dcl->get("orders");
 		foreach($result->result_array() as $entry) {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["orderid_1"][]["fieldContents"] = $entry["ord_id"];
-			$newEntry["collectionid_1"][]["fieldContents"] = $entry["col_id"];
-			$newEntry["sourceid_1"][]["fieldContents"] = $entry["src_id"];
-			$newEntry["orderedby_1"][]["fieldContents"] = $entry["ordered_by"];
+			$newEntry["order_id"][]["fieldContents"] = $entry["ord_id"];
+			$newEntry["collection_id"][]["fieldContents"] = $entry["col_id"];
+			$newEntry["source_id"][]["fieldContents"] = $entry["src_id"];
+			$newEntry["ordered_by"][]["fieldContents"] = $entry["ordered_by"];
 			$newEntry["readyForDisplay"] = true;
-			$newEntry["templateId"] = $this->getTemplateId("Old Orders");
+			$newEntry["templateId"] = 20;
 			$newEntry["collectionId"] = $this->targetCollection;
 
 			if($entry['src_id']) {
-				$foundRecord = $this->getExistingRecord("Old Source Publication", "sourceid_1", "fieldContents", $entry['src_id']);
-
-				if($foundRecord) {
+				$foundMongo = $this->qb
+				    ->where('collectionId', $this->targetCollection)
+				    ->where('templateId', 19)
+				    ->where('source_id.fieldContents', $entry['src_id'])
+				    ->getOne('dcl3');
+				if($foundMongo) {
 					$tempAsset = new Asset_model();
-					$tempAsset->loadAssetById($foundRecord);
+					$tempAsset->loadAssetFromRecord($foundMongo);
 
 					$newEntry["source"][]["targetAssetId"] = $tempAsset->getObjectId();
 
@@ -605,43 +593,48 @@ class dclImporter extends Instance_Controller {
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Order:" . $objectId. "\n";
 		}
 
 	}
 
 
-	public function importAgentWork() {
+public function importAgentWork() {
 
-		$foundRecord = $this->getExistingRecord("Old Agent Work", "workid_1", "fieldContents", $this->wkid);
-		if($foundRecord) {
+	$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 21)
+			    ->where('work_id.fieldContents', $this->wkid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
-
-
-		$this->dcl->where("wk_id", $this->wkid);
+	$this->dcl->where("wk_id", $this->wkid);
 		$result = $this->dcl->get("agents_works");
 		foreach($result->result_array() as $entry) {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["agentworkid_1"][]["fieldContents"] = $entry["agwk_id"];
-			$newEntry["agentid_1"][]["fieldContents"] = $entry["ag_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["role_1"][]["fieldContents"] = $entry["role"];
-			$newEntry["attribution_1"][]["fieldContents"] = $entry["attribution"];
-			$newEntry["extent_1"][]["fieldContents"] = $entry["extent"];
+			$newEntry["agent_work_id"][]["fieldContents"] = $entry["agwk_id"];
+			$newEntry["agent_id"][]["fieldContents"] = $entry["ag_id"];
+			$newEntry["work_id"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["role"][]["fieldContents"] = $entry["role"];
+			$newEntry["attribution"][]["fieldContents"] = $entry["attribution"];
+			$newEntry["extent"][]["fieldContents"] = $entry["extent"];
 			$newEntry["readyForDisplay"] = true;
-			$newEntry["templateId"] = $this->getTemplateId("Old Agent Work");
+			$newEntry["templateId"] = 21;
 			$newEntry["collectionId"] = $this->targetCollection;
-			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_1", "fieldContents", $entry['ag_id']);
-
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 15)
+			    ->where('agent_id.fieldContents', $entry['ag_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["agent_1"][]["targetAssetId"] = $tempAsset->getObjectId();
+				$tempAsset->loadAssetFromRecord($foundMongo);
+				$newEntry["agent"][]["targetAssetId"] = $tempAsset->getObjectId();
 			}
 			else {
 				return;
@@ -651,46 +644,44 @@ class dclImporter extends Instance_Controller {
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "Agentwork:" . $objectId. "\n";
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
 
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 14)
+			    ->where('work_id.fieldContents', $entry['wk_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
+				$tempAsset->loadAssetFromRecord($foundMongo);
 				$assetArray = $tempAsset->getAsArray();
 				$insert = array();
 				$insert["targetAssetId"] = $objectId;
 				if($entry["rank"] == 1) {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["creator_1"][] = $insert;
-				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$assetArray["agent"][] = $insert;
+				$tempAsset->loadDataFromObject($assetArray);
+				$tempAsset->save();
 
 			}
 		}
 
 	}
 
-	public function timeTest() {
-		$tempAsset = new Asset_model();
-			$tempAsset->loadAssetById("558c633b81bbd1567c8b4567");
-			$start = microtime(true);
-				$assetArray = $tempAsset->getAsArray();
-				$end = microtime(true);
-				echo "took " . ($start - $end);
-	}
-
 	public function importViews()
 	{
 
-		$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_1", "fieldContents", $this->vwid);
-		if($foundRecord) {
+	$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 13)
+			    ->where('view_id.fieldContents', $this->vwid)
+			    ->getOne('dcl3');
+		if($foundMongo) {
 			return;
 		}
-
 
 		$this->dcl->where("vw_id", $this->vwid);
 		$result = $this->dcl->get("dcl_views");
@@ -699,75 +690,82 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["alttype_1"][]["fieldContents"] = $entry["alt_type"];
-			$newEntry["classification_1"][]["fieldContents"] = $entry["classification"];
-			$newEntry["date_1"][]["fieldContents"] = $entry["date"];
-			$newEntry["description_1"][]["fieldContents"] = $entry["description"];
-			$newEntry["digitalid_1"][]["fieldContents"] = $entry["digital_id"];
-			$newEntry["digitized_1"][]["fieldContents"] = $entry["digitized"];
-			$newEntry["figurenumber_1"][]["fieldContents"] = $entry["figure_number"];
-			$newEntry["folionumber_1"][]["fieldContents"]= $entry["folio_number"];
-			$newEntry["keywords_1"][]["tags"] = $entry["keywords"];
+		    $newEntry["alt_type"][]["fieldContents"] = $entry["alt_type"];
+		    $newEntry["classification"][]["fieldContents"] = $entry["classification"];
+		    $newEntry["date"][]["fieldContents"] = $entry["date"];
+		    $newEntry["description"][]["fieldContents"] = $entry["description"];
+		    $newEntry["digital_id"][]["fieldContents"] = $entry["digital_id"];
+		    $newEntry["digitized"][]["fieldContents"] = $entry["digitized"];
+		    $newEntry["figure_number"][]["fieldContents"] = $entry["figure_number"];
+		    $newEntry["folio_number"][]["fieldContents"]= $entry["folio_number"];
+		    $newEntry["keywords"][]["tags"] = $entry["keywords"];
 
-			$newEntry["mediatype_1"][]["fieldContents"] = $entry["media_type"];
-			$newEntry["orderid_1"][]["fieldContents"] = $entry["ord_id"];
-			$newEntry["legacyid_1"][]["fieldContents"] = $entry["legacy_id"];
-			$newEntry["pagenumber_1"][]["fieldContents"] = $entry["page_number"];
-			$newEntry["publiccopyright_1"][]["fieldContents"] = $entry["copyright_public"];
-			$newEntry["scale_1"][]["fieldContents"] = $entry["scale"];
-			$newEntry["subtype_1"][]["fieldContents"] = $entry["sub_type"];
-			$newEntry["title_1"][]["fieldContents"] = $entry["title"];
-			$newEntry["viewtype_1"][]["fieldContents"] = $entry["type"];
-			$newEntry["viewagentextent_1"][]["fieldContents"] = $entry["view_agent_extent"];
-			$newEntry["viewagentid_1"][]["fieldContents"] = $entry["view_agent_id"];
-			$newEntry["viewid_1"][]["fieldContents"] = $entry["vw_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["copyrightfullvideo_1"][]["fieldContents"] = $entry["copyright_full_video"];
+		    $newEntry["media_type"][]["fieldContents"] = $entry["media_type"];
+		    $newEntry["order_id"][]["fieldContents"] = $entry["ord_id"];
+		    $newEntry["legacy_id"][]["fieldContents"] = $entry["legacy_id"];
+		    $newEntry["page_number"][]["fieldContents"] = $entry["page_number"];
+		    $newEntry["public_copyright"][]["fieldContents"] = $entry["copyright_public"];
+		    $newEntry["scale"][]["fieldContents"] = $entry["scale"];
+		    $newEntry["sub_type"][]["fieldContents"] = $entry["sub_type"];
+		    $newEntry["title"][]["fieldContents"] = $entry["title"];
+		    $newEntry["type"][]["fieldContents"] = $entry["type"];
+		    $newEntry["view_agent_extent"][]["fieldContents"] = $entry["view_agent_extent"];
+		    $newEntry["view_agent_id"][]["fieldContents"] = $entry["view_agent_id"];
+		    $newEntry["view_id"][]["fieldContents"] = $entry["vw_id"];
+		    $newEntry["work_id"][]["fieldContents"] = $entry["wk_id"];
+		    $newEntry["copyright_full_video"][]["fieldContents"] = $entry["copyright_full_video"];
 			$newEntry["readyForDisplay"] = true;
-			$newEntry["collectionId"] = $this->targetCollection;
-			$newEntry["templateId"] = $this->getTemplateId("Old DCL Views");
+		    $newEntry["collectionId"] = $this->targetCollection;
+			$newEntry["templateId"] = 13;
 
-
-			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_1", "fieldContents", $entry['view_agent_id']);
-
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 15)
+			    ->where('agent_id.fieldContents', $entry['view_agent_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["agent_1"][]["targetAssetId"] = $tempAsset->getObjectId();
+				$tempAsset->loadAssetFromRecord($foundMongo);
+				$newEntry["agent"][]["targetAssetId"] = $tempAsset->getObjectId();
 			}
 
-			$foundRecord = $this->getExistingRecord("Old Orders", "orderid_1", "fieldContents", $entry['ord_id']);
-
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 20)
+			    ->where('order_id.fieldContents', $entry['ord_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["ordersource_1"][]["targetAssetId"] = $tempAsset->getObjectId();
+				$tempAsset->loadAssetFromRecord($foundMongo);
+				$newEntry["order"][]["targetAssetId"] = $tempAsset->getObjectId();
 			}
 
 
 
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
-			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$asset->loadDataFromObject($newEntry);
+			$objectId = $asset->save();
 			echo "View:" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
-
-			if($foundRecord) {
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 14)
+			    ->where('work_id.fieldContents', $entry['wk_id'])
+			    ->getOne('dcl3');
+			if($foundMongo) {
 				$tempAsset = new Asset_model();
-				$start = microtime(true);
-				$tempAsset->loadAssetById($foundRecord);
+				$tempAsset->loadAssetFromRecord($foundMongo);
 				$assetArray = $tempAsset->getAsArray();
 				$insert = array();
 				$insert["targetAssetId"] = $objectId;
 				if(strcasecmp($this->primaryViewId, $entry["digital_id"]) == 0) {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["views_1"][] = $insert;
+				$assetArray["view"][] = $insert;
 
-				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$tempAsset->loadDataFromObject($assetArray);
+				$tempAsset->save();
 
 			}
 
@@ -777,7 +775,6 @@ class dclImporter extends Instance_Controller {
 
 
 	public function importMediaBank() {
-return;
 		$this->dcl->where("digital_id", $this->digitalid);
 		$this->dcl->where("is_active_for_delivery", 1);
 		$result = $this->dcl->get("source_medias");
@@ -788,32 +785,29 @@ return;
 			$digitalId = $entry["digital_id"];
 			$originalExtension = str_replace(".", "", $entry["file_extension"]);
 
-			$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_1", "fieldContents", $this->vwid);
 
 
-			if($foundRecord) {
-				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
-				try {
-					$fileHandler = $tempAsset->getPrimaryFilehandler();
-					if($fileHandler) {
-						echo "This view, " . $this->vwid . " " . $tempAsset->getObjectId() . "  already has files\n";
-						return;
-					}
-				}
-				catch (Exception $e) {
-				// don't need to do anything, might not have a handler, that's ok.
-				}
+		$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 13)
+			    ->where('view_id.fieldContents', $this->vwid)
+			    ->getOne('dcl3');
+		if($foundMongo && isset($foundMongo["file_asset"]) && count($foundMongo["file_asset"])>0) {
+			echo "This view, " . $this->vwid . " " . $foundMongo["_id"] . "  already has files\n";
+			return;
+		}
 
 
-			}
+			$foundMongo = $this->qb
+			    ->where('collectionId', $this->targetCollection)
+			    ->where('templateId', 13)
+			    ->where('digital_id.fieldContents', $digitalId)
+			    ->getOne('dcl3');
 
-			$foundRecord = $this->getExistingRecord("Old DCL Views", "digitalid_1", "fieldContents", $digitalId);
-
-			if($foundRecord) {
+			if($foundMongo) {
 				echo "starting\n";
 				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
+				$tempAsset->loadAssetFromRecord($foundMongo);
 
 
 				// try {
@@ -825,22 +819,21 @@ return;
 				// }
 
 				$filename = $mediaId . ".orig";
-				$pathToFile = $this->rootPathToMedia . "/" . $this->pathToMedia($mediaId) . "/" . $filename;
+ 				$pathToFile = $this->rootPathToMedia . "/" . $this->pathToMedia($mediaId) . "/" . $filename;
 
-				if(!file_exists($pathToFile)) {
-					echo "File Not Found: " . $pathToFile . "\n";
-					return;
-				}
+ 				if(!file_exists($pathToFile)) {
+ 					echo "File Not Found: " . $pathToFile . "\n";
+ 					return;
+ 				}
 
-				$fileHandler = $this->filehandler_router->getHandlerForType($originalExtension);
+ 				$fileHandler = $this->filehandler_router->getHandlerForType($originalExtension);
 
 				if(get_class($fileHandler) == "FileHandlerBase") {
-					echo "unkown type: " . $originalExtension . "\n";
-					die;
-				}
-
-				$fileHandler->setCollectionId($tempAsset->getGlobalValue("collectionId"));
-				$fileHandler->parentObjectId = $tempAsset->getObjectId();
+ 					echo "unkown type: " . $originalExtension . "\n";
+ 					die;
+ 				}
+ 				$fileHandler->setCollectionId($tempAsset->getGlobalValue("collectionId"));
+ 				$fileHandler->parentObjectId = $tempAsset->getObjectId();
 
 				$fileContainer = new fileContainerS3();
 				$fileHandler->sourceFile = $fileContainer;
@@ -850,7 +843,7 @@ return;
 				$fileContainer->derivativeType = "source";
 				$fileContainer->setParent($fileHandler);
 				$fileContainer->originalFilename = $digitalId . ".". $originalExtension;
-				$fileHandler->save(true,false);
+				$fileHandler->save();
 
 				$objectId = $fileHandler->getObjectId();
 
@@ -859,20 +852,20 @@ return;
 					die;
 				}
 				$fileHandler->sourceFile->ready = true;
-				$fileHandler->save(true,false);
+				$fileHandler->save();
 
 				$assetArray = $tempAsset->getAsArray();
-				$assetArray["file_1"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
+				$assetArray["file_asset"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
 
-				$tempAsset->createObjectFromJSON($assetArray);
+				$tempAsset->loadDataFromObject($assetArray);
 				echo $tempAsset->getObjectId() . "\n";
 				echo $objectId . "\n";
-				$tempAsset->save(true,false);
-			}
-			else {
-				$this->logging->logError("no match", "could not find match for " . $digitalId);
-				echo "could not find match for " . $digitalId . "\n";
-			}
+				$tempAsset->save();
+ 			}
+ 			else {
+ 				$this->logging->logError("no match", "could not find match for " . $digitalId);
+ 				echo "could not find match for " . $digitalId . "\n";
+ 			}
 
 
 

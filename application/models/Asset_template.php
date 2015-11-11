@@ -1,7 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-/**
- * TODO: this won't fail in a particularly helpful way if you try to load a template that doesn't exist.
- */
+
 class Asset_template extends CI_Model {
 	private $templateId;
 	private $templateCache = array();
@@ -21,7 +19,7 @@ class Asset_template extends CI_Model {
 		$widgets = directory_map(APPPATH."models/widgets", TRUE);
 		foreach($widgets as $widget) {
     		if( ! is_array($widget)) {
-        		$class = str_replace(".php", "", $widget);
+        		$class = str_replace(EXT, "", $widget);
         		$className = "widgets/" . $class;
         		$this->load->model($className);
 			}

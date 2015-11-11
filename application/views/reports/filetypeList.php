@@ -43,9 +43,9 @@
 		</thead>
 		<?foreach($results as $result):?>
 			<tr>
-                <td><?=$result["type"]?></td>
-				<td><?=$result["count"]?></td>
-				<td><?=formatSizeUnits($result['size'])?></td>
+                <td><?=$result["_id"]?></td>
+				<td><?=$result['value']["count"]?></td>
+				<td><?=formatSizeUnits($result["value"]['size'])?></td>
 			</tr>
 		<?endforeach?>
 		</table>

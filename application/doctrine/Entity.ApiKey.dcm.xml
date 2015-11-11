@@ -8,9 +8,7 @@
           <id name="id" type="integer">
               <generator strategy="AUTO" />
           </id>
-        <indexes>
-          <index columns="apiKey"/>
-        </indexes>
+
           <many-to-one field="owner" target-entity="User">
             <join-column name="owner" referenced-column-name="id" />
           </many-to-one>

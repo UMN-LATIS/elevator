@@ -24,8 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die('Invalid access');
 
+$plugin                     = new StdClass();
 $plugin->component          = 'repository_elevator';
-$plugin->version            = 2015032312;
+$plugin->version            = 2015032310;
 $plugin->requires           = 2012062500;
-$plugin->release            = '1.0.1';
+$plugin->release            = '1.0.0';
 $plugin->maturity           = MATURITY_STABLE;

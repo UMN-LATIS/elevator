@@ -1,0 +1,21 @@
+<!-- Entity.RecentDrawer.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                    http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+      <entity name="Entity\RecentSearch" table="recent_searches">
+          <id name="id" type="integer">
+              <generator strategy="AUTO" />
+          </id>
+
+          <many-to-one field="user" target-entity="User" inversed-by="recent_searches" />l
+          <many-to-one field="instance" target-entity="Instance"/>
+           <field name="searchId" type="string" nullable='true' />
+           <field name="searchText" type="string" nullable='true' />
+
+
+          <field name="createdAt" type="datetime" nullable='true' />
+
+      </entity>
+</doctrine-mapping>

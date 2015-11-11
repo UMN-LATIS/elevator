@@ -35,12 +35,12 @@ class Beltdrive extends CI_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+		$this->qb = new \MongoQB\Builder(array('dsn'   =>  $this->config->item('mongoDSN')));
 		$this->serverId = $this->getMacLinux();
 		$this->doctrine->extendTimeout();
 
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
-		$this->config->set_item("enableCaching", false);
 		$this->asset_template->useCache = FALSE;
 
 	}
@@ -71,16 +71,11 @@ class Beltdrive extends CI_Controller {
 			$instanceId = $job_encoded["instance"];
 			$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
 			$objectId = $job_encoded["objectId"];
-			if(!$objectId || !is_string($objectId)) {
-				$this->pheanstalk->delete($job);
-				continue;
-			}
 			echo "Reindexing " . $objectId . "\n";
 
 			$this->asset_model->loadAssetById($objectId);
 			$this->asset_model->reindex();
 			$this->pheanstalk->delete($job);
-			$this->doctrine->em->clear();
 		}
 	}
 
@@ -99,6 +94,7 @@ class Beltdrive extends CI_Controller {
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
 
+
 			$job_encoded = json_decode($job->getData(), true);
 
 			$jobId = $job->getId();
@@ -106,31 +102,27 @@ class Beltdrive extends CI_Controller {
 			$jobPriority = $stats->pri;
 
 
-
-			if($stats->reserves > 200 && $job_encoded['task'] != "waitForCompletion") { // if we've tried to process it 200 times, it's probably not gonna work
+			if($stats->reserves > 200) { // if we've tried to process it 200 times, it's probably not gonna work
 				$this->logging->processingInfo("job", "transcoder", "file attempted 200 times", $job_encoded['fileHandlerId'], $job->getId());
 				$this->pheanstalk->bury($job);
 				continue;
 			}
 
-			// Ideally, a single file will live its whole life on one node.
-			// We give it a bunch fo chances, but eventually bail and just do it on a new host.
-			// This will result in stale files needing to be cleaned up!
-			// reserveCount is a local cache in each instance - if a given node has been assigned htis job more than 20 times
-			// and has rejected it each time, it gives up and just does it.
 			if(isset($job_encoded['host_affinity'])) {
+
 				$targetHost = $job_encoded['host_affinity'];
+
 
 				if($targetHost != $this->serverId) {
 					if(!isset($this->reserveCount[$jobId])) {
 						$this->reserveCount[$jobId] = 0;
 					}
 					$this->reserveCount[$jobId]++;
-					if($this->reserveCount[$jobId] < 10 ) {
+					if($this->reserveCount[$jobId] <5 ) {
 						$this->pheanstalk->release($job, $jobPriority, 1);
 						continue;
 					}
-					elseif($this->reserveCount[$jobId] < 20 ) {
+					elseif($this->reserveCount[$jobId] <10 ) {
 						$this->pheanstalk->release($job, $jobPriority, 5);
 						continue;
 					}
@@ -182,7 +174,6 @@ class Beltdrive extends CI_Controller {
 
 			$cnt++;
 
-			// every 100 jobs, let's clear our reserve count cache
 			if($cnt % 100 == 0) {
 				$this->reserveCount = array();
 			}
@@ -193,7 +184,7 @@ class Beltdrive extends CI_Controller {
 				echo "exiting run due to memory limit";
 				exit;
 			}
-			$this->doctrine->em->clear();
+
 			sleep(1);
 		}
 	}
@@ -208,6 +199,8 @@ class Beltdrive extends CI_Controller {
 				usleep(5);
 				continue;
 			}
+
+
 
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -303,7 +296,7 @@ class Beltdrive extends CI_Controller {
 				echo "exiting run due to memory limit";
 				exit;
 			}
-			$this->doctrine->em->clear();
+
 			sleep(1);
 		}
 	}
@@ -367,7 +360,7 @@ class Beltdrive extends CI_Controller {
 				echo "exiting run due to memory limit";
 				exit;
 			}
-			$this->doctrine->em->clear();
+
 			sleep(1);
 		}
 	}
@@ -491,7 +484,7 @@ class Beltdrive extends CI_Controller {
 				echo "exiting run due to memory limit";
 				exit;
 			}
-			$this->doctrine->em->clear();
+
 			sleep(1);
 		}
 	}

@@ -31,6 +31,7 @@ class BoxHandler extends FileHandlerBase {
 
 	public function supportsType($fileType) {
 
+
 		if($this->instance !== NULL && $this->instance->getBoxKey() && strlen($this->instance->getBoxKey())>5) {
 			if(in_array(strtolower($fileType), $this->supportedTypes)) {
 				return TRUE;
@@ -98,7 +99,7 @@ class BoxHandler extends FileHandlerBase {
 
 		$boxClient = new BoxHelper($this->instance->getBoxKey());
 		if(!$boxClient->createDocumentFromURL($this->sourceFile->getProtectedURLForFile())) {
-			$this->logging->logError("box error", $boxClient->error);
+			$this->logging->logErorr("box error", $boxClient->error);
 			return JOB_FAILED;
 		}
 

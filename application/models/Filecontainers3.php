@@ -8,7 +8,7 @@
  * @author
  **
 */
-require_once("Filecontainer.php");
+require_once("filecontainer.php");
 class FileContainerS3 extends FileContainer {
 
 	private $client;
@@ -47,7 +47,6 @@ class FileContainerS3 extends FileContainer {
 		if($this->path == null || $this->derivativeType == null) {
 			throw new Exception('Attempting to set a storage key without necessary parameters');
 		}
-
 		$this->storageKey = $this->path . "/" .  $this->getCompositeName();
 	}
 
@@ -186,8 +185,7 @@ class FileContainerS3 extends FileContainer {
 			throw new Exception("File not available");
 			return false;
 		}
-		$returnPath = $this->parent->s3model->getObjectURL($this->path ."/" . $this->getCompositeName());
-		// $returnPath =  "http://" . $this->parent->collection->getBucket() .".". $this->baseWebPath . "/" . $this->path ."/" . $this->getCompositeName();
+		$returnPath =  "http://" . $this->parent->collection->getBucket() .".". $this->baseWebPath . "/" . $this->path ."/" . $this->getCompositeName();
 		if($stripHTTP) {
 			return stripHTTP($returnPath);
 		}
