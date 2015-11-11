@@ -140,7 +140,6 @@ class Drawers extends Instance_Controller {
 		}
 
 		$drawerItem = $this->doctrine->em->getRepository("Entity\DrawerItem")->findOneBy(['drawer'=>$this->doctrine->em->getReference("Entity\Drawer", $drawerId), 'asset' => $assetId]);
-
 		$this->doctrine->em->remove($drawerItem);
 		$this->doctrine->em->flush();
 		instance_redirect("drawers/viewDrawer/".$drawerId);
@@ -292,10 +291,7 @@ class Drawers extends Instance_Controller {
 
 		$drawerId = $drawer->getId();
 
-		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->user_model->userId);
-		}
+		$this->cache->delete("userCache_" . $this->user_model->userId);
 
 		echo json_encode(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);
 

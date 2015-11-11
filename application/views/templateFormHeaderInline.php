@@ -116,7 +116,7 @@ if(strlen($this->template->collectionId)>0) {
 							<input type="hidden" name="collectionId" value="<?=$collectionId?>" id="collectionId">
 								<select name="newCollectionId" id="newCollectionId" class="form-control input-large">
 									<option>---</option>
-									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections],true);?>
+									<?=$this->load->view("collection_select_partial", ["selectCollection"=>$collectionId, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections]);?>
 
 								</select>
 							</div>

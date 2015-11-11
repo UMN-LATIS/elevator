@@ -38,21 +38,6 @@ function submitForm(ignoreWarnings, supressAlertAndBlock) {
 	});
 	showHaveEntries();
 
-	if($("#collectionId").val() == -1) {
-		bootbox.dialog({
-			message: "Collection cannot be empty.",
-			title: "Invalid Collction",
-			backdrop: true,
-			buttons: {
-
-				cancel: {
-					label: "OK",
-					className: "btn-primary"
-				}
-			}
-		});
-		return;
-	}
 
 	if(!$("#entryForm").parsley('isValid')) {
 		bootbox.dialog({
@@ -78,7 +63,6 @@ function submitForm(ignoreWarnings, supressAlertAndBlock) {
 	}
 
 	$.post( basePath + "assetManager/submission", {formData: JSON.stringify($( "#entryForm" ).serializeForm())}, function( data ) {
-
 		try{
 			jsonObject = $.parseJSON(data);
 		}
@@ -122,34 +106,8 @@ function submitForm(ignoreWarnings, supressAlertAndBlock) {
 			}
 
 		}
-		else {
-			bootbox.dialog({
-				message: "An error was returned while saving your asset.  Check your internet connection and try saving again.  If it continues to fail, you may need to refresh the page.  Any unsaved changes will be lost.",
-				title: "Error Occured During Save",
-				backdrop: true,
-				buttons: {
 
-					cancel: {
-						label: "OK",
-						className: "btn-primary"
-					}
-				}
-			});
-		}
-	}).fail(function() {
-		bootbox.dialog({
-			message: "An error was returned while saving your asset.  Check your internet connection and try saving again.  If it continues to fail, you may need to refresh the page.  Any unsaved changes will be lost.",
-			title: "Error Occured During Save",
-			backdrop: true,
-			buttons: {
-
-				cancel: {
-					label: "OK",
-					className: "btn-primary"
-				}
-			}
-		});
-	});
+});
 }
 
 function loadPreviewAndUpdateTitle(objectId) {

@@ -17,9 +17,6 @@
 
           <one-to-many field="widgets" target-entity="Widget" mapped-by="template">
             <cascade><cascade-remove /></cascade>
-              <order-by>
-                <order-by-field name="id" direction="ASC" />
-            </order-by>
           </one-to-many>
 
           <field name="name" type="string" />

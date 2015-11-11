@@ -3,7 +3,7 @@ var MarkerSource;
 var MarkerTemplate;
 var cachedResults = "";
 var cachedDates = null;
-var searchId = null;
+var searchId;
 var currentPageNumber;
 var eventSource;
 var resultsAvailable = true;
@@ -87,22 +87,14 @@ function parseHash() {
 	}
 }
 
-// ignore results is used to force the server to pre-cache the next set of results
-function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
+function doSearch(searchId, pageNumber, loadAll) {
 
-
-	if(!ignoreResults) {
-		previousEventComplete = false;
-		currentPageNumber = pageNumber;
-	}
-
+	previousEventComplete = false;
+	currentPageNumber = pageNumber;
 
 	loadAll = (loadAll)?"true":"false";
 
 	$.get(basePath + "search/searchResults/" + searchId + "/" + pageNumber + "/" + loadAll, function(data) {
-			if(ignoreResults) {
-				return;
-			}
 			var oldMatches = [];
 			try{
 				if(cachedResults) {
@@ -301,12 +293,6 @@ function populateSearchResults(searchObject) {
 		$(".paginationBlock").hide();
 		resultsAvailable = false;
 	}
-
-	// have the server precache the new results
-	if(searchId !== null) {
-		doSearch(searchId, currentPageNumber+1, false, true);
-	}
-
 
 }
 

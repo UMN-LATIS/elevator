@@ -58,32 +58,36 @@ class filter_elevator extends moodle_text_filter {
         foreach ($xpath->query('//img') as $node) {
             $href = $node->getAttribute('src');
 
-            if (!empty($href) && (boolean)preg_match($this->targetString, $href)) {
+            if (empty($href)) {
+                continue;
+            }
+            if ((boolean)preg_match($this->targetString, $href)) {
                 $newnode  = $dom->createDocumentFragment();
                 $width = $node->getAttribute('width');
                 $height = $node->getAttribute('height');
 
                 $queryString = explode("?", $href);
-                if (count($queryString)== 0) {
+                if(count($queryString)== 0) {
                     continue;
                 }
 
                 parse_str($queryString[1], $parsedHref);
 
                 // we place this string in anything that needs to be replaced.  It is hopefully unlikely to occur randomly.
-                if (!array_key_exists("placeholderStringForElevatorDoNotRemove", $parsedHref)) {
+                if(!array_key_exists("placeholderStringForElevatorDoNotRemove", $parsedHref)) {
                     continue;
                 }
-                if (!array_key_exists("instance", $parsedHref)) {
+                if(!array_key_exists("instance", $parsedHref)) {
                     continue;
                 }
 
                 $fileObjectId = $parsedHref["placeholderStringForElevatorDoNotRemove"];
                 $instance = $parsedHref["instance"];
                 $excerpt = null;
-                if (array_key_exists("excerptId", $parsedHref)) {
+                if(array_key_exists("excerptId", $parsedHref)) {
                     $excerpt = $parsedHref["excerptId"];
                 }
+
 
                 global $CFG;
                 $elevatorURL = get_config('elevator', 'elevatorURL');
@@ -103,14 +107,17 @@ class filter_elevator extends moodle_text_filter {
                     $height = $this->_default_thumb_height;
                 }
 
-                $html = '<iframe src="' .$embed_url .'" ' .
-                    'width="'. $width . '" ' .
-                    'height="' . $height . '" ' .
+                $template = '<iframe src="URL" ' .
+                    'width="WIDTH" ' .
+                    'height="HEIGHT" ' .
                     'webkitallowfullscreen="webkitallowfullscreen" ' .
                     'allowfullscreen="allowfullscreen" ' .
                     'frameborder="0"> ' .
                     '</iframe>';
 
+                $patterns = array('/URL/', '/WIDTH/', '/HEIGHT/');
+                $replace = array($embed_url, $width, $height);
+                $html =  preg_replace($patterns, $replace, $template);
                 $newnode->appendXML($html);
                 $node->parentNode->replaceChild($newnode, $node);
 

@@ -20,6 +20,7 @@ class Upload extends Widget_base {
 				$this->$key = $entry;
 			}
 		}
+
 	}
 
 	public function getAsArray($nestedDepth=false) {

@@ -81,6 +81,7 @@ class ImageSvsHandler extends FileHandlerBase {
 		else {
 			$fileObject = $args['fileObject'];
 		}
+
 		$fileStatus = $this->sourceFile->makeLocal();
 
 		if($fileStatus == FILE_GLACIER_RESTORING) {

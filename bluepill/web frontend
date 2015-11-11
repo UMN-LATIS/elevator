@@ -1,6 +1,6 @@
 Bluepill.application("dclManagement") do |app|
   app.process("prepareDrawers") do |process|
-    process.start_command = "/usr/bin/php /opt/elevator/index.php beltdrive prepareDrawers"
+    process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php beltdrive prepareDrawers"
     process.group = "dcl"
     process.daemonize = true
     process.pid_file = "/tmp/prepareDrawers"
@@ -9,7 +9,7 @@ Bluepill.application("dclManagement") do |app|
   end
 
   app.process("restoreFiles") do |process|
-    process.start_command = "/usr/bin/php /opt/elevator/index.php beltdrive restoreFiles"
+    process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php beltdrive restoreFiles"
     process.group = "dcl"
     process.daemonize = true
     process.pid_file = "/tmp/restoreFiles"
@@ -18,7 +18,7 @@ Bluepill.application("dclManagement") do |app|
   end
 
   app.process("reindex") do |process|
-    process.start_command = "/usr/bin/php /opt/elevator/index.php beltdrive updateIndexes"
+    process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php beltdrive updateIndexes"
     process.group = "dcl"
     process.daemonize = true
     process.pid_file = "/tmp/updateIndexes"
@@ -26,8 +26,8 @@ Bluepill.application("dclManagement") do |app|
     process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
   end
 
-  app.process("migrate") do |process|
-    process.start_command = "/usr/bin/php /opt/elevator/index.php beltdrive migrateCollections"
+  app.process("reindex") do |process|
+    process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php beltdrive migrateCollections"
     process.group = "dcl"
     process.daemonize = true
     process.pid_file = "/tmp/migrateCollections"
@@ -35,27 +35,18 @@ Bluepill.application("dclManagement") do |app|
     process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
   end
 
-2.times do |i|
-      app.process("processFiles-#{i}") do |process|
-        process.start_command = "/usr/bin/php /opt/elevator/index.php beltdrive processFileTask"
-        process.daemonize = true
-        process.group = "dcl"
-        process.pid_file = "/tmp/processFiles-#{i}"
-        process.stdout = process.stderr = "/tmp/processFiles.log"
-        process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
-      end
-end
+#2.times do |i|
+#      app.process("processFiles-#{i}") do |process|
+#        process.start_command = "/usr/bin/php /var/www/dcl3/public/index.php beltdrive processFileTask"
+#	process.daemonize = true
+#	process.group = "dcl"
+#        process.pid_file = "/tmp/processFiles-#{i}"
+#	process.working_dir = "/tmp/processFilesDir"
+#        process.stdout = process.stderr = "/tmp/processFiles.log"
+#        process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
+#      end
+#end
 
-2.times do |i|
-      app.process("transcode-#{i}") do |process|
-        process.start_command = "/usr/bin/php /opt/elevator/index.php transcoder transcodeTask"
-        process.group = "dcl"
-        process.daemonize = true
-        process.pid_file = "/tmp/transcodeTask-#{i}"
-        process.stdout = process.stderr = "/tmp/transcodeTask.log"
-        process.checks :mem_usage, :every => 20.seconds, :below => 100.megabytes, :times => [3,5]
-      end
-end
 end
 
 

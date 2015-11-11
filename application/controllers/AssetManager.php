@@ -5,7 +5,6 @@ class AssetManager extends Admin_Controller {
 	public function __construct()
 	{
 		parent::__construct();
-
 		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
 		$this->template->javascript->add("assets/js/formSubmission.js");
 		$this->template->javascript->add("assets/js/serializeForm.js");
@@ -26,8 +25,6 @@ class AssetManager extends Admin_Controller {
 		$this->template->javascript->add("assets/js/typeahead.jquery.min.js");
 		$this->template->stylesheet->add("assets/css/bootstrap-tagsinput.css");
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
-
-		$this->load->model("asset_model");
 	}
 
 	public function addAssetModal() {
@@ -41,7 +38,6 @@ class AssetManager extends Admin_Controller {
 	/**
 	 * AJAX call to add a new widget to an asset entry form.
 	 * gets the current count so we can build the fields with the right ID
-	 * Dear god, why isn't this all done client side?  Please rebuild this in React and a proper design.
 	 */
 	public function getWidget($widgetId, $widgetCount) {
 		$widgetObject = $this->doctrine->em->find('Entity\Widget', $widgetId);
@@ -75,7 +71,7 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if(!$templateId) {
-			$this->logging->logError("no template", $_SERVER);
+			$this->logging->logError("no template", json_encode($_SERVER));
 			instance_redirect("/errorHandler/error/unknownTemplate");
 		}
 		$this->template->javascript->add("assets/js/widgetHelpers.js");
@@ -84,8 +80,6 @@ class AssetManager extends Admin_Controller {
 		$template = $this->asset_template->getTemplate($templateId);
 
 		$this->template->title = "Add Asset | ". $template->getName() . "";
-
-		// if this is a nested form, we might be trying to force a collectionId
 		if(is_numeric($collectionId)) {
 			$this->template->collectionId = $collectionId;
 		}
@@ -108,12 +102,14 @@ class AssetManager extends Admin_Controller {
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
+		$this->load->model("asset_model");
 		$this->asset_model->loadAssetById($objectId);
 
 		if($accessLevel < PERM_ADDASSETS) {
 			if($this->user_model->getAccessLevel("collection",$this->collection_model->getCollection($this->asset_model->getGlobalValue("collectionId"))) < PERM_ADDASSETS) {
 				instance_redirect("errorHandler/error/noPermission");
 			}
+
 		}
 
 		$this->load->model("asset_model");
@@ -143,10 +139,7 @@ class AssetManager extends Admin_Controller {
 			instance_redirect("errorHandler/error/noPermission");
 		}
 
-		$asset = new Asset_model();
-		$asset->loadAssetById($objectId);
-
-		$entries = $asset->assetObject->getRevisions();
+		$entries = $this->qb->where("sourceId",new MongoId($objectId))->get($this->config->item('historyCollection'));
 
 		$assetArray = array();
 		$this->load->model("asset_model");
@@ -162,52 +155,36 @@ class AssetManager extends Admin_Controller {
 	}
 
 	function restore($objectId) {
-
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
 			instance_redirect("errorHandler/error/noPermission");
 		}
 
-		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
-		$currentParent = $restoreObject->getRevisionSource();
+		$object = $this->qb->where(['_id'=>new MongoId($objectId)])->getOne($this->config->item('historyCollection'));
 
-		$restoreObject->setAssetId($currentParent->getAssetId());
-		$restoreObject->setRevisionSource(null);
-		$restoreObject->setDeleted(false);
-		if($currentParent) {
-			$currentParent->setAssetId(null);
-			$currentParent->setRevisionSource($restoreObject);
-			$currentParent->setDeleted(false);
+		$this->load->model("asset_model");
+		$restoreObject = new Asset_model();
+		$restoreObject->loadAssetFromRecord($object);
+
+
+
+		$currentObject = new Asset_model();
+
+		if(!$currentObject->loadAssetById($object["sourceId"])) {
+			// probably a deleted asset, laod template manually
+			$currentObject->assetTemplate = $this->asset_template->getTemplate($restoreObject->templateId);
+		}
+		$currentObject->assetObjects = $restoreObject->assetObjects;
+		$currentObject->globalValues = $restoreObject->globalValues;
+		$currentObject->save();
+		if(isset($object["deleted"]) && $object["deleted"] == true) {
+			// clear the dleetion record
+			$this->qb->where(['_id'=>new MongoId($restoreObject->getObjectId())])->delete($this->config->item('historyCollection'));
+
 		}
 
-		$qb = $this->doctrine->em->createQueryBuilder();
-		$q = $qb->update('Entity\Asset', 'a')
-        ->set('a.revisionSource', $restoreObject->getId())
-        ->where('a.revisionSource = ?1')
-        ->setParameter(1, $currentParent->getId())
-        ->getQuery();
-		$p = $q->execute();
-
-
-		$this->doctrine->em->flush();
-
-		$this->asset_model->loadAssetById($restoreObject->getAssetId());
-		$files = $this->asset_model->getAllWithinAsset("Upload");
-		foreach($files as $file) {
-			foreach($file->fieldContentsArray as $entry) {
-				if($entry->fileHandler->deleted == true) {
-					$entry->fileHandler->regenerate = true;
-					$entry->fileHandler->undeleteFile();
-				}
-
-			}
-		}
-
-		$this->asset_model->save(true,false);
-
-
-		instance_redirect("asset/viewAsset/" .$restoreObject->getAssetId());
+		redirect("asset/viewAsset/" .$currentObject->getObjectId());
 	}
 
 	// save an asset
@@ -223,51 +200,34 @@ class AssetManager extends Admin_Controller {
 		$objectArray = json_decode($data, true);
 		unset($data);
 
-
+		$this->load->model("asset_model");
 		$asset = new Asset_model;
-		$firstSave = true;
-
 		if(isset($objectArray["objectId"]) && strlen(($objectArray["objectId"])) == 24) {
 			$asset->loadAssetById($objectArray["objectId"]);
-			$firstSave = FALSE;
 		}
-
 		$asset->templateId = $objectArray["templateId"];
-		$asset->createObjectFromJSON($objectArray);
+		$asset->loadDataFromObject($objectArray);
 
 		unset($objectArray);
 
-		if($firstSave) {
-			$objectId = $asset->save(false);
-		}
-		else {
-			$objectId = $asset->save(true);
-		}
-
+		$objectId = $asset->save(false);
 
 		echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
 
+		/**
+		 * BEWARE
+		 * SOME REALLY HACKY STUFF HERE!
+		 * Because we need files to know about their parent, we need to reload the asset and resave so that all the
+		 * children get the parent id (because we don't know it at the time of the first save)
+		 * Wish we had futures.
+		 */
 
-		if($firstSave) {
-			/**
-			 * BEWARE
-			 * SOME REALLY HACKY STUFF HERE!
-			 * Because we need files to know about their parent, we need to reload the asset and resave so that all the
-			 * children get the parent id (because we don't know it at the time of the first save)
-			 * Wish we had futures.
-			 */
+		$asset->loadAssetById($objectId);
+		$asset->save();
 
-			$asset = new Asset_model();
-			if($asset->loadAssetById($objectId)) {
-				$asset->save(true,false);
-			}
-
-
-			/**
-			 * END HACKY STUFF
-			 */
-
-		}
+		/**
+		 * END HACKY STUFF
+		 */
 
 
 
@@ -277,13 +237,12 @@ class AssetManager extends Admin_Controller {
 	/**
 	 * Because the uploader goes directly to S3, we need to pre-create a place for the asset to live on our end.  That way
 	 * we can give it an appropriate objectId on S3.
-	 * This can result in stray file containers sitting in the DB - eventually we should probably have some code to purge these or reconnect them
+	 * This can result in stray file containers sitting in the DB - eventually we should probably have some code to purge these.
 	 */
 	public function getFileContainer() {
 		$collectionId = $this->input->post("collectionId");
 		$filename = $this->input->post("filename");
 		// TODO: check that we can actually write to this bucket
-		// right now, it'll fail silently (though if you look at the browser debugger it's obvious)
 		$collection = $this->collection_model->getCollection($collectionId);
 		$fileObjectId = $this->input->post("fileObjectId");
 		$fileContainer = new fileContainerS3();
@@ -291,13 +250,13 @@ class AssetManager extends Admin_Controller {
 		$fileContainer->path = "original";
 
 		if(!$fileObjectId) {
+
 			$fileContainer->ready = false;
-
-			// this handler type may get overwritten later - for example, once we identify the contents of a zip
 			$fileHandler = $this->filehandler_router->getHandlerForType($fileContainer->getType());
-
 			$fileHandler->sourceFile = $fileContainer;
 			$fileHandler->collectionId = $collectionId;
+
+
 			$fileId = $fileHandler->save();
 
 		}
@@ -326,6 +285,7 @@ class AssetManager extends Admin_Controller {
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
+		$this->load->model("asset_model");
 		$this->load->model("search_model");
 		$this->asset_model->loadAssetById($objectId);
 
@@ -341,7 +301,6 @@ class AssetManager extends Admin_Controller {
 			instance_redirect("errorHandler/error/noPermission");
 		}
 		$this->search_model->remove($this->asset_model);
-
 		$this->asset_model->delete();
 
 		$qb = $this->doctrine->em->createQueryBuilder();
@@ -356,22 +315,14 @@ class AssetManager extends Admin_Controller {
 	// List all of the assets touched by the user.  Offset specifies page number essentially.
 	public function userAssets($offset=0) {
 
-		$qb = $this->doctrine->em->createQueryBuilder();
-		$qb->from("Entity\Asset", 'a')
-			->select("a")
-			->where("a.createdBy = :userId")
-			->setParameter(":userId", (int)$this->user_model->userId)
-			->andWhere("a.assetId IS NOT NULL")
-			->orderBy("a.modifiedAt", "DESC")
-			->setMaxResults(50)
-			->setFirstResult($offset);
+		$assets = $this->qb->orWhere(["modifiedBy" => (int)$this->user_model->userId, "createdBy"=>(int)$this->user_model->userId])->orderBy(["modified"=>"DESC"])->limit(50)->offset($offset)->get($this->config->item('mongoCollection'));
 
-		$assets = $qb->getQuery()->execute();
-
+		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
 			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+
 		}
 
 		if($offset>0) {
@@ -388,7 +339,9 @@ class AssetManager extends Admin_Controller {
 
 
 	/**
-	 * Fired when a file has finished uploading
+	 * this shouldn't be a special case like this.  Fired when a file has finished uploading
+	 * @param  [type] $fileObjectId [description]
+	 * @return [type]               [description]
 	 */
 	public function completeSourceFile($fileObjectId) {
 

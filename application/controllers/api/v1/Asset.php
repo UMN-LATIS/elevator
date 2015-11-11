@@ -96,7 +96,6 @@ class asset extends API_Controller {
 		}
 
 		$assetText = $assetModel->getAsArray(1, true);
-
 		echo json_encode($assetText);
 
 
