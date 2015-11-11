@@ -9,6 +9,7 @@ class FileContainer extends CI_Model {
 
 	public $localAsset;
 	public $metadata = array();
+	public $storageKey = "";
 
 	public function __construct($targetFile=null)
 	{
@@ -31,6 +32,14 @@ class FileContainer extends CI_Model {
 
 	public function getPathToLocalFile() {
 		return $this->localAsset;
+	}
+
+	public function getfileSize() {
+		return filesize($this->getPathToLocalFile());
+	}
+
+	public function makeLocal() {
+		return FILE_LOCAL;
 	}
 
 }

@@ -49,9 +49,11 @@ class S3_model extends CI_Model {
 		$this->key = $instance->getAmazonS3Key();
 		$this->bucket = $instance->getDefaultBucket();
 		$this->s3Client = $this->s3_model->s3Client =  Aws\S3\S3Client::factory(array(
-    					'key'    => $this->key,
-    					'secret' =>  $this->secret ,
-    					"scheme" => "http"
+    					'credentials'=> ['key'    => $this->key,
+    					'secret' =>  $this->secret],
+    					"scheme" => "http",
+    					"version"=>"2006-03-01",
+    					"region" => $instance->getBucketRegion()
 					));
 
 	}
@@ -197,17 +199,29 @@ class S3_model extends CI_Model {
 		}
 	}
 
+	public function getObjectURL($targetKey) {
+		return $this->s3Client->getObjectUrl($this->bucket, $targetKey);
+	}
+
 	public function getProtectedURL($targetKey, $originalName=null, $timeString="+10 minutes") {
 		try {
 			$options = array();
+
+			$options["Bucket"] = $this->bucket;
+			$options["Key"] = $targetKey;
+
 			if($originalName) {
-				$options["ResponseContentDisposition"] = 'filename="' . $originalName . '"';
+				$options["ResponseContentDisposition"] = 'attachment; filename="' . $originalName . '"';
 			}
 
-			return $this->s3Client->getObjectUrl($this->bucket, $targetKey, $timeString, $options);
+			$cmd = $this->s3Client->getCommand('GetObject', $options);
+			$request = $this->s3Client->createPresignedRequest($cmd, $timeString);
+
+			return (string)$request->getUri();
 
 		}
 		catch (Exception $e) {
+			error_log($e);
 			$this->logging->logError("getProtectedURL", $e, $targetKey);
 			return false;
 		}
@@ -281,29 +295,64 @@ class S3_model extends CI_Model {
 			return false;
 		}
 
+		if(!$serial && !$mfa && $targetKey) {
+			// try to delete the normal way
 
-		if(!$this->sessionToken) {
-			$client = StsClient::factory(array(
-			'key'    => $this->key,
-    		'secret' => $this->secret));
-			$this->sessionToken = $client->getSessionToken(["DurationSeconds"=>900, "SerialNumber"=>$serial, "TokenCode"=>$mfa]);
+			$this->s3Client = Aws\S3\S3Client::factory(array(
+				'credentials'=>[
+				'key'    => $this->key,
+				'secret' => $this->secret],
+				"version" => "2006-03-01",
+	    		"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
+	    		));
+
+			$this->s3Client->deleteMatchingObjects($this->bucket, $targetKey);
+
+
+		}
+		else {
+			if(!$this->sessionToken) {
+				try {
+					$client = StsClient::factory(array(
+					'region'=> 'us-east-1', // TODO should not be hardcoded
+					'version'=> '2011-06-15',
+					'credentials'=> ['key'    => $this->key,
+					'secret' => $this->secret]));
+					$this->sessionToken = $client->getSessionToken(["DurationSeconds"=>900, "SerialNumber"=>$serial, "TokenCode"=>$mfa]);
+				}
+				catch (Exception $e) {
+					echo $e;
+					$this->logging->logError("failed creating token", $e);
+					return false;
+				}
+			}
+			try {
+				$this->s3Client = Aws\S3\S3Client::factory(array(
+					'credentials' => [
+					'key'    => $this->sessionToken['Credentials']['AccessKeyId'],
+					'secret' => $this->sessionToken['Credentials']['SecretAccessKey'],
+					'token'  => $this->sessionToken['Credentials']['SessionToken']
+					],
+					"version" => "2006-03-01",
+	    			"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
+	    		));
+			}
+			catch (Exception $e) {
+				$this->logging->logError("failed creating token", $e);
+				return false;
+			}
+
+
+			try {
+				$this->s3Client->deleteMatchingObjects($this->bucket, $targetKey);
+			}
+			catch (Exception $e) {
+				echo $e;
+				return false;
+			}
+
 		}
 
-		$this->s3Client = Aws\S3\S3Client::factory(array(
-    		'key'    => $this->sessionToken['Credentials']['AccessKeyId'],
-	    	'secret' => $this->sessionToken['Credentials']['SecretAccessKey'],
-    		'token'  => $this->sessionToken['Credentials']['SessionToken'],
-		));
-
-
-		$iterator = $this->s3Client->getIterator('ListObjects', array(
-    		'Bucket' => $this->bucket,
-		    'Prefix' => $targetKey
-		));
-
-		$clear = new ClearBucket($this->s3Client, $this->bucket);
-		$clear->setIterator($iterator);
-		$result = $clear->clear();
 		return true;
 	}
 

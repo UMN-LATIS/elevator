@@ -19,5 +19,5 @@
  * @subpackage elevator
  */
 
-$string['filtername'] = 'Elevator Media filter';
+$string['filtername'] = 'Elevator Filter';
 

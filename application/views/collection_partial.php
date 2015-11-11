@@ -11,7 +11,7 @@
 				<div>
 					<ul>
 					<?foreach($collection->getChildren() as $child):?>
-					<?=$this->load->view("collection_partial", ["collection"=>$child]);?>
+					<?=$this->load->view("collection_partial", ["collection"=>$child],true);?>
 					<?endforeach?>
 					</ul>
 				</div>

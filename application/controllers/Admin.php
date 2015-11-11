@@ -13,6 +13,7 @@ class admin extends Admin_Controller {
 		}
 	}
 
+
 	public function index()
 	{
 
@@ -29,6 +30,18 @@ class admin extends Admin_Controller {
 		instance_redirect("permissions/editUser/" . $userId);
 	}
 
+
+	public function loadRecordAndReindex() {
+		$this->load->model("asset_model");
+		$start = microtime(true);
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
+		$this->asset_model->loadAssetById("558c633b81bbd1567c8b4567");
+		$this->asset_model->save(false, false);
+		$this->asset_model->reindex();
+		$end = microtime(true);
+		echo "took" . ($end - $start) . "\n";
+	}
+
 	public function reindex($searchKey = null, $searchValue = null) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
@@ -38,24 +51,41 @@ class admin extends Admin_Controller {
 		$this->load->model("search_model");
 
 		if($searchKey && $searchValue) {
-			$result = $this->qb->where($searchKey, (int)$searchValue)->get($this->config->item('mongoCollection'), true);
+			$result = $this->doctrine->em->getRepository("Entity\Asset")->findBy([$searchKey=>$searchValue]);
 		}
 		else {
-			$result = $this->qb->get($this->config->item('mongoCollection'), true);
+			$qb = $this->doctrine->em->createQueryBuilder();
+			$qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.deleted != TRUE")
+			->orWhere("a.deleted IS NULL")
+			->andWhere("a.assetId IS NOT NULL");
+
+			$result = $qb->getQuery()->execute();
+
 			$this->search_model->wipeIndex();
 		}
 
 
 		$count = 0;
-		while ($result->hasNext()) {
+		foreach($result as $entry) {
 			$assetModel = new asset_model();
 			$searchModel = new search_model();
 			// $before = microtime(true);
-			if($assetModel->loadAssetFromRecord($result->getNext())) {
+			if($assetModel->loadAssetFromRecord($entry)) {
 				// $after = microtime(true);
 				// echo "Load Took:" . ($after - $before) . "\n";
-				if($assetModel->asset_template) {
-					echo "updating" . $assetModel->getObjectId(). "\n";
+				$noIndex = false;
+				if($assetModel->getGlobalValue('availableAfter')) {
+					date_default_timezone_set('UTC');
+					$afterDate = $assetModel->getGlobalValue('availableAfter');
+					if($afterDate > new DateTime()) {
+						$noIndex=true;
+					}
+				}
+
+				if($assetModel->asset_template && !$noIndex) {
+					echo "updating" . $assetModel->getObjectId(). "\n<br>";
 					$searchModel->addOrUpdate($assetModel);
 					$count++;
 				}
@@ -116,7 +146,7 @@ class admin extends Admin_Controller {
 
 		$deletionArray = array();
 		foreach($fileList as $fileEntry) {
-			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry["_id"]);
+			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry->getFileObjectId());
 			$fileHandler->loadFromObject($fileEntry);
 			$deletionArray[] = ["objectId"=>$fileHandler->getObjectId(), "filename"=>$fileHandler->sourceFile->originalFilename];
 		}
@@ -140,7 +170,7 @@ class admin extends Admin_Controller {
 		 */
 		$lastUsedToken = null;
 		foreach($fileList as $fileEntry) {
-			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry["_id"]);
+			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry->getFileObjectId());
 			$fileHandler->loadFromObject($fileEntry);
 			if(isset($lastUsedToken)) {
 				$fileHandler->s3model->sessionToken = $lastUsedToken;
@@ -152,6 +182,7 @@ class admin extends Admin_Controller {
 				$lastUsedToken = $fileHandler->s3model->sessionToken;
 			}
 			catch (Exception $e) {
+				echo $e;
 				echo "Deletion fail";
 			}
 
@@ -168,7 +199,13 @@ class admin extends Admin_Controller {
 		$now = time();
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
-		$assets = $this->qb->whereLte('availableAfter', new MongoDate($now))->get($this->config->item('mongoCollection'));
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->select("a")->from("Entity\Asset", "a")
+			->where("a.availableAfter <= CURRENT_DATE()")
+			->andWhere("a.assetId IS NOT NULL");
+
+		$assets = $qb->getQuery()->execute();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
 			$this->search_model->addOrUpdate($this->asset_model);
@@ -181,8 +218,16 @@ class admin extends Admin_Controller {
 		foreach($this->instance->getCollections() as $collection) {
 			$collections[] = $collection->getId();
 		}
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->select("a")->from("Entity\Asset", "a")
+			->where("a.readyForDisplay = FALSE")
+			->andWhere("a.assetId IS NOT NULL")
+			->andWhere("a.collectionId IN(:collections)")
+			->setParameter(":collections", $collections)
+			->orderby("a.modifiedAt", "desc");
 
-		$assets = $this->qb->where("readyForDisplay", null)->whereIn("collectionId", $collections)->orderBy(["modified"=>"DESC"])->get($this->config->item('mongoCollection'));
+		$assets = $qb->getQuery()->execute();
+
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
@@ -201,7 +246,16 @@ class admin extends Admin_Controller {
 			$collections[] = $collection->getId();
 		}
 
-		$assets = $this->qb->whereIn("collectionId", $collections)->orderBy(["modified"=>"DESC"])->limit(200)->get($this->config->item('mongoCollection'));
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->select("a")->from("Entity\Asset", "a")
+			->andWhere("a.assetId IS NOT NULL")
+			->andWhere("a.collectionId IN(:collections)")
+			->setParameter(":collections", $collections)
+			->setMaxResults(200)
+			->orderby("a.modifiedAt", "desc");
+
+		$assets = $qb->getQuery()->execute();
+
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
@@ -219,12 +273,20 @@ class admin extends Admin_Controller {
 			$collections[] = $collection->getId();
 		}
 
-		$assets = $this->qb->whereIn("collectionId", $collections)->where("deleted",true)->orderBy(["deletedDate"=>"DESC"])->limit(200)->get($this->config->item('historyCollection'));
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.deleted = true")
+			->orderBy("a.deletedAt", "DESC")
+			->setMaxResults(200);
+
+		$assets = $qb->getQuery()->execute();
+
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$entry["sourceId"], "deleted"=>true, "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$entry->getAssetId(), "deleted"=>true, "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 
 		}
 

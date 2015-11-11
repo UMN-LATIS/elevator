@@ -8,6 +8,10 @@
           <id name="id" type="integer">
               <generator strategy="AUTO" />
           </id>
+       <indexes>
+            <index columns="username"/>
+            <index columns="emplid"/>
+        </indexes>
 
 
           <one-to-many field="recent_drawers" target-entity="RecentDrawer" mapped-by="user" orphan-removal="true">
@@ -17,20 +21,17 @@
             </order-by>
            </one-to-many>
 
+          <one-to-many field="recent_searches" target-entity="SearchEntry" mapped-by="user" orphan-removal="true">
+                          <cascade><cascade-remove /><cascade-persist /></cascade>
+           </one-to-many>
+
+
           <one-to-many field="recent_collections" target-entity="RecentCollection" mapped-by="user" orphan-removal="true">
              <cascade><cascade-remove /><cascade-persist /></cascade>
              <order-by>
                 <order-by-field name="createdAt" direction="ASC" />
             </order-by>
            </one-to-many>
-
-          <one-to-many field="recent_searches" target-entity="RecentSearch" mapped-by="user" orphan-removal="true">
-             <cascade><cascade-remove /><cascade-persist /></cascade>
-             <order-by>
-                <order-by-field name="createdAt" direction="ASC" />
-            </order-by>
-           </one-to-many>
-
 
           <field name="emplid" type="string"  nullable='true' />
           <field name="username" type="string"  nullable='true' />

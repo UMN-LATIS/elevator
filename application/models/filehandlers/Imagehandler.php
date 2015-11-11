@@ -3,7 +3,7 @@
 
 class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef");
+	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs");
 	protected $noDerivatives = false;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
@@ -13,7 +13,8 @@ class ImageHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
 							2=>["taskType"=>"clarifyTag", "config"=>array()],
-							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							3=>["taskType"=>"tileImage", "config"=>array("minimumMegapixels"=>30)],
+							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
 
@@ -30,7 +31,11 @@ class ImageHandler extends FileHandlerBase {
 
 		if($accessLevel>=$this->getPermission()) {
 			$derivative[] = "screen";
+			if(array_key_exists("tiled", $this->derivatives)) {
+				$derivative[] = "tiled";
+			}
 		}
+
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
 			$derivative[] = "thumbnail2x";
@@ -77,16 +82,19 @@ class ImageHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$fileObject->metadata = getImageMetadata($this->sourceFile);
+		$sourceFile = $this->swapLocalForPNG();
+
+
+		$fileObject->metadata = getImageMetadata($sourceFile);
 
 		if(!$fileObject->metadata) {
-			if($fileFormat = identifyImage($this->sourceFile)) {
-				$originalName = $this->sourceFile->originalFilename;
+			if($fileFormat = identifyImage($sourceFile)) {
+				$originalName = $sourceFile->originalFilename;
 				$originalExtension = pathinfo($originalName, PATHINFO_EXTENSION);
 				$originalName = str_replace($originalExtension, $fileFormat, $originalName);
 
-				$this->sourceFile->originalFilename = $originalName;
-				if(false === ($fileObject->metadata = getImageMetadata($this->sourceFile))) {
+				$sourceFile->originalFilename = $originalName;
+				if(false === ($fileObject->metadata = getImageMetadata($sourceFile))) {
 					return JOB_FAILED;
 				}
 			}
@@ -101,7 +109,7 @@ class ImageHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
+		$fileObject->metadata["filesize"] = $sourceFile->getFileSize();
 
 
 
@@ -114,6 +122,10 @@ class ImageHandler extends FileHandlerBase {
 
 	public function createDerivative($args) {
 		$success = true;
+
+		$sourceFile = $this->swapLocalForPNG();
+
+
 		foreach($args as $key=>$derivativeSetting) {
 			$this->pheanstalk->touch($this->job);
 			if(!is_numeric($key)) {
@@ -123,7 +135,7 @@ class ImageHandler extends FileHandlerBase {
 			$width = $derivativeSetting['width'];
 			$height = $derivativeSetting['height'];
 
-			$fileStatus = $this->sourceFile->makeLocal();
+			$fileStatus = $sourceFile->makeLocal();
 
 			if($fileStatus == FILE_GLACIER_RESTORING) {
 				$this->postponeTime = 900;
@@ -135,12 +147,12 @@ class ImageHandler extends FileHandlerBase {
 
 			$this->pheanstalk->touch($this->job);
 
-			if(!file_exists($this->sourceFile->getPathToLocalFile())) {
+			if(!file_exists($sourceFile->getPathToLocalFile())) {
 				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
 				return JOB_FAILED;
 			}
 
-			$localPath = $this->sourceFile->getPathToLocalFile();
+			$localPath = $sourceFile->getPathToLocalFile();
 			$pathparts = pathinfo($localPath);
 
 			$derivativeContainer = new fileContainerS3();
@@ -149,7 +161,7 @@ class ImageHandler extends FileHandlerBase {
 			$derivativeContainer->setParent($this->sourceFile->getParent());
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
-			if(compressImageAndSave($this->sourceFile, $derivativeContainer, $width, $height)) {
+			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height)) {
 				$derivativeContainer->ready = true;
 				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				if(!$derivativeContainer->copyToRemoteStorage()) {
@@ -182,6 +194,72 @@ class ImageHandler extends FileHandlerBase {
 		else {
 			return JOB_FAILED;
 		}
+
+	}
+
+	public function tileImage($args) {
+		$uploadWidget = $this->getUploadWidget();
+
+		if(!$uploadWidget->parentWidget->enableTiling) {
+			$this->queueTask(4);
+			return JOB_SUCCESS;
+		}
+
+		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
+
+		if($megapixels < $args["minimumMegapixels"] && !$this->forceTiling()) {
+			$this->queueTask(4);
+			return JOB_SUCCESS;
+		}
+
+		// don't swap, VIPS can handle SVS
+		$sourceFile = $this->sourceFile;
+
+
+
+		$localPath = $sourceFile->getPathToLocalFile();
+		$pathparts = pathinfo($localPath);
+
+		$derivativeType = "tiled";
+
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = $derivativeType;
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType;
+
+
+		$outputPath = $localPath . "-tiled";
+		//TODO: catch errors here
+		mkdir($outputPath);
+		$outputFile = $outputPath ."/tiledBase";
+
+		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . "[autorotate] " . $outputFile;
+
+		exec($extractString . " 2>/dev/null");
+		if(!file_exists($outputFile . ".dzi")) {
+			$this->logging->processingInfo("createDerivative","imageHandler","Tiling failed",$this->getObjectId(),$this->job->getId());
+			return JOB_FAILED;
+		}
+
+
+		$dziContents = file_get_contents($outputFile . ".dzi");
+		$dzi = new SimpleXMLElement($dziContents);
+		$dziHeight = (int)$dzi->Size[0]["Height"];
+		$dziWidth = (int)$dzi->Size[0]["Width"];
+		$this->sourceFile->metadata["dziWidth"] = $dziWidth;
+		$this->sourceFile->metadata["dziHeight"] = $dziHeight;
+
+		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled")) {
+			$this->load->helper('file');
+			delete_files($outputPath, true);
+		}
+
+		$this->derivatives[$derivativeType] = $derivativeContainer;
+		$this->unlinkLocalSwap();
+
+		$this->queueTask(4);
+		return JOB_SUCCESS;
 
 	}
 
@@ -224,9 +302,45 @@ class ImageHandler extends FileHandlerBase {
 		$this->queueTask(3);
 		return JOB_SUCCESS;
 
+	}
 
+	function unlinkLocalSwap() {
+		if($this->sourceFile->getType() == "svs") {
+			$source = $this->sourceFile->getPathToLocalFile();
+			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
+			if(file_exists($dest)) {
+				unlink($dest);
+			}
+		}
+		return true;
+	}
+
+	function forceTiling() {
+		if($this->sourceFile->getType() == "svs") {
+			return TRUE;
+ 		}
+
+ 		return FALSE;
 
 	}
+
+	function swapLocalForPNG() {
+		if($this->sourceFile->getType() == "svs") {
+			$source = $this->sourceFile->getPathToLocalFile();
+			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
+			if(file_exists($dest)) {
+				return new FileContainer($dest);
+			}
+			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+			exec($convertString . " 2>/dev/null");
+
+			return new FileContainer($dest);
+		}
+		else {
+			return $this->sourceFile;
+		}
+	}
+
 
 
 }

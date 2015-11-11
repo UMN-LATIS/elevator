@@ -11,16 +11,13 @@ class Instance_Controller extends MY_Controller
     {
         parent::__construct();
 
-        // if($this->config->item('site_open') === FALSE)
-        // {
-        //     show_error('Sorry the site is shut for now.');
-        // }
-        //
-        //
+        if($this->config->item('site_open') === FALSE)
+        {
+            show_error('Elevator is Temporarily Unavailable.');
+        }
+
 
         if(php_sapi_name() == 'cli') {
-
-
             $this->config->set_item("instance_name", "defaultinstance");
             return;
         }
@@ -34,10 +31,6 @@ class Instance_Controller extends MY_Controller
             if(!$this->instance && !$this->noRedirect) {
                 redirect("/errorHandler/error/specifyInstance");
             }
-
-            // if(!$this->noAuth && $this->user_model->getAccessLevel("instance", $this->instance)==PERM_NOPERM) {
-            //     redirect("/errorHandler/error/noAccess");
-            // }
 
             $this->instanceType = "subdirectory";
             $this->template->relativePath = $this->getRelativePath();
@@ -55,12 +48,6 @@ class Instance_Controller extends MY_Controller
             if(!$this->instance && !$this->noRedirect) {
                 redirect("/errorHandler/error/specifyInstance");
             }
-
-
-            // TODO: what should we do here?
-            // if(!$this->noAuth && $this->user_model->getAccessLevel("instance", $this->instance)==PERM_NOPERM) {
-            //     redirect("/errorHandler/error/noAccess");
-            // }
 
             $this->instanceType = "subdomain";
             $this->template->relativePath = $this->getRelativePath();

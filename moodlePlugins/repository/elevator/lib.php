@@ -50,8 +50,8 @@ class repository_elevator extends repository
         // if moodle is telling us what kind of mimetypes it wants, we check to see if it happens to be just ZIP.
         // If that's the case, we know we're on a SCORM page, because in all other cases supported_filetypes() will return web_image
         // this allows us to override our own type and act like a SCORM supplier.
-        if(isset($options['mimetypes'])) {
-            if(in_array(".zip", $options['mimetypes'])) {
+        if (isset($options['mimetypes'])) {
+            if (in_array(".zip", $options['mimetypes'])) {
                 $this->fileTypes = "zipscorm";
                 $this->fileExtension = ".zip";
             }
@@ -76,7 +76,7 @@ class repository_elevator extends repository
         $this->elevatorAPI = new elevatorAPI($elevatorURL, $apiKey, $apiSecret, $this->userId);
         $this->elevatorAPI->fileTypes = $this->fileTypes;
 
-        if($this->userId) {
+        if ($this->userId) {
             $this->loggedIn = $this->testUserId();
             $this->manageURL = $this->elevatorAPI->getManageURL();
         }
@@ -111,7 +111,7 @@ class repository_elevator extends repository
     public function getDrawers() {
         $drawerList = $this->elevatorAPI->getDrawers();
         $fileslist = array();
-        foreach($drawerList as $drawerId=>$drawerTitle) {
+        foreach ($drawerList as $drawerId=>$drawerTitle) {
             $fileslist[] = array(
                 'title' => $drawerTitle,
                 'path'=> '/Home/Drawers/' . $drawerTitle,
@@ -123,7 +123,7 @@ class repository_elevator extends repository
 
     public function getCollections() {
         $collectionList = $this->elevatorAPI->getCollections();
-        foreach($collectionList as $collectionId=>$collectionTitle) {
+        foreach ($collectionList as $collectionId=>$collectionTitle) {
             $fileslist[] = array(
                 'title' => $collectionTitle,
                 'path'=> '/Home/Collections/' . $collectionTitle,
@@ -157,12 +157,12 @@ class repository_elevator extends repository
 
     public function parseResultIntoFileList($fileList, $path=null) {
         $outputArray = array();
-        if(isset($fileList['totalResults']) && isset($fileList['assetsPerPage'])) {
+        if (isset($fileList['totalResults']) && isset($fileList['assetsPerPage'])) {
             $this->totalPages = ceil($fileList["totalResults"] / $fileList["assetsPerPage"]);
         }
 
         foreach($fileList["matches"] as $entry) {
-            if(array_key_exists("fileAssets", $entry) && $entry["fileAssets"] > 1) {
+            if (array_key_exists("fileAssets", $entry) && $entry["fileAssets"] > 1) {
                 // this allows us to browse into assets with multiple items
                 $outputArray[] = array(
                     "shorttitle"=>$entry["title"],
@@ -197,13 +197,13 @@ class repository_elevator extends repository
 
 
     public function get_listing($path = '', $page = '1') {
-        if(!is_numeric($page)) {
+        if (!is_numeric($page)) {
             $page = 1;
         }
         global $OUTPUT;
         $filesList = array();
 
-        if($path == '' || $path == '/Home') {
+        if ($path == '' || $path == '/Home') {
             $filesList[] = array(
                 'title' => "Drawers",
                 'source' => "drawer",
@@ -217,28 +217,28 @@ class repository_elevator extends repository
                 'children'=>array()
             );
         }
-        elseif($path == "/Home/Drawers") {
+        elseif ($path == "/Home/Drawers") {
             $filesList = $this->getDrawers();
         }
-        elseif($path == "/Home/Collections") {
+        elseif ($path == "/Home/Collections") {
             $filesList = $this->getCollections();
         }
         else {
             $splitPath = explode("/", $path);
 
-            if(count($splitPath) == 2) {
+            if (count($splitPath) == 2) {
                 $filesList = $this->getAssetChildren($splitPath[1], $page);
             }
-            else if(count($splitPath) == 4) {
+            else if (count($splitPath) == 4) {
                 if($splitPath[2] == "Drawers") {
                     $filesList = $this->getAssetsFromDrawer($splitPath[3], $page);
                 }
 
-                if($splitPath[2] == "Collections") {
+                if ($splitPath[2] == "Collections") {
                     $filesList = $this->getAssetsFromCollection($splitPath[3], $page);
                 }
             }
-            if(count($splitPath) == 5) {
+            if (count($splitPath) == 5) {
                 $filesList = $this->getAssetChildren($splitPath[4], $page);
             }
 
@@ -283,11 +283,11 @@ class repository_elevator extends repository
 
     public function search($search_text, $page = 1) {
         global $SESSION;
-        if(!is_numeric($page) || $page < 1) {
+        if (!is_numeric($page) || $page < 1) {
             $page = 1;
         }
         $sess_search_text = $this->setting.$this->id.'_search_text';
-        if(!$search_text && isset($SESSION->{$sess_search_text})) {
+        if (!$search_text && isset($SESSION->{$sess_search_text})) {
             $search_text = $SESSION->{$sess_search_text};
         }
 
@@ -309,13 +309,14 @@ class repository_elevator extends repository
 
     // convert the thumbnail link into the full url for embedding
     public function get_link($url) {
-        $assetInfo = $this->elevatorAPI->assetLookup($url);
+        $assetInfo = $this->elevatorAPI->fileLookup($url);
         return $assetInfo["source"];
     }
 
     public function get_file_reference($source) {
-        if($this->fileTypes == "zipscorm") {
-            $assetInfo = $this->elevatorAPI->assetLookup($source);
+        if ($this->fileTypes == "zipscorm") {
+
+            $assetInfo = $this->elevatorAPI->fileLookup($source);
             return $assetInfo["original"];
         }
         else {
@@ -352,7 +353,7 @@ class repository_elevator extends repository
      */
     public function supported_filetypes() {
         global $PAGE;
-        if($PAGE->pagetype == "mod-scorm-mod") {
+        if ($PAGE->pagetype == "mod-scorm-mod") {
             return "*";
         }
         else {
@@ -370,7 +371,7 @@ class repository_elevator extends repository
      */
     public function supported_returntypes() {
         global $PAGE;
-        if($PAGE->pagetype == "mod-scorm-mod") {
+        if ($PAGE->pagetype == "mod-scorm-mod") {
             return FILE_INTERNAL;
         }
         else {
@@ -383,7 +384,6 @@ class repository_elevator extends repository
      */
 
     public static function get_type_option_names() {
-
         return array('apiKey', 'apiSecret','elevatorURL', 'pluginname');
     }
 

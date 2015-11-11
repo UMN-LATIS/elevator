@@ -119,7 +119,19 @@ class Search extends Instance_Controller {
 		if(count($searchArray) == 0) {
 			return;
 		}
-		$this->searchId = (string)$this->qb->save('searchArchive', $searchArray);
+
+		$searchArchive = new Entity\SearchEntry;
+		$searchArchive->setUser($this->user_model->user);
+		$searchArchive->setInstance($this->instance);
+		$searchArchive->setSearchText($searchArray['searchText']);
+		$searchArchive->setSearchData($searchArray);
+		$searchArchive->setCreatedAt(new DateTime());
+		$searchArchive->setUserInitiated(false);
+
+		$this->doctrine->em->persist($searchArchive);
+		$this->doctrine->em->flush();
+		$this->searchId = $searchArchive->getId();
+
 		instance_redirect("search#".$this->searchId);
 	}
 
@@ -129,8 +141,17 @@ class Search extends Instance_Controller {
 		}
 
 		$searchArray["searchText"] = rawurldecode($searchString);
+		$searchArchive = new Entity\SearchEntry;
+		$searchArchive->setUser($this->user_model->user);
+		$searchArchive->setInstance($this->instance);
+		$searchArchive->setSearchText($searchArray['searchText']);
+		$searchArchive->setSearchData($searchArray);
+		$searchArchive->setCreatedAt(new DateTime());
+		$searchArchive->setUserInitiated(false);
 
-		$this->searchId = (string)$this->qb->save('searchArchive', $searchArray);
+		$this->doctrine->em->persist($searchArchive);
+		$this->doctrine->em->flush();
+		$this->searchId = $searchArchive->getId();
 		instance_redirect("search#".$this->searchId);
 	}
 
@@ -196,10 +217,14 @@ class Search extends Instance_Controller {
 		$objectId = $this->input->post("objectId");
 		$this->load->model("search_model");
 
-		$searchArray = $this->qb->where(['_id'=>new MongoId($searchId)])->getOne("searchArchive");
+
+		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
+		$searchArray = $searchArchiveEntry->getSearchData();
+
 		$searchArray['highlightForObject'] = $objectId;
 
 		$matchArray = $this->search_model->find($searchArray, true);
+
 		$highlightArray = array();
 
 		if(isset($matchArray['highlight'])) {
@@ -209,6 +234,7 @@ class Search extends Instance_Controller {
 					foreach ($entry as $individualEntry) {
 						// we know the last thing in a relevant highlight will be the object id we need
 						// if we end up with other cruft here, it doesn't matter - the client will discard it.
+
 						$potentialObject = substr($individualEntry, strrpos($individualEntry, ' ') + 1);
 						if(strlen($potentialObject) == 24)  {
 							$highlightArray[] = $potentialObject;
@@ -218,6 +244,7 @@ class Search extends Instance_Controller {
 				}
 			}
 		}
+
 		$returnArray = array();
 
 		if(count($highlightArray)>1) {
@@ -236,6 +263,7 @@ class Search extends Instance_Controller {
 
 
 	public function searchResults($searchId=null, $page=0, $loadAll = false) {
+
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		$loadAll = ($loadAll == "true")?true:false;
@@ -326,16 +354,11 @@ class Search extends Instance_Controller {
 
 		$showHidden = false;
 
-
 		if($searchId) {
 			$this->searchId = $searchId;
 			if(!isset($searchArray)) {
-				// we'll load our search from mongo
-				$searchArray = $this->qb->where(['_id'=>new MongoId($this->searchId)])->getOne("searchArchive");
-			}
-			else {
-				// add the _id to the search so we update it
-				$searchArray["_id"] = new MongoId($this->searchId);
+				$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
+				$searchArray = $searchArchiveEntry->getSearchData();
 			}
 		}
 
@@ -357,12 +380,29 @@ class Search extends Instance_Controller {
 		}
 
 		$searchArray["searchDate"] = new \DateTime("now");
-		$this->searchId = (string)$this->qb->save('searchArchive', $searchArray);
 
-		if(!$this->input->post("suppressRecent")) {
-			$this->user_model->addRecentSearch($this->searchId, $searchArray["searchText"]);
+
+		if($searchId) {
+			$searchArchive = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
+		}
+		else {
+			$searchArchive = new Entity\SearchEntry;
 		}
 
+		$searchArchive->setUser($this->user_model->user);
+		$searchArchive->setInstance($this->instance);
+		$searchArchive->setSearchText($searchArray['searchText']);
+		$searchArchive->setSearchData($searchArray);
+		$searchArchive->setCreatedAt(new DateTime());
+		$searchArchive->setUserInitiated(false);
+		if(!$this->input->post("suppressRecent")) {
+			$searchArchive->setUserInitiated(true);
+		}
+
+		$this->doctrine->em->persist($searchArchive);
+		$this->doctrine->em->flush();
+
+		$this->searchId = $searchArchive->getId();
 
 		if($this->input->post("storeOnly") == true) {
 
@@ -373,7 +413,6 @@ class Search extends Instance_Controller {
 		$this->load->model("search_model");
 
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
-
 		$matchArray["searchId"] = $this->searchId;
 
 		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));

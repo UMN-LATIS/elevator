@@ -3,7 +3,7 @@ var MarkerSource;
 var MarkerTemplate;
 var cachedResults = "";
 var cachedDates = null;
-var searchId;
+var searchId = null;
 var currentPageNumber;
 var eventSource;
 var resultsAvailable = true;
@@ -87,14 +87,22 @@ function parseHash() {
 	}
 }
 
-function doSearch(searchId, pageNumber, loadAll) {
+// ignore results is used to force the server to pre-cache the next set of results
+function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 
-	previousEventComplete = false;
-	currentPageNumber = pageNumber;
+
+	if(!ignoreResults) {
+		previousEventComplete = false;
+		currentPageNumber = pageNumber;
+	}
+
 
 	loadAll = (loadAll)?"true":"false";
 
 	$.get(basePath + "search/searchResults/" + searchId + "/" + pageNumber + "/" + loadAll, function(data) {
+			if(ignoreResults) {
+				return;
+			}
 			var oldMatches = [];
 			try{
 				if(cachedResults) {
@@ -294,6 +302,12 @@ function populateSearchResults(searchObject) {
 		resultsAvailable = false;
 	}
 
+	// have the server precache the new results
+	if(searchId !== null) {
+		doSearch(searchId, currentPageNumber+1, false, true);
+	}
+
+
 }
 
 
@@ -382,7 +396,6 @@ function prepMap() {
 		$.goMap.clearMarkers();
 	}
 
-
 	$.each(cachedResults.matches, function(index, value) {
 		if(value.locations) {
 			$.each(value.locations, function (index2, value2) {
@@ -454,6 +467,7 @@ function prepTimeline() {
 //			"dateTimeFormat": "iso8601",
 			"events": []
 		};
+
 
 		$.each(cachedResults.matches, function(index, value) {
 			if(value.dates) {

@@ -5,6 +5,7 @@ class Upload extends Widget_base {
 
 	public $extractLocation;
 	public $extractDate;
+	public $enableTiling = false;
 
 	public function __construct()
 	{
@@ -20,7 +21,6 @@ class Upload extends Widget_base {
 				$this->$key = $entry;
 			}
 		}
-
 	}
 
 	public function getAsArray($nestedDepth=false) {
