@@ -56,9 +56,9 @@ class Doctrine
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
 
       // $cache = new ApcCache;
-        $config->setMetadataCacheImpl(new \Doctrine\Common\Cache\ApcCache());
-        $config->setQueryCacheImpl(new \Doctrine\Common\Cache\ApcCache());
-        $config->setResultCacheImpl(new \Doctrine\Common\Cache\ApcCache());
+      // $config->setMetadataCacheImpl($cache);
+      // $config->setQueryCacheImpl($cache);
+
         // $config->setQueryCacheImpl($cache);
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;

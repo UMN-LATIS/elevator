@@ -116,7 +116,7 @@
               <button type="button" class="btn btn-info mapToggle" data-toggle="collapse" data-target="#advancedSearchMap">Show Map</button>
             </div>
           </div>
-          <?=$this->load->view("mapSelector", ["mapId"=>"advancedSearchMap"], true)?>
+          <?=$this->load->view("mapSelector", ["mapId"=>"advancedSearchMap"])?>
           <hr>
           <div class="form-group">
             <label for="inputStartDate" class="col-sm-2 control-label">Between:</label>
@@ -140,7 +140,7 @@
 
               <select name="collection[]" id="collection" class="form-control">
                   <option value="0">All</option>
-                  <?=$this->load->view("collection_select_partial", ["selectCollection"=>NULL, "allowedCollections"=>$allowedCollections, "collections"=>$this->instance->getCollectionsWithoutParent()], true)?>
+                  <?=$this->load->view("collection_select_partial", ["selectCollection"=>NULL, "allowedCollections"=>$allowedCollections, "collections"=>$this->instance->getCollectionsWithoutParent()])?>
               </select>
             </div>
              <div class="col-sm-4">

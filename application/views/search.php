@@ -105,4 +105,4 @@ var Timeline_parameters='bundle=true';
 
 
 
-<?$this->load->view("handlebarsTemplates");?>
+<?=$this->load->view("handlebarsTemplates");

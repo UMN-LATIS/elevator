@@ -52,10 +52,10 @@ class search_model extends CI_Model {
 
 	public function addOrUpdate($asset) {
 
+
 		if(!$asset->assetTemplate || !$asset->assetTemplate->getIndexForSearching()) {
 			return;
 		}
-		$this->asset_model->enableObjectCache();
 
 		/** HACK
 		* for now, make sure we have a mapping each time we add a record
@@ -78,6 +78,7 @@ class search_model extends CI_Model {
 
 		// Update the index mapping
 		$this->es->indices()->putMapping($params);
+
 
  		$params = array();
 
@@ -124,6 +125,7 @@ class search_model extends CI_Model {
 						}
 						else {
 							$tempArray["endDate"]=-631139000000000000; // negative 20 billion years ago
+;
 						}
 						$dateArray[] = $tempArray;
 
@@ -134,6 +136,7 @@ class search_model extends CI_Model {
 
 			}
 		}
+
 
     	/**
     	 * special case upload data, no levels deep
@@ -147,19 +150,19 @@ class search_model extends CI_Model {
 			foreach($uploads as $upload) {
 				foreach($upload->fieldContentsArray as $uploadContent) {
 
-					if($uploadContent->hasContents() && $uploadContent->getSearchData() != "") {
+					if($uploadContent->hasContents() && $uploadContent->searchData != "") {
 
-						$uploadContentArray[] = $uploadContent->getSearchData();
+						$uploadContentArray[] = $uploadContent->searchData;
 						$uploadContent->searchData = "";
 					}
-					if($uploadContent->hasContents() && $uploadContent->getLocationData() != "") {
+					if($uploadContent->hasContents() && $uploadContent->locationData != "") {
 
-						$locationDataArray[] = $uploadContent->getLocationData();
+						$locationDataArray[] = $uploadContent->locationData;
 						$uploadContent->locationData = "";
 					}
-					if($uploadContent->hasContents() && $uploadContent->getDateData() != "") {
+					if($uploadContent->hasContents() && $uploadContent->dateData != "") {
 						$tempArray = array();
-						$tempArray["startDate"]=intval(strtotime($uploadContent->getDateData()));
+						$tempArray["startDate"]=intval(strtotime($uploadContent->dateData));
 						$tempArray["endDate"]=-631139000000000000; // negative 20 billion years ago
 						$dateDataArray[] = $tempArray;
 						$uploadContent->dateData = "";
@@ -179,6 +182,7 @@ class search_model extends CI_Model {
 			}
 
 		}
+
 
     	$fileTypes = $asset->getAllWithinAsset("Upload",null, 1);
 		$fileTypeArray = array();
@@ -222,7 +226,7 @@ class search_model extends CI_Model {
     	$params['id']    = $asset->getObjectId();
 
     	$ret = $this->es->index($params);
-    	$this->asset_model->disableObjectCache();
+
 
 	}
 
@@ -317,12 +321,7 @@ class search_model extends CI_Model {
 
 			}
 			else {
-				if(is_array($searchArray['templateId'])) {
-					$filter[]['terms']['templateId'] = $searchArray['templateId'];
-				}
-				else {
-					$filter[]['terms']['templateId'] = [$searchArray['templateId']];
-				}
+				$filter[]['terms']['templateId'] = [$searchArray['templateId']];
 			}
 
 		}
@@ -464,10 +463,9 @@ class search_model extends CI_Model {
 
 
     	$searchParams['fields'] = "_id";
-// $this->logging->logError("Query Params", $searchParams);
+ // $this->logging->logError("Query Params", $searchParams);
 
     	$queryResponse = $this->es->search($searchParams);
-
 
  // $this->logging->logError("Query Response", $queryResponse);
 
@@ -554,13 +552,7 @@ class search_model extends CI_Model {
 
 		$collections = array();
 		if($templateId) {
-			if(is_array($templateId)) {
-				$filter[]['terms']['templateId'] = $templateId;
-			}
-			else {
-				$filter[]['terms']['templateId'] = [$templateId];
-			}
-
+			$filter[]['terms']['templateId'] = [$templateId];
 		}
 
 
@@ -579,7 +571,7 @@ class search_model extends CI_Model {
     	$searchParams['fields'] = $fieldTitle;
     	$searchParams['size'] = 10;
 
-    	// $this->logging->logError("params", $searchParams);
+
 		$queryResponse = $this->es->search($searchParams);
 
     	$termArray = array();
@@ -611,7 +603,6 @@ class search_model extends CI_Model {
 
 		$resultsArray = array();
 
-		$this->asset_model->enableObjectCache();
 		foreach($matchArray["searchResults"] as $match) {
 			$asset = new Asset_model;
 
@@ -626,27 +617,11 @@ class search_model extends CI_Model {
 				array_unshift($resultsArray, $asset->getSearchResultEntry());
 			}
 			else {
-				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->setNamespace('searchCache_');
-					if($storedObject = $this->doctrineCache->fetch($match)) {
-
-					}
-					else {
-						$storedObject = $asset->getSearchResultEntry();
-						if($this->config->item('enableCaching')) {
-							$this->doctrineCache->save($match, $storedObject, 900);
-						}
-					}
-				}
-				else {
-					$storedObject = $asset->getSearchResultEntry();
-				}
-				$resultsArray[] = $storedObject;
-
+				$resultsArray[] = $asset->getSearchResultEntry();
 			}
 			unset($asset);
 		}
-		$this->asset_model->disableObjectCache();
+
 		$matchArray['matches'] = $resultsArray;
 		$matchArray["success"] = true;
 		$matchArray["searchEntry"] = $searchArray;

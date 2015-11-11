@@ -38,9 +38,9 @@ class Transcoder extends CI_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+		$this->qb = new \MongoQB\Builder(array('dsn'   =>  $this->config->item('mongoDSN')));
 		$this->pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 		$this->serverId = $this->getMacLinux();
-		$this->config->set_item("enableCaching", false);
 		$this->doctrine->extendTimeout();
 	}
 
@@ -196,7 +196,7 @@ class Transcoder extends CI_Controller {
 				echo "exiting run due to memory limit";
 				exit;
 			}
-			$this->doctrine->em->clear();
+
 			sleep(1);
 		}
 	}

@@ -2,6 +2,8 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * User
  */
@@ -80,12 +82,12 @@ class User
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $recent_searches;
+    private $recent_collections;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $recent_collections;
+    private $recent_searches;
 
     /**
      * @var \Entity\User
@@ -98,25 +100,19 @@ class User
     private $instance;
 
     /**
-     * @var \Entity\Instance
-     */
-    private $apiInstance;
-
-    /**
      * Constructor
      */
     public function __construct()
     {
         $this->recent_drawers = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->recent_searches = new \Doctrine\Common\Collections\ArrayCollection();
         $this->recent_collections = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->recent_searches = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
      * Set emplid
      *
      * @param string $emplid
-     *
      * @return User
      */
     public function setEmplid($emplid)
@@ -129,7 +125,7 @@ class User
     /**
      * Get emplid
      *
-     * @return string
+     * @return string 
      */
     public function getEmplid()
     {
@@ -140,7 +136,6 @@ class User
      * Set username
      *
      * @param string $username
-     *
      * @return User
      */
     public function setUsername($username)
@@ -153,7 +148,7 @@ class User
     /**
      * Get username
      *
-     * @return string
+     * @return string 
      */
     public function getUsername()
     {
@@ -164,7 +159,6 @@ class User
      * Set userType
      *
      * @param string $userType
-     *
      * @return User
      */
     public function setUserType($userType)
@@ -177,7 +171,7 @@ class User
     /**
      * Get userType
      *
-     * @return string
+     * @return string 
      */
     public function getUserType()
     {
@@ -188,7 +182,6 @@ class User
      * Set email
      *
      * @param string $email
-     *
      * @return User
      */
     public function setEmail($email)
@@ -201,7 +194,7 @@ class User
     /**
      * Get email
      *
-     * @return string
+     * @return string 
      */
     public function getEmail()
     {
@@ -212,7 +205,6 @@ class User
      * Set displayName
      *
      * @param string $displayName
-     *
      * @return User
      */
     public function setDisplayName($displayName)
@@ -225,7 +217,7 @@ class User
     /**
      * Get displayName
      *
-     * @return string
+     * @return string 
      */
     public function getDisplayName()
     {
@@ -236,7 +228,6 @@ class User
      * Set fastUpload
      *
      * @param boolean $fastUpload
-     *
      * @return User
      */
     public function setFastUpload($fastUpload)
@@ -249,7 +240,7 @@ class User
     /**
      * Get fastUpload
      *
-     * @return boolean
+     * @return boolean 
      */
     public function getFastUpload()
     {
@@ -260,7 +251,6 @@ class User
      * Set password
      *
      * @param string $password
-     *
      * @return User
      */
     public function setPassword($password)
@@ -273,7 +263,7 @@ class User
     /**
      * Get password
      *
-     * @return string
+     * @return string 
      */
     public function getPassword()
     {
@@ -284,7 +274,6 @@ class User
      * Set isSuperAdmin
      *
      * @param boolean $isSuperAdmin
-     *
      * @return User
      */
     public function setIsSuperAdmin($isSuperAdmin)
@@ -297,7 +286,7 @@ class User
     /**
      * Get isSuperAdmin
      *
-     * @return boolean
+     * @return boolean 
      */
     public function getIsSuperAdmin()
     {
@@ -308,7 +297,6 @@ class User
      * Set hasExpiry
      *
      * @param boolean $hasExpiry
-     *
      * @return User
      */
     public function setHasExpiry($hasExpiry)
@@ -321,7 +309,7 @@ class User
     /**
      * Get hasExpiry
      *
-     * @return boolean
+     * @return boolean 
      */
     public function getHasExpiry()
     {
@@ -332,7 +320,6 @@ class User
      * Set expires
      *
      * @param \DateTime $expires
-     *
      * @return User
      */
     public function setExpires($expires)
@@ -345,7 +332,7 @@ class User
     /**
      * Get expires
      *
-     * @return \DateTime
+     * @return \DateTime 
      */
     public function getExpires()
     {
@@ -356,7 +343,6 @@ class User
      * Set createdAt
      *
      * @param \DateTime $createdAt
-     *
      * @return User
      */
     public function setCreatedAt($createdAt)
@@ -369,7 +355,7 @@ class User
     /**
      * Get createdAt
      *
-     * @return \DateTime
+     * @return \DateTime 
      */
     public function getCreatedAt()
     {
@@ -380,7 +366,6 @@ class User
      * Set modifiedAt
      *
      * @param \DateTime $modifiedAt
-     *
      * @return User
      */
     public function setModifiedAt($modifiedAt)
@@ -393,7 +378,7 @@ class User
     /**
      * Get modifiedAt
      *
-     * @return \DateTime
+     * @return \DateTime 
      */
     public function getModifiedAt()
     {
@@ -403,7 +388,7 @@ class User
     /**
      * Get id
      *
-     * @return integer
+     * @return integer 
      */
     public function getId()
     {
@@ -411,33 +396,32 @@ class User
     }
 
     /**
-     * Add recentDrawer
+     * Add recent_drawers
      *
-     * @param \Entity\RecentDrawer $recentDrawer
-     *
+     * @param \Entity\RecentDrawer $recentDrawers
      * @return User
      */
-    public function addRecentDrawer(\Entity\RecentDrawer $recentDrawer)
+    public function addRecentDrawer(\Entity\RecentDrawer $recentDrawers)
     {
-        $this->recent_drawers[] = $recentDrawer;
+        $this->recent_drawers[] = $recentDrawers;
 
         return $this;
     }
 
     /**
-     * Remove recentDrawer
+     * Remove recent_drawers
      *
-     * @param \Entity\RecentDrawer $recentDrawer
+     * @param \Entity\RecentDrawer $recentDrawers
      */
-    public function removeRecentDrawer(\Entity\RecentDrawer $recentDrawer)
+    public function removeRecentDrawer(\Entity\RecentDrawer $recentDrawers)
     {
-        $this->recent_drawers->removeElement($recentDrawer);
+        $this->recent_drawers->removeElement($recentDrawers);
     }
 
     /**
-     * Get recentDrawers
+     * Get recent_drawers
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getRecentDrawers()
     {
@@ -445,67 +429,32 @@ class User
     }
 
     /**
-     * Add recentSearch
+     * Add recent_collections
      *
-     * @param \Entity\SearchEntry $recentSearch
-     *
+     * @param \Entity\RecentCollection $recentCollections
      * @return User
      */
-    public function addRecentSearch(\Entity\SearchEntry $recentSearch)
+    public function addRecentCollection(\Entity\RecentCollection $recentCollections)
     {
-        $this->recent_searches[] = $recentSearch;
+        $this->recent_collections[] = $recentCollections;
 
         return $this;
     }
 
     /**
-     * Remove recentSearch
+     * Remove recent_collections
      *
-     * @param \Entity\SearchEntry $recentSearch
+     * @param \Entity\RecentCollection $recentCollections
      */
-    public function removeRecentSearch(\Entity\SearchEntry $recentSearch)
+    public function removeRecentCollection(\Entity\RecentCollection $recentCollections)
     {
-        $this->recent_searches->removeElement($recentSearch);
+        $this->recent_collections->removeElement($recentCollections);
     }
 
     /**
-     * Get recentSearches
+     * Get recent_collections
      *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getRecentSearches()
-    {
-        return $this->recent_searches;
-    }
-
-    /**
-     * Add recentCollection
-     *
-     * @param \Entity\RecentCollection $recentCollection
-     *
-     * @return User
-     */
-    public function addRecentCollection(\Entity\RecentCollection $recentCollection)
-    {
-        $this->recent_collections[] = $recentCollection;
-
-        return $this;
-    }
-
-    /**
-     * Remove recentCollection
-     *
-     * @param \Entity\RecentCollection $recentCollection
-     */
-    public function removeRecentCollection(\Entity\RecentCollection $recentCollection)
-    {
-        $this->recent_collections->removeElement($recentCollection);
-    }
-
-    /**
-     * Get recentCollections
-     *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return \Doctrine\Common\Collections\Collection 
      */
     public function getRecentCollections()
     {
@@ -513,10 +462,42 @@ class User
     }
 
     /**
+     * Add recent_searches
+     *
+     * @param \Entity\RecentSearch $recentSearches
+     * @return User
+     */
+    public function addRecentSearch(\Entity\RecentSearch $recentSearches)
+    {
+        $this->recent_searches[] = $recentSearches;
+
+        return $this;
+    }
+
+    /**
+     * Remove recent_searches
+     *
+     * @param \Entity\RecentSearch $recentSearches
+     */
+    public function removeRecentSearch(\Entity\RecentSearch $recentSearches)
+    {
+        $this->recent_searches->removeElement($recentSearches);
+    }
+
+    /**
+     * Get recent_searches
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getRecentSearches()
+    {
+        return $this->recent_searches;
+    }
+
+    /**
      * Set createdBy
      *
      * @param \Entity\User $createdBy
-     *
      * @return User
      */
     public function setCreatedBy(\Entity\User $createdBy = null)
@@ -529,7 +510,7 @@ class User
     /**
      * Get createdBy
      *
-     * @return \Entity\User
+     * @return \Entity\User 
      */
     public function getCreatedBy()
     {
@@ -540,7 +521,6 @@ class User
      * Set instance
      *
      * @param \Entity\Instance $instance
-     *
      * @return User
      */
     public function setInstance(\Entity\Instance $instance = null)
@@ -553,12 +533,17 @@ class User
     /**
      * Get instance
      *
-     * @return \Entity\Instance
+     * @return \Entity\Instance 
      */
     public function getInstance()
     {
         return $this->instance;
     }
+    /**
+     * @var \Entity\Instance
+     */
+    private $apiInstance;
+
 
     /**
      * Set apiInstance

@@ -1,34 +1,4 @@
-<script>
 
-var bucketCreationCallback = function(accessKey, secretKey, bucketName, bucketRegion) {
-	$("#inputAmazonS3Key").val(accessKey);
-	$("#inputAmazonS3Secret").val(secretKey);
-	$("#inputDefaultBucket").val(bucketName);
-	$("#inputBucketRegion").val(bucketRegion);
-}
-
-$(document).ready(function() {
-	$(".s3control").on("change", function() {
-		var notEmpty = false;
-		$(".s3control").each(function() {
-			if($(this).val() != "") {
-				notEmpty = true;
-			}
-		});
-
-		if(notEmpty) {
-			$(".bucketButton").attr("disabled", true);
-		}
-		else {
-			$(".bucketButton").attr("disabled", false);
-		}
-
-	});
-
-	$(".s3control").trigger('change');
-});
-
-</script>
 
 <?if($instance->getId()):?>
 <input type=hidden name="instanceId" value="<?=$instance->getId()?>">
@@ -56,27 +26,16 @@ $(document).ready(function() {
 </div>
 
 <div class="form-group">
-	<div class="col-sm-6 col-sm-offset-2">
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary btn-sm bucketButton" data-toggle="modal" data-target="#bucketCreationModal">
-	Create new bucket
-</button>
-	</div>
-</div>
-
-
-
-<div class="form-group">
 	<label for="inputAmazonS3Key" class="col-sm-2 control-label">Amazon S3 Key:</label>
 	<div class="col-sm-6">
-		<input type="text" name="amazonS3Key" id="inputAmazonS3Key" class="form-control s3control" value="<?= $instance->getAmazonS3Key(); ?>">
+		<input type="text" name="amazonS3Key" id="inputAmazonS3Key" class="form-control" value="<?= $instance->getAmazonS3Key(); ?>">
 	</div>
 </div>
 
 <div class="form-group">
 	<label for="inputAmazonS3Secret" class="col-sm-2 control-label">Amazon S3 Secret:</label>
 	<div class="col-sm-6">
-		<input type="text" name="amazonS3Secret" id="inputAmazonS3Secret" class="form-control s3control" value="<?= $instance->getAmazonS3Secret(); ?>">
+		<input type="text" name="amazonS3Secret" id="inputAmazonS3Secret" class="form-control" value="<?= $instance->getAmazonS3Secret(); ?>">
 	</div>
 </div>
 
@@ -104,7 +63,7 @@ $(document).ready(function() {
 <div class="form-group">
 	<label for="inputDefaultBucket" class="col-sm-2 control-label">Default Bucket:</label>
 	<div class="col-sm-6">
-		<input type="text" name="defaultBucket" id="inputDefaultBucket" class="form-control s3control" value="<?= $instance->getDefaultBucket(); ?>">
+		<input type="text" name="defaultBucket" id="inputDefaultBucket" class="form-control" value="<?= $instance->getDefaultBucket(); ?>">
 	</div>
 </div>
 

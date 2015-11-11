@@ -22,7 +22,7 @@ class api_drawers extends API_Controller {
 	public function getContentsOfDrawer($drawerId, $pageNumber=0, $mimeType=null)
 	{
 		// pagenumber is disregarded.
-		require_once("application/controllers/Drawers.php");
+		require_once("application/controllers/drawers.php");
 		ob_start();
 		Drawers::getDrawer($drawerId);
 		$results = ob_get_contents();

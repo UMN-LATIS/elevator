@@ -382,16 +382,60 @@ class User_model extends CI_Model {
 
 		$this->doctrine->em->flush();
 
-		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->userId);
-		}
+		$this->cache->delete("userCache_" . $this->userId);
 
 		$this->recentDrawers = null;
 		$this->getRecentDrawers();
 
 	}
 
+/**
+	 * FIFO capped
+	 * @param [recentsearch entity] $drawer [description]
+	 */
+	public function addRecentSearch($searchId, $searchText) {
+
+		if(!$this->user) {
+			return;
+		}
+
+		if(!is_array($this->recentSearches)) {
+			$this->getRecentSearches();
+		}
+
+		foreach($this->recentSearches as $recentSearch) {
+			if($recentSearch->getSearchId() == $searchId) {
+				$recentSearch->setSearchText($searchText);
+				$this->doctrine->em->persist($recentSearch);
+				return;
+			}
+		}
+
+		if(count($this->recentSearches)>=$this->maxRecents) {
+			$recentSearch= reset($this->recentSearches);
+			$this->user->removeRecentSearch($recentSearch);
+		}
+
+
+
+		$recentSearch = new Entity\RecentSearch();
+
+		$recentSearch->setSearchId($searchId);
+		$recentSearch->setSearchText($searchText);
+		$recentSearch->setUser($this->user);
+		$recentSearch->setCreatedAt(new DateTime());
+		$recentSearch->setInstance($this->instance);
+		$this->user->addRecentSearch($recentSearch);
+
+		$this->doctrine->em->persist($this->user);
+
+		$this->doctrine->em->flush();
+
+		$this->cache->delete("userCache_" . $this->userId);
+		$this->recentSearches = null;
+		$this->getRecentSearches();
+
+	}
 
 	/**
 	 * [addRecentCollection description]
@@ -430,11 +474,7 @@ class User_model extends CI_Model {
 
 		$this->doctrine->em->flush();
 
-		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->userId);
-		}
-
+		$this->cache->delete("userCache_" . $this->userId);
 		$this->recentCollections= null;
 		$this->getRecentCollections();
 	}
@@ -520,11 +560,14 @@ class User_model extends CI_Model {
 	{
 		if($this->recentSearches == null && $this->user) {
 
-			$recentSearches = $this->doctrine->em->getRepository("Entity\SearchEntry")->findBy(["instance"=>$this->instance, "user"=>$this->user_model->user, "userInitiated"=>true], ["createdAt"=>"desc"], 5,0);
-
+			$recentSearches = $this->user->getRecentSearches();
 			$this->recentSearches = array();
 			if(count($recentSearches) > 0) {
-				$this->recentSearches = $recentSearches;
+				foreach($recentSearches as $search) {
+					if($search->getInstance() == $this->instance) {
+						$this->recentSearches[] = $search;
+					}
+				}
 			}
 
 		}

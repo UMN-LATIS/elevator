@@ -7,8 +7,7 @@ class Asset_model extends CI_Model {
 	 * @var array of strings
 	 */
 	private $objectId;
-	public $objectCache = array();
-	public $useObjectCaching = false;
+
 	/**
 	 * These are the values that are valid for all items, regardless of metadata schema.  In a relational database, these would be columns.
 	 */
@@ -18,8 +17,6 @@ class Asset_model extends CI_Model {
 	public $assetObjects = array();
 	public $templateId = null;
 	public $forceCollection = false;
-	public $assetObject = null;
-
 
 	public function __construct($objectId=null)
 	{
@@ -33,23 +30,8 @@ class Asset_model extends CI_Model {
 	 * special handy getter for objectId
 	 */
 	public function getObjectId() {
-		if(isset($this->assetObject)) {
-			return $this->assetObject->getAssetId();
-		}
-		else {
-			return false;
-		}
+		return $this->objectId;
 	}
-
-	public function getIndexId() {
-		if(isset($this->assetObject)) {
-			return $this->assetObject->getId();
-		}
-		else {
-			return false;
-		}
-	}
-
 
 	public function getGlobalValue($globalValue) {
 		if(isset($this->globalValues[$globalValue])) {
@@ -68,28 +50,16 @@ class Asset_model extends CI_Model {
 
 
 	/**
-	 * if we've got a full postgres record, we can instantiate an object from that without having to
+	 * if we've got a full mongo record, we can instantiate an object from that without having to
 	 * go back to the DB.
 	 */
-	public function loadAssetFromRecord($record=null) {
-		if(!$record) {
-			return;
-		}
-		$this->assetObject = $record;
+	public function loadAssetFromRecord($record) {
 
-		$this->templateId = $record->getTemplateId();
-		$this->setGlobalValue("readyForDisplay", $record->getReadyForDisplay());
-		$this->setGlobalValue("templateId", $record->getTemplateId());
-		$this->setGlobalValue("collectionId", $record->getCollectionId());
-		$this->setGlobalValue("availableAfter", $record->getAvailableAfter());
-		$this->setGlobalValue("modified", $record->getModifiedAt());
-		$this->setGlobalValue("modifiedBy", $record->getModifiedBy());
-		$this->setGlobalValue("cachedUploadCount", $record->getCachedUploadCount());
-		$this->setGlobalValue("cachedLocationData", $record->getCachedLocationData());
-		$this->setGlobalValue("cachedDateData", $record->getCachedDateData());
-		$this->setGlobalValue("cachedPrimaryFileHandler", $record->getCachedPrimaryFileHandler());
+		$this->objectId = (string)$record["_id"];
 
-		if($this->loadWidgetsFromArray($record->getWidgets())) {
+		$this->templateId = $record['templateId'];
+
+		if($this->loadDataFromObject($record)) {
 			return TRUE;
 		}
 		else {
@@ -99,43 +69,26 @@ class Asset_model extends CI_Model {
 
 
 	public function loadAssetById($objectId) {
-		if($this->asset_model->useObjectCaching == true) {
-			if(array_key_exists($objectId, $this->asset_model->objectCache)) {
-				return $this->asset_model->objectCache[$objectId];
-			}
 
+		try {
+			$mongoId = new MongoId($objectId);
 		}
+		catch (MongoException $ex) {
+			return FALSE;
+		}
+		$this->objectId = $objectId;
 
-		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
+		$asset = $this->qb->where(['_id'=>$mongoId])->getOne($this->config->item('mongoCollection'));
 
 		if(!isset($asset)) {
 			return FALSE;
 		}
-		$this->assetObject = $asset;
+
 
 		$this->loadAssetFromRecord($asset);
-		if($this->asset_model->useObjectCaching == true) {
-			$this->asset_model->objectCache[$objectId] = $this;
-		}
+
 		return TRUE;
 	}
-
-
-	/**
-	 * Methods for working with our internal object cache.
-	 * The idea is that on read-only operations, we should make sure we don't load the same object repeatedly
-	 * (for example, an asset with nested records)
-	 */
-
-	public function enableObjectCache() {
-		$this->asset_model->useObjectCaching = true;
-	}
-
-	public function disableObjectCache() {
-		$this->asset_model->useObjectCaching = false;
-		$this->asset_model->objectCache = array();
-	}
-
 
 	/**
 	 * @param  [type]  $type           The type of asset (using widget class) that you want to find
@@ -212,6 +165,7 @@ class Asset_model extends CI_Model {
 	 * @return [type]        [description]
 	 */
 	private function findPrimaryWithinAsset($asset, $type) {
+
 		$widgetArray = $this->getAllWithinAsset($type,$asset,0);
 		if(count($widgetArray)>0) {
 			foreach($widgetArray as $widget) {
@@ -224,7 +178,6 @@ class Asset_model extends CI_Model {
 		}
 
 		$widgetArray = $this->getAllWithinAsset($type,$asset,1);
-
 		if(count($widgetArray)>0) {
 			foreach($widgetArray as $widget) {
 				foreach($widget->fieldContentsArray as $fieldContents) {
@@ -236,7 +189,6 @@ class Asset_model extends CI_Model {
 		}
 
 
-
 		/**
 		 * This template doesn't have any upload widgets, return false
 		 */
@@ -244,99 +196,63 @@ class Asset_model extends CI_Model {
 		return FALSE;
 	}
 
-
 	/**
 	 * Find "the" preview for this asset - if we have an upload widget attached, get the primary item there.  If we don't, search all
 	 * our nested assets to find the most primary (we may have multiple equally ranked ones, if so, pick one and hope the user doesn't
 	 * complain too much.)
 	 * @return [type] [description]
 	 */
-	public function getPrimaryFilehandler($tryCache = true) {
-		$fileHandler = NULL;
-		if($tryCache && $fileHandlerId = $this->getGlobalValue("cachedPrimaryFileHandler")) {
-			$fileHandler = $this->filehandler_router->getHandledObject($fileHandlerId);
-		}
-		else {
-			$contents = null;
-			$foundPrimary = FALSE;
+	public function getPrimaryFilehandler() {
 
-			if(!$contents = $this->findPrimaryWithinAsset($this, "Upload")) {
+		$contents = null;
+		$foundPrimary = FALSE;
+		if(!$contents = $this->findPrimaryWithinAsset($this, "Upload")) {
 			// no first tier primary, try nested - first see if the primary related has an image.
-				$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
-				foreach($relatedArray as $asset) {
-
-					foreach($asset->fieldContentsArray as $fieldContents) {
-						if(!$asset->getAllowMultiple() || $fieldContents->isPrimary) {
-							$contents = $this->findPrimaryWithinAsset($fieldContents->getRelatedAsset(), "Upload");
-							if(!$contents) {
-								$contents = $this->getFirstWithinAsset($fieldContents->getRelatedAsset(), "Upload");
-							}
-							else {
-								$foundPrimary = true;
-								break;
-							}
+			$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
+			foreach($relatedArray as $asset) {
+				foreach($asset->fieldContentsArray as $fieldContents) {
+					if(!$asset->getAllowMultiple() || $fieldContents->isPrimary) {
+						$contents = $this->findPrimaryWithinAsset($fieldContents->getRelatedAsset(), "Upload");
+						if(!$contents) {
+							$contents = $this->getFirstWithinAsset($fieldContents->getRelatedAsset(), "Upload");
+						}
+						else {
+							$foundPrimary = true;
+							break;
 						}
 					}
-					if($foundPrimary) {
-						break;
-					}
 				}
-
-				if(!$contents) {
-					$contents = $this->getFirstWithinAsset($this, "Upload");
+				if($foundPrimary) {
+					break;
 				}
 			}
 
-			if($contents) {
-				if(!$contents->getFileHandler()) {
-					throw new Exception("no file handler attached");
-					return null;
-				}
-				$fileHandler = $contents->getFileHandler();
+			if(!$contents) {
+				$contents = $this->getFirstWithinAsset($this, "Upload");
 			}
 		}
 
 
-		if($fileHandler) {
-			return $fileHandler;
-		}
-		else {
-			throw new Exception('Primary File Handler Not Found');
-			return NULL;
-		}
-		return NULL;
-	}
-
-	public function createObjectFromJSON($json) {
-		if(!isset($this->assetObject)) {
-			$this->assetObject = new Entity\Asset;
-		}
-
-		$this->templateId = $json['templateId'];
 
 
-		foreach($this->globalValues as $key=>$value) {
-			if(isset($json[$key])) {
-				$this->globalValues[$key] = $json[$key];
-				if($json[$key] === "on") { // deal with checkboxes for global values from the browser
-					$this->globalValues[$key] = true;
-				}
+		if($contents) {
+			if(!isset($contents->fileHandler)) {
+				throw new Exception("no file handler attached");
+				return null;
+			}
+			$fileHandler = $contents->fileHandler;
+			if($fileHandler) {
+
+				return $fileHandler;
 			}
 			else {
-				$this->globalValues[$key] = null;
+				throw new Exception('Primary File Handler Not Found');
+				return NULL;
 			}
 		}
-
-
-		if(is_string($this->globalValues["availableAfter"]) && strlen($this->globalValues["availableAfter"])>5) {
-			date_default_timezone_set('UTC');
-			$this->globalValues["availableAfter"] = new DateTime($this->globalValues["availableAfter"]);
-		}
-
-		$this->loadWidgetsFromArray($json);
-
+		throw new Exception('No File Handlers Found');
+		return NULL;
 	}
-
 
 	/**
 	 * Build an object from a json representation.
@@ -344,16 +260,13 @@ class Asset_model extends CI_Model {
 	 * @param  [type] $jsonData [description]
 	 * @return [type]           [description]
 	 */
-	public function loadWidgetsFromArray($jsonData) {
-		// echo json_encode($jsonData);
-		// die;
+	public function loadDataFromObject($jsonData) {
 		if(!$this->templateId) {
 			return false;
 		}
 		# get the template for this asset, it contains the widgets
 		$this->assetTemplate = $this->asset_template->getTemplate($this->templateId);
 		$populatedWidgetArray = array();
-
 		# go through all the widgets from the template, see if they're set in the jsonData
 		foreach($this->assetTemplate->widgetArray as $widget) {
 			$widgetKey = $widget->getFieldTitle();
@@ -401,13 +314,33 @@ class Asset_model extends CI_Model {
 		 */
 		$this->sortBy('viewOrder');
 
+		foreach($this->globalValues as $key=>$value) {
+			if(isset($jsonData[$key])) {
+				$this->globalValues[$key] = $jsonData[$key];
+				if($jsonData[$key] === "on") { // deal with checkboxes for global values from the browser
+					$this->globalValues[$key] = true;
+				}
+			}
+			else {
+				$this->globalValues[$key] = null;
+			}
+		}
+
+		if(is_string($this->globalValues["availableAfter"])) {
+			date_default_timezone_set('UTC');
+			$this->globalValues["availableAfter"] = new MongoDate(strtotime($this->globalValues["availableAfter"]));
+		}
 
 		return TRUE;
 	}
 
 
-	public function getWidgetArray($nestedDepth=0, $useTemplateTitles=false) {
+	/**
+	 * serialize the asset as an array.  This array should contain all the data necessary to reconstruct
+	 * this asset (this is what's stored in the DB)
+	 */
 
+	function getAsArray($nestedDepth=false, $useTemplateTitles=false) {
 		$outputObject = array();
 		foreach($this->assetObjects as $assetKey=>$assetObject) {
 			if($assetObject->hasContents()) {
@@ -421,16 +354,6 @@ class Asset_model extends CI_Model {
 				$outputObject[$outputKey] = $assetObject->getAsArray($nestedDepth);
 			}
 		}
-		return $outputObject;
-	}
-
-	/**
-	 * serialize the asset as an array.  This array should contain all the data necessary to reconstruct
-	 * this asset (this is what's stored in the DB)
-	 */
-
-	function getAsArray($nestedDepth=0, $useTemplateTitles=false) {
-		$outputObject = $this->getWidgetArray($nestedDepth, $useTemplateTitles);
 
 		foreach($this->globalValues as $key=>$value) {
 			if($key == "templateId" || $key == "collectionId") {
@@ -441,6 +364,21 @@ class Asset_model extends CI_Model {
 			}
 
 		}
+		return $outputObject;
+	}
+
+	function getAsText($nestedDepth=false) {
+		$outputObject = array();
+		foreach($this->assetObjects as $assetKey=>$assetObject) {
+			if($assetObject->getSearchable() && $assetObject->hasContents()) {
+				$outputObject[$assetKey] = $assetObject->getAsText($nestedDepth);
+			}
+		}
+
+		foreach($this->globalValues as $key=>$value) {
+			$outputObject[$key] = $value;
+		}
+
 		return $outputObject;
 	}
 
@@ -481,8 +419,7 @@ class Asset_model extends CI_Model {
 				if(get_class($assetObject) == "Related_asset") {
 					$assetTitle = array();
 					foreach($assetObject->fieldContentsArray as $entry) {
-						$titleArray = $entry->getRelatedAsset()->getAssetTitle(true);
-						array_push($assetTitle, $titleArray);
+						array_push($assetTitle, $entry->getRelatedAsset()->getAssetTitle(true));
 					}
 
 				}
@@ -520,8 +457,7 @@ class Asset_model extends CI_Model {
 		$outputObject = array();
 		$foundFirst = false;
 		$uploadCount = 0;
-		$rootTitleArray = $this->getAssetTitle();
-		$outputObject['title'] = array_shift($rootTitleArray); // only show the first title
+		$outputObject['title'] = array_shift($this->getAssetTitle()); // only show the first title
 		foreach($this->assetObjects as $assetKey=>$assetObject) {
 			if($assetObject->getDisplayInPreview() && get_class($assetObject) != "Upload") {
 				$entryAsText = $assetObject->getArrayOfText(false);
@@ -598,11 +534,11 @@ class Asset_model extends CI_Model {
 					$fieldContent->extractLocation = $upload->extractLocation; // this is wrong, should use a method on the widget
 					$fieldContent->extractDate = $upload->extractDate;
 
-					if($fieldContent->getLocationData()) {
+					if($fieldContent->locationData) {
 						$entryArray[] = $fieldContent->getAsArray(false);
 
 					}
-					if($fieldContent->getDateData()) {
+					if($fieldContent->dateData) {
 						$dateArray[] = $fieldContent->getAsArray(false);
 					}
 				}
@@ -616,12 +552,20 @@ class Asset_model extends CI_Model {
 			}
 		}
 
-		$outputObject["objectId"] = $this->getObjectId();
+		$outputObject["objectId"] = $this->objectId;
 
 		try {
 			$fileHandler = false;
+			if($fileHandlerId = $this->getGlobalValue("cachedPrimaryFileHandler")) {
+				$fileHandler = $this->filehandler_router->getHandlerForObject($fileHandlerId);
+				if($fileHandler) {
+					$fileHandler->loadByObjectId($fileHandlerId);
+				}
+			}
 
-			$fileHandler = $this->getPrimaryFilehandler();
+			if(!$fileHandler) {
+				$fileHandler = $this->getPrimaryFilehandler();
+			}
 			$outputObject["primaryHandlerType"] = get_class($fileHandler);
 			$outputObject["primaryHandlerId"] = $fileHandler->getObjectId();
 			$outputObject["primaryHandlerThumbnail"] = $fileHandler->getPreviewThumbnail()->getURLForFile(true);
@@ -645,31 +589,19 @@ class Asset_model extends CI_Model {
 	 * parentarray is the ids of the parent in this chain so we don't recurse
 	 * @return [type] [description]
 	 */
-	public function save($reindex=true, $saveRevision=true) {
+	public function save($reindex=true) {
+		$arrayData = $this->getAsArray();
 
-		if(!isset($this->assetObject)) {
-			return false;
-		}
-		$oldAsset = null;
-		if($this->getObjectId() && $this->assetObject->getId()) {
-			$oldAsset = new Asset_model;
-        	$oldAsset->loadAssetById($this->getObjectId());
-        	$oldAssetObject = clone $oldAsset->assetObject;
-    	}
-
-    			$this->assetObject->setWidgets($this->getWidgetArray());
-
-		$this->assetObject->setModifiedAt(new DateTime());
-
+		$arrayData['modified'] = new \MongoDate();
 
 		if($this->user_model && isset($this->user_model->user)) {
-			$this->assetObject->setModifiedBy($this->user_model->getId());
-			if(!$this->assetObject->getCreatedBy()) {
-				$this->assetObject->setCreatedBy($this->user_model->getId());
+			$arrayData['modifiedBy'] = $this->user_model->getId();
+			if(!isset($arrayData['createdBy'])) {
+				$arrayData['createdBy'] = $this->user_model->getId();
 			}
 		}
 		else {
-			$this->assetObject->setModifiedBy(0);
+			$arrayData['modifiedBy'] = 0;
 		}
 
 		/**
@@ -689,12 +621,12 @@ class Asset_model extends CI_Model {
 			}
 		}
 
-		$this->assetObject->setCachedUploadCount($cachedUploadCount);
+		$arrayData['cachedUploadCount'] = $cachedUploadCount;
 
 		try {
-			$primaryFileHandler = $this->getPrimaryFilehandler(false);
+			$primaryFileHandler = $this->getPrimaryFilehandler();
 			if($primaryFileHandler) {
-				$this->assetObject->setCachedPrimaryFileHandler($primaryFileHandler->getObjectId());
+				$arrayData['cachedPrimaryFileHandler'] = $primaryFileHandler->getObjectId();
 			}
 		}
 		catch (Exception $e) {
@@ -711,7 +643,9 @@ class Asset_model extends CI_Model {
 				$locationArray[] = ["label"=>$location->getLabel(), "entries"=>$location->getAsArray(false)];
 			}
 		}
-		$this->assetObject->setCachedLocationData($locationArray);
+
+		$arrayData['cachedLocationData'] = $locationArray;
+
 
 
 		/**
@@ -724,28 +658,15 @@ class Asset_model extends CI_Model {
 				$dateArray[] = ["label"=>$dateAsset->getLabel(), "dateAsset"=>$dateAsset->getAsArray(false)];
 			}
 		}
+		$arrayData['cachedDateData'] = $dateArray;
 
-
-		$this->assetObject->setCachedDateData($dateArray);
-
-		$this->assetObject->setReadyForDisplay($this->getGlobalValue("readyForDisplay")?true:false);
-		$this->assetObject->setCollectionId($this->getGlobalValue("collectionId"));
-		$this->assetObject->setTemplateId($this->templateId);
-		if(is_object($this->getGlobalValue("availableAfter"))) {
-			$this->assetObject->setAvailableAfter($this->getGlobalValue("availableAfter"));
-		}
-		else {
-			$this->assetObject->setAvailableAfter(null);
-		}
-
-		$this->assetObject->setDeleted(false);
-
-		if(!$this->getObjectId()) {
-			$this->assetObject->setAssetId((string)new MongoId());
-			$this->doctrine->em->persist($this->assetObject);
-			$this->doctrine->em->flush();
+		if(!isset($this->objectId)) {
+	   		$this->objectId = (string)$this->qb->save($this->config->item('mongoCollection'), $arrayData);
     	}
-        else if($oldAsset) {
+        else {
+        	$oldAsset = new Asset_model;
+        	$oldAsset->loadAssetById($this->objectId);
+
 
         	/**
         	 * if collection is changing, we need to check and see if we're changing buckets.
@@ -759,34 +680,29 @@ class Asset_model extends CI_Model {
 
 
         		if($oldCollection && $newCollection && $oldCollection->getBucket() != $newCollection->getBucket()) {
-        			$this->assetObject->setCollectionId($oldAsset->getGlobalValue("collectionId"));
-        			$this->assetObject->setCollectionMigration(true);
+        			$arrayData["collectionId"] = $oldAsset->getGlobalValue("collectionId");
+        			$arrayData["collectionMigration"] = true;
 
 					$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-					$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId(), "targetCollection"=>$this->getGlobalValue("collectionId")]);
+					$newTask = json_encode(["objectId"=>$this->objectId,"instance"=>$this->instance->getId(), "targetCollection"=>$this->getGlobalValue("collectionId")]);
 					$jobId= $pheanstalk->useTube('collectionMigration')->put($newTask, NULL, 1);
 
         		}
 
         	}
 
-        	$this->doctrine->em->detach($oldAssetObject);
-        	// $oldAssetObject->setId();
-        	$oldAssetObject->setRevisionSource($this->assetObject);
-        	$oldAssetObject->setAssetId(null);
+        	$oldAssetArray = $oldAsset->getAsArray();
+        	$oldAssetArray["sourceId"] = new MongoId($this->objectId);
 
-        	$this->doctrine->em->persist($this->assetObject);
-
-        	if($saveRevision) {
-        		$this->doctrine->em->persist($oldAssetObject);
-        	}
-
-        	$this->doctrine->em->flush();
-
-    	}
-    	else {
-    		$this->doctrine->em->persist($this->assetObject);
-			$this->doctrine->em->flush();
+        	$history = $this->qb->insert($this->config->item('historyCollection'), $oldAssetArray);
+        	unset($oldAssetArray);
+        	unset($oldAsset);
+        	$arrayData["_id"] = new MongoId($this->objectId);
+        	$objectId = (string)$this->qb->save($this->config->item('mongoCollection'), $arrayData);
+        	$this->objectId = $objectId;
+        	unset($arrayData);
+        	// TODO: potentially get upload objects and set objectId on them so they reference back to us?
+        	// this is hacky.
     	}
 
 
@@ -795,36 +711,30 @@ class Asset_model extends CI_Model {
 		$noIndex=false;
 		if($this->getGlobalValue('availableAfter')) {
 			date_default_timezone_set('UTC');
-			$afterDate = $this->getGlobalValue('availableAfter');
-			if($afterDate > new DateTime()) {
+			$afterDate = strtotime($this->getGlobalValue('availableAfter'));
+			if($afterDate > time()) {
 				$noIndex=true;
 			}
 		}
 
 		if($reindex && !$noIndex) {
 			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-			$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId()]);
+			$newTask = json_encode(["objectId"=>$this->objectId,"instance"=>$this->instance->getId()]);
 			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
 		}
 
-
-		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('searchCache_');
-			$this->doctrineCache->delete($this->getObjectId());
-		}
-
-
-    	return $this->getObjectId();
+    	return $this->objectId;
 	}
 
 	// reindex self and children, preventing recursion
 
 	public function reindex($parentArray=array()) {
 
+
 		$this->load->model("search_model");
 
 		if(count($parentArray) === 0) {
-			$parentArray[] = $this->getObjectId();
+			$parentArray[] = $this->objectId;
 		}
 
 		if(count($parentArray)>5 ) {
@@ -832,28 +742,22 @@ class Asset_model extends CI_Model {
 		}
 
 		$this->search_model->addOrUpdate($this);
+
 		// now find any related items and resave them.
 		//
 		// we build a parent array so we don't recurse
 
 
-		$results = $this->search_model->find(["searchText"=>$this->getObjectId(), "searchRelated"=>true], false);
-		$parentArray[] = $this->getObjectId();
+		$results = $this->search_model->find(["searchText"=>$this->objectId, "searchRelated"=>true], false);
+		$parentArray[] = $this->objectId;
 
 		foreach($results["searchResults"] as $result) {
 			if(!in_array($result, $parentArray)) {
-				echo "subIndex: " . $result . "\n";
-				// $this->logging->logError("updating", $result);
+				$this->logging->logError("updating", $result);
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($result);
-
-				// I don't think we need to resave since we're not nesting elements?
-				// $tempAsset->save(false, false);
+				$tempAsset->save(false);
 				$tempAsset->reindex($parentArray);
-				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->setNamespace('searchCache_');
-					$this->doctrineCache->delete($this->getObjectId());
-				}
 			}
 		}
 
@@ -865,8 +769,8 @@ class Asset_model extends CI_Model {
 
 		foreach($uploadAssets as $uploadAsset) {
 			foreach($uploadAsset->fieldContentsArray as $uploadAsset) {
-				if($uploadAsset->getFileHandler() && $uploadAsset->getFileHandler()->getObjectId() == $fileId) {
-					return $uploadAsset->getFileHandler();
+				if(isset($uploadAsset->fileHandler) && $uploadAsset->fileHandler->getObjectId() == $fileId) {
+					return $uploadAsset->fileHandler;
 				}
 			}
 		}
@@ -893,25 +797,23 @@ class Asset_model extends CI_Model {
 
 	public function delete()
 	{
-
 		$files = $this->getAllWithinAsset("Upload");
 		foreach($files as $file) {
 			foreach($file->fieldContentsArray as $entry) {
-				if($fileHandler = $entry->getFileHandler()) {
-					$fileHandler->deleteFile();
-				}
-
+				$entry->fileHandler->deleteFile();
 			}
 		}
 
-		$oldAsset = new Asset_model;
-        $oldAsset->loadAssetById($this->getObjectId());
-        $oldAssetObject = $oldAsset->assetObject;
 
-        $oldAssetObject->setDeleted(true);
-        $oldAssetObject->setDeletedAt(new DateTime);
-        $this->doctrine->em->persist($oldAssetObject);
-        $this->doctrine->em->flush();
+		$oldAsset = new Asset_model;
+        $oldAsset->loadAssetById($this->objectId);
+        $oldAssetArray = $oldAsset->getAsArray();
+        $oldAssetArray["sourceId"] = new MongoId($this->objectId);
+        $oldAssetArray["deleted"] = true;
+        $oldAssetArray["deletedDate"] = new \MongoDate();
+
+        $objectId = $this->qb->insert($this->config->item('historyCollection'), $oldAssetArray);
+		$this->qb->where(['_id'=>new MongoId($this->getObjectId())])->delete($this->config->item('mongoCollection'));
 	}
 
 }

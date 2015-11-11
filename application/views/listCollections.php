@@ -16,7 +16,7 @@ $(document).on("show.bs.collapse", ".collectionGroup", function(e) {
 		<ul>
 			<?for($i=0; $i<$columnSize; $i++):?>
 
-				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
+				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]])?>
 
 			<?endfor?>
 		</ul>
@@ -25,7 +25,7 @@ $(document).on("show.bs.collapse", ".collectionGroup", function(e) {
 	<div class="col-md-4">
 		<ul>
 			<?for($i=$columnSize; $i<$columnSize*2; $i++):?>
-				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
+				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]])?>
 			<?endfor?>
 		</ul>
 	</div>
@@ -33,7 +33,7 @@ $(document).on("show.bs.collapse", ".collectionGroup", function(e) {
 	<div class="col-md-4">
 		<ul>
 			<?for($i=$columnSize*2; $i<$totalCollections; $i++):?>
-				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
+				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]])?>
 			<?endfor?>
 		</ul>
 	</div>

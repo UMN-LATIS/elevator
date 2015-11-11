@@ -2,13 +2,13 @@
 $(document).ready(function() {
 
     $(document).on("submit", ".searchForm", function() {
-        // if(window.location.hash.length > 0) {
-        //     searchId = window.location.hash.substring(1);
-        // }
-        // else {
-        //     searchId = "";
-        // }
-        storeAndSearch("", $(this));
+        if(window.location.hash.length > 0) {
+            searchId = window.location.hash.substring(1);
+        }
+        else {
+            searchId = "";
+        }
+        storeAndSearch(searchId, $(this));
 
         return false;
     });
@@ -27,6 +27,7 @@ $(document).on("change", ".searchDropdown", function() {
 });
 
 var storeAndSearch = function(searchId, targetForm) {
+
     $.post( basePath + "search/searchResults/" + searchId, {storeOnly:true, searchQuery:JSON.stringify($( targetForm ).serializeForm())}, function( data ) {
         console.log(data);
         try{
@@ -49,7 +50,7 @@ var storeAndSearch = function(searchId, targetForm) {
 };
 
 var buildFieldInfo = function(templateId, fieldTitle, targetGroup) {
-    $.post(basePath+'/search/getFieldInfo', {fieldTitle: fieldTitle, template: templateId}, function(data, textStatus, xhr) {
+    $.post('/search/getFieldInfo', {fieldTitle: fieldTitle, template: templateId}, function(data, textStatus, xhr) {
         var results;
         try {
             results = $.parseJSON(data);
