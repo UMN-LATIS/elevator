@@ -102,7 +102,7 @@ world.horizon_color = (1, 1, 1)";
 
 
 	public function createDerivative($args) {
-		$meshlabScript = dirname(realpath(NULL)) . "/public/assets/blender/meshlab.mlx";
+		$meshlabScript = realpath(NULL) . "/assets/blender/meshlab.mlx";
 
 		$fileStatus = $this->sourceFile->makeLocal();
 
@@ -134,6 +134,11 @@ world.horizon_color = (1, 1, 1)";
 		$objFile = "";
 		$foundMTL = false;
 		foreach($it as $file) {
+			$onlyFilename = pathinfo($file, PATHINFO_FILENAME);
+			if(substr($onlyFilename, 0,1) == ".") {
+				continue;
+			}
+
     		if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "obj") {
     			$objFile = $file;
     			$baseFolder = pathinfo($file, PATHINFO_DIRNAME);
@@ -156,7 +161,7 @@ world.horizon_color = (1, 1, 1)";
 		$derivativeContainer->setParent($this->sourceFile->getParent());
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
 
-		putenv("DISPLAY=:99.0");
+		putenv("DISPLAY=:1.0");
 
 		$meshlabCommandLine =  $this->config->item("meshlabPath") . "meshlabserver -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
 
@@ -267,7 +272,7 @@ world.horizon_color = (1, 1, 1)";
 			$uploadObjects = $this->parentObject->getAllWithinAsset("Upload");
 			foreach($uploadObjects as $upload) {
 				foreach($upload->fieldContentsArray as $widgetContents) {
-					if($widgetContents->fileId == $this->objectId) {
+					if($widgetContents->fileId == $this->getObjectId()) {
 						$uploadWidget = $widgetContents;
 					}
 				}

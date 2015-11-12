@@ -97,7 +97,7 @@ rnd.resolution_y = int(2000)";
 
 
 	public function createDerivative($args) {
-		$meshlabScript = dirname(realpath(NULL)) . "/public/assets/blender/meshlab.mlx";
+		$meshlabScript = realpath(NULL) . "/assets/blender/meshlab.mlx";
 		$fileStatus = $this->sourceFile->makeLocal();
 
 		if($fileStatus == FILE_GLACIER_RESTORING) {
@@ -130,7 +130,7 @@ rnd.resolution_y = int(2000)";
 		$derivativeContainer->setParent($this->sourceFile->getParent());
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
 
-		putenv("DISPLAY=:99.0");
+		putenv("DISPLAY=:1.0");
 
 
 
@@ -213,7 +213,7 @@ rnd.resolution_y = int(2000)";
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "stl" . '.stl';
 		//TODO: catch errors here
 
-		putenv("DISPLAY=:99.0");
+		putenv("DISPLAY=:1.0");
 
 
 
@@ -289,7 +289,7 @@ rnd.resolution_y = int(2000)";
 	public function createThumbInternal($sourceFileContainer, $args) {
 
 
-		$this->pathToBlenderStage =dirname(realpath(NULL)) . "/public/assets/blender/stage.blend";
+		$this->pathToBlenderStage =realpath(NULL) . "/assets/blender/stage.blend";
 		ini_set('memory_limit', '512M');
 		$success = true;
 
@@ -315,6 +315,7 @@ rnd.resolution_y = int(2000)";
 		$targetLargeFileShortName = $sourceFileContainer->getPathToLocalFile() . "_output";
 
 		$blenderCommandLine = $this->config->item('blenderBinary') . " -b " . $this->pathToBlenderStage . " -P " . $outputScript . " -o " . $targetLargeFileShortName . " -F JPEG -x 1 -f 1";
+
 		// blender will generate a new output name
 		$targetLargeFile = $targetLargeFileShortName . "0001.jpg";
 
