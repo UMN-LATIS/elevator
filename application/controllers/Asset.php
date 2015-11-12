@@ -188,6 +188,8 @@ class asset extends Instance_Controller {
 			return;
 		}
 
+		// TODO: merging this in, but do we need it?
+		$fileHandler->parentObject = $assetModel;
 
 		// We need to see if the user has access to this file's parent object, so we can resolve permissions for drawers/collections.
 		// This is a brute force sort of thing.
