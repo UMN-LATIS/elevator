@@ -12,12 +12,12 @@ values
 insert into "field_types" ("id", "name", "model_name", "sample_field_data")
 values
 	(1, 'text', 'text', null),
-	(2, 'upload', 'upload', '{ \"extractlocation\":true, \"extractdate\":true, \"enableTiling\":true}'),
+	(2, 'upload', 'upload', '{ \"extractLocation\":true, \"extractDate\":true, \"enableTiling\":true}'),
 	(3, 'date', 'date', null),
-	(4, 'select', 'select', '{\n  \"selectgroup\": [\n    \"option 1\",\n    \"option 2\",\n    \"option 3\"\n  ]\n}\n\nalt:\n\n{\n  \"selectgroup\": \n    {\"option 1\":\"more text about option 1\",\n    \"option 2\":\"more text about option 2\",\n    \"option 3\":\"more text about option 3\"\n}\n  \n}\n'),
+	(4, 'select', 'select', '{\n  \"selectGroup\": [\n    \"option 1\",\n    \"option 2\",\n    \"option 3\"\n  ]\n}\n\nalt:\n\n{\n  \"selectGroup\": \n    {\"option 1\":\"more text about option 1\",\n    \"option 2\":\"more text about option 2\",\n    \"option 3\":\"more text about option 3\"\n}\n  \n}\n'),
 	(5, 'location', 'location', null),
 	(6, 'multiselect', 'multiselect', '{\n  \"country\": {\n    \"usa\": {\n      \"state\": {\n        \"wisconsin\": {\n          \"city\": [\n            \"madison\",\n            \"milwaukee\"\n          ]\n        },\n        \"minnesota\": {\n          \"city\": {\n            \"minneapolis\": {\n              \"neighborhood\": [\n                \"uptown\",\n                \"downtown\"\n              ]\n            },\n            \"mankato\": {\n              \"neighborhood\": [\n                \"campus\",\n                \"downtown\"\n              ]\n            }\n          }\n        }\n      }\n    },\n    \"canada\": {\n      \"state\": {\n        \"alberta\": {\n          \"city\": [\n            \"fakeville\",\n            \"faketown\"\n          ]\n        },\n        \"quebec\": {\n          \"city\": [\n            \"montreal\"\n          ]\n        }\n      }\n    }\n  }\n}'),
-	(7, 'related asset', 'related_asset', '{\n  \"nestdata\": true,\n  \"showlabel\": true,\n  \"collapsenestedchildren\": false,\n  \"thumbnailview\": false,\n  \"defaulttemplate\": 0,\n  \"displayinline\": false\n}'),
+	(7, 'related asset', 'related_asset', '{\n  \"nestData\": true,\n  \"showLabel\": true,\n  \"collapseNestedChildren\": false,\n  \"matchAgainst\": [],\n  \"thumbnailView\": false,\n  \"defaultTemplate\": 0,\n  \"displayInline\": false\n}'),
 	(8, 'tag list', 'tags', null),
 	(10, 'text area', 'textarea', null),
 	(11, 'checkbox', 'checkbox', null);
