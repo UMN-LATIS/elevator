@@ -12,7 +12,7 @@ values
 insert into "field_types" ("id", "name", "model_name", "sample_field_data")
 values
 	(1, 'text', 'text', null),
-	(2, 'upload', 'upload', '{ \"extractlocation\":true, \"extractdate\":true}'),
+	(2, 'upload', 'upload', '{ \"extractlocation\":true, \"extractdate\":true, \"enableTiling\":true}'),
 	(3, 'date', 'date', null),
 	(4, 'select', 'select', '{\n  \"selectgroup\": [\n    \"option 1\",\n    \"option 2\",\n    \"option 3\"\n  ]\n}\n\nalt:\n\n{\n  \"selectgroup\": \n    {\"option 1\":\"more text about option 1\",\n    \"option 2\":\"more text about option 2\",\n    \"option 3\":\"more text about option 3\"\n}\n  \n}\n'),
 	(5, 'location', 'location', null),

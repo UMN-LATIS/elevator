@@ -231,7 +231,10 @@ class ImageHandler extends FileHandlerBase {
 
 		$outputPath = $localPath . "-tiled";
 		//TODO: catch errors here
-		mkdir($outputPath);
+		if(!file_exists($outputPath)) {
+			mkdir($outputPath);
+		}
+
 		$outputFile = $outputPath ."/tiledBase";
 
 		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . "[autorotate] " . $outputFile;
