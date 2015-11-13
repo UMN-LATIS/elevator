@@ -163,7 +163,7 @@ world.horizon_color = (1, 1, 1)";
 
 		putenv("DISPLAY=:1.0");
 
-		$meshlabCommandLine =  $this->config->item("meshlabPath") . "meshlabserver -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . " -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
 
 		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());

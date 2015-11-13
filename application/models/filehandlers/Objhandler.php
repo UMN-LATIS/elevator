@@ -134,7 +134,7 @@ rnd.resolution_y = int(2000)";
 
 
 
-		$meshlabCommandLine = $this->config->item("meshlabPath") . "meshlabserver -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vn vc";
+		$meshlabCommandLine = $this->config->item("meshlabPath") . " -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vn vc";
 
 		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
@@ -217,7 +217,7 @@ rnd.resolution_y = int(2000)";
 
 
 
-		$meshlabCommandLine = $this->config->item("meshlabPath") . "meshlabserver -i " . $sourceFileLocalName . " -o " . $derivativeContainer->getPathToLocalFile() . ".stl";
+		$meshlabCommandLine = $this->config->item("meshlabPath") . " -i " . $sourceFileLocalName . " -o " . $derivativeContainer->getPathToLocalFile() . ".stl";
 
 		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 		rename($derivativeContainer->getPathToLocalFile() . ".stl", $derivativeContainer->getPathToLocalFile());
