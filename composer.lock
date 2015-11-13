@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c61afd6838f887479de329b9946ff90a",
+    "hash": "fe4d365e54c8a2826baced9633e91c9b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.10.0",
+            "version": "3.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "7b369751845660edb983edded7e6b3d697baba4c"
+                "reference": "16258334537e989a65b682141cc027e1c3464017"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7b369751845660edb983edded7e6b3d697baba4c",
-                "reference": "7b369751845660edb983edded7e6b3d697baba4c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/16258334537e989a65b682141cc027e1c3464017",
+                "reference": "16258334537e989a65b682141cc027e1c3464017",
                 "shasum": ""
             },
             "require": {
@@ -82,7 +82,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-11-10 21:14:24"
+            "time": "2015-11-13 00:45:01"
         },
         {
             "name": "buggedcom/phpvideotoolkit",
@@ -143,13 +143,13 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/crocodoc/php-box-view.git",
-                "reference": "68f2dc8c7e2199d73dea66c14058e1e83adfd568"
+                "url": "https://github.com/cmcfadden/php-box-view.git",
+                "reference": "49034d6019799a64dc4655de27711314f1941ef2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/crocodoc/php-box-view/zipball/68f2dc8c7e2199d73dea66c14058e1e83adfd568",
-                "reference": "68f2dc8c7e2199d73dea66c14058e1e83adfd568",
+                "url": "https://api.github.com/repos/cmcfadden/php-box-view/zipball/49034d6019799a64dc4655de27711314f1941ef2",
+                "reference": "49034d6019799a64dc4655de27711314f1941ef2",
                 "shasum": ""
             },
             "require": {
@@ -184,10 +184,9 @@
                 "crocodoc"
             ],
             "support": {
-                "source": "https://github.com/crocodoc/php-box-view/tree/master",
-                "issues": "https://github.com/crocodoc/php-box-view/issues"
+                "source": "https://github.com/cmcfadden/php-box-view/tree/master"
             },
-            "time": "2015-08-26 18:22:16"
+            "time": "2015-11-13 21:41:51"
         },
         {
             "name": "doctrine/annotations",
