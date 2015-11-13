@@ -84,7 +84,7 @@ class Beltdrive extends CI_Controller {
 	}
 
 	public function processFileTask() {
-
+		echo "Starting processing thread\n";
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 		$cnt=0;
 		while(1) {

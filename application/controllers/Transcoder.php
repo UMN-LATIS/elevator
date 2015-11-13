@@ -63,7 +63,7 @@ class Transcoder extends CI_Controller {
 
 
 	public function transcodeTask() {
-
+		echo "Starting transcoding thread\n";
 		$cnt=0;
 		while(1) {
 			$job = $this->pheanstalk->watch('transcoder')->ignore('default')->reserve();
