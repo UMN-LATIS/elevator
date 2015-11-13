@@ -1,5 +1,8 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-
+/**
+ * This filehandler has been deprecated in favor of a unified box.net handler.  Leaving this in the repo in case we ever
+ * want to roll back, but this was a hacky implementation.
+ */
 
 //require_once("fileHandlerBase.php");
 class DocHandler extends FileHandlerBase {
