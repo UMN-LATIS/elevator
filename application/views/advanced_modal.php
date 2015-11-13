@@ -67,7 +67,6 @@
   <option value="txt">TXT</option>
   <option value="box">PDF</option>
   <option value="box">PPT</option>
-  <option value="x3d">3D</option>
   <option value="zipobj">3D (obj)</option>
   <option value="ply">3D (ply)</option>
   <option value="zipscorm">SCORM</option>
