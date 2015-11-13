@@ -437,7 +437,7 @@ $config['gifsicleBinary'] = 'gifsicle';
 
 // meshlab has an install directory, not a single binary
 // make sure to include a trailing '/'
-$config['meshlabPath'] = '/usr/lib/meshlab/';
+$config['meshlabPath'] = '/usr/lib/meshlab/meshlabserver';
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */
