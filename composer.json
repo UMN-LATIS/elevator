@@ -6,7 +6,7 @@
     },
     {
       "type": "vcs",
-      "url": "https://github.com/crocodoc/php-box-view"
+      "url": "https://github.com/cmcfadden/php-box-view.git"
     }
   ],
   "require": {
