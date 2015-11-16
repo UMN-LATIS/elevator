@@ -124,7 +124,7 @@ class admin extends Admin_Controller {
 
 	public function beanstalk() {
 		$this->template->javascript->add("assets/js/beanstalk.js");
-		$console = new Console;
+		$console = new Console($this->config->item("beanstalkd"));
 		$errors = $console->getErrors();
 		$tplVars = $console->getTplVars();
 		$tplVars['servers'] = [$tplVars['server']];
