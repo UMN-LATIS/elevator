@@ -29,8 +29,8 @@ class Console {
     protected $_errors = array();
     private $servers = array();
 
-    public function __construct() {
-        $this->__init();
+    public function __construct($beanstalkIP) {
+        $this->__init($beanstalkIP);
         $this->_main();
     }
 
@@ -177,9 +177,9 @@ class Console {
         }
     }
 
-    protected function __init() {
+    protected function __init($beanstalkIP) {
         global $server, $action, $state, $count, $tube, $config, $tplMain, $tplBlock;
-        $server="127.0.0.1:11300";
+        $server=$beanstalkIP;
         $this->_globalVar = array(
             'server' => $server,
             'action' => $action,
