@@ -20,6 +20,9 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 ?>
 <link type="text/css" rel="stylesheet" href="/assets/3dviewer/stylesheet/3dhop.css"/>
+<?if($this->config->item('enableCaching')) :?>
+<script type="text/javascript" src="/asset/3dviewer/3dviewer.js"></script>
+<?else:?>
 <!--SPIDERGL-->
 <script type="text/javascript" src="/assets/3dviewer/js/spidergl.js"></script>
 <!--PRESENTER-->
@@ -34,7 +37,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <script type="text/javascript" src="/assets/3dviewer/js/trackball_pantilt.js"></script>
 <!--UTILITY-->
 <script type="text/javascript" src="/assets/3dviewer/js/init.js"></script>
-
+<?endif?>
 
 <?if(!$embedded):?>
 <div class="row assetViewRow">

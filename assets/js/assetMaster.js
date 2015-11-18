@@ -183,14 +183,12 @@ $(document).on("ready", function() {
 	else if(searchId && $(".rightColumn").find(".loadView").length>1) {
 		// we have multiple subviews, let's ask the search engine if there's one we should highlight
 		$.post(basePath + "search/getHighlight", {searchId: searchId, objectId: objectId}, function(data, textStatus, xhr) {
-
 			var json = $.parseJSON(data);
 
 			var targetAsset = null;
 			var haveSelectedTarget = false;
 			$.each(json, function(index, element) {
 				if(element != $("#embedView").data("objectid")) {
-
 					targetAsset = $(document).find('[data-fileobjectid="' + element + '"]');
 					if(targetAsset.length>0) {
 
@@ -198,7 +196,6 @@ $(document).on("ready", function() {
 					else { // maybe it's a related asset, try that
 						targetAsset = $(document).find('[data-objectid="' + element + '"]').find(".loadView");
 					}
-
 					if(targetAsset.length>0) {
 						$(targetAsset).trigger("click");
 						haveSelectedTarget = true;
@@ -244,8 +241,10 @@ $(document).on("click", ".showDetails", function() {
 	$(this).parent().parent().children('.assetDetails').toggle("fast");
 });
 
-$(document).on("click", ".loadView", function() {
-
+$(document).on("click", ".loadView", function(e) {
+	if (e.originalEvent === undefined) {
+		e.preventDefault();
+	}
 	fileObjectId = $(this).data("fileobjectid");
 
 	var parent = $(this).closest("[data-objectid]");

@@ -83,6 +83,7 @@
 
               <select name="sort" id="sortBy" class="form-control advancedOption">
                 <option value="0">Best Match</option>
+                <option value="modified.date">Modified Date</option>
                 <?foreach($searchableWidgets as $title=>$values):?>
                   <option value="<?=$title?>"><?=$values['label']?></option>
                 <?endforeach?>
