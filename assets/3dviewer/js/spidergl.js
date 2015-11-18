@@ -244,7 +244,7 @@ SpiderGL.Version.VERSION_MINOR = 2;
  * @constant
  * @type number
  */
-SpiderGL.Version.VERSION_REVISION = 0;
+SpiderGL.Version.VERSION_REVISION = 1;
 
 /**
  * Version string.
@@ -10014,7 +10014,7 @@ SpiderGL.WebGL.Context._setup_SGL_direct_state_access = function (gl, pubExt) {
  * @see SpiderGL.WebGL.ObjectGL
  */
 SpiderGL.WebGL.Context.hijack = function (gl) {
-	if (!SpiderGL.Type.instanceOf(gl, WebGLRenderingContext)) { return false; }
+//	if (!SpiderGL.Type.instanceOf(gl, WebGLRenderingContext)) { return false; }
 	if (gl._spidergl) { return false; }
 
 	SpiderGL.WebGL.Context._prepareContex(gl);
@@ -10046,6 +10046,7 @@ SpiderGL.WebGL.Context.hijack = function (gl) {
  * @see SpiderGL.WebGL.Context.get
  */
 SpiderGL.WebGL.Context.isHijacked = function (gl) {
+	return !!gl && !!gl._spidergl;
 	return (SpiderGL.Type.instanceOf(gl, WebGLRenderingContext) && gl._spidergl);
 }
 
@@ -13026,7 +13027,7 @@ SpiderGL.Type.extend(SpiderGL.WebGL.FragmentShader, SpiderGL.WebGL.Shader);
  * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.prototype.texImage2D.
  * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.prototype.texImage2D.
  * @param {number} [options.magFilter=SpiderGL.WebGL.Texture.DEFAULT_MAG_FILTER] Texture magnification filter (see {@link SpiderGL.WebGL.Texture#magFilter}).
- * @param {number} [options.minFilter=SpiderGL.WebGL.Texture.DEFAULT_MIN_FILTER] Texture minnification filter (see {@link SpiderGL.WebGL.Texture#minFilter}).
+ * @param {number} [options.minFilter=SpiderGL.WebGL.Texture.DEFAULT_MIN_FILTER] Texture minification filter (see {@link SpiderGL.WebGL.Texture#minFilter}).
  * @param {number} [options.wrapS=SpiderGL.WebGL.Texture.DEFAULT_WRAP_S] Texture horizontal wrap mode (see {@link SpiderGL.WebGL.Texture#wrapS}).
  * @param {number} [options.wrapT=SpiderGL.WebGL.Texture.DEFAULT_WRAP_T] Texture vertical wrap mode (see {@link SpiderGL.WebGL.Texture#wrapT}).
  * @param {bool} [options.autoMipmap=SpiderGL.WebGL.Texture.DEFAULT_AUTO_GENERATE_MIPMAP] If true, mipmaps are automatically generated when calling setImage or setSubImage (see {@link SpiderGL.WebGL.Texture#autoMipmap}).
@@ -13909,9 +13910,10 @@ SpiderGL.WebGL.Texture2D.prototype = {
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
 	 * @param {number} [options.colorspaceConversion] If specified, overrides colorspaceConversionPolicy.
-	 * @param {function} [options.onAbort] If url is specified, this function will be called if image data loading is aborted.
+	 * @param {function} [options.onCancel] If url is specified, this function will be called if image data loading is cancelled.
 	 * @param {function} [options.onError] If url is specified, this function will be called if an error occurs when loading image data.
-	 * @param {function} [options.onLoad] If url is specified, this function will be called when image data has been loaded.
+	 * @param {function} [options.onProgress] If url is specified, this function will be called during the image loading progress.
+	 * @param {function} [options.onSuccess] If url is specified, this function will be called when image data has been successfully loaded.
 	 *
 	 * @see setSubImage
 	 * @see SpiderGL.WebGL.Texture
@@ -13936,9 +13938,10 @@ SpiderGL.WebGL.Texture2D.prototype = {
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
 	 * @param {number} [options.colorspaceConversion] If specified, overrides colorspaceConversionPolicy.
-	 * @param {function} [options.onAbort] If url is specified, this function will be called if image data loading is aborted.
+	 * @param {function} [options.onCancel] If url is specified, this function will be called if image data loading is cancelled.
 	 * @param {function} [options.onError] If url is specified, this function will be called if an error occurs when loading image data.
-	 * @param {function} [options.onLoad] If url is specified, this function will be called when image data has been loaded.
+	 * @param {function} [options.onProgress] If url is specified, this function will be called during the image loading progress.
+	 * @param {function} [options.onSuccess] If url is specified, this function will be called when image data has been successfully loaded.
 	 *
 	 * @see setImage
 	 * @see SpiderGL.WebGL.Texture
@@ -13984,10 +13987,21 @@ SpiderGL.WebGL.TextureCubeMap = function (gl, options) {
 
 	if (options.url) {
 		var urls = options.url;
+		var onSuccess = options.onSuccess;
+		if (onSuccess) {
+			options.onSuccess = (function(){
+				var imagesLeft = 6;
+				return function () {
+					--imagesLeft;
+					if (imagesLeft == 0) onSuccess.apply(options, null);
+				}
+			})();
+		}
 		for (var i=0; i<6; ++i) {
 			options.url = urls[i];
 			this.setImage(faceTargets[i], options);
 		}
+		options.onSuccess = onSuccess;
 	}
 	else if (options.data) {
 		var datas = options.data;
@@ -14042,9 +14056,10 @@ SpiderGL.WebGL.TextureCubeMap.prototype = {
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
 	 * @param {number} [options.colorspaceConversion] If specified, overrides colorspaceConversionPolicy.
-	 * @param {function} [options.onAbort] If url is specified, this function will be called if image data loading is aborted.
+	 * @param {function} [options.onCancel] If url is specified, this function will be called if image data loading is cancelled.
 	 * @param {function} [options.onError] If url is specified, this function will be called if an error occurs when loading image data.
-	 * @param {function} [options.onLoad] If url is specified, this function will be called when image data has been loaded.
+	 * @param {function} [options.onProgress] If url is specified, this function will be called during the image loading progress.
+	 * @param {function} [options.onSuccess] If url is specified, this function will be called when image data has been successfully loaded.
 	 *
 	 * @see setSubImage
 	 * @see SpiderGL.WebGL.Texture
@@ -14077,9 +14092,10 @@ SpiderGL.WebGL.TextureCubeMap.prototype = {
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
 	 * @param {number} [options.colorspaceConversion] If specified, overrides colorspaceConversionPolicy.
-	 * @param {function} [options.onAbort] If url is specified, this function will be called if image data loading is aborted.
+	 * @param {function} [options.onCancel] If url is specified, this function will be called if image data loading is cancelled.
 	 * @param {function} [options.onError] If url is specified, this function will be called if an error occurs when loading image data.
-	 * @param {function} [options.onLoad] If url is specified, this function will be called when image data has been loaded.
+	 * @param {function} [options.onProgress] If url is specified, this function will be called during the image loading progress.
+	 * @param {function} [options.onSuccess] If url is specified, this function will be called when image data has been successfully loaded.
 	 *
 	 * @see setImage
 	 * @see SpiderGL.WebGL.Texture
@@ -15952,10 +15968,11 @@ SpiderGL.UserInterface.CanvasHandler = function (gl, handler, options) {
 	this._animateWithTimeout  = false;
 	this._fastAnimate         = false;
 
-	this._fpsUpdateMS = 1000;
-	this._fpsTime     = Date.now();
-	this._fpsCount    = 0;
-	this._fps         = 0;
+	this._fpsUpdateMS  = 1000;
+	this._fpsTime      = 0;
+	this._fpsCount     = 0;
+	this._fps          = 0;
+	this._delegateDraw = function(t) { that._onDraw(t); };
 
 	/** @private */
 	var handleMessage = function (evt) {
@@ -15991,10 +16008,16 @@ SpiderGL.UserInterface.CanvasHandler = function (gl, handler, options) {
 	window.addEventListener("mouseup",         function (e) { that._onWindowMouseButtonUp (e); }, false);
 	window.addEventListener("mousemove",       function (e) { that._onWindowMouseMove     (e); }, false);
 
-	canvas.addEventListener("touchstart",      SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
-	canvas.addEventListener("touchend",        SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
-	canvas.addEventListener("touchmove",       SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
-	canvas.addEventListener("touchcancel",     SpiderGL.UserInterface.CanvasHandler._touchHandler, true);
+	canvas.addEventListener("touchstart",      SpiderGL.UserInterface.CanvasHandler._touchHandler, false);
+	canvas.addEventListener("touchend",        SpiderGL.UserInterface.CanvasHandler._touchHandler, false);
+	canvas.addEventListener("touchmove",       SpiderGL.UserInterface.CanvasHandler._touchHandler, false);
+
+	window.addEventListener("pointerup",       function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onWindowMouseButtonUp (e); }, false);
+	window.addEventListener("pointermove",     function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onWindowMouseMove     (e); }, false);
+
+	canvas.addEventListener("pointerdown",     function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onMouseButtonDown (e); }, false);
+	canvas.addEventListener("pointerup",       function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onMouseButtonUp   (e); }, false);
+	canvas.addEventListener("pointermove",     function (e) { if(e.pointerType=="touch") SpiderGL.UserInterface.CanvasHandler._touchHandler(e); else that._onMouseMove       (e); }, false);
 
 	var standardGLUnpack = SpiderGL.Utility.getDefaultValue(options.standardGLUnpack, SpiderGL.UserInterface.CanvasHandler.DEFAULT_STANDARD_GL_UNPACK);
 	if (standardGLUnpack) {
@@ -16043,34 +16066,137 @@ SpiderGL.UserInterface.CanvasHandler.DEFAULT_STANDARD_GL_UNPACK = true;
  */
 SpiderGL.UserInterface.CanvasHandler.DEFAULT_PROPERTY_NAME = "ui";
 
+SpiderGL.UserInterface.CanvasHandler._multiTouch = { tmp:0, touches:[], evt:null, pan:false, btn:0, phase:0 };
 SpiderGL.UserInterface.CanvasHandler._touchHandler = function (event) {
-	var touches = event.changedTouches,
 
-	first = touches[0],
-	type = "";
+	var touches, first,
+	diff   = 1,
+	button = 0,
+	type   = "";
+
+	/**IE PATCH**/
+	/**/if (event.type=="pointerdown") SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.push(event);
+	/**/else {
+	/**/	for(i=0; i<SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length; i++) {
+	/**/		if (event.pointerId==SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i].pointerId) SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i] = event;
+	/**/	}
+	/**/}
+	/**/
+	/**/if (navigator.userAgent.toLowerCase().indexOf('trident')>-1) { touches = SpiderGL.UserInterface.CanvasHandler._multiTouch.touches; first = touches[0]; }
+	/**/else { touches = event.touches; first = event.changedTouches[0]; }
+	/**IE PATCH**/
 
 	switch(event.type)
 	{
-		case "touchstart": type = "mousedown"; break;
-		case "touchmove":  type = "mousemove"; break;
-		case "touchend":   type = "mouseup";   break;
+		case "touchstart": case "pointerdown": type = "mousedown"; break;
+		case "touchmove":  case "pointermove": type = "mousemove"; break;
+		case "touchend":   case "pointerup":   type = "mouseup";   break;
 		default: return;
 	}
 
-	//initMouseEvent(type, canBubble, cancelable, view, clickCount,
-	//           screenX, screenY, clientX, clientY, ctrlKey,
-	//           altKey, shiftKey, metaKey, button, relatedTarget);
-
 	var simulatedEvent = document.createEvent("MouseEvent");
-	simulatedEvent.initMouseEvent(
-		type, true, true, window, 1,
-		first.screenX, first.screenY,
-		first.clientX, first.clientY, false,
-		false, false, false, 0/*left*/, null
-	);
 
-	first.target.dispatchEvent(simulatedEvent);
+	if(touches.length>=2) {
+		/**IE PATCH**/
+		/**/if (navigator.userAgent.toLowerCase().indexOf('trident')<=-1)
+		/**IE PATCH**/
+		{
+			if(touches[0].target.id!="draw-canvas"||touches[1].target.id!="draw-canvas") return;
+		}
+
+		var dist = Math.sqrt(Math.pow((touches[0].clientX - touches[1].clientX),2)+Math.pow((touches[0].clientY - touches[1].clientY),2));
+		var diff = dist - SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp;
+		SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp = dist;
+		/**IE PATCH**/
+		/**/if(event.type=="pointerup") {
+		/**/	button = SpiderGL.UserInterface.CanvasHandler._multiTouch.btn;
+		/**/	type = "mousedown";
+		/**/}
+		/**IE PATCH**/
+		else if(/*SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp!=0 &&*/ (diff<-0.995||diff>0.995)) {
+			diff>0 ? diff=1 : diff=-1;
+			type = "mousewheel";
+		}
+		else return;
+	}
+	else {
+		/**IE PATCH**/
+		/**/if(event.type=="pointerup"||event.type=="pointermove") if((!first)||(event.pointerId!=first.pointerId)) return;
+		/**IE PATCH**/
+		if(SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp!=0&&event.type=="touchend") {
+			button = SpiderGL.UserInterface.CanvasHandler._multiTouch.btn;
+			type = "mousedown";
+		}
+		//TOUCH PAN START
+		if (type=="mousedown") {
+			SpiderGL.UserInterface.CanvasHandler._multiTouch.evt = event;
+		}
+		else if (type=="mouseup") {
+			if(SpiderGL.UserInterface.CanvasHandler._multiTouch.pan) {
+				button = 1;
+				SpiderGL.UserInterface.CanvasHandler._multiTouch.pan   = false;
+				SpiderGL.UserInterface.CanvasHandler._multiTouch.phase = 0;
+				/**FIREFOX PATCH**/
+				/**/if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) SpiderGL.UserInterface.CanvasHandler._touchHandler(event);
+				/**FIREFOX PATCH**/
+			}
+		}
+		else if (type=="mousemove") {
+			if(!SpiderGL.UserInterface.CanvasHandler._multiTouch.pan) {
+				var start;
+				/**IE PATCH**/
+				/**/(navigator.userAgent.toLowerCase().indexOf('trident')>-1) ? (start=SpiderGL.UserInterface.CanvasHandler._multiTouch.evt) : (start=SpiderGL.UserInterface.CanvasHandler._multiTouch.evt.touches[0]);
+				/**IE PATCH**/
+				if((Math.sqrt(Math.pow((first.clientX - start.clientX),2)+Math.pow((first.clientY - start.clientY),2))<=2)&&(event.timeStamp-SpiderGL.UserInterface.CanvasHandler._multiTouch.evt.timeStamp>400)) SpiderGL.UserInterface.CanvasHandler._multiTouch.pan = true;
+			}
+			else {
+				switch(SpiderGL.UserInterface.CanvasHandler._multiTouch.phase) {
+					case 0:
+						diff = -1;
+						/**FIREFOX PATCH**/
+						/**/(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) ? (type = "mousemove") : (type = "mouseup");
+						/**FIREFOX PATCH**/
+						SpiderGL.UserInterface.CanvasHandler._multiTouch.phase++;
+						break;
+					case 1:
+						button = 1;
+						type = "mousedown";
+						SpiderGL.UserInterface.CanvasHandler._multiTouch.phase++;
+						break;
+					default:
+						button = 1;
+						break;
+				}
+			}
+		}
+		//TOUCH PAN END
+		SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp = 0;
+		SpiderGL.UserInterface.CanvasHandler._multiTouch.btn = button;
+	}
+
+	if(first){
+		simulatedEvent.initMouseEvent(
+			type, true, true, window, diff,
+			first.screenX, first.screenY,
+			first.clientX, first.clientY, false,
+			false, false, false, button, null
+		);
+		first.target.dispatchEvent(simulatedEvent);
+	}
+
+	/**IE PATCH**/
+	/**/if(event.type=="pointerup") {
+	/**/	for(i=0; i<SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length; i++) {
+	/**/		if (SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i].pointerId>=event.pointerId) {
+	/**/			if (i+1==SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length) SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.pop();
+	/**/			else SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i] = SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i+1];
+	/**/		}
+	/**/	}
+	/**/}
+	/**IE PATCH**/
+
 	event.preventDefault();
+	event.stopPropagation();
 };
 
 SpiderGL.UserInterface.CanvasHandler.prototype = {
@@ -16094,10 +16220,14 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_postDrawEvent : function () {
-		if (this._drawEventPending) return;
+		this._postDrawCount = 5;
+		if (this._drawEventPending)
+			return;
+
 		this._drawEventPending = true;
+		requestAnimationFrame(this._delegateDraw);
 		//setTimeout(this._drawEventHandler, 0);
-		window.postMessage(SpiderGL.UserInterface.CanvasHandler._FAST_DRAW_MESSAGE_NAME, "*");
+		//window.postMessage(SpiderGL.UserInterface.CanvasHandler._FAST_DRAW_MESSAGE_NAME, "*");
 	},
 
 	_getMouseClientPos : function(e) {
@@ -16105,7 +16235,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		var w = this._canvas.width;
 		var h = this._canvas.height;
 		var x = e.clientX - r.left;
-		var y = h - 1 - (e.clientY - r.top);
+		var y = h - (e.clientY - r.top);
 		var outside = ((x < 0) || (x >= w) || (y < 0) || (y >= h));
 		return [x, y, outside];
 	},
@@ -16136,13 +16266,13 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_onKeyDown : function (e) {
-		var c = e.keyCode || e.charCode;
-		var s = String.fromCharCode(c);
+		var c = e.keyCode;
 		if(((c>=48) && (c<=90)))
 		{
 			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
+
 		var wasDown = this._keysDown[c];
 		this._keysDown[c] = true;
 		if (!wasDown || !this._ignoreKeyRepeat) {
@@ -16151,22 +16281,25 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_onKeyUp : function (e) {
-		var c = e.keyCode || e.charCode;
-		var s = String.fromCharCode(c);
+		var c = e.keyCode;
 		if(((c>=48) && (c<=90)))
 		{
 			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
-		}		this._keysDown[c] = false;
+		}
+
+		this._keysDown[c] = false;
 		this._dispatch("onKeyUp", c, e);
 	},
 
 	_onKeyPress : function (e) {
-		var c = e.keyCode || e.charCode;
-		var s = String.fromCharCode(c);
-		if (s.length > 0) {
-			c = s;
+		var c = e.keyCode;
+		if(((c>=48) && (c<=90)))
+		{
+			var s = String.fromCharCode(c);
+			c = s.toUpperCase();
 		}
+
 		this._dispatch("onKeyPress", c, e);
 	},
 
@@ -16207,7 +16340,6 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._dragStartPos[btn] = [xy[0], xy[1]];
 		this._dispatch("onMouseButtonDown", btn, xy[0], xy[1], e);
 
-		e.preventDefault();
 		e.stopPropagation();
 	},
 
@@ -16217,6 +16349,9 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 
 		var btn = e.button;
 		this._mouseButtonsDown[btn] = false;
+		/**FIREFOX PATCH**/
+		/**/if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) if(!e.isTrusted) return;
+		/**FIREFOX PATCH**/
 		this._dispatch("onMouseButtonUp", btn, xy[0], xy[1], e);
 
 		if (this._dragging[btn]) {
@@ -16236,9 +16371,13 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._cursorPos = xy;
 
 		var btn = e.button;
-		if (!xy[2] || !this._mouseButtonsDown[btn]) return;
+
+		if (!this._mouseButtonsDown[btn]) return;
 
 		this._mouseButtonsDown[btn] = false;
+		/**FIREFOX PATCH**/
+		/**/if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1) if(!e.isTrusted) return;
+		/**FIREFOX PATCH**/
 		this._dispatch("onMouseButtonUp", btn, xy[0], xy[1], e);
 
 		if (this._dragging[btn]) {
@@ -16247,7 +16386,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 			var ePos = [xy[0], xy[1]];
 			this._dragEndPos[btn] = ePos;
 			this._dragDeltaPos[btn] = [ePos[0] - sPos[0], ePos[1] - sPos[1]];
-			this._dispatch("onDragStart", btn, ePos[0], ePos[1]);
+			this._dispatch("onDragEnd", btn, ePos[0], ePos[1]);
 		}
 
 		e.stopPropagation();
@@ -16257,13 +16396,12 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		this._cursorPrevPos = this._cursorPos;
 
 		var xy = this._getMouseClientPos(e);
-		this._cursorPos      = xy;
+		this._cursorPos = xy;
 
 		this._cursorDeltaPos = [this._cursorPos[0] - this._cursorPrevPos[0], this._cursorPos[1] - this._cursorPrevPos[1]];
-		this._dispatch("onMouseMove", xy[0], xy[1], e);
 
 		for (var i=0; i<3; ++i) {
-			if (!this._mouseButtonsDown[i]) continue;
+			if (!this._mouseButtonsDown[i]||(this._cursorDeltaPos[0]==0&&this._cursorDeltaPos[1]==0)) continue;
 			var sPos = this._dragStartPos[i];
 			var ePos = [xy[0], xy[1]];
 			this._dragEndPos[i] = ePos;
@@ -16272,17 +16410,21 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 				this._dragging[i] = true;
 				this._dispatch("onDragStart", i, sPos[0], sPos[1]);
 			}
-			this._dispatch("onDrag", i, ePos[0], ePos[1]);
+			else this._dispatch("onDrag", i, ePos[0], ePos[1]);
 		}
+
+		this._dispatch("onMouseMove", xy[0], xy[1], e);
 
 		e.stopPropagation();
 	},
 
 	_onWindowMouseMove : function (e) {
-		var gl = this._gl;
-		var xy = this._getMouseClientPos(e);
+		this._cursorPrevPos = this._cursorPos;
 
-		if (!xy[2]) return;
+		var xy = this._getMouseClientPos(e);
+		this._cursorPos = xy;
+
+		this._cursorDeltaPos = [this._cursorPos[0] - this._cursorPrevPos[0], this._cursorPos[1] - this._cursorPrevPos[1]];
 
 		for (var i=0; i<3; ++i) {
 			if (!this._dragging[i]) continue;
@@ -16292,6 +16434,9 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 			this._dragDeltaPos[i] = [ePos[0] - sPos[0], ePos[1] - sPos[1]];
 			this._dispatch("onDrag", i, ePos[0], ePos[1]);
 		}
+
+		if (xy[2]) return;
+		this._dispatch("onMouseMove", xy[0], xy[1], e);
 
 		e.stopPropagation();
 	},
@@ -16323,6 +16468,8 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	_onMouseOut: function(e) {
+		var xy = this._getMouseClientPos(e);
+		this._dispatch("onMouseOut", xy[0], xy[1], e);
 	},
 
 	_onClick : function (e) {
@@ -16354,20 +16501,23 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 		}
 	},
 
-	_onDraw : function () {
+	_onDraw : function (timestamp) {
 		this._drawEventPending = false;
 
-		this._fpsCount++;
-
-		var now   = Date.now();
-		var fpsDT = now - this._fpsTime;
-		if (fpsDT >= this._fpsUpdateMS) {
-			this._fps      = SpiderGL.Math.floor(this._fpsCount * 1000 / fpsDT);
-			this._fpsTime  = now;
+		if(!this._fpsTime || this.postDrawCount == 5) { //new run
 			this._fpsCount = 0;
+		} else {
+			this._fpsCount++;
+			var diff = timestamp - this._fpsTime;
+			this._fps = 0.8*this._fps + 0.2 *(1000/diff);
 		}
+		this._fpsTime = timestamp;
 
 		this._dispatch("onDraw");
+		if(this._postDrawCount-- > 0) {
+			this._drawEventPending = true;
+			requestAnimationFrame(this._delegateDraw);
+		}
 	},
 
 	/**
@@ -16563,7 +16713,13 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	 * @returns {bool} True if the dragging operation is active with the specified mouse button, false otherwise.
 	 */
 	isDragging : function (btn) {
-		return this._dragging[btn];
+		var dragging = false;
+		if(btn!==undefined) dragging = this._dragging[btn];
+		else {
+			for(i=0;i<3;i++) if(this._dragging[i]) return true;
+		}
+		return dragging;
+//		return this._dragging[btn];
 	},
 
 	/**
