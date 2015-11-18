@@ -684,9 +684,9 @@ Nexus.Renderer.prototype = {
 		var that = this;
 		var url = this._url;
 		/**Safari PATCH**/
-		 // if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
-		  // url = this._url + '?' + Math.random();
-		// /**/}
+		/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+		/**/  url = this._url + '?' + Math.random();
+		/**/}
 		/**Safari PATCH**/
 		var r = new SglBinaryRequest(url, {
 			range : [offset, offset+size-1],
@@ -699,7 +699,6 @@ Nexus.Renderer.prototype = {
 
 	_handleHeader : function (buffer) {
 		var view         = new DataView(buffer);
-		debugger;
 		var offset       = 0;
 		var littleEndian = Nexus.LITTLE_ENDIAN_DATA;
 
@@ -716,9 +715,9 @@ Nexus.Renderer.prototype = {
 		var that = this;
 		var url = this._url;
 		/**Safari PATCH**/
-		// if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
-		// url = this._url + '?' + Math.random();
-		// }
+		/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+		/**/  url = this._url + '?' + Math.random();
+		/**/}
 		/**Safari PATCH**/
 		var r = new SglBinaryRequest(url, {
 			range : [offset, offset+size-1],
@@ -769,6 +768,7 @@ Nexus.Renderer.prototype = {
 		this._visitedNodes  = new Uint8Array(nodesCount);  //Nexus.BoolArray(nodesCount);
 		this._blockedNodes  = new Uint8Array(nodesCount);  //new Nexus.BoolArray(nodesCount);
 		this._selectedNodes = new Uint8Array(nodesCount);  //new Nexus.BoolArray(nodesCount);
+
 		this._status = Nexus.Renderer.STATUS_OPEN;
 
 		if (this._onSceneReady) {
@@ -1272,9 +1272,9 @@ Nexus.Renderer.prototype = {
 		var url = this._url;
 		for (var i=0; i<nodesToRequest; ++i) {
 			/**Safari PATCH**/
-			// if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
-			  url = this._url + '?' + Math.random();
-			// }
+			/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+			/**/  url = this._url + '?' + Math.random();
+			/**/}
 			/**Safari PATCH**/
 			var node   = candidateNodes[i];
 			node.status  = Nexus.Renderer._NODE_PENDING;
