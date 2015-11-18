@@ -16138,7 +16138,9 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	_onKeyDown : function (e) {
 		var c = e.keyCode || e.charCode;
 		var s = String.fromCharCode(c);
-		if (s.length > 0) {
+		if(((c>=48) && (c<=90)))
+		{
+			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
 		var wasDown = this._keysDown[c];
@@ -16151,10 +16153,11 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	_onKeyUp : function (e) {
 		var c = e.keyCode || e.charCode;
 		var s = String.fromCharCode(c);
-		if (s.length > 0) {
+		if(((c>=48) && (c<=90)))
+		{
+			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
-		}
-		this._keysDown[c] = false;
+		}		this._keysDown[c] = false;
 		this._dispatch("onKeyUp", c, e);
 	},
 
