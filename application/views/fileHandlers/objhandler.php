@@ -20,10 +20,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 ?>
 <link type="text/css" rel="stylesheet" href="/assets/3dviewer/stylesheet/3dhop.css"/>
-<?if($this->config->item('enableCaching')) :?>
-<script type="text/javascript" src="/assets/3dviewer/js/3dviewer.js"></script>
-<script type="text/javascript" src="/assets/3dviewer/js/nexus.js"></script><!-- need this due to how nexus.js swaps out itself -->
-<?else:?>
+<?if(defined('ENVIRONMENT') && ENVIRONMENT == "development") :?>
 <!--SPIDERGL-->
 <script type="text/javascript" src="/assets/3dviewer/js/spidergl.js"></script>
 <!--PRESENTER-->
@@ -38,6 +35,9 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <script type="text/javascript" src="/assets/3dviewer/js/trackball_pantilt.js"></script>
 <!--UTILITY-->
 <script type="text/javascript" src="/assets/3dviewer/js/init.js"></script>
+<?else:?>
+<script type="text/javascript" src="/assets/3dviewer/js/3dviewer.js"></script>
+<script type="text/javascript" src="/assets/3dviewer/js/nexus.js"></script><!-- need this due to how nexus.js swaps out itself -->
 <?endif?>
 
 <?if(!$embedded):?>
