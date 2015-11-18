@@ -22,3 +22,13 @@ gulp.task('3dhop', function() {
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest("./assets/3dviewer/js/"));
 });
+
+
+gulp.task('basicFiles', function() {
+    return gulp.src(["./assets/js/serializeForm.js", "./assets/js/dateWidget.js", "./assets/js/template.js"])
+        .pipe(sourcemaps.init())
+        .pipe(uglify())
+        .pipe(concat('serializeDateTemplate.js'))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest("./assets/js/"));
+});
