@@ -30,6 +30,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <!--TRACKBALLS-->
 <script type="text/javascript" src="/assets/3dviewer/js/trackball_sphere.js"></script>
 <script type="text/javascript" src="/assets/3dviewer/js/trackball_turntable.js"></script>
+<script type="text/javascript" src="/assets/3dviewer/js/trackball_turntable_pan.js"></script>
 <script type="text/javascript" src="/assets/3dviewer/js/trackball_pantilt.js"></script>
 <!--UTILITY-->
 <script type="text/javascript" src="/assets/3dviewer/js/init.js"></script>
@@ -132,7 +133,7 @@ function setup3dhop() {
     },
     spots : spotObjects,
     trackball: {
-      type : TurnTableTrackball,
+      type : TurntablePanTrackball,
       trackOptions : {
         startDistance : 2.0,
         minMaxDist    : [0.2, 15.0],
