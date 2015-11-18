@@ -22,7 +22,7 @@ class MY_Controller extends CI_Controller {
 
 		}
 		else {
-			$this->template->javascript->add("assets/js/master.min.js");
+			$this->template->javascript->add("assets/js/serializeDateTemplate.js");
 		}
 
 		if($this->router->fetch_class() != "search") {
