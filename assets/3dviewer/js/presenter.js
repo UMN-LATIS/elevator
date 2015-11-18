@@ -1,7 +1,7 @@
 /*
 3DHOP - 3D Heritage Online Presenter
 Copyright (c) 2014, Marco Callieri - Visual Computing Lab, ISTI - CNR
-All rights reserved.
+All rights reserved.    
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ SpiderGL.openNamespace();
 const SGL_TRACKBALL_NO_ACTION = 0;
 const SGL_TRACKBALL_ROTATE    = 1;
 const SGL_TRACKBALL_PAN       = 2;
-const SGL_TRACKBALL_DOLLY     = 3;
+const SGL_TRACKBALL_DOLLY     = 3; 
 const SGL_TRACKBALL_SCALE     = 4;
 // selectors
 const HOP_ALL     = 256;
@@ -119,7 +119,7 @@ Presenter.prototype = {
 		}, options);
 		r.transform = this._parseTransform(r.transform);
 		r.ID = this._instancesProgressiveID;
-		if (r.color[3]) r.alpha = r.color[3];
+		if (r.color[3]) r.alpha = r.color[3]; 
 		this._instancesProgressiveID += 1;
 		return r;
 	},
@@ -361,7 +361,7 @@ Presenter.prototype = {
         });
 		if(this._isDebugging)
 			console.log("NXS Program Log:\n" + program.log);
-
+	
 		return program;
 	},
 
@@ -435,10 +435,10 @@ Presenter.prototype = {
         });
 		if(this._isDebugging)
 			console.log("NXS Program Log:\n" + program.log);
-
+	
 		return program;
-	},
-
+	},		
+	
 	_createXYZNXSProgram : function () {
 		var gl = this.ui.gl;
         var nxsVertexShader = new SglVertexShader(gl, "\
@@ -496,10 +496,10 @@ Presenter.prototype = {
         });
 		if(this._isDebugging)
 			console.log("NXS Program Log:\n" + program.log);
-
+	
 		return program;
-	},
-
+	},		
+	
 	// color coded ID program for NXS rendering, points and faces
 	_createColorCodedIDPointNXSProgram : function () {
 		var gl = this.ui.gl;
@@ -616,7 +616,7 @@ Presenter.prototype = {
         });
 		if(this._isDebugging)
 			console.log("Program Log:\n" + program.log);
-
+	
 		return program;
 	},
 
@@ -840,7 +840,7 @@ Presenter.prototype = {
 				"uSolidColor"                : { semantic : "uSolidColor",                value : [ 1.0, 1.0, 1.0 ] },
 			}
 		});
-
+		
 		return technique;
 	},
 
@@ -889,10 +889,10 @@ Presenter.prototype = {
 				"uWorldViewProjectionMatrix" : { semantic : "uWorldViewProjectionMatrix", value : SglMat4.identity() },
 			}
 		});
-
+		
 		return technique;
 	},
-
+	
 	// color coded ID technique for PLY rendering
 	_createColorCodedIDPLYtechnique : function () {
 		var gl = this.ui.gl;
@@ -930,7 +930,7 @@ Presenter.prototype = {
 				"uColorID"                   : { semantic : "uColorID",   value : [1.0, 0.5, 0.25, 1.0] }
 			}
 		});
-
+		
 		return technique;
 	},
 
@@ -988,7 +988,7 @@ Presenter.prototype = {
 				"uColorID"                   : { semantic : "uColorID",   value : [1.0, 0.5, 0.25, 1.0] }
 			}
 		});
-
+		
 		return technique;
 	},
 
@@ -1039,25 +1039,22 @@ Presenter.prototype = {
 				"uPointB"                    : { semantic : "uPointB",   value : [1.0, 1.0, 1.0] },
 			}
 		});
-
+		
 		return technique;
-	},
-
-
+	},	
+	
+	
 //----------------------------------------------------------------------------------------
 // SUPPORT FUNCTIONS
 //----------------------------------------------------------------------------------------
 	_isSceneReady : function () {
-		var r = (this._scene && this._sceneParsed && (this._objectsToLoad == 0));
+		var r = (this._scene && this._sceneParsed && (this._objectsToLoad == 0)); 
 		return r;
 	},
 
 	_testReady : function () {
 		if (this._objectsToLoad != 0) return;
-		// Colin Addition
-		if(this._onLoadedEvent && this._onLoadedEvent!="null") {
-			this._onLoadedEvent();
-		}
+
 		this.trackball.track(SglMat4.identity(), 0.0, 0.0, 0.0);
 		this.ui.postDrawEvent();
 	},
@@ -1227,9 +1224,9 @@ Presenter.prototype = {
 
 				instCenter = SglMat4.mul4(mesh.transform.matrix, instCenter);
 				instCenter = SglMat4.mul4(instances[this._scene.space.whichInstanceCenter].transform.matrix, instCenter);
-
+				
 				instCenter = SglVec4.to3(instCenter);
-
+				
 				this.sceneCenter = instCenter;
 			}
 		}
@@ -1239,29 +1236,29 @@ Presenter.prototype = {
 			var smax = SglVec3.minNumber();
 			var imin = [0.0, 0.0, 0.0];
 			var imax = [0.0, 0.0, 0.0];
-
+			
 			for (var inst in instances) {
 				var mesh = meshes[instances[inst].mesh];
 				if((mesh)&&(mesh.renderable)){
 					var instCenter = SglVec3.to4(mesh.renderable.datasetCenter,1);
 					instCenter = SglMat4.mul4(mesh.transform.matrix, instCenter);
-					instCenter = SglMat4.mul4(instances[inst].transform.matrix, instCenter);
+					instCenter = SglMat4.mul4(instances[inst].transform.matrix, instCenter);					
 					instCenter = SglVec4.to3(instCenter);
-
+					
 					var radius = mesh.renderable.datasetRadius;
 					var vector111 = SglVec3.one();
 					vector111 = SglMat3.mul3(SglMat4.to33(mesh.transform.matrix), vector111);
 					vector111 = SglMat3.mul3(SglMat4.to33(instances[inst].transform.matrix), vector111);
 					var scalefactor = SglVec3.length(vector111) / SglVec3.length([1,1,1]);
 					radius = radius*scalefactor;
-
+					
 					imin[0] = instCenter[0] - radius;
 					imin[1] = instCenter[1] - radius;
 					imin[2] = instCenter[2] - radius;
 					imax[0] = instCenter[0] + radius;
 					imax[1] = instCenter[1] + radius;
 					imax[2] = instCenter[2] + radius;
-
+					
 					if(imin[0] < smin[0]) smin[0] = imin[0];
 					if(imin[1] < smin[1]) smin[1] = imin[1];
 					if(imin[2] < smin[2]) smin[2] = imin[2];
@@ -1270,9 +1267,9 @@ Presenter.prototype = {
 					if(imax[2] > smax[2]) smax[2] = imax[2];
 				}
 			}
-
+		
 			this.sceneCenter = [ (smax[0] + smin[0])/2.0, (smax[1] + smin[1])/2.0, (smax[2] + smin[2])/2.0 ];
-		}
+		}		
 		else //if(this._scene.space.centerMode == "first")
 		{
 			for (var inst in instances) {
@@ -1282,9 +1279,9 @@ Presenter.prototype = {
 
 					instCenter = SglMat4.mul4(mesh.transform.matrix, instCenter);
 					instCenter = SglMat4.mul4(instances[inst].transform.matrix, instCenter);
-
+					
 					instCenter = SglVec4.to3(instCenter);
-
+					
 					this.sceneCenter = instCenter;
 					break;
 				}
@@ -1301,12 +1298,12 @@ Presenter.prototype = {
 			if((mesh)&&(mesh.renderable)){
 				var radius = mesh.renderable.datasetRadius;
 				var vector111 = SglVec3.one();
-
+				
 				vector111 = SglMat3.mul3(SglMat4.to33(mesh.transform.matrix), vector111);
 				vector111 = SglMat3.mul3(SglMat4.to33(instances[this._scene.space.whichInstanceRadius].transform.matrix), vector111);
-
+				
 				var scalefactor = SglVec3.length(vector111) / SglVec3.length([1,1,1]);
-
+				
 				this.sceneRadiusInv = 1.0 / (radius*scalefactor);
 			}
 		}
@@ -1316,29 +1313,29 @@ Presenter.prototype = {
 			var smax = SglVec3.minNumber();
 			var imin = [0.0, 0.0, 0.0];
 			var imax = [0.0, 0.0, 0.0];
-
+			
 			for (var inst in instances) {
 				var mesh = meshes[instances[inst].mesh];
 				if((mesh)&&(mesh.renderable)){
 					var instCenter = SglVec3.to4(mesh.renderable.datasetCenter,1);
 					instCenter = SglMat4.mul4(mesh.transform.matrix, instCenter);
-					instCenter = SglMat4.mul4(instances[inst].transform.matrix, instCenter);
+					instCenter = SglMat4.mul4(instances[inst].transform.matrix, instCenter);					
 					instCenter = SglVec4.to3(instCenter);
-
+					
 					var radius = mesh.renderable.datasetRadius;
 					var vector111 = SglVec3.one();
 					vector111 = SglMat3.mul3(SglMat4.to33(mesh.transform.matrix), vector111);
 					vector111 = SglMat3.mul3(SglMat4.to33(instances[inst].transform.matrix), vector111);
 					var scalefactor = SglVec3.length(vector111) / SglVec3.length([1,1,1]);
 					radius = radius*scalefactor;
-
+					
 					imin[0] = instCenter[0] - radius;
 					imin[1] = instCenter[1] - radius;
 					imin[2] = instCenter[2] - radius;
 					imax[0] = instCenter[0] + radius;
 					imax[1] = instCenter[1] + radius;
 					imax[2] = instCenter[2] + radius;
-
+					
 					if(imin[0] < smin[0]) smin[0] = imin[0];
 					if(imin[1] < smin[1]) smin[1] = imin[1];
 					if(imin[2] < smin[2]) smin[2] = imin[2];
@@ -1349,7 +1346,7 @@ Presenter.prototype = {
 			}
 			var scenter = [ (smax[0] + smin[0])/2.0, (smax[1] + smin[1])/2.0, (smax[2] + smin[2])/2.0 ]
 			this.sceneRadiusInv = 1.0 / SglVec3.length(SglVec3.sub(smax, scenter));
-		}
+		}		
 		else //if(this._scene.space.radiusMode == "first")
 		{
 			for (var inst in instances) {
@@ -1357,12 +1354,12 @@ Presenter.prototype = {
 				if((mesh)&&(mesh.renderable)){
 					var radius = mesh.renderable.datasetRadius;
 					var vector111 = SglVec3.one();
-
+					
 					vector111 = SglMat3.mul3(SglMat4.to33(mesh.transform.matrix), vector111);
 					vector111 = SglMat3.mul3(SglMat4.to33(instances[inst].transform.matrix), vector111);
-
+					
 					var scalefactor = SglVec3.length(vector111) / SglVec3.length([1,1,1]);
-
+					
 					this.sceneRadiusInv = 1.0 / (radius*scalefactor);
 					break;
 				}
@@ -1386,7 +1383,7 @@ Presenter.prototype = {
 	},
 
 	_createPickFramebuffer : function (width, height) {
-		if (this.pickFramebuffer && (this.pickFramebuffer.width == width) && (this.pickFramebuffer.height == height))
+		if (this.pickFramebuffer && (this.pickFramebuffer.width == width) && (this.pickFramebuffer.height == height)) 
 			return;
 		else
 			this._destroyPickFramebuffer();
@@ -1479,7 +1476,7 @@ Presenter.prototype = {
 		TMR.datasetCenter[1] = (TMR.boundingBox.max[1] + TMR.boundingBox.min[1]) / 2.0;
 		TMR.datasetCenter[2] = (TMR.boundingBox.max[2] + TMR.boundingBox.min[2]) / 2.0;
 
-		TMR.datasetRadius = Math.sqrt( Math.pow((TMR.boundingBox.max[0] - TMR.boundingBox.min[0]),2) +
+		TMR.datasetRadius = Math.sqrt( Math.pow((TMR.boundingBox.max[0] - TMR.boundingBox.min[0]),2) + 
 									   Math.pow((TMR.boundingBox.max[1] - TMR.boundingBox.min[1]),2) +
 									   Math.pow((TMR.boundingBox.max[2] - TMR.boundingBox.min[2]),2) ) / 2.0;
 
@@ -1495,7 +1492,7 @@ Presenter.prototype = {
 		var height   = this.ui.height;
 		var xform    = this.xform;
 		var renderer = this.renderer;
-		var CurrProgram   = this.basicNXSProgram;
+		var CurrProgram   = this.basicNXSProgram; 
 		var CurrPointProgram = this.pointNXSProgram;
 		var CurrTechnique = this.basicPLYTechnique;
 		var CCProgram   = this.colorShadedNXSProgram;
@@ -1557,9 +1554,9 @@ Presenter.prototype = {
 					if(newBudget > nexus._minDrawBudget && (newBudget < nexus._drawBudget || nexus._drawSize > nexus._drawBudget))
 						nexus._drawBudget = 0.9 * nexus._drawBudget + 0.1*newBudget;
 				}
-
+				
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CurrProgram;
 				else
 					program = CurrPointProgram;
@@ -1583,7 +1580,7 @@ Presenter.prototype = {
 
 			// GLstate cleanup
 			gl.disable(gl.DEPTH_TEST);
-
+			
 			xform.model.pop();
 		}
 
@@ -1632,9 +1629,9 @@ Presenter.prototype = {
 					if(newBudget > nexus._minDrawBudget && (newBudget < nexus._drawBudget || nexus._drawSize > nexus._drawBudget))
 						nexus._drawBudget = 0.9 * nexus._drawBudget + 0.1*newBudget;
 				}
-
+				
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CurrProgram;
 				else
 					program = CurrPointProgram;
@@ -1660,7 +1657,7 @@ Presenter.prototype = {
 			gl.disable(gl.BLEND);
 			gl.depthMask(true);
 			gl.disable(gl.DEPTH_TEST);
-
+			
 			xform.model.pop();
 		}
 
@@ -1669,16 +1666,16 @@ Presenter.prototype = {
 			// GLstate setup
 			gl.enable(gl.DEPTH_TEST);
 			gl.depthFunc(gl.LESS);
-
+			
 			xform.model.push();
-
+			
 			var lineUniforms = {
 				"uWorldViewProjectionMatrix" : xform.modelViewProjectionMatrix,
 				"uLineColor"                 : [0.5, 1.0, 0.5, 1.0] ,
 				"uPointA"                    : this._pointA,
-				"uPointB"                    : (this._measurementStage==2)?this._pointA:this._pointB,
+				"uPointB"                    : (this._measurementStage==2)?this._pointA:this._pointB, 
 			};
-
+			
 			//drawing points and line
 			renderer.begin();
 				renderer.setTechnique(lineTechnique);
@@ -1691,19 +1688,19 @@ Presenter.prototype = {
 				renderer.setModel(this.simpleLineModel);
 				renderer.renderModel();
 			renderer.end();
-
+			
 			lineUniforms = {
 				"uWorldViewProjectionMatrix" : xform.modelViewProjectionMatrix,
 				"uLineColor"                 : [0.2, 0.4, 0.2, 0.5] ,
 				"uPointA"                    : this._pointA,
-				"uPointB"                    : (this._measurementStage==2)?this._pointA:this._pointB,
+				"uPointB"                    : (this._measurementStage==2)?this._pointA:this._pointB, 
 			};
-
+			
 			gl.depthFunc(gl.GREATER);
 			gl.depthMask(false);
 			gl.enable(gl.BLEND);
 			gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-
+			
 			//drawing points and line
 			renderer.begin();
 				renderer.setTechnique(lineTechnique);
@@ -1716,13 +1713,13 @@ Presenter.prototype = {
 				renderer.setModel(this.simpleLineModel);
 				renderer.renderModel();
 			renderer.end();
-
+			
 			// GLstate cleanup
 			gl.disable(gl.BLEND);
 			gl.depthMask(true);
 			gl.depthFunc(gl.LESS);
 			gl.disable(gl.DEPTH_TEST);
-
+			
 			xform.model.pop();
 		}
 
@@ -1763,7 +1760,7 @@ Presenter.prototype = {
 				nexus.viewport         = [0, 0, width, height];
 
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CCProgram;
 				else
 					program = CCPointProgram;
@@ -1789,7 +1786,7 @@ Presenter.prototype = {
 			gl.disable(gl.BLEND);
 			gl.depthMask(true);
 			gl.disable(gl.DEPTH_TEST);
-
+			
 			xform.model.pop();
 		}
 	},
@@ -1851,7 +1848,7 @@ Presenter.prototype = {
 				this.pickFramebuffer.bind();
 
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CurrProgram;
 				else
 					program = CurrPointProgram;
@@ -1896,14 +1893,14 @@ Presenter.prototype = {
 		var bb = pixel[2] / 255.0;
 		var aa = pixel[3] / 255.0;
 		var depth = aa  + ( bb / (256.0)) + ( gg / (256.0*256.0)) + ( rr / (256.0*256.0*256.0));
-
+		
 		var ppointc;
 
 		if((rr==0.0) && (gg==0.0) && (bb==00))
 			return(null);
 		else
 			ppointc = xform.unproject([this._pickpoint[0]/width,this._pickpoint[1]/height,depth]);
-
+		
 		return([ppointc[0], ppointc[1], ppointc[2]]);
 	},
 
@@ -1966,7 +1963,7 @@ Presenter.prototype = {
 				this.pickFramebuffer.bind();
 
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CurrProgram;
 				else
 					program = CurrPointProgram;
@@ -2069,7 +2066,7 @@ Presenter.prototype = {
 				this.pickFramebuffer.bind();
 
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CurrProgram;
 				else
 					program = CurrPointProgram;
@@ -2134,7 +2131,7 @@ Presenter.prototype = {
 				this.pickFramebuffer.bind();
 
 				var program;
-				if(nexus._header.signature.face.hasIndex)
+				if(nexus._header.signature.face.hasIndex) 
 					program = CurrProgram;
 				else
 					program = CurrPointProgram;
@@ -2185,7 +2182,7 @@ Presenter.prototype = {
 
 	// creates simple 2-point line model
 	_createLineModel : function () {
-
+	
 		var gl = this.ui.gl;
 		this.simpleLineModel = new SglModel(gl, {
 					vertices : {
@@ -2218,7 +2215,7 @@ Presenter.prototype = {
 		this.colorCodedIDNXSProgram = this._createColorCodedIDNXSProgram();
 		this.colorCodedIDPointNXSProgram = this._createColorCodedIDPointNXSProgram();
 		this.colorCodedXYZNXSProgram = this._createXYZNXSProgram();
-		this.colorCodedXYZPointNXSProgram = this._createXYZPointNXSProgram();
+		this.colorCodedXYZPointNXSProgram = this._createXYZPointNXSProgram();		
 
 		this.basicPLYTechnique  = this._createStandardPLYtechnique();
 		this.colorCodedIDPLYtechnique  = this._createColorCodedIDPLYtechnique();
@@ -2258,7 +2255,7 @@ Presenter.prototype = {
 		this._objectsToLoad      = 0;
 		this._targetInstanceName = null;
 		this._targetHotSpotName  = null;
-
+		
 		this._instancesProgressiveID = 1;
 		this._spotsProgressiveID     = 1;
 
@@ -2408,9 +2405,9 @@ Presenter.prototype = {
 	},
 
 	onDraw : function () {
-		if (this._isSceneReady())
+		if (this._isSceneReady()) 
 			this._drawScene();
-		else
+		else 
 			this._drawNull();
 	},
 
@@ -2424,7 +2421,7 @@ Presenter.prototype = {
 	toggleDebugMode : function () {
 		this._isDebugging = !this._isDebugging;
 	},
-
+	
 	setScene : function (options) {
 
 		if (!options) return;
@@ -2510,7 +2507,7 @@ Presenter.prototype = {
 
 		// create point-to-point line model
 		this._createLineModel();
-
+		
 		this._testReady();
 		this._sceneParsed = true;
 	},
@@ -2518,16 +2515,16 @@ Presenter.prototype = {
 	resetTrackball : function () {
 		this.trackball.reset();
 		this.trackball.track(SglMat4.identity(), 0.0, 0.0, 0.0);
-
+		
 		this._lightDirection = [0, 0, -1]; // also reset lighting
-
+		
 		this.ui.postDrawEvent();
 	},
 
 	getTrackballPosition : function () {
 		return this.trackball.getState();
 	},
-
+	
 	setTrackballPosition : function (newposition) {
 		this.trackball.setState(newposition);
 		this.ui.postDrawEvent();
@@ -2552,11 +2549,11 @@ Presenter.prototype = {
 		var instances = this._scene.modelInstances;
 
 		if(name == HOP_ALL) {
-			for (var inst in instances)
+			for (var inst in instances) 
 				instances[inst].useSolidColor = newState;
 				if(newColor)
 					instances[name].color = newColor;
-		}
+		} 
 		else {
 			if(instances[name]) { // if an instance with that name exists
 				instances[name].useSolidColor = newState;
@@ -2599,9 +2596,9 @@ Presenter.prototype = {
 		var instances = this._scene.modelInstances;
 
 		if(name == HOP_ALL) {
-			for (var inst in instances)
+			for (var inst in instances) 
 				instances[inst].useSolidColor = !instances[inst].useSolidColor;
-		}
+		} 
 		else {
 			if(instances[name]) // if an instance with that name exists
 				instances[name].useSolidColor = !instances[name].useSolidColor;
@@ -2639,11 +2636,11 @@ Presenter.prototype = {
 		var instances = this._scene.modelInstances;
 
 		if(name == HOP_ALL) {
-			for (var inst in instances)
+			for (var inst in instances) 
 				instances[inst].useTransparency = newState;
 				if(newAlpha)
 					instances[inst].alpha = newAlpha;
-		}
+		} 
 		else {
 			if(instances[name]) { // if an instance with that name exists
 				instances[name].useTransparency = newState;
@@ -2687,9 +2684,9 @@ Presenter.prototype = {
 		var instances = this._scene.modelInstances;
 
 		if(name == HOP_ALL) {
-			for (var inst in instances)
+			for (var inst in instances) 
 				instances[inst].useTransparency = !instances[inst].useTransparency;
-		}
+		} 
 		else {
 			if(instances[name]) // if an instance with that name exists
 				instances[name].useTransparency = !instances[name].useTransparency;
@@ -2727,9 +2724,9 @@ Presenter.prototype = {
 		var instances = this._scene.modelInstances;
 
 		if(name == HOP_ALL) {
-			for (var inst in instances)
+			for (var inst in instances) 
 				instances[inst].visible = newState;;
-		}
+		} 
 		else {
 			if(instances[name]) // if an instance with that name exists
 				instances[name].visible = newState;
@@ -2764,9 +2761,9 @@ Presenter.prototype = {
 		var instances = this._scene.modelInstances;
 
 		if(name == HOP_ALL) {
-			for (var inst in instances)
+			for (var inst in instances) 
 				instances[inst].visible = !instances[inst].visible;
-		}
+		} 
 		else {
 			if(instances[name]) // if an instance with that name exists
 				instances[name].visible = !instances[name].visible;
@@ -2804,15 +2801,15 @@ Presenter.prototype = {
 
 		if(!name || name==HOP_ALL) {
 			for (var inst in instances) {
-				if(instances[inst].visible){
+				if(instances[inst].visible){ 
 					visibility = true;
 					return visibility;
 				}
 			}
-		}
+		} 
 		else {
 			if(instances[name]) { // if an instance with that name exists
-				if(instances[name].visible){
+				if(instances[name].visible){ 
 					visibility = true;
 					return visibility;
 				}
@@ -2828,7 +2825,7 @@ Presenter.prototype = {
 
 		for (var inst in instances) {
 			if(!tag || tag==HOP_ALL){
-				if(instances[inst].visible){
+				if(instances[inst].visible){ 
 					visibility = true;
 					return visibility;
 				}
@@ -2836,7 +2833,7 @@ Presenter.prototype = {
 			else{
 				for (var tg in instances[inst].tags){
 					if(instances[inst].tags[tg] == tag){
-						if(instances[inst].visible){
+						if(instances[inst].visible){ 
 							visibility = true;
 							return visibility;
 						}
@@ -2854,9 +2851,9 @@ Presenter.prototype = {
 		var spots = this._scene.spots;
 
 		if(name == HOP_ALL) {
-			for (var spt in spots)
+			for (var spt in spots) 
 				spots[spt].visible = newState;
-		}
+		} 
 		else {
 			if(spots[name]) // if an hotspot with that name exists
 				spots[name].visible = newState;
@@ -2893,9 +2890,9 @@ Presenter.prototype = {
 		var spots = this._scene.spots;
 
 		if(name == HOP_ALL) {
-			for (var spt in spots)
+			for (var spt in spots) 
 				spots[spt].visible = !spots[spt].visible;
-		}
+		} 
 		else {
 			if(spots[name]) // if an hotspot with that name exists
 				spots[name].visible = !spots[name].visible;
@@ -2933,15 +2930,15 @@ Presenter.prototype = {
 
 		if(!name || name==HOP_ALL) {
 			for (var spt in spots) {
-				if(spots[spt].visible){
+				if(spots[spt].visible){ 
 					visibility = true;
 					return visibility;
 				}
 			}
-		}
+		} 
 		else {
 			if(spots[name]) { // if an hotspot with that name exists
-				if(spots[name].visible){
+				if(spots[name].visible){ 
 					visibility = true;
 					return visibility;
 				}
@@ -2957,7 +2954,7 @@ Presenter.prototype = {
 
 		for (var spt in spots) {
 			if(!tag || tag==HOP_ALL){
-				if(spots[spt].visible){
+				if(spots[spt].visible){ 
 					visibility = true;
 					return visibility;
 				}
@@ -2965,7 +2962,7 @@ Presenter.prototype = {
 			else{
 				for (var tg in spots[spt].tags){
 					if(spots[spt].tags[tg] == tag){
-						if(spots[spt].visible){
+						if(spots[spt].visible){ 
 							visibility = true;
 							return visibility;
 						}
@@ -2984,10 +2981,10 @@ Presenter.prototype = {
        this.onMouseWheel(1);
     },
 
-    rotateLight: function(x, y) {
+    rotateLight: function(x, y) {       
       x *= 2;
       y *= 2;
-      var r = Math.sqrt(x*x + y*y);
+      var r = Math.sqrt(x*x + y*y);     
       if(r >= 1) {
         x /= r;
         y /= r;
