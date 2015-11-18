@@ -1,7 +1,7 @@
 /*
 3DHOP - 3D Heritage Online Presenter
 Copyright (c) 2014, Marco Callieri - Visual Computing Lab, ISTI - CNR
-All rights reserved.    
+All rights reserved.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -62,15 +62,15 @@ Nexus.Attribute._typeSizeMap[Nexus.Attribute.FLOAT         ] = 4;
 Nexus.Attribute._typeSizeMap[Nexus.Attribute.DOUBLE        ] = 8;
 
 Nexus.Attribute._typeGLMap = { };
-Nexus.Attribute._typeGLMap[Nexus.Attribute.NONE          ] = WebGLRenderingContext.NONE;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.BYTE          ] = WebGLRenderingContext.BYTE;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.UNSIGNED_BYTE ] = WebGLRenderingContext.UNSIGNED_BYTE;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.SHORT         ] = WebGLRenderingContext.SHORT;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.UNSIGNED_SHORT] = WebGLRenderingContext.UNSIGNED_SHORT;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.INT           ] = WebGLRenderingContext.INT;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.UNSIGNED_INT  ] = WebGLRenderingContext.UNSIGNED_INT;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.FLOAT         ] = WebGLRenderingContext.FLOAT;
-Nexus.Attribute._typeGLMap[Nexus.Attribute.DOUBLE        ] = WebGLRenderingContext.DOUBLE;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.NONE          ] = WebGLRenderingContext.prototype.NONE;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.BYTE          ] = WebGLRenderingContext.prototype.BYTE;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.UNSIGNED_BYTE ] = WebGLRenderingContext.prototype.UNSIGNED_BYTE;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.SHORT         ] = WebGLRenderingContext.prototype.SHORT;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.UNSIGNED_SHORT] = WebGLRenderingContext.prototype.UNSIGNED_SHORT;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.INT           ] = WebGLRenderingContext.prototype.INT;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.UNSIGNED_INT  ] = WebGLRenderingContext.prototype.UNSIGNED_INT;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.FLOAT         ] = WebGLRenderingContext.prototype.FLOAT;
+Nexus.Attribute._typeGLMap[Nexus.Attribute.DOUBLE        ] = WebGLRenderingContext.prototype.DOUBLE;
 
 Nexus.Attribute._typeNormalized = { };
 Nexus.Attribute._typeNormalized[Nexus.Attribute.NONE          ] = true;
@@ -522,7 +522,7 @@ Nexus.PriorityQueue.prototype = {
 		this.bubbleUp(this.content.push(node) -1);
 	},
 	pop: function() {
-		var result = this.content[0];    
+		var result = this.content[0];
 		var end = this.content.pop();
 		if (this.content.length > 0) {
 			this.content[0] = end;
@@ -534,7 +534,7 @@ Nexus.PriorityQueue.prototype = {
 	bubbleUp: function(n) {
 		var element = this.content[n];
 		while (n > 0) {
-			var parentN = ((n+1)>>1) -1; 
+			var parentN = ((n+1)>>1) -1;
 			var parent = this.content[parentN];
 			if(parent.node.renderError > element.node.renderError)
 				break;
@@ -684,9 +684,9 @@ Nexus.Renderer.prototype = {
 		var that = this;
 		var url = this._url;
 		/**Safari PATCH**/
-		/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
-		/**/  url = this._url + '?' + Math.random();
-		/**/}
+		 // if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+		  // url = this._url + '?' + Math.random();
+		// /**/}
 		/**Safari PATCH**/
 		var r = new SglBinaryRequest(url, {
 			range : [offset, offset+size-1],
@@ -699,6 +699,7 @@ Nexus.Renderer.prototype = {
 
 	_handleHeader : function (buffer) {
 		var view         = new DataView(buffer);
+		debugger;
 		var offset       = 0;
 		var littleEndian = Nexus.LITTLE_ENDIAN_DATA;
 
@@ -715,9 +716,9 @@ Nexus.Renderer.prototype = {
 		var that = this;
 		var url = this._url;
 		/**Safari PATCH**/
-		/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
-		/**/  url = this._url + '?' + Math.random();
-		/**/}
+		// if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+		// url = this._url + '?' + Math.random();
+		// }
 		/**Safari PATCH**/
 		var r = new SglBinaryRequest(url, {
 			range : [offset, offset+size-1],
@@ -768,7 +769,6 @@ Nexus.Renderer.prototype = {
 		this._visitedNodes  = new Uint8Array(nodesCount);  //Nexus.BoolArray(nodesCount);
 		this._blockedNodes  = new Uint8Array(nodesCount);  //new Nexus.BoolArray(nodesCount);
 		this._selectedNodes = new Uint8Array(nodesCount);  //new Nexus.BoolArray(nodesCount);
-
 		this._status = Nexus.Renderer.STATUS_OPEN;
 
 		if (this._onSceneReady) {
@@ -995,7 +995,7 @@ Nexus.Renderer.prototype = {
 				var _node = {
 					nvert: node.verticesCount,
 					nface: node.facesCount,
-					firstPatch: 0, 
+					firstPatch: 0,
 					lastPatch: node.lastPatch - node.firstPatch,
 					buffer: node.request.buffer
 				};
@@ -1145,7 +1145,7 @@ Nexus.Renderer.prototype = {
 
 		var nodesCount = this._nodes.length;
 		for(var i = 0; i < nodesCount; i++) {
-			this._visitedNodes[i] = 0; 
+			this._visitedNodes[i] = 0;
 			this._blockedNodes[i] = 0;
 			this._selectedNodes[i] = 0;
 		}
@@ -1174,9 +1174,9 @@ Nexus.Renderer.prototype = {
 			}
 			else {
 				this._selectedNodes[n] = 1;
-				this.currentError = nodeData.node.renderError; 
+				this.currentError = nodeData.node.renderError;
 			}
-			
+
 			this._hierarchyVisit_insertChildren(n, visitQueue, blocked);
 		}
 //		if(visitQueue.size() == 0)
@@ -1202,7 +1202,7 @@ Nexus.Renderer.prototype = {
 					index: node.index,
 					nvert: node.verticesCount,
 					nface: node.facesCount,
-					firstPatch: 0, 
+					firstPatch: 0,
 					lastPatch: node.lastPatch - node.firstPatch,
 					buffer: node.request.buffer
 				};
@@ -1272,9 +1272,9 @@ Nexus.Renderer.prototype = {
 		var url = this._url;
 		for (var i=0; i<nodesToRequest; ++i) {
 			/**Safari PATCH**/
-			/**/if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
-			/**/  url = this._url + '?' + Math.random();
-			/**/}
+			// if (navigator.userAgent.toLowerCase().indexOf('safari')!=-1 && navigator.userAgent.toLowerCase().indexOf('chrome')==-1) {
+			  url = this._url + '?' + Math.random();
+			// }
 			/**Safari PATCH**/
 			var node   = candidateNodes[i];
 			node.status  = Nexus.Renderer._NODE_PENDING;
@@ -1310,7 +1310,7 @@ Nexus.Renderer.prototype = {
 		var r = this._vp[0] + this._vp[2];
 		var b = this._vp[1];
 		var t = this._vp[1] + this._vp[3];
-  
+
 		var nsw = this._unproject([l, b, 0.0]);
 		var nse = this._unproject([r, b, 0.0]);
 		var nnw = this._unproject([l, t, 0.0]);
@@ -1390,7 +1390,7 @@ Nexus.Renderer.prototype = {
 				if (skipped) continue;
 			}
 
-			if(!this._hierarchyVisit_isVisible(node.sphere.center, node.tightRadius)) 
+			if(!this._hierarchyVisit_isVisible(node.sphere.center, node.tightRadius))
 				continue;
 
 			node.vbo.bind();
@@ -1434,9 +1434,9 @@ Nexus.Renderer.prototype = {
 				var patch = patches[p];
 				if(!selectedNodes[patch.node]) { //draw this patch
 					last = patch.lastTriangle;
-					if(p < node.lastPatch-1) 
+					if(p < node.lastPatch-1)
 						continue;
-				} 
+				}
 				//here either we skip or is the last node
 				if(last > first) { //might be a double skip
 					gl.glDrawElements(gl.TRIANGLES, (last - first) * 3, gl.UNSIGNED_SHORT, first * 3 * Uint16Array.BYTES_PER_ELEMENT);
@@ -1444,7 +1444,7 @@ Nexus.Renderer.prototype = {
 				}
 				first = patch.lastTriangle;
 			}
-		} 
+		}
 
 		for (var i = 0; i < vertexAttribsCount; ++i) {
 			if (vertexAttributes[i].isNull) continue;
