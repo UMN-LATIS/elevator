@@ -11,8 +11,11 @@ var gulp = require('gulp'),
     cache = require('gulp-cache'),
     livereload = require('gulp-livereload'),
     del = require('del');
-    del = require('gulp-sourcemaps');
-var sourcemaps = require('gulp-sourcemaps');
+    sourcemaps = require('gulp-sourcemaps');
+    foreach = require('gulp-foreach');
+    out = require('gulp-out');
+    uglifycss = require('gulp-uglifycss');
+
 
 gulp.task('3dhop', function() {
 	return gulp.src(["./assets/3dviewer/js/spidergl.js", "./assets/3dviewer/js/presenter.js", "./assets/3dviewer/js/ply.js", "./assets/3dviewer/js/trackball_pantilt.js", "./assets/3dviewer/js/trackball_sphere.js","./assets/3dviewer/js/trackball_turntable.js","./assets/3dviewer/js/trackball_turntable_pan.js", "./assets/3dviewer/js/init.js"])
@@ -30,5 +33,24 @@ gulp.task('basicFiles', function() {
         .pipe(uglify())
         .pipe(concat('serializeDateTemplate.js'))
         .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest("./assets/js/"));
+        .pipe(gulp.dest("./assets/minified/"));
+});
+
+
+gulp.task("allJSFilesIndividually", function() {
+    return gulp.src('./assets/js/*.js')
+        .pipe(sourcemaps.init())
+        .pipe(uglify())
+        .pipe(sourcemaps.write('./'))
+        .pipe(out('./assets/minifiedjs/{basename}.min{extension}'));
+
+});
+
+gulp.task("allCSSFilesIndividually", function() {
+    return gulp.src('./assets/css/*.css')
+        // .pipe(sourcemaps.init())
+        .pipe(uglifycss())
+        // .pipe(sourcemaps.write('./'))
+        .pipe(out('./assets/minifiedcss/{basename}.min{extension}'));
+
 });

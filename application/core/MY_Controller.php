@@ -7,26 +7,26 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 
 		parent::__construct();
-		$this->template->stylesheet->add('assets/css/bootstrap.css');
-		$this->template->javascript->add("assets/js/jquery-2.0.3.min.js");
-		$this->template->javascript->add("assets/js/bootstrap.min.js");
-		$this->template->javascript->add("assets/js/jquery-ui.min.js");
-		$this->template->javascript->add("assets/js/jquery.cookie.min.js");
-		$this->template->javascript->add("assets/js/retina-1.1.0.min.js");
-		$this->template->javascript->add("assets/js/mousetrap.min.js");
-		$this->template->javascript->add("assets/js/bootbox.min.js");
+		$this->template->stylesheet->add('assets/minifiedcss/bootstrap.min.css');
+		$this->template->javascript->add("assets/minifiedjs/jquery-2.0.3.min.js");
+		$this->template->javascript->add("assets/minifiedjs/bootstrap.min.js");
+		$this->template->javascript->add("assets/minifiedjs/jquery-ui.min.js");
+		$this->template->javascript->add("assets/minifiedjs/jquery.cookie.min.js");
+		$this->template->javascript->add("assets/minifiedjs/retina-1.1.0.min.js");
+		$this->template->javascript->add("assets/minifiedjs/mousetrap.min.js");
+		$this->template->javascript->add("assets/minifiedjs/bootbox.min.js");
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$this->template->javascript->add("assets/js/serializeForm.js");
-			$this->template->javascript->add("assets/js/dateWidget.js");
-			$this->template->javascript->add("assets/js/template.js");
+			$this->template->javascript->add("assets/minifiedjs/serializeForm.js");
+			$this->template->javascript->add("assets/minifiedjs/dateWidget.js");
+			$this->template->javascript->add("assets/minifiedjs/template.js");
 
 		}
 		else {
-			$this->template->javascript->add("assets/js/serializeDateTemplate.js");
+			$this->template->javascript->add("assets/minifiedjs/serializeDateTemplate.min.js");
 		}
 
 		if($this->router->fetch_class() != "search") {
-			$this->template->javascript->add("assets/js/templateSearch.js");
+			$this->template->javascript->add("assets/minifiedjs/templateSearch.min.js");
 		}
 
 		$this->load->library("session");
