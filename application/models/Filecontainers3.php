@@ -205,7 +205,6 @@ class FileContainerS3 extends FileContainer {
 	 * @return [type]                 [description]
 	 */
 	public function getProtectedURLForFile($appendedString=null, $timeString="+10 minutes") {
-		$this->logging->logError($this->storageKey . $appendedString);
 		return $this->parent->s3model->getProtectedURL($this->storageKey . $appendedString, $this->originalFilename, $timeString);
 	}
 
