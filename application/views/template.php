@@ -82,10 +82,9 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
   <?=$this->template->stylesheet; ?>
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 
+<link rel="stylesheet" href="/assets/minifiedcss/screen.min.css">
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
-<?else:?>
-<link rel="stylesheet" href="/assets/css/screen.css">
 <?endif?>
 
 
