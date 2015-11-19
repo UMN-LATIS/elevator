@@ -413,11 +413,12 @@ $config['scratchSpace'] = "/scratch/";
 
 $config['elastic'] = "127.0.0.1:9200"; // elastic ip:port
 
-/**
- * dcl caching
- */
-
-$config["enableCaching"] = false;
+if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+  $config["enableCaching"] = false;
+}
+else {
+  $config["enableCaching"] = true;
+}
 
 
 /**
