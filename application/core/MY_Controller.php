@@ -7,33 +7,30 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 
 		parent::__construct();
-		$this->template->stylesheet->add('assets/minifiedcss/bootstrap.min.css');
-		$this->template->javascript->add("assets/minifiedjs/jquery-2.0.3.min.js");
-		$this->template->javascript->add("assets/minifiedjs/bootstrap.min.js");
-		$this->template->javascript->add("assets/minifiedjs/jquery-ui.min.js");
-		$this->template->javascript->add("assets/minifiedjs/jquery.cookie.min.js");
-		$this->template->javascript->add("assets/minifiedjs/retina-1.1.0.min.js");
-		$this->template->javascript->add("assets/minifiedjs/mousetrap.min.js");
-		$this->template->javascript->add("assets/minifiedjs/bootbox.min.js");
+		$cssLoadArray = ["bootstrap"];
+		$jsLoadArray = ["jquery", "bootstrap", "jquery-ui","jquery.cookie", "retina-1.1.0", "mousetrap", "bootbox"];
+
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$this->template->javascript->add("assets/minifiedjs/serializeForm.js");
-			$this->template->javascript->add("assets/minifiedjs/dateWidget.js");
-			$this->template->javascript->add("assets/minifiedjs/template.js");
+			$jsLoadArray= array_merge($jsLoadArray, ["serializeForm", "dateWidget", "temlate"]);
 
 		}
 		else {
-			$this->template->javascript->add("assets/minifiedjs/serializeDateTemplate.min.js");
+			$jsLoadArray[] = "serializeDateTemplate";
 		}
 
 		if($this->router->fetch_class() != "search") {
-			$this->template->javascript->add("assets/minifiedjs/templateSearch.min.js");
+			$jsLoadArray[] = "templateSearch";
 		}
+
+		$this->template->loadCSS($cssLoadArray);
+		$this->tempalte->loadJavascript($jsLoadArray);
+
 
 		$this->load->library("session");
 
 		// set a forever cookie to help with use in iframes
 		$this->input->set_cookie(["name"=>"ElevatorCookie", "value"=>true, "expire" => 60*60*24*365]);
-		$this->load->driver('cache',  array('adapter' => 'apc', 'backup' => 'file'));
+		$this->load->driver('cache',  array('adapter' => 'apc'));
 
 		$this->load->model("user_model");
 
@@ -69,6 +66,8 @@ class MY_Controller extends CI_Controller {
 			$this->user_model->resolvePermissions();
 		}
 	}
+
+
 
 }
 
