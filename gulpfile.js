@@ -17,6 +17,8 @@ var gulp = require('gulp'),
     uglifycss = require('gulp-uglifycss');
 
 
+gulp.task('pre-commit', ['default']);
+
 gulp.task('3dhop', function() {
 	return gulp.src(["./assets/3dviewer/js/spidergl.js", "./assets/3dviewer/js/presenter.js", "./assets/3dviewer/js/ply.js", "./assets/3dviewer/js/trackball_pantilt.js", "./assets/3dviewer/js/trackball_sphere.js","./assets/3dviewer/js/trackball_turntable.js","./assets/3dviewer/js/trackball_turntable_pan.js", "./assets/3dviewer/js/init.js"])
 		.pipe(sourcemaps.init())
