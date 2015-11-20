@@ -6,25 +6,15 @@ class AssetManager extends Admin_Controller {
 	{
 		parent::__construct();
 
-		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
-		$this->template->javascript->add("assets/js/formSubmission.js");
-		$this->template->javascript->add("assets/js/serializeForm.js");
-		$this->template->javascript->add("assets/js/interWindow.js");
-		$this->template->javascript->add("assets/js/sugar.js");
+
+		$jsLoadArray = ["handlebars-v1.1.2", "formSubmission", "serializeForm", "interWindow", "sugar", "jquery.gomap-1.3.2",
+		"markerclusterer", "mapWidget","dateWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery"];
+		$this->template->loadJavascript($jsLoadArray);
+
 		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false");
-		$this->template->javascript->add("assets/js/jquery.gomap-1.3.2.js");
-		$this->template->javascript->add("assets/js/markerclusterer.js");
-		$this->template->javascript->add("assets/js/mapWidget.js");
-		$this->template->javascript->add("assets/js/dateWidget.js");
-		$this->template->javascript->add("assets/js/multiselectWidget.js");
-		$this->template->javascript->add("assets/js/mule2.js");
-		$this->template->javascript->add("assets/js/uploadWidget.js");
-		$this->template->javascript->add("assets/js/parsley.js");
-		$this->template->javascript->add("assets/js/bootstrap-datepicker.js");
-		$this->template->stylesheet->add("assets/css/datepicker.css");
-		$this->template->javascript->add("assets/js/bootstrap-tagsinput.js");
-		$this->template->javascript->add("assets/js/typeahead.jquery.min.js");
-		$this->template->stylesheet->add("assets/css/bootstrap-tagsinput.css");
+
+		$cssLoadArray = ["datepicker", "bootstrap-tagsinput"];
+		$this->template->loadCSS($cssLoadArray);
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
 
 		$this->load->model("asset_model");
