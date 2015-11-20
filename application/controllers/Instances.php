@@ -92,7 +92,7 @@ class Instances extends Instance_Controller {
 			show_404();
 		}
 		$this->template->title = 'Edit Instance';
-		$this->template->javascript->add('assets/js/parsley.js');
+		$this->template->loadJavascript(["parsley"]);
 		$this->template->content->view('instances/edit', $data);
 		$this->template->publish();
 	}
@@ -128,7 +128,7 @@ class Instances extends Instance_Controller {
 
 
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
-		// $this->template->javascript->add("assets/tinymce/jquery.tinymce.min.js");
+
 		if($pageId) {
 			$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
 
