@@ -359,8 +359,7 @@ class Permissions extends Instance_Controller {
 		$data['permissionList'] = $this->doctrine->em->getRepository("Entity\Permission")->findAll();
 
 		$this->template->title = 'New ' . ucfirst($permissionType) . ' Permissions';
-		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
-		$this->template->javascript->add('assets/js/groupCreation.js');
+		$this->template->loadJavascript(["handlebars-v1.1.2", "groupCreation"]);
 		$this->template->content->view('permissions/new_group', $data);
 		$this->template->content->view('handlebarsTemplates');
 		$this->template->publish();
@@ -593,8 +592,8 @@ class Permissions extends Instance_Controller {
 
 	public function addUser()
 	{
-		$this->template->javascript->add("assets/js/bootstrap-datepicker.js");
-		$this->template->stylesheet->add("assets/css/datepicker.css");
+		$this->template->loadJavascript(["bootstrap-datepicker"]);
+		$this->template->loadCSS(["datepicker"]);
 
 		$tempUser = new Entity\User;
 		$tempUser->setUserType("Local");
@@ -660,9 +659,9 @@ class Permissions extends Instance_Controller {
 		$instanceList = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
 
 
+		$this->template->loadJavascript(["bootstrap-datepicker"]);
+		$this->template->loadCSS(["datepicker"]);
 
-		$this->template->javascript->add("assets/js/bootstrap-datepicker.js");
-		$this->template->stylesheet->add("assets/css/datepicker.css");
 		$this->template->content->view('permissions/addUser', ["user"=>$user, "instanceList"=>$instanceList]);
 		$this->template->content->view('user/hiddenAssets', ["hiddenAssets"=>$hiddenAssetArray, "isOffset"=>false]);
 		$this->template->publish();

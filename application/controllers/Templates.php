@@ -6,7 +6,7 @@ class Templates extends Instance_Controller {
 	{
 
 		parent::__construct();
-		$this->template->stylesheet->add('assets/css/template.css');
+		$this->template->loadCSS(['template']);
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
 		if($accessLevel<PERM_ADMIN) {
 			instance_redirect("/errorHandler/error/noPermission");
@@ -213,7 +213,7 @@ class Templates extends Instance_Controller {
 
 		$this->template->title = 'Sort Template';
 
-    $this->template->stylesheet->add('assets/css/template.css');
+    $this->template->loadCSS(['template']);
   	$this->template->content->view('templates/sort', $data);
     $this->template->publish();
 
