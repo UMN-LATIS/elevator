@@ -39,11 +39,10 @@ class Search extends Instance_Controller {
 		}
 
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$this->template->javascript->add("assets/js/search.js");
-			$this->template->javascript->add("assets/js/searchForm.js");
+			$this->template->loadJavascript(["search", "searchForm"]);
 		}
 		else {
-			$this->template->javascript->add("assets/js/searchMaster.js");
+			$this->template->loadJavascript(["searchMaster"]);
 		}
 
 		$this->template->javascript->add("assets/js/spin.min.js");
