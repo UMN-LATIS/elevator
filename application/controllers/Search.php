@@ -9,14 +9,10 @@ class Search extends Instance_Controller {
 	{
 		parent::__construct();
 		$this->load->model("asset_model");
-		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
-		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false&libraries=geometry");
-		$this->template->javascript->add("assets/js/jquery.gomap-1.3.2.js");
-		$this->template->javascript->add("assets/js/mapWidget.js");
-		$this->template->javascript->add("assets/js/markerclusterer.js");
-		$this->template->javascript->add("assets/js/sugar.js");
-		$this->template->javascript->add("assets/js/drawers.js");
-		$this->template->javascript->add("assets/js/galleria-1.3.3.js");
+		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
+
+		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer", "sugar","drawers", "galleria-1.3.3"];
+		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->content->view("drawers/drawerModal");
 	}
@@ -174,7 +170,7 @@ class Search extends Instance_Controller {
 		}
 
 
-		$this->template->javascript->add("assets/js/templateSearch.js");
+		$this->template->loadJavascript(["assets/js/templateSearch"]);
 		$this->template->content->view("listCollections", ["collections"=>$collections]);
 		$this->template->publish();
 
@@ -429,7 +425,7 @@ class Search extends Instance_Controller {
 		if($accessLevel < PERM_ADDASSETS) {
 			instance_redirect("errorHandler/error/noPermission");
 		}
-		$this->template->javascript->add("assets/js/templateSearch.js");
+		$this->template->loadJavascript(["assets/js/templateSearch"]);
 
 
 		$customSearches = $this->doctrine->em->getRepository("Entity\CustomSearch")->findBy(["instance"=>$this->instance, "user"=>$this->user_model->user]);;
@@ -486,13 +482,13 @@ class Search extends Instance_Controller {
 
 
 	public function searchBuilder($customSearchId=null) {
-		$this->template->javascript->add("assets/js/customSearch.js");
+		$this->template->loadJavascript(["assets/js/customSearch"]);
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
 			instance_redirect("errorHandler/error/noPermission");
 		}
-		$this->template->javascript->add("assets/js/templateSearch.js");
+		$this->template->loadJavascript(["assets/js/templateSearch"]);
 
 		if(!$customSearchId) {
 			$customSearch = new Entity\CustomSearch;

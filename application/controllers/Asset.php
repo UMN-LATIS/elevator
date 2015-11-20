@@ -6,24 +6,19 @@ class asset extends Instance_Controller {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->template->javascript->add("assets/js/handlebars-v1.1.2.min.js");
+
+		$jsLoadArray = ["handlebars-v1.1.2"];
+
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$this->template->javascript->add("assets/js/assetView.js");
-			$this->template->javascript->add("assets/js/drawers.js");
+			$jsLoadArray = array_merge($jsLoadArray, ["assetView", "drawers"]);
 		}
 		else {
-			$this->template->javascript->add("assets/js/assetMaster.min.js");
+			$jsLoadArray[] = "assetMaster";
 		}
 
-
-		$this->template->javascript->add("assets/js/jquery.fullscreen-0.4.1.js");
 		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry&sensor=false");
-		$this->template->javascript->add("assets/js/jquery.gomap-1.3.2.min.js");
-		$this->template->javascript->add("assets/js/markerclusterer.min.js");
-		$this->template->javascript->add("assets/js/mapWidget.js");
-		$this->template->javascript->add("assets/js/panzoom.min.js");
-		$this->template->javascript->add("assets/js/jquery.expander.min.js");
-
+		$jsLoadArray = array_merge($jsLoadArray, ["jquery.fullscreen-0.4.1", "jquery.gomap-1.3.2", "markerclusterer", "mapWidget","panzoom","jquery.expander"]);
+		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
 		$this->template->content->view("drawers/drawerModal");
 
@@ -63,7 +58,7 @@ class asset extends Instance_Controller {
 		}
 
 		// for subclipping movies
-		$this->template->javascript->add("assets/js/excerpt.js");
+		$this->template->loadJavascript(["excerpt"]);
 
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
 		$this->template->publish();
@@ -87,7 +82,7 @@ class asset extends Instance_Controller {
 		}
 
 		$embed = $this->loadAssetView($assetModel);
-		$this->template->javascript->add("assets/js/excerpt.js");
+		$this->template->loadJavascript(["excerpt"]);
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "embed"=>$embed, 'firstAsset'=>null]);
 		$this->template->publish();
 
@@ -127,7 +122,7 @@ class asset extends Instance_Controller {
 			$this->template->set_template("noTemplate");
 		}
 
-		$this->template->javascript->add("assets/js/excerpt.js");
+		$this->template->loadJavascript(["excerpt"]);
 		$this->template->content->view("asset/excerpt", ["isEmbedded"=>$embedLink, "asset"=>$assetModel, "embed"=>$embed, "startTime"=>$excerpt->getExcerptStart(), "endTime"=>$excerpt->getExcerptEnd(),"excerptId"=>$excerpt->getId(), "label"=>$excerpt->getExcerptLabel()]);
 		$this->template->publish();
 
@@ -171,7 +166,7 @@ class asset extends Instance_Controller {
 			$embed = $this->load->view("fileHandlers/filenotfound", true);
 			if($embedded) {
 				$this->template->set_template("noTemplate");
-				$this->template->javascript->add("assets/js/excerpt.js");
+				$this->template->loadJavascript(["excerpt"]);
 				$this->template->content = $embed;
 				$this->template->publish();
 			}
@@ -230,8 +225,7 @@ class asset extends Instance_Controller {
 		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedded);
 		if($embedded) {
 			$this->template->set_template("noTemplate");
-			$this->template->javascript->add("assets/js/excerpt.js");
-			$this->template->javascript->add("assets/js/embedTriggers.js");
+			$this->template->loadJavascript(["excerpt", "embedTriggers"]);
 			$this->template->content = $embed;
 			$this->template->publish();
 		}

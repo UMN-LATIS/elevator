@@ -31,19 +31,14 @@ class Drawers extends Instance_Controller {
 		$this->user_model->addRecentDrawer($this->doctrine->em->find('Entity\Drawer', $drawerId));
 
 		$this->template->content->view("search");
-		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
-		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false&libraries=geometry");
-		$this->template->javascript->add("assets/js/jquery.gomap-1.3.2.js");
-		$this->template->javascript->add("assets/js/markerclusterer.js");
-		$this->template->javascript->add("assets/js/drawers.js");
-		$this->template->javascript->add("assets/js/sugar.min.js");
+
+		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
+
+		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer", "sugar","drawers", "galleria-1.3.3", "search", "loadDrawer"];
+		$this->template->loadJavascript($jsLoadArray);
+
 		$this->template->addToDrawer->view("drawers/edit_drawer",["drawerId"=>$drawerId]);
 		$this->template->content->view("drawers/drawerModal");
-		$this->template->javascript->add("assets/js/search.js");
-		$this->template->javascript->add("assets/js/galleria-1.3.3.js");
-		$this->template->javascript->add("assets/js/loadDrawer.js");
-
-
 
 		$this->template->publish();
 	}
