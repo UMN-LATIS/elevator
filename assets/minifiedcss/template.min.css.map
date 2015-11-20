@@ -1,0 +1,1 @@
+{"version":3,"names":[],"mappings":"","sources":["template.css"],"sourcesContent":["div.widgetItem {\n\tborder-style:solid;\n\tborder-width:1px;\n\tmargin:2px 0px 2px 0px;\n\tpadding-top:5px;\n}\n"],"file":"template.min.css","sourceRoot":"/source/"}
