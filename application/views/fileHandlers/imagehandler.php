@@ -33,7 +33,6 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 		<?else:?>
 
 			<?if(array_key_exists("tiled", $fileContainers)):?>
-
 			    <script type="text/javascript" src='/assets/seadragon/openseadragon.js'></script>
 			    <style type="text/css">
 
