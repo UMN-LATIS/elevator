@@ -14,7 +14,7 @@ class Search extends Instance_Controller {
 		$this->template->javascript->add("assets/js/jquery.gomap-1.3.2.js");
 		$this->template->javascript->add("assets/js/mapWidget.js");
 		$this->template->javascript->add("assets/js/markerclusterer.js");
-		$this->template->javascript->add("assets/js/sugar.min.js");
+		$this->template->javascript->add("assets/js/sugar.js");
 		$this->template->javascript->add("assets/js/drawers.js");
 		$this->template->javascript->add("assets/js/galleria-1.3.3.js");
 
@@ -46,7 +46,7 @@ class Search extends Instance_Controller {
 		else {
 			$jsLoadArray = ["searchMaster"];
 		}
-		$jsLoadArray = ["spin"];
+		$jsLoadArray[] = "spin";
 
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
