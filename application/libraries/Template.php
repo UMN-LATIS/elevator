@@ -80,10 +80,10 @@ class Template {
         }
         foreach($cssArray as $css) {
             if($minified) {
-                $this->stylesheet->add("/assets/minifiedcss/" . $css . ".min.js");
+                $this->stylesheet->add("/assets/minifiedcss/" . $css . ".min.css");
             }
             else {
-                $this->stylesheet->add("/assets/css/" . $css . ".js");
+                $this->stylesheet->add("/assets/css/" . $css . ".css");
             }
 
         }
