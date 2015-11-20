@@ -38,14 +38,17 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$this->template->loadJavascript(["search", "searchForm"]);
+			$jsLoadArray = ["search", "searchForm"];
+
 		}
 		else {
-			$this->template->loadJavascript(["searchMaster"]);
+			$jsLoadArray = ["searchMaster"];
 		}
+		$jsLoadArray = ["spin"];
 
-		$this->template->javascript->add("assets/js/spin.min.js");
+		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
 		$this->template->content->view("search");
 		$this->template->publish();
