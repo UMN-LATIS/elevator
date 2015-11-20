@@ -6,12 +6,12 @@ class AssetManager extends Admin_Controller {
 	{
 		parent::__construct();
 
-
+		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "formSubmission", "serializeForm", "interWindow", "sugar", "jquery.gomap-1.3.2",
 		"markerclusterer", "mapWidget","dateWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery"];
 		$this->template->loadJavascript($jsLoadArray);
 
-		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false");
+
 
 		$cssLoadArray = ["datepicker", "bootstrap-tagsinput"];
 		$this->template->loadCSS($cssLoadArray);
