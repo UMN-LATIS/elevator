@@ -23,7 +23,7 @@ class MY_Controller extends CI_Controller {
 		}
 
 		$this->template->loadCSS($cssLoadArray);
-		$this->tempalte->loadJavascript($jsLoadArray);
+		$this->template->loadJavascript($jsLoadArray);
 
 
 		$this->load->library("session");
