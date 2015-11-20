@@ -63,7 +63,7 @@ class Templates extends Instance_Controller {
 		}
 
 		$this->template->title = 'Edit Template';
-	    $this->template->javascript->add("assets/js/handlebars-v1.1.2.js");
+	    $this->template->loadJavascript(["assets/js/handlebars-v1.1.2"]);
   		$this->template->content->view('templates/edit', $data);
     	$this->template->publish();
 	}
