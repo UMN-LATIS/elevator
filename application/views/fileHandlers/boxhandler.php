@@ -16,7 +16,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <link type="text/css" rel="stylesheet" href="/assets/css/crocodoc.viewer.min.css"/>
 <link type="text/css" rel="stylesheet" href="/assets/css/fullscreen.css"/>
 <script type="text/javascript" src="/assets/js/crocodoc.viewer.min.js"></script>
-<script type="text/javascript" src="/assets/js/fullscreen.js"></script>
+<script type="text/javascript" src="/assets/js/crocdoc.fullscreen.js"></script>
 
 
 
