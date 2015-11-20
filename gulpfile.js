@@ -15,6 +15,7 @@ var gulp = require('gulp'),
     foreach = require('gulp-foreach');
     out = require('gulp-out');
     uglifycss = require('gulp-uglifycss');
+    changed = require('gulp-changed');
 
 
 gulp.task('3dhop', function() {
@@ -57,6 +58,7 @@ gulp.task('searchMaster', function() {
 
 gulp.task("allJSFilesIndividually", function() {
     return gulp.src('./assets/js/*.js')
+        .pipe(changed('./assets/minifiedjs/', {extension: '.min.js'}))
         .pipe(sourcemaps.init())
         .pipe(uglify())
         .pipe(rename({
@@ -69,6 +71,7 @@ gulp.task("allJSFilesIndividually", function() {
 
 gulp.task("allCSSFilesIndividually", function() {
     return gulp.src('./assets/css/*.css')
+        .pipe(changed('./assets/minifiedcss/', {extension: '.min.css'}))
         .pipe(sourcemaps.init())
         .pipe(uglifycss())
         .pipe(rename({
