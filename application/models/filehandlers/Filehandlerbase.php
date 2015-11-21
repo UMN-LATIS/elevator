@@ -21,7 +21,7 @@ class FileHandlerBase extends CI_Model {
 	/**
 	 * these will be set by subclasses
 	 */
-	public $metadata;j
+	public $metadata;
 
 	public $sourceFile = NULL; // an object of type fileContainer
 	public $jobIdArray = array(); //beanstalk jobIds
