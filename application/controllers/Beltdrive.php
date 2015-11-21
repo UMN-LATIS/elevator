@@ -155,26 +155,30 @@ class Beltdrive extends CI_Controller {
 
 			$success=false;
 
+
 			$result = $fileHandler->performTask($job);
 
 			if($result == JOB_SUCCESS) {
 				if($fileHandler->save() != false) {
 					$fileHandler->removeJob($job->getId());
 					$this->pheanstalk->delete($job);
+					$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Task Ended",$fileHandler->getObjectId(),$job->getId());
 				}
 				else {
 					echo "Failed updating " . $fileHandler->getObjectId() . "\n";
 					$this->pheanstalk->bury($job);
+					$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Task Updating Failed",$fileHandler->getObjectId(),$job->getId());
 				}
 			}
 			else if($result == JOB_FAILED) {
 				echo "Job Failed\n";
 				$this->pheanstalk->bury($job);
+				$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Job Failed",$fileHandler->getObjectId(),$job->getId());
 			}
 			else if($result == JOB_POSTPONE) {
 				echo "Postponing " . $fileHandler->sourceFile->originalFilename . " : " . $job_encoded['task'] . "\n";
-
 				$this->pheanstalk->release($job, $jobPriority, $fileHandler->postponeTime);
+				$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Postponing task " . $job_encoded['task'],$fileHandler->getObjectId(),$job->getId());
 			}
 
 			echo "Job Complete\n";

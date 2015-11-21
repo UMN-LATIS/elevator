@@ -10,6 +10,7 @@
 sourceFiles/*
 composer.phar
 vendor/*
+node_modules/*
 .tags
 .tags_sorted_by_file
 .DS_Store
