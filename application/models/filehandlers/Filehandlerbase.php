@@ -21,7 +21,7 @@ class FileHandlerBase extends CI_Model {
 	/**
 	 * these will be set by subclasses
 	 */
-	public $metadata;
+	public $metadata;j
 
 	public $sourceFile = NULL; // an object of type fileContainer
 	public $jobIdArray = array(); //beanstalk jobIds
@@ -195,6 +195,7 @@ class FileHandlerBase extends CI_Model {
 		$this->job = $job; //cache the job so we can touch it if necessary
 		$task = json_decode($job->getData(), true);
 		if(method_exists($this, $task["task"])) {
+			$this->logging->processingInfo("taskStart",get_class($this),"Starting Task " . $task["task"],$this->getObjectId(),$job->getId());
 			return call_user_func(array($this,$task["task"]), $task['config']);
 		}
 		else {
