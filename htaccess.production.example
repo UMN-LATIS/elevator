@@ -1,9 +1,5 @@
 RewriteEngine On
 
-# For PHP applications, force inclusion on the ShibPoseur controller file
-# to ensure the Shib attributes get populated even if you didn't bounce through
-# the session initiator
-#php_value auto_prepend_file "/var/www/dcl3/public/shibposeur/Shibboleth.sso.php"
 #RewriteRule ^Shibboleth\.sso(?:/(.*)) shibposeur/Shibboleth.sso.php?shibaction=$1 [L,QSA]
 
 <IfModule mod_deflate.c>
