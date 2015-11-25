@@ -57,7 +57,13 @@ class Instance_Controller extends MY_Controller
         }
 
         if(!$this->instance && !$this->noRedirect) {
-            redirect("/errorHandler/error/specifyInstance");
+            if($this->config->item('missingSiteURL') != '') {
+                redirect($this->config->item('missingSiteURL'));
+            }
+            else {
+                redirect("/errorHandler/error/specifyInstance");
+            }
+
         }
 
     }
