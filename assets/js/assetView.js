@@ -250,8 +250,8 @@ $(document).on("click", ".loadView", function(e) {
 	var parent = $(this).closest("[data-objectid]");
 
 	var needLoadNestedView = false;
-	if(parent.length>0) {
-		// we're within a nested asset, let's also load the content for that.
+	if(parent.length>0 && !parent.hasClass('objectIdHost')) {
+		// we're within a nested asset, rather than a straight thumbnail, let's also load the content for that.
 		parentObject = parent.data("objectid");
 		needLoadNestedView = true;
 	}
