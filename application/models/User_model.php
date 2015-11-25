@@ -154,14 +154,21 @@ class User_model extends CI_Model {
 
 	public function findUserFromLDAP($searchString, $searchType) {
 
-		$ldap_host = "ldap.umn.edu";
-		$base_dn = array("o=University of Minnesota, c=US",);
+		$ldap_host = $this->config->item('ldapURI');
+		$base_dn = array($this->config->item('ldapSearchBase'),);
 		$filter = "($searchType=" . $searchString. ")";
 		$connect = ldap_connect( $ldap_host);
 
 		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
-		$r=ldap_bind($connect);
+
+		if($this->config->item('ldapUsername') != "") {
+			$r=ldap_bind($connect, $this->config->item('ldapUsername'), $this->config->item('ldapPassword'));
+		}
+		else {
+			$r=ldap_bind($connect);
+		}
+
 		$search = ldap_search([$connect], $base_dn, $filter)
 		      or exit(">>Unable to search ldap server<<");
 		$returnArray = array();

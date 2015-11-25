@@ -440,6 +440,20 @@ $config['gifsicleBinary'] = 'gifsicle';
 // make sure to include a trailing '/'
 $config['meshlabPath'] = '/usr/lib/meshlab/meshlabserver';
 
+$config['nxsBuild'] = 'nsxBuild';
+$config['vipsBinary'] = 'vips';
+
+// LDAP username and password.
+// Application should bind anonymously if not set, or set to blanks.
+$config['ldapUsername'] = '';
+$config['ldapPassword'] = '';
+$config['ldapURI'] = '';
+$config['ldapSearchBase'] = '';
+
+$config['jwplayer'] = '';
+
+$config['missingSiteURL'] = ''; // where should we redirect on 404 instances (with leading http)
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */
 
