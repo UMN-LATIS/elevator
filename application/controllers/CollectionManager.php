@@ -53,6 +53,7 @@ class CollectionManager extends Instance_Controller {
 
 	public function edit($id=null)
 	{
+		$this->template->loadJavascript(["bootstrap-show-password"]);
 		if($id) {
 			$data['collection'] = $this->doctrine->em->find('Entity\Collection', $id);
 		}

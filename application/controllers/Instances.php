@@ -69,6 +69,7 @@ class Instances extends Instance_Controller {
 
 	public function edit($id=null)
 	{
+
 		if($id) {
 			$data['instance'] = $this->doctrine->em->find('Entity\Instance', $id);
 			$accessLevel = $this->user_model->getAccessLevel("instance", $data['instance']);
@@ -92,7 +93,7 @@ class Instances extends Instance_Controller {
 			show_404();
 		}
 		$this->template->title = 'Edit Instance';
-		$this->template->loadJavascript(["parsley"]);
+		$this->template->loadJavascript(["parsley","bootstrap-show-password"]);
 		$this->template->content->view('instances/edit', $data);
 		$this->template->publish();
 	}
