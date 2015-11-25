@@ -118,7 +118,7 @@ $(document).ready(function() {
 <div class="form-group">
 	<label for="inputGoogleAnalyticsKey" class="col-sm-2 control-label">Google Analytics Key:</label>
 	<div class="col-sm-6">
-		<input type="text" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
+		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
 	</div>
 </div>
 
@@ -132,14 +132,14 @@ $(document).ready(function() {
 <div class="form-group">
 	<label for="inputClarifaiSecret" class="col-sm-2 control-label">Clarifai Secret:</label>
 	<div class="col-sm-6">
-		<input type="text" name="clarifaiSecret" id="inputClarifaiSecret" class="form-control" value="<?= $instance->getClarifaiSecret(); ?>">
+		<input type="password" data-toggle="password" name="clarifaiSecret" id="inputClarifaiSecret" class="form-control" value="<?= $instance->getClarifaiSecret(); ?>">
 	</div>
 </div>
 
 <div class="form-group">
 	<label for="inputBoxKey" class="col-sm-2 control-label">Box API Key:</label>
 	<div class="col-sm-6">
-		<input type="text" name="boxKey" id="inputBoxKey" class="form-control" value="<?= $instance->getBoxKey(); ?>">
+		<input type="password" data-toggle="password" name="boxKey" id="inputBoxKey" class="form-control" value="<?= $instance->getBoxKey(); ?>">
 	</div>
 </div>
 
