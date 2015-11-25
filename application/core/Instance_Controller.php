@@ -29,7 +29,12 @@ class Instance_Controller extends MY_Controller
         if($instanceName != FALSE) {
             $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
             if(!$this->instance && !$this->noRedirect) {
-                redirect("/errorHandler/error/specifyInstance");
+                if($this->config->item('missingSiteURL') != '') {
+                    redirect($this->config->item('missingSiteURL'));
+                }
+                else {
+                    redirect("/errorHandler/error/specifyInstance");
+                }
             }
 
             $this->instanceType = "subdirectory";
@@ -46,7 +51,12 @@ class Instance_Controller extends MY_Controller
             $instanceName = $subdomain_arr;
             $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
             if(!$this->instance && !$this->noRedirect) {
-                redirect("/errorHandler/error/specifyInstance");
+                if($this->config->item('missingSiteURL') != '') {
+                   redirect($this->config->item('missingSiteURL'));
+                }
+                else {
+                    redirect("/errorHandler/error/specifyInstance");
+                }
             }
 
             $this->instanceType = "subdomain";
