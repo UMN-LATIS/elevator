@@ -87,7 +87,7 @@ $(document).ready(function() {
 			<div class="form-group">
 				<label for="inputS3Secret" class="col-sm-2 control-label">S3 Secret:</label>
 				<div class="col-sm-6">
-					<input type="text" name="S3Secret" id="inputAmazonS3Secret" class="form-control s3control" value="<?=$collection->getS3Secret() ?>" >
+					<input type="password" data-toggle="password" name="S3Secret" id="inputAmazonS3Secret" class="form-control s3control" value="<?=$collection->getS3Secret() ?>" >
 				</div>
 			</div>
 
