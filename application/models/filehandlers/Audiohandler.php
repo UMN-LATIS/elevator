@@ -110,7 +110,8 @@ class AudioHandler extends FileHandlerBase {
 
 	public function extractWaveform($args) {
 
-		$jobId = Transcoder::extractWaveform($this->getObjectId());
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		$jobId = $transcodeCommands->extractWaveform($this->getObjectId());
 
 		$this->save();
 		$this->queueTask(5, ["jobId"=>$jobId, "previousTask"=>"extractWaveform"]);
@@ -120,7 +121,8 @@ class AudioHandler extends FileHandlerBase {
 
 	public function extractMetadata($args) {
 
-		$jobId = Transcoder::extractMetadata($this->getObjectId());
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		$jobId = $transcodeCommands->extractMetadata($this->getObjectId());
 
 		$this->save();
 		$this->queueTask(1, ["jobId"=>$jobId, "previousTask"=>"metadata"]);
@@ -131,9 +133,10 @@ class AudioHandler extends FileHandlerBase {
 
 	public function createDerivatives($args) {
 
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
 		$jobIdArray = array();
 
-		$jobIdArray[] = Transcoder::createDerivative($this->getObjectId(), "mp3");
+		$jobIdArray[] = $transcodeCommands->createDerivative($this->getObjectId(), "mp3");
 
 		if(count($jobIdArray)>0) {
 			$this->queueTask(3, ["jobId"=>$jobIdArray, "previousTask"=>"createDerivatives"]);
