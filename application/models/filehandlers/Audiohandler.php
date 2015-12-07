@@ -71,10 +71,12 @@ class AudioHandler extends FileHandlerBase {
 		}
 
 		$jobId = $args['jobId'];
+		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+
 
 		if(is_array($jobId)) {
 			foreach($jobId as $singleJobId) {
-				$response = Transcoder::checkCompletion($singleJobId);
+				$response = $transcodeCommands->checkCompletion($singleJobId);
 				if($response == "working") {
 					return JOB_POSTPONE;
 				}
@@ -85,7 +87,7 @@ class AudioHandler extends FileHandlerBase {
 			}
 		}
 		else {
-			$response = Transcoder::checkCompletion($jobId);
+			$response = $transcodeCommands->checkCompletion($jobId);
 			if($response == "working") {
 				return JOB_POSTPONE;
 			}
