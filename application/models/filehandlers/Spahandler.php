@@ -100,7 +100,9 @@ class SPAHandler extends FileHandlerBase {
 		$this->pheanstalk->touch($this->job);
 
 		$sourceFile = $this->swapLocalForPNG();
-
+		if(!$sourceFile) {
+			return JOB_FAILED;
+		}
 
 		foreach($args as $key=>$derivativeSetting) {
 			$this->pheanstalk->touch($this->job);
@@ -124,7 +126,7 @@ class SPAHandler extends FileHandlerBase {
 			$this->pheanstalk->touch($this->job);
 
 			if(!file_exists($sourceFile->getPathToLocalFile())) {
-				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","spaHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
 				return JOB_FAILED;
 			}
 
@@ -144,12 +146,12 @@ class SPAHandler extends FileHandlerBase {
 					//TODO: log
 					//TODO: remove derivative
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
+					$this->logging->processingInfo("createDerivative","spaHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
+						$this->logging->processingInfo("createDerivative","spaHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -157,7 +159,7 @@ class SPAHandler extends FileHandlerBase {
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createDerivative","imageHandler","Error generating derivative",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","spaHandler","Error generating derivative",$this->getObjectId(),$this->job->getId());
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -215,8 +217,8 @@ class SPAHandler extends FileHandlerBase {
 		fclose($outputFile);
 		$gnuScript = "set terminal png size {width},{height};
 			set output '{output}';
-set xtics font \"Times-Roman, 30\" offset 0,-1;
-set ytics font \"Times-Roman, 30\" offset 0,-0.5;
+set xtics font 'Times-Roman, 30' offset 0,-1;
+set ytics font 'Times-Roman, 30' offset 0,-0.5;
 set lmargin 8;
 set rmargin 5;
 set bmargin 3;
@@ -230,8 +232,9 @@ unset border;
 		$targetScript = str_replace("{height}", 1600, $targetScript);
 		$gnuPath = "gnuplot";
 		$outputScript = "cat \"" . $rawDataOutputPath . "\" | " . $gnuPath . " -e \"" . $targetScript . "\"";
-		exec($outputScript);
+		exec($outputScript, $errorText);
 		if(!file_exists($targetFile)) {
+			$this->logging->processingInfo("createDerivative","spaHandler","Creation Failed: " . $errorText,$this->getObjectId(),$this->job->getId());
 			return false;
 		}
 
@@ -243,5 +246,5 @@ unset border;
 
 }
 
-/* End of file imageHandler.php */
-/* Location: ./application/models/imageHandler.php */
+/* End of file spaHandler.php */
+/* Location: ./application/models/spaHandler.php */
