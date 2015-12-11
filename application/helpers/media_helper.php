@@ -8,7 +8,7 @@
  * @param  [type] $height      [description]
  * @return [type]              [description]
  */
-function compressImageAndSave($sourceImage, $targetImage, $width, $height) {
+function compressImageAndSave($sourceImage, $targetImage, $width, $height, $compressionQuality=80) {
 	//$im->setResolution(300,300); could do this for pdf
 	//
 	$append = "";
@@ -19,7 +19,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height) {
 
 	$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
 	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
-	$image->setImageCompressionQuality(80);
+	$image->setImageCompressionQuality($compressionQuality);
 	$image = $image->flattenImages();
 
 	$image->setImageFormat('jpeg');
