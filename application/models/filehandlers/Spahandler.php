@@ -162,6 +162,7 @@ class SPAHandler extends FileHandlerBase {
 				$success=false;
 			}
 		}
+		$this->unlinkLocalSwap();
 
 		if($success) {
 			$this->queueTask(2, ["ttr"=>600]);
