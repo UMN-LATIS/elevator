@@ -165,6 +165,12 @@ if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
 				</div>
 			</div>
 
+			<div class="form-group advancedContent">
+				<div class="col-sm-offset-3 col-sm-8">
+					<a href="" class="processingLogs">View Processing Logs for Asset</a>
+				</div>
+			</div>
+
 			<div class="sidecars"><?=$sidecarView?></div>
 
 			<?if($widgetModel->getAllowMultiple()):?>
