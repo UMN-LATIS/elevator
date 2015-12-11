@@ -251,6 +251,17 @@ $(document).ready(function(){
 
     });
 
+    $(".processingLogs").on("click", function(e) {
+        e.preventDefault();
+        var parentElement = $(this).closest(".widgetContents");
+        var fileObjectId = $(parentElement).find(".fileObjectId").val();
+        var win = window.open(basePath + "/assetManager/processingLogsForAsset/" + fileObjectId, '_blank');
+        if(win){
+            //Browser has allowed it to be opened
+            win.focus();
+        }
+    });
+
     if($(".allowResume").length > 0) {
         $(".allowResume").each(function() {
 
