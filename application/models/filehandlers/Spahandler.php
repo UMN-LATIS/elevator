@@ -233,7 +233,7 @@ unset border;
 		$gnuPath = "gnuplot";
 		$outputScript = "cat \"" . $rawDataOutputPath . "\" | " . $gnuPath . " -e \"" . $targetScript . "\"";
 		exec($outputScript, $errorText);
-		if(!file_exists($targetFile)) {
+		if(!file_exists($dest)) {
 			$this->logging->processingInfo("createDerivative","spaHandler",$errorText,$this->getObjectId(),$this->job->getId());
 			return false;
 		}
