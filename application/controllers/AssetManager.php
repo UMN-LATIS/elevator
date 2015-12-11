@@ -258,11 +258,23 @@ class AssetManager extends Admin_Controller {
 			 */
 
 		}
-
-
-
-
 	}
+
+
+	public function processingLogsForAsset($fileObjectId=null) {
+		if(!$fileObjectId) {
+			instance_redirect("errorHandler/error/noPermission");
+		}
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+		if($accessLevel < PERM_ADDASSETS) {
+			instance_redirect("errorHandler/error/noPermission");
+		}
+
+		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy(["asset"=>$fileObjectId], ["id"=>"desc"],30);
+		$this->template->content->view("admin/jobLogs", $data);
+		$this->template->publish();
+	}
+
 
 	/**
 	 * Because the uploader goes directly to S3, we need to pre-create a place for the asset to live on our end.  That way
