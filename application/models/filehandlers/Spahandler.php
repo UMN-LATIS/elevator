@@ -214,7 +214,8 @@ class SPAHandler extends FileHandlerBase {
 		fclose($outputFile);
 		$gnuScript = "set terminal png size {width},{height};
 			set output '{output}';
-
+			set xtics font \"Times-Roman, 30\
+			set style line 1 lt 2 lc lw 3\
 			unset key;
 			unset border;
 
