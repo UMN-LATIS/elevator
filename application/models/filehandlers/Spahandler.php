@@ -9,7 +9,7 @@ class SPAHandler extends FileHandlerBase {
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
 						  1=>["taskType"=>"createDerivative", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
 						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
-						  											    ["width"=>1024, "height"=>1024, "type"=>"screen", "path"=>"derivative"]]],
+						  											    ["width"=>800, "height"=>800, "type"=>"screen", "path"=>"derivative"]]],
 							2=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
@@ -221,8 +221,8 @@ class SPAHandler extends FileHandlerBase {
 		plot '<cat' binary filetype=bin format='%float32' endian=little array=1:0 with lines lt rgb 'black';";
 
 		$targetScript = str_replace("{output}", $dest, $gnuScript);
-		$targetScript = str_replace("{width}", 1400, $targetScript);
-		$targetScript = str_replace("{height}", 1000, $targetScript);
+		$targetScript = str_replace("{width}", 800, $targetScript);
+		$targetScript = str_replace("{height}", 600, $targetScript);
 		$gnuPath = "gnuplot";
 		$outputScript = "cat \"" . $rawDataOutputPath . "\" | " . $gnuPath . " -e \"" . $targetScript . "\"";
 		exec($outputScript);
