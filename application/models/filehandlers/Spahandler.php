@@ -214,16 +214,19 @@ class SPAHandler extends FileHandlerBase {
 		fclose($outputFile);
 		$gnuScript = "set terminal png size {width},{height};
 			set output '{output}';
-			set xtics font \"Times-Roman, 30\
-			set style line 1 lt 2 lc lw 3\
-			unset key;
-			unset border;
+set xtics font \"Times-Roman, 30\" offset 0,-1;
+set ytics font \"Times-Roman, 30\" offset 0,-0.5;
+set lmargin 8;
+set rmargin 5;
+set bmargin 3;
+unset key;
+unset border;
 
-		plot '<cat' binary filetype=bin format='%float32' endian=little array=1:0 with lines lt rgb 'black';";
+		plot '<cat' binary filetype=bin format='%float32' endian=little array=1:0 with lines lw3 lt rgb 'black';";
 
 		$targetScript = str_replace("{output}", $dest, $gnuScript);
-		$targetScript = str_replace("{width}", 640, $targetScript);
-		$targetScript = str_replace("{height}", 400, $targetScript);
+		$targetScript = str_replace("{width}", 2000, $targetScript);
+		$targetScript = str_replace("{height}", 1600, $targetScript);
 		$gnuPath = "gnuplot";
 		$outputScript = "cat \"" . $rawDataOutputPath . "\" | " . $gnuPath . " -e \"" . $targetScript . "\"";
 		exec($outputScript);
