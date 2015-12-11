@@ -219,13 +219,13 @@ class SPAHandler extends FileHandlerBase {
 			set output '{output}';
 set xtics font 'Times-Roman, 30' offset 0,-1;
 set ytics font 'Times-Roman, 30' offset 0,-0.5;
-set lmargin 8;
+set lmargin 10;
 set rmargin 5;
 set bmargin 3;
 unset key;
 unset border;
 
-		plot '<cat' binary filetype=bin format='%float32' endian=little array=1:0 with lines lw3 lt rgb 'black';";
+		plot '<cat' binary filetype=bin format='%float32' endian=little array=1:0 with lines lw 3 lt rgb 'red';";
 
 		$targetScript = str_replace("{output}", $dest, $gnuScript);
 		$targetScript = str_replace("{width}", 2000, $targetScript);
@@ -234,7 +234,7 @@ unset border;
 		$outputScript = "cat \"" . $rawDataOutputPath . "\" | " . $gnuPath . " -e \"" . $targetScript . "\"";
 		exec($outputScript, $errorText);
 		if(!file_exists($targetFile)) {
-			$this->logging->processingInfo("createDerivative","spaHandler","Creation Failed: " . $errorText,$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","spaHandler",$errorText,$this->getObjectId(),$this->job->getId());
 			return false;
 		}
 
