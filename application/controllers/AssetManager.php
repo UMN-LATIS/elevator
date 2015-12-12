@@ -56,7 +56,7 @@ class AssetManager extends Admin_Controller {
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 
@@ -102,7 +102,7 @@ class AssetManager extends Admin_Controller {
 
 		if($accessLevel < PERM_ADDASSETS) {
 			if($this->user_model->getAccessLevel("collection",$this->collection_model->getCollection($this->asset_model->getGlobalValue("collectionId"))) < PERM_ADDASSETS) {
-				instance_redirect("errorHandler/error/noPermission");
+				$this->errorhandler_helper->callError("noPermission");
 			}
 		}
 
@@ -130,7 +130,7 @@ class AssetManager extends Admin_Controller {
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		$asset = new Asset_model();
@@ -156,7 +156,7 @@ class AssetManager extends Admin_Controller {
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
@@ -206,7 +206,7 @@ class AssetManager extends Admin_Controller {
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		$data = $this->input->post("formData");
@@ -263,11 +263,11 @@ class AssetManager extends Admin_Controller {
 
 	public function processingLogsForAsset($fileObjectId=null) {
 		if(!$fileObjectId) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy(["asset"=>$fileObjectId], ["id"=>"desc"],30);
@@ -333,14 +333,14 @@ class AssetManager extends Admin_Controller {
 
 		if($accessLevel < PERM_ADDASSETS) {
 			if($this->user_model->getAccessLevel("collection",$this->collection_model->getCollection($this->asset_model->getGlobalValue("collectionId"))) < PERM_ADDASSETS) {
-				instance_redirect("errorHandler/error/noPermission");
+				$this->errorhandler_helper->callError("noPermission");
 			}
 
 		}
 
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
 		if($this->accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 		$this->search_model->remove($this->asset_model);
 
