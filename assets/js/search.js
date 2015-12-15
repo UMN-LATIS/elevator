@@ -405,6 +405,9 @@ function prepMap() {
 					value.base_url = basePath;
 					var html    = MarkerTemplate(value);
 					var allMarkers = $.goMap.getMarkers("markers");
+					if(loc[1] === 0 && loc[0] === 0) {
+						return true;
+					}
 					latlng = new google.maps.LatLng(loc[1], loc[0]);
 					finalLatLng = latlng;
 					if (allMarkers.length != 0) {
