@@ -10,7 +10,6 @@ class ObjHandler extends FileHandlerBase {
 
 bpy.ops.import_mesh.ply(filepath=r'{{PATHTOX3D}}', filter_glob=\"*.ply\")
 
-b
 maxDimension = 5.0
 
 scaleFactor = maxDimension / max(bpy.context.active_object.dimensions)
