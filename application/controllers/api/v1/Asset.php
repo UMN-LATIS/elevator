@@ -40,7 +40,12 @@ class asset extends API_Controller {
 
 		$bestURL = null;
 		try {
-			$bestDerivative = $fileHandler->highestQualityDerivativeForAccessLevel($accessLevel, true);
+			$bestDerivative = $fileHandler->highestQualityDerivativeForAccessLevel($accessLevel, false);
+			if(!$bestDerivative) {
+				$this->logging->logError("API", "Missing Best Derivative");
+				echo json_encode([]);
+				return;
+			}
 			$bestURL = $bestDerivative->getProtectedURLForFile();
 		}
 		catch (Exception $e) {
