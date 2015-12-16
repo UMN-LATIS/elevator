@@ -10,6 +10,13 @@ class ObjHandler extends FileHandlerBase {
 
 bpy.ops.import_mesh.ply(filepath=r'{{PATHTOX3D}}', filter_glob=\"*.ply\")
 
+b
+maxDimension = 5.0
+
+scaleFactor = maxDimension / max(bpy.context.active_object.dimensions)
+
+bpy.context.active_object.scale = (scaleFactor, scaleFactor, scaleFactor)
+
 bpy.ops.material.new()
 
 bpy.data.materials[0].specular_intensity = 0.1
@@ -25,7 +32,9 @@ world.horizon_color = (1, 1, 1)
 rnd = bpy.data.scenes[0].render
 
 rnd.resolution_x = int(2000)
-rnd.resolution_y = int(2000)";
+rnd.resolution_y = int(2000)
+
+";
 
 
 	public $taskArray = [
