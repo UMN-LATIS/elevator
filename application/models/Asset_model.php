@@ -154,7 +154,7 @@ class Asset_model extends CI_Model {
 		}
 
 		foreach($asset->assetObjects as $widget) {
-			if(get_class($widget) == $type) {
+			if(get_class($widget) == $type && $widget->hasContents()) {
 				$widgetArray[] = $widget;
 			}
 		}
