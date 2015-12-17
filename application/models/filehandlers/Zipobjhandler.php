@@ -166,6 +166,14 @@ world.horizon_color = (1, 1, 1)";
 		$meshlabCommandLine =  $this->config->item("meshlabPath") . " -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
 
 		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
+		if(!file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
+			// failed to process with the texture, let's try without.
+			$this->logging->processingInfo("createDerivative","objHandler","Failed to load texture, trying without",$this->getObjectId(),$this->job->getId());
+			$meshlabCommandLine =  $this->config->item("meshlabPath") . " -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
+			exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
+
+		}
+
 		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
 
 		$success = true;
