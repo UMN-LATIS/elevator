@@ -242,7 +242,7 @@ $(document).on("click", ".processingLogs", function(e) {
      e.preventDefault();
     var parentElement = $(this).closest(".widgetContents");
     var fileObjectId = $(parentElement).find(".fileObjectId").val();
-    var win = window.open(basePath + "/assetManager/processingLogsForAsset/" + fileObjectId, '_blank');
+    var win = window.open(basePath + "assetManager/processingLogsForAsset/" + fileObjectId, '_blank');
     if(win){
         //Browser has allowed it to be opened
         win.focus();
