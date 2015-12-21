@@ -4,7 +4,7 @@ require_once(APPPATH.'controllers/Transcoder.php');
 
 class MovieHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("mov","mp4", "m4v", "mts", "mkv");
+	protected $supportedTypes = array("mov","mp4", "m4v", "mts", "mkv", "avi", "mpeg", "mpg");
 	protected $noDerivatives = false;
 	public $videoTTR = 900;
 
