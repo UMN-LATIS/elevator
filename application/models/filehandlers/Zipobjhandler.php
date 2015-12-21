@@ -10,6 +10,14 @@ class ZipObjHandler extends ZipHandler {
 
 bpy.ops.import_mesh.ply(filepath=r'{{PATHTOX3D}}', filter_glob=\"*.ply\")
 
+maxDimension = 5.0
+
+scaleFactor = maxDimension / max(bpy.context.active_object.dimensions)
+
+bpy.context.active_object.scale = (scaleFactor, scaleFactor, scaleFactor)
+
+bpy.ops.object.origin_set()
+
 bpy.ops.material.new()
 
 bpy.data.materials[0].specular_intensity = 0.1
@@ -20,7 +28,13 @@ bpy.context.object.data.materials.append(bpy.data.materials[0])
 
 world = bpy.context.scene.world
 
-world.horizon_color = (1, 1, 1)";
+world.horizon_color = (1, 1, 1)
+
+rnd = bpy.data.scenes[0].render
+
+rnd.resolution_x = int(2000)
+rnd.resolution_y = int(2000)
+";
 
 
 	public $taskArray = [0=>["taskType"=>"identifyContents", "config"=>array()],
