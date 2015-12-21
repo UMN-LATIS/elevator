@@ -408,7 +408,7 @@ class FileManager extends Instance_Controller {
 			instance_redirect("/errorHandler/error/originalNotAvailable");
 		}
 
-		redirect($targetURL, 307);
+		redirect(stripHTTP($targetURL), 307);
 
 	}
 
