@@ -114,7 +114,7 @@ class FileManager extends Instance_Controller {
 
 
 		$resultURL = $this->getURLForPreviewImage($fileHandler, $retina, $size);
-		redirect($resultURL, 307);
+		redirect(stripHTTP($resultURL), 307);
 	}
 
 
@@ -220,7 +220,7 @@ class FileManager extends Instance_Controller {
 			redirect("/assets/icons/512px/".$fileHandler->getIcon(), 307);
 		}
 
-		redirect($targetURL, 307);
+		redirect(stripHTTP($targetURL), 307);
 
 
 	}
@@ -250,7 +250,7 @@ class FileManager extends Instance_Controller {
 			//TODO: go to error page
 			instance_redirect("errorHandler/error/noMediaFound", 307);
 		}
-		redirect($targetURL, 307);
+		redirect(stripHTTP($targetURL), 307);
 
 	}
 
@@ -350,7 +350,7 @@ class FileManager extends Instance_Controller {
 			}
 		}
 
-		redirect($targetURL, 307);
+		redirect(stripHTTP($targetURL), 307);
 
 	}
 
