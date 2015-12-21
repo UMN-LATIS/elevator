@@ -16,6 +16,8 @@ scaleFactor = maxDimension / max(bpy.context.active_object.dimensions)
 
 bpy.context.active_object.scale = (scaleFactor, scaleFactor, scaleFactor)
 
+bpy.ops.object.origin_set()
+
 bpy.ops.material.new()
 
 bpy.data.materials[0].specular_intensity = 0.1
