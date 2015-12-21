@@ -16,6 +16,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 		<a href="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">
 		<img src="/assets/icons/512px/_blank.png" class="img-responsive embedImage" style="width: 50%; margin-left:auto; margin-right:auto"/>
 		</a>
+		<p>No preview available for this asset.  Click the icon above to download a copy.</p>
 				<?else:?>
 		<p class="alert alert-info">No derivatives found.
 			<?if(!$this->user_model->userLoaded):?>
