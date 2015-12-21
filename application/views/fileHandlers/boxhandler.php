@@ -13,10 +13,10 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 
 ?>
-<link type="text/css" rel="stylesheet" href="/assets/css/crocodoc.viewer.min.css"/>
-<link type="text/css" rel="stylesheet" href="/assets/css/fullscreen.css"/>
-<script type="text/javascript" src="/assets/js/crocodoc.viewer.min.js"></script>
-<script type="text/javascript" src="/assets/js/crocdoc.fullscreen.js"></script>
+<link type="text/css" rel="stylesheet" href="/assets/minifiedcss/crocodoc.viewer.min.css"/>
+<link type="text/css" rel="stylesheet" href="/assets/minifiedcss/fullscreen.min.css"/>
+<script type="text/javascript" src="/assets/minifiedjs/crocodoc.viewer.min.js"></script>
+<script type="text/javascript" src="/assets/minifiedjs/crocdoc.fullscreen.min.js"></script>
 
 
 
