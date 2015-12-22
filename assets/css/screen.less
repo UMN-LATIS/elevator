@@ -1170,7 +1170,12 @@ input[type='range']::-webkit-slider-thumb {
 
 
 .threedelementcontainer {
-    height: 600px;
+    @media (max-width: 480px) {
+        height: 450px;
+    }
+    @media (min-width: 481px) {
+       height: 600px;
+    }
 }
 
 /**
