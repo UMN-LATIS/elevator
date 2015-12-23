@@ -45,6 +45,36 @@ var toggleTabs = function() {
   $(".leftPane").toggle();
 };
 
+var relatedAssetPreview = function(relatedAssetId, targetContainer) {
+	if(relatedAssetId.length > 0) {
+		var source   = $("#autocompleter-template").html();
+		var template = Handlebars.compile(source);
+		var self = targetContainer;
+		$.get( basePath + "asset/getAssetPreview/" + relatedAssetId,  function( data ) {
+				try{
+					jsonObject = $.parseJSON(data);
+				}
+				catch(e){
+					alert(e + " " + data);
+					return;
+				}
+				if(jsonObject) {
+					var responseObject = jsonObject;
+					responseObject.base_url = basePath;
+					var html = template(responseObject);
+					$(self).closest(".widgetContents").find(".autocompletePreview").show();
+					$(self).closest(".widgetContents").find(".autocompleteEdit").show();
+					$(self).closest(".widgetContents").find(".clearRelated").show();
+					$(self).closest(".widgetContents").find(".assetPreview").html(html);
+					$(self).closest(".widgetContents").find(".newAssetButton").attr("disabled", true);
+
+
+				}
+			});
+	}
+};
+
+
 /**
  * Add checkmarks to sidebar if there's content in their
  */
@@ -210,32 +240,7 @@ $(document).ready(function() {
 	$(".relatedAssetSelectedItem").each(function(index, el) {
 
 		var relatedAssetId = $(el).val();
-		if(relatedAssetId.length > 0) {
-			var source   = $("#autocompleter-template").html();
-			var template = Handlebars.compile(source);
-			var self = this;
-			$.get( basePath + "asset/getAssetPreview/" + relatedAssetId,  function( data ) {
-					try{
-						jsonObject = $.parseJSON(data);
-					}
-					catch(e){
-						alert(e + " " + data);
-						return;
-					}
-					if(jsonObject) {
-						var responseObject = jsonObject;
-						responseObject.base_url = basePath;
-						var html = template(responseObject);
-						$(self).closest(".widgetContents").find(".autocompletePreview").show();
-						$(self).closest(".widgetContents").find(".autocompleteEdit").show();
-						$(self).closest(".widgetContents").find(".clearRelated").show();
-						$(self).closest(".widgetContents").find(".assetPreview").html(html);
-
-
-					}
-				});
-		}
-
+		relatedAssetPreview(relatedAssetId, this);
 	});
 
 
@@ -396,6 +401,7 @@ function buildAutocomplete() {
 				$(value).closest(".widgetContents").find(".autocompletePreview").show();
 				$(value).closest(".widgetContents").find(".autocompleteEdit").show();
 				$(value).closest(".widgetContents").find(".clearRelated").show();
+				$(value).closest(".widgetContents").find(".newAssetButton").attr("disabled",true);
 			}
 			$(value).autocomplete({
 			source: function(request, response) {
@@ -442,6 +448,7 @@ function buildAutocomplete() {
 				$(this).closest(".widgetContents").find(".autocompletePreview").show();
 				$(this).closest(".widgetContents").find(".autocompleteEdit").show();
 				$(this).closest(".widgetContents").find(".clearRelated").show();
+				$(this).closest(".widgetContents").find(".newAssetButton").attr("disabled",true);
 				$(this).closest(".widgetContents").find(".assetPreview").html(html);
 			}
 		}).data("ui-autocomplete")._renderItem = function( ul, item ) {
@@ -474,6 +481,7 @@ $(document).on("click", ".clearRelated", function(e) {
 		$(this).closest(".widgetContents").find(".assetPreview").html("");
 		$(this).closest(".widgetContents").find(".clearRelated").hide();
 		$(this).closest(".widgetContents").find(".nestediIFrame").remove();
+		$(this).closest(".widgetContents").find(".newAssetButton").removeAttr("disabled");
 	}
 });
 

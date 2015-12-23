@@ -8,6 +8,7 @@ $(document).on("click", ".newAssetButton", function(event) {
 	var targetTemplate = $(this).closest(".widgetContents").find(".templateSelector").first().val();
 	var targetCollection = $("#collectionId").val();
 	var targetField = $(this).closest(".widgetContents").find(".targetAsset").first().attr('id');
+	$(this).attr("disabled", true);
 	unsavedChildren++;
 	var windowPointer = window.open(basePath +"assetManager/addAsset/"+targetTemplate + "/" + targetCollection);
 	windowPointer.onload = function( ){
@@ -49,11 +50,13 @@ function listener(event) {
 				unsavedChildren--;
 			}
 			$("#"+messageObject.targetFieldId).val(messageObject.objectId);
+			relatedAssetPreview(messageObject.objectId, $("#"+messageObject.targetFieldId).closest(".widgetContents"));
 			submitForm();
 		}
 		if(messageObject.status == 'closed') {
 			if($("#"+messageObject.targetFieldId).val() === "") {
 				unsavedChildren--;
+				$("#"+messageObject.targetFieldId).closest(".widgetContents").find(".newAssetButton").removeAttr("disabled");
 			}
 
 		}
@@ -64,8 +67,8 @@ function listener(event) {
 
 if (window.addEventListener){
 
-  	addEventListener("message", listener, false);
-  	console.log("listener added");
+	addEventListener("message", listener, false);
+	console.log("listener added");
 
 } else {
   attachEvent("onmessage", listener);
