@@ -47,7 +47,7 @@
 <div class="panel panel-default widgetContentsContainer nestedAsset">
 
 	<div class="panel-body widgetContents">
-		<div class="form-group hide" >
+		<div class="form-group advancedContent" >
 			<label for="<?=$targetAssetId?>" class="col-sm-2 control-label">Asset Type:</label>
 			<div class="col-sm-4">
 				<select class="templateSelector form-control input-large">
@@ -58,7 +58,7 @@
 				</select>
 			</div>
 		</div>
-		<div class="form-group hide" >
+		<div class="form-group advancedContent" >
 			<label for="<?=$targetAssetId?>" class="col-sm-2 control-label">Asset:</label>
 			<div class="col-sm-4">
 				<input type="text"  autocomplete="off" class="mainWidgetEntry form-control relatedAssetInput targetAsset" id="<?=$targetAssetId?>" name="<?=$targetAssetName?>" placeholder="<?=$labelText?>" value="<?=$assetContents?>">
@@ -92,7 +92,6 @@
 // we maybe loaded in an iframe, so we need to trigger some events.
 $(document).ready(function() {
 	loadFrameForNestedElement($("#<?=$targetAssetId?>").closest('.nestedAsset'));
-
 })
 
 // $(window).load(function() {
