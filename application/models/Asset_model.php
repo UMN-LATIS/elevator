@@ -699,6 +699,7 @@ class Asset_model extends CI_Model {
 		}
 		catch (Exception $e) {
 			// eh, this is ok.
+			$this->assetObject->setCachedPrimaryFileHandler(NULL);
 		}
 
 		/**
