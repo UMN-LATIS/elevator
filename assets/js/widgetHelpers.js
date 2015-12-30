@@ -517,8 +517,11 @@ function loadFrameForNestedElement(el) {
 
 		element.appendTo(targetElement);
 
+		var targetField = $(el).find(".targetAsset");
 		element.load(function() {
 			iframeLoaded(element);
+			var targetInfo = { 'status':'open', 'targetField': targetField.attr('id') };
+			this.contentWindow.postMessage(JSON.stringify(targetInfo), "*");
 		});
 
 }
