@@ -367,7 +367,11 @@ class search_model extends CI_Model {
 			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
 			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
 			if(!$fuzzySearch) {
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "cross_fields";
+				$matchType = "cross_fields";
+				if(isset($searchArray['matchType'])) {
+					$matchType = $searchArray['matchType'];
+				}
+				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = $matchType;
 				// by default, we want cross field to be an "and" so our matching document matches all of the relevant search terms
 				// however, sometimes we want to match any document with any of the terms, setting crossFieldOr to true will enable that.
 				// this is primarily used for "related items" searches where we pass in a ton of MongoIds
