@@ -213,6 +213,11 @@ class S3_model extends CI_Model {
 			if($originalName) {
 				$options["ResponseContentDisposition"] = 'attachment; filename="' . $originalName . '"';
 			}
+			else {
+				// if we don't have an explicit filename, force S3 not to serve one.
+				// we do this mostly because Flash doesn't accept files with a content disposition.
+				$options["ResponseContentDisposition"] = '';
+			}
 
 			$cmd = $this->s3Client->getCommand('GetObject', $options);
 			$request = $this->s3Client->createPresignedRequest($cmd, $timeString);
