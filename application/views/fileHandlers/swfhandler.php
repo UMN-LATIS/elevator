@@ -9,18 +9,16 @@ $embedLink = str_replace("https:", "", $embedLink);
 
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
-?
 ?>
 
 <div class="row assetViewRow">
 	<div class="col-md-12">
 		<?if($allowOriginal):?>
-		<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" WIDTH="100%" HEIGHT="480px" id="swf_embed" ALIGN="">
-			<PARAM NAME=movie VALUE="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">
-			<PARAM NAME=quality VALUE=high>
-			<PARAM NAME=bgcolor VALUE=#333399>
-			<EMBED src="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>" quality=high bgcolor=#333399 WIDTH="100%" HEIGHT="480px" NAME="swf_embed" ALIGN="" TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>
-		</OBJECT>
+		<object type="application/x-shockwave-flash" data="<?=stripHTTP($fileObject->sourceFile->getProtectedURLForFile())?>" width="100%" height="480px">
+  	<param name="movie" value="<?=stripHTTP($fileObject->sourceFile->getProtectedURLForFile())?>" />
+  <param name="quality" value="high"/>
+</object>
+
 				<?else:?>
 		<p class="alert alert-info">No derivatives found.
 			<?if(!$this->user_model->userLoaded):?>
@@ -49,7 +47,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
       <?endif?>
       </ul>'></span>
       <span class="glyphicon glyphicon-share infoPopover" data-placement="bottom" data-toggle="popover" title="Share" data-html="true" data-content='<ul>
-      <?if(count($fileContainers)>0):?>
+      <?if($allowOriginal):?>
         <li class="list-group-item assetDetails"><strong>Embed: </strong><input class="form-control embedControl" value="<?=htmlspecialchars($embed, ENT_QUOTES)?>"></li>
        <?endif?>
       </ul>'></span>
@@ -58,3 +56,12 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 	</div>
 </div>
 
+<script>
+$(document).ready(function() {
+
+  $(".infoPopover").popover({trigger: "focus | click"});
+  $(".infoPopover").tooltip({ placement: 'top'});
+  $(".excerptTooltip").tooltip({ placement: 'top'});
+});
+
+</script>
