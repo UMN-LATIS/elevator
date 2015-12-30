@@ -364,10 +364,10 @@ class AssetManager extends Admin_Controller {
 			->where("a.createdBy = :userId")
 			->setParameter(":userId", (int)$this->user_model->userId)
 			->andWhere("a.assetId IS NOT NULL")
+			->andWhere("a.deleted = false")
 			->orderBy("a.modifiedAt", "DESC")
 			->setMaxResults(50)
 			->setFirstResult($offset);
-
 		$assets = $qb->getQuery()->execute();
 
 		$hiddenAssetArray = array();
