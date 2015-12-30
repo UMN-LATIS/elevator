@@ -384,7 +384,12 @@ class Asset_model extends CI_Model {
 									$tempObject->isPrimary = false;
 								}
 							}
-							$populatedWidgetArray[$widgetKey]->addContent($tempObject);
+
+							// only save this widget if it actually has contents.  This assumes widgets are well behaved.
+							if($tempObject->hasContents()) {
+								$populatedWidgetArray[$widgetKey]->addContent($tempObject);
+							}
+
 							$i++;
 						}
 
