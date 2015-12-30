@@ -411,6 +411,11 @@ class Search extends Instance_Controller {
 		$this->load->model("search_model");
 
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
+		if(count($matchArray["searchResults"]) == 0) {
+			// let's try again with fuzzyness
+			$searchArray['matchType'] = "phrase_prefix"; // this is a leaky abstraction. But the whole thing is really.
+			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
+		}
 		$matchArray["searchId"] = $this->searchId;
 
 		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));
