@@ -20,7 +20,17 @@ $(document).on("click", ".newAssetButton", function(event) {
 
 function notifyParentOfSave(objectId) {
 	var statusNotice = { 'objectId': objectId, 'status':'saved', 'targetFieldId': targetFieldId};
-	window.opener.postMessage(JSON.stringify(statusNotice), "*");
+	var targetElement;
+
+	if(window.opener !== null) {
+		targetElement = window.opener;
+	}
+	else {
+		// we're in an iframe!
+		targetElement = parent;
+	}
+
+	targetElement.postMessage(JSON.stringify(statusNotice), "*");
 }
 
 $( window ).unload(function() {
@@ -38,7 +48,6 @@ function listener(event) {
 	}
 	var messageObject = JSON.parse(event.data);
 	if(event.data ) {
-
 		if(messageObject.status == 'open') {
 			hasParent = true;
 			targetFieldId = messageObject.targetField;
@@ -49,6 +58,7 @@ function listener(event) {
 			if($("#"+messageObject.targetFieldId).val() != messageObject.objectId) {
 				unsavedChildren--;
 			}
+
 			$("#"+messageObject.targetFieldId).val(messageObject.objectId);
 			relatedAssetPreview(messageObject.objectId, $("#"+messageObject.targetFieldId).closest(".widgetContents"));
 			submitForm();
