@@ -13,6 +13,14 @@ function inIframe () {
     }
 }
 
+if(window.location.hash  == "#secondFrame" && inIframe()) {
+    window.addEventListener("message", function(event) {
+        if(event.data == "pageLoaded") {
+            location.reload();
+        }
+    }, false);
+}
+
 function popitup() {
   newwindow=window.open("https://" + window.location.hostname + "/autoclose.html",'name','height=200,width=150');
 
@@ -43,11 +51,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 } else {
 
     if(window.location.hash  == "#secondFrame" && inIframe()) {
-        window.addEventListener("message", function(event) {
-            if(event.data == "pageLoaded") {
-                location.reload();
-            }
-        }, false);
+
     }
     else {
         // Mark browser as being isPassive checked
