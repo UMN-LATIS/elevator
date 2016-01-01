@@ -24,6 +24,14 @@ function popitup() {
   return false;
 }
 
+if(window.location.hash  == "#secondFrame" && inIframe()) {
+    window.addEventListener("message", function(event) {
+        if(event.data == "pageLoaded") {
+            location.reload();
+        }
+    }, false);
+}
+
 if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 
     if(window.location.hash  == "#firstFrame" && inIframe()) {
@@ -46,11 +54,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
     }
 } else {
     if(window.location.hash  == "#secondFrame" && inIframe()) {
-        window.addEventListener("message", function(event) {
-            if(event.data == "pageLoaded") {
-                location.reload();
-            }
-        }, false);
+
     }
     else {
         // Mark browser as being isPassive checked
