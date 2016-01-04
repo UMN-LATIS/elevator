@@ -28,18 +28,13 @@ class Widget_base extends CI_Model {
 	}
 
 	public function primarySort() {
+		foreach($this->fieldContentsArray as $key=>$fieldContents) {
 
-		usort($this->fieldContentsArray, function($a, $b) {
-			$a = ($a->isPrimary?1:-1);
-			$b = ($b->isPrimary?1:-1);
-			if ($a == $b) {
-        		return 0;
-    		}
-    		$result = ($a > $b) ? -1 : 1;
-    		return $result;
-   		});
-
-
+			if($fieldContents->isPrimary) {
+				unset($this->fieldContentsArray[$key]);
+				array_unshift($this->fieldContentsArray, $fieldContents);
+			}
+		}
 
 	}
 
