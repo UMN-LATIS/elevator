@@ -178,20 +178,21 @@ class Instances extends Instance_Controller {
 		$s3InstanceName = $this->input->post("name");
 		$s3Region = $this->input->post("region");
 
-		$s3InstanceName = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($s3InstanceName)) . ".elevator";
+		$s3InstanceName = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($s3InstanceName));
 
 		if(!$s3Region) {
 			$s3Region = 'us-east-1';
 		}
 
 		if($s3Secret && $s3Key && $s3InstanceName) {
+			$bucketName = $s3InstanceName . ".elevator";
 			$s3Client = null;
 			try {
 				$s3Client = new Aws\S3\S3Client(['region'=>'us-east-1', 'version'=>'2006-03-01', 'credentials'=>['secret'=>$s3Secret, 'key'=>$s3Key]]);
 				$loopedOnce = false;
 				while(1==1) {
 					try {
-						$s3Client->headBucket(['Bucket' =>$s3InstanceName]);
+						$s3Client->headBucket(['Bucket' =>$bucketName]);
 						break;
 					}
 					catch (\Aws\S3\Exception\S3Exception $e) {
@@ -200,7 +201,7 @@ class Instances extends Instance_Controller {
 								echo json_encode(["Error"=>"Can't find a bucket name"]);
 								return;
 							}
-							$s3InstanceName = $s3InstanceName . "_01";
+							$s3InstanceName = $bucketName . "_01";
 							$loopedOnce = true;
 						}
 						elseif($e->getStatusCode() == "404") {
@@ -217,11 +218,11 @@ class Instances extends Instance_Controller {
 			}
 
 
-			$s3Client->createBucket(["Bucket"=> $s3InstanceName, "region"=>$s3Region]);
-			$s3Client->waitUntil('BucketExists', array('Bucket' => $s3InstanceName));
+			$s3Client->createBucket(["Bucket"=> $bucketName, "region"=>$s3Region]);
+			$s3Client->waitUntil('BucketExists', array('Bucket' => $bucketName));
 
 			$result = $s3Client->putBucketCors([
-				'Bucket' => $s3InstanceName,
+				'Bucket' => $bucketName,
 				'CORSConfiguration' => [
 				'CORSRules' => [
 				[
@@ -235,7 +236,7 @@ class Instances extends Instance_Controller {
 				]);
 
 			$result = $s3Client->putBucketPolicy([
-				'Bucket'=>$s3InstanceName,
+				'Bucket'=>$bucketName,
 				'Policy'=>'{
 					"Version": "2008-10-17",
 					"Id": "Policy1386963710894",
@@ -247,7 +248,7 @@ class Instances extends Instance_Controller {
 							"AWS": "*"
 						},
 						"Action": "s3:GetObject",
-						"Resource": ["arn:aws:s3:::' . $s3InstanceName . '/derivative/*streaming/*", "arn:aws:s3:::' . $s3InstanceName . '/thumbnail/*",  "arn:aws:s3:::' . $s3InstanceName . '/vtt/*"]
+						"Resource": ["arn:aws:s3:::' . $bucketName . '/derivative/*streaming/*", "arn:aws:s3:::' . $bucketName . '/thumbnail/*",  "arn:aws:s3:::' . $bucketName . '/vtt/*"]
 					},
 					{
 						"Sid": "Stmt1387382290061",
@@ -259,7 +260,7 @@ class Instances extends Instance_Controller {
 						"s3:DeleteObject",
 						"s3:DeleteObjectVersion"
 						],
-						"Resource": "arn:aws:s3:::' . $s3InstanceName . '/original/*",
+						"Resource": "arn:aws:s3:::' . $bucketName . '/original/*",
 						"Condition": {
 							"Null": {
 								"aws:MultiFactorAuthAge": true
@@ -273,7 +274,7 @@ class Instances extends Instance_Controller {
 							"AWS": "*"
 						},
 						"Action": "s3:GetObject",
-						"Resource": "arn:aws:s3:::' . $s3InstanceName . '/derivative/*streaming/stream1.m3u8"
+						"Resource": "arn:aws:s3:::' . $bucketName . '/derivative/*streaming/stream1.m3u8"
 					}
 					]
 				}'
@@ -295,7 +296,7 @@ class Instances extends Instance_Controller {
 
 			if($useStandardIA || $useLifecycle) {
 				$s3Client->putBucketLifecycleConfiguration([
-					'Bucket'=>$s3InstanceName,
+					'Bucket'=>$bucketName,
 					'LifecycleConfiguration' => [
         				'Rules' =>
         				[ // REQUIRED
@@ -317,7 +318,7 @@ class Instances extends Instance_Controller {
 			}
 
 
-			$newUser = $s3InstanceName . "_bucket_user";
+			$newUser = $s3InstanceName . "_bucket_user" . ".elevator";
 			$client = new Aws\Iam\IamClient(['region'=>'us-east-1', 'version'=>'2010-05-08', 'credentials'=>['secret'=>$s3Secret, 'key'=>$s3Key]]);
 
 			try {
@@ -378,7 +379,7 @@ class Instances extends Instance_Controller {
 							"s3:RestoreObject"
 							],
 							"Resource": [
-							"arn:aws:s3:::' . $s3InstanceName . '*"
+							"arn:aws:s3:::' . $bucketName . '*"
 							]
 						}
 						]
@@ -394,7 +395,6 @@ class Instances extends Instance_Controller {
 				$accessKey = $userSecrets["AccessKey"]["AccessKeyId"];
 				$secretKey = $userSecrets["AccessKey"]["SecretAccessKey"];
 
-				$bucketName = $s3InstanceName;
 
 				echo json_encode(["accessKey"=>$accessKey, "secretKey"=>$secretKey, "bucketName"=>$bucketName, "bucketRegion"=>$s3Region]);
 
