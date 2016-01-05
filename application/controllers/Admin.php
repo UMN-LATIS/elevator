@@ -61,7 +61,7 @@ class admin extends Admin_Controller {
 			->orWhere("a.deleted IS NULL")
 			->andWhere("a.assetId IS NOT NULL");
 
-			$result = $qb->getQuery()->execute();
+			$result = $qb->getQuery()->iterate();
 
 			$this->search_model->wipeIndex();
 		}
@@ -69,6 +69,7 @@ class admin extends Admin_Controller {
 
 		$count = 0;
 		foreach($result as $entry) {
+			$entry = $entry[0];
 			$assetModel = new asset_model();
 			$searchModel = new search_model();
 			// $before = microtime(true);
@@ -93,6 +94,7 @@ class admin extends Admin_Controller {
 			}
 			unset($searchModel);
 			unset($assetModel);
+			$this->doctrine->em->clear();
 			if($count % 100 == 0) {
 				gc_collect_cycles();
 			}
