@@ -42,7 +42,7 @@ class admin extends Admin_Controller {
 		echo "took" . ($end - $start) . "\n";
 	}
 
-	public function reindex($searchKey = null, $searchValue = null) {
+	public function reindex($wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
 		$this->doctrine->extendTimeout();
@@ -61,9 +61,17 @@ class admin extends Admin_Controller {
 			->orWhere("a.deleted IS NULL")
 			->andWhere("a.assetId IS NOT NULL");
 
+			if($startValue > 0 || $maxValue > 0) {
+				$qb->setMaxResults($maxValue);
+				$qb->setFirstResult($startValue);
+			}
+
 			$result = $qb->getQuery()->iterate();
 
-			$this->search_model->wipeIndex();
+			if($wipe == "true") {
+				$this->search_model->wipeIndex();
+			}
+
 		}
 
 
