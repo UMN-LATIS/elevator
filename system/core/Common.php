@@ -632,7 +632,7 @@ if ( ! function_exists('_error_handler'))
 		// default error handling. See http://www.php.net/manual/en/errorfunc.constants.php
 		if ($is_error)
 		{
-			exit(1); // EXIT_ERROR
+			// exit(1); // EXIT_ERROR
 		}
 	}
 }
