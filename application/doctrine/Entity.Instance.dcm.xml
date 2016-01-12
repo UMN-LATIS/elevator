@@ -28,6 +28,9 @@
                 <join-column name="template_id" referenced-column-name="id" />
               </inverse-join-columns>
             </join-table>
+            <order-by>
+                <order-by-field name="name" direction="ASC" />
+            </order-by>
           </many-to-many>
 
           <many-to-many field="collections" inversed-by="instances" target-entity="Collection">
