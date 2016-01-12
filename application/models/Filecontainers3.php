@@ -173,10 +173,6 @@ class FileContainerS3 extends FileContainer {
 		return $this->basePath . "/" . $this->getCompositeName();
 	}
 
-	public function getPathToRemoteFile() {
-		return "http://" . $this->parent->s3model->getSecretKeyPair() . "@". $this->parent->collection->getBucket() . ".s3.amazonaws.com/" . $this->path ."/" . $this->getCompositeName();
-	}
-
 	/**
 	 * Get the path to the binary asset
 	 * @return fully qualified URL for asset
