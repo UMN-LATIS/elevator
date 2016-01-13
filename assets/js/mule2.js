@@ -170,7 +170,7 @@
 
             // the Amazon S3 bucket where you'll store the uploads
             settings.bucket = settings.bucket;
-            settings.host = settings.host || location.protocol + "//" + settings.bucket + ".s3.amazonaws.com";
+            settings.host = settings.host || location.protocol + "//" + ".s3.amazonaws.com" + "/" + settings.bucket + "/";
 
             // the Amazon S3 access key. DO NOT give the AWS Secret code!
             settings.access_key = settings.access_key;
