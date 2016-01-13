@@ -5,7 +5,9 @@
 <div class="resultContainer searchContainer">
 	<h5><a class="assetLink" href="{{base_url}}asset/viewAsset/{{objectId}}">{{join title}}</a></h5>
 	<div class="previewCrop ">
+	{{#if primaryHandlerThumbnail}}
 		<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
+	{{/if}}
 	{{#if fileAssets}}
 		<span class="badge alert-success"><span class="glyphicon glyphicon-eye-open"></span> {{fileAssets}}</span>
 	{{/if}}
