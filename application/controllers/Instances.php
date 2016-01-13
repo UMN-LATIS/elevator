@@ -185,7 +185,7 @@ class Instances extends Instance_Controller {
 		}
 
 		if($s3Secret && $s3Key && $s3InstanceName) {
-			$bucketName = "elevator." . $s3InstanceName;
+			$bucketName = "elevator-" . $s3InstanceName;
 			$s3Client = null;
 			try {
 				$s3Client = new Aws\S3\S3Client(['region'=>'us-east-1', 'version'=>'2006-03-01', 'credentials'=>['secret'=>$s3Secret, 'key'=>$s3Key]]);
@@ -318,7 +318,7 @@ class Instances extends Instance_Controller {
 			}
 
 
-			$newUser = "elevator.bucket_user" . $s3InstanceName;
+			$newUser = "elevator-bucket_user" . $s3InstanceName;
 			$client = new Aws\Iam\IamClient(['region'=>'us-east-1', 'version'=>'2010-05-08', 'credentials'=>['secret'=>$s3Secret, 'key'=>$s3Key]]);
 
 			try {
