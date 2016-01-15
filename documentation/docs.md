@@ -12,7 +12,7 @@ Elevator has a few key terms to describe the types of operations you'll be perfo
 
 ### Instance ###
 
-An instance can be thought of as a "site" or a catalog.  Instances are completely separate silos - data from one instance isn't shared with other instances.  Instances can be customized for particular groups, and are responsible for their own costs (Amazon storage fees).
+An instance can be thought of as a "site" or a catalog.  Instances are completely separate silos - data from one instance isn't visible to other instances.  Instances can be customized for particular groups, and are responsible for their own costs (Amazon storage fees).
 
 
 ### Assets ###
@@ -33,11 +33,14 @@ Drawers are user-defined groups of assets.  Given appropriate permissions, users
 
 ## Administrative Support ##
 
-Elevator is still being developed.  If you encounter issues, note the time and date.  you can also visit the "logs" section under the admin drop down.
+Elevator is still being developed.  If you encounter issues, note the time and date.  High level administrators can also visit the "logs" section under the admin drop down.
 
 # Defining Templates #
 
-Templates are the key to adding assets to your Elevator instance.  You can create as many templates as you'd like, and you may nest templates within other templates.
+Templates that define which type of metadata you'd like to collect, and  are the key to adding assets to your Elevator instance.  You can create as many templates as you'd like, and you may nest templates within other templates.  
+
+**** Gotcha: Even file attachments are a type of field within a metadata template.  If you don't have an "upload" field, you won't be able to attach files to your record.****
+
 
 ## Behaviors of Templates ##
 
@@ -53,7 +56,7 @@ A text field is a simple one-line text entry box.
 
 ### Text Area ###
 
-A text area is a larger text entry field which supports line returns.
+A text area is a larger text entry field which supports line returns and formatting.
 
 ### Date ###
 
@@ -61,7 +64,7 @@ A date field can contain either a single date (4/1/2014) or a range of dates.  D
 
 ### Location ###
 
-A location will be a latitude and longitude, along with a label.
+A location will be a latitude and longitude, along with a label.  You can look up a location by address, or by entering the coordinates.  If you don't enter a label, the latitude and longitude will be displayed to your viewers.
 
 ### Select ###
 
@@ -101,7 +104,10 @@ A simple on/off checkbox
 
 This field allows you to link or embed other assets within one asset.  For example, you may create a "person" template for defining content creators, and then nest those records within records describing their content.  This type of field can be customized using some additional JSON, as follows.
 
-```{ "nestData":true, "showLabel":true, "collapseNestedChildren":false, "thumbnailView":false, "defaultTemplate": 0}```
+```{ "nestData":true, "showLabel":true, "collapseNestedChildren":false, "thumbnailView":false, "defaultTemplate": 0, "matchAgainst": 0, "displayInline": false}```
+
+
+
 
 #### nestData ####
 
@@ -136,6 +142,10 @@ An array listing the other templates that this field should be matched against w
 
 A file-attachment field.  This allows users to upload a file their computer.  JSON controls whether dates and locations should automatically be extracted from uploaded files.
 
+#### Sidecar Data ####
+
+Some file formats (movies, 3d objects) will present an additional field when being uploaded.  In this case of movies, this is where you can add SRT subtitles.  For 3d Objects, a custom JSON attachment can describe points of interest.  This format will be documented in a separate application.
+
 ## Creating a Template ##
 
 Select "Edit Templates" from the Admin pulldown.  Click "Create New Template."
@@ -150,9 +160,9 @@ Sometimes you want to add assets, but not have them included in public search re
 
 When unchecked, this template will not be indexed for searching at all.  Assets using this template can only be accessed via their unique identifier, or via links from other assets.  This is intended to be used for "join" templates - templates that join one asset to another asset with some descriptive data, but which have no value on their own.
 
-### Hide from "Add"" menu
+### Hide from "Add" menu
 
-When checked, this template will not appear in the list of options when creating new assets, but still remains available for editing existing assets.
+When checked, this template will not appear in the list of options when creating new assets, but still remains available for editing existing assets.  This is useful for templates you wish to deprecate, without removing their assets.
 
 ### Adding a Widget ###
 
@@ -163,10 +173,6 @@ Each field in your template is defined by a "widget".  A widget has a variety of
 #### Field Label ####
 
 The label that will be shown to viewers of this asset.
-
-#### Internal Title ####
-
-This field must be unique within your template, and may only contain letters, numbers and underscores.
 
 #### Field Type ####
 
@@ -204,6 +210,14 @@ Should this field be shown in the asset preview?  The asset preview is used on t
 
 When enabled, users will be able to add multiple copies of this field.  For example, they may wish to add multiple dates to a single item.
 
+#### Directly Searchable ####
+
+This box controls whether this field will appear within the "Advanced search" box, as a field that can be searched exclusively.
+
+#### Click to Search ####
+
+When enabled, this will make the contents of the field into a link, which will trigger a new search.
+
 ## Saving a Template ##
 
 After clicking "submit" you'll be returned to the list of templates.  From here, you should adjust the display order for your newly created template.
@@ -218,7 +232,7 @@ You may wish to create a "Base" template, and then create an advanced version.  
 
 ## Deleting Templates ##
 
-Deleting templates will cause assets that use this template to be displayed incorrectly.  Use with caution!
+Deleting templates will cause assets that use this template to be displayed incorrectly.  *Use with caution!*
 
 # Collections #
 
@@ -230,7 +244,7 @@ To create a collection, select "edit collections" from the "admin" drop down and
 
 Generally, you'll only need to populate the title for your collection.  If you'd like this collection stored in a separate location in the cloud, you can populate appropriate S3 information as well.  By default, it's copied from your instance.
 
-Sometimes you may wish to use a separate bucket for a given collection.  For example, you may have most of your collections to automatically migrate original files to "glacier" storage, which is much less expensive, but much slower to access.  You may then wish to keep one collection's original assets always available.  You'd do this by creating a separate bucket with a different lifecycle policy for this collection.
+Sometimes you may wish to use a separate bucket for a given collection.  For example, you may have most of your collections to automatically migrate original files to "glacier" storage, which is much less expensive, but much slower to access.  You may then wish to keep one collection's original assets always available.  You'd do this by creating a using the bucket creation button after clearing out the existing S3 fields.  
 
 Collections can be nested within other collections by assigning a collection parent.  They will be grouped hierarchically in dropdown and in the collection browsing interface.
 
@@ -278,9 +292,6 @@ You may select multiple files at the same time when uploading assets.  After sta
 If an upload fails for some reason, simple refresh the asset and select the file again.  It will resume where you left off.
 
 After a file is uploaded, a small preview will be displayed.  You may add an additional description about the file if you'd like.
-
-> **Important: make sure you save your asset after beginning an upload, or you may not be able to access the uploaded file.**
-
 
 
 # Permissions #
