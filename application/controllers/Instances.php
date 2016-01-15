@@ -178,7 +178,7 @@ class Instances extends Instance_Controller {
 		$s3InstanceName = $this->input->post("name");
 		$s3Region = $this->input->post("region");
 
-		$s3InstanceName = preg_replace('/[^a-zA-Z0-9.]/', '', strtolower($s3InstanceName));
+		$s3InstanceName = preg_replace('/[^a-zA-Z0-9-]/', '', strtolower($s3InstanceName));
 
 		if(!$s3Region) {
 			$s3Region = 'us-east-1';
