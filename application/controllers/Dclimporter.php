@@ -598,7 +598,7 @@ class dclImporter extends Instance_Controller {
 					$tempAsset = new Asset_model();
 					$tempAsset->loadAssetById($foundRecord);
 
-					$newEntry["source"][]["targetAssetId"] = $tempAsset->getObjectId();
+					$newEntry["source_7"][]["targetAssetId"] = $tempAsset->getObjectId();
 
 				}
 			}
