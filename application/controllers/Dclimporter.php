@@ -32,7 +32,7 @@ class dclImporter extends Instance_Controller {
 		parent::__construct();
 		ini_set("memory_limit","4096M");
 		$this->dcl = $this->load->database('old', TRUE);
-		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 7);
 		$this->load->model("asset_model");
 		$this->user_model->loadUser(1);
 		echo "\n";
@@ -223,45 +223,46 @@ class dclImporter extends Instance_Controller {
 
 	public function importWork() {
 
-		$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $this->wkid);
+		$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $this->wkid);
 		if($foundRecord) {
 			return;
 		}
 
 		$this->dcl->where("wk_id", $this->wkid);
 		$result = $this->dcl->get("dcl_works", 1);
+
 		foreach($result->result_array() as $entry) {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
 
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period1"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period2"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period3"];
-			$newEntry["styleperiod_1"][]["fieldContents"] = $entry["style_period4"];
+			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period1"];
+			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period2"];
+			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period3"];
+			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period4"];
 			if($entry["type4"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type4"];
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
 			}
 			if($entry["type3"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type3"];
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
 			}
 			if($entry["type2"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type2"];
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type2"];
 			}
 			if($entry["type1"]) {
-				$newEntry["classification_1"][]["fieldContents"] = $entry["type1"];
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
 			}
 
-			$newEntry["culture_1"][]["fieldContents"] = $entry["culture1"];
-			$newEntry["culture_1"][]["fieldContents"] = $entry["culture2"];
-			$newEntry["technique_1"][]["fieldContents"] = $entry["technique1"];
-			$newEntry["materials_1"][]["fieldContents"] = $entry["materials"];
-			$newEntry["language_1"][]["fieldContents"] = $entry["language"];
-			$newEntry["stateedition_1"][]["fieldContents"] = $entry["state_edition"];
-			$newEntry["inscription_1"][]["fieldContents"] = $entry["inscription"];
-			$newEntry["repositoryobjectid_1"][]["fieldContents"] = $entry["repository_object_id"];
-			$newEntry["comments_1"][]["fieldContents"] = $entry["comments"];
+			$newEntry["culture_7"][]["fieldContents"] = $entry["culture1"];
+			$newEntry["culture_7"][]["fieldContents"] = $entry["culture2"];
+			$newEntry["technique_7"][]["fieldContents"] = $entry["technique1"];
+			$newEntry["materials_7"][]["fieldContents"] = $entry["materials"];
+			$newEntry["language_7"][]["fieldContents"] = $entry["language"];
+			$newEntry["stateedition_7"][]["fieldContents"] = $entry["state_edition"];
+			$newEntry["inscription_7"][]["fieldContents"] = $entry["inscription"];
+			$newEntry["repositoryobjectid_7"][]["fieldContents"] = $entry["repository_object_id"];
+			$newEntry["comments_7"][]["fieldContents"] = $entry["comments"];
 			if($entry['primary_view_digital_id']) {
 				$this->primaryViewId = $entry['primary_view_digital_id'];
 			}
@@ -295,7 +296,7 @@ class dclImporter extends Instance_Controller {
 
 	public function importWorkTitle() {
 
-		$foundRecord = $this->getExistingRecord("Old Work Title", "workid_1", "fieldContents", $this->wkid);
+		$foundRecord = $this->getExistingRecord("Old Work Title", "workid_7", "fieldContents", $this->wkid);
 		if($foundRecord) {
 			return;
 		}
@@ -312,11 +313,11 @@ class dclImporter extends Instance_Controller {
 				return;
 			}
 
-			$newEntry["worktitleid_1"][]["fieldContents"] = $entry["wkt_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["title_1"][]["fieldContents"] = $entry["title"];
-			$newEntry["type_1"][]["fieldContents"] = $entry["type"];
-			$newEntry["markpreferred_1"][]["fieldContents"] = $entry["mark_preferred"];
+			$newEntry["worktitleid_7"][]["fieldContents"] = $entry["wkt_id"];
+			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["title_7"][]["fieldContents"] = $entry["title"];
+			$newEntry["type_7"][]["fieldContents"] = $entry["type"];
+			$newEntry["markpreferred_7"][]["fieldContents"] = $entry["mark_preferred"];
 			$newEntry["collectionId"] = $this->targetCollection;
 			$newEntry["templateId"] = $this->getTemplateId("Old Work Title");
 			$newEntry["readyForDisplay"] = true;
@@ -333,7 +334,7 @@ class dclImporter extends Instance_Controller {
 			echo "Work Title:" . $objectId. "\n";
 
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $this->wkid);
+			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $this->wkid);
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($foundRecord);
@@ -343,7 +344,7 @@ class dclImporter extends Instance_Controller {
 				if($entry["mark_preferred"] == "Y") {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["worktitle_1"][] = $insert;
+				$assetArray["worktitle_7"][] = $insert;
 				$tempAsset->createObjectFromJSON($assetArray);
 				$tempAsset->save(true,false);
 			}
@@ -353,7 +354,7 @@ class dclImporter extends Instance_Controller {
 	}
 
 	public function importWorkEvent() {
-		$foundRecord = $this->getExistingRecord("Old Work Event", "workid_1", "fieldContents", $this->wkid);
+		$foundRecord = $this->getExistingRecord("Old Work Event", "workid_7", "fieldContents", $this->wkid);
 		if($foundRecord) {
 			return;
 		}
@@ -368,28 +369,28 @@ class dclImporter extends Instance_Controller {
 				return;
 			}
 
-			$newEntry["workeventid_1"][]["fieldContents"] = $entry["wke_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["earliestdate_1"][]["fieldContents"] = $entry["earliest_date"];
-			$newEntry["latestdate_1"][]["fieldContents"] = $entry["latest_date"];
-			$newEntry["begincentury_1"][]["fieldContents"] = $entry["begin_century"];
-			$newEntry["endcentury_1"][]["fieldContents"] = $entry["end_century"];
-			$newEntry["decade_1"][]["fieldContents"] = $entry["decade"];
-			$newEntry["locationname_1"][]["fieldContents"] = $entry["location_name"];
-			$newEntry["continent_1"][]["fieldContents"] = $entry["continent"];
-			$newEntry["country_1"][]["fieldContents"] = $entry["country"];
-			$newEntry["state_1"][]["fieldContents"] = $entry["state"];
-			$newEntry["region_1"][]["fieldContents"] = $entry["region"];
-			$newEntry["type_1"][]["fieldContents"] = $entry["type"];
-			$newEntry["citysite_1"][]["fieldContents"] = $entry["city_site"];
-			$newEntry["address_1"][]["fieldContents"] = $entry["address"];
-			$newEntry["county_1"][]["fieldContents"] = $entry["county"];
+			$newEntry["workeventid_7"][]["fieldContents"] = $entry["wke_id"];
+			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["earliestdate_7"][]["fieldContents"] = $entry["earliest_date"];
+			$newEntry["latestdate_7"][]["fieldContents"] = $entry["latest_date"];
+			$newEntry["begincentury_7"][]["fieldContents"] = $entry["begin_century"];
+			$newEntry["endcentury_7"][]["fieldContents"] = $entry["end_century"];
+			$newEntry["decade_7"][]["fieldContents"] = $entry["decade"];
+			$newEntry["locationname_7"][]["fieldContents"] = $entry["location_name"];
+			$newEntry["continent_7"][]["fieldContents"] = $entry["continent"];
+			$newEntry["country_7"][]["fieldContents"] = $entry["country"];
+			$newEntry["state_7"][]["fieldContents"] = $entry["state"];
+			$newEntry["region_7"][]["fieldContents"] = $entry["region"];
+			$newEntry["type_7"][]["fieldContents"] = $entry["type"];
+			$newEntry["citysite_7"][]["fieldContents"] = $entry["city_site"];
+			$newEntry["address_7"][]["fieldContents"] = $entry["address"];
+			$newEntry["county_7"][]["fieldContents"] = $entry["county"];
 			if($entry['longitude'] && $entry['latitude']) {
 
 				$locArray = ["type"=>"Point", "coordinates"=>[$entry['longitude'], $entry['latitude']]];
 				$locationEntry['loc'] = $locArray;
 				$locationEntry['locationLabel'] = "";
-				$newEntry['locationcoordinates_1'][] = $locationEntry;
+				$newEntry['locationcoordinates_7'][] = $locationEntry;
 
 			}
 			$newEntry["readyForDisplay"] = true;
@@ -403,13 +404,13 @@ class dclImporter extends Instance_Controller {
 			$objectId = $asset->save(true,false);
 			echo "Work Event:" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
+			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
 
 				$tempAsset->loadAssetById($foundRecord);
 				$assetArray = $tempAsset->getAsArray();
-				$assetArray["datelocation_1"][]["targetAssetId"] = $objectId;
+				$assetArray["datelocation_7"][]["targetAssetId"] = $objectId;
 				$tempAsset->createObjectFromJSON($assetArray);
 
 				$tempAsset->save(true,false);
@@ -420,7 +421,7 @@ class dclImporter extends Instance_Controller {
 
 	public function importWorkMeasure() {
 
-		$foundRecord = $this->getExistingRecord("Old Work Measurement", "workid_1", "fieldContents", $this->wkid);
+		$foundRecord = $this->getExistingRecord("Old Work Measurement", "workid_7", "fieldContents", $this->wkid);
 		if($foundRecord) {
 			return;
 		}
@@ -436,10 +437,10 @@ class dclImporter extends Instance_Controller {
 			}
 
 
-			$newEntry["workmeasurementid_1"][]["fieldContents"] = $entry["wkm_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["measurement_1"][]["fieldContents"] = $entry["measurement"];
-			$newEntry["extent_1"][]["fieldContents"] = $entry["extent"];
+			$newEntry["workmeasurementid_7"][]["fieldContents"] = $entry["wkm_id"];
+			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["measurement_7"][]["fieldContents"] = $entry["measurement"];
+			$newEntry["extent_7"][]["fieldContents"] = $entry["extent"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["collectionId"] = $this->targetCollection;
 			$newEntry["templateId"] = $this->getTemplateId("Old Work Measurement");
@@ -450,13 +451,13 @@ class dclImporter extends Instance_Controller {
 			$objectId = $asset->save(true,false);
 			echo "Work Measure" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
+			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($foundRecord);
 				$assetArray = $tempAsset->getAsArray();
-				$assetArray["workmeasurement_1"][]["targetAssetId"] = $objectId;
+				$assetArray["workmeasurement_7"][]["targetAssetId"] = $objectId;
 				$tempAsset->createObjectFromJSON($assetArray);
 				$tempAsset->save(true,false);
 
@@ -475,7 +476,7 @@ class dclImporter extends Instance_Controller {
 
 
 	public function importAgent() {
-		$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_1", "fieldContents", $this->agid);
+		$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $this->agid);
 		if($foundRecord) {
 			return;
 		}
@@ -486,24 +487,24 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["firstnamequalifier_1"][]["fieldContents"] = $entry["first_name_qualifier"];
-			$newEntry["firstname_1"][]["fieldContents"] = $entry["first_name"];
-			$newEntry["lastname_1"][]["fieldContents"] = $entry["last_name"];
-			$newEntry["lastnamequalifier_1"][]["fieldContents"] = $entry["last_name_qualifier"];
-			$newEntry["altname_1"][]["fieldContents"] = $entry["alt_name"];
-			$newEntry["birthdate_1"][]["fieldContents"] = $entry["birth_date"];
-			$newEntry["deathdate_1"][]["fieldContents"] = $entry["death_date"];
-			$newEntry["nationality_1"][]["fieldContents"] = $entry["nationality1"];
-			$newEntry["nationality_1"][]["fieldContents"] = $entry["nationality2"];
-			$newEntry["datesactive_1"][]["fieldContents"] = $entry["dates_active"];
-			$newEntry["notes_1"][]["fieldContents"] = $entry["notes"];
+			$newEntry["firstnamequalifier_7"][]["fieldContents"] = $entry["first_name_qualifier"];
+			$newEntry["firstname_7"][]["fieldContents"] = $entry["first_name"];
+			$newEntry["lastname_7"][]["fieldContents"] = $entry["last_name"];
+			$newEntry["lastnamequalifier_7"][]["fieldContents"] = $entry["last_name_qualifier"];
+			$newEntry["altname_7"][]["fieldContents"] = $entry["alt_name"];
+			$newEntry["birthdate_7"][]["fieldContents"] = $entry["birth_date"];
+			$newEntry["deathdate_7"][]["fieldContents"] = $entry["death_date"];
+			$newEntry["nationality_7"][]["fieldContents"] = $entry["nationality1"];
+			$newEntry["nationality_7"][]["fieldContents"] = $entry["nationality2"];
+			$newEntry["datesactive_7"][]["fieldContents"] = $entry["dates_active"];
+			$newEntry["notes_7"][]["fieldContents"] = $entry["notes"];
 
 			// if we don't have any values up to this point, let's bail.
 			if(!array_filter($this->array_value_recursive("fieldContents", $newEntry))) {
 				return;
 			}
 
-			$newEntry["agentid_1"][]["fieldContents"] = $entry["ag_id"];
+			$newEntry["agentid_7"][]["fieldContents"] = $entry["ag_id"];
 
 
 			$newEntry["templateId"] = $this->getTemplateId("Old DCL Agents");
@@ -512,7 +513,7 @@ class dclImporter extends Instance_Controller {
 
 			$agentNameArray = array($entry["first_name_qualifier"], join($this->removeEmptyElements(array($entry["first_name"], $entry["last_name"])), " "),$entry["last_name_qualifier"]);
 			$agentName = join($this->removeEmptyElements($agentNameArray), ", ");
-			$newEntry["displayname_1"][]["fieldContents"] = $agentName;
+			$newEntry["displayname_7"][]["fieldContents"] = $agentName;
 
 
 			$asset = new Asset_model();
@@ -537,7 +538,7 @@ class dclImporter extends Instance_Controller {
 
 	public function importSourcePublication() {
 
-		$foundRecord = $this->getExistingRecord("Old Source Publication", "sourceid_1", "fieldContents", $this->srcid);
+		$foundRecord = $this->getExistingRecord("Old Source Publication", "sourceid_7", "fieldContents", $this->srcid);
 		if($foundRecord) {
 			return;
 		}
@@ -548,13 +549,13 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["sourceid_1"][]["fieldContents"] = $entry["src_id"];
-			$newEntry["author_1"][]["fieldContents"] = $entry["author"];
-			$newEntry["articletitle_1"][]["fieldContents"] = $entry["article_title"];
-			$newEntry["title_1"][]["fieldContents"] = $entry["title"];
-			$newEntry["volume_1"][]["fieldContents"] = $entry["volume"];
-			$newEntry["number_1"][]["fieldContents"] = $entry["number"];
-			$newEntry["year_1"][]["fieldContents"] = $entry["year"];
+			$newEntry["sourceid_7"][]["fieldContents"] = $entry["src_id"];
+			$newEntry["author_7"][]["fieldContents"] = $entry["author"];
+			$newEntry["articletitle_7"][]["fieldContents"] = $entry["article_title"];
+			$newEntry["title_7"][]["fieldContents"] = $entry["title"];
+			$newEntry["volume_7"][]["fieldContents"] = $entry["volume"];
+			$newEntry["number_7"][]["fieldContents"] = $entry["number"];
+			$newEntry["year_7"][]["fieldContents"] = $entry["year"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $this->getTemplateId("Old Source Publication");
 			$newEntry["collectionId"] = $this->targetCollection;
@@ -571,7 +572,7 @@ class dclImporter extends Instance_Controller {
 	public function importOrder() {
 
 
-		$foundRecord = $this->getExistingRecord("Old Orders", "orderid_1", "fieldContents", $this->ordid);
+		$foundRecord = $this->getExistingRecord("Old Orders", "orderid_7", "fieldContents", $this->ordid);
 		if($foundRecord) {
 			return;
 		}
@@ -582,16 +583,16 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["orderid_1"][]["fieldContents"] = $entry["ord_id"];
-			$newEntry["collectionid_1"][]["fieldContents"] = $entry["col_id"];
-			$newEntry["sourceid_1"][]["fieldContents"] = $entry["src_id"];
-			$newEntry["orderedby_1"][]["fieldContents"] = $entry["ordered_by"];
+			$newEntry["orderid_7"][]["fieldContents"] = $entry["ord_id"];
+			$newEntry["collectionid_7"][]["fieldContents"] = $entry["col_id"];
+			$newEntry["sourceid_7"][]["fieldContents"] = $entry["src_id"];
+			$newEntry["orderedby_7"][]["fieldContents"] = $entry["ordered_by"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $this->getTemplateId("Old Orders");
 			$newEntry["collectionId"] = $this->targetCollection;
 
 			if($entry['src_id']) {
-				$foundRecord = $this->getExistingRecord("Old Source Publication", "sourceid_1", "fieldContents", $entry['src_id']);
+				$foundRecord = $this->getExistingRecord("Old Source Publication", "sourceid_7", "fieldContents", $entry['src_id']);
 
 				if($foundRecord) {
 					$tempAsset = new Asset_model();
@@ -615,7 +616,7 @@ class dclImporter extends Instance_Controller {
 
 	public function importAgentWork() {
 
-		$foundRecord = $this->getExistingRecord("Old Agent Work", "workid_1", "fieldContents", $this->wkid);
+		$foundRecord = $this->getExistingRecord("Old Agent Work", "workid_7", "fieldContents", $this->wkid);
 		if($foundRecord) {
 			return;
 		}
@@ -627,21 +628,21 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["agentworkid_1"][]["fieldContents"] = $entry["agwk_id"];
-			$newEntry["agentid_1"][]["fieldContents"] = $entry["ag_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["role_1"][]["fieldContents"] = $entry["role"];
-			$newEntry["attribution_1"][]["fieldContents"] = $entry["attribution"];
-			$newEntry["extent_1"][]["fieldContents"] = $entry["extent"];
+			$newEntry["agentworkid_7"][]["fieldContents"] = $entry["agwk_id"];
+			$newEntry["agentid_7"][]["fieldContents"] = $entry["ag_id"];
+			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["role_7"][]["fieldContents"] = $entry["role"];
+			$newEntry["attribution_7"][]["fieldContents"] = $entry["attribution"];
+			$newEntry["extent_7"][]["fieldContents"] = $entry["extent"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $this->getTemplateId("Old Agent Work");
 			$newEntry["collectionId"] = $this->targetCollection;
-			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_1", "fieldContents", $entry['ag_id']);
+			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $entry['ag_id']);
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["agent_1"][]["targetAssetId"] = $tempAsset->getObjectId();
+				$newEntry["agent_7"][]["targetAssetId"] = $tempAsset->getObjectId();
 			}
 			else {
 				return;
@@ -654,7 +655,7 @@ class dclImporter extends Instance_Controller {
 			$asset->createObjectFromJSON($newEntry);
 			$objectId = $asset->save(true,false);
 			echo "Agentwork:" . $objectId. "\n";
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
+			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
@@ -665,7 +666,7 @@ class dclImporter extends Instance_Controller {
 				if($entry["rank"] == 1) {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["creator_1"][] = $insert;
+				$assetArray["creator_7"][] = $insert;
 				$tempAsset->createObjectFromJSON($assetArray);
 				$tempAsset->save(true,false);
 
@@ -686,7 +687,7 @@ class dclImporter extends Instance_Controller {
 	public function importViews()
 	{
 
-		$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_1", "fieldContents", $this->vwid);
+		$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_7", "fieldContents", $this->vwid);
 		if($foundRecord) {
 			return;
 		}
@@ -699,49 +700,49 @@ class dclImporter extends Instance_Controller {
 			$newEntry = array();
 			$entry = array_map(function($source){$trimmed = trim($source); if($trimmed=="") {return null;} return $trimmed;}, $entry);
 
-			$newEntry["alttype_1"][]["fieldContents"] = $entry["alt_type"];
-			$newEntry["classification_1"][]["fieldContents"] = $entry["classification"];
-			$newEntry["date_1"][]["fieldContents"] = $entry["date"];
-			$newEntry["description_1"][]["fieldContents"] = $entry["description"];
-			$newEntry["digitalid_1"][]["fieldContents"] = $entry["digital_id"];
-			$newEntry["digitized_1"][]["fieldContents"] = $entry["digitized"];
-			$newEntry["figurenumber_1"][]["fieldContents"] = $entry["figure_number"];
-			$newEntry["folionumber_1"][]["fieldContents"]= $entry["folio_number"];
-			$newEntry["keywords_1"][]["tags"] = $entry["keywords"];
+			$newEntry["alttype_7"][]["fieldContents"] = $entry["alt_type"];
+			$newEntry["classification_7"][]["fieldContents"] = $entry["classification"];
+			$newEntry["date_7"][]["fieldContents"] = $entry["date"];
+			$newEntry["description_7"][]["fieldContents"] = $entry["description"];
+			$newEntry["digitalid_7"][]["fieldContents"] = $entry["digital_id"];
+			$newEntry["digitized_7"][]["fieldContents"] = $entry["digitized"];
+			$newEntry["figurenumber_7"][]["fieldContents"] = $entry["figure_number"];
+			$newEntry["folionumber_7"][]["fieldContents"]= $entry["folio_number"];
+			$newEntry["keywords_7"][]["tags"] = $entry["keywords"];
 
-			$newEntry["mediatype_1"][]["fieldContents"] = $entry["media_type"];
-			$newEntry["orderid_1"][]["fieldContents"] = $entry["ord_id"];
-			$newEntry["legacyid_1"][]["fieldContents"] = $entry["legacy_id"];
-			$newEntry["pagenumber_1"][]["fieldContents"] = $entry["page_number"];
-			$newEntry["publiccopyright_1"][]["fieldContents"] = $entry["copyright_public"];
-			$newEntry["scale_1"][]["fieldContents"] = $entry["scale"];
-			$newEntry["subtype_1"][]["fieldContents"] = $entry["sub_type"];
-			$newEntry["title_1"][]["fieldContents"] = $entry["title"];
-			$newEntry["viewtype_1"][]["fieldContents"] = $entry["type"];
-			$newEntry["viewagentextent_1"][]["fieldContents"] = $entry["view_agent_extent"];
-			$newEntry["viewagentid_1"][]["fieldContents"] = $entry["view_agent_id"];
-			$newEntry["viewid_1"][]["fieldContents"] = $entry["vw_id"];
-			$newEntry["workid_1"][]["fieldContents"] = $entry["wk_id"];
-			$newEntry["copyrightfullvideo_1"][]["fieldContents"] = $entry["copyright_full_video"];
+			$newEntry["mediatype_7"][]["fieldContents"] = $entry["media_type"];
+			$newEntry["orderid_7"][]["fieldContents"] = $entry["ord_id"];
+			$newEntry["legacyid_7"][]["fieldContents"] = $entry["legacy_id"];
+			$newEntry["pagenumber_7"][]["fieldContents"] = $entry["page_number"];
+			$newEntry["publiccopyright_7"][]["fieldContents"] = $entry["copyright_public"];
+			$newEntry["scale_7"][]["fieldContents"] = $entry["scale"];
+			$newEntry["subtype_7"][]["fieldContents"] = $entry["sub_type"];
+			$newEntry["title_7"][]["fieldContents"] = $entry["title"];
+			$newEntry["viewtype_7"][]["fieldContents"] = $entry["type"];
+			$newEntry["viewagentextent_7"][]["fieldContents"] = $entry["view_agent_extent"];
+			$newEntry["viewagentid_7"][]["fieldContents"] = $entry["view_agent_id"];
+			$newEntry["viewid_7"][]["fieldContents"] = $entry["vw_id"];
+			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["copyrightfullvideo_7"][]["fieldContents"] = $entry["copyright_full_video"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["collectionId"] = $this->targetCollection;
 			$newEntry["templateId"] = $this->getTemplateId("Old DCL Views");
 
 
-			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_1", "fieldContents", $entry['view_agent_id']);
+			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $entry['view_agent_id']);
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["agent_1"][]["targetAssetId"] = $tempAsset->getObjectId();
+				$newEntry["agent_7"][]["targetAssetId"] = $tempAsset->getObjectId();
 			}
 
-			$foundRecord = $this->getExistingRecord("Old Orders", "orderid_1", "fieldContents", $entry['ord_id']);
+			$foundRecord = $this->getExistingRecord("Old Orders", "orderid_7", "fieldContents", $entry['ord_id']);
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["ordersource_1"][]["targetAssetId"] = $tempAsset->getObjectId();
+				$newEntry["ordersource_7"][]["targetAssetId"] = $tempAsset->getObjectId();
 			}
 
 
@@ -752,7 +753,7 @@ class dclImporter extends Instance_Controller {
 			$objectId = $asset->save(true,false);
 			echo "View:" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_1", "fieldContents", $entry['wk_id']);
+			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
@@ -764,7 +765,7 @@ class dclImporter extends Instance_Controller {
 				if(strcasecmp($this->primaryViewId, $entry["digital_id"]) == 0) {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["views_1"][] = $insert;
+				$assetArray["views_7"][] = $insert;
 
 				$tempAsset->createObjectFromJSON($assetArray);
 				$tempAsset->save(true,false);
@@ -788,7 +789,7 @@ return;
 			$digitalId = $entry["digital_id"];
 			$originalExtension = str_replace(".", "", $entry["file_extension"]);
 
-			$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_1", "fieldContents", $this->vwid);
+			$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_7", "fieldContents", $this->vwid);
 
 
 			if($foundRecord) {
@@ -808,7 +809,7 @@ return;
 
 			}
 
-			$foundRecord = $this->getExistingRecord("Old DCL Views", "digitalid_1", "fieldContents", $digitalId);
+			$foundRecord = $this->getExistingRecord("Old DCL Views", "digitalid_7", "fieldContents", $digitalId);
 
 			if($foundRecord) {
 				echo "starting\n";
@@ -862,7 +863,7 @@ return;
 				$fileHandler->save(true,false);
 
 				$assetArray = $tempAsset->getAsArray();
-				$assetArray["file_1"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
+				$assetArray["file_7"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
 
 				$tempAsset->createObjectFromJSON($assetArray);
 				echo $tempAsset->getObjectId() . "\n";
