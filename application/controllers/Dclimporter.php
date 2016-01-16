@@ -27,6 +27,9 @@ class dclImporter extends Instance_Controller {
 
 	public $rootPathToMedia = "/export/A24FLUN0P1/archive_root/dcl/";
 
+	public $agentObject = array();
+	public $workObject = array();
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -275,6 +278,7 @@ class dclImporter extends Instance_Controller {
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
 			$objectId = $asset->save(true,false);
+			$this->workObject[$entry['wk_id']] = $objectId;
 			echo "Work:" . $objectId. "\n";
 
 
@@ -520,6 +524,8 @@ class dclImporter extends Instance_Controller {
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
 			$objectId = $asset->save(true,false);
+			$this->agentObject[$entry["ag_id"]] = $objectId;
+
 			echo "Agent:" . $objectId. "\n";
 		}
 
@@ -637,12 +643,22 @@ class dclImporter extends Instance_Controller {
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $this->getTemplateId("Old Agent Work");
 			$newEntry["collectionId"] = $this->targetCollection;
-			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $entry['ag_id']);
 
-			if($foundRecord) {
-				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
-				$newEntry["agent_7"][]["targetAssetId"] = $tempAsset->getObjectId();
+			$agentObjectId = null;
+			if(isset($this->agentObject[$entry["ag_id"]])) {
+				$agentObjectId = $this->agentObject[$entry["ag_id"]];
+			}
+			else {
+				$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $entry['ag_id']);
+
+				if($foundRecord) {
+					$tempAsset = new Asset_model();
+					$tempAsset->loadAssetById($foundRecord);
+					$agentObjectId = $tempAsset->getObjectId();
+				}
+			}
+			if($agentObjectId) {
+				$newEntry["agent_7"][]["targetAssetId"] = $agentObjectId;
 			}
 			else {
 				return;
@@ -655,7 +671,13 @@ class dclImporter extends Instance_Controller {
 			$asset->createObjectFromJSON($newEntry);
 			$objectId = $asset->save(true,false);
 			echo "Agentwork:" . $objectId. "\n";
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
+
+			if(isset($this->workObject[$entry['wk_id']])) {
+				$foundRecord = $this->workObject[$entry['wk_id']];
+			}
+			else {
+				$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
+			}
 
 			if($foundRecord) {
 				$tempAsset = new Asset_model();
