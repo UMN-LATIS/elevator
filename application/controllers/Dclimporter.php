@@ -686,7 +686,7 @@ class dclImporter extends Instance_Controller {
 				if($foundRecord) {
 					$workObject = new Asset_model();
 					$workObject->loadAssetById($foundRecord);
-					$workObjectArray = $tempAsset->getAsArray();
+					$workObjectArray = $workObject->getAsArray();
 				}
 			}
 			if($workObject) {
