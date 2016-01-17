@@ -627,6 +627,8 @@ class dclImporter extends Instance_Controller {
 			return;
 		}
 
+		$workObject = null;
+		$workObjectArray = null;
 
 		$this->dcl->where("wk_id", $this->wkid);
 		$result = $this->dcl->get("agents_works");
@@ -672,28 +674,34 @@ class dclImporter extends Instance_Controller {
 			$objectId = $asset->save(true,false);
 			echo "Agentwork:" . $objectId. "\n";
 
-			if(isset($this->workObject[$entry['wk_id']])) {
-				$foundRecord = $this->workObject[$entry['wk_id']];
-			}
-			else {
-				$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
-			}
 
-			if($foundRecord) {
-				$tempAsset = new Asset_model();
-				$tempAsset->loadAssetById($foundRecord);
-				$assetArray = $tempAsset->getAsArray();
+			if(!$workObject || $workObjectArray) {
+				if(isset($this->workObject[$entry['wk_id']])) {
+					$foundRecord = $this->workObject[$entry['wk_id']];
+				}
+				else {
+					$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
+				}
+
+				if($foundRecord) {
+					$workObject = new Asset_model();
+					$workObject->loadAssetById($foundRecord);
+					$workObjectArray = $tempAsset->getAsArray();
+				}
+			}
+			if($workObject) {
 				$insert = array();
 				$insert["targetAssetId"] = $objectId;
 				if($entry["rank"] == 1) {
 					$insert["isPrimary"] = true;
 				}
-				$assetArray["creator_7"][] = $insert;
-				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
-
+				$workObjectArray["creator_7"][] = $insert;
 			}
 		}
+
+
+		$workObject->createObjectFromJSON($assetArray);
+		$workObject->save(true,false);
 
 	}
 
