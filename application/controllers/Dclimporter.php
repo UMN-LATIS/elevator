@@ -675,7 +675,7 @@ class dclImporter extends Instance_Controller {
 			echo "Agentwork:" . $objectId. "\n";
 
 
-			if(!$workObject || $workObjectArray) {
+			if(!$workObject || !$workObjectArray) {
 				if(isset($this->workObject[$entry['wk_id']])) {
 					$foundRecord = $this->workObject[$entry['wk_id']];
 				}
