@@ -529,7 +529,15 @@ class Asset_model extends CI_Model {
 		$outputObject['title'] = array_shift($rootTitleArray); // only show the first title
 		foreach($this->assetObjects as $assetKey=>$assetObject) {
 			if($assetObject->getDisplayInPreview() && get_class($assetObject) != "Upload") {
-				$entryAsText = $assetObject->getArrayOfText(false);
+
+				// check to make sure this isn't the same value we used as the title
+				// we'll handle it for related_asset later, for better perf
+				if(get_class($assetObject) !== "Related_asset") {
+					$entryAsText = $assetObject->getArrayOfText(false);
+				}
+				else {
+					$entryAsText = array();
+				}
 
 				if(array_shift($entryAsText) != $outputObject['title'] && $assetObject->hasContents()) {
 					/**
@@ -539,11 +547,15 @@ class Asset_model extends CI_Model {
 
 					if(get_class($assetObject) == "Related_asset") {
 						$titleArray = array();
+						$maxCount = 3;
+						$count = 0;
 						foreach($assetObject->fieldContentsArray as $entry) {
-							$titleArray[] = $entry->getRelatedAsset()->getAssetTitle();
-							foreach($entry->getRelatedAsset()->getAllWithinAsset("Upload") as $uploadWidget) {
-								$uploadCount += count($uploadWidget->fieldContentsArray);
+							if($count > $maxCount) {
+								break;
 							}
+							$titleArray[] = $entry->getRelatedAsset()->getAssetTitle();
+
+							$count++;
 						}
 
 						if($outputObject['title'] == reset($titleArray[0])) {
@@ -561,9 +573,6 @@ class Asset_model extends CI_Model {
 
 
 				}
-			}
-			elseif(get_class($assetObject) == "Upload") {
-				$uploadCount += count($assetObject->fieldContentsArray);
 			}
 
 		}
@@ -685,12 +694,15 @@ class Asset_model extends CI_Model {
 		 */
 		$cachedUploadCount = 0;
 		foreach($this->assetObjects as $assetObject) {
-			if(get_class($assetObject) == "Related_asset" && !$assetObject->getDisplayInPreview()) {
+			if(get_class($assetObject) == "Related_asset") {
 				foreach($assetObject->fieldContentsArray as $entry) {
 					foreach($entry->getRelatedAsset()->getAllWithinAsset("Upload") as $uploadWidget) {
 						$cachedUploadCount += count($uploadWidget->fieldContentsArray);
 					}
 				}
+			}
+			elseif(get_class($assetObject) == "Upload") {
+				$cachedUploadCount += count($assetObject->fieldContentsArray);
 			}
 		}
 
