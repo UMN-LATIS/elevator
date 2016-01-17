@@ -700,7 +700,7 @@ class dclImporter extends Instance_Controller {
 		}
 
 
-		$workObject->createObjectFromJSON($assetArray);
+		$workObject->createObjectFromJSON($workObjectArray);
 		$workObject->save(true,false);
 
 	}
