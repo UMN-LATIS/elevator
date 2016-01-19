@@ -62,7 +62,7 @@ class dclImporter extends Instance_Controller {
 			$this->importId($entry);
 			$this->doctrine->em->clear();
 			$count++;
-			if($count % 100 == 0) {
+			if($count % 10 == 0) {
 				gc_collect_cycles();
 			}
 		}
@@ -699,9 +699,10 @@ class dclImporter extends Instance_Controller {
 			}
 		}
 
-
-		$workObject->createObjectFromJSON($workObjectArray);
-		$workObject->save(true,false);
+		if($workObjectArray) {
+			$workObject->createObjectFromJSON($workObjectArray);
+			$workObject->save(true,false);
+		}
 
 	}
 
