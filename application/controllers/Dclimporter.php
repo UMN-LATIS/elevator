@@ -126,7 +126,7 @@ class dclImporter extends Instance_Controller {
 		$this->dcl->where("digital_id", $digitalId);
 		$viewQuery = $this->dcl->get("dcl_views");
 
-		if(!$viewRow) {
+		if(!$viewQuery) {
 			$this->logging->logError("import failed", "importing " . $digitalId . " failed");
 			return;
 		}
