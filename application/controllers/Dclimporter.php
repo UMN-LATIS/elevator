@@ -124,59 +124,63 @@ class dclImporter extends Instance_Controller {
 	public function importId($digitalId) {
 
 		$this->dcl->where("digital_id", $digitalId);
-		$viewRow = $this->dcl->get("dcl_views")->row();
+		$viewQuery = $this->dcl->get("dcl_views");
 
 		if(!$viewRow) {
 			$this->logging->logError("import failed", "importing " . $digitalId . " failed");
 			return;
 		}
 
-		$this->vwid = $viewRow->vw_id;
-		$this->wkid = $viewRow->wk_id;
-		$this->digitalid = $digitalId;
-		$this->agid = $viewRow->view_agent_id;
-		$this->ordid = $viewRow->ord_id;
+		foreach($viewQuery->result() as $viewRow) {
+			$this->vwid = $viewRow->vw_id;
+			$this->wkid = $viewRow->wk_id;
+			$this->digitalid = $digitalId;
+			$this->agid = $viewRow->view_agent_id;
+			$this->ordid = $viewRow->ord_id;
 
-		$this->dcl->where("wk_id", $this->wkid);
-		$wkresult = $this->dcl->get("dcl_works");
-		if($wkresult->num_rows()>0) {
-			$work = $wkresult->row();
-			$this->targetCollection = $this->findCollection($work->col_id);
-		}
-
-		if($this->wkid) {
-			$this->importWork();
-			$this->importWorkTitle();
-			$this->importWorkEvent();
-			$this->importWorkMeasure();
-		}
-
-		$this->importAgent();
-
-		if($this->wkid) {
 			$this->dcl->where("wk_id", $this->wkid);
-			$result = $this->dcl->get("agents_works");
-			foreach($result->result() as $entry) {
-				$this->agid = $entry->ag_id;
-				$this->importAgent();
+			$wkresult = $this->dcl->get("dcl_works");
+			if($wkresult->num_rows()>0) {
+				$work = $wkresult->row();
+				$this->targetCollection = $this->findCollection($work->col_id);
 			}
-			$this->importAgentWork();
-		}
+
+			if($this->wkid) {
+				$this->importWork();
+				$this->importWorkTitle();
+				$this->importWorkEvent();
+				$this->importWorkMeasure();
+			}
+
+			$this->importAgent();
+
+			if($this->wkid) {
+				$this->dcl->where("wk_id", $this->wkid);
+				$result = $this->dcl->get("agents_works");
+				foreach($result->result() as $entry) {
+					$this->agid = $entry->ag_id;
+					$this->importAgent();
+				}
+				$this->importAgentWork();
+			}
 
 
-		if($this->ordid) {
-			$this->dcl->where("ord_id", $this->ordid);
-			$orderRow = $this->dcl->get("orders")->row();
-			$this->srcid = $orderRow->src_id;
-			$this->importSourcePublication();
-			$this->importOrder();
-		}
-		if($this->vwid) {
-			$this->importViews();
-			$this->importMediaBank();
-		}
+			if($this->ordid) {
+				$this->dcl->where("ord_id", $this->ordid);
+				$orderRow = $this->dcl->get("orders")->row();
+				$this->srcid = $orderRow->src_id;
+				$this->importSourcePublication();
+				$this->importOrder();
+			}
+			if($this->vwid) {
+				$this->importViews();
+				$this->importMediaBank();
+			}
 
-		echo "done!\n";
+			echo "done!\n";
+
+
+		}
 
 	}
 
