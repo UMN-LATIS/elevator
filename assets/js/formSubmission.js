@@ -1,5 +1,18 @@
 
+var submitTimer = null;
+
+
+// wait a tick before we fire so we can coalesce saves
 function submitForm(ignoreWarnings, supressAlertAndBlock) {
+
+	submitTimer = setTimeout(function() {
+		submitFormProtected(ignoreWarnings, supressAlertAndBlock);
+	}, 1000);
+
+
+}
+
+function submitFormProtected(ignoreWarnings, supressAlertAndBlock) {
 
 	if(window.unsavedChildren>0 && !ignoreWarnings) {
 		bootbox.dialog({
