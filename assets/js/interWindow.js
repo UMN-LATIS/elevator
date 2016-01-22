@@ -61,7 +61,7 @@ function listener(event) {
 
 			$("#"+messageObject.targetFieldId).val(messageObject.objectId);
 			relatedAssetPreview(messageObject.objectId, $("#"+messageObject.targetFieldId).closest(".widgetContents"));
-			submitForm();
+			submitFormWithDelay(true,true);
 		}
 		if(messageObject.status == 'closed') {
 			if($("#"+messageObject.targetFieldId).val() === "") {
