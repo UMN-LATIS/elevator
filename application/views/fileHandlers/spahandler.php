@@ -60,6 +60,10 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 			<li class="list-group-item"><strong>File Type: </strong> SPA  </li>
 			<li class="list-group-item"><strong>Original Name: </strong> <?=$fileObject->sourceFile->originalFilename?></li>
 			<li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
+			<?foreach($fileObject->sourceFile->metadata as $key=>$value):?>
+			<?if($key == "filesize") continue;?>
+			<li class="list-group-item assetDetails"><strong><?=(!is_numeric($key) && $key)?$key:null?>: </strong><?=$value?></li>
+			<?endforeach?>
 		</ul>'></span>
 
       	<span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content='
