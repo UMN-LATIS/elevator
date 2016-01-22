@@ -3,17 +3,19 @@ var submitTimer = null;
 
 
 // wait a tick before we fire so we can coalesce saves
-function submitForm(ignoreWarnings, supressAlertAndBlock) {
+function submitFormWithDelay(ignoreWarnings, supressAlertAndBlock) {
 	clearTimeout(submitTimer);
 	submitTimer = setTimeout(function() {
 		submitFormProtected(ignoreWarnings, supressAlertAndBlock);
-	}, 1000);
+	}, 500);
+}
 
-
+function submitForm(ignoreWarnings, supressAlertAndBlock) {
+	clearTimeout(submitTimer);
+	submitFormProtected(ignoreWarnings, supressAlertAndBlock);
 }
 
 function submitFormProtected(ignoreWarnings, supressAlertAndBlock) {
-
 	if(window.unsavedChildren>0 && !ignoreWarnings) {
 		bootbox.dialog({
 			message: "You have unsaved nested assets.  Please save or close them before submitting the parent.",

@@ -232,7 +232,7 @@ var fileObjectPreview = function(targetElement) {
 $(document).on("change", ".fileObjectId", function() {
     fileObjectPreview(this);
     if($(this).val() !== "") {
-        submitForm(true);
+        submitFormWithDelay(true);
     }
     // force a save when the fileobjectId changes
 
