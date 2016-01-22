@@ -87,6 +87,8 @@ class SPAHandler extends FileHandlerBase {
 		$contents = fread($sourceFile, $metadataLength);
 		$fileObject->metadata = $this->parseMetadata($contents);
 
+		fseek($sourceFile, 596);
+		$fileObject->metadata["Number of Scans"] = fread($sourceFile, 2);
 
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
