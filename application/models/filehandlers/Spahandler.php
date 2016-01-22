@@ -74,8 +74,24 @@ class SPAHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
+		$source = $this->sourceFile->getPathToLocalFile();
+		$sourceFile = fopen($source, "rb");
+
+		fseek($sourceFile, 370);
+		$metadataStart = current(unpack("v", fread($sourceFile, 2)));
+		fseek($sourceFile, 374);
+		$metadataLength = current(unpack("v", fread($sourceFile, 2)));
+
+
+		fseek($sourceFile, $metadataStart);
+		$contents = fread($sourceFile, $metadataLength);
+		$fileObject->metadata = $this->parseMetadata($contents);
+
+
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
+
+
 
 
 		if($args['continue'] == true) {
@@ -197,12 +213,6 @@ class SPAHandler extends FileHandlerBase {
 
 		$sourceFile = fopen($source, "rb");
 
-		fseek($sourceFile, 370);
-		$metadataStart = current(unpack("v", fread($sourceFile, 2)));
-		fseek($sourceFile, 374);
-		$metadataLength = current(unpack("v", fread($sourceFile, 2)));
-
-
 		fseek($sourceFile, 386);
 		$targetOffset = current(unpack("v", fread($sourceFile, 2)));
 		if($targetOffset > filesize($source)) {
@@ -215,17 +225,15 @@ class SPAHandler extends FileHandlerBase {
 		}
 
 
-		fseek($sourceFile, $metadataStart);
-		$contents = fread($sourceFile, $metadataLength);
-		$metadataArray = $this->parseMetadata($contents);
-		$resolution = explode(" ", $metadataArray["Resolution"]);
+
+		$resolution = explode(" ", $this->sourceFile->metadata["Resolution"]);
 		$start = round($resolution[2]);
 		$end = round($resolution[4]);
 
 		$rScriptPath = $source . "_r_script";
 
 		$search = array("START_RANGE", "END_RANGE", "X_LABEL", "Y_LABEL", "OUTPUT_PATH","SOURCE_PATH");
-		$replace = array($start, $end, "Wavenumbers (cm-1)", $metadataArray["Final format"], $dest, $source);
+		$replace = array($start, $end, "Wavenumbers (cm-1)", $this->sourceFile->metadata["Final format"], $dest, $source);
 
 		$rScript = str_replace($search, $replace, $this->rScript);
 
