@@ -4,7 +4,7 @@ var submitTimer = null;
 
 // wait a tick before we fire so we can coalesce saves
 function submitForm(ignoreWarnings, supressAlertAndBlock) {
-
+	clearTimeout(submitTimer);
 	submitTimer = setTimeout(function() {
 		submitFormProtected(ignoreWarnings, supressAlertAndBlock);
 	}, 1000);
