@@ -15,6 +15,7 @@ class SPAHandler extends FileHandlerBase {
 
 
 
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -188,7 +189,6 @@ class SPAHandler extends FileHandlerBase {
 
 
 	function swapLocalForPNG() {
-
 		$source = $this->sourceFile->getPathToLocalFile();
 		$dest = $this->sourceFile->getPathToLocalFile() . ".png";
 		if(file_exists($dest)) {
@@ -196,6 +196,12 @@ class SPAHandler extends FileHandlerBase {
 		}
 
 		$sourceFile = fopen($source, "rb");
+
+		fseek($sourceFile, 370);
+		$metadataStart = current(unpack("v", fread($sourceFile, 2)));
+		fseek($sourceFile, 374);
+		$metadataLength = current(unpack("v", fread($sourceFile, 2)));
+
 
 		fseek($sourceFile, 386);
 		$targetOffset = current(unpack("v", fread($sourceFile, 2)));
@@ -208,31 +214,25 @@ class SPAHandler extends FileHandlerBase {
 			return false;
 		}
 
-		fseek($sourceFile, $targetOffset);
 
-		$rawData = fread($sourceFile, $dataLength);
-		$rawDataOutputPath = $source . "_raw_data";
-		$outputFile = fopen($rawDataOutputPath, "w");
-		fwrite($outputFile, $rawData);
-		fclose($outputFile);
-		$gnuScript = "set terminal png size {width},{height};
-			set output '{output}';
-set xtics font 'Times-Roman, 30' offset 0,-1;
-set ytics font 'Times-Roman, 30' offset 0,-0.5;
-set lmargin 10;
-set rmargin 5;
-set bmargin 3;
-unset key;
-unset border;
+		fseek($sourceFile, $metadataStart);
+		$contents = fread($sourceFile, $metadataLength);
+		$metadataArray = $this->parseMetadata($contents);
+		$resolution = explode(" ", $metadataArray["Resolution"]);
+		$start = round($resolution[2]);
+		$end = round($resolution[4]);
 
-		plot '<cat' binary filetype=bin format='%float32' endian=little array=1:0 with lines lw 3 lt rgb 'red';";
+		$rScriptPath = $source . "_r_script";
 
-		$targetScript = str_replace("{output}", $dest, $gnuScript);
-		$targetScript = str_replace("{width}", 2000, $targetScript);
-		$targetScript = str_replace("{height}", 1600, $targetScript);
-		$gnuPath = "gnuplot";
-		$outputScript = "cat \"" . $rawDataOutputPath . "\" | " . $gnuPath . " -e \"" . $targetScript . "\"";
-		exec($outputScript, $errorText);
+		$search = array("START_RANGE", "END_RANGE", "X_LABEL", "Y_LABEL", "OUTPUT_PATH","SOURCE_PATH");
+		$replace = array($start, $end, "Wavenumbers (cm-1)", $metadataArray["Final format"], $dest, $source);
+
+		$rScript = str_replace($search, $replace, $this->rScript);
+
+		file_put_contents($rScriptPath, $rScript);
+
+		exec("R < " . $rScriptPath . " --no-save", $errorText);
+		unlink($rScriptPath);
 		if(!file_exists($dest)) {
 			$this->logging->processingInfo("createDerivative","spaHandler",$errorText,$this->getObjectId(),$this->job->getId());
 			return false;
@@ -242,7 +242,102 @@ unset border;
 
 	}
 
+	function parseMetadata($dataBlock) {
 
+		$metadataArray = array();
+		$stopString = hex2bin("0D0A");
+		$stopStringDecoded = join("", unpack("v",$stopString));
+		$currentEntry = null;
+		for($i=0; $i<strlen($dataBlock)-2; $i++) {
+			$substring = substr($dataBlock, $i, 2);
+			$targetStringCollapsed = join("", unpack("v", $substring));
+
+			if($targetStringCollapsed == $stopStringDecoded) {
+				$metadataArray[] = $currentEntry;
+				$currentEntry = null;
+				$i = $i+1;
+			}
+			else {
+				$currentEntry = $currentEntry . (string)$dataBlock[$i];
+			}
+
+		}
+
+		if($currentEntry) {
+			$metadataArray[] = $currentEntry;
+		}
+
+		$cleanedArray = array();
+		foreach($metadataArray as $entry) {
+			if(strstr($entry, " on ") && !strpos($enry, ":")) {
+				$cleanedArray[] = trim(htmlentities($entry,  ENT_COMPAT , "ISO-8859-15"));
+			}
+			else {
+				$entry = array_map('trim', explode(':', htmlentities($entry,  ENT_COMPAT , "ISO-8859-15"), 2));
+				$cleanedArray[$entry[0]] = $entry[1];
+			}
+
+
+		}
+
+		return $cleanedArray;
+
+	}
+
+
+	private $rScript = <<< EOD
+library(ggplot2)
+
+startRange <- START_RANGE;
+endRange <- END_RANGE;
+xLabel <- "X_LABEL";
+yLabel <- "Y_LABEL";
+outputFile = "OUTPUT_PATH";
+
+pathToSource <- "SOURCE_PATH";
+to.read = file(pathToSource, "rb");
+
+# Read the start offset
+seek(to.read, 386, origin="start");
+startOffset <- readBin(to.read, "int", n=1, size=2);
+# Read the length
+seek(to.read, 390, origin="start");
+readLength <- readBin(to.read, "int", n=1, size=2);
+
+# seek to the start
+seek(to.read, startOffset, origin="start");
+
+# we'll read four byte chunks
+floatCount <- readLength/4;
+
+spacing <- (endRange - startRange) / floatCount;
+
+# read all our floats
+floatData <- c(readBin(to.read,"double",floatCount, size=4))
+sequence <- seq(from = startRange, to = endRange, by = spacing)
+
+if(length(sequence) < length(floatData)) {
+  while(length(sequence) < length(floatData)) {
+    sequence <- append(sequence, tail(sequence, n=1) + spacing);
+    print(length(sequence));
+  }
+
+
+} else if(length(sequence) > length(floatData)) {
+  while(length(sequence) > length(floatData)) {
+      sequence <- sequence[-length(sequence)];
+  }
+}
+
+floatDataFrame <- as.data.frame(floatData)
+floatDataFrame\$ID<-rev(sequence)
+
+png(outputFile, height=600, width=600)
+p.plot <- ggplot(data = floatDataFrame,aes(x=ID, y=floatData))  + xlab(xLabel)+ ylab(yLabel)
+p.plot + geom_line(aes(group=1), colour="red") + theme_bw()  + scale_x_reverse(lim=c(endRange, startRange))
+dev.off()
+
+EOD;
 
 }
 
