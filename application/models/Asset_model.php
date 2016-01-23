@@ -97,14 +97,18 @@ class Asset_model extends CI_Model {
 		}
 	}
 
-
-	public function loadAssetById($objectId) {
+	public function getCachedAsset($objectId) {
 		if($this->asset_model->useObjectCaching == true) {
 			if(array_key_exists($objectId, $this->asset_model->objectCache)) {
 				return $this->asset_model->objectCache[$objectId];
 			}
 
 		}
+
+		return FALSE;
+	}
+
+	public function loadAssetById($objectId) {
 
 		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
 
