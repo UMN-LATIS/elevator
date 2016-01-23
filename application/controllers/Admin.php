@@ -61,9 +61,11 @@ class admin extends Admin_Controller {
 			->orWhere("a.deleted IS NULL")
 			->andWhere("a.assetId IS NOT NULL");
 
-			if($startValue > 0 || $maxValue > 0) {
-				$qb->setMaxResults($maxValue);
+			if($startValue > 0) {
 				$qb->setFirstResult($startValue);
+			}
+			if($maxValue > 0) {
+				$qb->setMaxResults($maxValue);
 			}
 
 			$result = $qb->getQuery()->iterate();
@@ -119,9 +121,16 @@ class admin extends Admin_Controller {
 	}
 
 	public function reindexFilesOfType($handlerClass) {
-		$this->instance = $this->doctrine->em->find("Entity\Instance", 8);
+
 		$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass, "deleted"=>false]);
 		foreach($handlers as $handler) {
+			$collection = $this->collection_model->getCollection($handler->getCollectionId());
+			if(!$collection) {
+				echo "Bad Item: " . $handler->getFileObjectId() . "\n";
+				continue;
+			}
+			$instance = $collection->getInstances();
+			$this->instance = $instance[0];
 			echo "Regenerating " . $handler->getFileObjectId() . "\n";
 			$fileHandler = $this->filehandler_router->getHandledObject($handler->getFileObjectId());
 			$fileHandler->regenerate = true;
