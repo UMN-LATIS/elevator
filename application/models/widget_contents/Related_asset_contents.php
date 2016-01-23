@@ -141,8 +141,11 @@ class Related_asset_contents extends Widget_contents_base {
 	 */
 	public function getRelatedAsset() {
 		if(!$this->relatedAsset) {
-			$this->relatedAsset = new Asset_model;
-			$this->relatedAsset->loadAssetById($this->targetAssetId);
+			if(!($this->relatedAsset = $this->asset_model->getCachedAsset($this->targetAssetId))) {
+				$this->relatedAsset = new Asset_model;
+				$this->relatedAsset->loadAssetById($this->targetAssetId);
+
+			}
 			return $this->relatedAsset;
 		}
 		else {

@@ -120,7 +120,7 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function reindexFilesOfType($handlerClass) {
+	public function regenerateFilesOfType($handlerClass) {
 
 		$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass, "deleted"=>false]);
 		foreach($handlers as $handler) {
@@ -139,6 +139,26 @@ class admin extends Admin_Controller {
 		echo "done.\n";
 
 	}
+
+	public function resaveFilesFromCollection($collectionId, $templateId) {
+
+		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy(["collectionId"=>$collectionId, "templateId"=>$templateId]);
+		$this->load->model("Asset_model");
+		$this->load->model("Asset_template");
+		foreach($assets as $assetRecord) {
+			$asset = new Asset_model();
+			echo "Loading Asset" . $asset->getObjectId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord);
+			echo "Resaving " . $asset->getObjectId() . "\n";
+			$asset->save(false, false);
+
+
+
+		}
+		echo "done.\n";
+
+	}
+
 
 	public function logs() {
 
