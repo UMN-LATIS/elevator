@@ -118,6 +118,18 @@ class admin extends Admin_Controller {
 
 	}
 
+	public function reindexFilesOfType($handlerClass) {
+
+		$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass]);
+		foreach($handlers as $handler) {
+			echo "Regenerating " . $handler->getObjectId() . "\n";
+			$fileHandler = $this->filehandler_router->getHandledObject($handler->getObjectId());
+			$fileHandler->regenerate = true;
+			$fileHandler->save();
+		}
+
+	}
+
 	public function logs() {
 
 		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\Log")->findBy([], ["id"=>"desc"],50);
