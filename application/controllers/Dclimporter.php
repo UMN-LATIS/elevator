@@ -184,6 +184,28 @@ class dclImporter extends Instance_Controller {
 
 	}
 
+	public function findFileRecord($keyPath) {
+
+		$manager = $this->doctrine->em->getConnection();
+
+		$results = $manager->query('select fileobjectid from filehandlers where deleted = FALSE AND sourcefile @> \'{"originalFilename": "' . $keyPath . '"}\'');
+		if($results) {
+			$records = $results->fetchAll();
+			if(count($records)>0) {
+				foreach($records as $record) {
+					if($record['fileobjectid'] != null) {
+						return $record;
+					}
+				}
+			}
+		}
+
+		return false;
+
+
+	}
+
+
 
 	public function getExistingRecord($templateTitle, $baseField, $keyPath, $searchValue) {
 		$template = $this->doctrine->em->getRepository("Entity\Template")->findOneBy(["name"=>$templateTitle]);
@@ -813,7 +835,7 @@ class dclImporter extends Instance_Controller {
 
 
 	public function importMediaBank() {
-return;
+
 		$this->dcl->where("digital_id", $this->digitalid);
 		$this->dcl->where("is_active_for_delivery", 1);
 		$result = $this->dcl->get("source_medias");
@@ -851,7 +873,6 @@ return;
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($foundRecord);
 
-
 				// try {
 				// 	$tempAsset->getPrimaryFilehandler();
 				// }
@@ -860,53 +881,70 @@ return;
 				// 	return;
 				// }
 
-				$filename = $mediaId . ".orig";
-				$pathToFile = $this->rootPathToMedia . "/" . $this->pathToMedia($mediaId) . "/" . $filename;
+				$fileHandlerId = $this->findFileRecord($digitalId . ".". $originalExtension);
+				if($fileHandlerId) {
+					$fileHandlerId = $fileHandlerId["fileobjectid"];
+					$assetArray = $tempAsset->getAsArray();
+					$assetArray["file_7"][] = ["fileId"=>$fileHandlerId];
+					$fileHandler = $this->filehandler_router->getHandledObject($fileHandlerId);
 
-				if(!file_exists($pathToFile)) {
-					echo "File Not Found: " . $pathToFile . "\n";
-					return;
+					$fileHandler->parentObjectId = $tempAsset->getObjectId();
+					$fileHandler->save();
+					$objectId = $fileHandlerId;
 				}
+				else {
+					$filename = $mediaId . ".orig";
 
-				$fileHandler = $this->filehandler_router->getHandlerForType($originalExtension);
+					$pathToFile = $this->rootPathToMedia . "/" . $this->pathToMedia($mediaId) . "/" . $filename;
 
-				if(get_class($fileHandler) == "FileHandlerBase") {
-					echo "unkown type: " . $originalExtension . "\n";
-					die;
+					if(!file_exists($pathToFile)) {
+						echo "File Not Found: " . $pathToFile . "\n";
+						return;
+					}
+
+					$fileHandler = $this->filehandler_router->getHandlerForType($originalExtension);
+
+					if(get_class($fileHandler) == "FileHandlerBase") {
+						echo "unkown type: " . $originalExtension . "\n";
+						die;
+					}
+
+					$fileHandler->setCollectionId($tempAsset->getGlobalValue("collectionId"));
+					$fileHandler->parentObjectId = $tempAsset->getObjectId();
+
+					$fileContainer = new fileContainerS3();
+					$fileHandler->sourceFile = $fileContainer;
+
+					$fileContainer->path = "original";
+					$fileContainer->storageType = $this->instance->getS3StorageType();
+					$fileContainer->derivativeType = "source";
+					$fileContainer->setParent($fileHandler);
+					$fileContainer->originalFilename = $digitalId . ".". $originalExtension;
+					$fileHandler->save(true,false);
+
+					$objectId = $fileHandler->getObjectId();
+
+					if(!$fileHandler->s3model->putObject($pathToFile, "original" . "/" . $fileHandler->getReversedObjectId() . "-source")) {
+						echo "issue with " . $objectId . " " . $digitalId . "\n";
+						die;
+					}
+					$fileHandler->sourceFile->ready = true;
+					$fileHandler->save(true,false);
+
+					$assetArray = $tempAsset->getAsArray();
+					$assetArray["file_7"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
+
+
 				}
-
-				$fileHandler->setCollectionId($tempAsset->getGlobalValue("collectionId"));
-				$fileHandler->parentObjectId = $tempAsset->getObjectId();
-
-				$fileContainer = new fileContainerS3();
-				$fileHandler->sourceFile = $fileContainer;
-
-				$fileContainer->path = "original";
-				$fileContainer->storageType = $this->instance->getS3StorageType();
-				$fileContainer->derivativeType = "source";
-				$fileContainer->setParent($fileHandler);
-				$fileContainer->originalFilename = $digitalId . ".". $originalExtension;
-				$fileHandler->save(true,false);
-
-				$objectId = $fileHandler->getObjectId();
-
-				if(!$fileHandler->s3model->putObject($pathToFile, "original" . "/" . $fileHandler->getReversedObjectId() . "-source")) {
-					echo "issue with " . $objectId . " " . $digitalId . "\n";
-					die;
-				}
-				$fileHandler->sourceFile->ready = true;
-				$fileHandler->save(true,false);
-
-				$assetArray = $tempAsset->getAsArray();
-				$assetArray["file_7"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
-
 				$tempAsset->createObjectFromJSON($assetArray);
 				echo $tempAsset->getObjectId() . "\n";
 				echo $objectId . "\n";
+
 				$tempAsset->save(true,false);
+
 			}
 			else {
-				$this->logging->logError("no match", "could not find match for " . $digitalId);
+				// $this->logging->logError("no match", "could not find match for " . $digitalId);
 				echo "could not find match for " . $digitalId . "\n";
 			}
 
