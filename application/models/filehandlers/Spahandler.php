@@ -279,7 +279,7 @@ class SPAHandler extends FileHandlerBase {
 
 		$cleanedArray = array();
 		foreach($metadataArray as $entry) {
-			if(strstr($entry, " on ") && !strpos($enry, ":")) {
+			if(strstr($entry, " on ") && !strpos($entry, ":")) {
 				$cleanedArray[] = trim(htmlentities($entry,  ENT_COMPAT , "ISO-8859-15"));
 			}
 			else {
