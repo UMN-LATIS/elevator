@@ -19,7 +19,6 @@ class Search extends Instance_Controller {
 
 	public function index()
 	{
-		return;
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_SEARCH) {
