@@ -83,10 +83,11 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 <?else:?>
 <link rel="stylesheet" href="/assets/css/screen.css">
 <?endif?>
-  <?=$this->template->javascript; ?>
+<script src="http://dcl.elevator.umn.edu//assets/minifiedjs/jquery.min.js"></script>
 
 
     <?php
     // This is the main content partial
     echo $this->template->content;
     ?>
+<?=$this->template->javascript; ?>
