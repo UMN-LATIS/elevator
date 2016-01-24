@@ -557,7 +557,7 @@ class Asset_model extends CI_Model {
 							if($count > $maxCount) {
 								break;
 							}
-							$titleArray[] = $entry->getRelatedAsset()->getAssetTitle();
+							$titleArray[] = $entry->getRelatedObjectTitle();
 
 							$count++;
 						}
