@@ -95,6 +95,6 @@ $(document).on("click", ".addAnotherSpecific", function() {
 $(document).on("click", ".addAnotherCollection", function() {
     var collectionCopy = $(this).closest('.form-group');
     var newCollection = $(collectionCopy).clone(false);
+    newCollection.find("input[type='text']").val("");
     $(collectionCopy).after(newCollection);
-
 });
