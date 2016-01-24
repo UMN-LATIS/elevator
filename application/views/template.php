@@ -91,12 +91,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?endif?>
 
-
-  <?=$this->template->javascript; ?>
-
-
-
-
+<script src="http://dcl.elevator.umn.edu//assets/minifiedjs/jquery.min.js"></script>
 </head>
 
 <?if(isset($this->instance) && $this->instance->getGoogleAnalyticsKey()):?>
@@ -316,5 +311,6 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+<?=$this->template->javascript; ?>
 </body>
 </html>
