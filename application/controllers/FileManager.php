@@ -303,7 +303,7 @@ class FileManager extends Instance_Controller {
 			return;
 		}
 
-		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
+		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model, true);
 
 		try {
 			$allDerivatives = $fileHandler->allDerivativesForAccessLevel($accessLevel);

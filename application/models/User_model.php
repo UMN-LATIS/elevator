@@ -44,7 +44,7 @@ class User_model extends CI_Model {
 	/**
 	 * use permissions to get the max access level for specific object
 	 */
-	public function getAccessLevel($type, $object) {
+	public function getAccessLevel($type, $object, $includeExcerpts=false) {
 
 
 		if(isset($this->user) && $this->getIsSuperAdmin()) {
@@ -69,7 +69,7 @@ class User_model extends CI_Model {
 				}
 				break;
 			case "asset":
-				$assetDrawers = $object->getDrawers();
+				$assetDrawers = $object->getDrawers($includeExcerpts);
 				$perm = 0;
 				foreach($assetDrawers as $drawer) {
 					if(array_key_exists($drawer, $this->drawerPermissions)) {
