@@ -183,7 +183,7 @@ class Asset_model extends CI_Model {
 	public function getDrawers()
 	{
 
-		$drawerList =  $this->doctrine->em->getRepository("Entity\DrawerItem")->findBy(['asset' => $this->getObjectId(), 'excerptAsset'=>NULL]);
+		$drawerList =  $this->doctrine->em->getRepository("Entity\DrawerItem")->findBy(['asset' => $this->getObjectId()]);
 		$drawerArray = array();
 		foreach($drawerList as $drawer) {
 			$drawerArray[] = $drawer->getDrawer()->getId();
@@ -367,7 +367,6 @@ class Asset_model extends CI_Model {
 				$populatedWidgetArray[$widgetKey]->parentObjectId = $this->getObjectId();
 				if(is_array($jsonData[$widgetKey])) {
 					$i=0;
-					$stamp = microtime(true);
 					foreach($jsonData[$widgetKey] as $key=>$value) {
 						if(is_array($value)) {
 							$tempObject = $widget->getContentContainer();
