@@ -180,10 +180,14 @@ class Asset_model extends CI_Model {
 	 * this should just be one line with doctrine to get as scalar array, but I can't figure it out right now
 	 * @return [type] [description]
 	 */
-	public function getDrawers()
+	public function getDrawers($includeExcerpts=false)
 	{
 
-		$drawerList =  $this->doctrine->em->getRepository("Entity\DrawerItem")->findBy(['asset' => $this->getObjectId()]);
+		$matchArray = ["asset"=>$this->getObjectId()];
+		if($includeExcerpts) {
+			$matchArray["excerptAsset"] = null;
+		}
+		$drawerList =  $this->doctrine->em->getRepository("Entity\DrawerItem")->findBy($matchArray);
 		$drawerArray = array();
 		foreach($drawerList as $drawer) {
 			$drawerArray[] = $drawer->getDrawer()->getId();
