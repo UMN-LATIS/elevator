@@ -184,7 +184,7 @@ class Asset_model extends CI_Model {
 	{
 
 		$matchArray = ["asset"=>$this->getObjectId()];
-		if($includeExcerpts) {
+		if(!$includeExcerpts) {
 			$matchArray["excerptAsset"] = null;
 		}
 		$drawerList =  $this->doctrine->em->getRepository("Entity\DrawerItem")->findBy($matchArray);
