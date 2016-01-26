@@ -40,6 +40,7 @@ class Related_asset_contents extends Widget_contents_base {
 		// }
 	}
 
+	// TODO: why would we ever do this instead of using targetAssetId?
 	public function getRelatedObjectId() {
 		if($this->relatedObjectId) {
 			return $this->relatedObjectId;

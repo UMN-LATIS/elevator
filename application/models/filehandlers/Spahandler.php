@@ -284,7 +284,13 @@ class SPAHandler extends FileHandlerBase {
 			}
 			else {
 				$entry = array_map('trim', explode(':', htmlentities($entry,  ENT_COMPAT , "ISO-8859-15"), 2));
-				$cleanedArray[$entry[0]] = $entry[1];
+				if(count($entry)>1) {
+					$cleanedArray[$entry[0]] = $entry[1];
+				}
+				else {
+					$cleanedArray[] = $entry[0];
+				}
+
 			}
 
 
