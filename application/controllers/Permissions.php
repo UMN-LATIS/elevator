@@ -641,7 +641,7 @@ class Permissions extends Instance_Controller {
 		$qb->from("Entity\Asset", 'a')
 			->select("a")
 			->where("a.createdBy = :userId")
-			->setParameter(":userId", (int)$this->user_model->userId)
+			->setParameter(":userId", (int)$userId)
 			->andWhere("a.assetId IS NOT NULL")
 			->orderBy("a.modifiedAt", "DESC")
 			->setMaxResults(20);
