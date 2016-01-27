@@ -73,7 +73,7 @@ $(document).ready(function($) {
 	function scope() {
 
 		var self = $("#<?=$textId?>");
-		return function(entry, callback) {
+		return function(entry, sync,async) {
 			<?if($autocomplete):?>
 				var templateId = $("#sourceTemplate").val();
 				var fieldTitle = $(self).closest(".tab-pane").attr("id");
@@ -91,7 +91,7 @@ $(document).ready(function($) {
 						outputArray.push({value: el});
 					});
 
-					callback(outputArray);
+					async(outputArray);
 					// response(jsonObject);
 				});
 			<?endif?>
