@@ -91,7 +91,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?endif?>
 
-<script src="//dcl.elevator.umn.edu//assets/minifiedjs/jquery.min.js"></script>
+<script src="/assets/minifiedjs/jquery.min.js"></script>
 </head>
 
 <?if(isset($this->instance) && $this->instance->getGoogleAnalyticsKey()):?>
