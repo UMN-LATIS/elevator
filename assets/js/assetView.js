@@ -101,7 +101,8 @@ $(document).on("ready", function() {
 
 		$.get(basePath+"asset/viewAssetMetadataOnly/"+parentObjectId + "/" + nestedObjectId, function(data) {
 			$(targetElement).find('.relatedAssetContents').html(data);
-			lazyInstance.update();
+			lazyElements = $(targetElement).find('.relatedAssetContents').find("lazy");
+			lazyInstance.addItems(lazyElements);
 		});
 	});
 
