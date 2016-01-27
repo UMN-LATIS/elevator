@@ -91,3 +91,9 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
     echo $this->template->content;
     ?>
 <?=$this->template->javascript; ?>
+<script>
+var lazyInstance;
+$(document).ready(function() {
+   lazyInstance = $('.lazy').Lazy({ chainable: false });
+});
+</script>
