@@ -12,8 +12,11 @@
 			$fileHandler = null;
 			try {
 				$fileHandler = $fieldContent->getPrimaryFileHandler();
+				if($fileHandler) {
+
 				$retina = $fileHandler->getPreviewTiny(true)->getURLForFile();
 				$standard = $fileHandler->getPreviewTiny(false)->getURLForFile();
+			}
 			}
 			catch (Exception $e) {
 				if($fileHandler && $fileHandler->icon) {
@@ -53,7 +56,7 @@
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
 							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
-								<img class="relatedThumbContainerImage loadView noResizeRetina" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard?>">
+								<img class="relatedThumbContainerImage img-responsive loadView lazy" data-fileobjectid="<?=$fileObjectId?>" data-retina="<?=$retina?>" data-src="<?=$standard?>">
 							</div>
 							<div class="relatedThumbTitle autoTruncate"><?$assetTitle = $fieldContent->getRelatedObjectTitle();echo array_shift($assetTitle)?></div>
 						</div>
@@ -66,7 +69,7 @@
 						<div class="panel-heading">
 							<h4 class="panel-title">
 							<?try { $result = $fieldContent->getRelatedAsset()->getPrimaryFilehandler(); ?>
-							<img class="pull-left super-tiny-image img-responsive img-rounded loadView" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard ?>">
+							<img class="pull-left super-tiny-image img-responsive img-rounded loadView lazy" data-fileobjectid="<?=$fileObjectId?>" data-retina="<?=$retina?>" data-src="<?=$standard ?>">
 							<? } catch (Exception $e) { /* no file handler, ignore this */ }?>
 							<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedAsset()->getObjectId()?>" data-objectId="<?=$fieldContent->getRelatedAsset()->getObjectId()?>" href="#collapse<?=$fieldContent->getRelatedAsset()->getObjectId()?>">
 							<div class="truncatedTitle">

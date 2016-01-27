@@ -43,5 +43,11 @@
     <hr>
   </div>
 <?=$this->template->javascript; ?>
+<script>
+var lazyInstance;
+$(document).ready(function() {
+   lazyInstance = $('.lazy').Lazy({ chainable: false });
+});
+</script>
 </body>
 </html>
