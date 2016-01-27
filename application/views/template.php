@@ -312,5 +312,11 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 <?=$this->template->javascript; ?>
+<script>
+var lazyInstance;
+$(document).ready(function() {
+   lazyInstance = $('.lazy').Lazy({ chainable: false });
+});
+</script>
 </body>
 </html>
