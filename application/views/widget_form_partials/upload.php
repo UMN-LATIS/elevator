@@ -200,7 +200,6 @@ if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
 <script>
 $( "#collectionId" ).trigger( "change" );
 $("#<?=$fileFieldId?>").trigger("change");
-fileObjectPreview("#<?=$fileIdId?>");
 
 </script>
 <?if($widgetModel->offsetCount==0):?>
