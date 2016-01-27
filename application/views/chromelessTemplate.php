@@ -11,7 +11,7 @@
     <?else:?>
     <link rel="stylesheet" href="/assets/css/screen.css">
   <?endif?>
-<script src="http://dcl.elevator.umn.edu//assets/minifiedjs/jquery.min.js"></script>
+<script src="//dcl.elevator.umn.edu//assets/minifiedjs/jquery.min.js"></script>
 
   <script>
   var basePath = "<?=$this->template->relativePath?>";
