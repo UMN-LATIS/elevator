@@ -69,7 +69,7 @@
 						<div class="panel-heading">
 							<h4 class="panel-title">
 							<?try { $result = $fieldContent->getRelatedAsset()->getPrimaryFilehandler(); ?>
-							<img class="pull-left super-tiny-image img-responsive img-rounded loadView lazy" data-fileobjectid="<?=$fileObjectId?>" data-retina="<?=$retina?>" data-src="<?=$standard ?>">
+							<img class="pull-left super-tiny-image img-responsive img-rounded loadView" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard ?>">
 							<? } catch (Exception $e) { /* no file handler, ignore this */ }?>
 							<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedAsset()->getObjectId()?>" data-objectId="<?=$fieldContent->getRelatedAsset()->getObjectId()?>" href="#collapse<?=$fieldContent->getRelatedAsset()->getObjectId()?>">
 							<div class="truncatedTitle">
