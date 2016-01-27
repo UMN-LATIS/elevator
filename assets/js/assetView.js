@@ -101,6 +101,7 @@ $(document).on("ready", function() {
 
 		$.get(basePath+"asset/viewAssetMetadataOnly/"+parentObjectId + "/" + nestedObjectId, function(data) {
 			$(targetElement).find('.relatedAssetContents').html(data);
+			lazyInstance.update();
 		});
 	});
 
@@ -278,6 +279,7 @@ $(document).on("click", ".loadView", function(e) {
 				$("#embedView").append(data);
 			});
 		}
+		lazyInstance.update();
 
 		if (typeof loadedCallback == 'function') {
 			loadedCallback();

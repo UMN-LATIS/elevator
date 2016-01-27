@@ -8,7 +8,7 @@ class MY_Controller extends CI_Controller {
 
 		parent::__construct();
 		$cssLoadArray = ["bootstrap"];
-		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "retina-1.1.0", "mousetrap", "bootbox"];
+		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "jquery.lazy", "retina-1.1.0", "mousetrap", "bootbox"];
 
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
 			$jsLoadArray= array_merge($jsLoadArray, ["serializeForm", "dateWidget", "template"]);
