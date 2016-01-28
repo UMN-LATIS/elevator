@@ -160,7 +160,7 @@ class SPAHandler extends FileHandlerBase {
 			//TODO: catch errors here
 			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height,100)) { // use no compresson (100% quality) for lines
 				$derivativeContainer->ready = true;
-				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
+
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
 					//TODO: remove derivative
