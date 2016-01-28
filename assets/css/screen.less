@@ -112,9 +112,9 @@ body {
 }
 
 .mainContent {
-	@media (min-width: 768px) {
+    @media (min-width: 768px) {
 
-	}
+    }
 }
 
 .hiddenElement {
@@ -171,9 +171,9 @@ body {
         padding-left: 15px;
         padding-right: 15px;
     }
-	@media (max-width: 768px) {
+    @media (max-width: 768px) {
         position: static;
-	}
+    }
 }
 
 .navbar-right {
@@ -243,20 +243,20 @@ body {
 }
 
 .parsingAlert(@color) {
-	color: @color !important;
-	background-color: lighten(@color, 50%) !important;
-	border: 1px solid saturate(lighten(@color, 50%),30%) !important;
+    color: @color !important;
+    background-color: lighten(@color, 50%) !important;
+    border: 1px solid saturate(lighten(@color, 50%),30%) !important;
 }
 
 
 .parsley-success
 {
-	.parsingAlert(@approvedField);
+    .parsingAlert(@approvedField);
 }
 
 .parsley-error
 {
-	.parsingAlert(@failedField);
+    .parsingAlert(@failedField);
 }
 
 .parsley-error-list
@@ -499,7 +499,7 @@ body {
 }
 
 .relatedAssetContainer {
-	.panel-title {
+    .panel-title {
         .truncatedTitle {
             display: inline-block;
             width: 84%;
@@ -508,32 +508,32 @@ body {
         .expandRelated {
             display: inline;
         }
-		position:relative;
-		.btn {
-    		display:none;
-    		position:absolute;
-    		right:-10px;
-    		top: -2px;
-    		z-index: 10;
-		}
-		&:hover .btn {
-			display:block;
-		}
-	}
+        position:relative;
+        .btn {
+            display:none;
+            position:absolute;
+            right:-10px;
+            top: -2px;
+            z-index: 10;
+        }
+        &:hover .btn {
+            display:block;
+        }
+    }
 }
 
 
 .collapsedChild {
-	.btn {
-    	position:absolute;
-    	right:30px;
-    	top: 0px;
-    	z-index: 10;
-    	display:none;
-	}
-	&:hover .btn {
-		display:block;
-	}
+    .btn {
+        position:absolute;
+        right:30px;
+        top: 0px;
+        z-index: 10;
+        display:none;
+    }
+    &:hover .btn {
+        display:block;
+    }
 }
 
 
@@ -550,12 +550,12 @@ body {
     margin-bottom:5px;
     & ul {
         margin: 0;
-    	list-style-type: none;
+        list-style-type: none;
 
         padding-left:0px;
-    	& li {
-			display:inline;
-    	}
+        & li {
+            display:inline;
+        }
         &:not(.fileList) li:after {
             content: ", ";
         }
@@ -573,24 +573,24 @@ body {
 .relatedAssetThumbs {
     display:none;
     .relatedAssetContents {
-		border: 1px solid @relatedAssetColor;
-    	border-radius: 3px 3px 3px 3px;
-    	margin-top: -1px;
+        border: 1px solid @relatedAssetColor;
+        border-radius: 3px 3px 3px 3px;
+        margin-top: -1px;
     }
 }
 
 .relatedAssetContents {
     display:relative;
     .btn {
-    	display:none;
-    	position:absolute;
-    	right:8px;
-    	top: 5px;
-    	z-index: 10;
-	}
-	&:hover .btn {
-    	display: block;
-	}
+        display:none;
+        position:absolute;
+        right:8px;
+        top: 5px;
+        z-index: 10;
+    }
+    &:hover .btn {
+        display: block;
+    }
 }
 
 
@@ -728,17 +728,37 @@ body {
 }
 
 
+.thumbnailFixedSize {
+  position: relative;
+  width: 75px;
+  height: 75px;
+  overflow: hidden;
+  float:left;
+  margin: 3px;
+  padding:0px;
+}
+.thumbnailFixedSize img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  cursor:pointer;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
+}
+
 .fileList img {
     display:inline;
     // float:left;
-    margin: 3px;
-    padding:0px;
+    cursor:pointer;
 }
 
 .tiny-image {
     max-width: 75px;
     max-height: 75px;
-    cursor:pointer;
+
 }
 
 .super-tiny-image {
@@ -906,8 +926,8 @@ input[type='range']::-webkit-slider-thumb {
     border-width: 1px;
     border-style: solid;
     h3 {
-    	margin-top: 0px;
-	}
+        margin-top: 0px;
+    }
 }
 
 
@@ -952,13 +972,13 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .previewEntry {
-	ul {
-	    margin-left:0px;
-	    padding-left:0px;
-	    display:inline;
-		list-style-type:none;
-		li {
-    		display: inline;
+    ul {
+        margin-left:0px;
+        padding-left:0px;
+        display:inline;
+        list-style-type:none;
+        li {
+            display: inline;
             &:nth-child(n+4) {
                display:none;
             }
@@ -971,8 +991,8 @@ input[type='range']::-webkit-slider-thumb {
             &:last-child:after {
                 content: "";
             }
-		}
-	}
+        }
+    }
 }
 
 
