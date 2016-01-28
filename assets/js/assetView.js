@@ -86,6 +86,7 @@ $(document).on("ready", function() {
 		$(this).find(".expandRelated").removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
 	});
 
+
 	$(document).on("show.bs.collapse", ".relatedListToggle", function(e) {
 		e.stopPropagation();
 		var nestedObjectId = $(this).data("objectid");
@@ -102,8 +103,8 @@ $(document).on("ready", function() {
 		$.get(basePath+"asset/viewAssetMetadataOnly/"+parentObjectId + "/" + nestedObjectId, function(data) {
 			$(targetElement).find('.relatedAssetContents').html(data);
 			lazyElements = $(targetElement).find('.relatedAssetContents').find(".lazy");
-
 			lazyInstance.addItems(lazyElements);
+			lazyInstance.update();
 		});
 	});
 
