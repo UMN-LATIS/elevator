@@ -313,7 +313,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 <script>
 var lazyInstance;
 $(document).ready(function() {
-   lazyInstance = $('.lazy').Lazy({ chainable: false });
+   lazyInstance = $('.lazy').Lazy({ chainable: false, autoDestroy:false });
 });
 </script>
 </body>
