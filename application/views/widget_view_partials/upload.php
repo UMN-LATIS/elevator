@@ -1,5 +1,5 @@
 <p><strong><?=$widgetModel->getLabel()?>:</strong></p>
-<ul class="">
+<ul class="fileList">
 	<?foreach($widgetModel->fieldContentsArray as $fieldContent):?>
 
 	<?
