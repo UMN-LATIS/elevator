@@ -271,10 +271,11 @@ $(document).on("click", ".loadView", function(e) {
 		var y = $(window).scrollTop();
 		var z = $('#embedView').offset().top + 400;
 		if(y>z) {
-			bootbox.alert("<h2>Scroll Up For New Content</h2>");
-				window.setTimeout(function(){
-					bootbox.hideAll();
-				}, 1200);
+			 $("html, body").animate({ scrollTop: 0 }, "fast");
+			// bootbox.alert("<h2>Scroll Up For New Content</h2>");
+			// 	window.setTimeout(function(){
+			// 		bootbox.hideAll();
+			// 	}, 1200);
 		}
 
 		if(needLoadNestedView) {
