@@ -36,21 +36,25 @@ class Related_asset_contents extends Widget_contents_base {
 
 			}
 
-			return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary, "cachedPrimaryHandler"=>$fileHandlerId, "relatedObjectId"=>$this->getRelatedAsset()->getObjectId(), "relatedObjectTitle"=>$this->getRelatedAsset()->getAssetTitle()];
+			return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
 		// }
 	}
 
-	// TODO: why would we ever do this instead of using targetAssetId?
 	public function getRelatedObjectId() {
-		if($this->relatedObjectId) {
-			return $this->relatedObjectId;
-		}
-		else {
-			return $this->getRelatedAsset()->getObjectId();
-		}
+		return $this->targetAssetId;
 	}
 
 	public function getRelatedObjectTitle($collapse = false) {
+
+		if(!$this->relatedObjectTitle && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
+			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
+				$relatedAssetCache = $assetCache->getRelatedAssetCache();
+				if(isset($relatedAssetCache[$this->getRelatedObjectId()])) {
+					$this->relatedObjectTitle = $relatedAssetCache[$this->getRelatedObjectId()]["relatedAssetTitle"];
+				}
+			}
+		}
+
 		if($this->relatedObjectTitle) {
 			if($collapse) {
 				return implode(" ", $this->relatedObjectTitle);
@@ -65,6 +69,15 @@ class Related_asset_contents extends Widget_contents_base {
 	}
 
 	public function getPrimaryFileHandler() {
+
+		if(!$this->cachedPrimaryHandler && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
+			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
+				$relatedAssetCache = $assetCache->getRelatedAssetCache();
+				if(isset($relatedAssetCache[$this->getRelatedObjectId()])) {
+					$this->cachedPrimaryHandler = $relatedAssetCache[$this->getRelatedObjectId()]["primaryHandler"];
+				}
+			}
+		}
 
 		if($this->cachedPrimaryHandler) {
 			return $this->filehandler_router->getHandledObject($this->cachedPrimaryHandler);
