@@ -20,6 +20,8 @@ class Asset_model extends CI_Model {
 	public $forceCollection = false;
 	public $assetObject = null;
 
+	// if necessary, shoudl we use stale caches?
+	public $useStaleCaches = TRUE;
 
 	public function __construct($objectId=null)
 	{
@@ -261,8 +263,8 @@ class Asset_model extends CI_Model {
 	 */
 	public function getPrimaryFilehandler($tryCache = true) {
 		$fileHandler = NULL;
-		if($tryCache && $fileHandlerId = $this->getGlobalValue("cachedPrimaryFileHandler")) {
-			$fileHandler = $this->filehandler_router->getHandledObject($fileHandlerId);
+		if($tryCache && $this->assetObject->getAssetCache() && !$this->assetObject->getAssetCache()->getNeedsRebuild()) {
+			$fileHandler = $this->filehandler_router->getHandledObject($this->assetObject->getAssetCache()->getPrimaryHandlerCache());
 		}
 		else {
 			$contents = null;
@@ -375,6 +377,7 @@ class Asset_model extends CI_Model {
 						if(is_array($value)) {
 							$tempObject = $widget->getContentContainer();
 							$tempObject->parentObjectId = $this->getObjectId();
+							$tempObject->parentObject = $this;
 							$tempObject->loadContentFromArray($value);
 							if(isset($jsonData[$widgetKey]['isPrimary'])) {
 								/**
@@ -527,7 +530,8 @@ class Asset_model extends CI_Model {
 	 * We include the type of object (flagged true) to deal with the way Handlebars does conditionals
 	 * @return [type] [description]
 	 */
-	public function getSearchResultEntry() {
+
+	public function buildSearchResultEntry() {
 		$this->sortBy('viewOrder');
 		$outputObject = array();
 		$foundFirst = false;
@@ -656,6 +660,32 @@ class Asset_model extends CI_Model {
 
 
 		return $outputObject;
+
+	}
+
+
+	public function getSearchResultEntry() {
+		if($assetCache = $this->assetObject->getAssetCache()) {
+			if(!$assetCache->getNeedsRebuild()) {
+				return $assetCache->getSearchResultCache();
+			}
+		}
+
+		return $this->buildSearchResultEntry();
+
+
+		// I suspect building the whole cache on the fly is too expensive?
+		// TODO: benchmark this after implementing related item caching
+		// TODO: Don't you merge this with this comment still in!!
+		// $assetCache = $this->buildCache();
+		// if($assetCache) {
+		// 	return $assetCache->getSearchResultCache();
+		// }
+		// else {
+		// 	return array();
+		// }
+
+
 
 	}
 
@@ -838,9 +868,65 @@ class Asset_model extends CI_Model {
 			$this->doctrineCache->delete($this->getObjectId());
 		}
 
+		$this->buildCache();
 
     	return $this->getObjectId();
 	}
+
+	public function buildCache() {
+		$this->useStaleCaches = FALSE;
+
+		if(!$this->assetObject) {
+			return FALSE;
+		}
+
+		if(!$assetCache = $this->assetObject->getAssetCache()) {
+			$assetCache = new Entity\AssetCache;
+			$assetCache->setAsset($this->assetObject);
+		}
+
+		$assetCache->setSearchResultCache($this->buildSearchResultEntry());
+		$assetCache->setNeedsRebuild(false);
+		$assetCache->setTemplateId($this->templateId);
+
+
+		$relatedItems = $this->getAllWithinAsset("Related_asset");
+		$relatedAssetCache = array();
+		foreach($relatedItems as $relatedWidget) {
+			foreach($relatedWidget->fieldContentsArray as $widgetContents) {
+				$nestedAsset = $widgetContents->getRelatedAsset();
+				if($nestedAsset) {
+					$primaryHandlerId = NULL;
+					try {
+						$primaryHandler = $nestedAsset->getPrimaryFilehandler();
+						$primaryHandlerId = $primaryHandler->getObjectId();
+
+					}
+					catch (Exception $e) {
+
+					}
+					$relatedAssetCache[$nestedAsset->getObjectId()] = ["relatedAssetTitle"=>$nestedAsset->getAssetTitle(), "primaryHandler"=>$primaryHandlerId];
+				}
+			}
+		}
+
+		$assetCache->setRelatedAssetCache($relatedAssetCache);
+
+		try {
+			$fileHandler = $this->getPrimaryFilehandler();
+			$fileHandlerId = $fileHandler->getObjectId();
+			$assetCache->setPrimaryHandlerCache($fileHandlerId);
+		}
+		catch (Exception $e) {
+
+		}
+
+		$this->doctrine->em->persist($assetCache);
+		$this->doctrine->em->flush();
+
+		return $assetCache;
+	}
+
 
 	// reindex self and children, preventing recursion
 
