@@ -28,7 +28,7 @@
               <label for="inputBucket Name" class="col-sm-2 control-label">Bucket Name:</label>
               <div class="col-sm-10">
                 <input type="text" name="name" id="inputBucketName" class="form-control" value="" required="required" pattern="" title="">
-              <span id="helpBlock" class="help-block">Bucket names must be universally unique (within the Amazon ecosystem).</span>
+
               </div>
 
             </div>
