@@ -268,6 +268,7 @@ $(document).on("click", ".loadView", function(e) {
 	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
 
+
 		var y = $(window).scrollTop();
 		var z = $('#embedView').offset().top + 400;
 		if(y>z) {
@@ -278,9 +279,16 @@ $(document).on("click", ".loadView", function(e) {
 			// 	}, 1200);
 		}
 
+		lazyElements = $("#embedView").find(".lazy");
+		lazyInstance.addItems(lazyElements);
+		lazyInstance.update();
+
 		if(needLoadNestedView) {
 			$.get(basePath+"asset/viewAssetMetadataOnly/"+objectId + "/" + parentObject, function(data) {
 				$("#embedView").append(data);
+				lazyElements = $("#embedView").find(".lazy");
+				lazyInstance.addItems(lazyElements);
+				lazyInstance.update();
 			});
 		}
 		lazyInstance.update();
