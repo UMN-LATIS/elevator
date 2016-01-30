@@ -159,6 +159,24 @@ class admin extends Admin_Controller {
 
 	}
 
+	public function resaveAll($collectionId, $templateId) {
+
+		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy();
+		$this->load->model("asset_model");
+		$this->load->model("asset_template");
+		foreach($assets as $assetRecord) {
+			$asset = new Asset_model();
+			echo "Loading Asset" . $asset->getObjectId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord);
+			echo "Resaving " . $asset->getObjectId() . "\n";
+			$asset->save(false, false);
+
+
+
+		}
+		echo "done.\n";
+
+	}
 
 	public function logs() {
 
