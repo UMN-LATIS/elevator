@@ -65,7 +65,7 @@ class Widget
     private $tooltip;
 
     /**
-     * @var string
+     * @var array
      */
     private $field_data;
 
@@ -121,7 +121,7 @@ class Widget
     /**
      * Get template_order
      *
-     * @return integer 
+     * @return integer
      */
     public function getTemplateOrder()
     {
@@ -144,7 +144,7 @@ class Widget
     /**
      * Get view_order
      *
-     * @return integer 
+     * @return integer
      */
     public function getViewOrder()
     {
@@ -167,7 +167,7 @@ class Widget
     /**
      * Get display
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getDisplay()
     {
@@ -190,7 +190,7 @@ class Widget
     /**
      * Get displayInPreview
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getDisplayInPreview()
     {
@@ -213,7 +213,7 @@ class Widget
     /**
      * Get required
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getRequired()
     {
@@ -236,7 +236,7 @@ class Widget
     /**
      * Get searchable
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getSearchable()
     {
@@ -259,7 +259,7 @@ class Widget
     /**
      * Get allow_multiple
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getAllowMultiple()
     {
@@ -282,7 +282,7 @@ class Widget
     /**
      * Get attempt_autocomplete
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getAttemptAutocomplete()
     {
@@ -305,7 +305,7 @@ class Widget
     /**
      * Get field_title
      *
-     * @return string 
+     * @return string
      */
     public function getFieldTitle()
     {
@@ -328,7 +328,7 @@ class Widget
     /**
      * Get label
      *
-     * @return string 
+     * @return string
      */
     public function getLabel()
     {
@@ -351,7 +351,7 @@ class Widget
     /**
      * Get tooltip
      *
-     * @return string 
+     * @return string
      */
     public function getTooltip()
     {
@@ -361,7 +361,7 @@ class Widget
     /**
      * Set field_data
      *
-     * @param string $fieldData
+     * @param array $fieldData
      * @return Widget
      */
     public function setFieldData($fieldData)
@@ -374,7 +374,7 @@ class Widget
     /**
      * Get field_data
      *
-     * @return string 
+     * @return array
      */
     public function getFieldData()
     {
@@ -397,7 +397,7 @@ class Widget
     /**
      * Get createdAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getCreatedAt()
     {
@@ -420,7 +420,7 @@ class Widget
     /**
      * Get modifiedAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getModifiedAt()
     {
@@ -443,7 +443,7 @@ class Widget
     /**
      * Get directSearch
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getDirectSearch()
     {
@@ -466,7 +466,7 @@ class Widget
     /**
      * Get clickToSearch
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getClickToSearch()
     {
@@ -476,7 +476,7 @@ class Widget
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -499,7 +499,7 @@ class Widget
     /**
      * Get field_type
      *
-     * @return \Entity\Field_type 
+     * @return \Entity\Field_type
      */
     public function getFieldType()
     {
@@ -522,7 +522,7 @@ class Widget
     /**
      * Get template
      *
-     * @return \Entity\Template 
+     * @return \Entity\Template
      */
     public function getTemplate()
     {

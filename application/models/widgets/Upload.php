@@ -15,7 +15,7 @@ class Upload extends Widget_base {
 
 	public function loadWidget($widgetItem) {
 		parent::loadWidget($widgetItem);
-		$parsedFieldData = json_decode($this->getFieldData());
+		$parsedFieldData = $this->getFieldData();
 		if(isset($parsedFieldData)) {
 			foreach($parsedFieldData as $key=>$entry) {
 				$this->$key = $entry;
