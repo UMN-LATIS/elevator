@@ -637,7 +637,8 @@ class search_model extends CI_Model {
 					}
 					else {
 						$storedObject = $asset->getSearchResultEntry();
-						if($this->config->item('enableCaching')) {
+						// only store this in the search cache if it isn't due for cache rebuilding
+						if($this->config->item('enableCaching') && !$asset->assetObject->getNeedsRebuild()) {
 							$this->doctrineCache->save($match, $storedObject, 900);
 						}
 					}

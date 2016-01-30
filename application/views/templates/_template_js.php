@@ -67,7 +67,7 @@ $(document).ready(function() {
 			tooltip: "<?= addslashes($widget->getTooltip()); ?>",
 			viewOrder: '<?= $widget->getViewOrder(); ?>',
 			templateOrder: '<?= $widget->getTemplateOrder(); ?>',
-			fieldData: '<?= str_replace("\n", "\\n", mres($widget->getFieldData()) )?>',
+			fieldData: '<?= str_replace("\n", "\\n", mres(json_encode($widget->getFieldData())) )?>',
 			lockFieldLabel: "true"
 			};
 
@@ -93,11 +93,22 @@ $(document).ready(function() {
 					]
 			};
 		var insertHTML = widget(context);
+		$("#needsRebuildId").val(1);
 		$('div#widgetList').append(insertHTML);
 
 	});
 
+	$(document).on("change", ".displayWidget", function() {
+		$("#needsRebuildId").val(1);
+	});
+
+	$(document).on("change", ".displayPreviewWidget", function() {
+		$("#needsRebuildId").val(1);
+	});
+
 	$(document).on("keyup", ".fieldTitle", function() {
+		$("#needsRebuildId").val(1);
+
 		// we use the instance ID because we want to intentionally ensure collisions between same field title
 		// within the same instance. This allows autocompleter to be more flexible, rather than locking to a specific
 		// template.  We don't want to autocomplete across instances though, since that could be wonky.

@@ -519,6 +519,83 @@ class Beltdrive extends CI_Controller {
 		}
 	}
 
+
+	public function populateCacheTube() {
+		$currentTime = date('Y-m-d H:i:s',time());
+		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$q = $qb->update('Entity\AssetCache', 'a')
+        ->set('a.rebuildTimestamp', '?1')
+        ->where('a.needsRebuild = true')
+        ->andWhere('a.rebuildTimestamp IS NULL')
+        ->setParameter(1, $currentTime)
+        ->getQuery();
+		$p = $q->execute();
+
+		$qb2 = $this->doctrine->em->createQueryBuilder();
+		$q2 = $qb2->select("a")
+		->from("Entity\AssetCache", "a")
+        ->where('a.needsRebuild = true')
+        ->andWhere('a.rebuildTimestamp = ?1')
+        ->setParameter(1, $currentTime)
+        ->getQuery();
+
+		$result = $q2->iterate();
+		$count = 0;
+
+		foreach($result as $entry) {
+			$entry = $entry[0];
+			$this->doctrine->em->clear();
+
+			$newTask = json_encode(["task"=>"recache", "objectId"=>$entry->getAsset()->getAssetId()]);
+			$jobId= $this->pheanstalk->useTube('cacheRebuild')->put($newTask, 10, 2, 200);
+
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+
+		}
+
+	}
+
+	public function rebuildCache() {
+		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
+		$count=0;
+		while(1) {
+			$job = $this->pheanstalk->watch('cacheRebuild')->ignore('default')->reserve();
+			if(!is_object($job)) {
+				usleep(5);
+				continue;
+			}
+			//reset doctrine in case we've lost the DB
+			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
+			$this->doctrine->reset();
+
+			$job_encoded = json_decode($job->getData(), true);
+
+
+			$objectId = $job_encoded["objectId"];
+			if(!$objectId || !is_string($objectId)) {
+				$this->pheanstalk->delete($job);
+				continue;
+			}
+			echo "Reindexing " . $objectId . "\n";
+
+			$this->asset_model->loadAssetById($objectId);
+			$this->asset_model->buildCache();
+			$this->pheanstalk->delete($job);
+			$this->doctrine->em->clear();
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+		}
+	}
+
+
 }
 
 /* End of file  */
