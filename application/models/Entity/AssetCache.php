@@ -226,4 +226,3 @@ class AssetCache
         return $this->asset;
     }
 }
-

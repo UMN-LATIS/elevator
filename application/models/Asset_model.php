@@ -921,6 +921,7 @@ class Asset_model extends CI_Model {
 		}
 
 		$assetCache->setNeedsRebuild(false);
+		$assetCache->setRebuildTimestamp(NULL);
 
 		$this->doctrine->em->persist($assetCache);
 		$this->doctrine->em->flush();
