@@ -565,7 +565,6 @@ class Asset_model extends CI_Model {
 								break;
 							}
 							$titleArray[] = $entry->getRelatedObjectTitle();
-
 							$count++;
 						}
 
@@ -708,7 +707,7 @@ class Asset_model extends CI_Model {
         	$oldAssetObject = clone $oldAsset->assetObject;
     	}
 
-    			$this->assetObject->setWidgets($this->getWidgetArray());
+    	$this->assetObject->setWidgets($this->getWidgetArray());
 
 		$this->assetObject->setModifiedAt(new DateTime());
 
@@ -885,8 +884,6 @@ class Asset_model extends CI_Model {
 			$assetCache->setAsset($this->assetObject);
 		}
 
-		$assetCache->setSearchResultCache($this->buildSearchResultEntry());
-		$assetCache->setNeedsRebuild(false);
 		$assetCache->setTemplateId($this->templateId);
 
 
@@ -911,6 +908,8 @@ class Asset_model extends CI_Model {
 		}
 
 		$assetCache->setRelatedAssetCache($relatedAssetCache);
+		$assetCache->setSearchResultCache($this->buildSearchResultEntry());
+
 
 		try {
 			$fileHandler = $this->getPrimaryFilehandler();
@@ -920,6 +919,8 @@ class Asset_model extends CI_Model {
 		catch (Exception $e) {
 
 		}
+
+		$assetCache->setNeedsRebuild(false);
 
 		$this->doctrine->em->persist($assetCache);
 		$this->doctrine->em->flush();
@@ -942,6 +943,9 @@ class Asset_model extends CI_Model {
 			return;
 		}
 
+		$this->useStaleCaches = FALSE;
+		$this->buildCache();
+
 		$this->search_model->addOrUpdate($this);
 		// now find any related items and resave them.
 		//
@@ -957,6 +961,12 @@ class Asset_model extends CI_Model {
 				// $this->logging->logError("updating", $result);
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($result);
+				$tempAsset->useStaleCaches = FALSE;
+				if($tempAsset->assetObject->getAssetCache()) {
+					$tempAsset->assetObject->getAssetCache()->setNeedsRebuild(true);
+				}
+
+				$tempAsset->buildCache();
 
 				// I don't think we need to resave since we're not nesting elements?
 				// $tempAsset->save(false, false);

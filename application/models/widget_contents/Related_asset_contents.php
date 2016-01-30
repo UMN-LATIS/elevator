@@ -158,6 +158,7 @@ class Related_asset_contents extends Widget_contents_base {
 			if(!($this->relatedAsset = $this->asset_model->getCachedAsset($this->targetAssetId))) {
 				$this->relatedAsset = new Asset_model;
 				$this->relatedAsset->loadAssetById($this->targetAssetId);
+				$this->relatedAsset->useStaleCaches = $this->parentObject->useStaleCaches;
 
 			}
 			return $this->relatedAsset;
