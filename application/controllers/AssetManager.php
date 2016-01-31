@@ -270,7 +270,7 @@ class AssetManager extends Admin_Controller {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
-		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy(["asset"=>$fileObjectId], ["id"=>"desc"],30);
+		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy(["asset"=>$fileObjectId], ["id"=>"desc"]);
 		$this->template->content->view("admin/jobLogs", $data);
 		$this->template->publish();
 	}
