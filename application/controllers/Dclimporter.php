@@ -126,6 +126,9 @@ class dclImporter extends Instance_Controller {
 		$this->dcl->where("digital_id", $digitalId);
 		$viewQuery = $this->dcl->get("dcl_views");
 
+		$this->primaryViewId = NULL;
+		$this->digitalid = NULL;
+
 		if(!$viewQuery) {
 			$this->logging->logError("import failed", "importing " . $digitalId . " failed");
 			return;
@@ -819,7 +822,7 @@ class dclImporter extends Instance_Controller {
 				$assetArray = $tempAsset->getAsArray();
 				$insert = array();
 				$insert["targetAssetId"] = $objectId;
-				if(strcasecmp($this->primaryViewId, $entry["digital_id"]) == 0) {
+				if(strcasecmp($this->primaryViewId, $entry["digital_id"]) == 0 || ($this->primaryViewId == NULL && !array_key_exists("views_7", $assetArray))) {
 					$insert["isPrimary"] = true;
 				}
 				$assetArray["views_7"][] = $insert;
