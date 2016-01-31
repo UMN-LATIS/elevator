@@ -266,7 +266,8 @@ class Asset_model extends CI_Model {
 		if($tryCache && $this->assetObject->getAssetCache() && ($this->useStaleCaches || !$this->assetObject->getAssetCache()->getNeedsRebuild())) {
 			$fileHandler = $this->filehandler_router->getHandledObject($this->assetObject->getAssetCache()->getPrimaryHandlerCache());
 		}
-		else {
+
+		if(!$fileHandler) {
 			$fileHandler = null;
 			$foundPrimary = FALSE;
 			if(!$uploadContents = $this->findPrimaryWithinAsset($this, "Upload")) {
@@ -283,10 +284,7 @@ class Asset_model extends CI_Model {
 
 							}
 
-							if(!$fileHandler) {
-
-							}
-							else {
+							if($fileHandler) {
 								$foundPrimary = true;
 								break;
 							}
@@ -666,7 +664,6 @@ class Asset_model extends CI_Model {
 		catch (Exception $e) {
 			// don't need to do anything, might not have a handler, that's ok.
 		}
-
 
 		return $outputObject;
 
