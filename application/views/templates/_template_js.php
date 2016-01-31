@@ -119,6 +119,19 @@ $(document).ready(function() {
 
 	});
 
+	$(document).on("blur", ".fieldData", function() {
+
+		jsonContents = $(this).val();
+		try {
+			JSON.parse(jsonContents);
+			$(this).css("background-color", "white");
+		}
+		catch (e) {
+			$(this).css("background-color", "red");
+		}
+
+
+	});
 
 
 	$(".fieldType").trigger('change');
