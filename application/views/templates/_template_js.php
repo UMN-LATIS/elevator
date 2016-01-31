@@ -119,8 +119,8 @@ $(document).ready(function() {
 
 	});
 
+	// validate that JSON fields have actual JSON in them.
 	$(document).on("blur", ".fieldData", function() {
-
 		jsonContents = $(this).val();
 		try {
 			JSON.parse(jsonContents);
@@ -129,8 +129,6 @@ $(document).ready(function() {
 		catch (e) {
 			$(this).css("background-color", "red");
 		}
-
-
 	});
 
 
