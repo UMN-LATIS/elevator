@@ -524,14 +524,10 @@ class Beltdrive extends CI_Controller {
 		$currentTime = date('Y-m-d H:i:s',time());
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 
-		$qb = $this->doctrine->em->createQueryBuilder();
-		$q = $qb->update('Entity\AssetCache', 'a')
-        ->set('a.rebuildTimestamp', '?1')
-        ->where('a.needsRebuild = true')
-        ->andWhere('a.rebuildTimestamp IS NULL')
-        ->setParameter(1, $currentTime)
-        ->getQuery();
-		$p = $q->execute();
+
+		$this->doctrine->em->getConnection()->executeUpdate("UPDATE asset_cache a SET rebuildTimestamp = '" . $currentTime . "'
+			FROM ( SELECT asset_id FROM asset_cache WHERE needsRebuild = true and rebuildTimestamp IS NULL limit 10000) sub where a.asset_id = sub.asset_id");
+
 
 		$qb2 = $this->doctrine->em->createQueryBuilder();
 		$q2 = $qb2->select("a")
@@ -582,7 +578,7 @@ class Beltdrive extends CI_Controller {
 				$this->pheanstalk->delete($job);
 				continue;
 			}
-			echo "Reindexing " . $objectId . "\n";
+			echo "Recaching " . $objectId . "\n";
 
 			$this->asset_model->loadAssetById($objectId);
 			$this->asset_model->buildCache();
