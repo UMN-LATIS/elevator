@@ -43,7 +43,13 @@ class Related_asset_contents extends Widget_contents_base {
 	}
 
 	public function getRelatedObjectId() {
-		return $this->targetAssetId;
+		if($this->targetAssetId) {
+			return $this->targetAssetId;
+		}
+		else {
+			return FALSE;
+		}
+
 	}
 
 	public function getRelatedObjectTitle($collapse = false) {

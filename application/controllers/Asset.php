@@ -135,7 +135,10 @@ class asset extends Instance_Controller {
 	function viewAssetMetadataOnly($parentObject, $targetObject) {
 
 		$assetModel = new Asset_model();
-		$assetModel->loadAssetById($parentObject);
+
+		if(!$assetModel->loadAssetById($parentObject)) {
+			$this->errorhandler_helper->callError("unknownAsset");
+		}
 
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
@@ -149,7 +152,13 @@ class asset extends Instance_Controller {
 			foreach($asset->fieldContentsArray as $contents) {
 
 				if($contents->targetAssetId == $targetObject) {
-					$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$contents->getRelatedAsset()]);
+					if(!$contents->getRelatedAsset()) {
+						$this->errorhandler_helper->callError("unknownAsset", $inline=true);
+					}
+					else {
+						$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$contents->getRelatedAsset()]);
+					}
+
 				}
 			}
 		}
