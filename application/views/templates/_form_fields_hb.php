@@ -43,8 +43,8 @@
 			</div>
 		</div>
 
-				<input type="hidden" name="widget[{{id}}][templateOrder]" id="inputWidget[{{id}}][templateOrder]" class="form-control" value="{{templateOrder}}" >
-<input type="hidden" name="widget[{{id}}][viewOrder]" id="inputWidget[{{id}}][viewOrder]" class="form-control" value="{{viewOrder}}">
+		<input type="hidden" name="widget[{{id}}][templateOrder]" id="inputWidget[{{id}}][templateOrder]" class="form-control" value="{{templateOrder}}" >
+		<input type="hidden" name="widget[{{id}}][viewOrder]" id="inputWidget[{{id}}][viewOrder]" class="form-control" value="{{viewOrder}}">
 
 
 		<div class="form-group">
