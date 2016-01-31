@@ -118,7 +118,6 @@ class Asset_model extends CI_Model {
 			return FALSE;
 		}
 		$this->assetObject = $asset;
-
 		$this->loadAssetFromRecord($asset);
 		if($this->asset_model->useObjectCaching == true) {
 			$this->asset_model->objectCache[$objectId] = $this;
@@ -233,17 +232,17 @@ class Asset_model extends CI_Model {
 			}
 		}
 
-		$widgetArray = $this->getAllWithinAsset($type,$asset,1);
+		// $widgetArray = $this->getAllWithinAsset($type,$asset,1);
 
-		if(count($widgetArray)>0) {
-			foreach($widgetArray as $widget) {
-				foreach($widget->fieldContentsArray as $fieldContents) {
-					if((!$widget->getAllowMultiple() || count($widget->fieldContentsArray)==1) || $fieldContents->isPrimary) {
-						return $fieldContents;
-					}
-				}
-			}
-		}
+		// if(count($widgetArray)>0) {
+		// 	foreach($widgetArray as $widget) {
+		// 		foreach($widget->fieldContentsArray as $fieldContents) {
+		// 			if((!$widget->getAllowMultiple() || count($widget->fieldContentsArray)==1) || $fieldContents->isPrimary) {
+		// 				return $fieldContents;
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 
 
@@ -263,23 +262,29 @@ class Asset_model extends CI_Model {
 	 */
 	public function getPrimaryFilehandler($tryCache = true) {
 		$fileHandler = NULL;
-		if($tryCache && $this->assetObject->getAssetCache() && !$this->assetObject->getAssetCache()->getNeedsRebuild()) {
+
+		if($tryCache && $this->assetObject->getAssetCache() && ($this->useStaleCaches || !$this->assetObject->getAssetCache()->getNeedsRebuild())) {
 			$fileHandler = $this->filehandler_router->getHandledObject($this->assetObject->getAssetCache()->getPrimaryHandlerCache());
 		}
 		else {
-			$contents = null;
+			$fileHandler = null;
 			$foundPrimary = FALSE;
-
-			if(!$contents = $this->findPrimaryWithinAsset($this, "Upload")) {
-			// no first tier primary, try nested - first see if the primary related has an image.
+			if(!$uploadContents = $this->findPrimaryWithinAsset($this, "Upload")) {
+				// no first tier primary, try nested - first see if the primary related has an image.
 				$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
 				foreach($relatedArray as $asset) {
 
 					foreach($asset->fieldContentsArray as $fieldContents) {
-						if(!$asset->getAllowMultiple() || $fieldContents->isPrimary) {
-							$contents = $this->findPrimaryWithinAsset($fieldContents->getRelatedAsset(), "Upload");
-							if(!$contents) {
-								$contents = $this->getFirstWithinAsset($fieldContents->getRelatedAsset(), "Upload");
+						if(!$asset->getAllowMultiple() || $fieldContents->isPrimary || count($asset->fieldContentsArray)==1) {
+							try {
+								$fileHandler = $fieldContents->getPrimaryFilehandler();
+							}
+							catch (Exception $e) {
+
+							}
+
+							if(!$fileHandler) {
+
 							}
 							else {
 								$foundPrimary = true;
@@ -292,17 +297,22 @@ class Asset_model extends CI_Model {
 					}
 				}
 
-				if(!$contents) {
+				if(!$fileHandler) {
 					$contents = $this->getFirstWithinAsset($this, "Upload");
+					if($contents) {
+						$fileHandler = $contents->getFileHandler();
+					}
+				}
+			}
+			else {
+				if($uploadContents->getFileHandler()) {
+					$fileHandler = $uploadContents->getFileHandler();
 				}
 			}
 
-			if($contents) {
-				if(!$contents->getFileHandler()) {
-					throw new Exception("no file handler attached");
-					return null;
-				}
-				$fileHandler = $contents->getFileHandler();
+			if(!$fileHandler) {
+				throw new Exception("no file handler attached");
+				return null;
 			}
 		}
 
@@ -732,7 +742,10 @@ class Asset_model extends CI_Model {
 		foreach($this->assetObjects as $assetObject) {
 			if(get_class($assetObject) == "Related_asset") {
 				foreach($assetObject->fieldContentsArray as $entry) {
-					foreach($entry->getRelatedAsset()->getAllWithinAsset("Upload") as $uploadWidget) {
+					if(!$relatedAsset = $entry->getRelatedAsset()) {
+						continue;
+					}
+					foreach($relatedAsset->getAllWithinAsset("Upload") as $uploadWidget) {
 						$cachedUploadCount += count($uploadWidget->fieldContentsArray);
 					}
 				}
@@ -744,16 +757,6 @@ class Asset_model extends CI_Model {
 
 		$this->assetObject->setCachedUploadCount($cachedUploadCount);
 
-		try {
-			$primaryFileHandler = $this->getPrimaryFilehandler(false);
-			if($primaryFileHandler) {
-				$this->assetObject->setCachedPrimaryFileHandler($primaryFileHandler->getObjectId());
-			}
-		}
-		catch (Exception $e) {
-			// eh, this is ok.
-			$this->assetObject->setCachedPrimaryFileHandler(NULL);
-		}
 
 		/**
 		 * populate with cached location data (flattened, one layer deep) for drawing maps
@@ -883,16 +886,15 @@ class Asset_model extends CI_Model {
 			$assetCache = new Entity\AssetCache;
 			$assetCache->setAsset($this->assetObject);
 		}
+		$assetCache->setNeedsRebuild(true);
 
 		$assetCache->setTemplateId($this->templateId);
-
 
 		$relatedItems = $this->getAllWithinAsset("Related_asset");
 		$relatedAssetCache = array();
 		foreach($relatedItems as $relatedWidget) {
 			foreach($relatedWidget->fieldContentsArray as $widgetContents) {
-				$nestedAsset = $widgetContents->getRelatedAsset();
-				if($nestedAsset) {
+				if($nestedAsset = $widgetContents->getRelatedAsset()) {
 					$primaryHandlerId = NULL;
 					try {
 						$primaryHandler = $nestedAsset->getPrimaryFilehandler();
@@ -908,8 +910,6 @@ class Asset_model extends CI_Model {
 		}
 
 		$assetCache->setRelatedAssetCache($relatedAssetCache);
-		$assetCache->setSearchResultCache($this->buildSearchResultEntry());
-
 
 		try {
 			$fileHandler = $this->getPrimaryFilehandler();
@@ -917,8 +917,10 @@ class Asset_model extends CI_Model {
 			$assetCache->setPrimaryHandlerCache($fileHandlerId);
 		}
 		catch (Exception $e) {
-
+			$assetCache->setPrimaryHandlerCache(NULL);
 		}
+
+		$assetCache->setSearchResultCache($this->buildSearchResultEntry());
 
 		$assetCache->setNeedsRebuild(false);
 		$assetCache->setRebuildTimestamp(NULL);
