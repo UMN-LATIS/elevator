@@ -67,6 +67,10 @@ class MY_Controller extends CI_Controller {
 		}
 	}
 
+	function throwBacktrace() {
+		$e = new Exception;
+		var_dump($e->getTraceAsString());
+	}
 
 
 }
