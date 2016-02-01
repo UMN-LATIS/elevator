@@ -15,6 +15,7 @@ class User_model extends CI_Model {
 	public $jobCodes = array();
 	public $courses= array();
 	public $units= array();
+	public $studentStatus= array();
 
 
 
@@ -140,6 +141,14 @@ class User_model extends CI_Model {
 						$this->units[] = $jobCodeArray[0];
 					}
 
+				}
+
+				$studentStatus = explode(";",$umnshib->getAttributeValue('umnRegSummary'));
+				foreach($studentStatus as $studentCode) {
+					$studentStatusArray = explode(":", $studentCode);
+					if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
+						$this->studentStatus[$studentStatusArray[12]] = $studentStatusArray[12];
+					}
 				}
 
 			}
@@ -590,7 +599,7 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes"];
+		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes", "studentStatus"];
 
 	}
 
