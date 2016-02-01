@@ -300,6 +300,7 @@ $(document).on("click", ".loadView", function(e) {
 });
 
 function loadEmbedViewPointer() {
+
 	targetObjectId = $("#embedView").data("objectid");
 		var targetAsset = $(document).find('[data-fileobjectid="' + targetObjectId + '"]');
 		if(targetAsset.length>0) {
@@ -308,5 +309,10 @@ function loadEmbedViewPointer() {
 		else { // maybe it's a related asset, try that
 			targetAsset = $(document).find('[data-objectid="' + targetObjectId + '"]').find(".loadView");
 		}
+
+		if(targetAsset.length > 1) {
+			targetAsset = targetAsset.first();
+		}
+
 		$(targetAsset).trigger("click");
 }
