@@ -108,7 +108,7 @@ class Reports extends Admin_Controller {
 		$rsm->addScalarResult('size', 'size');
 		$rsm->addScalarResult('c', 'count');
 		$rsm->addScalarResult('type', 'type');
-		$query = $this->doctrine->em->createNativeQuery('select count(f.id) as c, f.filetype as type, SUM(CAST(f.sourceFile->\'metadata\'->>\'filesize\' AS integer)) as size from filehandlers f group by filetype',$rsm);
+		$query = $this->doctrine->em->createNativeQuery('select count(f.id) as c, f.filetype as type, SUM(CAST(f.sourceFile->\'metadata\'->>\'filesize\' AS bigint)) as size from filehandlers f group by filetype',$rsm);
 		$results = $query->getResult();
 		$this->template->content->view("reports/filetypeList", ["results"=>$results]);
 		$this->template->publish();
