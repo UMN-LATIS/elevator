@@ -245,6 +245,15 @@ $(document).on("click", ".showDetails", function() {
 	$(this).parent().parent().children('.assetDetails').toggle("fast");
 });
 
+
+Mousetrap.bind('left', function() {
+	$(".relatedThumbHighlight").closest(".col-sm-2").prev().find("img").trigger("click");
+});
+
+Mousetrap.bind('right', function() {
+	$(".relatedThumbHighlight").closest(".col-sm-2").next().find("img").trigger("click");
+});
+
 $(document).on("click", ".loadView", function(e) {
 	if (e.originalEvent === undefined) {
 		e.preventDefault();
@@ -267,7 +276,8 @@ $(document).on("click", ".loadView", function(e) {
 
 	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
-
+		$(document).find(".relatedThumbHighlight").removeClass("relatedThumbHighlight");
+		$(document).find('[data-fileobjectid="' + fileObjectId + '"]').parent().addClass("relatedThumbHighlight");
 
 		var y = $(window).scrollTop();
 		var z = $('#embedView').offset().top + 400;
