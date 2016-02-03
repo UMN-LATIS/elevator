@@ -78,7 +78,10 @@ $(document).on("ready", function() {
 	$(document).on("click", ".relatedThumbContainer", function(e) {
 		e.stopPropagation();
 		var nestedObjectId = $(this).data("objectid");
-		window.location.hash = nestedObjectId;
+		if(nestedObjectId !== undefined) {
+			window.location.hash = nestedObjectId;
+		}
+
 	});
 
 	// flip chevrons

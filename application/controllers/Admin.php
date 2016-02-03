@@ -396,6 +396,46 @@ class admin extends Admin_Controller {
 
 	}
 
+	public function importAsset($instanceId, $collectionId, $templateId, $file) {
+
+		$filecontents = file_get_contents($file);
+		$decoded = json_decode($filecontents, true);
+		$assetArray = $decoded["asset"];
+
+		$files = $decoded["files"];
+		foreach($files as $file) {
+
+			$fileHandler = new Entity\FileHandler;
+			$fileHandler->setFileObjectId($file["_id"]["\$id"]);
+			$fileHandler->setSourceFile($file["sourceFile"]);
+			$fileHandler->setDerivatives($file["derivatives"]);
+			$fileHandler->setFileType($file["type"]);
+			$fileHandler->setHandler($file["handler"]);
+			$fileHandler->setCollectionId($collectionId);
+			$fileHandler->setDeleted($file["deleted"]);
+			$fileHandler->setParentObjectId(null);
+			$fileHandler->setGlobalMetadata($file["globalMetadata"]);
+			$fileHandler->setJobIdArray([]);
+			$this->doctrine->em->persist($fileHandler);
+			$this->doctrine->em->flush();
+		}
+
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+
+		$this->load->model("Asset_model");
+		$asset = new Asset_model();
+		$assetArray["templateId"] = $templateId;
+		$assetArray["collectionId"] = $collectionId;
+		$assetArray["readyForDisplay"] = true;
+
+		$asset->createObjectFromJSON($assetArray);
+
+		// $asset->save(true,false);
+		var_dump($asset->getObjectId());
+
+
+	}
+
 
 }
 
