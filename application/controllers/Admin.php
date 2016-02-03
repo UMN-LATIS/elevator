@@ -146,11 +146,11 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		foreach($assets as $assetRecord) {
-			if(!$asset->getObjectId()) {
+			if(!$assetRecord->getObjectId()) {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset" . $asset->getObjectId() . "\n";
+			echo "Loading Asset" . $assetRecord->getObjectId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord);
 			echo "Resaving " . $asset->getObjectId() . "\n";
 			$asset->save(false, false);
