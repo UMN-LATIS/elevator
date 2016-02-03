@@ -690,7 +690,7 @@ class Asset_model extends CI_Model {
 			}
 		}
 		else {
-			$this->assetObject->getCreatedBy(0);
+			$this->assetObject->setCreatedBy(0);
 			$this->assetObject->setModifiedBy(0);
 		}
 
