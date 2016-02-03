@@ -66,5 +66,5 @@ function parseDate(event) {
 $(document).ready(function() {
 	$(document).on( "change", ".rangeModify", modifyRange );
 	$( ".rangeModify" ).trigger( "change" );
-	$(document).on("blur", ".dateText", parseDate);
+	$(document).on("change", ".dateText", parseDate);
 });
