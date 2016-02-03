@@ -146,6 +146,9 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		foreach($assets as $assetRecord) {
+			if(!$asset->getObjectId()) {
+				continue;
+			}
 			$asset = new Asset_model();
 			echo "Loading Asset" . $asset->getObjectId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord);
@@ -430,7 +433,11 @@ class admin extends Admin_Controller {
 
 		$asset->createObjectFromJSON($assetArray);
 
-		// $asset->save(true,false);
+		$asset->setGlobalValue("templateId", $templateId);
+		$asset->setGlobalValue("collectionId", $collectionId);
+		$asset->setGlobalValue("readyForDisplay", true);
+
+		$asset->save(true,false);
 		var_dump($asset->getObjectId());
 
 
