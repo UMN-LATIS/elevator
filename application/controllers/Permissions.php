@@ -35,7 +35,13 @@ class Permissions extends Instance_Controller {
 			$data['objectTitle'] = $data['instance']->getName();
 		} else {
 			$data['permissionableObject'] = $this->doctrine->em->find("Entity\\$permissionType", $id);
-			$data['objectTitle'] = $data['permissionableObject']->getTitle();
+			if($permissionType == INSTANCE_PERMISSION) {
+				$data['objectTitle'] = $data['instance']->getName();
+			}
+			else {
+				$data['objectTitle'] = $data['permissionableObject']->getTitle();
+			}
+
 		}
 
 		if ($data['permissionableObject'] === null) {
