@@ -11,9 +11,10 @@ class Permissions extends Instance_Controller {
 		$data['permissionTypeId'] = $id;
 
 		$data['instance'] =  $this->instance;
-
+		$data['objectTitle'] = "";
 		if($permissionType == DRAWER_PERMISSION) {
 			$data['drawer'] = $this->doctrine->em->find('Entity\Drawer', $data['permissionTypeId']);
+			$data['objectTitle'] = $data['drawer']->getTitle();
 			$accessLevel = $this->user_model->getAccessLevel(DRAWER_PERMISSION, $data['drawer']);
 			if($accessLevel < PERM_CREATEDRAWERS) {
 				instance_redirect("errorHandler/error/noPermission");
@@ -31,8 +32,10 @@ class Permissions extends Instance_Controller {
 				show_404();
 			}
 			$data['permissionableObject'] = $data['instance'];
+			$data['objectTitle'] = $data['instance']->getName();
 		} else {
 			$data['permissionableObject'] = $this->doctrine->em->find("Entity\\$permissionType", $id);
+			$data['objectTitle'] = $data['permissionableObject']->getTitle();
 		}
 
 		if ($data['permissionableObject'] === null) {
