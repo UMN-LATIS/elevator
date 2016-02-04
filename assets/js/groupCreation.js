@@ -98,7 +98,7 @@ $(document).ready(function() {
 
 	});
 
-	$("$courseListSelect").on("change", function() {
+	$("#courseListSelect").on("change", function() {
 		$(".inputGroupValue").last().val($(this).val());
 	});
 
