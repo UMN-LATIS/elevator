@@ -609,7 +609,7 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes", "studentStatus"];
+		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes","coursesTaught", "studentStatus"];
 
 	}
 
