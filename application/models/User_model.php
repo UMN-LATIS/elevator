@@ -188,7 +188,7 @@ class User_model extends CI_Model {
 			$r=ldap_bind($connect);
 		}
 
-		$search = ldap_search([$connect], $base_dn, $filter)
+		$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
 		      or exit(">>Unable to search ldap server<<");
 		$returnArray = array();
 		foreach($search as $readItem) {
