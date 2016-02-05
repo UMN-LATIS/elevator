@@ -37,7 +37,7 @@
 		<div class="form-group">
 			<label for="<?=$selectId?>" class="col-sm-2 control-label"><?=$labelText?></label>
 			<div class="col-sm-4">
-				<select class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
+				<select <?=$required?> class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
 		<? foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption): ?>
 			<?if(!is_numeric($key)):?>
 				<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $key==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?> value="<?=$key?>"><?=$key?></option>
