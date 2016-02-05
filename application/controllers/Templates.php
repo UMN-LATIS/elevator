@@ -55,7 +55,7 @@ class Templates extends Instance_Controller {
 		else {
 			$data['template'] = $this->doctrine->em->find('Entity\Template', $id);
 		}
-		$data['field_types'] = $this->doctrine->em->getRepository("Entity\Field_type")->findAll();
+		$data['field_types'] = $this->doctrine->em->getRepository("Entity\Field_type")->findBy([], ['name' => 'ASC']);;
 
 		if (empty($data['template']))
 		{
