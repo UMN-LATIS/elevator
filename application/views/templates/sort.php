@@ -12,7 +12,7 @@
 	View Order
 	<ul id="sortable_view_order">
 		<?php foreach ($widgetsViewOrder as $key => $widget): ?>
-			<li class="ui-state-default"><?= $widget->getLabel(); ?>
+			<li class="sortHover ui-state-default"><?= $widget->getLabel(); ?>
 				<input type="hidden" name="widget[<?= $widget->getId(); ?>][view_order]" id="inputViewOrderWidget<?= $widget->getId(); ?>TemplateOrder" class="form-control widget-item" value="<?= $widget->getTemplateOrder(); ?>">
 			</li>
 		<?php endforeach ?>
@@ -21,7 +21,7 @@
 	Template Order
 	<ul id="sortable_template_order">
 		<?php foreach ($widgetsTemplateOrder as $key => $widget): ?>
-			<li class="ui-state-default"><?= $widget->getLabel(); ?>
+			<li class="sortHover ui-state-default"><?= $widget->getLabel(); ?>
 				<input type="hidden" name="widget[<?= $widget->getId(); ?>][template_order]" id="inputTemplateOrderWidget<?= $widget->getId(); ?>TemplateOrder" class="form-control widget-item" value="<?= $widget->getTemplateOrder(); ?>">
 			</li>
 		<?php endforeach ?>
