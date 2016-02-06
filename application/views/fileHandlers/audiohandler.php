@@ -93,7 +93,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
         <span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content='
           <ul>
-        <?if(isset($fileContainers['mp3']) && $fileContainers['mp3']->ready):?>
+        <?if(isset($fileContainers['mp3']) && $fileContainers['mp3']->ready && (!$this->instance->getHideVideoAudio() || $allowOriginal)):?>
       <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")?>">Download MP3</a></li>
       <?endif?>
       <?if($allowOriginal):?>
