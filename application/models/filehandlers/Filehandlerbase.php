@@ -479,7 +479,7 @@ class FileHandlerBase extends CI_Model {
 		}
 		$this->load->model("asset_model");
 		if($this->asset_model->loadAssetById($parentId)) {
-			$this->asset_model->save();
+			$this->asset_model->save(true,false);
 			return JOB_SUCCESS;
 		}
 		else {
