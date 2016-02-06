@@ -94,6 +94,7 @@ class Instances extends Instance_Controller {
 		}
 		$this->template->title = 'Edit Instance';
 		$this->template->loadJavascript(["parsley","bootstrap-show-password"]);
+		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
 		$this->template->content->view('instances/edit', $data);
 		$this->template->publish();
 	}
