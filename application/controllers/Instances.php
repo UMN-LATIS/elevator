@@ -57,6 +57,7 @@ class Instances extends Instance_Controller {
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);
 		$instance->setUseCustomCSS($this->input->post('useCustomCSS')?1:0);
 		$instance->setUseCentralAuth($this->input->post('useCentralAuth')?1:0);
+		$instance->setHideVideoAudio($this->input->post('hideVideoAudio')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 
