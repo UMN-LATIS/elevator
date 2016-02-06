@@ -66,6 +66,7 @@
           <field name="useCustomCSS" type="boolean" nullable='true' />
           <field name="useHeaderLogo" type="boolean" nullable='true' />
           <field name="useCentralAuth" type="boolean" nullable='true' />
+          <field name="hideVideoAudio" type="boolean" nullable='true' />
           <field name="featuredAsset" type="string" nullable='true' />
           <field name="featuredAssetText" type="text" nullable='true' />
 

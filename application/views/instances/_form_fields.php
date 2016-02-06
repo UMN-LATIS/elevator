@@ -202,6 +202,15 @@ $(document).ready(function() {
 			</div>
 		</div>
 
+			<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-8">
+				<label>
+					<input type="checkbox" id="hideVideoAudio" name="hideVideoAudio" value="On" <?=$instance->getHideVideoAudio()?"checked":null?>>
+					Hide video/audio download links from "view" users <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="This will not prevent tech-savvy users from downloading files."></span>
+				</label>
+			</div>
+		</div>
+
 
 <div class="form-group">
 	<div class="col-sm-6 col-offset-2">
@@ -223,7 +232,7 @@ $(document).ready(function() {
         	});
 	    }
 	 });
-
+	$('[data-toggle="tooltip"]').tooltip()
 });
 
 
