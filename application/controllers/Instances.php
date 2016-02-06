@@ -49,8 +49,8 @@ class Instances extends Instance_Controller {
 		$instance->setBucketRegion($this->input->post('bucketRegion'));
 		$instance->setDefaultBucket($this->input->post('defaultBucket'));
 		$instance->setGoogleAnalyticsKey($this->input->post('googleAnalyticsKey'));
-		$instance->setClarifaiId($this->input->post('clarifaiId'));
-		$instance->setClarifaiSecret($this->input->post('clarifaiSecret'));
+		// $instance->setClarifaiId($this->input->post('clarifaiId'));
+		// $instance->setClarifaiSecret($this->input->post('clarifaiSecret'));
 		$instance->setBoxKey($this->input->post('boxKey'));
 		$instance->setIntroText($this->input->post('introText'));
 		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
