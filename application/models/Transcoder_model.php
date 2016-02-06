@@ -620,6 +620,7 @@ class Transcoder_Model extends CI_Model {
         		$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
 				$process->addCommand("-crf", 23);
 				$process->addCommand("-maxrate", "3000k");
+				$process->addCommand("-bufsize", "1835k");
 				$process->addCommand("-pix_fmt", "yuv420p");
 				if($isRotated) {
 	        		$process->addCommand('-metadata:s:v', 'rotate=""');
