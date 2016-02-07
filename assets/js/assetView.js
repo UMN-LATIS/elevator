@@ -240,14 +240,6 @@ $(document).on("mouseout", ".relatedThumbToggle", function() {
 
 });
 
-$(document).on("click", ".embedControl", function() {
-	$(this).select();
-});
-
-$(document).on("click", ".showDetails", function() {
-	$(this).parent().parent().children('.assetDetails').toggle("fast");
-});
-
 
 Mousetrap.bind('left', function() {
 	$(".relatedThumbHighlight").closest(".col-sm-2").prev().find("img").trigger("click");
@@ -257,6 +249,15 @@ Mousetrap.bind('right', function() {
 	$(".relatedThumbHighlight").closest(".col-sm-2").next().find("img").trigger("click");
 });
 
+$(document).on("click", ".embedControl", function() {
+	$(this).select();
+});
+
+$(document).on("click", ".showDetails", function() {
+	$(this).parent().parent().children('.assetDetails').toggle("fast");
+});
+
+// main handler for loading assets
 $(document).on("click", ".loadView", function(e) {
 	if (e.originalEvent === undefined) {
 		e.preventDefault();
@@ -288,11 +289,7 @@ $(document).on("click", ".loadView", function(e) {
 		var y = $(window).scrollTop();
 		var z = $('#embedView').offset().top + 400;
 		if(y>z) {
-			 $("html, body").animate({ scrollTop: 0 }, "fast");
-			// bootbox.alert("<h2>Scroll Up For New Content</h2>");
-			// 	window.setTimeout(function(){
-			// 		bootbox.hideAll();
-			// 	}, 1200);
+			$("html, body").animate({ scrollTop: 0 }, "fast");
 		}
 
 		lazyElements = $("#embedView").find(".lazy");
