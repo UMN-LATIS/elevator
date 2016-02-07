@@ -227,7 +227,7 @@ $(document).on("ready", function() {
 $(document).on("mouseover", ".relatedThumbToggle", function() {
 	var image = $(this).find(".relatedThumbContainerImage");
 	$(image).data("oldURL", $(image).attr("src"));
-	var data = $(image).data("at2x");
+	var data = $(image).data("hover");
 	$(image).attr("src", data);
 
 });
@@ -284,7 +284,12 @@ $(document).on("click", ".loadView", function(e) {
 	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
 		$(document).find(".relatedThumbHighlight").removeClass("relatedThumbHighlight");
-		$(document).find('[data-fileobjectid="' + fileObjectId + '"]').parent().addClass("relatedThumbHighlight");
+		var parentContainer = $(document).find('[data-fileobjectid="' + fileObjectId + '"]').parent();
+		parentContainer.each(function(index, el) {
+			if($(el).is('div')) {
+				$(el).addClass("relatedThumbHighlight");
+			}
+		});
 
 		var y = $(window).scrollTop();
 		var z = $('#embedView').offset().top + 400;
