@@ -290,6 +290,9 @@ class Transcoder_Model extends CI_Model {
         $derivativeContainer->copyToRemoteStorage();
         $derivativeContainer->removeLocalFile();
         $derivativeContainer->ready = true;
+
+
+        $this->fileHandler->triggerReindex();
  		return JOB_SUCCESS;
 	}
 
@@ -374,6 +377,7 @@ class Transcoder_Model extends CI_Model {
         $derivativeContainer->copyToRemoteStorage();
         $derivativeContainer->removeLocalFile();
         $derivativeContainer->ready = true;
+        $this->fileHandler->triggerReindex();
  		return JOB_SUCCESS;
 	}
 
