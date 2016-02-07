@@ -259,7 +259,6 @@ class Templates extends Instance_Controller {
 
 
 	public function reindexTemplate($templateId, $parentArray=array()) {
-		echo $templateId . "\n";
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$q = $qb->update('Entity\AssetCache', 'a')
         ->set('a.needsRebuild', "true")
