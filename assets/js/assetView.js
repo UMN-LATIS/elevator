@@ -266,8 +266,11 @@ $(document).on("click", ".loadView", function(e) {
 	var parent = $(this).closest("[data-objectid]");
 
 	var needLoadNestedView = false;
-	if(parent.length>0 && !parent.hasClass('objectIdHost')) {
+
+	if(parent.length>0 && (!parent.hasClass('objectIdHost') || (parent.hasClass('objectIdHost') && parent.hasClass('sidebarContainer')))) {
 		// we're within a nested asset, rather than a straight thumbnail, let's also load the content for that.
+		// if we've been loaded in the left column, as a nested view, we want to make sure we load both the view and reload the metadata, which is why
+		// we check for the sdiebar container
 		parentObject = parent.data("objectid");
 		needLoadNestedView = true;
 	}
