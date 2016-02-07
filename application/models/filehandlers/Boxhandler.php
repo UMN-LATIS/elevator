@@ -178,6 +178,8 @@ class BoxHandler extends FileHandlerBase {
 			}
 		}
 
+		$this->triggerReindex();
+
 		if($success) {
 			unlink($sourcePath);
 			$this->queueTask(2, ["docId"=>$args["docId"]]);
