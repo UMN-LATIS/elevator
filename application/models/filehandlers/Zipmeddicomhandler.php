@@ -240,6 +240,8 @@ class ZipMedDicomHandler extends ZipHandler {
 			$this->queueTask(2);
 		}
 
+		$this->triggerReindex();
+
 		return JOB_SUCCESS;
 	}
 

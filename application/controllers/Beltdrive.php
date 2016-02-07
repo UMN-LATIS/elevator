@@ -161,7 +161,6 @@ class Beltdrive extends CI_Controller {
 			if($result == JOB_SUCCESS) {
 				if($fileHandler->save() != false) {
 					$fileHandler->removeJob($job->getId());
-					$fileHandler->taskSuccessHandler();
 					$this->pheanstalk->delete($job);
 					$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Task Ended",$fileHandler->getObjectId(),$job->getId());
 				}

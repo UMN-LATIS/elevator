@@ -232,6 +232,7 @@ rnd.resolution_y = int(2000)
 			$this->derivatives = array_merge($this->derivatives, $result);
 		}
 		$this->queueTask(4);
+		$this->triggerReindex();
 		return JOB_SUCCESS;
 
 	}
