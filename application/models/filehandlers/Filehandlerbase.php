@@ -258,7 +258,6 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function cleanupOriginal($args) {
-
 		if($this->sourceFile->removeLocalFile()) {
 			if($nextTask = $this->getNextTask("cleanupOriginal")) {
 				$this->queueTask($nextTask);
@@ -309,6 +308,13 @@ class FileHandlerBase extends CI_Model {
 
 		if($this->parentObjectId != null) {
 			$fileObject->setParentObjectId($this->parentObjectId);
+
+			$parentAsset = $this->doctrine->em->getRepository("Entity\Asset")->findOneBy(["assetId"=>$this->parentObjectId]);
+			if($parentAsset && $parentAsset->getAssetCache()) {
+				$parentAsset->getAssetCache()->setNeedsRebuild(true);
+			}
+
+
 		}
 
 		if(!$this->getObjectId()) {
