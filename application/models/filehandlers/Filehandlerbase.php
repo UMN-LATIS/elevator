@@ -308,11 +308,11 @@ class FileHandlerBase extends CI_Model {
 
 		if($this->parentObjectId != null) {
 			$fileObject->setParentObjectId($this->parentObjectId);
-
-			$parentAsset = $this->doctrine->em->getRepository("Entity\Asset")->findOneBy(["assetId"=>$this->parentObjectId]);
-			if($parentAsset && $parentAsset->getAssetCache()) {
-				$parentAsset->getAssetCache()->setNeedsRebuild(true);
-			}
+			// we need to get the various parents to flush their caches and index any new metadata that we've got.
+			// this is a bit of a heavy stick, but we want to be aggressive in tossing caches.
+			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$this->instance->getId()]);
+			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
 
 
 		}
