@@ -204,6 +204,15 @@ class FileHandlerBase extends CI_Model {
 
 	}
 
+	public function taskSuccessHandler() {
+		// we may have made some sort of change at this point, let's queue a reindex
+		if($this->parentObjectId != null) {
+			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$this->instance->getId()]);
+			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+		}
+	}
+
 
 	public function queueTask($taskId, $appendData=array(), $setHostAffinity=true) {
 
@@ -244,6 +253,7 @@ class FileHandlerBase extends CI_Model {
 		$jobId= $this->pheanstalk->useTube('newUploads')->put($newTask, $priority, 2, $ttr);
 
 		$this->addJobId($jobId);
+
 	}
 
 	public function getNextTask($taskName) {
@@ -308,13 +318,6 @@ class FileHandlerBase extends CI_Model {
 
 		if($this->parentObjectId != null) {
 			$fileObject->setParentObjectId($this->parentObjectId);
-			// we need to get the various parents to flush their caches and index any new metadata that we've got.
-			// this is a bit of a heavy stick, but we want to be aggressive in tossing caches.
-			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$this->instance->getId()]);
-			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
-
-
 		}
 
 		if(!$this->getObjectId()) {
