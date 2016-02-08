@@ -1,6 +1,8 @@
 <?
 $titleArray = $assetModel->getAssetTitle($collapse=false);
 $assetTitle = reset($titleArray);
+$collection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
+
 ?>
 <script>
 var objectId = "<?=$assetModel->getObjectId()?>";
@@ -29,6 +31,16 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 		</div>
 		<?endif?>
 		<?endforeach?>
+
+		<div class="row">
+			<div class="col-md-12 assetWidget">
+				<ul>
+					<strong>Collection:</strong>
+						<li><a href="<?=instance_url("collections/browseCollection/". $collection->getId())?>"><?=$collection->getTitle()?></a>
+						</li>
+				</ul>
+			</div>
+		</div>
 
 	</div>
 

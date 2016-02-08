@@ -1,3 +1,5 @@
+<h2>Editing Permissions For <?=$objectTitle?></h2>
+
 <form method="post" accept-charset="utf-8" action="<?= instance_url("permissions/update/"); ?>" />
 
 	<input type="hidden" name="permissionType" id="inputPermissionType" class="form-control" value="<?= $permissionType; ?>">

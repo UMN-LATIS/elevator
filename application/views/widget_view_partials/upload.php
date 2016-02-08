@@ -1,5 +1,5 @@
 <p><strong><?=$widgetModel->getLabel()?>:</strong></p>
-<ul class="fileList">
+
 	<?foreach($widgetModel->fieldContentsArray as $fieldContent):?>
 
 	<?
@@ -23,11 +23,14 @@
 
 			}
 	?>
-	<li>
-		<div class="thumbnailFixedSize">
-			<a href="#<?=$fieldContent->fileId?>"><img data-fileobjectid="<?=$fieldContent->fileId?>" class="lazy loadView" data-retina="<?=$retina?>" data-src="<?=$standard?>"></a>
+	<div class="col-sm-2 col-xs-4">
+		<div class="relatedThumbToggle">
+			<div class="relatedThumbContainer">
+				<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fieldContent->fileId?>" data-retina="<?=$retina?>" data-hover="<?=$retina?>" data-src="<?=$standard?>">
+			</div>
 		</div>
-	</li>
+	</div>
+
 	<?endforeach?>
-</ul>
+
 

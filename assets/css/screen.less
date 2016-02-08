@@ -229,6 +229,10 @@ body {
     margin-top: -10px;
 }
 
+.sortHover {
+    cursor: move;
+}
+
 /**
  * ! Asset Entry
  */
@@ -551,10 +555,11 @@ body {
     & ul {
         margin: 0;
         list-style-type: none;
-
+        display: inline-block;
         padding-left:0px;
         & li {
             display:inline;
+            // padding-left:2px;
         }
         &:not(.fileList) li:after {
             content: ", ";
@@ -617,6 +622,19 @@ body {
 
 .relatedThumbContainerImage {
     z-index: 1;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 100%;
+    width: auto;
+    cursor:pointer;
+    -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
+}
+
+.relatedThumbHighlight {
+    border: 2px red solid;
 }
 
 .relatedThumbToggle {
@@ -627,22 +645,14 @@ body {
 
     z-index: 1;
 
+
     .relatedThumbContainer {
-        height: 75px;
-        width: 75px;
-        margin-top: 2px;
-        margin-bottom:2px;
-        padding-left: 3px;
-        padding-right: 3px;
         z-index: 1;
         position: relative;
+        width: 75px;
+        height: 75px;
         overflow: hidden;
-        .relatedThumbContainerImage {
-            min-height: 75px;
-            min-width: 75px;
-
-
-        }
+        padding:0px;
     }
     .relatedThumbTitle {
         display:none;
@@ -659,14 +669,16 @@ body {
         border-right: 1px solid #000;
         border-top: 1px solid #000;
         background-color: white;
+        margin: 0px;
+
         .verticalCenter;
         cursor: pointer;
         .relatedThumbContainerImage {
-            .verticalCenter;
-            max-width: 100%;
-            max-height: 100%;
-            margin-left:auto;
-            margin-right:auto;
+            // .verticalCenter;
+            // max-width: 100%;
+            // max-height: 100%;
+            // margin-left:auto;
+            // margin-right:auto;
             display:block;
 
         }

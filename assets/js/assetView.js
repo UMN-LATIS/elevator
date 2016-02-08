@@ -78,7 +78,10 @@ $(document).on("ready", function() {
 	$(document).on("click", ".relatedThumbContainer", function(e) {
 		e.stopPropagation();
 		var nestedObjectId = $(this).data("objectid");
-		window.location.hash = nestedObjectId;
+		if(nestedObjectId !== undefined) {
+			window.location.hash = nestedObjectId;
+		}
+
 	});
 
 	// flip chevrons
@@ -224,7 +227,7 @@ $(document).on("ready", function() {
 $(document).on("mouseover", ".relatedThumbToggle", function() {
 	var image = $(this).find(".relatedThumbContainerImage");
 	$(image).data("oldURL", $(image).attr("src"));
-	var data = $(image).data("at2x");
+	var data = $(image).data("hover");
 	$(image).attr("src", data);
 
 });
@@ -237,6 +240,15 @@ $(document).on("mouseout", ".relatedThumbToggle", function() {
 
 });
 
+
+Mousetrap.bind('left', function() {
+	$(".relatedThumbHighlight").closest(".col-sm-2").prev().find("img").trigger("click");
+});
+
+Mousetrap.bind('right', function() {
+	$(".relatedThumbHighlight").closest(".col-sm-2").next().find("img").trigger("click");
+});
+
 $(document).on("click", ".embedControl", function() {
 	$(this).select();
 });
@@ -245,6 +257,7 @@ $(document).on("click", ".showDetails", function() {
 	$(this).parent().parent().children('.assetDetails').toggle("fast");
 });
 
+// main handler for loading assets
 $(document).on("click", ".loadView", function(e) {
 	if (e.originalEvent === undefined) {
 		e.preventDefault();
@@ -254,8 +267,11 @@ $(document).on("click", ".loadView", function(e) {
 	var parent = $(this).closest("[data-objectid]");
 
 	var needLoadNestedView = false;
-	if(parent.length>0 && !parent.hasClass('objectIdHost')) {
+
+	if(parent.length>0 && (!parent.hasClass('objectIdHost') || (parent.hasClass('objectIdHost') && parent.hasClass('sidebarContainer')))) {
 		// we're within a nested asset, rather than a straight thumbnail, let's also load the content for that.
+		// if we've been loaded in the left column, as a nested view, we want to make sure we load both the view and reload the metadata, which is why
+		// we check for the sdiebar container
 		parentObject = parent.data("objectid");
 		needLoadNestedView = true;
 	}
@@ -267,16 +283,20 @@ $(document).on("click", ".loadView", function(e) {
 
 	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
-
+		$(document).find(".relatedThumbHighlight").removeClass("relatedThumbHighlight");
+		if($(".rightColumn").find('[data-fileobjectid]').length > 1) {
+			var parentContainer = $(document).find('[data-fileobjectid="' + fileObjectId + '"]').parent();
+			parentContainer.each(function(index, el) {
+				if($(el).is('div')) {
+					$(el).addClass("relatedThumbHighlight");
+				}
+			});
+		}
 
 		var y = $(window).scrollTop();
 		var z = $('#embedView').offset().top + 400;
 		if(y>z) {
-			 $("html, body").animate({ scrollTop: 0 }, "fast");
-			// bootbox.alert("<h2>Scroll Up For New Content</h2>");
-			// 	window.setTimeout(function(){
-			// 		bootbox.hideAll();
-			// 	}, 1200);
+			$("html, body").animate({ scrollTop: 0 }, "fast");
 		}
 
 		lazyElements = $("#embedView").find(".lazy");
@@ -300,6 +320,7 @@ $(document).on("click", ".loadView", function(e) {
 });
 
 function loadEmbedViewPointer() {
+
 	targetObjectId = $("#embedView").data("objectid");
 		var targetAsset = $(document).find('[data-fileobjectid="' + targetObjectId + '"]');
 		if(targetAsset.length>0) {
@@ -308,5 +329,10 @@ function loadEmbedViewPointer() {
 		else { // maybe it's a related asset, try that
 			targetAsset = $(document).find('[data-objectid="' + targetObjectId + '"]').find(".loadView");
 		}
+
+		if(targetAsset.length > 1) {
+			targetAsset = targetAsset.first();
+		}
+
 		$(targetAsset).trigger("click");
 }

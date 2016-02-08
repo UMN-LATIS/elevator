@@ -180,10 +180,10 @@ if(!objectId) {
 
         <span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content='
           <ul>
-    <?if(isset($fileContainers['mp4hd']) && $fileContainers['mp4hd']->ready):?>
+    <?if(isset($fileContainers['mp4hd']) && $fileContainers['mp4hd']->ready && (!$this->instance->getHideVideoAudio() || $allowOriginal)):?>
       <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4hd")?>">Download HD MP4</a></li>
       <?endif?>
-      <?if(isset($fileContainers['mp4sd']) && $fileContainers['mp4sd']->ready):?>
+      <?if(isset($fileContainers['mp4sd']) && $fileContainers['mp4sd']->ready && (!$this->instance->getHideVideoAudio() || $allowOriginal)):?>
       <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4sd")?>">Download SD MP4</a></li>
       <?endif?>
       <?if($allowOriginal):?>

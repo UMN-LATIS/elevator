@@ -626,7 +626,13 @@ class Asset_model extends CI_Model {
 
 				$entryArray = array();
 				$dateArray = array();
+				$limit = 0;
 				foreach($upload->fieldContentsArray as $fieldContent) {
+					if($limit > 10) {
+						break;
+					}
+					$limit++;
+
 					$fieldContent->extractLocation = $upload->extractLocation; // this is wrong, should use a method on the widget
 					$fieldContent->extractDate = $upload->extractDate;
 
@@ -726,6 +732,7 @@ class Asset_model extends CI_Model {
 			}
 		}
 		else {
+			$this->assetObject->setCreatedBy(0);
 			$this->assetObject->setModifiedBy(0);
 		}
 

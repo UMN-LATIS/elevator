@@ -49,6 +49,17 @@ if($groupObject->getGroupType() == "User") {
 				</div>
 			</div>
 
+			<div class="form-group" id="courseList">
+				<label for="inputGroupType" class="col-sm-2 control-label">Suggested Course IDs:</label>
+				<div class="col-sm-5">
+					<select name="courseListSelect" id="courseListSelect" class="form-control">
+						<option value="">-- Select Course --</option>
+						<?foreach($this->user_model->coursesTaught as $courseId=>$courseLabel):?>
+						<option value=<?=$courseId?>><?=$courseLabel?></option>
+						<?endforeach?>
+					</select>
+				</div>
+			</div>
 			<script>
 
 			var existingGroups = <?=json_encode($groupArray)?>;

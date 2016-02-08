@@ -75,11 +75,17 @@ $(document).ready(function() {
 			case "Authed_remote":
 			$(".groupValueGroup").hide();
 			$("#groupLabelGroup").hide();
+			$("#courseList").hide();
 			break;
 			case "Course":
+			$("#courseList").show();
+			$(".groupValueGroup").show();
+			$("#groupLabelGroup").show();
+			break;
 			case "JobCode":
 			case "User":
 			case "Unit":
+			$("#courseList").hide();
 			$(".groupValueGroup").show();
 			$("#groupLabelGroup").show();
 			break;
@@ -90,6 +96,10 @@ $(document).ready(function() {
 		}
 
 
+	});
+
+	$("#courseListSelect").on("change", function() {
+		$(".inputGroupValue").last().val($(this).val());
 	});
 
 	$("#createGroupForm").on("submit", function() {

@@ -14,7 +14,9 @@ class User_model extends CI_Model {
 	private $maxRecents = 5;
 	public $jobCodes = array();
 	public $courses= array();
+	public $coursesTaught = array();
 	public $units= array();
+	public $studentStatus= array();
 
 
 
@@ -126,6 +128,15 @@ class User_model extends CI_Model {
 				// todo: learn about the actual standard for eduCourseMember
 				foreach($courseArray as $course) {
 					$courseId = substr($course, -6);
+					$explodedString = split("@", $course);
+					if(count($explodedString)>0) {
+						$role = $explodedString[0];
+					}
+					if($role == "Instructor") {
+						$courseString = split("/", $course);
+						$courseName = $courseString[6];
+						$this->coursesTaught[$courseId + 0] = $courseName;
+					}
 					$this->courses[] = $courseId + 0;
 				}
 
@@ -139,6 +150,14 @@ class User_model extends CI_Model {
 						$this->units[] = $jobCodeArray[0];
 					}
 
+				}
+
+				$studentStatus = explode(";",$umnshib->getAttributeValue('umnRegSummary'));
+				foreach($studentStatus as $studentCode) {
+					$studentStatusArray = explode(":", $studentCode);
+					if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
+						$this->studentStatus[$studentStatusArray[12]] = $studentStatusArray[12];
+					}
 				}
 
 			}
@@ -168,7 +187,7 @@ class User_model extends CI_Model {
 			$r=ldap_bind($connect);
 		}
 
-		$search = ldap_search([$connect], $base_dn, $filter)
+		$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
 		      or exit(">>Unable to search ldap server<<");
 		$returnArray = array();
 		foreach($search as $readItem) {
@@ -589,7 +608,7 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes"];
+		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes","coursesTaught", "studentStatus"];
 
 	}
 

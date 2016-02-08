@@ -17,7 +17,7 @@
 				<?php foreach ($instances as $instance) : ?>
 				<tr>
     			<td><?= $instance->getName(); ?></td>
-    			<td><?= $instance->getDomain(); ?></td>
+    			<td><a href="/<?=$instance->getDomain()?>"><?= $instance->getDomain(); ?></a></td>
 
     			<td><?= $instance->getIntroText(); ?></td>
     			<td><a href="<?= instance_url("permissions/edit/instance/{$instance->getId()}"); ?>">Edit Permissions</a></td>
