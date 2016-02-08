@@ -121,7 +121,7 @@ $(document).ready(function() {
 		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
 	</div>
 </div>
-
+<!--
 <div class="form-group">
 	<label for="inputClarifaiId" class="col-sm-2 control-label">Clarifai Id:</label>
 	<div class="col-sm-6">
@@ -135,7 +135,7 @@ $(document).ready(function() {
 		<input type="password" data-toggle="password" name="clarifaiSecret" id="inputClarifaiSecret" class="form-control" value="<?= $instance->getClarifaiSecret(); ?>">
 	</div>
 </div>
-
+-->
 <div class="form-group">
 	<label for="inputBoxKey" class="col-sm-2 control-label">Box API Key:</label>
 	<div class="col-sm-6">
@@ -163,7 +163,7 @@ $(document).ready(function() {
 <div class="form-group">
 	<label for="introText" class="col-sm-2 control-label">Intro Text</label>
 	<div class="col-sm-6">
-		<textarea name="introText" class="form-control"><?= $instance->getIntroText(); ?></textarea><br/>
+		<textarea name="introText" class="form-control introText"><?= $instance->getIntroText(); ?></textarea><br/>
 	</div>
 </div>
 
@@ -202,9 +202,38 @@ $(document).ready(function() {
 			</div>
 		</div>
 
+			<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-8">
+				<label>
+					<input type="checkbox" id="hideVideoAudio" name="hideVideoAudio" value="On" <?=$instance->getHideVideoAudio()?"checked":null?>>
+					Hide video/audio download links from "view" users <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="This will not prevent tech-savvy users from downloading files."></span>
+				</label>
+			</div>
+		</div>
+
 
 <div class="form-group">
 	<div class="col-sm-6 col-offset-2">
 		<button type="submit" class="btn btn-primary">Submit</button>
 	</div>
 </div>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+	tinymce.init({
+	    mode: "specific_textareas",
+	    editor_selector: "introText",
+	    menubar : false,
+	    plugins: "link",
+	    setup: function(editor) {
+ 			editor.on('change', function () {
+            	tinymce.triggerSave();
+        	});
+	    }
+	 });
+	$('[data-toggle="tooltip"]').tooltip()
+});
+
+
+</script>

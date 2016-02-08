@@ -222,6 +222,10 @@ class asset extends Instance_Controller {
 			if($parentMatch) {
 				$this->accessLevel = $this->user_model->getAccessLevel("asset", $tempAsset);
 			}
+			else {
+				// we've got a mismatch, but see if they've got access to the file without looking at the parent.
+				$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+			}
 		}
 		else {
 			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);

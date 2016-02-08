@@ -121,11 +121,13 @@ class Transcoder extends CI_Controller {
 					$this->pheanstalk->delete($job);
 				}
 				else {
+					$this->logging->processingInfo("job", "transcoder", "failed updating", $job_encoded['fileHandlerId'], $job->getId());
 					echo "Failed updating " . $fileHandler->getObjectId() . "\n";
 					$this->pheanstalk->bury($job);
 				}
 			}
 			else if($result == JOB_FAILED) {
+				$this->logging->processingInfo("job", "transcoder", "job failed (" . $job_encoded['task'] . ")", $job_encoded['fileHandlerId'], $job->getId());
 				echo "Job Failed: " . $job->getId() . " " .  $fileHandler->sourceFile->originalFilename . " : " . $job_encoded['task'] . "\n";
 				$this->pheanstalk->bury($job);
 			}

@@ -11,9 +11,10 @@ class Permissions extends Instance_Controller {
 		$data['permissionTypeId'] = $id;
 
 		$data['instance'] =  $this->instance;
-
+		$data['objectTitle'] = "";
 		if($permissionType == DRAWER_PERMISSION) {
 			$data['drawer'] = $this->doctrine->em->find('Entity\Drawer', $data['permissionTypeId']);
+			$data['objectTitle'] = $data['drawer']->getTitle();
 			$accessLevel = $this->user_model->getAccessLevel(DRAWER_PERMISSION, $data['drawer']);
 			if($accessLevel < PERM_CREATEDRAWERS) {
 				instance_redirect("errorHandler/error/noPermission");
@@ -31,8 +32,16 @@ class Permissions extends Instance_Controller {
 				show_404();
 			}
 			$data['permissionableObject'] = $data['instance'];
+			$data['objectTitle'] = $data['instance']->getName();
 		} else {
 			$data['permissionableObject'] = $this->doctrine->em->find("Entity\\$permissionType", $id);
+			if($permissionType == INSTANCE_PERMISSION) {
+				$data['objectTitle'] = $data['instance']->getName();
+			}
+			else {
+				$data['objectTitle'] = $data['permissionableObject']->getTitle();
+			}
+
 		}
 
 		if ($data['permissionableObject'] === null) {
@@ -654,7 +663,7 @@ class Permissions extends Instance_Controller {
 
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 		$instanceList = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
 

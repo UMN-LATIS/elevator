@@ -492,7 +492,7 @@ function prepTimeline() {
 			if(value.dates) {
 				$.each(value.dates, function(index, value2) {
 					$.each(value2.dateAsset, function(index, value3) {
-						if(value3.start) {
+						if(value3.start && value3.start["numeric"].length > 0) {
 							var startTime = null;
 							var endTime = null;
 							var formattedStart = null;
@@ -555,7 +555,7 @@ function prepTimeline() {
 			}
 		});
 	}
-
+console.log(cachedDates);
 
 	if(eventSource) {
 		eventSource.clear();

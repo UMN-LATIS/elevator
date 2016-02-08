@@ -270,7 +270,7 @@ class AssetManager extends Admin_Controller {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
-		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy(["asset"=>$fileObjectId], ["id"=>"desc"],30);
+		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy(["asset"=>$fileObjectId], ["id"=>"desc"]);
 		$this->template->content->view("admin/jobLogs", $data);
 		$this->template->publish();
 	}
@@ -373,7 +373,7 @@ class AssetManager extends Admin_Controller {
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 
 		if($offset>0) {

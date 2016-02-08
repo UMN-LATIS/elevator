@@ -147,8 +147,11 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		foreach($assets as $assetRecord) {
+			if(!$assetRecord->getAssetId()) {
+				continue;
+			}
 			$asset = new Asset_model();
-			echo "Loading Asset" . $asset->getObjectId() . "\n";
+			echo "Loading Asset" . $assetRecord->getAssetId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord);
 			echo "Resaving " . $asset->getObjectId() . "\n";
 			$asset->save(false, false);
@@ -317,7 +320,7 @@ class admin extends Admin_Controller {
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 
 		}
 
@@ -345,7 +348,7 @@ class admin extends Admin_Controller {
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 
 		}
 
@@ -371,7 +374,7 @@ class admin extends Admin_Controller {
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$entry->getAssetId(), "deleted"=>true, "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 
 		}
 
@@ -426,6 +429,50 @@ class admin extends Admin_Controller {
 		$this->doctrine->em->persist($key);
 		$this->doctrine->em->flush();
 		instance_redirect("admin/listAPIkeys");
+
+	}
+
+	public function importAsset($instanceId, $collectionId, $templateId, $file) {
+
+		$filecontents = file_get_contents($file);
+		$decoded = json_decode($filecontents, true);
+		$assetArray = $decoded["asset"];
+
+		$files = $decoded["files"];
+		foreach($files as $file) {
+
+			$fileHandler = new Entity\FileHandler;
+			$fileHandler->setFileObjectId($file["_id"]["\$id"]);
+			$fileHandler->setSourceFile($file["sourceFile"]);
+			$fileHandler->setDerivatives($file["derivatives"]);
+			$fileHandler->setFileType($file["type"]);
+			$fileHandler->setHandler($file["handler"]);
+			$fileHandler->setCollectionId($collectionId);
+			$fileHandler->setDeleted($file["deleted"]);
+			$fileHandler->setParentObjectId(null);
+			$fileHandler->setGlobalMetadata($file["globalMetadata"]);
+			$fileHandler->setJobIdArray([]);
+			$this->doctrine->em->persist($fileHandler);
+			$this->doctrine->em->flush();
+		}
+
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+
+		$this->load->model("Asset_model");
+		$asset = new Asset_model();
+		$assetArray["templateId"] = $templateId;
+		$assetArray["collectionId"] = $collectionId;
+		$assetArray["readyForDisplay"] = true;
+
+		$asset->createObjectFromJSON($assetArray);
+
+		$asset->setGlobalValue("templateId", $templateId);
+		$asset->setGlobalValue("collectionId", $collectionId);
+		$asset->setGlobalValue("readyForDisplay", true);
+
+		$asset->save(true,false);
+		var_dump($asset->getObjectId());
+
 
 	}
 
