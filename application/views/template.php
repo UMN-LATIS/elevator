@@ -248,6 +248,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
         <?endif?>
       <?endif?>
 
+      <li><a href="http://www.elevatorapp.net">Help</span></a></li>
       </ul>
 
       <?if($this->user_model->userLoaded):?>

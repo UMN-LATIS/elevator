@@ -743,7 +743,7 @@ class Instance
     /**
      * Get handler_permissions
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getHandlerPermissions()
     {
@@ -771,7 +771,7 @@ class Instance
     /**
      * Get useCentralAuth
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getUseCentralAuth()
     {
@@ -809,7 +809,7 @@ class Instance
     /**
      * Get pages
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getPages()
     {
@@ -837,7 +837,7 @@ class Instance
     /**
      * Get s3StorageType
      *
-     * @return string 
+     * @return string
      */
     public function getS3StorageType()
     {
@@ -929,5 +929,34 @@ class Instance
     public function getBoxKey()
     {
         return $this->boxKey;
+    }
+    /**
+     * @var boolean
+     */
+    private $hideVideoAudio;
+
+
+    /**
+     * Set hideVideoAudio
+     *
+     * @param boolean $hideVideoAudio
+     *
+     * @return Instance
+     */
+    public function setHideVideoAudio($hideVideoAudio)
+    {
+        $this->hideVideoAudio = $hideVideoAudio;
+
+        return $this;
+    }
+
+    /**
+     * Get hideVideoAudio
+     *
+     * @return boolean
+     */
+    public function getHideVideoAudio()
+    {
+        return $this->hideVideoAudio;
     }
 }

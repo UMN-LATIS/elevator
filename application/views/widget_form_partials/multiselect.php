@@ -83,7 +83,8 @@ function makeSafeForTitle($sourceName) {
 
 <?
 
-
+$decodedField = json_decode($widgetModel->getFieldData());
+$encodedField = json_encode($decodedField);
 
 $topLevels = array_unique(flatten(recurseThing($widgetModel->getFieldData(),0)));
 
@@ -101,7 +102,7 @@ if(!selectedItems) {
 
 selectedItems["<?=$formFieldId?>"] = new Array();
 
-sourceContent["<?=$formFieldId?>"] = $.parseJSON('<?=preg_replace( "/\r|\n/", "",addslashes($widgetModel->getFieldData()))?>');
+sourceContent["<?=$formFieldId?>"] = $.parseJSON('<?=preg_replace( "/\r|\n/", "",addslashes($encodedField))?>');
 
 <?if(isset($fieldContents)):foreach($fieldContents as $key=>$value):?>
 selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
@@ -145,7 +146,10 @@ selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
 </div>
 
 <script>
-loadGroup("<?=$formFieldId?>");
+$(document).ready(function() {
+	loadGroup("<?=$formFieldId?>");
+});
+
 </script>
 
 

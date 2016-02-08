@@ -49,14 +49,15 @@ class Instances extends Instance_Controller {
 		$instance->setBucketRegion($this->input->post('bucketRegion'));
 		$instance->setDefaultBucket($this->input->post('defaultBucket'));
 		$instance->setGoogleAnalyticsKey($this->input->post('googleAnalyticsKey'));
-		$instance->setClarifaiId($this->input->post('clarifaiId'));
-		$instance->setClarifaiSecret($this->input->post('clarifaiSecret'));
+		// $instance->setClarifaiId($this->input->post('clarifaiId'));
+		// $instance->setClarifaiSecret($this->input->post('clarifaiSecret'));
 		$instance->setBoxKey($this->input->post('boxKey'));
 		$instance->setIntroText($this->input->post('introText'));
 		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);
 		$instance->setUseCustomCSS($this->input->post('useCustomCSS')?1:0);
 		$instance->setUseCentralAuth($this->input->post('useCentralAuth')?1:0);
+		$instance->setHideVideoAudio($this->input->post('hideVideoAudio')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 
@@ -94,6 +95,7 @@ class Instances extends Instance_Controller {
 		}
 		$this->template->title = 'Edit Instance';
 		$this->template->loadJavascript(["parsley","bootstrap-show-password"]);
+		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
 		$this->template->content->view('instances/edit', $data);
 		$this->template->publish();
 	}
