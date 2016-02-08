@@ -521,37 +521,40 @@ class Beltdrive extends CI_Controller {
 
 
 	public function populateCacheTube() {
-		$currentTime = date('Y-m-d H:i:s',time());
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 
+		while(1) {
+			$currentTime = date('Y-m-d H:i:s',time());
 
-		$this->doctrine->em->getConnection()->executeUpdate("UPDATE asset_cache a SET rebuildTimestamp = '" . $currentTime . "'
-			FROM ( SELECT asset_id FROM asset_cache WHERE needsRebuild = true and rebuildTimestamp IS NULL limit 10000) sub where a.asset_id = sub.asset_id");
+			$this->doctrine->em->getConnection()->executeUpdate("UPDATE asset_cache a SET rebuildTimestamp = '" . $currentTime . "'
+				FROM ( SELECT asset_id FROM asset_cache WHERE needsRebuild = true and rebuildTimestamp IS NULL limit 10000) sub where a.asset_id = sub.asset_id");
 
 
-		$qb2 = $this->doctrine->em->createQueryBuilder();
-		$q2 = $qb2->select("a")
-		->from("Entity\AssetCache", "a")
-        ->where('a.needsRebuild = true')
-        ->andWhere('a.rebuildTimestamp = ?1')
-        ->setParameter(1, $currentTime)
-        ->getQuery();
+			$qb2 = $this->doctrine->em->createQueryBuilder();
+			$q2 = $qb2->select("a")
+			->from("Entity\AssetCache", "a")
+	        ->where('a.needsRebuild = true')
+	        ->andWhere('a.rebuildTimestamp = ?1')
+	        ->setParameter(1, $currentTime)
+	        ->getQuery();
 
-		$result = $q2->iterate();
-		$count = 0;
+			$result = $q2->iterate();
+			$count = 0;
 
-		foreach($result as $entry) {
-			$entry = $entry[0];
-			$this->doctrine->em->clear();
+			foreach($result as $entry) {
+				$entry = $entry[0];
+				$this->doctrine->em->clear();
 
-			$newTask = json_encode(["task"=>"recache", "objectId"=>$entry->getAsset()->getAssetId()]);
-			$jobId= $this->pheanstalk->useTube('cacheRebuild')->put($newTask, 10, 2, 200);
+				$newTask = json_encode(["task"=>"recache", "objectId"=>$entry->getAsset()->getAssetId()]);
+				$jobId= $this->pheanstalk->useTube('cacheRebuild')->put($newTask, 10, 2, 200);
 
-			$count++;
-			if($count % 10 == 0) {
-				gc_collect_cycles();
+				$count++;
+				if($count % 10 == 0) {
+					gc_collect_cycles();
+				}
+
 			}
-
+			sleep(300);
 		}
 
 	}
