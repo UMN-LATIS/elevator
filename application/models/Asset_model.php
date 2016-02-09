@@ -867,6 +867,9 @@ class Asset_model extends CI_Model {
 			$this->doctrineCache->setNamespace('searchCache_');
 			$this->doctrineCache->delete($this->getObjectId());
 		}
+		else {
+			$this->flushCache();
+		}
 
 		if(!$this->assetObject) {
 			return FALSE;
@@ -921,6 +924,36 @@ class Asset_model extends CI_Model {
 		return $assetCache;
 	}
 
+	public function flushCache() {
+		$ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->config->item("base_url") . "/api/v1/hello/clearCache/" . "" . $this->getObjectId());
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        $now = time();
+        $header[] = "Authorization-Key: " . $this->config->item("apiKey");
+        $header[] = "Authorization-Timestamp: " . $now;
+        $header[] = "Authorization-Hash: " . sha1($now . $this->config->item("apiSecret"));
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+        try {
+            $data = curl_exec($ch);
+            $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($response == 200) {
+                return $data;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (Exception $ex) {
+            // echo $ex;
+            return false;
+        }
+
+	}
 
 	// reindex self and children, preventing recursion
 
@@ -968,6 +1001,7 @@ class Asset_model extends CI_Model {
 					$this->doctrineCache->setNamespace('searchCache_');
 					$this->doctrineCache->delete($this->getObjectId());
 				}
+
 			}
 		}
 
