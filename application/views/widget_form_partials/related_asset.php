@@ -77,7 +77,7 @@
 			<label for="<?=$targetAssetId?>" class="col-sm-2 control-label"><?=$labelText?>:</label>
 			<div class="col-sm-4">
 				<input type="text"  autocomplete="off" class="mainWidgetEntry form-control relatedAssetInput  <?=$autocomplete?>" placeholder="<?=$labelText?>" >
-				<input type="hidden"  autocomplete="off" class="mainWidgetEntry form-control relatedAssetSelectedItem targetAsset" id="<?=$targetAssetId?>" name="<?=$targetAssetName?>" placeholder="<?=$labelText?>" value="<?=$assetContents?>">
+				<input type="text"  autocomplete="off" class="advancedContent mainWidgetEntry form-control relatedAssetSelectedItem targetAsset" id="<?=$targetAssetId?>" name="<?=$targetAssetName?>" placeholder="<?=$labelText?>" value="<?=$assetContents?>">
 			</div>
 			<div class="col-sm-6">
 				<button type="button" class="btn btn-primary autocompletePreview">Preview</button> <button type="button" class="btn btn-primary autocompleteEdit">Edit</button> <button type="button" class="btn btn-primary clearRelated">Clear</button>

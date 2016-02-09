@@ -48,7 +48,9 @@
         <option name="jsonb">true</option>
       </options>
     </field>
-
+    <one-to-one field="assetCache" target-entity="AssetCache" mapped-by="asset" fetch="EAGER" >
+      <cascade><cascade-remove /></cascade>
+    </one-to-one>
     <indexes>
       <index columns="collectionId"/>
       <index columns="templateId"/>
