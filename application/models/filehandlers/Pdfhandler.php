@@ -178,7 +178,7 @@ class PDFHandler extends FileHandlerBase {
 				$success=false;
 			}
 		}
-
+		$this->triggerReindex();
 		if($success) {
 			$this->queueTask(2);
 			return JOB_SUCCESS;

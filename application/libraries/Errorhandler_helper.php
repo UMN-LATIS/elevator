@@ -2,17 +2,25 @@
 
 class Errorhandler_helper {
 
-	public function callError($error) {
+	public function callError($error, $inline=false) {
 		$CI =& get_instance();
+		$e = new Exception;
+		$CI->logging->logError($error, $e->getTraceAsString());
 		$CI->useUnauthenticatedTemplate = true;
 		if(file_exists("application/views/errors/". $error . ".php")) {
-			$CI->template->content->view("errors/" . $error);
+			$view = "errors/" . $error;
 		}
 		else {
-			$CI->template->content->view("errors/genericError");
+			$view = "errors/genericError";
 		}
-		$CI->template->publish();
-		$CI->output->_display();
+		if($inline) {
+			echo $CI->load->view($view, array(), true);
+		}
+		else {
+			$CI->template->content->view($view);
+			$CI->template->publish();
+			$CI->output->_display();
+		}
 		exit();
 
 	}

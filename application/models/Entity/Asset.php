@@ -561,4 +561,33 @@ class Asset
     {
         return $this->cachedDateData;
     }
+    /**
+     * @var \Entity\AssetCache
+     */
+    private $assetCache;
+
+
+    /**
+     * Set assetCache
+     *
+     * @param \Entity\AssetCache $assetCache
+     *
+     * @return Asset
+     */
+    public function setAssetCache(\Entity\AssetCache $assetCache = null)
+    {
+        $this->assetCache = $assetCache;
+
+        return $this;
+    }
+
+    /**
+     * Get assetCache
+     *
+     * @return \Entity\AssetCache
+     */
+    public function getAssetCache()
+    {
+        return $this->assetCache;
+    }
 }

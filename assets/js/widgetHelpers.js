@@ -349,11 +349,6 @@ $(document).on("click", ".autocompletePreview", function(event) {
 	return false;
 });
 
-$(document).on("click", ".autocompleteEdit", function(event) {
-	var targetItem = $(this).closest(".widgetContents").find(".targetAsset").val();
-	window.open(basePath+ "assetManager/editAsset/"+targetItem);
-	return false;
-});
 
 
 function buildAutocomplete() {
