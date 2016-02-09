@@ -112,7 +112,7 @@ class InhibitorHook {
 		if(isset($CI->collection)) {
 			$log->setCollection($CI->collection->getId());
 		}
-		$CI->doctrine->em->persist($log);
+		$CI->doctrine->em->persist(substr($log, 0, 1000));
 		$CI->doctrine->em->flush();
 
 	}
