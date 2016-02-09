@@ -197,6 +197,7 @@ class MovieHandler extends FileHandlerBase {
 	}
 
 	public function cleanupOriginal($args) {
+
 		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
 		$jobId = $transcodeCommands->cleanup($this->getObjectId());
 

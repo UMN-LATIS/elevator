@@ -185,6 +185,7 @@ class SPAHandler extends FileHandlerBase {
 		}
 		$this->unlinkLocalSwap();
 
+		$this->triggerReindex();
 		if($success) {
 			$this->queueTask(2, ["ttr"=>600]);
 			return JOB_SUCCESS;
