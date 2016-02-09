@@ -55,7 +55,7 @@ class MY_Controller extends CI_Controller {
 				}
 				else {
 					$this->user_model->loadUser($userId);
-					$this->doctrineCache->save($userId, serialize($this->user_model), 900);
+					$this->doctrineCache->save($userId, serialize($this->user_model), 3600);
 				}
 			}
 			else {
@@ -67,6 +67,10 @@ class MY_Controller extends CI_Controller {
 		}
 	}
 
+	function throwBacktrace() {
+		$e = new Exception;
+		var_dump($e->getTraceAsString());
+	}
 
 
 }

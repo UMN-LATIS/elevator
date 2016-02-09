@@ -46,6 +46,9 @@ class Upload_contents extends Widget_contents_base {
 	}
 
 	public function getAsText($serializeNestedObjects=false) {
+		if(!$this->getFileHandler()) {
+			return "";
+		}
 		return implode(" " , [$this->getFileHandler()->getObjectId(), $this->fileDescription, substr($this->getSearchData(), 0, 100)]);
 	}
 
@@ -128,6 +131,9 @@ class Upload_contents extends Widget_contents_base {
 			parent::loadContentFromArray($value);
 			if(isset($value["fileId"]) && strlen($value["fileId"])>0) {
 				$this->fileHandler = $this->filehandler_router->getHandlerForObject($value["fileId"]);
+				if(!$this->fileHandler) {
+					return false;
+				}
 				$this->fileHandler->loadByObjectId($value["fileId"]);
 				if($this->parentObjectId != NULL && $this->fileHandler->parentObjectId == NULL) {
 					$this->fileHandler->parentObjectId = $this->parentObjectId;

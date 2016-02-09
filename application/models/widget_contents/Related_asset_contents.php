@@ -29,28 +29,40 @@ class Related_asset_contents extends Widget_contents_base {
 		//
 			$fileHandlerId = null;
 			try {
-				$fileHandler = $this->getRelatedAsset()->getPrimaryFilehandler();
-				$fileHandlerId = $fileHandler->getObjectId();
+				if($relatedAsset = $this->getRelatedAsset()) {
+					$fileHandler = $relatedAsset->getPrimaryFilehandler();
+					$fileHandlerId = $fileHandler->getObjectId();
+				}
 			}
 			catch (Exception $e) {
 
 			}
 
-			return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary, "cachedPrimaryHandler"=>$fileHandlerId, "relatedObjectId"=>$this->getRelatedAsset()->getObjectId(), "relatedObjectTitle"=>$this->getRelatedAsset()->getAssetTitle()];
+			return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
 		// }
 	}
 
-	// TODO: why would we ever do this instead of using targetAssetId?
 	public function getRelatedObjectId() {
-		if($this->relatedObjectId) {
-			return $this->relatedObjectId;
+		if($this->targetAssetId) {
+			return $this->targetAssetId;
 		}
 		else {
-			return $this->getRelatedAsset()->getObjectId();
+			return FALSE;
 		}
+
 	}
 
 	public function getRelatedObjectTitle($collapse = false) {
+
+		if(!$this->relatedObjectTitle && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
+			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
+				$relatedAssetCache = $assetCache->getRelatedAssetCache();
+				if(isset($relatedAssetCache[$this->getRelatedObjectId()])) {
+					$this->relatedObjectTitle = $relatedAssetCache[$this->getRelatedObjectId()]["relatedAssetTitle"];
+				}
+			}
+		}
+
 		if($this->relatedObjectTitle) {
 			if($collapse) {
 				return implode(" ", $this->relatedObjectTitle);
@@ -60,18 +72,42 @@ class Related_asset_contents extends Widget_contents_base {
 			}
 		}
 		else {
-			return $this->getRelatedAsset()->getAssetTitle($collapse);
+			if($relatedAsset = $this->getRelatedAsset()) {
+				return $relatedAsset->getAssetTitle($collapse);
+			}
+			if($collapse) {
+				return "";
+			}
+			else {
+				return array();
+			}
 		}
 	}
 
 	public function getPrimaryFileHandler() {
+		if(!$this->cachedPrimaryHandler && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
+			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
+				$relatedAssetCache = $assetCache->getRelatedAssetCache();
+				if(isset($relatedAssetCache[$this->getRelatedObjectId()])) {
+					$this->cachedPrimaryHandler = $relatedAssetCache[$this->getRelatedObjectId()]["primaryHandler"];
+				}
+			}
+		}
+
 
 		if($this->cachedPrimaryHandler) {
 			return $this->filehandler_router->getHandledObject($this->cachedPrimaryHandler);
 		}
 		else {
 			try {
-				$fileHandler = $this->getRelatedAsset()->getPrimaryFilehandler();
+				$relatedAsset = $this->getRelatedAsset();
+				if($relatedAsset) {
+					$fileHandler = $relatedAsset->getPrimaryFilehandler();
+				}
+				else {
+					throw new Exception('Primary File Handler Not Found');
+					return;
+				}
 			}
 			catch (Exception $e) {
 				throw new Exception('Primary File Handler Not Found');
@@ -144,7 +180,11 @@ class Related_asset_contents extends Widget_contents_base {
 		if(!$this->relatedAsset) {
 			if(!($this->relatedAsset = $this->asset_model->getCachedAsset($this->targetAssetId))) {
 				$this->relatedAsset = new Asset_model;
-				$this->relatedAsset->loadAssetById($this->targetAssetId);
+				if(!$this->relatedAsset->loadAssetById($this->targetAssetId)) {
+					$this->relatedAsset = null;
+					return FALSE;
+				}
+				$this->relatedAsset->useStaleCaches = $this->parentObject->useStaleCaches;
 
 			}
 			return $this->relatedAsset;
