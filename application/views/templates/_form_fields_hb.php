@@ -43,8 +43,8 @@
 			</div>
 		</div>
 
-				<input type="hidden" name="widget[{{id}}][templateOrder]" id="inputWidget[{{id}}][templateOrder]" class="form-control" value="{{templateOrder}}" >
-<input type="hidden" name="widget[{{id}}][viewOrder]" id="inputWidget[{{id}}][viewOrder]" class="form-control" value="{{viewOrder}}">
+		<input type="hidden" name="widget[{{id}}][templateOrder]" id="inputWidget[{{id}}][templateOrder]" class="form-control" value="{{templateOrder}}" >
+		<input type="hidden" name="widget[{{id}}][viewOrder]" id="inputWidget[{{id}}][viewOrder]" class="form-control" value="{{viewOrder}}">
 
 
 		<div class="form-group">
@@ -59,7 +59,7 @@
 			<div class="col-sm-offset-2 col-sm-8">
 				<div class="checkbox">
 					<label>
-						<input type="checkbox" name="widget[{{id}}][display]" id="inputWidget[{{id}}][Display]" {{displayYes}}>
+						<input type="checkbox" class="displayWidget" name="widget[{{id}}][display]" id="inputWidget[{{id}}][Display]" {{displayYes}}>
 						Display
 					</label>
 				</div>
@@ -103,7 +103,7 @@
 			<div class="col-sm-offset-2 col-sm-8">
 				<div class="checkbox">
 					<label>
-						<input type="checkbox" name="widget[{{id}}][displayInPreview]" id="inputWidget[{{id}}][displayInPreview]" {{displayInPreviewYes}}>
+						<input type="checkbox" class="displayPreviewWidget" name="widget[{{id}}][displayInPreview]" id="inputWidget[{{id}}][displayInPreview]" {{displayInPreviewYes}}>
 						Display in preview
 					</label>
 				</div>
