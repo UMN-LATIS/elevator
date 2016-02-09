@@ -749,6 +749,7 @@ class Asset_model extends CI_Model {
 
 		/**
 		 * populate with cached location data (flattened, one layer deep) for drawing maps
+		 * TODO: move all this to our cache generation
 		 */
 		$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
 		$locationArray = array();
@@ -854,11 +855,6 @@ class Asset_model extends CI_Model {
 		}
 
 
-		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('searchCache_');
-			$this->doctrineCache->delete($this->getObjectId());
-		}
-
 		$this->buildCache();
 
     	return $this->getObjectId();
@@ -866,6 +862,11 @@ class Asset_model extends CI_Model {
 
 	public function buildCache() {
 		$this->useStaleCaches = FALSE;
+
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('searchCache_');
+			$this->doctrineCache->delete($this->getObjectId());
+		}
 
 		if(!$this->assetObject) {
 			return FALSE;
