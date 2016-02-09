@@ -13,7 +13,7 @@ class Select extends Widget_base {
 
 	public function loadWidget($widgetItem) {
 		parent::loadWidget($widgetItem);
-		$this->parsedFieldData = json_decode($this->getFieldData(),true);
+		$this->parsedFieldData = $this->getFieldData();
 	}
 
 

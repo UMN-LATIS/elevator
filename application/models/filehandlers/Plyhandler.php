@@ -102,6 +102,7 @@ class PlyHandler extends FileHandlerBase {
 			$this->derivatives = array_merge($this->derivatives, $result);
 		}
 		$this->queueTask(2);
+		$this->triggerReindex();
 		return JOB_SUCCESS;
 
 	}

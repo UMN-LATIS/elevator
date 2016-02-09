@@ -4,7 +4,7 @@ require_once(APPPATH.'controllers/Transcoder.php');
 
 class MovieHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("mov","mp4", "m4v", "mts", "mkv", "avi", "mpeg", "mpg", "m2t");
+	protected $supportedTypes = array("mov","mp4", "m4v", "mts", "mkv", "avi", "mpeg", "mpg", "m2t", "m2ts");
 	protected $noDerivatives = false;
 	public $videoTTR = 900;
 
@@ -197,6 +197,7 @@ class MovieHandler extends FileHandlerBase {
 	}
 
 	public function cleanupOriginal($args) {
+
 		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
 		$jobId = $transcodeCommands->cleanup($this->getObjectId());
 
