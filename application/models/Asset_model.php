@@ -684,21 +684,6 @@ class Asset_model extends CI_Model {
 		}
 
 		return $this->buildSearchResultEntry();
-
-
-		// I suspect building the whole cache on the fly is too expensive?
-		// TODO: benchmark this after implementing related item caching
-		// TODO: Don't you merge this with this comment still in!!
-		// $assetCache = $this->buildCache();
-		// if($assetCache) {
-		// 	return $assetCache->getSearchResultCache();
-		// }
-		// else {
-		// 	return array();
-		// }
-
-
-
 	}
 
 
