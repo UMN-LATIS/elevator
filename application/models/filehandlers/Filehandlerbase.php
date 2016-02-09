@@ -204,6 +204,32 @@ class FileHandlerBase extends CI_Model {
 
 	}
 
+	public function triggerReindex() {
+		// we may have made some sort of change at this point, let's queue a reindex
+		if($this->parentObjectId != null) {
+			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
+			if(!$this->instance || $this->instance == null) {
+				$instanceId = 1; // welp, we're hosed, hope we can find a good one.
+				// lookup instance based on this file's collection.
+				$collection = $this->collection_model->getCollection($this->collectionId);
+				if($collection) {
+					$instances = $collection->getInstances();
+					if(count($instances) > 0) {
+						$instance = $instances[0];
+						$instanceId = $instance->getId();
+					}
+				}
+			}
+			else {
+				$instanceId = $this->instance->getId();
+			}
+
+			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$instanceId]);
+			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
+		}
+	}
+
 
 	public function queueTask($taskId, $appendData=array(), $setHostAffinity=true) {
 
@@ -244,6 +270,7 @@ class FileHandlerBase extends CI_Model {
 		$jobId= $this->pheanstalk->useTube('newUploads')->put($newTask, $priority, 2, $ttr);
 
 		$this->addJobId($jobId);
+
 	}
 
 	public function getNextTask($taskName) {
@@ -258,7 +285,6 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function cleanupOriginal($args) {
-
 		if($this->sourceFile->removeLocalFile()) {
 			if($nextTask = $this->getNextTask("cleanupOriginal")) {
 				$this->queueTask($nextTask);

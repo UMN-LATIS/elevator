@@ -186,7 +186,7 @@ class ImageHandler extends FileHandlerBase {
 				$success=false;
 			}
 		}
-
+		$this->triggerReindex();
 		if($success) {
 			$this->queueTask(2, ["ttr"=>600]);
 			return JOB_SUCCESS;

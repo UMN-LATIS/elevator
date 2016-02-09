@@ -70,7 +70,7 @@ class API_Controller extends MY_Controller {
 				}
 			}
 			else {
-				$this->logging->logError("cache fail" . $authUser);
+				// $this->logging->logError("cache fail" . $authUser);
 				$this->user_model->loadUser($authUser); // we'll give it a try, but we may not have perms if we rely on external auth stuffs.
 				if($this->user_model->getUserType() == "Remote") { // bail
 					$this->user_model->userLoaded = false;

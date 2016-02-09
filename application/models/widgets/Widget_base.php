@@ -9,7 +9,7 @@ class Widget_base extends CI_Model {
 	/**
 	 * Asset ivars
 	 */
-	public $fieldContentsArray;
+	public $fieldContentsArray = array();
 
 	/**
 	 * Drawing ivars (accessed by views)

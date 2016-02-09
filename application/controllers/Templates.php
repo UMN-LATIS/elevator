@@ -124,7 +124,12 @@ class Templates extends Instance_Controller {
 				$newWidget->setFieldTitle($widget['fieldTitle']);
 				$newWidget->setLabel($widget['label']);
 				$newWidget->setTooltip($widget['tooltip']);
-				$newWidget->setFieldData($widget['fieldData']);
+
+				$fieldData = json_decode($widget['fieldData']);
+				if($fieldData) {
+					$newWidget->setFieldData($fieldData);
+				}
+
 				$newWidget->setTemplate($template);
 				$newWidget->setTemplateOrder($widget["templateOrder"]);
 				$newWidget->setViewOrder($widget["viewOrder"]);
@@ -155,6 +160,11 @@ class Templates extends Instance_Controller {
 		if($this->config->item('enableCaching')) {
 			$this->doctrineCache->setNamespace('searchCache_');
 			$this->doctrineCache->deleteAll();
+	   	}
+
+
+	   	if($this->input->post("needsRebuild") == 1) {
+	   		$this->reindexTemplate($template->getId());
 	   	}
 
 
@@ -239,8 +249,50 @@ class Templates extends Instance_Controller {
 
 		$this->doctrine->em->flush();
 
+	   	if($this->input->post("needsRebuild") == 1) {
+	   		$this->reindexTemplate($template->getId());
+	   	}
+
 		instance_redirect('templates/');
 
 	}
+
+
+	public function reindexTemplate($templateId, $parentArray=array()) {
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$q = $qb->update('Entity\AssetCache', 'a')
+        ->set('a.needsRebuild', "true")
+        ->where('a.needsRebuild = false')
+        ->andWhere('a.templateId = ?1')
+        ->setParameter(1, $templateId)
+        ->getQuery();
+		$p = $q->execute();
+
+
+		$manager = $this->doctrine->em->getConnection();
+
+		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
+
+		$foundItems = array();
+		if($results) {
+			$records = $results->fetchAll();
+			if(count($records)>0) {
+				foreach($records as $record) {
+					if($record['template_id'] != null) {
+						if(!in_array($record['template_id'], $parentArray))
+						$foundItems[] = $record['template_id'];
+					}
+				}
+			}
+		}
+
+		$parentArray = array_merge($foundItems, $parentArray);
+
+		foreach($foundItems as $rootTemplate) {
+			$this->reindexTemplate($rootTemplate, $parentArray);
+		}
+	}
+
+
 }
 

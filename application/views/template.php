@@ -247,8 +247,10 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
             <?endif?>
         <?endif?>
       <?endif?>
+
       <li><a href="http://www.elevatorapp.net">Help</span></a></li>
       </ul>
+
       <?if($this->user_model->userLoaded):?>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
@@ -273,6 +275,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
         </li>
       </ul>
       <?endif?>
+
     </div><!-- /.navbar-collapse -->
 <?endif?>
 

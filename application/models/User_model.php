@@ -53,7 +53,6 @@ class User_model extends CI_Model {
 			return 70;
 		}
 
-
 		switch($type) {
 			case "collection":
 				if(array_key_exists($object->getId(),$this->collectionPermissions)) {

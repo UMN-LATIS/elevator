@@ -29,7 +29,12 @@
           <field name="field_title" type="string" nullable='true' />
           <field name="label" type="string" nullable='true' />
           <field name="tooltip" type="string" nullable='true' />
-          <field name="field_data" type="text" nullable='true' />
+          <field name="field_data" type="json_array" nullable='true'>
+            <options>
+              <option name="jsonb">true</option>
+            </options>
+          </field>
+
           <field name="createdAt" type="datetime" nullable='true' />
           <field name="modifiedAt" type="datetime" nullable='true' />
           <field name="directSearch" type="boolean" nullable='true' />

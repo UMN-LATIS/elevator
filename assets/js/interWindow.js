@@ -18,7 +18,21 @@ $(document).on("click", ".newAssetButton", function(event) {
 
 });
 
+$(document).on("click", ".autocompleteEdit", function(event) {
+	var targetItem = $(this).closest(".widgetContents").find(".targetAsset").val();
+	var targetField = $(this).closest(".widgetContents").find(".targetAsset").first().attr('id');
+	var windowPointer = window.open(basePath+ "assetManager/editAsset/"+targetItem);
+	windowPointer.onload = function( ){
+		var targetInfo = { 'status':'open', 'targetField': targetField };
+		windowPointer.postMessage(JSON.stringify(targetInfo), "*");
+	};
+
+	return false;
+});
+
+
 function notifyParentOfSave(objectId) {
+	console.log("SAVE");
 	var statusNotice = { 'objectId': objectId, 'status':'saved', 'targetFieldId': targetFieldId};
 	var targetElement;
 

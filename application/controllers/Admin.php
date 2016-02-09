@@ -141,7 +141,6 @@ class admin extends Admin_Controller {
 	}
 
 	public function resaveFilesFromCollection($collectionId, $templateId) {
-
 		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy(["collectionId"=>$collectionId, "templateId"=>$templateId]);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
@@ -154,14 +153,46 @@ class admin extends Admin_Controller {
 			$asset->loadAssetFromRecord($assetRecord);
 			echo "Resaving " . $asset->getObjectId() . "\n";
 			$asset->save(false, false);
+		}
+		echo "done.\n";
 
+	}
+
+	public function resaveAll($startValue, $maxValue) {
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL");
+
+		if($startValue > 0) {
+			$qb->setFirstResult($startValue);
+		}
+		if($maxValue > 0) {
+			$qb->setMaxResults($maxValue);
+		}
+		$result = $qb->getQuery()->iterate();
+
+		$this->load->model("asset_model");
+		$this->load->model("asset_template");
+		foreach($result as $entry) {
+			$entry = $entry[0];
+			if($entry->getAssetId() === NULL) {
+				continue;
+			}
+			$asset = new Asset_model();
+			$asset->loadAssetFromRecord($entry);
+			echo "Loading Asset" . $asset->getObjectId() . "\n";
+			echo "Resaving " . $asset->getObjectId() . "\n";
+			$asset->save(false, false);
+			$this->doctrine->em->clear();
 
 
 		}
 		echo "done.\n";
 
 	}
-
 
 	public function logs() {
 
