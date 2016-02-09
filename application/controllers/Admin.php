@@ -141,8 +141,6 @@ class admin extends Admin_Controller {
 	}
 
 	public function resaveFilesFromCollection($collectionId, $templateId) {
-
-			$result = $qb->getQuery()->iterate();
 		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy(["collectionId"=>$collectionId, "templateId"=>$templateId]);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
