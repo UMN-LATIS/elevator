@@ -6,7 +6,7 @@
  *
  * This content is released under the MIT License (MIT)
  *
- * Copyright (c) 2014 - 2015, British Columbia Institute of Technology
+ * Copyright (c) 2014 - 2016, British Columbia Institute of Technology
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,10 @@
  *
  * @package	CodeIgniter
  * @author	EllisLab Dev Team
- * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (http://ellislab.com/)
- * @copyright	Copyright (c) 2014 - 2015, British Columbia Institute of Technology (http://bcit.ca/)
+ * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
+ * @copyright	Copyright (c) 2014 - 2016, British Columbia Institute of Technology (http://bcit.ca/)
  * @license	http://opensource.org/licenses/MIT	MIT License
- * @link	http://codeigniter.com
+ * @link	https://codeigniter.com
  * @since	Version 2.0
  * @filesource
  */
@@ -106,7 +106,7 @@ class CI_Cache_memcached extends CI_Driver {
 		}
 		else
 		{
-			throw new RuntimeException('Cache: Failed to create Memcache(d) object; extension not loaded?');
+			log_message('error', 'Cache: Failed to create Memcache(d) object; extension not loaded?');
 		}
 
 		foreach ($this->_memcache_conf as $cache_server)
@@ -284,12 +284,6 @@ class CI_Cache_memcached extends CI_Driver {
 	 */
 	public function is_supported()
 	{
-		if ( ! extension_loaded('memcached') && ! extension_loaded('memcache'))
-		{
-			log_message('debug', 'The Memcached Extension must be loaded to use Memcached Cache.');
-			return FALSE;
-		}
-
-		return TRUE;
+		return (extension_loaded('memcached') OR extension_loaded('memcache'));
 	}
 }
