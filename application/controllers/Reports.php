@@ -41,7 +41,8 @@ class Reports extends Admin_Controller {
 
 		$collectionInfo = array();
 		foreach($results as $result) {
-			if(!$this->collection_model->getCollection($result["collectionId"]) || !in_array($this->instance, $this->collection_model->getCollection($result["collectionId"])->getInstances())) {
+
+			if(!$this->collection_model->getCollection($result["collectionId"]) || !in_array($this->instance, $this->collection_model->getCollection($result["collectionId"])->getInstances()->getValues())) {
 				continue;
 			}
 
