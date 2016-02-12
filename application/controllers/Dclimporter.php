@@ -51,7 +51,7 @@ class dclImporter extends Instance_Controller {
 		$lines = explode("\n", $contents);
 
 		$count = 0;
-		foreach($lines as $entry) {
+		foreach($lines as $key=>$entry) {
 			$this->wkid = null;
 			$this->vwid = null;
 			$this->agid = null;
@@ -62,7 +62,9 @@ class dclImporter extends Instance_Controller {
 			$this->importId($entry);
 			$this->doctrine->em->clear();
 			$count++;
+			unset($lines[$key]);
 			if($count % 10 == 0) {
+				file_put_contents($file, implode(PHP_EOL, $lines));
 				gc_collect_cycles();
 			}
 		}
