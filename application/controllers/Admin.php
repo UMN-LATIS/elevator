@@ -141,7 +141,11 @@ class admin extends Admin_Controller {
 	}
 
 	public function resaveFilesFromCollection($collectionId, $templateId) {
-		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy(["collectionId"=>$collectionId, "templateId"=>$templateId]);
+		$saveArray["collectionId"] = $collectionId;
+		if($templateId) {
+			$saveArray["templateId"] = $templateId;
+		}
+		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		foreach($assets as $assetRecord) {
