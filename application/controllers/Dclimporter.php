@@ -308,7 +308,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			$this->workObject[$entry['wk_id']] = $objectId;
 			echo "Work:" . $objectId. "\n";
 
@@ -365,7 +365,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Work Title:" . $objectId. "\n";
 
 
@@ -381,7 +381,7 @@ class dclImporter extends Instance_Controller {
 				}
 				$assetArray["worktitle_7"][] = $insert;
 				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 			}
 
 
@@ -436,7 +436,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Work Event:" . $objectId. "\n";
 
 			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
@@ -448,7 +448,7 @@ class dclImporter extends Instance_Controller {
 				$assetArray["datelocation_7"][]["targetAssetId"] = $objectId;
 				$tempAsset->createObjectFromJSON($assetArray);
 
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 		}
@@ -483,7 +483,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Work Measure" . $objectId. "\n";
 
 			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
@@ -494,7 +494,7 @@ class dclImporter extends Instance_Controller {
 				$assetArray = $tempAsset->getAsArray();
 				$assetArray["workmeasurement_7"][]["targetAssetId"] = $objectId;
 				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 		}
@@ -554,7 +554,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			$this->agentObject[$entry["ag_id"]] = $objectId;
 
 			echo "Agent:" . $objectId. "\n";
@@ -600,7 +600,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Source Pub:" . $objectId. "\n";
 		}
 
@@ -644,7 +644,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Order:" . $objectId. "\n";
 		}
 
@@ -702,7 +702,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Agentwork:" . $objectId. "\n";
 
 
@@ -732,7 +732,7 @@ class dclImporter extends Instance_Controller {
 
 		if($workObjectArray) {
 			$workObject->createObjectFromJSON($workObjectArray);
-			$workObject->save(true,false);
+			$workObject->save(false,false);
 		}
 
 	}
@@ -812,7 +812,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "View:" . $objectId. "\n";
 
 			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
@@ -830,7 +830,7 @@ class dclImporter extends Instance_Controller {
 				$assetArray["views_7"][] = $insert;
 
 				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 
@@ -925,7 +925,7 @@ class dclImporter extends Instance_Controller {
 					$fileContainer->derivativeType = "source";
 					$fileContainer->setParent($fileHandler);
 					$fileContainer->originalFilename = $digitalId . ".". $originalExtension;
-					$fileHandler->save(true,false);
+					$fileHandler->save(false,false);
 
 					$objectId = $fileHandler->getObjectId();
 
@@ -934,7 +934,7 @@ class dclImporter extends Instance_Controller {
 						die;
 					}
 					$fileHandler->sourceFile->ready = true;
-					$fileHandler->save(true,false);
+					$fileHandler->save(false,false);
 
 					$assetArray = $tempAsset->getAsArray();
 					$assetArray["file_7"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
@@ -945,7 +945,7 @@ class dclImporter extends Instance_Controller {
 				echo $tempAsset->getObjectId() . "\n";
 				echo $objectId . "\n";
 
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 			else {
