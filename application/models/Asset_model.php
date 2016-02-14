@@ -969,15 +969,10 @@ class Asset_model extends CI_Model {
 
 		$this->load->model("search_model");
 
-		if(count($parentArray) === 0) {
-			$parentArray[] = $this->getObjectId();
-		}
-
 		if(count($parentArray)>5 ) {
 			return;
 		}
 
-		$this->useStaleCaches = FALSE;
 		$this->buildCache();
 
 		$this->search_model->addOrUpdate($this);
@@ -995,15 +990,6 @@ class Asset_model extends CI_Model {
 				// $this->logging->logError("updating", $result);
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($result);
-				$tempAsset->useStaleCaches = FALSE;
-				if($tempAsset->assetObject->getAssetCache()) {
-					$tempAsset->assetObject->getAssetCache()->setNeedsRebuild(true);
-				}
-
-				$tempAsset->buildCache();
-
-				// I don't think we need to resave since we're not nesting elements?
-				// $tempAsset->save(false, false);
 				$tempAsset->reindex($parentArray);
 				if($this->config->item('enableCaching')) {
 					$this->doctrineCache->setNamespace('searchCache_');
