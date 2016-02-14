@@ -34,20 +34,8 @@
     <many-to-one field="revisionSource" target-entity="Asset" inversed-by="revisions" />
 
     <field name="collectionMigration" type="boolean"  nullable='true' />
-    <field name="cachedUploadCount" type="integer" nullable='true'/>
-    <field name="cachedPrimaryFileHandler" type="string" nullable='true' />
     <field name="deleted" type="boolean"  nullable='true' />
     <field name="deletedAt" type="datetime" nullable='true'/>
-    <field name="cachedLocationData" type="json_array" nullable="true">
-      <options>
-        <option name="jsonb">true</option>
-      </options>
-    </field>
-    <field name="cachedDateData" type="json_array" nullable="true">
-      <options>
-        <option name="jsonb">true</option>
-      </options>
-    </field>
     <one-to-one field="assetCache" target-entity="AssetCache" mapped-by="asset" fetch="EAGER" >
       <cascade><cascade-remove /></cascade>
     </one-to-one>
