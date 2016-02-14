@@ -613,6 +613,9 @@ class Asset_model extends CI_Model {
 		}
 
 		$uploadCount += $nestedUploadCount;
+		if($uploadCount > 1) {
+			$outputObject["fileAssets"] = $uploadCount;
+		}
 
 		$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
 		$locationArray = array();
