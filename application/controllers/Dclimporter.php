@@ -159,16 +159,15 @@ class dclImporter extends Instance_Controller {
 			$tempAsset->loadAssetById($foundRecord);
 			$assetArray = $tempAsset->getAsArray();
 			$insert = array();
-
-
-
 		}
+
 		$this->dcl->where("wk_id", $this->wkid);
 		$views = $this->dcl->get("dcl_views");
 		foreach($views->result() as $view) {
 			$this->ordid = $view->ord_id;
 			$this->agid = $view->view_agent_id;
 			$this->vwid = $view->vw_id;
+			$this->digitalid = $view->digital_id;
 			$this->importAgent();
 			if($this->ordid) {
 				$this->dcl->where("ord_id", $this->ordid);
@@ -203,7 +202,7 @@ class dclImporter extends Instance_Controller {
 
 		}
 		$tempAsset->createObjectFromJSON($assetArray);
-		$tempAsset->save(false,false);
+		$tempAsset->save(true,false);
 
 
 		echo "done!\n";
