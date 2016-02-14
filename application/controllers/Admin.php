@@ -60,7 +60,7 @@ class admin extends Admin_Controller {
 
 		if($searchKey && $searchValue) {
 			$qb->andWhere($searchKey ." = ?1");
-			$qb->setParameter(1, $earchValue);
+			$qb->setParameter(1, $searchValue);
 		}
 
 		if($startValue > 0) {
