@@ -83,8 +83,7 @@ function makeSafeForTitle($sourceName) {
 
 <?
 
-$decodedField = json_decode($widgetModel->getFieldData());
-$encodedField = json_encode($decodedField);
+$encodedField = json_encode($widgetModel->getFieldData());
 
 $topLevels = array_unique(flatten(recurseThing($widgetModel->getFieldData(),0)));
 
