@@ -43,7 +43,7 @@ class FileHandlerBase extends CI_Model {
 	public function __construct()
 	{
 		parent::__construct();
-		$this->load->model("FileContainerS3");
+		$this->load->model("Filecontainers3");
 		$this->load->model("FileContainer");
 		//Do your magic here
 	}

@@ -19,27 +19,7 @@ class Related_asset_contents extends Widget_contents_base {
 
 
 	public function getAsArray($nestedObjectDepth=0) {
-		// echo $nestedObjectDepth . "\n";
-		// if(($nestedObjectDepth>0 || $this->nestData == true) && !($nestedObjectDepth<=0)) {
-			// decrement to prevent recusion.
-			//return ["targetAssetId"=>new MongoId($this->targetAssetId), "label"=>$this->label, "isPrimary"=>$this->isPrimary];
-			// return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
-		// }
-		// else {
-		//
-			$fileHandlerId = null;
-			try {
-				if($relatedAsset = $this->getRelatedAsset()) {
-					$fileHandler = $relatedAsset->getPrimaryFilehandler();
-					$fileHandlerId = $fileHandler->getObjectId();
-				}
-			}
-			catch (Exception $e) {
-
-			}
-
-			return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
-		// }
+		return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
 	}
 
 	public function getRelatedObjectId() {
