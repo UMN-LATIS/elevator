@@ -51,7 +51,7 @@ class dclImporter extends Instance_Controller {
 		$lines = explode("\n", $contents);
 
 		$count = 0;
-		foreach($lines as $entry) {
+		foreach($lines as $key=>$entry) {
 			$this->wkid = null;
 			$this->vwid = null;
 			$this->agid = null;
@@ -62,7 +62,9 @@ class dclImporter extends Instance_Controller {
 			$this->importId($entry);
 			$this->doctrine->em->clear();
 			$count++;
+			unset($lines[$key]);
 			if($count % 10 == 0) {
+				file_put_contents($file, implode(PHP_EOL, $lines));
 				gc_collect_cycles();
 			}
 		}
@@ -120,6 +122,92 @@ class dclImporter extends Instance_Controller {
 
 	}
 
+
+	public function importByWork($workId) {
+		$this->wkid = $workId;
+		$this->dcl->where("wk_id", $this->wkid);
+		$wkresult = $this->dcl->get("dcl_works");
+		if($wkresult->num_rows()>0) {
+			$work = $wkresult->row();
+			$this->targetCollection = $this->findCollection($work->col_id);
+		}
+
+		if($this->wkid) {
+			$this->importWork();
+			$this->importWorkTitle();
+			$this->importWorkEvent();
+			$this->importWorkMeasure();
+		}
+
+		$this->importAgent();
+
+		if($this->wkid) {
+			$this->dcl->where("wk_id", $this->wkid);
+			$result = $this->dcl->get("agents_works");
+			foreach($result->result() as $entry) {
+				$this->agid = $entry->ag_id;
+				$this->importAgent();
+			}
+			$this->importAgentWork();
+		}
+
+		$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $this->wkid);
+
+		if($foundRecord) {
+			$tempAsset = new Asset_model();
+			$start = microtime(true);
+			$tempAsset->loadAssetById($foundRecord);
+			$assetArray = $tempAsset->getAsArray();
+			$insert = array();
+		}
+
+		$this->dcl->where("wk_id", $this->wkid);
+		$views = $this->dcl->get("dcl_views");
+		foreach($views->result() as $view) {
+			$this->ordid = $view->ord_id;
+			$this->agid = $view->view_agent_id;
+			$this->vwid = $view->vw_id;
+			$this->digitalid = $view->digital_id;
+			$this->importAgent();
+			if($this->ordid) {
+				$this->dcl->where("ord_id", $this->ordid);
+				$orderRow = $this->dcl->get("orders")->row();
+				$this->srcid = $orderRow->src_id;
+				$this->importSourcePublication();
+				$this->importOrder();
+			}
+
+
+			if($this->vwid) {
+				$insert = $this->importViews(true);
+				if(strcasecmp($this->primaryViewId, $view->digital_id) == 0 || ($this->primaryViewId == NULL && !array_key_exists("views_7", $assetArray))) {
+					$insert["isPrimary"] = true;
+				}
+				$skip = false;
+				foreach($assetArray["views_7"] as $entry) {
+					if($entry["targetAssetId"] == $insert["targetAssetId"]) {
+						$skip = true;
+					}
+				}
+				if(!$skip) {
+					$assetArray["views_7"][] = $insert;
+				}
+				else {
+					echo "Skipping\n";
+				}
+
+
+				// $this->importMediaBank();
+			}
+
+		}
+		$tempAsset->createObjectFromJSON($assetArray);
+		$tempAsset->save(true,false);
+
+
+		echo "done!\n";
+
+	}
 
 	public function importId($digitalId) {
 
@@ -306,7 +394,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			$this->workObject[$entry['wk_id']] = $objectId;
 			echo "Work:" . $objectId. "\n";
 
@@ -363,7 +451,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Work Title:" . $objectId. "\n";
 
 
@@ -379,7 +467,7 @@ class dclImporter extends Instance_Controller {
 				}
 				$assetArray["worktitle_7"][] = $insert;
 				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 			}
 
 
@@ -434,7 +522,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Work Event:" . $objectId. "\n";
 
 			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
@@ -446,7 +534,7 @@ class dclImporter extends Instance_Controller {
 				$assetArray["datelocation_7"][]["targetAssetId"] = $objectId;
 				$tempAsset->createObjectFromJSON($assetArray);
 
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 		}
@@ -481,7 +569,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Work Measure" . $objectId. "\n";
 
 			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
@@ -492,7 +580,7 @@ class dclImporter extends Instance_Controller {
 				$assetArray = $tempAsset->getAsArray();
 				$assetArray["workmeasurement_7"][]["targetAssetId"] = $objectId;
 				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 		}
@@ -552,7 +640,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			$this->agentObject[$entry["ag_id"]] = $objectId;
 
 			echo "Agent:" . $objectId. "\n";
@@ -598,7 +686,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Source Pub:" . $objectId. "\n";
 		}
 
@@ -642,7 +730,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Order:" . $objectId. "\n";
 		}
 
@@ -700,7 +788,7 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "Agentwork:" . $objectId. "\n";
 
 
@@ -730,7 +818,7 @@ class dclImporter extends Instance_Controller {
 
 		if($workObjectArray) {
 			$workObject->createObjectFromJSON($workObjectArray);
-			$workObject->save(true,false);
+			$workObject->save(false,false);
 		}
 
 	}
@@ -744,11 +832,15 @@ class dclImporter extends Instance_Controller {
 				echo "took " . ($start - $end);
 	}
 
-	public function importViews()
+	public function importViews($return=false)
 	{
 
 		$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_7", "fieldContents", $this->vwid);
 		if($foundRecord) {
+			if($return) {
+				$insert["targetAssetId"] = $foundRecord['assetid'];
+				return $insert;
+			}
 			return;
 		}
 
@@ -769,7 +861,6 @@ class dclImporter extends Instance_Controller {
 			$newEntry["figurenumber_7"][]["fieldContents"] = $entry["figure_number"];
 			$newEntry["folionumber_7"][]["fieldContents"]= $entry["folio_number"];
 			$newEntry["keywords_7"][]["tags"] = $entry["keywords"];
-
 			$newEntry["mediatype_7"][]["fieldContents"] = $entry["media_type"];
 			$newEntry["orderid_7"][]["fieldContents"] = $entry["ord_id"];
 			$newEntry["legacyid_7"][]["fieldContents"] = $entry["legacy_id"];
@@ -810,26 +901,36 @@ class dclImporter extends Instance_Controller {
 			$asset = new Asset_model();
 			$asset->templateId = $newEntry["templateId"];
 			$asset->createObjectFromJSON($newEntry);
-			$objectId = $asset->save(true,false);
+			$objectId = $asset->save(false,false);
 			echo "View:" . $objectId. "\n";
 
-			$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
 
-			if($foundRecord) {
-				$tempAsset = new Asset_model();
-				$start = microtime(true);
-				$tempAsset->loadAssetById($foundRecord);
-				$assetArray = $tempAsset->getAsArray();
+			if($return) {
 				$insert = array();
 				$insert["targetAssetId"] = $objectId;
-				if(strcasecmp($this->primaryViewId, $entry["digital_id"]) == 0 || ($this->primaryViewId == NULL && !array_key_exists("views_7", $assetArray))) {
-					$insert["isPrimary"] = true;
+				return $insert;
+			}
+			else {
+
+
+				$foundRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $entry['wk_id']);
+
+				if($foundRecord) {
+					$tempAsset = new Asset_model();
+					$start = microtime(true);
+					$tempAsset->loadAssetById($foundRecord);
+					$assetArray = $tempAsset->getAsArray();
+					$insert = array();
+					$insert["targetAssetId"] = $objectId;
+					if(strcasecmp($this->primaryViewId, $entry["digital_id"]) == 0 || ($this->primaryViewId == NULL && !array_key_exists("views_7", $assetArray))) {
+						$insert["isPrimary"] = true;
+					}
+					$assetArray["views_7"][] = $insert;
+
+					$tempAsset->createObjectFromJSON($assetArray);
+					$tempAsset->save(false,false, true); // dont builda new cache
+
 				}
-				$assetArray["views_7"][] = $insert;
-
-				$tempAsset->createObjectFromJSON($assetArray);
-				$tempAsset->save(true,false);
-
 			}
 
 		}
@@ -923,7 +1024,7 @@ class dclImporter extends Instance_Controller {
 					$fileContainer->derivativeType = "source";
 					$fileContainer->setParent($fileHandler);
 					$fileContainer->originalFilename = $digitalId . ".". $originalExtension;
-					$fileHandler->save(true,false);
+					$fileHandler->save(false,false);
 
 					$objectId = $fileHandler->getObjectId();
 
@@ -932,7 +1033,7 @@ class dclImporter extends Instance_Controller {
 						die;
 					}
 					$fileHandler->sourceFile->ready = true;
-					$fileHandler->save(true,false);
+					$fileHandler->save(false,false);
 
 					$assetArray = $tempAsset->getAsArray();
 					$assetArray["file_7"][] = ["fileId"=>$objectId, "regenerate"=>"On"];
@@ -943,7 +1044,7 @@ class dclImporter extends Instance_Controller {
 				echo $tempAsset->getObjectId() . "\n";
 				echo $objectId . "\n";
 
-				$tempAsset->save(true,false);
+				$tempAsset->save(false,false);
 
 			}
 			else {

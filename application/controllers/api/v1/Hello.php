@@ -15,6 +15,13 @@ class Hello extends API_Controller {
 		}
 	}
 
+	public function clearCache($cacheName) {
+		if($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('searchCache_');
+			$this->doctrineCache->delete($cacheName);
+		}
+	}
+
 }
 
 /* End of file  */

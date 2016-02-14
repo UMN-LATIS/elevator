@@ -693,7 +693,7 @@ class Asset_model extends CI_Model {
 	 * parentarray is the ids of the parent in this chain so we don't recurse
 	 * @return [type] [description]
 	 */
-	public function save($reindex=true, $saveRevision=true) {
+	public function save($reindex=true, $saveRevision=true, $noCache=false) {
 
 		if(!isset($this->assetObject)) {
 			return false;
@@ -727,53 +727,59 @@ class Asset_model extends CI_Model {
 		 * This only counts things that won't otherwise be used to compute the search result view.
 		 * Someday, we can cache all of that, and then we'll be awesome.
 		 */
-		$cachedUploadCount = 0;
-		foreach($this->assetObjects as $assetObject) {
-			if(get_class($assetObject) == "Related_asset") {
-				foreach($assetObject->fieldContentsArray as $entry) {
-					if(!$relatedAsset = $entry->getRelatedAsset()) {
-						continue;
-					}
-					foreach($relatedAsset->getAllWithinAsset("Upload") as $uploadWidget) {
-						$cachedUploadCount += count($uploadWidget->fieldContentsArray);
+
+		if(!$noCache) {
+			$cachedUploadCount = 0;
+			foreach($this->assetObjects as $assetObject) {
+				if(get_class($assetObject) == "Related_asset") {
+					foreach($assetObject->fieldContentsArray as $entry) {
+						if(!$relatedAsset = $entry->getRelatedAsset()) {
+							continue;
+						}
+						foreach($relatedAsset->getAllWithinAsset("Upload") as $uploadWidget) {
+							$cachedUploadCount += count($uploadWidget->fieldContentsArray);
+						}
 					}
 				}
+				elseif(get_class($assetObject) == "Upload") {
+					$cachedUploadCount += count($assetObject->fieldContentsArray);
+				}
 			}
-			elseif(get_class($assetObject) == "Upload") {
-				$cachedUploadCount += count($assetObject->fieldContentsArray);
-			}
-		}
 
-		$this->assetObject->setCachedUploadCount($cachedUploadCount);
+			$this->assetObject->setCachedUploadCount($cachedUploadCount);
+		}
 
 
 		/**
 		 * populate with cached location data (flattened, one layer deep) for drawing maps
 		 * TODO: move all this to our cache generation
 		 */
-		$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
-		$locationArray = array();
-		foreach($locationAssets as $location) {
-			if($location->getDisplay()) {
-				$locationArray[] = ["label"=>$location->getLabel(), "entries"=>$location->getAsArray(false)];
+		if(!$noCache) {
+			$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
+			$locationArray = array();
+			foreach($locationAssets as $location) {
+				if($location->getDisplay()) {
+					$locationArray[] = ["label"=>$location->getLabel(), "entries"=>$location->getAsArray(false)];
+				}
 			}
+			$this->assetObject->setCachedLocationData($locationArray);
 		}
-		$this->assetObject->setCachedLocationData($locationArray);
-
 
 		/**
 		 * populate with date data (flattened, one layer deep) for drawing timeline
 		 */
-		$dateAssets = $this->getAllWithinAsset("Date",$this, 1);
-		$dateArray = array();
-		foreach($dateAssets as $dateAsset) {
-			if($dateAsset->getDisplay()) {
-				$dateArray[] = ["label"=>$dateAsset->getLabel(), "dateAsset"=>$dateAsset->getAsArray(false)];
+		if(!$noCache) {
+			$dateAssets = $this->getAllWithinAsset("Date",$this, 1);
+			$dateArray = array();
+			foreach($dateAssets as $dateAsset) {
+				if($dateAsset->getDisplay()) {
+					$dateArray[] = ["label"=>$dateAsset->getLabel(), "dateAsset"=>$dateAsset->getAsArray(false)];
+				}
 			}
+
+
+			$this->assetObject->setCachedDateData($dateArray);
 		}
-
-
-		$this->assetObject->setCachedDateData($dateArray);
 
 		$this->assetObject->setReadyForDisplay($this->getGlobalValue("readyForDisplay")?true:false);
 		$this->assetObject->setCollectionId($this->getGlobalValue("collectionId"));
@@ -854,8 +860,10 @@ class Asset_model extends CI_Model {
 			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
 		}
 
+		if(!$noCache) {
+			$this->buildCache();
+		}
 
-		$this->buildCache();
 
     	return $this->getObjectId();
 	}
@@ -866,6 +874,9 @@ class Asset_model extends CI_Model {
 		if($this->config->item('enableCaching')) {
 			$this->doctrineCache->setNamespace('searchCache_');
 			$this->doctrineCache->delete($this->getObjectId());
+		}
+		else {
+			$this->flushCache();
 		}
 
 		if(!$this->assetObject) {
@@ -921,6 +932,36 @@ class Asset_model extends CI_Model {
 		return $assetCache;
 	}
 
+	public function flushCache() {
+		$ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->config->item("base_url") . "/api/v1/hello/clearCache/" . "" . $this->getObjectId());
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        $now = time();
+        $header[] = "Authorization-Key: " . $this->config->item("apiKey");
+        $header[] = "Authorization-Timestamp: " . $now;
+        $header[] = "Authorization-Hash: " . sha1($now . $this->config->item("apiSecret"));
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+        try {
+            $data = curl_exec($ch);
+            $response = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($response == 200) {
+                return $data;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (Exception $ex) {
+            // echo $ex;
+            return false;
+        }
+
+	}
 
 	// reindex self and children, preventing recursion
 
@@ -968,6 +1009,7 @@ class Asset_model extends CI_Model {
 					$this->doctrineCache->setNamespace('searchCache_');
 					$this->doctrineCache->delete($this->getObjectId());
 				}
+
 			}
 		}
 
