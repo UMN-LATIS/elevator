@@ -140,7 +140,7 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function resaveFilesFromCollection($collectionId, $skip=0) {
+	public function recacheFilesFromCollection($collectionId, $skip=0) {
 		$saveArray["collectionId"] = $collectionId;
 		if($templateId) {
 			$saveArray["templateId"] = $templateId;
@@ -168,7 +168,7 @@ class admin extends Admin_Controller {
 			echo "Loading Asset" . $assetRecord[0]->getAssetId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord[0]);
 			echo "Resaving " . $asset->getObjectId() . "\n";
-			$asset->save(false, false);
+			$asset->buildCache();
 			$this->doctrine->em->clear();
 			echo "count: " . $count . "\n";
 			$count++;
@@ -202,8 +202,8 @@ class admin extends Admin_Controller {
 			}
 			$asset = new Asset_model();
 			$asset->loadAssetFromRecord($entry);
-			echo "Loading Asset" . $asset->getObjectId() . "\n";
-			echo "Resaving " . $asset->getObjectId() . "\n";
+			echo "Loading: " . $asset->getObjectId() . "\n";
+			echo "Resaving: " . $asset->getObjectId() . "\n";
 			$asset->save(false, false);
 			$this->doctrine->em->clear();
 
