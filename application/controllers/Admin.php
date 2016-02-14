@@ -50,34 +50,34 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL");
+
 		if($searchKey && $searchValue) {
-			$result = $this->doctrine->em->getRepository("Entity\Asset")->findBy([$searchKey=>$searchValue]);
+			$qb->andWhere("a." . $searchKey ." = ?1");
+			$qb->setParameter(1, $searchValue);
 		}
-		else {
-			$qb = $this->doctrine->em->createQueryBuilder();
-			$qb->from("Entity\Asset", 'a')
-			->select("a")
-			->where("a.deleted != TRUE")
-			->orWhere("a.deleted IS NULL")
-			->andWhere("a.assetId IS NOT NULL");
 
-			if($startValue > 0) {
-				$qb->setFirstResult($startValue);
-			}
-			if($maxValue > 0) {
-				$qb->setMaxResults($maxValue);
-			}
+		if($startValue > 0) {
+			$qb->setFirstResult($startValue);
+		}
+		if($maxValue > 0) {
+			$qb->setMaxResults($maxValue);
+		}
 
-			$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->iterate();
 
-			if($wipe == "true") {
-				$this->search_model->wipeIndex();
-			}
-
+		if($wipe == "true") {
+			$this->search_model->wipeIndex();
 		}
 
 
-		$count = 0;
+		$count = $startValue;
 		foreach($result as $entry) {
 			$entry = $entry[0];
 			$assetModel = new asset_model();
@@ -96,7 +96,7 @@ class admin extends Admin_Controller {
 				}
 
 				if($assetModel->asset_template && !$noIndex) {
-					echo "updating" . $assetModel->getObjectId(). "\n<br>";
+					echo "updating: " . $assetModel->getObjectId(). " (".$count.")\n";
 					$searchModel->addOrUpdate($assetModel);
 					$count++;
 				}
@@ -140,19 +140,38 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function resaveFilesFromCollection($collectionId, $templateId) {
-		$assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy(["collectionId"=>$collectionId, "templateId"=>$templateId]);
+	public function resaveFilesFromCollection($collectionId, $skip=0) {
+		$saveArray["collectionId"] = $collectionId;
+		if($templateId) {
+			$saveArray["templateId"] = $templateId;
+		}
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.collectionId = ?1")
+		->setParameter(1, $collectionId);
+
+		if($skip>0) {
+			$qb->setFirstResult($skip);
+		}
+
+		$assets = $qb->getQuery()->iterate();
+		// $assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
+		$countStart = $skip;
 		foreach($assets as $assetRecord) {
-			if(!$assetRecord->getAssetId()) {
+			if(!$assetRecord[0]->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset" . $assetRecord->getAssetId() . "\n";
-			$asset->loadAssetFromRecord($assetRecord);
+			echo "Loading Asset" . $assetRecord[0]->getAssetId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord[0]);
 			echo "Resaving " . $asset->getObjectId() . "\n";
 			$asset->save(false, false);
+			$this->doctrine->em->clear();
+			echo "count: " . $count . "\n";
+			$count++;
 		}
 		echo "done.\n";
 

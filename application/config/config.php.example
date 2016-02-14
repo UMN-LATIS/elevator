@@ -454,6 +454,9 @@ $config['jwplayer'] = '';
 
 $config['missingSiteURL'] = ''; // where should we redirect on 404 instances (with leading http)
 
+$config['apiKey'] = '';
+$config['apiSecret'] = '';
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */
 

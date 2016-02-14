@@ -32,7 +32,7 @@ $(document).on("click", ".autocompleteEdit", function(event) {
 
 
 function notifyParentOfSave(objectId) {
-	console.log("SAVE");
+
 	var statusNotice = { 'objectId': objectId, 'status':'saved', 'targetFieldId': targetFieldId};
 	var targetElement;
 
@@ -43,8 +43,13 @@ function notifyParentOfSave(objectId) {
 		// we're in an iframe!
 		targetElement = parent;
 	}
+	if(targetElement == window) {
+		// our parent is gone!
+	}
+	else {
+		targetElement.postMessage(JSON.stringify(statusNotice), "*");
+	}
 
-	targetElement.postMessage(JSON.stringify(statusNotice), "*");
 }
 
 $( window ).unload(function() {
