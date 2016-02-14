@@ -59,7 +59,7 @@ class admin extends Admin_Controller {
 		->andWhere("a.assetId IS NOT NULL");
 
 		if($searchKey && $searchValue) {
-			$qb->andWhere($searchKey ." = ?1");
+			$qb->andWhere("a." . $searchKey ." = ?1");
 			$qb->setParameter(1, $searchValue);
 		}
 
@@ -77,7 +77,7 @@ class admin extends Admin_Controller {
 		}
 
 
-		$count = 0;
+		$count = $startValue;
 		foreach($result as $entry) {
 			$entry = $entry[0];
 			$assetModel = new asset_model();
@@ -96,7 +96,7 @@ class admin extends Admin_Controller {
 				}
 
 				if($assetModel->asset_template && !$noIndex) {
-					echo "updating" . $assetModel->getObjectId(). "\n<br>";
+					echo "updating: " . $assetModel->getObjectId(). " (".$count.")\n";
 					$searchModel->addOrUpdate($assetModel);
 					$count++;
 				}
