@@ -101,7 +101,7 @@ class InhibitorHook {
 		$CI->doctrine->reset();
 
 		$log = new Entity\Log();
-		$log->setMessage($errorText);
+		$log->setMessage(substr($errorText, 0, 1000));
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
 			$log->setInstance($CI->instance);
@@ -112,9 +112,11 @@ class InhibitorHook {
 		if(isset($CI->collection)) {
 			$log->setCollection($CI->collection->getId());
 		}
-		$CI->doctrine->em->persist(substr($log, 0, 1000));
+		$CI->doctrine->em->persist($log);
 		$CI->doctrine->em->flush();
-
+		if( (php_sapi_name() === 'cli')) {
+			echo "Error, dying.\n";
+		}
 	}
 
 	/**
@@ -148,6 +150,8 @@ class InhibitorHook {
             'errline' => $errline,
             'time' => date('Y-m-d H:i:s')
         );
+
+
 		$CI =& get_instance();
 
 		//reset doctrine in case we've lost the DB
@@ -156,7 +160,7 @@ class InhibitorHook {
 
 		$errorText = join("\n", $data);
 		$log = new Entity\Log();
-		$log->setMessage($errorText);
+		$log->setMessage(substr($errorText, 0, 1000));
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
 			$log->setInstance($CI->instance);
@@ -172,6 +176,9 @@ class InhibitorHook {
 		}
 		$CI->doctrine->em->persist($log);
 		$CI->doctrine->em->flush();
+		if( (php_sapi_name() === 'cli')) {
+			echo "Error, continuing.\n";
+		}
 		// echo "<p>Error Logged</p>";
 		// $CI =& get_instance();
 		// $CI->load->database();
