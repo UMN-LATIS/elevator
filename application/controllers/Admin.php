@@ -167,9 +167,9 @@ class admin extends Admin_Controller {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset" . $assetRecord[0]->getAssetId() . "\n";
+			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord[0]);
-			echo "Resaving " . $asset->getObjectId() . "\n";
+			echo "Recaching: " . $asset->getObjectId() . "\n";
 			$asset->buildCache();
 			$this->doctrine->em->clear();
 			echo "count: " . $count . "\n";
