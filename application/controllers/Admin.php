@@ -73,6 +73,8 @@ class admin extends Admin_Controller {
 		$result = $qb->getQuery()->iterate();
 
 		if($wipe == "true") {
+			echo "are you sure?"; // adding this because we had an index go missing, need to see if it's a bug in this logic.
+			die;
 			$this->search_model->wipeIndex();
 		}
 
@@ -140,7 +142,7 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function resaveFilesFromCollection($collectionId, $skip=0) {
+	public function recacheFilesFromCollection($collectionId, $skip=0) {
 		$saveArray["collectionId"] = $collectionId;
 		if($templateId) {
 			$saveArray["templateId"] = $templateId;
@@ -165,10 +167,10 @@ class admin extends Admin_Controller {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset" . $assetRecord[0]->getAssetId() . "\n";
+			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord[0]);
-			echo "Resaving " . $asset->getObjectId() . "\n";
-			$asset->save(false, false);
+			echo "Recaching: " . $asset->getObjectId() . "\n";
+			$asset->buildCache();
 			$this->doctrine->em->clear();
 			echo "count: " . $count . "\n";
 			$count++;
@@ -202,8 +204,8 @@ class admin extends Admin_Controller {
 			}
 			$asset = new Asset_model();
 			$asset->loadAssetFromRecord($entry);
-			echo "Loading Asset" . $asset->getObjectId() . "\n";
-			echo "Resaving " . $asset->getObjectId() . "\n";
+			echo "Loading: " . $asset->getObjectId() . "\n";
+			echo "Resaving: " . $asset->getObjectId() . "\n";
 			$asset->save(false, false);
 			$this->doctrine->em->clear();
 

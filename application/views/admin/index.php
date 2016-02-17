@@ -4,7 +4,6 @@
 		<ul>
 			<li><a href="<?=instance_url("instances")?>">Manage Instances</a></li>
 			<li><a href="<?=instance_url("admin/logs")?>">Error Logs</a></li>
-			<li><a href="<?=instance_url("admin/reindex")?>">Reindex</a></li>
 			<li><a href="<?=instance_url("admin/processingLogs")?>">Processing Logs</a></li>
 			<li><a href="<?=instance_url("admin/beanstalk")?>">Job Queue Status</a></li>
 			<li><a href="<?=instance_url("admin/showPendingDeletes")?>">Files Pending Deletion</a></li>
