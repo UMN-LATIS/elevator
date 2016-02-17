@@ -147,15 +147,14 @@ class asset extends API_Controller {
 
 		}
 
-
 		foreach($upload as $entryTitle=>$entry) {
 			foreach($entry->fieldContentsArray as $contents) {
-				if(!isset($contents->fileHandler)) {
+				if(!$contents->getFileHandler()) {
 					continue;
 				}
 				$targetURL = "";
 				try {
-					$targetURL = $contents->fileHandler->getPreviewTiny()->getURLForFile(true);
+					$targetURL = $contents->getFileHandler()->getPreviewTiny()->getURLForFile(true);
 					if($entryTitle) {
 						$outputTitle = $entryTitle;
 					}
@@ -163,9 +162,13 @@ class asset extends API_Controller {
 						$outputTitle = $title;
 					}
 
-					if(!$mimeType || stristr(get_class($contents->fileHandler), $mimeType)) {
+					if(isset($contents->getFileHandler()->sourceFile) && isset($contents->getFileHandler()->sourceFile->originalFilename)) {
+						$outputTitle = $outputTitle . ": " . $contents->getFileHandler()->sourceFile->originalFilename;
+					}
 
-						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->fileHandler->getObjectId(), "primaryHandlerTiny"=>$targetURL);
+					if(!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
+
+						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>$targetURL);
 					}
 				}
 				catch (Exception $e) {
@@ -176,9 +179,13 @@ class asset extends API_Controller {
 						$outputTitle = $title;
 					}
 
-					if(!$mimeType || stristr(get_class($contents->fileHandler), $mimeType)) {
+					if(isset($contents->getFileHandler()->sourceFile) && isset($contents->getFileHandler()->sourceFile->originalFilename)) {
+						$outputTitle = $outputTitle . ": " . $contents->getFileHandler()->sourceFile->originalFilename;
+					}
 
-						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->fileHandler->getObjectId(), "primaryHandlerTiny"=>site_url("/assets/icons/512px/".$contents->fileHandler->getIcon(), 307));
+					if(!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
+
+						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>site_url("/assets/icons/512px/".$contents->fileHandler->getIcon(), 307));
 					}
 					// it's ok not to do anytihng, might not have an entry
 				}
