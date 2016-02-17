@@ -203,7 +203,7 @@ class S3_model extends CI_Model {
 		return $this->s3Client->getObjectUrl($this->bucket, $targetKey);
 	}
 
-	public function getProtectedURL($targetKey, $originalName=null, $timeString="+10 minutes") {
+	public function getProtectedURL($targetKey, $originalName=null, $timeString="+240 minutes") {
 		try {
 			$options = array();
 
