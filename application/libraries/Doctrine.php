@@ -56,9 +56,14 @@ class Doctrine
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
 
       // $cache = new ApcCache;
-        $config->setMetadataCacheImpl(new \Doctrine\Common\Cache\ApcCache());
-        $config->setQueryCacheImpl(new \Doctrine\Common\Cache\ApcCache());
-        $config->setResultCacheImpl(new \Doctrine\Common\Cache\ApcCache());
+        $redis = new Redis();
+        $redis->connect("127.0.0.1", 6379);
+        $redisCache = new \Doctrine\Common\Cache\RedisCache();
+        $redisCache->setRedis($redis);
+
+        $config->setMetadataCacheImpl($redisCache);
+        $config->setQueryCacheImpl($redisCache);
+        $config->setResultCacheImpl($redisCache);
         // $config->setQueryCacheImpl($cache);
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
