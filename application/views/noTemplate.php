@@ -64,7 +64,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 
         }
         else {
-          document.cookie = "_check_is_passive=" + window.location;
+          document.cookie = "_check_is_passive=" + window.location + ";path=/";
           // Redirect to Shibboleth handler
           window.location.href = "https://" + window.location.hostname + "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?redirect=" + encodeURIComponent(window.location));
 
