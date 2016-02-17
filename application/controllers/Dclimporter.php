@@ -59,7 +59,7 @@ class dclImporter extends Instance_Controller {
 			$this->ordid =null;
 			$this->digitalid = null;
 			echo "Importing " . $entry . "\n";
-			$this->importId($entry);
+			$this->importByWork($entry);
 			$this->doctrine->em->clear();
 			$count++;
 			unset($lines[$key]);
@@ -103,7 +103,7 @@ class dclImporter extends Instance_Controller {
 	}
 
 	public function findCollection($collectionId) {
-
+		return 85;
 		$this->dcl->where("col_id", $collectionId);
 		$collection = $this->dcl->get("collections");
 		if($collection->num_rows() > 0) {
@@ -184,11 +184,14 @@ class dclImporter extends Instance_Controller {
 					$insert["isPrimary"] = true;
 				}
 				$skip = false;
-				foreach($assetArray["views_7"] as $entry) {
-					if($entry["targetAssetId"] == $insert["targetAssetId"]) {
-						$skip = true;
+				if(array_key_exists("views_7", $assetArray)) {
+					foreach($assetArray["views_7"] as $entry) {
+						if($entry["targetAssetId"] == $insert["targetAssetId"]) {
+							$skip = true;
+						}
 					}
 				}
+
 				if(!$skip) {
 					$assetArray["views_7"][] = $insert;
 				}

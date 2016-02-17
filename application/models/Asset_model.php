@@ -12,7 +12,7 @@ class Asset_model extends CI_Model {
 	/**
 	 * These are the values that are valid for all items, regardless of metadata schema.  In a relational database, these would be columns.
 	 */
-	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"", "cachedUploadCount"=>0, "cachedLocationData"=>null, "cachedDateData"=>null, "cachedPrimaryFileHandler"=>null, "collectionMigration"=>null];
+	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null];
 
 	public $assetTemplate = null;
 	public $assetObjects = array();
@@ -86,10 +86,6 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("availableAfter", $record->getAvailableAfter());
 		$this->setGlobalValue("modified", $record->getModifiedAt());
 		$this->setGlobalValue("modifiedBy", $record->getModifiedBy());
-		$this->setGlobalValue("cachedUploadCount", $record->getCachedUploadCount());
-		$this->setGlobalValue("cachedLocationData", $record->getCachedLocationData());
-		$this->setGlobalValue("cachedDateData", $record->getCachedDateData());
-		$this->setGlobalValue("cachedPrimaryFileHandler", $record->getCachedPrimaryFileHandler());
 
 		if($this->loadWidgetsFromArray($record->getWidgets())) {
 			return TRUE;
@@ -599,25 +595,45 @@ class Asset_model extends CI_Model {
 		 * We've cached the upload count for nested elements, so we can use that to draw the little eyeball, in
 		 * addition to any display elements or first level uploads.
 		 */
-		if($this->getGlobalValue("cachedUploadCount")) {
-			$uploadCount += $this->getGlobalValue("cachedUploadCount");
+		$nestedUploadCount = 0;
+		foreach($this->assetObjects as $assetObject) {
+			if(get_class($assetObject) == "Related_asset") {
+				foreach($assetObject->fieldContentsArray as $entry) {
+					if(!$relatedAsset = $entry->getRelatedAsset()) {
+						continue;
+					}
+					foreach($relatedAsset->getAllWithinAsset("Upload") as $uploadWidget) {
+						$nestedUploadCount += count($uploadWidget->fieldContentsArray);
+					}
+				}
+			}
+			elseif(get_class($assetObject) == "Upload") {
+				$nestedUploadCount += count($assetObject->fieldContentsArray);
+			}
 		}
 
-
+		$uploadCount += $nestedUploadCount;
 		if($uploadCount > 1) {
 			$outputObject["fileAssets"] = $uploadCount;
 		}
 
-
-
-		if($this->getGlobalValue("cachedLocationData")) {
-			$outputObject['locations'] = $this->getGlobalValue('cachedLocationData');
+		$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
+		$locationArray = array();
+		foreach($locationAssets as $location) {
+			if($location->getDisplay()) {
+				$locationArray[] = ["label"=>$location->getLabel(), "entries"=>$location->getAsArray(false)];
+			}
 		}
+		$outputObject['locations'] = $locationArray;
 
-		if($this->getGlobalValue("cachedDateData")) {
-			$outputObject['dates'] = $this->getGlobalValue('cachedDateData');
+		$dateAssets = $this->getAllWithinAsset("Date",$this, 1);
+		$dateArray = array();
+		foreach($dateAssets as $dateAsset) {
+			if($dateAsset->getDisplay()) {
+				$dateArray[] = ["label"=>$dateAsset->getLabel(), "dateAsset"=>$dateAsset->getAsArray(false)];
+			}
 		}
-
+		$outputObject['dates'] = $dateArray;
 
 
 		$uploadAssets = $this->getAllWithinAsset("Upload", $this, 0);
@@ -719,66 +735,6 @@ class Asset_model extends CI_Model {
 		else {
 			$this->assetObject->setCreatedBy(0);
 			$this->assetObject->setModifiedBy(0);
-		}
-
-		/**
-		 * cache the nested asset upload objects (whew) so that we can drag the little eyeball on search results
-		 * without having to walk all of these.
-		 * This only counts things that won't otherwise be used to compute the search result view.
-		 * Someday, we can cache all of that, and then we'll be awesome.
-		 */
-
-		if(!$noCache) {
-			$cachedUploadCount = 0;
-			foreach($this->assetObjects as $assetObject) {
-				if(get_class($assetObject) == "Related_asset") {
-					foreach($assetObject->fieldContentsArray as $entry) {
-						if(!$relatedAsset = $entry->getRelatedAsset()) {
-							continue;
-						}
-						foreach($relatedAsset->getAllWithinAsset("Upload") as $uploadWidget) {
-							$cachedUploadCount += count($uploadWidget->fieldContentsArray);
-						}
-					}
-				}
-				elseif(get_class($assetObject) == "Upload") {
-					$cachedUploadCount += count($assetObject->fieldContentsArray);
-				}
-			}
-
-			$this->assetObject->setCachedUploadCount($cachedUploadCount);
-		}
-
-
-		/**
-		 * populate with cached location data (flattened, one layer deep) for drawing maps
-		 * TODO: move all this to our cache generation
-		 */
-		if(!$noCache) {
-			$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
-			$locationArray = array();
-			foreach($locationAssets as $location) {
-				if($location->getDisplay()) {
-					$locationArray[] = ["label"=>$location->getLabel(), "entries"=>$location->getAsArray(false)];
-				}
-			}
-			$this->assetObject->setCachedLocationData($locationArray);
-		}
-
-		/**
-		 * populate with date data (flattened, one layer deep) for drawing timeline
-		 */
-		if(!$noCache) {
-			$dateAssets = $this->getAllWithinAsset("Date",$this, 1);
-			$dateArray = array();
-			foreach($dateAssets as $dateAsset) {
-				if($dateAsset->getDisplay()) {
-					$dateArray[] = ["label"=>$dateAsset->getLabel(), "dateAsset"=>$dateAsset->getAsArray(false)];
-				}
-			}
-
-
-			$this->assetObject->setCachedDateData($dateArray);
 		}
 
 		$this->assetObject->setReadyForDisplay($this->getGlobalValue("readyForDisplay")?true:false);
@@ -969,15 +925,10 @@ class Asset_model extends CI_Model {
 
 		$this->load->model("search_model");
 
-		if(count($parentArray) === 0) {
-			$parentArray[] = $this->getObjectId();
-		}
-
 		if(count($parentArray)>5 ) {
 			return;
 		}
 
-		$this->useStaleCaches = FALSE;
 		$this->buildCache();
 
 		$this->search_model->addOrUpdate($this);
@@ -995,15 +946,6 @@ class Asset_model extends CI_Model {
 				// $this->logging->logError("updating", $result);
 				$tempAsset = new Asset_model();
 				$tempAsset->loadAssetById($result);
-				$tempAsset->useStaleCaches = FALSE;
-				if($tempAsset->assetObject->getAssetCache()) {
-					$tempAsset->assetObject->getAssetCache()->setNeedsRebuild(true);
-				}
-
-				$tempAsset->buildCache();
-
-				// I don't think we need to resave since we're not nesting elements?
-				// $tempAsset->save(false, false);
 				$tempAsset->reindex($parentArray);
 				if($this->config->item('enableCaching')) {
 					$this->doctrineCache->setNamespace('searchCache_');
