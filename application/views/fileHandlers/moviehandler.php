@@ -71,7 +71,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
 <script>
 
-if(!objectId) {
+if(typeof objectId == 'undefined') {
     objectId = "<?=$fileObjectId?>";
 }
 </script>
