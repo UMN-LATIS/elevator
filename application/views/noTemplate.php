@@ -5,6 +5,7 @@
 <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
 <script>
 
+
 function inIframe () {
     try {
         return window.self !== window.top;
@@ -13,19 +14,19 @@ function inIframe () {
     }
 }
 
+function popitup() {
+  newwindow=window.open("https://" + window.location.hostname + "/autoclose.html",'name','height=200,width=150');
+
+  setTimeout(function() { location.reload();}, 1200);
+  return false;
+}
+
 if(window.location.hash  == "#secondFrame" && inIframe()) {
     window.addEventListener("message", function(event) {
         if(event.data == "pageLoaded") {
             location.reload();
         }
     }, false);
-}
-
-function popitup() {
-  newwindow=window.open("https://" + window.location.hostname + "/autoclose.html",'name','height=200,width=150');
-
-  setTimeout(function() { location.reload();}, 1200);
-  return false;
 }
 
 if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
@@ -49,7 +50,6 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
         window.location = document.cookie.substring(startpos,endpos);
     }
 } else {
-
     if(window.location.hash  == "#secondFrame" && inIframe()) {
 
     }
