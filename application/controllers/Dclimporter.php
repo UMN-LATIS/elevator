@@ -51,7 +51,11 @@ class dclImporter extends Instance_Controller {
 		$lines = explode("\n", $contents);
 
 		$count = 0;
+
 		foreach($lines as $key=>$entry) {
+			if(strlen($entry) < 5) {
+				continue;
+			}
 			$this->wkid = null;
 			$this->vwid = null;
 			$this->agid = null;
@@ -68,6 +72,7 @@ class dclImporter extends Instance_Controller {
 				gc_collect_cycles();
 			}
 		}
+		echo "Finished!\n";
 
 	}
 
