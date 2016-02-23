@@ -888,7 +888,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lin
 		$derivativeContainer->copyToRemoteStorage();
         $derivativeContainer->removeLocalFile();
         $derivativeContainer->ready = true;
-
+        $this->fileHandler->triggerReindex();
 		unlink($rawData);
  		return JOB_SUCCESS;
 	}
