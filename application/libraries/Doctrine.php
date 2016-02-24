@@ -12,6 +12,7 @@ class Doctrine
 {
 
     public $em;
+    public $redisHost;
 
     public function __construct()
     {
@@ -58,6 +59,7 @@ class Doctrine
       // $cache = new ApcCache;
         $redis = new Redis();
         $redis->connect("127.0.0.1", 6379);
+        $this->redisHost = $redis;
         $redisCache = new \Doctrine\Common\Cache\RedisCache();
         $redisCache->setRedis($redis);
 
