@@ -172,8 +172,8 @@ class admin extends Admin_Controller {
 			echo "Recaching: " . $asset->getObjectId() . "\n";
 			$asset->buildCache();
 			$this->doctrine->em->clear();
-			echo "count: " . $count . "\n";
-			$count++;
+			echo "count: " . $countStart . "\n";
+			$countStart++;
 		}
 		echo "done.\n";
 
