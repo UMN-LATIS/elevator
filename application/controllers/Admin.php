@@ -73,8 +73,8 @@ class admin extends Admin_Controller {
 		$result = $qb->getQuery()->iterate();
 
 		if($wipe == "true") {
-			echo "are you sure?"; // adding this because we had an index go missing, need to see if it's a bug in this logic.
-			die;
+			// echo "are you sure?"; // adding this because we had an index go missing, need to see if it's a bug in this logic.
+			// die;
 			$this->search_model->wipeIndex();
 		}
 
