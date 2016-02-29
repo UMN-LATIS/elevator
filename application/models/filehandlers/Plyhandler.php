@@ -20,7 +20,7 @@ class PlyHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]
 						  												],
-						  2=>["taskType"=>"createNxsFile", "config"=>[]],
+						  2=>["taskType"=>"createNxsFile", "config"=>["ttr"=>900]],
 						  3=>["taskType"=>"createSTL", "config"=>[]]
 						  												];
 
