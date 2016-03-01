@@ -339,7 +339,7 @@ class Beltdrive extends CI_Controller {
 			$pathToFile = $job_encoded["pathToFile"];
 
 			$instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-
+			$this->filehandlerbase = new filehandlerbase();
 			$this->filehandlerbase->loadByObjectId($objectId);
 
 			if($this->filehandlerbase) {
