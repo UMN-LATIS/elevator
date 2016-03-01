@@ -20,6 +20,10 @@ class search_model extends CI_Model {
 		$params['index'] = 'elevator';
     	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
+    	if($params['id'] || strlen($params['id']<5)) {
+    		// if you don't pass an id, elasticsearch will eat all your data
+    		return;
+    	}
     	try {
     		$ret = $this->es->delete($params);
     		return $ret;
