@@ -94,13 +94,10 @@ if(typeof objectId == 'undefined') {
     <div id="videoElement">Loading the player...</div>
 
     <script type="text/javascript">
-    // NOTE: jwplayer 7.1 is uri-encoding URLs directly within the image preview module.  This sure looks like a bug (it's a recent change) and
-    // it's fair to assume it'll be reverted in the future.
-    // IF PREVIEW IMAGES STOP WORKING IN THE FUTURE, don't do this urldecoding and just pass in the urlencoded string like a sane person.
     jwplayer("videoElement").setup({
       ga: { label:"label"},
       playlist: [{
-        image: '<?=isset($fileContainers['imageSequence'])?urldecode(stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2"))):null?>',
+        image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
         sources: [
         <?foreach($derivatives as $entry):?>
         {
