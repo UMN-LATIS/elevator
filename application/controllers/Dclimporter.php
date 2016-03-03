@@ -369,17 +369,17 @@ class dclImporter extends Instance_Controller {
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period2"];
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period3"];
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period4"];
-			if($entry["type4"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
-			}
-			if($entry["type3"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
+			if($entry["type1"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
 			}
 			if($entry["type2"]) {
 				$newEntry["classification_7"][]["fieldContents"] = $entry["type2"];
 			}
-			if($entry["type1"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
+			if($entry["type3"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
+			}
+			if($entry["type4"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
 			}
 
 			$newEntry["culture_7"][]["fieldContents"] = $entry["culture1"];
