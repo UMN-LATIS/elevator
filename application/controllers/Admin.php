@@ -73,6 +73,8 @@ class admin extends Admin_Controller {
 		$result = $qb->getQuery()->iterate();
 
 		if($wipe == "true") {
+			echo "are you sure?"; // adding this because we had an index go missing, need to see if it's a bug in this logic.
+			die;
 			$this->search_model->wipeIndex();
 		}
 
@@ -165,13 +167,13 @@ class admin extends Admin_Controller {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset" . $assetRecord[0]->getAssetId() . "\n";
+			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
 			$asset->loadAssetFromRecord($assetRecord[0]);
-			echo "Resaving " . $asset->getObjectId() . "\n";
+			echo "Recaching: " . $asset->getObjectId() . "\n";
 			$asset->buildCache();
 			$this->doctrine->em->clear();
-			echo "count: " . $count . "\n";
-			$count++;
+			echo "count: " . $countStart . "\n";
+			$countStart++;
 		}
 		echo "done.\n";
 
