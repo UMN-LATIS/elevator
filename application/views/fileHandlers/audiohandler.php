@@ -44,7 +44,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
     jwplayer("videoElement").setup({
       image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png"?>",
         <?if(isset($fileContainers['mp3'])):?>
-      file: "<?=isset($fileContainers['mp3'])?stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")):null?>",
+      file: "<?=isset($fileContainers['mp3'])?stripHTTP($fileContainers['mp3']->getProtectedURLForFile()):null?>",
       type: "mp3",
         <?endif?>
       width: "100%",
