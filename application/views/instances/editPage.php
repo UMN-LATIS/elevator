@@ -31,7 +31,7 @@
 					<select name="parent" id="inputParent" class="form-control" required="required">
 						<option value=0>None</option>
 						<?foreach($this->instance->getPages() as $pageItem):?>
-						<option value=<?=$pageItem->getId()?> <?=($pageItem->getParent()&&$pageItem->getId()==$page->getParent()->getId())?"SELECTED":null?> ><?=$pageItem->getTitle()?></option>
+						<option value=<?=$pageItem->getId()?> <?=($page->getParent()&&$pageItem->getId()==$page->getParent()->getId())?"SELECTED":null?> ><?=$pageItem->getTitle()?></option>
 						<?endforeach?>
 					</select>
 				</div>

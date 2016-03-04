@@ -167,7 +167,7 @@ class Instances extends Instance_Controller {
 		$page->setBody($this->input->post("body"));
 		$page->setIncludeInHeader($this->input->post("includeInHeader")?1:0);
 		$page->setInstance($this->instance);
-		$page->setParent($this->input->post("inputPage"));
+		$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
 		$this->doctrine->em->persist($page);
 		$this->doctrine->em->flush();
 		instance_redirect("instances/customPages");

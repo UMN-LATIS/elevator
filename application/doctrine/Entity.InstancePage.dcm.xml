@@ -22,6 +22,6 @@
       </order-by>
     </one-to-many>
     <many-to-one field="parent" target-entity="InstancePage" inversed-by="children" />
-    <field name="sortOrder" type="integer" />
+    <field name="sortOrder" type="integer" nullable='true'/>
   </entity>
 </doctrine-mapping>
