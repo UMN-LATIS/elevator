@@ -44,7 +44,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
     jwplayer("videoElement").setup({
       image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png"?>",
         <?if(isset($fileContainers['mp3'])):?>
-      file: "<?=isset($fileContainers['mp3'])?stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")):null?>",
+      file: "<?=isset($fileContainers['mp3'])?stripHTTP($fileContainers['mp3']->getProtectedURLForFile()):null?>",
       type: "mp3",
         <?endif?>
       width: "100%",
@@ -74,7 +74,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <div class="row infoRow">
   <div class="col-md-12">
     <span class="glyphicon glyphicon-info-sign infoPopover" data-placement="bottom" data-toggle="popover" title="File Info" data-html=true data-content='<ul class="list-group">
-      <li class="list-group-item"><strong>File Type: </strong> Movie  </li>
+      <li class="list-group-item"><strong>File Type: </strong> Audio  </li>
       <li class="list-group-item"><strong>Original Name: </strong> <?=$fileObject->sourceFile->originalFilename?></li>
       <li class="list-group-item assetDetails"><strong>Duration: </strong><?= gmdate("H:i:s", $fileObject->sourceFile->metadata["duration"])?></li>
       <?if($widgetObject && $widgetObject->fileDescription ):?>

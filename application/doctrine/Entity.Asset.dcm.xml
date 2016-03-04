@@ -44,6 +44,7 @@
       <index columns="templateId"/>
       <index columns="assetId"/>
       <index columns="readyForDisplay"/>
+      <index columns="widgets, templateId"/>
     </indexes>
   </entity>
 </doctrine-mapping>

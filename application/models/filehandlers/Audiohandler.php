@@ -4,7 +4,7 @@ require_once(APPPATH.'controllers/Transcoder.php');
 
 class AudioHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("mp3","aiff", "aif", "m4a", "wav", "wave");
+	protected $supportedTypes = array("mp3","aiff", "aif", "m4a", "wav", "wave", "wma");
 	protected $noDerivatives = false;
 	public $videoTTR = 900;
 	public $icon = "mp3.png";

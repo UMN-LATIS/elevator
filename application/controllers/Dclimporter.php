@@ -51,7 +51,11 @@ class dclImporter extends Instance_Controller {
 		$lines = explode("\n", $contents);
 
 		$count = 0;
+
 		foreach($lines as $key=>$entry) {
+			if(strlen($entry) < 5) {
+				continue;
+			}
 			$this->wkid = null;
 			$this->vwid = null;
 			$this->agid = null;
@@ -59,7 +63,7 @@ class dclImporter extends Instance_Controller {
 			$this->ordid =null;
 			$this->digitalid = null;
 			echo "Importing " . $entry . "\n";
-			$this->importId($entry);
+			$this->importByWork($entry);
 			$this->doctrine->em->clear();
 			$count++;
 			unset($lines[$key]);
@@ -68,6 +72,7 @@ class dclImporter extends Instance_Controller {
 				gc_collect_cycles();
 			}
 		}
+		echo "Finished!\n";
 
 	}
 
@@ -103,7 +108,7 @@ class dclImporter extends Instance_Controller {
 	}
 
 	public function findCollection($collectionId) {
-
+		return 85;
 		$this->dcl->where("col_id", $collectionId);
 		$collection = $this->dcl->get("collections");
 		if($collection->num_rows() > 0) {
@@ -184,11 +189,14 @@ class dclImporter extends Instance_Controller {
 					$insert["isPrimary"] = true;
 				}
 				$skip = false;
-				foreach($assetArray["views_7"] as $entry) {
-					if($entry["targetAssetId"] == $insert["targetAssetId"]) {
-						$skip = true;
+				if(array_key_exists("views_7", $assetArray)) {
+					foreach($assetArray["views_7"] as $entry) {
+						if($entry["targetAssetId"] == $insert["targetAssetId"]) {
+							$skip = true;
+						}
 					}
 				}
+
 				if(!$skip) {
 					$assetArray["views_7"][] = $insert;
 				}
@@ -361,17 +369,17 @@ class dclImporter extends Instance_Controller {
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period2"];
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period3"];
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period4"];
-			if($entry["type4"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
-			}
-			if($entry["type3"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
+			if($entry["type1"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
 			}
 			if($entry["type2"]) {
 				$newEntry["classification_7"][]["fieldContents"] = $entry["type2"];
 			}
-			if($entry["type1"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
+			if($entry["type3"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
+			}
+			if($entry["type4"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
 			}
 
 			$newEntry["culture_7"][]["fieldContents"] = $entry["culture1"];

@@ -190,7 +190,9 @@ class S3_model extends CI_Model {
 			$result = $this->s3Client->restoreObject([
 	    		'Bucket' => $this->bucket,
 	    		'Key'    => $targetKey,
-	    		'Days' => 15
+	    		'RestoreRequest' => [
+	    			'Days' => 15
+	    		]
 			]);
 		}
 		catch (Exception $e) {
@@ -203,7 +205,7 @@ class S3_model extends CI_Model {
 		return $this->s3Client->getObjectUrl($this->bucket, $targetKey);
 	}
 
-	public function getProtectedURL($targetKey, $originalName=null, $timeString="+10 minutes") {
+	public function getProtectedURL($targetKey, $originalName=null, $timeString="+240 minutes") {
 		try {
 			$options = array();
 
