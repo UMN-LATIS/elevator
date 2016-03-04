@@ -38,7 +38,8 @@ $(document).ready(function() {
 	tinymce.init({
 	    selector: "textarea",
 	    menubar : false,
-	    plugins: "link"
+	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | link",
+	    plugins: ["link", "code"]
 	 });
 });
 </script>
