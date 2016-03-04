@@ -11,21 +11,21 @@ $mediaArray = array();
 
 if(isset($fileContainers['streaming'])) {
   $entry["type"] = "hls";
-  $entry["file"] = stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/streaming"));
+  $entry["file"] = stripHTTP($fileContainers['streaming'])->getProtectedURLForFile());
   $entry["label"] = "Streaming";
   $mediaArray["streaming"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
   $entry["type"] = "mp4";
-  $entry["file"] = stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4sd"));
+  $entry["file"] = stripHTTP($fileContainers['streaming'])->getProtectedURLForFile());
   $entry["label"] = "SD";
   $mediaArray["mp4sd"] = $entry;
 }
 
 if(isset($fileContainers['mp4hd'])) {
   $entry["type"] = "mp4";
-  $entry["file"] = stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4hd"));
+  $entry["file"] = stripHTTP($fileContainers['streaming'])->getProtectedURLForFile());
   $entry["label"] = "HD";
   $mediaArray["mp4hd"] = $entry;
 }
