@@ -18,14 +18,14 @@ if(isset($fileContainers['streaming'])) {
 
 if(isset($fileContainers['mp4sd'])) {
   $entry["type"] = "mp4";
-  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile());
+  $entry["file"] = stripHTTP($fileContainers['mp4sd']->getProtectedURLForFile());
   $entry["label"] = "SD";
   $mediaArray["mp4sd"] = $entry;
 }
 
 if(isset($fileContainers['mp4hd'])) {
   $entry["type"] = "mp4";
-  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile());
+  $entry["file"] = stripHTTP($fileContainers['mp4hd']->getProtectedURLForFile());
   $entry["label"] = "HD";
   $mediaArray["mp4hd"] = $entry;
 }
