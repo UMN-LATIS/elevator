@@ -18,8 +18,9 @@
     <field name="modifiedAt" type="datetime" nullable='true' />
     <one-to-many field="children" target-entity="InstancePage" mapped-by="parent" >
       <order-by>
-        <order-by-field name="title" direction="ASC" />
+        <order-by-field name="sortOrder" direction="ASC" />
       </order-by>
+      <cascade><cascade-remove /><cascade-persist /></cascade>
     </one-to-many>
     <many-to-one field="parent" target-entity="InstancePage" inversed-by="children" />
     <field name="sortOrder" type="integer" nullable='true'/>
