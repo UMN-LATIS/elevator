@@ -272,12 +272,18 @@ class dclImporter extends Instance_Controller {
 				if($entry['admin_notes'] != null && !array_key_exists("admin_notes", $jsonContents)) {
 					$jsonContents["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
 				}
+				if($entry["digitized"] != "Y") {
+					$jsonContents["readyForDisplay"] = false;
+				}
+				else {
+					$jsonContents["readyForDisplay"] = true;
+				}
 
 			}
 
 			$assetObject->createObjectFromJSON($jsonContents);
 			echo "Updating Record for " . $assetObject->getObjectId() . "(" . $asset->getId() . ")\n";
-			$assetObject->save(false,false,true);
+			$assetObject->save(true,false,true);
 			$this->doctrine->em->clear();
 			$count++;
 			if($count % 10 == 0) {
@@ -1213,9 +1219,17 @@ class dclImporter extends Instance_Controller {
 			$newEntry["copyhistory_7"][]["fieldContents"] = $entry["copy_history"];
 			$newEntry["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
 			$newEntry["copyrightfullvideo_7"][]["fieldContents"] = $entry["copyright_full_video"];
-			$newEntry["readyForDisplay"] = true;
+
+			if($entry["digitized"] != "Y") {
+				$newEntry["readyForDisplay"] = false;
+			}
+			else {
+				$newEntry["readyForDisplay"] = true;
+			}
+
 			$newEntry["collectionId"] = $this->targetCollection;
 			$newEntry["templateId"] = $this->getTemplateId("Old DCL Views");
+
 
 
 			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $entry['view_agent_id']);
