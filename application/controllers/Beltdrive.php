@@ -283,7 +283,13 @@ class Beltdrive extends CI_Controller {
 
 					$drawerContent = $this->load->view("email/drawerReady", ["drawerId"=>$drawerId], true);
 
-					mail($userEmail, "Drawer Ready for Download", $drawerContent);
+					$this->load->library('email');
+					$this->email->from('elevator@umn.edu', 'Elevator');
+					$this->email->to($userEmail);
+					$this->email->subject("Drawer Ready for Download");
+					$this->email->message($drawerContent);
+					$this->email->send();
+
 					echo "Job Complete\n";
 
 				}
@@ -352,8 +358,14 @@ class Beltdrive extends CI_Controller {
 					echo "File finished". $objectId . "\n";
 					$this->pheanstalk->delete($job);
 					$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
+					$this->load->library('email');
+					$this->email->from('elevator@umn.edu', 'Elevator');
+					$this->email->to($userEmail);
+					$this->email->subject("File Ready for Download");
+					$this->email->message($fileContent);
+					$this->email->send();
 
-					mail($userEmail, "File Ready for Download",	$fileContent);
+
 				}
 			}
 			else {
