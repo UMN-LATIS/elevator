@@ -28,6 +28,7 @@
       <index columns="needsRebuild"/>
       <index columns="templateId"/>
       <index columns="needsRebuild,rebuildTimestamp"/>
+      <index columns="needsRebuild,templateId"/>
       <index columns="rebuildTimestamp"/>
     </indexes>
   </entity>
