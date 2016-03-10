@@ -17,15 +17,25 @@
 			</div>
 
 
-	<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-8">
-				<label>
-					<input type="checkbox" id="includeInHeader" name="includeInHeader" value="On" <?=$page->getIncludeInHeader()?"checked":null?>>
-					Include In Header
-				</label>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-8">
+					<label>
+						<input type="checkbox" id="includeInHeader" name="includeInHeader" value="On" <?=$page->getIncludeInHeader()?"checked":null?>>
+						Include In Header
+					</label>
+				</div>
 			</div>
-		</div>
-
+			<div class="form-group">
+				<label for="inputParent" class="col-sm-2 control-label">Parent:</label>
+				<div class="col-sm-6">
+					<select name="parent" id="inputParent" class="form-control" required="required">
+						<option value=0>None</option>
+						<?foreach($this->instance->getPages() as $pageItem):?>
+						<option value=<?=$pageItem->getId()?> <?=($page->getParent()&&$pageItem->getId()==$page->getParent()->getId())?"SELECTED":null?> ><?=$pageItem->getTitle()?></option>
+						<?endforeach?>
+					</select>
+				</div>
+			</div>
 
 			<input type="submit" name="submit" value="Update Page" class='btn btn-primary' />
 

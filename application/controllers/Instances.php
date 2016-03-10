@@ -127,6 +127,21 @@ class Instances extends Instance_Controller {
 		$this->template->publish();
 	}
 
+	public function sortUpdate() {
+
+		foreach($this->input->post("page") as $key=>$value) {
+			foreach($this->instance->getPages() as $page) {
+				if($page->getId() == $key) {
+					$page->setSortOrder($value);
+				}
+			}
+		}
+
+		$this->doctrine->em->flush();
+		instance_redirect("/instances/customPages");
+
+	}
+
 	public function editPage($pageId=null) {
 
 
@@ -142,6 +157,14 @@ class Instances extends Instance_Controller {
 
 		$this->template->title = 'Edit Page';
 		$this->template->content->view('instances/editPage', ["page"=>$page]);
+		$this->template->publish();
+	}
+
+
+	public function pageSort() {
+		 $this->template->loadCSS(['template']);
+		$this->template->title = 'Page sort Order';
+		$this->template->content->view('instances/pagesort');
 		$this->template->publish();
 	}
 
@@ -167,6 +190,10 @@ class Instances extends Instance_Controller {
 		$page->setBody($this->input->post("body"));
 		$page->setIncludeInHeader($this->input->post("includeInHeader")?1:0);
 		$page->setInstance($this->instance);
+		if( $this->input->post("parent")) {
+			$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
+		}
+
 		$this->doctrine->em->persist($page);
 		$this->doctrine->em->flush();
 		instance_redirect("instances/customPages");
