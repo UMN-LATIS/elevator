@@ -61,7 +61,7 @@ class Drawers extends Instance_Controller {
 		else {
 			$drawer->setChangedSinceArchive(false);
 			$this->doctrine->em->flush();
-			$pheanstalk = new Pheanstalk\Pheanstalk('127.0.0.1');
+			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 			$newTask = json_encode(["drawerId"=>$drawerId, "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId()]);
 			$jobId= $pheanstalk->useTube('archiveTube')->put($newTask, NULL, 1, 900); // run a 15 minute TTR because zipping all these could take a while.
 
