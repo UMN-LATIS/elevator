@@ -173,9 +173,20 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
       <ul class="nav navbar-nav">
         <?if(isset($this->instance)):?>
 
-        <?foreach($this->instance->getPages()->filter(function($entry) { return $entry->getIncludeInHeader();}) as $page):?>
-
+        <?foreach($this->instance->getPages()->filter(function($entry) { return ($entry->getIncludeInHeader() && $entry->getParent()==null);}) as $page):?>
+          <?if(count($page->getChildren())>0):?>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?=$page->getTitle()?> <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="<?=instance_url("page/view/". $page->getId())?>"><?=$page->getTitle()?></a></li>
+              <?foreach($page->getChildren() as $child):?>
+              <li><a href="<?=instance_url("page/view/". $child->getId())?>"><?=$child->getTitle()?></a></li>
+              <?endforeach?>
+            </ul>
+          </li>
+          <?else:?>
           <li><a href="<?=instance_url("page/view/". $page->getId())?>"><?=$page->getTitle()?></a></li>
+          <?endif?>
         <?endforeach?>
 
         <?endif?>
