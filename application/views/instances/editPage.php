@@ -46,9 +46,10 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	tinymce.init({
-		selector: "textarea",
-		menubar : false,
-		plugins: "link"
-	});
+	    selector: "textarea",
+	    menubar : false,
+	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | link",
+	    plugins: ["link", "code"]
+	 });
 });
 </script>
