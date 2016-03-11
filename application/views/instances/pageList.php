@@ -16,6 +16,7 @@
 		</table>
 
 		<p><a href="<?= instance_url("instances/editPage"); ?>">Create New Page</a></p>
+		<p><a href="<?= instance_url("instances/pageSort"); ?>">Edit Sort Order</a></p>
 	</div>
 </div>
 

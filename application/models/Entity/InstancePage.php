@@ -164,4 +164,108 @@ class InstancePage
     {
         return $this->includeInHeader;
     }
+    /**
+     * @var integer
+     */
+    private $sortOrder;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $children;
+
+    /**
+     * @var \Entity\InstancePage
+     */
+    private $parent;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->children = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Set sortOrder
+     *
+     * @param integer $sortOrder
+     *
+     * @return InstancePage
+     */
+    public function setSortOrder($sortOrder)
+    {
+        $this->sortOrder = $sortOrder;
+
+        return $this;
+    }
+
+    /**
+     * Get sortOrder
+     *
+     * @return integer
+     */
+    public function getSortOrder()
+    {
+        return $this->sortOrder;
+    }
+
+    /**
+     * Add child
+     *
+     * @param \Entity\InstancePage $child
+     *
+     * @return InstancePage
+     */
+    public function addChild(\Entity\InstancePage $child)
+    {
+        $this->children[] = $child;
+
+        return $this;
+    }
+
+    /**
+     * Remove child
+     *
+     * @param \Entity\InstancePage $child
+     */
+    public function removeChild(\Entity\InstancePage $child)
+    {
+        $this->children->removeElement($child);
+    }
+
+    /**
+     * Get children
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    /**
+     * Set parent
+     *
+     * @param \Entity\InstancePage $parent
+     *
+     * @return InstancePage
+     */
+    public function setParent(\Entity\InstancePage $parent = null)
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    /**
+     * Get parent
+     *
+     * @return \Entity\InstancePage
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
 }
