@@ -12,6 +12,7 @@ class Doctrine
 {
 
     public $em;
+    public $redisHost;
 
     public function __construct()
     {
@@ -52,18 +53,25 @@ class Doctrine
 
         // TODO TODO TODO
 
-        $config = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
+        $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
 
       // $cache = new ApcCache;
-        $config->setMetadataCacheImpl(new \Doctrine\Common\Cache\ApcCache());
-        $config->setQueryCacheImpl(new \Doctrine\Common\Cache\ApcCache());
-        $config->setResultCacheImpl(new \Doctrine\Common\Cache\ApcCache());
+        $redis = new Redis();
+        require(APPPATH . 'config/config.php');
+        $redis->connect($config["redis"], $config["redisPort"]);
+        $this->redisHost = $redis;
+        $redisCache = new \Doctrine\Common\Cache\RedisCache();
+        $redisCache->setRedis($redis);
+
+        $doctrineConfig->setMetadataCacheImpl($redisCache);
+        $doctrineConfig->setQueryCacheImpl($redisCache);
+        $doctrineConfig->setResultCacheImpl($redisCache);
         // $config->setQueryCacheImpl($cache);
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
         //$config->setSQLLogger($logger);
-        $this->em = EntityManager::create($connection_options, $config);
+        $this->em = EntityManager::create($connection_options, $doctrineConfig);
         $loader = new ClassLoader($models_namespace, $models_path);
         $loader->register();
     }
