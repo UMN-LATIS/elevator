@@ -167,6 +167,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 			$this->_session_id = $session_id;
 
 			$session_data = (string) $this->_redis->get($this->_key_prefix.$session_id);
+
 			$this->_fingerprint = md5($session_data);
 			return $session_data;
 		}

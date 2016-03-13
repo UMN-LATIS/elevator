@@ -17,7 +17,7 @@ class search_model extends CI_Model {
 	}
 
 	public function remove($asset) {
-		$params['index'] = 'elevator';
+		$params['index'] = $this->config->item('elasticIndex');
     	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
     	if(!$params['id'] || strlen($params['id']<5)) {
@@ -36,7 +36,7 @@ class search_model extends CI_Model {
 	}
 
 	public function wipeIndex() {
-		$deleteParams['index'] = 'elevator';
+		$deleteParams['index'] = $this->config->item('elasticIndex');
 		try {
 			$this->es->indices()->delete($deleteParams);
 		}
@@ -44,7 +44,7 @@ class search_model extends CI_Model {
 			$this->logging->logError("admin","wipeindex", "error deletig index" . json_encode($e));
 		}
 
-		$indexParams['index'] = 'elevator';
+		$indexParams['index'] = $this->config->item('elasticIndex');
 		try {
 			$this->es->indices()->create($indexParams);
 		}
@@ -64,7 +64,7 @@ class search_model extends CI_Model {
 		/** HACK
 		* for now, make sure we have a mapping each time we add a record
 		*/
-		$params['index'] = 'elevator';
+		$params['index'] = $this->config->item('elasticIndex');
 		$params['type']  = 'asset';
 
 		$myTypeMapping2 = array(
@@ -221,7 +221,7 @@ class search_model extends CI_Model {
     	 * grouped with other results.  This saves us having logic to detect mongoids in the query
     	 */
     	$params['body']['assetId'] = $asset->getObjectId();
-    	$params['index'] = 'elevator';
+    	$params['index'] = $this->config->item('elasticIndex');
     	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
 
@@ -232,7 +232,7 @@ class search_model extends CI_Model {
 
 	public function find($searchArray, $readyforDisplayOnly=true, $pageStart=0, $loadAll=false) {
 
- 		$searchParams['index'] = 'elevator';
+ 		$searchParams['index'] = $this->config->item('elasticIndex');
     	//$searchParams['type']  = 'asset';
 
     	$filter = array();
@@ -540,7 +540,7 @@ class search_model extends CI_Model {
 	public function getSuggestions($searchTerm) {
 
 		$searchParams = array();
-		$searchParams['index'] = 'elevator';
+		$searchParams['index'] = $this->config->item('elasticIndex');
 		$searchParams['body']["suggestion-finder"]["text"] = $searchTerm;
 		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
 
@@ -555,7 +555,7 @@ class search_model extends CI_Model {
 		// todo : do this the right way
 
 
-		$searchParams['index'] = 'elevator';
+		$searchParams['index'] = $this->config->item('elasticIndex');
     	//$searchParams['type']  = 'asset';
 
     	$filter = array();
