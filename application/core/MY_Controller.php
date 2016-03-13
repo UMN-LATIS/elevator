@@ -37,7 +37,9 @@ class MY_Controller extends CI_Controller {
 		//$this->user_model->loadUser(1);
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache = new \Doctrine\Common\Cache\ApcCache();
+			$redisCache = new \Doctrine\Common\Cache\RedisCache();
+        	$redisCache->setRedis($this->doctrine->redisHost);
+			$this->doctrineCache = $redisCache;
 		}
 
 		$userId = $this->session->userdata('userId');
