@@ -112,8 +112,10 @@ class Related_asset_contents extends Widget_contents_base {
 			foreach($this->getRelatedAsset()->assetObjects as $object) {
 				$assetText[] = implode(" ", $object->getAsText($nestedObjectDepth-1));
 			}
+			if($this->getRelatedAsset()) {
+				$assetText["objectId"] = $this->getRelatedAsset()->getObjectId();
+			}
 
-			$assetText["objectId"] = $this->getRelatedAsset()->getObjectId();
 
 			return implode(" ", $assetText);
 		}
