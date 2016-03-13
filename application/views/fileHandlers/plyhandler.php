@@ -7,6 +7,9 @@ if($this->user_model->userLoaded) {
         $drawerArray[] = $drawer;
     }
 }
+
+$nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
+
 ?>
 <?
 
@@ -128,7 +131,7 @@ function setup3dhop() {
 
   presenter.setScene({
     meshes: {
-      "targetAsset" : { url: "<?=stripHTTP($fileContainers['nxs']->getProtectedURLForFile())?>#.nxs" },
+      "targetAsset" : { url: "<?=stripHTTP($nxsURL)?>#.nxs" },
       "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
     },
     modelInstances : {

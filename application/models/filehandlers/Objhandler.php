@@ -46,7 +46,7 @@ rnd.resolution_y = int(2000)
 						  												["width"=>75, "height"=>150, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]],
-    3=>["taskType"=>"createNXS", "config"=>[]],
+    3=>["taskType"=>"createNXS", "config"=>["ttr"=>900]],
     4=>["taskType"=>"createSTL", "config"=>[]]
 	];
 
