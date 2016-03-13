@@ -16,5 +16,8 @@
           <field name="jobId" type="integer"  nullable='true' />
           <field name="task" type="string"  nullable='true' />
           <field name="message" type="text"  nullable='true' />
+          <indexes>
+            <index columns="asset"/>
+          </indexes>
       </entity>
 </doctrine-mapping>

@@ -27,7 +27,7 @@ $(document).on("change", ".searchDropdown", function() {
     var content = $(selectedOption).val();
     var templateId = $(selectedOption).data('templateid');
     var targetGroup = $(this).closest(".form-group").find(".specificSearchTextContainer");
-    $.post('/search/getFieldInfo', {fieldTitle: content, template: templateId}, function(data, textStatus, xhr) {
+    $.post(basePath + 'search/getFieldInfo', {fieldTitle: content, template: templateId}, function(data, textStatus, xhr) {
         var results;
         try {
             results = $.parseJSON(data);
