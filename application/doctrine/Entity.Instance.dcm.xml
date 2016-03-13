@@ -16,6 +16,9 @@
           </one-to-many>
 
           <one-to-many field="pages" target-entity="InstancePage" mapped-by="instance" >
+            <order-by>
+              <order-by-field name="sortOrder" direction="ASC" />
+            </order-by>
             <cascade><cascade-remove /><cascade-persist /></cascade>
           </one-to-many>
 

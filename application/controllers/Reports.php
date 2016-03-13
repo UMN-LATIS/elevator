@@ -31,6 +31,7 @@ class Reports extends Admin_Controller {
 		$qb = $this->doctrine->em->getRepository("Entity\Asset")->createQueryBuilder("a");
 			$qb->select("count(a.collectionId) as colCount", "a.collectionId")
 			->where("a.assetId IS NOT NULL")
+			->where("a.collectionId IS NOT NULL")
 			->groupBy("a.collectionId");
 
 		if($templateId) {

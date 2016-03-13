@@ -43,6 +43,308 @@ class dclImporter extends Instance_Controller {
 	}
 
 
+	public function fixOrders() {
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+		$this->dcl->query("SET SESSION wait_timeout = 28800 ");
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.templateId = 23")
+		->orderBy("a.id");
+
+		$assets = $qb->getQuery()->iterate();
+		$count = 0;
+		foreach($assets as $asset) {
+			$widgets = $asset->getWidgets();
+			if(!isset($widgets["orderid_7"][0]["fieldContents"])) {
+				continue;
+			}
+			$orderId = $widgets["orderid_7"][0]["fieldContents"];
+
+
+			$this->dcl->where("ord_id", $orderId);
+			$result = $this->dcl->get("orders");
+			$assetObject = new Asset_model();
+			$assetObject->loadAssetFromRecord($asset);
+			$jsonContents = $asset->getAsArray();
+
+			foreach($result->result_array() as $entry) {
+
+				if($entry['order_date'] != null && !array_key_exists("order_date", $jsonContents)) {
+					$jsonContents["orderdate_7"][]["fieldContents"] = $entry["order_date"];
+				}
+				if($entry['requester_id'] != null && !array_key_exists("requester_id", $jsonContents)) {
+					$jsonContents["requesterinternetid_7"][]["fieldContents"] = $entry["requester_id"];
+				}
+				if($entry['contributor'] != null && !array_key_exists("contributor", $jsonContents)) {
+					$jsonContents["contributordonor_7"][]["fieldContents"] = $entry["contributor"];
+				}
+				if($entry['deadline'] != null && !array_key_exists("deadline", $jsonContents)) {
+					$jsonContents["deadline_7"][]["fieldContents"] = $entry["deadline"];
+				}
+				if($entry['photographer'] != null && !array_key_exists("photographer", $jsonContents)) {
+					$jsonContents["photographer_7"][]["fieldContents"] = $entry["photographer"];
+				}
+				if($entry['completion'] != null && !array_key_exists("completion", $jsonContents)) {
+					$jsonContents["completiondate_7"][]["fieldContents"] = $entry["completion"];
+				}
+				if($entry['source_type'] != null && !array_key_exists("source_type", $jsonContents)) {
+					$jsonContents["sourcetype_7"][]["fieldContents"] = $entry["source_type"];
+				}
+				if($entry['number_of_items'] != null && !array_key_exists("number_of_items", $jsonContents)) {
+					$jsonContents["numberofitems_7"][]["fieldContents"] = $entry["number_of_items"];
+				}
+				if($entry['subject'] != null && !array_key_exists("subject", $jsonContents)) {
+					$jsonContents["subject_7"][]["fieldContents"] = $entry["subject"];
+				}
+				if($entry['order_number'] != null && !array_key_exists("order_number", $jsonContents)) {
+					$jsonContents["ordernumber_7"][]["fieldContents"] = $entry["order_number"];
+				}
+				if($entry['accession_range'] != null && !array_key_exists("accession_range", $jsonContents)) {
+					$jsonContents["accessionrange_7"][]["fieldContents"] = $entry["accession_range"];
+				}
+				if($entry['instructions'] != null && !array_key_exists("instructions", $jsonContents)) {
+					$jsonContents["instructionscommentsnotes_7"][]["fieldContents"] = $entry["instructions"];
+				}
+				if($entry['admin_notes'] != null && !array_key_exists("admin_notes", $jsonContents)) {
+					$jsonContents["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
+				}
+
+			}
+
+			$assetObject->createObjectFromJSON($jsonContents);
+			echo "Updating Record for " . $assetObject->getObjectId() . "(" . $asset->getId() . ")\n";
+			$assetObject->save(true,false,false);
+			$this->doctrine->em->clear();
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+		}
+	}
+
+	public function fixSourcePublications() {
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+		$this->dcl->query("SET SESSION wait_timeout = 28800 ");
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.templateId = 22")
+		->orderBy("a.id");
+
+		$assets = $qb->getQuery()->iterate();
+		$count = 0;
+		foreach($assets as $asset) {
+			$widgets = $asset->getWidgets();
+			if(!isset($widgets["sourceid_7"][0]["fieldContents"])) {
+				continue;
+			}
+			$sourceId = $widgets["sourceid_7"][0]["fieldContents"];
+
+
+			$this->dcl->where("src_id", $sourceId);
+			$result = $this->dcl->get("source_publications");
+			$assetObject = new Asset_model();
+			$assetObject->loadAssetFromRecord($asset);
+			$jsonContents = $asset->getAsArray();
+
+			foreach($result->result_array() as $entry) {
+
+				if($entry['publisher'] != null && !array_key_exists("publisher_7", $jsonContents)) {
+					$jsonContents["publisher_7"][]["fieldContents"] = $entry["publisher"];
+				}
+				if($entry['month'] != null && !array_key_exists("month_7", $jsonContents)) {
+					$jsonContents["month_7"][]["fieldContents"] = $entry["month"];
+				}
+				if($entry['source_number'] != null && !array_key_exists("sourcenumber_7", $jsonContents)) {
+					$jsonContents["sourcenumber_7"][]["fieldContents"] = $entry["source_number"];
+				}
+				if($entry['call_number'] != null && !array_key_exists("callnumber_7", $jsonContents)) {
+					$jsonContents["callnumber_7"][]["fieldContents"] = $entry["call_number"];
+				}
+				if($entry['source_format'] != null && !array_key_exists("sourceformat_7", $jsonContents)) {
+					$jsonContents["sourceformat_7"][]["fieldContents"] = $entry["source_format"];
+				}
+				if($entry['admin_notes'] != null && !array_key_exists("adminnotes_7", $jsonContents)) {
+					$jsonContents["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
+				}
+
+			}
+
+			$assetObject->createObjectFromJSON($jsonContents);
+			echo "Updating Record for " . $assetObject->getObjectId() . "(" . $asset->getId() . ")\n";
+			$assetObject->save(false,false,true);
+			$this->doctrine->em->clear();
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+		}
+	}
+
+	public function fixWorks() {
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+		$this->dcl->query("SET SESSION wait_timeout = 28800 ");
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.templateId = 26")
+		->orderBy("a.id");
+
+		$assets = $qb->getQuery()->iterate();
+		$count = 0;
+		foreach($assets as $asset) {
+			$widgets = $asset->getWidgets();
+			if(!isset($widgets["workid_7"][0]["fieldContents"])) {
+				continue;
+			}
+			$workId = $widgets["workid_7"][0]["fieldContents"];
+
+
+			$this->dcl->where("wk_id", $sourceId);
+			$result = $this->dcl->get("dcl_works");
+			$assetObject = new Asset_model();
+			$assetObject->loadAssetFromRecord($asset);
+			$jsonContents = $asset->getAsArray();
+
+			foreach($result->result_array() as $entry) {
+
+				if($entry['admin_notes'] != null && !array_key_exists("adminnotes_7", $jsonContents)) {
+					$jsonContents["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
+				}
+
+			}
+
+			$assetObject->createObjectFromJSON($jsonContents);
+			echo "Updating Record for " . $assetObject->getObjectId() . "(" . $asset->getId() . ")\n";
+			$assetObject->save(false,false,true);
+			$this->doctrine->em->clear();
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+		}
+	}
+
+	public function fixViews() {
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+		$this->dcl->query("SET SESSION wait_timeout = 28800 ");
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.templateId = 25")
+		->orderBy("a.id");
+
+		$assets = $qb->getQuery()->iterate();
+		$count = 0;
+		foreach($assets as $asset) {
+			$widgets = $asset->getWidgets();
+			if(!isset($widgets["viewid_7"][0]["fieldContents"])) {
+				continue;
+			}
+			$viewId = $widgets["viewid_7"][0]["fieldContents"];
+
+
+			$this->dcl->where("vw_id", $viewId);
+			$result = $this->dcl->get("dcl_views");
+			$assetObject = new Asset_model();
+			$assetObject->loadAssetFromRecord($asset);
+			$jsonContents = $asset->getAsArray();
+
+			foreach($result->result_array() as $entry) {
+
+				if($entry['accession_number'] != null && !array_key_exists("accession_number", $jsonContents)) {
+					$jsonContents["accessionnumber_7"][]["fieldContents"] = $entry["accession_number"];
+				}
+				if($entry['photographer'] != null && !array_key_exists("photographer", $jsonContents)) {
+					$jsonContents["photographer_7"][]["fieldContents"] = $entry["photographer"];
+				}
+				if($entry['copyright_holder'] != null && !array_key_exists("copyright_holder", $jsonContents)) {
+					$jsonContents["copyrightholder_7"][]["fieldContents"] = $entry["copyright_holder"];
+				}
+				if($entry['copy_history'] != null && !array_key_exists("copy_history", $jsonContents)) {
+					$jsonContents["copyhistory_7"][]["fieldContents"] = $entry["copy_history"];
+				}
+				if($entry['admin_notes'] != null && !array_key_exists("admin_notes", $jsonContents)) {
+					$jsonContents["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
+				}
+				if($entry["digitized"] != "Y") {
+					$jsonContents["readyForDisplay"] = false;
+				}
+				else {
+					$jsonContents["readyForDisplay"] = true;
+				}
+
+			}
+
+			$assetObject->createObjectFromJSON($jsonContents);
+			echo "Updating Record for " . $assetObject->getObjectId() . "(" . $asset->getId() . ")\n";
+			$assetObject->save(true,false,true);
+			$this->doctrine->em->clear();
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+		}
+	}
+
+
+	public function fixWorkTitles($file) {
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+		$this->dcl->query("SET SESSION wait_timeout = 28800 ");
+		$contents = file_get_contents($file);
+		$lines = explode("\n", $contents);
+
+		$count = 0;
+
+		$count = 0;
+		foreach($lines as $key=>$entry) {
+			$splitLine = explode("\t", $entry);
+			$wkId = $splitLine[0];
+			$wkTitle = $splitLine[1];
+			$record = $this->getExistingRecord("Old DCL Works",  "workid_7", "fieldContents", trim($wkId));
+
+			if(!$record) {
+				continue;
+			}
+			$titleRecord = $this->getExistingRecord("Old Work Title",  "worktitleid_7", "fieldContents", trim($wkTitle));
+
+			$asset = new Asset_model();
+			$asset->loadAssetById($record["assetid"]);
+			$assetRecord= $asset->getAsArray();
+			if(!array_key_exists("worktitle_7", $assetRecord)) {
+				continue;
+			}
+
+			foreach($assetRecord['worktitle_7'] as $widgetKey=>$widgetEntry) {
+
+				if($widgetEntry['targetAssetId'] == $titleRecord['assetid']) {
+					$widgetEntry['isPrimary'] = true;
+				}
+				else {
+					$widgetEntry['isPrimary'] = false;
+				}
+				$assetRecord['worktitle_7'][$widgetKey] = $widgetEntry;
+
+			}
+			$asset->createObjectFromJSON($assetRecord);
+			echo "Updating Record for " . $asset->getObjectId() . "\n";
+			$assetObject->save(false,false,true);
+			$this->doctrine->em->clear();
+			$count++;
+			unset($lines[$key]);
+			if($count % 10 == 0) {
+				file_put_contents($file, implode(PHP_EOL, $lines));
+				gc_collect_cycles();
+			}
+		}
+	}
+
 	public function importFromFile($file) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
@@ -108,7 +410,7 @@ class dclImporter extends Instance_Controller {
 	}
 
 	public function findCollection($collectionId) {
-		return 85;
+		return 125;
 		$this->dcl->where("col_id", $collectionId);
 		$collection = $this->dcl->get("collections");
 		if($collection->num_rows() > 0) {
@@ -369,17 +671,17 @@ class dclImporter extends Instance_Controller {
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period2"];
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period3"];
 			$newEntry["styleperiod_7"][]["fieldContents"] = $entry["style_period4"];
-			if($entry["type4"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
-			}
-			if($entry["type3"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
+			if($entry["type1"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
 			}
 			if($entry["type2"]) {
 				$newEntry["classification_7"][]["fieldContents"] = $entry["type2"];
 			}
-			if($entry["type1"]) {
-				$newEntry["classification_7"][]["fieldContents"] = $entry["type1"];
+			if($entry["type3"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type3"];
+			}
+			if($entry["type4"]) {
+				$newEntry["classification_7"][]["fieldContents"] = $entry["type4"];
 			}
 
 			$newEntry["culture_7"][]["fieldContents"] = $entry["culture1"];
@@ -391,6 +693,7 @@ class dclImporter extends Instance_Controller {
 			$newEntry["inscription_7"][]["fieldContents"] = $entry["inscription"];
 			$newEntry["repositoryobjectid_7"][]["fieldContents"] = $entry["repository_object_id"];
 			$newEntry["comments_7"][]["fieldContents"] = $entry["comments"];
+			$newEntry["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
 			if($entry['primary_view_digital_id']) {
 				$this->primaryViewId = $entry['primary_view_digital_id'];
 			}
@@ -627,6 +930,15 @@ class dclImporter extends Instance_Controller {
 			$newEntry["nationality_7"][]["fieldContents"] = $entry["nationality2"];
 			$newEntry["datesactive_7"][]["fieldContents"] = $entry["dates_active"];
 			$newEntry["notes_7"][]["fieldContents"] = $entry["notes"];
+			$newEntry["agentqualifier_7"][]["fieldContents"] = $entry["agent_qualifier"];
+			$newEntry["gender_7"][]["fieldContents"] = $entry["gender"];
+			$newEntry["countryofbirth_7"][]["fieldContents"] = $entry["country_birth"];
+			$newEntry["century_7"][]["fieldContents"] = $entry["century"];
+			$newEntry["countryactive_7"][]["fieldContents"] = $entry["country_active"];
+			$newEntry["firmlocation_7"][]["fieldContents"] = $entry["firm_location"];
+			$newEntry["authority_7"][]["fieldContents"] = $entry["authority"];
+			$newEntry["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
+
 
 			// if we don't have any values up to this point, let's bail.
 			if(!array_filter($this->array_value_recursive("fieldContents", $newEntry))) {
@@ -687,6 +999,12 @@ class dclImporter extends Instance_Controller {
 			$newEntry["volume_7"][]["fieldContents"] = $entry["volume"];
 			$newEntry["number_7"][]["fieldContents"] = $entry["number"];
 			$newEntry["year_7"][]["fieldContents"] = $entry["year"];
+			$newEntry["publisher_7"][]["fieldContents"] = $entry["publisher"];
+			$newEntry["month_7"][]["fieldContents"] = $entry["month"];
+			$newEntry["sourcenumber_7"][]["fieldContents"] = $entry["source_number"];
+			$newEntry["callnumber_7"][]["fieldContents"] = $entry["call_number"];
+			$newEntry["sourceformat_7"][]["fieldContents"] = $entry["source_format"];
+			$newEntry["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $this->getTemplateId("Old Source Publication");
 			$newEntry["collectionId"] = $this->targetCollection;
@@ -718,6 +1036,19 @@ class dclImporter extends Instance_Controller {
 			$newEntry["collectionid_7"][]["fieldContents"] = $entry["col_id"];
 			$newEntry["sourceid_7"][]["fieldContents"] = $entry["src_id"];
 			$newEntry["orderedby_7"][]["fieldContents"] = $entry["ordered_by"];
+			$newEntry["orderdate_7"][]["fieldContents"] = $entry["order_date"];
+			$newEntry["requesterinternetid_7"][]["fieldContents"] = $entry["requester_id"];
+			$newEntry["contributordonor_7"][]["fieldContents"] = $entry["contributor"];
+			$newEntry["deadline_7"][]["fieldContents"] = $entry["deadline"];
+			$newEntry["photographer_7"][]["fieldContents"] = $entry["photographer"];
+			$newEntry["completiondate_7"][]["fieldContents"] = $entry["completion"];
+			$newEntry["sourcetype_7"][]["fieldContents"] = $entry["source_type"];
+			$newEntry["numberofitems_7"][]["fieldContents"] = $entry["number_of_items"];
+			$newEntry["subject_7"][]["fieldContents"] = $entry["subject"];
+			$newEntry["ordernumber_7"][]["fieldContents"] = $entry["order_number"];
+			$newEntry["accessionrange_7"][]["fieldContents"] = $entry["accession_range"];
+			$newEntry["instructionscommentsnotes_7"][]["fieldContents"] = $entry["instructions"];
+			$newEntry["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $this->getTemplateId("Old Orders");
 			$newEntry["collectionId"] = $this->targetCollection;
@@ -882,10 +1213,23 @@ class dclImporter extends Instance_Controller {
 			$newEntry["viewagentid_7"][]["fieldContents"] = $entry["view_agent_id"];
 			$newEntry["viewid_7"][]["fieldContents"] = $entry["vw_id"];
 			$newEntry["workid_7"][]["fieldContents"] = $entry["wk_id"];
+			$newEntry["accessionnumber_7"][]["fieldContents"] = $entry["accession_number"];
+			$newEntry["photographer_7"][]["fieldContents"] = $entry["photographer"];
+			$newEntry["copyrightholder_7"][]["fieldContents"] = $entry["copyright_holder"];
+			$newEntry["copyhistory_7"][]["fieldContents"] = $entry["copy_history"];
+			$newEntry["adminnotes_7"][]["fieldContents"] = $entry["admin_notes"];
 			$newEntry["copyrightfullvideo_7"][]["fieldContents"] = $entry["copyright_full_video"];
-			$newEntry["readyForDisplay"] = true;
+
+			if($entry["digitized"] != "Y") {
+				$newEntry["readyForDisplay"] = false;
+			}
+			else {
+				$newEntry["readyForDisplay"] = true;
+			}
+
 			$newEntry["collectionId"] = $this->targetCollection;
 			$newEntry["templateId"] = $this->getTemplateId("Old DCL Views");
+
 
 
 			$foundRecord = $this->getExistingRecord("Old DCL Agents", "agentid_7", "fieldContents", $entry['view_agent_id']);

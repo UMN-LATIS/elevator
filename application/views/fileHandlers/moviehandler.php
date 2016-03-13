@@ -11,21 +11,21 @@ $mediaArray = array();
 
 if(isset($fileContainers['streaming'])) {
   $entry["type"] = "hls";
-  $entry["file"] = stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/streaming"));
+  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile());
   $entry["label"] = "Streaming";
   $mediaArray["streaming"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
   $entry["type"] = "mp4";
-  $entry["file"] = stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4sd"));
+  $entry["file"] = stripHTTP($fileContainers['mp4sd']->getProtectedURLForFile());
   $entry["label"] = "SD";
   $mediaArray["mp4sd"] = $entry;
 }
 
 if(isset($fileContainers['mp4hd'])) {
   $entry["type"] = "mp4";
-  $entry["file"] = stripHTTP(instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4hd"));
+  $entry["file"] = stripHTTP($fileContainers['mp4hd']->getProtectedURLForFile());
   $entry["label"] = "HD";
   $mediaArray["mp4hd"] = $entry;
 }
@@ -94,13 +94,10 @@ if(typeof objectId == 'undefined') {
     <div id="videoElement">Loading the player...</div>
 
     <script type="text/javascript">
-    // NOTE: jwplayer 7.1 is uri-encoding URLs directly within the image preview module.  This sure looks like a bug (it's a recent change) and
-    // it's fair to assume it'll be reverted in the future.
-    // IF PREVIEW IMAGES STOP WORKING IN THE FUTURE, don't do this urldecoding and just pass in the urlencoded string like a sane person.
     jwplayer("videoElement").setup({
       ga: { label:"label"},
       playlist: [{
-        image: '<?=isset($fileContainers['imageSequence'])?urldecode(stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2"))):null?>',
+        image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
         sources: [
         <?foreach($derivatives as $entry):?>
         {

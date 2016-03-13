@@ -500,7 +500,7 @@ class Asset_model extends CI_Model {
 				if(get_class($assetObject) == "Related_asset") {
 					$assetTitle = array();
 					foreach($assetObject->fieldContentsArray as $entry) {
-						$titleArray = $entry->getRelatedAsset()->getAssetTitle(true);
+						$titleArray = $entry->getRelatedObjectTitle(true);
 						array_push($assetTitle, $titleArray);
 					}
 

@@ -190,7 +190,9 @@ class S3_model extends CI_Model {
 			$result = $this->s3Client->restoreObject([
 	    		'Bucket' => $this->bucket,
 	    		'Key'    => $targetKey,
-	    		'Days' => 15
+	    		'RestoreRequest' => [
+	    			'Days' => 15
+	    		]
 			]);
 		}
 		catch (Exception $e) {
