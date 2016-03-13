@@ -52,7 +52,7 @@ class InhibitorHook {
 	 */
 	public function handle_fatal_errors()
 	{
-
+		session_write_close();
 		if (($error = error_get_last())) {
 
 			$buffer = ob_get_contents();
@@ -87,6 +87,7 @@ class InhibitorHook {
 	 */
 	public function handle_exceptions($exception)
 	{
+		session_write_close();
 		$CI =& get_instance();
 		// $CI->doctrine->em->resetManager();
 		if(is_array($exception)) {
