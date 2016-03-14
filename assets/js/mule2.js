@@ -985,7 +985,7 @@
     AmazonXHR.list = function(auth, file, key, upload_id, chunk_size, callback, error_callback, marker) {
         var querystring = {"uploadId": upload_id};
         if(marker) {
-            querystring['part-number​-marker'] = marker;
+            querystring['part-number-marker'] = marker;
         }
         return new AmazonXHR({
             auth: auth,
@@ -1032,7 +1032,7 @@
                 var is_truncated = xml.getElementsByTagName("IsTruncated")[0].textContent;
                 if(is_truncated === "true") {
                     var part_marker = xml.getElementsByTagName("NextPartNumberMarker")[0].textContent;
-                    AmazonXHR.list(auth, key, upload_id, chunk_size, function(new_parts) {
+                    AmazonXHR.list(auth, '', key, upload_id, chunk_size, function(new_parts) {
                         callback(parts.concat(new_parts));
                     }, error_callback, part_marker);
                 } else {
