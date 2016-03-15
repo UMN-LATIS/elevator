@@ -88,6 +88,7 @@ class MovieHandler extends FileHandlerBase {
 
 		$jobId = $args['jobId'];
 
+		$this->postponeTime = 60;
 
 		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
 		$response = $transcodeCommands->checkCompletion($jobId);
