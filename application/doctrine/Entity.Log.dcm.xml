@@ -11,7 +11,7 @@
           <field name="createdAt" type="datetime" nullable='true' />
 
           <many-to-one field="instance" target-entity="Instance">
-            <join-column name="instance_id" referenced-column-name="id" />
+            <join-column name="instance_id" referenced-column-name="id" on-delete="SET NULL"/>
           </many-to-one>
 
           <many-to-one field="collection" target-entity="Collection">

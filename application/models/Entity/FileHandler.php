@@ -312,4 +312,10 @@ class FileHandler
     {
         return $this->id;
     }
+    /**
+     * @var string
+     */
+    private $fileobjectid;
+
+
 }
