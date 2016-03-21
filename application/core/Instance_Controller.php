@@ -77,7 +77,7 @@ class Instance_Controller extends MY_Controller
 
         // HACK HACK HACK
         // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
-        if($this->uri->segment(1) !== "LoginManager") {
+        if(strtolower($this->uri->segment(1)) !== "loginmanager") {
             session_write_close();
         }
 
