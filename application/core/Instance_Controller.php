@@ -73,7 +73,12 @@ class Instance_Controller extends MY_Controller
             else {
                 redirect("/errorHandler/error/specifyInstance");
             }
+        }
 
+        // HACK HACK HACK
+        // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
+        if($this->uri->segment(1) !== "LoginManager") {
+            session_write_close();
         }
 
     }
