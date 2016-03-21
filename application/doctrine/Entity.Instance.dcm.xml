@@ -49,7 +49,7 @@
                 <order-by-field name="title" direction="ASC" />
             </order-by>
           </many-to-many>
-
+           <one-to-many field="logs" target-entity="Log" mapped-by="instance" on-delete="SET NULL" />
           <field name="name" type="string" />
           <field name="domain" type="string" nullable='true' />
           <field name="ownerHomepage" type="string" nullable='true' />
