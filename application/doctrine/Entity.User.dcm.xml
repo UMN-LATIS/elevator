@@ -45,8 +45,12 @@
           <field name="expires" type="datetime"  nullable='true' />
           <field name="createdAt" type="datetime" nullable='true' />
           <many-to-one field="createdBy" target-entity="User" />
-          <many-to-one field="instance" target-entity="Instance" />
+          <many-to-one field="instance" target-entity="Instance">
+            <join-column name="instance_id" referenced-column-name="id" on-delete="SET NULL"/>
+          </many-to-one>
           <field name="modifiedAt" type="datetime" nullable='true' />
-          <many-to-one field="apiInstance" target-entity="Instance" />
+          <many-to-one field="apiInstance" target-entity="Instance">
+            <join-column name="apiInstance_id" referenced-column-name="id" on-delete="SET NULL"/>
+          </many-to-one>
       </entity>
 </doctrine-mapping>
