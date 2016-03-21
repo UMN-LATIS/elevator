@@ -9,12 +9,12 @@
 
 <form action="<?= instance_url("templates/sort_update/"); ?>" method="POST" role="form">
 <input type="hidden" name="templateId" id="inputTemplateId" class="form-control" value="<?= $template->getId(); ?>">
-<input type="hidden" name="needsRebuild" id="needsRebuildId" class="form-control" value="0">
+<input name="needsRebuild" id="needsRebuildId" class="advancedContent form-control" value="0">
 	View Order
 	<ul id="sortable_view_order">
 		<?php foreach ($widgetsViewOrder as $key => $widget): ?>
 			<li class="sortHover ui-state-default"><?= $widget->getLabel(); ?>
-				<input type="hidden" name="widget[<?= $widget->getId(); ?>][view_order]" id="inputViewOrderWidget<?= $widget->getId(); ?>TemplateOrder" class="form-control widget-item" value="<?= $widget->getTemplateOrder(); ?>">
+				<input data-preview="<?=$widget->getDisplayInPreview()?>" type="hidden" name="widget[<?= $widget->getId(); ?>][view_order]" id="inputViewOrderWidget<?= $widget->getId(); ?>TemplateOrder" class="form-control widget-item" value="<?= $widget->getTemplateOrder(); ?>">
 			</li>
 		<?php endforeach ?>
 	</ul>
@@ -45,7 +45,10 @@
 			$('.widget-item').each(function(index) {
 				$(this).val(index + 1);
 			});
-			$("#needsRebuildId").val(1);
+			if($(ui.item).find(".widget-item").data('preview') === 1) {
+				$("#needsRebuildId").val(1);
+			}
+
 		}
     });
 
@@ -58,7 +61,6 @@
 			$('.widget-item').each(function(index) {
 				$(this).val(index + 1);
 			});
-			$("#needsRebuildId").val(1);
 		}
     });
 
