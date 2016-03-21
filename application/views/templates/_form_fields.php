@@ -2,7 +2,7 @@
 <?php $this->load->view('templates/_form_fields_hb'); ?>
 
 <input type="hidden" name="templateId" id="inputTemplateId" class="form-control" value="<?= $template->getId(); ?>">
-<input type="hidden" name="needsRebuild" id="needsRebuildId" class="advancedContent form-control" value="0">
+<input  name="needsRebuild" id="needsRebuildId" class="advancedContent form-control" value="0">
 
 <div class="form-group">
 	<label for="inputName" class="col-lg-2 control-label">Name:</label>

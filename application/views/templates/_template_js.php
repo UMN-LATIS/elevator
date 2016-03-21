@@ -93,13 +93,8 @@ $(document).ready(function() {
 					]
 			};
 		var insertHTML = widget(context);
-		$("#needsRebuildId").val(1);
 		$('div#widgetList').append(insertHTML);
 
-	});
-
-	$(document).on("change", ".displayWidget", function() {
-		$("#needsRebuildId").val(1);
 	});
 
 	$(document).on("change", ".displayPreviewWidget", function() {
@@ -107,7 +102,9 @@ $(document).ready(function() {
 	});
 
 	$(document).on("keyup", ".fieldTitle", function() {
-		$("#needsRebuildId").val(1);
+		if($(this).closest(".widgetItem").find(".displayPreviewWidget").is(":checked")) {
+			$("#needsRebuildId").val(1);
+		}
 
 		// we use the instance ID because we want to intentionally ensure collisions between same field title
 		// within the same instance. This allows autocompleter to be more flexible, rather than locking to a specific
