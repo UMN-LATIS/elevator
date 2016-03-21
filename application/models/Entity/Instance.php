@@ -959,4 +959,86 @@ class Instance
     {
         return $this->hideVideoAudio;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $logs;
+
+
+    /**
+     * Add log
+     *
+     * @param \Entity\Log $log
+     *
+     * @return Instance
+     */
+    public function addLog(\Entity\Log $log)
+    {
+        $this->logs[] = $log;
+
+        return $this;
+    }
+
+    /**
+     * Remove log
+     *
+     * @param \Entity\Log $log
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeLog(\Entity\Log $log)
+    {
+        return $this->logs->removeElement($log);
+    }
+
+    /**
+     * Get logs
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getLogs()
+    {
+        return $this->logs;
+    }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $users;
+
+
+    /**
+     * Add user
+     *
+     * @param \Entity\User $user
+     *
+     * @return Instance
+     */
+    public function addUser(\Entity\User $user)
+    {
+        $this->users[] = $user;
+
+        return $this;
+    }
+
+    /**
+     * Remove user
+     *
+     * @param \Entity\User $user
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeUser(\Entity\User $user)
+    {
+        return $this->users->removeElement($user);
+    }
+
+    /**
+     * Get users
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getUsers()
+    {
+        return $this->users;
+    }
 }
