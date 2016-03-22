@@ -127,10 +127,12 @@ var showHaveEntries = function() {
 
 };
 
+$(document).ready(function() {
+	$(document).on("change", ".mainWidgetEntry", function(e) {
+		showHaveEntries();
+		markSaveDirty();
+	});
 
-$(document).on("change", ".mainWidgetEntry", function() {
-	showHaveEntries();
-	markSaveDirty();
 });
 
 
@@ -209,7 +211,10 @@ $(document).ready(function() {
 			var sourceCollection = $(el).contents().find("#collectionId");
 			sourceCollection.val(targetCollection);
 			$(sourceCollection).trigger("change");
-			$(el).get(0).contentWindow.resetCollection();
+			if($(el).get(0).contentWindow && $(el).get(0).contentWindow.resetCollection !== undefined) {
+				$(el).get(0).contentWindow.resetCollection();
+			}
+
 		});
 
 	});

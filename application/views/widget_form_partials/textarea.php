@@ -71,8 +71,9 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	tinymce.init({
-	    mode: "specific_textareas",
-	    editor_selector: "textAreaWidget",
+	    // mode: "specific_textareas",
+	    // editor_selector: "textAreaWidget",
+	    selector: "textarea#<?=$textId?>",
 	    menubar : false,
 	    plugins: "link",
 	    setup: function(editor) {
