@@ -8,7 +8,20 @@ class Textarea_contents extends Widget_contents_base {
 			//Do your magic here
 		}
 
+	public function loadContentFromArray($value) {
+		foreach($value as $key=>$entry) {
 
+			if($key == "isPrimary" && ($entry == true || $entry == "on")) {
+				$this->isPrimary = true;
+			}
+			if($key == "fieldContents") {
+				$this->$key = trim($entry);
+			}
+			else {
+				$this->$key = $entry;
+			}
+		}
+	}
 
 	public function getAsText($serializeNestedObjects=false) {
 		return (string)strip_tags($this->fieldContents);
