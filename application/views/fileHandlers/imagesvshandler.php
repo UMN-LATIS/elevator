@@ -159,7 +159,7 @@ var loadedCallback = function() {
 		<? if(!isset($fileContainers) || count($fileContainers) == 1):?>
 		<p class="alert alert-info">No derivatives found.
 			<?if(!$this->user_model->userLoaded):?>
-			You may have access to additional derivatives if you log in.
+			<?=$this->load->view("errors/loginForPermissions")?>
 			<?endif?>
 		</p>
 

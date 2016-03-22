@@ -59,6 +59,9 @@ if($groupObject->getGroupType() == "User") {
 						<?endforeach?>
 					</select>
 				</div>
+				<div class="col-sm-4">
+					<A href="http://classinfo.umn.edu">Course ID lookup (5 digit number)</a>
+				</div>
 			</div>
 			<script>
 

@@ -49,7 +49,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
   <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
-      You may have access to additional derivatives if you log in.
+      <?=$this->load->view("errors/loginForPermissions")?>
       <?endif?>
     </p>
 

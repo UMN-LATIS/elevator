@@ -77,16 +77,17 @@
 	<div class="col-md-2">
 		<a href="<?= instance_url("permissions/newGroup/" . $permissionType . "/" . (($permissionTypeId == null)?null:$permissionTypeId)); ?>" class='btn btn-primary btn-info btn-sm'>Create a new group</a>
 	</div>
-</form>
 </div>
 
 <hr>
+
+<?if($permissionType !== DRAWER_PERMISSION):?>
 <div class="row rowContainer">
 	<div class="col-md-2">
 		<a href="<?= instance_url("permissions/instanceHandlerGroups")?>" class='btn btn-primary btn-info btn-sm'>Edit File Handler Groups</a>
 	</div>
-</form>
 </div>
+<?endif?>
 
 <hr>
 <div class="row rowPadding rowContainer">
