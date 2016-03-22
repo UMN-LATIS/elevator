@@ -503,6 +503,9 @@ class Search extends Instance_Controller {
 
 
 		$searchParameters = $customSearch->getSearchConfig();
+		if(!$searchParameters) {
+			$searchParameters = "{}";
+		}
 		$searchTitle = $customSearch->getSearchTitle();
 
 		$decodedParams = json_decode($searchParameters);

@@ -65,39 +65,39 @@
 				<?
 				// standard list view
 				elseif($fieldContent->getRelatedObjectId()):?>
-					<div class="panel panel-default relatedAssetContainer relatedListToggle"  data-objectid="<?=$fieldContent->getRelatedObjectId()?>" id="accordion<?=$fieldContent->getRelatedObjectId()?>">
-						<div class="panel-heading">
-							<h4 class="panel-title">
-							<?try { $result = $fieldContent->getPrimaryFileHandler(); ?>
-							<img class="pull-left super-tiny-image img-responsive img-rounded loadView" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard ?>">
-							<? } catch (Exception $e) { /* no file handler, ignore this */ }?>
-							<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedObjectId()?>" data-objectId="<?=$fieldContent->getRelatedObjectId()?>" href="#collapse<?=$fieldContent->getRelatedObjectId()?>">
-							<div class="truncatedTitle">
-							<?
+					<?$title = join(",", $fieldContent->getRelatedObjectTitle()); if($title):?>
+						<div class="panel panel-default relatedAssetContainer relatedListToggle"  data-objectid="<?=$fieldContent->getRelatedObjectId()?>" id="accordion<?=$fieldContent->getRelatedObjectId()?>">
+							<div class="panel-heading">
+								<h4 class="panel-title">
+								<?try { $result = $fieldContent->getPrimaryFileHandler(); ?>
+								<img class="pull-left super-tiny-image img-responsive img-rounded loadView" data-fileobjectid="<?=$fileObjectId?>" data-at2x="<?=$retina?>" src="<?=$standard ?>">
+								<? } catch (Exception $e) { /* no file handler, ignore this */ }?>
+								<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedObjectId()?>" data-objectId="<?=$fieldContent->getRelatedObjectId()?>" href="#collapse<?=$fieldContent->getRelatedObjectId()?>">
+								<div class="truncatedTitle">
+								<?
+								if(!$title) {
+									echo "(no title)";
+								}
+								else {
+									echo $title;
+								}
+								?> <?if($fieldContent->label):?>(<?=$fieldContent->label?>)<?endif?>
+								</div>
+								<div class="glyphicon glyphicon-chevron-down expandRelated pull-right titleToggle"></div>
+								</a>
+								<?if(!$widgetModel->displayInline):?>
+								<a href="<?=instance_url("asset/viewAsset/".$fieldContent->getRelatedObjectId())?>" class="btn btn-primary btn-xs" style="color:white">Open</a>
+								<?endif?>
 
-							$title = join(",", $fieldContent->getRelatedObjectTitle());
-							if(!$title) {
-								echo "(no title)";
-							}
-							else {
-								echo $title;
-							}
-							?> <?if($fieldContent->label):?>(<?=$fieldContent->label?>)<?endif?>
+								</h4>
 							</div>
-							<div class="glyphicon glyphicon-chevron-down expandRelated pull-right titleToggle"></div>
-							</a>
-							<?if(!$widgetModel->displayInline):?>
-							<a href="<?=instance_url("asset/viewAsset/".$fieldContent->getRelatedObjectId())?>" class="btn btn-primary btn-xs" style="color:white">Open</a>
-							<?endif?>
+							<div id="collapse<?=$fieldContent->getRelatedObjectId()?>" class="panel-collapse collapse">
+								<div class="panel-body relatedAssetContents">
 
-							</h4>
-						</div>
-						<div id="collapse<?=$fieldContent->getRelatedObjectId()?>" class="panel-collapse collapse">
-							<div class="panel-body relatedAssetContents">
-
+								</div>
 							</div>
 						</div>
-					</div>
+					<?endif?>
 				<?endif?>
 			<?endif?>
 		<?php endforeach?>
