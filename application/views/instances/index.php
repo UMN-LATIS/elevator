@@ -22,7 +22,7 @@
     			<td><?= $instance->getIntroText(); ?></td>
     			<td><a href="<?= instance_url("permissions/edit/instance/{$instance->getId()}"); ?>">Edit Permissions</a></td>
     			<td> <a href="<?= instance_url("instances/edit/{$instance->getId()}"); ?>">Edit</a></td>
-    			<td> <a href="<?= instance_url("instances/delete/{$instance->getId()}"); ?>" onclick="return alert('Are you sure you want to delete this instance?');">Delete</a></td>
+    			<td> <a href="<?= instance_url("instances/delete/{$instance->getId()}"); ?>" onclick="return confirm('Are you sure you want to delete this instance?');">Delete</a></td>
    			</tr>
 			<?php	endforeach; ?>
 
