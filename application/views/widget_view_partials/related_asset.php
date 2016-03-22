@@ -1,7 +1,7 @@
 <? /** SOMEONE SHOULD REFACTOR THIS **/ ?>
 
 
-<div class="panel-group" >
+<div class="panel-group nestedGroup">
 	<p><strong><?=$widgetModel->getLabel()?>:</strong></p>
 <?php
 	$j=0;
@@ -110,3 +110,16 @@
 	<?php endif;?>
 
 </div>
+
+
+<script>
+$(".nestedGroup").each(function(index, el) {
+	// if this group doesn't have any children, hide it
+	console.log($(el).children("div"));
+	if($(el).children("div").length == 0) {
+
+		$(el).hide();
+	}
+});
+
+</script>

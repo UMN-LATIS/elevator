@@ -486,13 +486,13 @@ class Search extends Instance_Controller {
 
 
 	public function searchBuilder($customSearchId=null) {
-		$this->template->loadJavascript(["assets/js/customSearch"]);
+		$this->template->loadJavascript(["customSearch"]);
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
 			instance_redirect("errorHandler/error/noPermission");
 		}
-		$this->template->loadJavascript(["assets/js/templateSearch"]);
+		$this->template->loadJavascript(["templateSearch"]);
 
 		if(!$customSearchId) {
 			$customSearch = new Entity\CustomSearch;
