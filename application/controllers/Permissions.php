@@ -427,7 +427,6 @@ class Permissions extends Instance_Controller {
 				$groupObject = new Entity\InstanceGroup();
 			}
 
-			$groupObject = new Entity\InstanceGroup();
 			$groupObject->setInstance($this->instance);
 		} else if ($permissionType == DRAWER_PERMISSION) {
 
