@@ -1410,6 +1410,24 @@ class dclImporter extends Instance_Controller {
 
 		}
 	}
+	public function moveCCItems() {
+		$manager = $this->doctrine->em->getConnection();
+
+		$results = $manager->query('select id from assets where collectionid = 156 and templateid = 25 and widgets->>\'description_7\' like \'%commons%\'');
+		if($results) {
+			$records = $results->fetchAll();
+			if(count($records)>0) {
+				foreach($records as $record) {
+					$asset= null;
+					$asset = $this->doctrine->em->getRepository("Entity\Asset")->find($record['id']);
+					$asset->setCollectionId(169);
+				}
+			}
+		}
+		$this->doctrine->em->flush();
+
+
+	}
 
 
 	function pathToMedia($mediaId) {
