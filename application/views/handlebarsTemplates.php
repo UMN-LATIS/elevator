@@ -18,7 +18,7 @@
 		{{#each entries}}
 		<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
 					{{#each this.entries}}
-						<li>{{this}}</li>
+						<li>{{{this}}}</li>
 					{{/each}}
 				</ul>
 		</div>
