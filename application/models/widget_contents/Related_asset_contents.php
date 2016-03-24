@@ -64,6 +64,28 @@ class Related_asset_contents extends Widget_contents_base {
 		}
 	}
 
+	public function getReadyForWeb() {
+
+		if(!$this->readyForWeb && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
+			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
+				$relatedAssetCache = $assetCache->getRelatedAssetCache();
+				if(isset($relatedAssetCache[$this->getRelatedObjectId()])) {
+					$this->readyForWeb = $relatedAssetCache[$this->getRelatedObjectId()]["readyForWeb"];
+				}
+			}
+		}
+
+		if($this->readyForWeb) {
+			return $this->readyForWeb;
+		}
+		else {
+			if($relatedAsset = $this->getRelatedAsset()) {
+				return $relatedAsset->getGlobalValue("readyForDisplay")?true:false;
+			}
+		}
+		return false;
+	}
+
 	public function getPrimaryFileHandler() {
 		if(!$this->cachedPrimaryHandler && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
 			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
