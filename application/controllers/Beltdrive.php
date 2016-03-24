@@ -513,21 +513,27 @@ class Beltdrive extends CI_Controller {
 
 
 	public function cleanupSource() {
-
-		$directory = new RecursiveDirectoryIterator($this->config->item("scratchSpace"),RecursiveDirectoryIterator::SKIP_DOTS);
-		$iterator = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
 		if (file_exists($this->config->item("scratchSpace"))) {
-    		foreach ($iterator as $fileInfo) {
-        		if (time() - $fileInfo->getCTime() >= 12*60*60) {
-            		if(is_file($fileInfo->getRealPath())) {
-            			unlink($fileInfo->getRealPath());
-            		}
-            		else {
-            			rmdir($fileInfo->getRealPath());
-            		}
+			$this->deleteDir($this->config->item("scratchSpace"));
+		}
 
-     		   	}
-    		}
+	}
+
+	private function deleteDir($path) {
+		$directory = new RecursiveDirectoryIterator($path,RecursiveDirectoryIterator::SKIP_DOTS);
+		$iterator = new RecursiveIteratorIterator($directory, RecursiveIteratorIterator::CHILD_FIRST);
+
+		foreach ($iterator as $fileInfo) {
+    		if (time() - $fileInfo->getCTime() >= 12*60*60) {
+        		if(is_file($fileInfo->getRealPath())) {
+        			unlink($fileInfo->getRealPath());
+        		}
+        		else {
+        			$this->deleteDir($fileInfo->getRealPath());
+        			rmdir($fileInfo->getRealPath());
+        		}
+
+ 		   	}
 		}
 	}
 
