@@ -1,16 +1,13 @@
 
 
 function loadGroup(targetId) {
-
 	var targetArray = sourceContent[targetId];
 	$("#"+targetId).find(".multiSelect").each(function(index, el) {
-
 		var selectIndex = $(el).data("cascadenumber");
 		var category = $(el).data("category");
 
 		if(selectIndex === 0) {
 			var entryList = sourceContent[targetId][category];
-
 			if(entryList) {
 				var keys = Object.keys(entryList);
 				keys.sort();
@@ -19,6 +16,12 @@ function loadGroup(targetId) {
 					$(el).append($("<option></option>").attr("value",value).text(value));
 				});
 				var groupSelected = selectedItems[targetId];
+				// console.log(category);
+				// console.log(selectedItems[targetId]);
+				// console.log(groupSelected);
+				// this is a horrible hack.  We store categories with sanitized key names, but our multiselector stores them properly.
+				//
+				category = category.replace(/[^A-Za-z0-9]/g, '');
 				if(groupSelected[category]) {
 					$(el).val(groupSelected[category]);
 					$(el).trigger("change");
@@ -105,7 +108,7 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 
 
 	// });
-
+	targetCategory = targetCategory.replace(/[^A-Za-z0-9]/g, '');
 	if(groupSelected[targetCategory]) {
 		$(selectElement).val(groupSelected[targetCategory]);
 		$(selectElement).trigger("change");

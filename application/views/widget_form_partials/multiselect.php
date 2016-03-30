@@ -98,17 +98,19 @@ $topLevels = array_unique(flatten(recurseThing($widgetModel->getFieldData(),0)))
 if(!sourceContent) {
 	var sourceContent = new Array();
 }
-if(!selectedItems) {
-	var selectedItems = new Array();
+if(typeof selectedItems === 'undefined') {
+
+	var selectedItems = {};
 }
 
-selectedItems["<?=$formFieldId?>"] = new Array();
-
-sourceContent["<?=$formFieldId?>"] = $.parseJSON('<?=preg_replace( "/\r|\n/", "",addslashes($encodedField))?>');
+selectedItems["<?=$formFieldId?>"] = {};
 
 <?if(isset($fieldContents)):foreach($fieldContents as $key=>$value):?>
 selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
 <?endforeach; endif;?>
+
+sourceContent["<?=$formFieldId?>"] = $.parseJSON('<?=preg_replace( "/\r|\n/", "",addslashes($encodedField))?>');
+
 
 </script>
 
