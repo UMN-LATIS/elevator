@@ -45,6 +45,8 @@
       <index columns="assetId"/>
       <index columns="readyForDisplay"/>
       <index columns="widgets"/>
+      <index columns="createdBy"/>
+      <index columns="modifiedBy"/>
     </indexes>
   </entity>
 </doctrine-mapping>
