@@ -161,7 +161,9 @@ class Search extends Instance_Controller {
 			if(count($allowedCollections) == 0) {
 				instance_redirect("errorHandler/error/noPermission");
 			}
-			$collections = $allowedCollections;
+			$collections = $this->instance->getCollectionsWithoutParent();
+
+			$collections = array_intersect($collections, $allowedCollections);
 
 		}
 		else {

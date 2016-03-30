@@ -30,8 +30,7 @@
 				 <div class="clearfix"></div>
 				<div class="paginationBlock">
 					<ul class="pager">
-					  <li><a href="#" class="previousPage">Previous</a></li>
-					  <li><a href="#" class="nextPage">Next</a></li>
+					  <li><a href="#" class="nextPage">Load More</a></li>
 					</ul>
 				</div>
 			</div>
@@ -49,8 +48,7 @@
 				 <div class="clearfix"></div>
 				<div class="paginationBlock">
 					<ul class="pager">
-					  <li><a href="#" class="previousPage">Previous</a></li>
-					  <li><a href="#" class="nextPage">Next</a></li>
+					  <li><a href="#" class="nextPage">Load Moret</a></li>
 					</ul>
 				</div>
 			</div>

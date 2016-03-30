@@ -53,6 +53,7 @@
 				<?
 				// thumbnail view
 				if($widgetModel->thumbnailView && $fieldContent->getRelatedObjectId()):?>
+					<?if($fieldContent->getReadyForWeb()):?>
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
 							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
@@ -61,6 +62,7 @@
 							<div class="relatedThumbTitle autoTruncate"><?$assetTitle = $fieldContent->getRelatedObjectTitle();echo array_shift($assetTitle)?></div>
 						</div>
 					</div>
+					<?endif?>
 
 				<?
 				// standard list view
