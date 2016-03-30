@@ -193,7 +193,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 
 
         <?if(!$this->useUnauthenticatedTemplate):?>
-          <li class="dropdown">
+          <li class="dropdown collectionToggle">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Collections <b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li class="disabled"><a href="#">Recent Collections:</a></li>

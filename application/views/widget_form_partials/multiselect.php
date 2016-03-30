@@ -5,29 +5,31 @@
 
 <?
 
-function flatten(array $array) {
-    $return = array();
-    array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });
-    return $return;
-}
-
-function recurseThing($array, $skip) {
-
-	$outputArray = array();
-	foreach($array as $key=>$value) {
-		if(!$skip) {
-			$outputArray[] = $key;
-		}
-		if(is_array($value) || is_object($value)) {
-			$outputArray[] = recurseThing($value, !$skip);
-		}
-
-
+if(!function_exists("flatten")) {
+	function flatten(array $array) {
+	    $return = array();
+	    array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });
+	    return $return;
 	}
 
-	return $outputArray;
+}
+
+if(!function_exists("recurseThing")) {
+	function recurseThing($array, $skip) {
+
+		$outputArray = array();
+		foreach($array as $key=>$value) {
+			if(!$skip) {
+				$outputArray[] = $key;
+			}
+			if(is_array($value) || is_object($value)) {
+				$outputArray[] = recurseThing($value, !$skip);
+			}
 
 
+		}
+		return $outputArray;
+	}
 }
 
 
@@ -36,10 +38,11 @@ function recurseThing($array, $skip) {
  * @param  [string] $sourceName
  * @return [string] sanitized name
  */
-function makeSafeForTitle($sourceName) {
-	return preg_replace("/[^a-zA-Z0-9]+/", "", $sourceName);
+if(!function_exists("makeSafeForTitle")) {
+	function makeSafeForTitle($sourceName) {
+		return preg_replace("/[^a-zA-Z0-9]+/", "", $sourceName);
+	}
 }
-
 
 
 ?>
