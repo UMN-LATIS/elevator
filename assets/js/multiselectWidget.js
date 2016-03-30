@@ -74,6 +74,9 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 	$(selectElement).empty();
 	$(selectElement).append("<option></option>");
 
+	if(typeof target === 'undefined') {
+		return;
+	}
 
 	// sort alphabetically, handle both object and array cases
 	var keys = Object.keys(target);
@@ -85,9 +88,6 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 		target.sort();
 		keys = Object.keys(target);
 	}
-
-
-
 
 	length = keys.length;
 	for (i = 0; i < length; i++) {
