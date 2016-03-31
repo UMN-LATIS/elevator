@@ -41,6 +41,11 @@ class Instance_Controller extends MY_Controller
             $this->template->relativePath = $this->getRelativePath();
             $this->config->set_item("instance_relative", $this->getRelativePath());
             $this->config->set_item("instance_absolute", $this->getAbsolutePath());
+            // HACK HACK HACK
+            // Close the session if we're not going to be doing a login, prevent se$
+            if(strtolower($this->uri->segment(2)) !== "loginmanager") {
+            	session_write_close();
+            }
             return;
         }
 
