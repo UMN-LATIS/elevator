@@ -23,13 +23,13 @@ SpiderGL.openNamespace();
 // CONSTANTS
 //----------------------------------------------------------------------------------------
 // sgltrackball
-const SGL_TRACKBALL_NO_ACTION = 0;
-const SGL_TRACKBALL_ROTATE    = 1;
-const SGL_TRACKBALL_PAN       = 2;
-const SGL_TRACKBALL_DOLLY     = 3;
-const SGL_TRACKBALL_SCALE     = 4;
+SGL_TRACKBALL_NO_ACTION = 0;
+SGL_TRACKBALL_ROTATE    = 1;
+SGL_TRACKBALL_PAN       = 2;
+SGL_TRACKBALL_DOLLY     = 3;
+SGL_TRACKBALL_SCALE     = 4;
 // selectors
-const HOP_ALL     = 256;
+HOP_ALL     = 256;
 
 Presenter = function (canvas) {
 	this._isDebugging      = false;
