@@ -436,6 +436,42 @@ class AssetManager extends Admin_Controller {
 
 	}
 
+	public function importFromCSV() {
+
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if($accessLevel < PERM_ADDASSETS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
+		if(!isset($_POST)) {
+			$this->template->content->view("assetManager/importCSV", $data);
+			$this->template->publish();
+			return;
+		}
+
+		$targetTemplate = $this->input->post("templateId");
+		$collectionId = $this->input->post("collectionId");
+
+		$config['upload_path'] = '/scratch/';
+		$config['max_size']	= '100';
+
+		$this->load->library('upload', $config);
+		if ( ! $this->upload->do_upload())
+		{
+			$error = array('error' => $this->upload->display_errors());
+			var_dump($error);
+		}
+		else
+		{
+			$data = array('upload_data' => $this->upload->data());
+			var_dump($data);
+		}
+
+	}
+
+
+
 	/**
 	 * If changing collections will result in the file being migrated from one bucket to another, we
 	 * need to alert the user.  This will lock the record from updating until the migration is complete.
