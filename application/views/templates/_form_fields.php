@@ -28,6 +28,12 @@
 		Hide from "Add" menu
 	</label>
 </div>
+<div class="checkbox">
+	<label>
+		<input type="checkbox" value="On" name="showCollection" <?=$template->getShowCollection()?"checked":null?>>
+		Show Collection when viewing asset
+	</label>
+</div>
 <div class="color">
 	<label>
 		<input value="<?=$template->getTemplateColor()?$template->getTemplateColor():0?>" name="templateColor">
