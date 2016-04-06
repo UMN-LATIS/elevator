@@ -425,7 +425,7 @@ class Beltdrive extends CI_Controller {
 			$haveArchivedItems = FALSE;
 			foreach($uploadHandlers as $uploadHandler) {
 				foreach($uploadHandler->fieldContentsArray as $uploadContents) {
-					if($uploadContents->fileHandler->sourceFile && $uploadContents->fileHandler->sourceFile->isArchived()) {
+					if($uploadContents->getFileHandler()->sourceFile && $uploadContents->getFileHandler()->sourceFile->isArchived()) {
 						$uploadContents->fileHandler->sourceFile->restoreFromArchive();
 						$haveArchivedItems = TRUE;
 					}
@@ -441,7 +441,7 @@ class Beltdrive extends CI_Controller {
 				foreach($uploadHandlers as $uploadHandler) {
 					foreach($uploadHandler->fieldContentsArray as $key=>$uploadContents) {
 
-						$fileHandler = $uploadContents->fileHandler;
+						$fileHandler = $uploadContents->getFileHandler();
 						$fileHandler->sourceFile->copyToLocalStorage();
 						$localFile = $fileHandler->sourceFile->getPathToLocalFile();
 						$originalName = $fileHandler->sourceFile->originalFilename;
