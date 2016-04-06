@@ -721,22 +721,34 @@ body {
 
 
 .assetWidget {
+    .sidebarContainer {
+        .assetWidget {
+            
+        }
+    }
     .collapsedChild {
         width: 95%;
-        margin-left: 15px;
+        // margin-left: 15px;
+        border-width: 0px;
         // padding: 10px;
         // background-color: @controlColors;
         .assetWidget {
             .collapsedChild {
+                border-width: 0px;
                 background-color: white;
             }
             width: 95%;
-            margin-left: 15px;
-            padding: 10px;
+            // margin-left: 15px;
+            // padding: 10px;
 
         }
 
     }
+}
+
+
+.panel-group.nestedGroup {
+    margin-bottom: 0px;
 }
 
 .tagList li a {
