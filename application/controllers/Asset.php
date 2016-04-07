@@ -220,7 +220,9 @@ class asset extends Instance_Controller {
 			}
 
 			if($parentMatch) {
-				$this->accessLevel = $this->user_model->getAccessLevel("asset", $tempAsset);
+				$assetPerms = $this->user_model->getAccessLevel("asset", $assetModel);
+				$parentPerms = $this->user_model->getAccessLevel("asset", $tempAsset);
+				$this->accessLevel = max($assetPerms, $parentPerms);
 			}
 			else {
 				// we've got a mismatch, but see if they've got access to the file without looking at the parent.
