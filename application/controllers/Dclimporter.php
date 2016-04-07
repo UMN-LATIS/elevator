@@ -34,7 +34,7 @@ class dclImporter extends Instance_Controller {
 	{
 		parent::__construct();
 		ini_set("memory_limit","4096M");
-		$this->dcl = $this->load->database('old', TRUE);
+		// $this->dcl = $this->load->database('old', TRUE);
 		$this->instance = $this->doctrine->em->find("Entity\Instance", 7);
 		$this->load->model("asset_model");
 		$this->user_model->loadUser(1);
@@ -614,7 +614,7 @@ class dclImporter extends Instance_Controller {
 
 		$manager = $this->doctrine->em->getConnection();
 
-		$results = $manager->query('select assetid from assets where templateid = ' . $templateId . ' AND widgets @> \'{"' . $baseField. '": [{"' . $keyPath .'":"' . $searchValue . '"}]}\'');
+		$results = $manager->query('select assetid from assets where assetid IS NOT NULL and templateid = ' . $templateId . ' AND widgets @> \'{"' . $baseField. '": [{"' . $keyPath .'":"' . $searchValue . '"}]}\'');
 		if($results) {
 			$records = $results->fetchAll();
 			if(count($records)>0) {
@@ -1425,8 +1425,130 @@ class dclImporter extends Instance_Controller {
 			}
 		}
 		$this->doctrine->em->flush();
+	}
 
+	public function moveWorksBack() {
 
+		$results = $this->doctrine->em->getRepository("Entity\Asset")->findBy(["templateId"=>26, "collectionId"=>172]);
+		foreach($results as $entry) {
+			if($entry->getAssetId() == NULL) {
+				continue;
+			}
+			$asset = new Asset_model();
+			$asset->loadAssetFromRecord($entry);
+			$views = $asset->assetObjects["views_7"];
+			$needsMove = false;
+			foreach($views->fieldContentsArray as $widget) {
+				$collection = $widget->getRelatedAsset()->getGlobalValue("collectionId");
+				if($collection != 1752) {
+					$needsMove = true;
+					break;
+				}
+			}
+			if($needsMove) {
+				$asset->setGlobalValue("collectionId", 127);
+				$asset->save(true,false);
+				echo $entry->getAssetId() . " moved\n";	
+			}
+			
+		}
+
+	}
+
+public function moveWorksBack2() {
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.templateId = 26")
+		->andWhere("a.collectionId= 28")
+		->andWhere("a.modifiedAt > '2016-04-07'");
+
+		$assets = $qb->getQuery()->iterate();
+		$count = 0;
+		foreach($assets as $entry) {
+			if($entry[0]->getAssetId() == NULL) {
+				continue;
+			}
+			echo $entry[0]->getAssetId() . "\n";
+			$asset = new Asset_model();
+			$asset->loadAssetFromRecord($entry[0]);
+			$views = $asset->assetObjects["views_7"];
+			$needsMove = true;
+			foreach($views->fieldContentsArray as $widget) {
+				$collection = $widget->getRelatedAsset()->getGlobalValue("collectionId");
+				if($collection != 173) {
+					$needsMove = false;
+					break;
+				}
+			}
+			if($needsMove) {
+				$asset->setGlobalValue("collectionId", 173);
+				$asset->save(true,false);
+				echo $entry[0]->getAssetId() . " moved\n";	
+			}
+			
+		}
+
+	}
+
+	public function fixViewCollection() {
+		$contents = file_get_contents("viewFix");
+		$lines = explode("\n", $contents);
+
+		$count = 0;
+
+		$count = 0;
+		foreach($lines as $key=>$entry) {
+			$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_7", "fieldContents", $entry);
+			if($foundRecord) {
+				$assetId = $foundRecord['assetid'];
+				echo $assetId . "\n";
+				$asset = new Asset_model;
+				$asset->loadAssetById($assetId);
+				$asset->setGlobalValue("collectionId", 140);
+				$asset->save(false,false,false);
+			}
+			$this->doctrine->em->flush();
+			$this->doctrine->em->clear();
+			$count++;
+			unset($lines[$key]);
+			if($count % 10 == 0) {
+				file_put_contents("viewFix", implode(PHP_EOL, $lines));
+				gc_collect_cycles();
+				if($count == 200) {
+					return;
+				}
+			}
+		}	
+		
+	}
+
+	public function fixSortDate() {
+		$this->dcl->where("sort_date IS NOT NULL", null, false);
+		$result = $this->dcl->get("work_events");
+		foreach($result->result() as $entry) {
+			echo "Looking for: " . $entry->wke_id . "\n";
+			$foundRecord = $this->getExistingRecord("Old Work Event", "workeventid_7", "fieldContents", $entry->wke_id);
+			if($foundRecord) {
+				$tempAsset = new Asset_model();
+				$start = microtime(true);
+				$tempAsset->loadAssetById($foundRecord);
+				$assetArray = $tempAsset->getAsArray();
+				if(array_key_exists("sortdate_7", $assetArray)) {
+					continue;
+				}
+				$insert = array();
+				$insert["end"] = ["text"=>"", "numeric"=>""];
+				$insert["label"] = "";
+				$insert["isPrimary"] = false;
+				$insert["start"] = ["text"=>$entry->sort_date, "numeric"=>mktime(0, 0, 0, 1, 1, $entry->sort_date)];
+				$assetArray["sortdate_7"][] = $insert;
+				$tempAsset->createObjectFromJSON($assetArray);
+				$tempAsset->save(true,false);
+				echo "Updated " . $tempAsset->getObjectId() . "\n";
+			}
+			$this->doctrine->em->clear();
+		}
 	}
 
 
