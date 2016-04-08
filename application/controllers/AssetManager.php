@@ -444,29 +444,87 @@ class AssetManager extends Admin_Controller {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
-		if(!isset($_POST)) {
-			$this->template->content->view("assetManager/importCSV", $data);
+		if(!isset($_POST["templateId"])) {
+			$this->template->content->view("assetManager/importCSV", array());
 			$this->template->publish();
 			return;
 		}
 
 		$targetTemplate = $this->input->post("templateId");
-		$collectionId = $this->input->post("collectionId");
 
-		$config['upload_path'] = '/scratch/';
-		$config['max_size']	= '100';
+		$config['upload_path'] = '/tmp/';
+		$config['max_size']	= '0';
+		$config['allowed_types']	= 'csv';
 
 		$this->load->library('upload', $config);
 		if ( ! $this->upload->do_upload())
 		{
 			$error = array('error' => $this->upload->display_errors());
 			var_dump($error);
+			return;
 		}
-		else
-		{
-			$data = array('upload_data' => $this->upload->data());
-			var_dump($data);
+		// TODO: more security here
+		$data = array('upload_data' => $this->upload->data());
+		$filename = $data["upload_data"]["full_path"];
+
+		if(!$fp = fopen($filename, "r")) {
+			$this->logging->logError("error reading file", $filename);
+			$this->errorhandler_helper->callError("genericError");
+			return;
 		}
+
+		$header = fgetcsv($fp, 0, ",");
+		$data["filename"]  = $filename;
+		$data["headerRows"] = $header;
+
+		$template = new Asset_template($targetTemplate);
+		$data["template"] = $template;
+
+		$this->template->content->view("assetManager/matchCSVrows", $data);
+		$this->template->publish();
+	}
+
+	public function processCSV() {
+		$filename = $this->input->post("filename");
+		$templateId = $this->input->post("templateId");
+		$collectionId = $this->input->post("collectionId");
+		$mapping = $this->input->post("targetField");
+
+		$template = new Asset_template($templateId);
+
+		if(!$fp = fopen($filename, "r")) {
+			$this->logging->logError("error reading file", $filename);
+			$this->errorhandler_helper->callError("genericError");
+			return;
+		}
+
+		$header = fgetcsv($fp, 0, ",");
+		$successArray = [];
+		while($row = fgetcsv($fp, 0, ",")) {
+			$newEntry = array();
+			$newEntry["readyForDisplay"] = true;
+			$newEntry["templateId"] = $templateId;
+			$newEntry["collectionId"] = $collectionId;
+
+			foreach($row as $key=>$rowEntry) {
+				if($mapping[$key] !== "ignore") {
+					$widget = clone $template->widgetArray[$mapping[$key]];
+					$widgetContainer = $widget->getContentContainer();
+					$widgetContainer->fieldContents = $rowEntry;
+					$newEntry[$widget->getFieldTitle()][] = $widgetContainer->getAsArray();
+				}
+			}
+
+
+			$assetModel = new Asset_model();
+			$assetModel->templateId = $templateId;
+			$asset->createObjectFromJSON($newEntry);
+			$assetModel->save();
+			$successArray[] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (" . $assetModel->getObjectId() . ")";
+		}
+
+		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $successArray));
+		$this->template->publish();
 
 	}
 

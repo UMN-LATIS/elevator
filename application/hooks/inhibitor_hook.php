@@ -200,7 +200,7 @@ class InhibitorHook {
 	private function _forward_error($message)
 	{
 		$CI =& get_instance();
-
+		session_start();
 		if($CI && !$CI->input->is_cli_request()) {
 			$CI->load->helper('url');
 			$CI->load->library('session');
