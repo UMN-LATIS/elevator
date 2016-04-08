@@ -490,6 +490,12 @@ class AssetManager extends Admin_Controller {
 		$collectionId = $this->input->post("collectionId");
 		$mapping = $this->input->post("targetField");
 
+		if(!$this->collection_model->getCollection($collectionId)) {
+			$this->template->content->set("Invalid Collection");
+			$this->template->publish();
+			return;
+		}
+
 		$template = new Asset_template($templateId);
 
 		if(!$fp = fopen($filename, "r")) {
