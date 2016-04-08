@@ -104,9 +104,11 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 				return;
 			}
 			var oldMatches = [];
+			var oldResults = [];
 			try{
 				if(cachedResults) {
 					oldMatches = cachedResults.matches;
+					oldResults = cachedResults.searchResults;
 				}
 				cachedResults = $.parseJSON(data);
 
@@ -127,6 +129,7 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 				}
 				processSearchResults(cachedResults);
 				newArray = $.merge(cachedResults.matches, oldMatches);
+				cachedResults.searchResults = $.merge(cachedResults.searchResults, oldResults);
 				cachedResults.matches = newArray;
 
 			}
