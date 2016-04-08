@@ -17,7 +17,6 @@ class errorHandler extends Instance_Controller {
 
 		$this->load->library('session');
 		$errorMessage = $this->session->flashdata('error');
-
 		$log = new Entity\Log();
 		$log->setMessage($errorMessage);
 		$log->setCreatedAt(new \DateTime("now"));
