@@ -518,7 +518,7 @@ class AssetManager extends Admin_Controller {
 
 			$assetModel = new Asset_model();
 			$assetModel->templateId = $templateId;
-			$asset->createObjectFromJSON($newEntry);
+			$assetModel->createObjectFromJSON($newEntry);
 			$assetModel->save();
 			$successArray[] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (" . $assetModel->getObjectId() . ")";
 		}
