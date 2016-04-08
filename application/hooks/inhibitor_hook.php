@@ -94,7 +94,8 @@ class InhibitorHook {
 		else {
 			$errorText = $exception;
 		}
-
+		var_dump($errorText);
+		die;
 
 		//reset doctrine in case we've lost the DB
 		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
