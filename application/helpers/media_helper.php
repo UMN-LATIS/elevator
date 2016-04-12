@@ -16,7 +16,8 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		// get the first page
 		$append = "[0]";
 	}
-
+	$CI =& get_instance();
+	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
 	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
 	$image->setImageCompressionQuality($compressionQuality);
