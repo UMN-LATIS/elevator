@@ -152,6 +152,7 @@ class Search extends Instance_Controller {
 		instance_redirect("search#".$this->searchId);
 	}
 
+
 	public function listCollections() {
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
@@ -163,7 +164,19 @@ class Search extends Instance_Controller {
 			}
 			$collections = $this->instance->getCollectionsWithoutParent();
 
-			$collections = array_intersect($collections, $allowedCollections);
+			
+			$collections = array_values(array_uintersect($collections, $allowedCollections, function($a, $b) { 
+				$this->logging->logError("a", ($a->getId()));
+				$this->logging->logError("b", ($b->getId()));
+				if($a->getId() == $b->getId()) { 
+					return 0;
+				}
+				if($a->getId() > $b->getId()) {
+					return 1;
+				}
+				return -1;
+			}));
+
 
 		}
 		else {

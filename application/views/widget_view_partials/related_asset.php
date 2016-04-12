@@ -41,7 +41,7 @@
 
 			// display children inline
 			if($widgetModel->collapseNestedChildren && $fieldContent->getRelatedObjectId()):?>
-				<div class="panel panel-default collapsedChild" >
+				<div class="collapsedChild" >
 					<?if($fieldContent->label):?><?=$fieldContent->label?><?endif?>
 					<?if(!$widgetModel->displayInline):?>
 					<a href="<?=instance_url("asset/viewAsset/".$fieldContent->getRelatedObjectId())?>" class="btn btn-primary btn-xs" style="color:white">Open</a>

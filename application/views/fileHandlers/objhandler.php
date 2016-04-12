@@ -38,7 +38,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <!--UTILITY-->
 <script type="text/javascript" src="/assets/3dviewer/js/init.js"></script>
 <?else:?>
-<script type="text/javascript" src="/assets/3dviewer/js/3dviewer.js"></script>
+<script type="text/javascript" src="/assets/3dviewer/js/3dviewer.min.js"></script>
 <script type="text/javascript" src="/assets/3dviewer/js/nexus.js"></script><!-- need this due to how nexus.js swaps out itself -->
 <?endif?>
 

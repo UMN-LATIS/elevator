@@ -146,8 +146,8 @@ class User_model extends CI_Model {
 					if(isset($jobCodeArray[2])) {
 						$this->jobCodes[] = $jobCodeArray[2] + 0;
 					}
-					if(isset($jobCodeArray[0])) {
-						$this->units[] = $jobCodeArray[0];
+					if(isset($jobCodeArray[10])) {
+						$this->units[] = $jobCodeArray[10];
 					}
 
 				}
