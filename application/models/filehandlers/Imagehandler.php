@@ -161,6 +161,7 @@ class ImageHandler extends FileHandlerBase {
 			$derivativeContainer->setParent($this->sourceFile->getParent());
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
+			echo "Compressing " . $width . " x " . $height . "\n";
 			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height)) {
 				$derivativeContainer->ready = true;
 				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
@@ -339,9 +340,28 @@ class ImageHandler extends FileHandlerBase {
 
 			return new FileContainer($dest);
 		}
-		else {
-			return $this->sourceFile;
+
+		if(isset($this->sourceFile->metadata) && isset($this->sourceFile->metadata["width"])) {
+			$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
+
+			if($megapixels > 100) {
+				$source = $this->sourceFile->getPathToLocalFile();
+				$dest = $this->sourceFile->getPathToLocalFile() . ".png";
+				if(file_exists($dest)) {
+					return new FileContainer($dest);
+				}
+				$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+				exec($convertString . " 2>/dev/null");
+
+				return new FileContainer($dest);
+
+
+			}
+
+
 		}
+		
+		return $this->sourceFile;
 	}
 
 
