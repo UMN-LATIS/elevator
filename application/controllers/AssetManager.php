@@ -504,6 +504,8 @@ class AssetManager extends Admin_Controller {
 			return;
 		}
 
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+					
 		$header = fgetcsv($fp, 0, ",");
 		$successArray = [];
 		while($row = fgetcsv($fp, 0, ",")) {
@@ -511,10 +513,14 @@ class AssetManager extends Admin_Controller {
 			$newEntry["readyForDisplay"] = true;
 			$newEntry["templateId"] = $templateId;
 			$newEntry["collectionId"] = $collectionId;
-
+			$uploadItems = array();
 			foreach($row as $key=>$rowEntry) {
 				if($mapping[$key] !== "ignore") {
 					$widget = clone $template->widgetArray[$mapping[$key]];
+					if(get_class($widget) == "Upload") {
+						$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>$rowEntry];
+						continue;
+					}
 					$widgetContainer = $widget->getContentContainer();
 					$widgetContainer->fieldContents = $rowEntry;
 					$newEntry[$widget->getFieldTitle()][] = $widgetContainer->getAsArray();
@@ -526,6 +532,12 @@ class AssetManager extends Admin_Controller {
 			$assetModel->templateId = $templateId;
 			$assetModel->createObjectFromJSON($newEntry);
 			$assetModel->save();
+
+			if(count($uploadItems)>0) {
+				$newTask = json_encode(["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems]);
+				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 900);
+			}
+
 			$successArray[] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (" . $assetModel->getObjectId() . ")";
 		}
 
