@@ -59,7 +59,7 @@ class asset extends Instance_Controller {
 
 		// for subclipping movies
 		$this->template->loadJavascript(["excerpt"]);
-
+		$this->template->title = $assetModel->getAssetTitle(true);
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
 		$this->template->publish();
 
