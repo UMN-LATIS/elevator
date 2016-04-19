@@ -53,7 +53,7 @@
 				<?
 				// thumbnail view
 				if($widgetModel->thumbnailView && $fieldContent->getRelatedObjectId()):?>
-					<?if($fieldContent->getReadyForWeb()):?>
+					<?if($fieldContent->getReadyForDisplay()):?>
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
 							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
@@ -117,7 +117,6 @@
 <script>
 $(".nestedGroup").each(function(index, el) {
 	// if this group doesn't have any children, hide it
-	console.log($(el).children("div"));
 	if($(el).children("div").length == 0) {
 
 		$(el).hide();
