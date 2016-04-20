@@ -41,7 +41,7 @@
 
 			// display children inline
 			if($widgetModel->collapseNestedChildren && $fieldContent->getRelatedObjectId()):?>
-				<div class="panel panel-default collapsedChild" >
+				<div class="collapsedChild" >
 					<?if($fieldContent->label):?><?=$fieldContent->label?><?endif?>
 					<?if(!$widgetModel->displayInline):?>
 					<a href="<?=instance_url("asset/viewAsset/".$fieldContent->getRelatedObjectId())?>" class="btn btn-primary btn-xs" style="color:white">Open</a>
@@ -53,7 +53,7 @@
 				<?
 				// thumbnail view
 				if($widgetModel->thumbnailView && $fieldContent->getRelatedObjectId()):?>
-					<?if($fieldContent->getReadyForWeb()):?>
+					<?if($fieldContent->getReadyForDisplay()):?>
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
 							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
