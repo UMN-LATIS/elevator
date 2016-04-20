@@ -38,7 +38,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <!--UTILITY-->
 <script type="text/javascript" src="/assets/3dviewer/js/init.js"></script>
 <?else:?>
-<script type="text/javascript" src="/assets/3dviewer/js/3dviewer.js"></script>
+<script type="text/javascript" src="/assets/3dviewer/js/3dviewer.min.js"></script>
 <script type="text/javascript" src="/assets/3dviewer/js/nexus.js"></script><!-- need this due to how nexus.js swaps out itself -->
 <?endif?>
 
@@ -46,7 +46,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <div class="row assetViewRow">
   <div class="col-md-12">
 <?endif?>
-  <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
+  <? if(!isset($fileContainers) || count($fileContainers) <=4 ):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
       <?=$this->load->view("errors/loginForPermissions")?>

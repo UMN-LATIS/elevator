@@ -193,7 +193,7 @@ class Beltdrive extends CI_Controller {
 			$memory = memory_get_usage();
 
 			if($memory > 100000000) {
-				echo "exiting run due to memory limit";
+				echo "exiting run due to memory limit\n";
 				exit;
 			}
 			$this->doctrine->em->clear();

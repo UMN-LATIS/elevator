@@ -59,10 +59,8 @@ class asset extends Instance_Controller {
 
 		// for subclipping movies
 		$this->template->loadJavascript(["excerpt"]);
-		
-		$titleArray = $assetModel->getAssetTitle($collapse=false);
-		$assetTitle = reset($titleArray);
-		$this->template->title = $assetTitle;
+
+		$this->template->title = reset($assetModel->getAssetTitle());
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
 		$this->template->publish();
 
@@ -223,7 +221,9 @@ class asset extends Instance_Controller {
 			}
 
 			if($parentMatch) {
-				$this->accessLevel = $this->user_model->getAccessLevel("asset", $tempAsset);
+				$assetPerms = $this->user_model->getAccessLevel("asset", $assetModel);
+				$parentPerms = $this->user_model->getAccessLevel("asset", $tempAsset);
+				$this->accessLevel = max($assetPerms, $parentPerms);
 			}
 			else {
 				// we've got a mismatch, but see if they've got access to the file without looking at the parent.

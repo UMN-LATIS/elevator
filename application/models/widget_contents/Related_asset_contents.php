@@ -64,19 +64,19 @@ class Related_asset_contents extends Widget_contents_base {
 		}
 	}
 
-	public function getReadyForWeb() {
+	public function getReadyForDisplay() {
 
-		if(!$this->readyForWeb && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
+		if(!$this->readyForDisplay && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
 			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
 				$relatedAssetCache = $assetCache->getRelatedAssetCache();
 				if(isset($relatedAssetCache[$this->getRelatedObjectId()])) {
-					$this->readyForWeb = $relatedAssetCache[$this->getRelatedObjectId()]["readyForWeb"];
+					$this->readyForDisplay = $relatedAssetCache[$this->getRelatedObjectId()]["readyForDisplay"];
 				}
 			}
 		}
 
-		if($this->readyForWeb) {
-			return $this->readyForWeb;
+		if($this->readyForDisplay) {
+			return $this->readyForDisplay;
 		}
 		else {
 			if($relatedAsset = $this->getRelatedAsset()) {
