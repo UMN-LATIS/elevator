@@ -55,7 +55,13 @@ class Permissions extends Instance_Controller {
 				show_404();
 			}
 			$myGroups = $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(["user"=>$this->user_model->user]);
-			$sourceGroups = $data['drawer']->getGroups()->toArray();
+			$sourceGroups = $data['drawer']->getPermissions();
+			foreach ($sourceGroups as $current) {
+			    if ( ! in_array($current->getGroup(), $myGroups)) {
+        			$myGroups[] = $current->getGroup();
+    			}
+			}
+			$sourceGroups = $data['drawer']->getGroups();
 			foreach ($sourceGroups as $current) {
 			    if ( ! in_array($current, $myGroups)) {
         			$myGroups[] = $current;
@@ -351,12 +357,12 @@ class Permissions extends Instance_Controller {
 		if($permissionType == DRAWER_PERMISSION) {
 			// If the drawer permissions are being added, be sure to include the drawer groups
 			$data['drawer'] = $this->doctrine->em->find('Entity\Drawer', $data['permissionTypeId']);
-
 			if ($data['drawer'] === null) {
 				show_404();
 			}
 			$myGroups = $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(["user"=>$this->user_model->user]);
-			$sourceGroups = $data['drawer']->getGroups()->toArray();
+			$sourceGroups = $data['drawer']->getPermissions()->toArray();
+
 			foreach ($sourceGroups as $current) {
 			    if ( ! in_array($current, $myGroups)) {
         			$myGroups[] = $current;
