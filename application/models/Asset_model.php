@@ -739,6 +739,7 @@ class Asset_model extends CI_Model {
 
 		$this->assetObject->setReadyForDisplay($this->getGlobalValue("readyForDisplay")?true:false);
 		$this->assetObject->setCollectionId($this->getGlobalValue("collectionId"));
+		$this->assetObject->setCollectionMigration($this->getGlobalValue("collectionMigration"));
 		$this->assetObject->setTemplateId($this->templateId);
 		if(is_object($this->getGlobalValue("availableAfter"))) {
 			$this->assetObject->setAvailableAfter($this->getGlobalValue("availableAfter"));
@@ -773,7 +774,7 @@ class Asset_model extends CI_Model {
 
 					$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 					$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId(), "targetCollection"=>$this->getGlobalValue("collectionId")]);
-					$jobId= $pheanstalk->useTube('collectionMigration')->put($newTask, NULL, 1);
+					$jobId= $pheanstalk->useTube('collectionMigration')->put($newTask, NULL, 1, 900);
 
         		}
 

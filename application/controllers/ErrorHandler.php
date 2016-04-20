@@ -14,6 +14,8 @@ class errorHandler extends Instance_Controller {
 	}
 
 	public function fatalError() {
+		header('Status: 500 Internal Server Error');
+        header('HTTP/1.0 500 Internal Server Error');
 
 		$this->load->library('session');
 		$errorMessage = $this->session->flashdata('error');
