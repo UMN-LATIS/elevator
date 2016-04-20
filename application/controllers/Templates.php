@@ -126,6 +126,7 @@ class Templates extends Instance_Controller {
 				$newWidget->setTooltip($widget['tooltip']);
 
 				$fieldData = json_decode($widget['fieldData']);
+
 				if($fieldData) {
 					$newWidget->setFieldData($fieldData);
 				}
