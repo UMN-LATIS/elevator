@@ -40,7 +40,7 @@
 				<select <?=$required?> class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
 		<? foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption): ?>
 			<?if(!is_numeric($key)):?>
-				<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $key==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?> value="<?=$key?>"><?=$key?></option>
+				<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $key==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?> value="<?=trim($key)?>"><?=trim($key)?></option>
 			<?else:?>
 
 			<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $selectOption==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?>><?=$selectOption?></option>
