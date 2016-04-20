@@ -430,4 +430,33 @@ class Collection
     {
         return $this->parent;
     }
+    /**
+     * @var boolean
+     */
+    private $showInBrowse;
+
+
+    /**
+     * Set showInBrowse
+     *
+     * @param boolean $showInBrowse
+     *
+     * @return Collection
+     */
+    public function setShowInBrowse($showInBrowse)
+    {
+        $this->showInBrowse = $showInBrowse;
+
+        return $this;
+    }
+
+    /**
+     * Get showInBrowse
+     *
+     * @return boolean
+     */
+    public function getShowInBrowse()
+    {
+        return $this->showInBrowse;
+    }
 }
