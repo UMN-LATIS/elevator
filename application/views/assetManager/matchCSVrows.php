@@ -18,16 +18,19 @@
 	<hr>
 	<?foreach($headerRows as $row):?>
 	<div class="form-group">
-		<div class="col-sm-6">
+		<div class="col-sm-4">
 			<?=$row?>
 		</div>
-		<div class="col-sm-6">
+		<div class="col-sm-4">
 			<select name="targetField[]" class="form-control">
 				<option value="ignore">Don't import</option>
 			<?foreach($template->widgetArray as $widget):?>
 				<option value="<?=$widget->getFieldTitle()?>"><?=$widget->getLabel()?></option>
 			<?endforeach?>
 			</select>
+		</div>
+		<div class="col-sm-2">
+			<input name="delimiter[]" cass="form-control" placeholder="delimiter">
 		</div>
 	</div>
 	<?endforeach?>
