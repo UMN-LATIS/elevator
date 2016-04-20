@@ -46,7 +46,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <div class="row assetViewRow">
   <div class="col-md-12">
 <?endif?>
-  <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
+  <? if(!isset($fileContainers) || count($fileContainers) <=4 ):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
       <?=$this->load->view("errors/loginForPermissions")?>
