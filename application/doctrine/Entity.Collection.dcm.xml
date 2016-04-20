@@ -31,5 +31,6 @@
           <field name="createdAt" type="datetime" nullable='true' />
           <field name="modifiedAt" type="datetime" nullable='true' />
           <field name="bucketRegion" type="string" nullable='true' />
+          <field name="showInBrowse" type="boolean" nullable='true' />
       </entity>
 </doctrine-mapping>
