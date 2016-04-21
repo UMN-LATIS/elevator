@@ -30,6 +30,13 @@ if(isset($fileContainers['mp4hd'])) {
   $mediaArray["mp4hd"] = $entry;
 }
 
+if(isset($fileContainers['mp4hd1080'])) {
+  $entry["type"] = "mp4";
+  $entry["file"] = stripHTTP($fileContainers['mp4hd1080']->getProtectedURLForFile());
+  $entry["label"] = "HD1080";
+  $mediaArray["mp4hd1080"] = $entry;
+}
+
 $derivatives = array();
 if($fileObject->sourceFile->metadata["duration"] < 300) {
 
@@ -54,8 +61,6 @@ else {
   if(array_key_exists("streaming", $mediaArray)) {
     $derivatives[] = $mediaArray["streaming"];
   }
-
-
 
 }
 
@@ -90,6 +95,8 @@ if(typeof objectId == 'undefined') {
         <?endif?>
       </p>
 
+    <?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
+           <iframe frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="/assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
     <?else:?>
     <div id="videoElement">Loading the player...</div>
 
