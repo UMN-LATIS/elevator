@@ -22,7 +22,9 @@ class ImageHandler extends FileHandlerBase {
 						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
 						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
-						  											    ["width"=>4096, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]]
+						  											    ["width"=>4096, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
+						2=>["taskType"=>"tileImage", "config"=>array("ttr"=>600, "minimumMegapixels"=>30)],
+							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
 
