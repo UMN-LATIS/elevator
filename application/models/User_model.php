@@ -248,10 +248,9 @@ class User_model extends CI_Model {
 		$result = $this->doctrine->em->getRepository("Entity\\" . $entityType)->createQueryBuilder('i')
 
    			->join("i.group_values", "r", "with", "i.group_type = :group_type")
-   			->where("r.groupValue = :group_value_number")
+   			->where(":group_value_number LIKE r.groupValue")
    			->setParameter('group_type', $groupType)
-   			->setParameter('group_value_number', $groupValue)
-   			->andWhere("r.groupValue = :group_value_number");
+   			->setParameter('group_value_number', $groupValue);
 
 		if($limit != null && $entityType == "DrawerGroup") {
 			$result = $result->andWhere("i.user = :user")
