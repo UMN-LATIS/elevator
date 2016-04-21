@@ -104,6 +104,20 @@ class Transcoder_Model extends CI_Model {
 
 		$targetMetadata["bulkMetadata"] = json_encode($metadata);
 		$targetMetadata["filesize"] = $this->fileHandler->sourceFile->getFileSize();
+
+/**
+		 * As these standards evolve this should be refactored
+		 */
+		$this->load->model("asset_model");
+		$uploadWidget = $this->fileHandler->getUploadWidget();
+		if(stristr($uploadWidget->fileDescription, "spherical")) {
+			$targetMetadata["spherical"] = true;
+		
+			if(stristr($uploadWidget->fileDescription, "stereo")) {
+				$targetMetadata["stereo"] = true;
+			}
+		}
+
 		$this->fileHandler->sourceFile->metadata = array_merge($this->fileHandler->sourceFile->metadata, $targetMetadata);
 
 		//TODO: update asset for reindexing
@@ -633,6 +647,53 @@ class Transcoder_Model extends CI_Model {
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "HD not created","", "", $this->job->getId());
+					return JOB_FAILED;
+				}
+        		echo "Uploading";
+				if($derivativeContainer->copyToRemoteStorage()) {
+        			$derivativeContainer->removeLocalFile();
+        			$derivativeContainer->ready = true;
+        		}
+        		else {
+        			$this->logging->processingInfo("createDerivative", "could not upload HD","", "", $this->job->getId());
+        			return JOB_FAILED;
+        		}
+        		break;
+        	case "HD1080":
+				$derivativeContainer->derivativeType = "mp4hd1080";
+				$derivativeContainer->path = "derivative";
+				$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "mp4hd1080.mp4";
+				$derivativeContainer->setParent($this->fileHandler);
+				$this->fileHandler->derivatives['mp4hd1080'] = $derivativeContainer;
+
+				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
+				$process = $video->getProcess();
+
+        		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
+ 				$outputFormat->setAudioCodec('aac')->setAudioChannels(2)->setVideoCodec('h264');
+
+ 				if(isset($this->fileHandler->sourceFile->metadata["sampleRate"])) {
+ 					$outputFormat->setAudioSampleFrequency((int)$this->fileHandler->sourceFile->metadata["sampleRate"]);
+ 				}
+ 				else {
+ 					$outputFormat->setAudioSampleFrequency(44100);
+ 				}
+
+ 				$outputFormat->setH264Preset("veryfast");
+	       		$outputFormat->setFormat("mp4")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+        		$process->addCommand("-movflags", "faststart");
+        		$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
+				$process->addCommand("-crf", 23);
+				$process->addCommand("-maxrate", "4500k");
+				$process->addCommand("-bufsize", "1835k");
+				$process->addCommand("-pix_fmt", "yuv420p");
+				if($isRotated) {
+	        		$process->addCommand('-metadata:s:v', 'rotate=""');
+	        	}
+				$process->addCommand("-vf", $rotationString . "scale=1920:trunc(ow/dar/2)*2,setdar=0", true);
+				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
+				if(!$output) {
+					$this->logging->processingInfo("createDerivative", "HD1080 not created","", "", $this->job->getId());
 					return JOB_FAILED;
 				}
         		echo "Uploading";
