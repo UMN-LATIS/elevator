@@ -23,7 +23,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 
 		<?foreach($assetModel->assetObjects as $widget):?>
-		<?if($widget->getDisplay() && $widget->hasContents() && implode("", $widget->getAsText(-1)) != $assetTitle):?>
+		<?if($widget->getDisplay() && $widget->hasContents() && !(implode("", $widget->getAsText(-1)) == $assetTitle && $widget == $assetModel->getAssetTitleWidget())):?>
 		<div class="row">
 			<div class="col-md-12 assetWidget">
 				<?=$widget->getView()?>
