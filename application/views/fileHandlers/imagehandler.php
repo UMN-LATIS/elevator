@@ -36,7 +36,9 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 				<?=$this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject])?>
 			<?else:?>
 				<?if(isset($fileObject->sourceFile->metadata["spherical"])):?>
-					 <iframe frameborder=0 width="100%" height=500px scrolling="no" allowfullscreen src="/assets/vrview/index.html?image=<?=urlencode(stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
+					<div style="height:500px">
+					 	<iframe frameborder=0 width="100%" height=100% scrolling="no" allowfullscreen src="/assets/vrview/index.html?image=<?=urlencode(stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
+					</div>
 				<?else:?>
 					 <div class="fullscreenImageContainer">
 
