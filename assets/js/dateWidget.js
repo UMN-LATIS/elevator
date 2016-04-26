@@ -5,15 +5,29 @@
 function modifyRange(event) {
 	if($(this).val() == 1) {
 		$(this).closest(".widgetContents").find('.startLabel').text("Start");
-		$(this).closest(".widgetContents").find('.dateRange').show('fast', function() {
+		// Firefox fails to handle animation when items are off-screen.  Disable animation.
+		// TODO: refactor this in a smarter way.
+		if(!(window.mozInnerScreenX == null)) {
+			$(this).closest(".widgetContents").find('.dateRange').show();
+		}
+		else {
+			$(this).closest(".widgetContents").find('.dateRange').show('fast', function() {
 
-		});
+			});	
+		}
+		
 	}
 	else {
 		$(this).closest(".widgetContents").find('.startLabel').text("Date");
-		$(this).closest(".widgetContents").find('.dateRange').hide('fast', function() {
+		if(!(window.mozInnerScreenX == null)) {
+			$(this).closest(".widgetContents").find('.dateRange').hide();
+		}
+		else {
+			$(this).closest(".widgetContents").find('.dateRange').hide('fast', function() {
 
-		});
+			});
+		}
+		
 	}
 
 }
