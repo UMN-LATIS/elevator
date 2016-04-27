@@ -98,6 +98,7 @@ class Templates extends Instance_Controller {
 		$template->setIncludeInSearch(($this->input->post("includeInSearch")=="On")?1:0);
 		$template->setIndexForSearching(($this->input->post("indexforSearching")=="On")?1:0);
 		$template->setIsHidden(($this->input->post("isHidden")=="On")?1:0);
+		$template->setShowCollection(($this->input->post("showCollection")=="On")?1:0);
 		$template->setTemplateColor($this->input->post("templateColor"));
 		$this->doctrine->em->persist($template);
 		$this->doctrine->em->flush();

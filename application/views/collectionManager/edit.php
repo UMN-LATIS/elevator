@@ -92,6 +92,13 @@ $(document).ready(function() {
 			</div>
 
 
+			<div class="form-group">
+				<label for="inputShowInBrowse" class="col-sm-2 control-label">Show in Browse List:</label>
+				<div class="col-sm-6">
+					<input type="checkbox"  name="showInBrowse" id="inputShowInBrowse" class="form-control" <?=$collection->getShowInBrowse()?"CHECKED":null ?> >
+				</div>
+			</div>
+
 
 
 			<input type="submit" name="submit" value="Update Collection" class='btn btn-primary' />
