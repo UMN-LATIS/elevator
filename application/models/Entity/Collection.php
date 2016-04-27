@@ -397,6 +397,11 @@ class Collection
         return !$this->children->isEmpty();
     }
 
+    public function hasBrowseableChildren() {
+        $filteredArray = array_filter($this->children, function($n) { return $n->getShowInBrowse();});
+        return count($filteredArray)>0?true:false;
+    }
+
     public function getFlattenedChildren() {
         $outputArray = array();
         foreach($this->children as $child) {
