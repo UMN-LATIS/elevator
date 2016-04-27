@@ -14,18 +14,18 @@ class Doctrine
     public $em;
     public $redisHost;
 
-    public function __construct()
+    public function __construct($useCache = true)
     {
 
 //        Setup::registerAutoloadDirectory(__DIR__);
 
         // Load the database configuration from CodeIgniter
 
-        $this->connect();
+        $this->connect($useCache);
 
     }
 
-    public function connect() {
+    public function connect($useCache = true) {
         require(APPPATH . 'config/database.php');
         $connection_options = array(
             'driver'        => $db['default']['doctrineDriver'],
@@ -56,18 +56,20 @@ class Doctrine
         $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
 
-      // $cache = new ApcCache;
-        $redis = new Redis();
-        require(APPPATH . 'config/config.php');
-        $redis->connect($config["redis"], $config["redisPort"]);
-        $this->redisHost = $redis;
-        $redisCache = new \Doctrine\Common\Cache\RedisCache();
-        $redisCache->setRedis($redis);
+        if($useCache) {
+            $redis = new Redis();
+            require(APPPATH . 'config/config.php');
+            $redis->connect($config["redis"], $config["redisPort"]);
+            $this->redisHost = $redis;
+            $redisCache = new \Doctrine\Common\Cache\RedisCache();
+            $redisCache->setRedis($redis);
 
-        $doctrineConfig->setMetadataCacheImpl($redisCache);
-        $doctrineConfig->setQueryCacheImpl($redisCache);
-        $doctrineConfig->setResultCacheImpl($redisCache);
-        // $config->setQueryCacheImpl($cache);
+            $doctrineConfig->setMetadataCacheImpl($redisCache);
+            $doctrineConfig->setQueryCacheImpl($redisCache);
+            $doctrineConfig->setResultCacheImpl($redisCache);
+        }
+        
+
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
         //$config->setSQLLogger($logger);
