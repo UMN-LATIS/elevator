@@ -184,6 +184,14 @@ class Search extends Instance_Controller {
 		}
 
 
+		foreach($collections as $key=>$collection) {
+
+			if(!$collection->getShowInBrowse()) {
+				unset($collections[$key]);
+			}
+
+		}
+
 		$this->template->loadJavascript(["assets/js/templateSearch"]);
 		$this->template->content->view("listCollections", ["collections"=>$collections]);
 		$this->template->publish();
