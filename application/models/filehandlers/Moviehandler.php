@@ -53,6 +53,7 @@ class MovieHandler extends FileHandlerBase {
 		$derivative=array();
 
 		if($accessLevel>=$this->getPermission()) {
+			$derivative[] = "mp4hd1080";
 			$derivative[] = "mp4hd";
 			$derivative[] = "mp4sd";
 			$derivative[] = "streaming";
@@ -158,6 +159,9 @@ class MovieHandler extends FileHandlerBase {
 			if($width >= 1280) {
 				$targetDerivatives[] = "hd";
 			}
+			if(isset($this->sourceFile->metadata["spherical"])) {
+				$targetDerivatives[] = "hd1080";
+			}
 		}
 		$nextDerivative = array_shift($targetDerivatives);
 
@@ -184,6 +188,9 @@ class MovieHandler extends FileHandlerBase {
 				break;
 			case "hd":
 				$jobId = $transcodeCommands->createDerivative($this->getObjectId(), "HD");
+				break;
+			case "hd1080":
+				$jobId = $transcodeCommands->createDerivative($this->getObjectId(), "HD1080");
 				break;
 		}
 
