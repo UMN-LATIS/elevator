@@ -397,6 +397,11 @@ class Collection
         return !$this->children->isEmpty();
     }
 
+    public function hasBrowseableChildren() {
+        $filteredArray = array_filter($this->children, function($n) { return $n->getShowInBrowse();});
+        return count($filteredArray)>0?true:false;
+    }
+
     public function getFlattenedChildren() {
         $outputArray = array();
         foreach($this->children as $child) {
@@ -429,5 +434,34 @@ class Collection
     public function getParent()
     {
         return $this->parent;
+    }
+    /**
+     * @var boolean
+     */
+    private $showInBrowse;
+
+
+    /**
+     * Set showInBrowse
+     *
+     * @param boolean $showInBrowse
+     *
+     * @return Collection
+     */
+    public function setShowInBrowse($showInBrowse)
+    {
+        $this->showInBrowse = $showInBrowse;
+
+        return $this;
+    }
+
+    /**
+     * Get showInBrowse
+     *
+     * @return boolean
+     */
+    public function getShowInBrowse()
+    {
+        return $this->showInBrowse;
     }
 }
