@@ -19,7 +19,7 @@ foreach ($GLOBALS as $helperSetCandidate) {
     }
 }
 
-$doctrine = new Doctrine;
+$doctrine = new Doctrine(false);
 $em = $doctrine->em;
 
 $helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(

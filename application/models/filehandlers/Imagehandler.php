@@ -17,6 +17,16 @@ class ImageHandler extends FileHandlerBase {
 							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
+	public $sphericalTaskArray = [
+						  1=>["taskType"=>"createDerivative", "config"=>["ttr"=>600, ["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
+						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
+						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
+						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
+						  											    ["width"=>4096, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
+						2=>["taskType"=>"tileImage", "config"=>array("ttr"=>600, "minimumMegapixels"=>30)],
+							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							];
+
 
 
 	public function __construct()
@@ -100,6 +110,19 @@ class ImageHandler extends FileHandlerBase {
 			}
 			else {
 				return JOB_FAILED;
+			}
+		}
+
+		/**
+		 * As these standards evolve this should be refactored
+		 */
+		$uploadWidget = $this->getUploadWidget();
+		if((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["GPano:UsePanoramaViewer"]) && $fileObject->metadata["exif"]["GPano:UsePanoramaViewer"] == "True") || stristr($uploadWidget->fileDescription, "spherical")) {
+			$fileObject->metadata["spherical"] = true;
+			$this->taskArray = $this->sphericalTaskArray; // swap out our task array to get a bigger max size for our derivatives in this case.
+			
+			if(stristr($uploadWidget->fileDescription, "stereo")) {
+				$fileObject->metadata["stereo"] = true;
 			}
 		}
 

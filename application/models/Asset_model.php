@@ -492,37 +492,49 @@ class Asset_model extends CI_Model {
 	//
 	public function getAssetTitle($collapse=false) {
 		$this->sortBy('viewOrder');
-		$outputObject = array();
-		$foundFirst = false;
+		
+		$assetObject = $this->getAssetTitleWidget();
+
+		if(!$assetObject) {
+			if($collapse) {
+				return "";
+			}
+			else {
+				return array();
+			}
+		}
+
+		if(get_class($assetObject) == "Related_asset") {
+			$assetTitle = array();
+			foreach($assetObject->fieldContentsArray as $entry) {
+				$titleArray = $entry->getRelatedObjectTitle(true);
+				array_push($assetTitle, $titleArray);
+			}
+
+		}
+		else {
+			$assetTitle = $assetObject->getArrayOfText(false);
+		}
+
+		if($collapse) {
+			return join(", ", $assetTitle);
+		}
+		else {
+			return $assetTitle;
+		}
+		
+	}
+
+	public function getAssetTitleWidget() {
+		$this->sortBy('viewOrder');
 		foreach($this->assetObjects as $assetKey=>$assetObject) {
 			$assetObject->primarySort();
 			if($assetObject->getDisplayInPreview()) {
-				if(get_class($assetObject) == "Related_asset") {
-					$assetTitle = array();
-					foreach($assetObject->fieldContentsArray as $entry) {
-						$titleArray = $entry->getRelatedObjectTitle(true);
-						array_push($assetTitle, $titleArray);
-					}
-
-				}
-				else {
-					$assetTitle = $assetObject->getArrayOfText(false);
-				}
-
-				if($collapse) {
-					return join(", ", $assetTitle);
-				}
-				else {
-					return $assetTitle;
-				}
+				return $assetObject;
 			}
 		}
-		if($collapse) {
-			return "";
-		}
-		else {
-			return array();
-		}
+		
+		return false;
 
 	}
 
