@@ -440,7 +440,7 @@ class AssetManager extends Admin_Controller {
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
-		if($accessLevel < PERM_ADDASSETS) {
+		if($accessLevel < PERM_ADMIN) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
