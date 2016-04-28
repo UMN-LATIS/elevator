@@ -43219,11 +43219,12 @@ function onSceneLoad(scene) {
     } else {
       // Load the video element.
       videoElement = document.createElement('video');
-      videoElement.src = scene.video;
-      videoElement.loop = true;
-      videoElement.setAttribute('crossorigin', 'anonymous');
       videoElement.addEventListener('canplaythrough', onVideoLoad);
       videoElement.addEventListener('error', onVideoError);
+      videoElement.src = scene.video;
+      videoElement.loop = true;
+      videoElement.preload = "auto";
+      videoElement.setAttribute('crossorigin', 'anonymous');
     }
   } else if (scene.image) {
     // Otherwise, just render the photosphere.
