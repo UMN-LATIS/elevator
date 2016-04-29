@@ -117,6 +117,28 @@ class Transcoder_Model extends CI_Model {
 				$targetMetadata["stereo"] = true;
 			}
 		}
+		else {
+
+			$fileType = strtolower($this->fileHandler->asset->getFileType());
+			if($fileType == "mov" || $fileType == "mp4") {
+				rename($this->fileHandler->sourceFile->getPathToLocalFile(), $this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType);
+				$commandString = "python " . $this->config->item("spatialMedia"). " " . $this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType;
+				exec($commandString, $output);
+				rename($this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType, $this->fileHandler->sourceFile->getPathToLocalFile());
+				foreach($output as $line) {
+					if(stristr($line, "spherical") && stristr($line, "true")) {
+						$targetMetadata["spherical"] = true;
+					}
+					if(stristr($line, "stereo") && stristr($line, "true")) {
+						$targetMetadata["stereo"] = true;
+					}
+				}
+
+
+
+			}
+
+		}
 
 		$this->fileHandler->sourceFile->metadata = array_merge($this->fileHandler->sourceFile->metadata, $targetMetadata);
 
