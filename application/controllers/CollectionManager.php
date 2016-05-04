@@ -63,6 +63,7 @@ class CollectionManager extends Instance_Controller {
 			$collection->setS3Secret($this->instance->getAmazonS3Secret());
 			$collection->setBucket($this->instance->getDefaultBucket());
 			$collection->setBucketRegion($this->instance->getBucketRegion());
+			$collection->setShowInBrowse(true);
 			$data['collection'] = $collection;
 
 		}
@@ -92,6 +93,7 @@ class CollectionManager extends Instance_Controller {
 		$collection->setBucketRegion($this->input->post('bucketRegion'));
 		$collection->setS3Key($this->input->post('S3Key'));
 		$collection->setS3Secret($this->input->post('S3Secret'));
+		$collection->setShowInBrowse($this->input->post('showInBrowse')=="on"?1:0);
 
 		if($this->input->post("parent") !== "0") {
 
