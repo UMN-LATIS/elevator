@@ -166,8 +166,6 @@ class Search extends Instance_Controller {
 
 			
 			$collections = array_values(array_uintersect($collections, $allowedCollections, function($a, $b) { 
-				$this->logging->logError("a", ($a->getId()));
-				$this->logging->logError("b", ($b->getId()));
 				if($a->getId() == $b->getId()) { 
 					return 0;
 				}
