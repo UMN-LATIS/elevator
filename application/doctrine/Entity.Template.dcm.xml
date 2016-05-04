@@ -29,6 +29,11 @@
           <field name="indexForSearching" type="boolean" />
           <field name="templateColor" type="integer" />
           <field name="isHidden" type="boolean" />
+          <field name="showCollection" type="boolean">
+            <options>
+              <option name="default">0</option>
+            </options>
+          </field>
       </entity>
 
 

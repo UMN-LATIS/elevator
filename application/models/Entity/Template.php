@@ -333,4 +333,33 @@ class Template
     {
         return $this->instances;
     }
+    /**
+     * @var boolean
+     */
+    private $showCollection;
+
+
+    /**
+     * Set showCollection
+     *
+     * @param boolean $showCollection
+     *
+     * @return Template
+     */
+    public function setShowCollection($showCollection)
+    {
+        $this->showCollection = $showCollection;
+
+        return $this;
+    }
+
+    /**
+     * Get showCollection
+     *
+     * @return boolean
+     */
+    public function getShowCollection()
+    {
+        return $this->showCollection;
+    }
 }
