@@ -398,7 +398,7 @@ class Collection
     }
 
     public function hasBrowseableChildren() {
-        $filteredArray = array_filter($this->children, function($n) { return $n->getShowInBrowse();});
+        $filteredArray = array_filter($this->children->toArray(), function($n) { return $n->getShowInBrowse();});
         return count($filteredArray)>0?true:false;
     }
 
