@@ -248,6 +248,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
                 <li><a href="<?=instance_url("reports/")?>">Reports</a></li>
                 <li><a href="<?=instance_url("templates/")?>">Edit Templates</a></li>
                 <li><a href="<?=instance_url("collectionManager")?>">Edit Collections</a></li>
+                <li><a href="<?=instance_url("assetManager/importFromCSV")?>">Import from CSV</a></li>
                 <?if($this->user_model->getIsSuperAdmin()):?>
                  <li class="divider"></li>
                 <li><a href="<?=instance_url("admin")?>">Elevator Admin</a></li>
