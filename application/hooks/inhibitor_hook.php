@@ -94,7 +94,7 @@ class InhibitorHook {
 		else {
 			$errorText = $exception;
 		}
-		var_dump($errorText);
+		var_dump(substr($errorText, 0, 1000));
 		die;
 
 		//reset doctrine in case we've lost the DB

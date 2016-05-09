@@ -24,7 +24,11 @@
 			</div>
 
 			<input type="hidden" name="redirectURL" value="<?=$redirectURL?>" >
-
+			<script>
+			if(window.location.hash) {
+				$('[name="redirectURL"]').val($('[name="redirectURL"]').val() + window.location.hash);
+			}
+			</script>
 			<div class="form-group">
 				<div class="col-sm-6 col-sm-offset-2">
 					<button type="submit" class="btn btn-primary">Login</button>
