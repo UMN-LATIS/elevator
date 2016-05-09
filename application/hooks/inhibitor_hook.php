@@ -94,7 +94,8 @@ class InhibitorHook {
 		else {
 			$errorText = $exception;
 		}
-
+		var_dump($errorText);
+		die;
 
 		//reset doctrine in case we've lost the DB
 		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -200,7 +201,7 @@ class InhibitorHook {
 	private function _forward_error($message)
 	{
 		$CI =& get_instance();
-
+		session_start();
 		if($CI && !$CI->input->is_cli_request()) {
 			$CI->load->helper('url');
 			$CI->load->library('session');
