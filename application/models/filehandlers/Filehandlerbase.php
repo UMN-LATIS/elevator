@@ -56,6 +56,10 @@ class FileHandlerBase extends CI_Model {
 	 * @return [BOOL]           [yes, we support it]
 	 */
 	public function supportsType($fileType) {
+		if($fileType == "" || $fileType == NULL) {
+			return FALSE;
+		}
+		
 		if(in_array(strtolower($fileType), $this->supportedTypes)) {
 			return TRUE;
 		}

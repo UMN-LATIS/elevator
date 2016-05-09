@@ -644,6 +644,9 @@ class Beltdrive extends CI_Controller {
 			$fileArray = $job_encoded["importItems"];
 			foreach($fileArray as $importEntry) {
 
+				if(!is_numeric($assetModel->getGlobalValue("collectionId"))) {
+					continue;
+				}
 				$parsedURL = parse_url($importEntry['url'], PHP_URL_PATH);
 				$urlFile = basename($parsedURL);
 				$fileContainer = new fileContainerS3();

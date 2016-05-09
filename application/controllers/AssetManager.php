@@ -484,50 +484,80 @@ class AssetManager extends Admin_Controller {
 		$this->template->publish();
 	}
 
-	public function processCSV() {
-		$filename = $this->input->post("filename");
-		$templateId = $this->input->post("templateId");
-		$collectionId = $this->input->post("collectionId");
-		$mapping = $this->input->post("targetField");
-		$delimiter = $this->input->post("delimiter");
+	public function processCSV($hash=null, $offset=null) {
+		set_time_limit(120);
 
-		if(!$this->collection_model->getCollection($collectionId)) {
+		if($this->input->post("filename")) {
+			$cacheArray['filename'] = $this->input->post("filename");
+			$cacheArray['templateId'] = $this->input->post("templateId");
+			$cacheArray['collectionId'] = $this->input->post("collectionId");
+			$cacheArray['mapping'] = $this->input->post("targetField");
+			$cacheArray['delimiter'] = $this->input->post("delimiter");
+			$hash = sha1(rand());
+		}
+		else {
+
+			if($hash) {
+				$this->doctrineCache->setNamespace('importCache_');
+				$cacheArray = $this->doctrineCache->fetch($hash);
+			}
+			else {
+				$this->logging->logError("Cachine Error");
+				$this->errorhandler_helper->callError("genericError");
+				return;
+			}
+
+		}
+		
+
+
+		if(!$this->collection_model->getCollection($cacheArray['collectionId'])) {
 			$this->template->content->set("Invalid Collection");
 			$this->template->publish();
 			return;
 		}
 
-		$template = new Asset_template($templateId);
+		$template = new Asset_template($cacheArray['templateId']);
 
-		if(!$fp = fopen($filename, "r")) {
-			$this->logging->logError("error reading file", $filename);
+		if(!$fp = fopen($cacheArray['filename'], "r")) {
+			$this->logging->logError("error reading file", $cacheArray['filename']);
 			$this->errorhandler_helper->callError("genericError");
 			return;
 		}
 
 		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-					
+				
+
+		$rowCount = 0;
+		$totalLines = intval(exec("wc -l '" . $cacheArray['filename'] . "'"));
+
 		$header = fgetcsv($fp, 0, ",");
 		$successArray = [];
 		while($row = fgetcsv($fp, 0, ",")) {
+			if($offset > 0) {
+				if($rowCount < $offset) {
+					$rowCount++;
+					continue;
+				}
+			}
 			$newEntry = array();
 			$newEntry["readyForDisplay"] = true;
-			$newEntry["templateId"] = $templateId;
-			$newEntry["collectionId"] = $collectionId;
+			$newEntry["templateId"] = $cacheArray['templateId'];
+			$newEntry["collectionId"] = $cacheArray['collectionId'];
 			$uploadItems = array();
 			foreach($row as $key=>$cell) {
 				$cell = mb_convert_encoding( $cell, 'UTF-8', 'Windows-1252');;
 				$rowArray = array();
-				if(strlen($delimiter[$key]) > 0 && strpos($cell, $delimiter[$key])) {
-					$rowArray = explode($delimiter[$key], $cell);
+				if(strlen($cacheArray['delimiter'][$key]) > 0 && strpos($cell, $cacheArray['delimiter'][$key])) {
+					$rowArray = explode($cacheArray['delimiter'][$key], $cell);
 				}
 				else {
 					$rowArray[] = $cell;
 				}
 
 				foreach($rowArray as $rowEntry) {
-					if($mapping[$key] !== "ignore") {
-						$widget = clone $template->widgetArray[$mapping[$key]];
+					if($cacheArray['mapping'][$key] !== "ignore") {
+						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
 						$widgetContainer = $widget->getContentContainer();
 					
 						if(get_class($widget) == "Upload") {
@@ -577,10 +607,21 @@ class AssetManager extends Admin_Controller {
 				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 900);
 			}
 
-			$successArray[] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $assetModel->getObjectId()) ."\">" . $assetModel->getObjectId() . "</A>)";
+			$cacheArray['successArray'][] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $assetModel->getObjectId()) ."\">" . $assetModel->getObjectId() . "</A>)";
+			
+			$rowCount++;
+
+			if($rowCount % round(($totalLines / 10)) == 0) {
+				$this->doctrineCache->setNamespace('importCache_');
+				$this->doctrineCache->save($hash, $cacheArray, 900);
+				$offset = $rowCount;
+				instance_redirect("assetManager/processCSV/" . $hash . "/" . $offset);
+				return;
+			}
+
 		}
 
-		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $successArray));
+		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $cacheArray['successArray']));
 		$this->template->publish();
 
 	}
