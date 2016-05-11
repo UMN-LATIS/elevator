@@ -7,6 +7,10 @@
     {
       "type": "vcs",
       "url": "https://github.com/cmcfadden/php-box-view.git"
+    },
+     {
+      "type": "vcs",
+      "url": "https://github.com/UMN-LATIS/umn-shib-php.git"
     }
   ],
   "require": {
@@ -20,7 +24,7 @@
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
     "tedivm/stash": "dev-master",
-    "umn-community-shib/basic-authenticator": ">=1.1.0",
+    "umn-community-shib/basic-authenticator": "dev-master",
     "crocodoc/php-box-view": "dev-master",
     "aws/aws-sdk-php": ">=3.2.6"
   }
