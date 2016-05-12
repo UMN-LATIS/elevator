@@ -81,6 +81,12 @@ $(document).on("ready", function() {
 		if(nestedObjectId !== undefined) {
 			window.location.hash = nestedObjectId;
 		}
+		else {
+			nestedObjectId = $(this).data("fileobjectid");
+			if(nestedObjectId !== undefined) {
+				window.location.hash = nestedObjectId;
+			}
+		}
 
 	});
 
