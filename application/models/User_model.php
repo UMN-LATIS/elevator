@@ -120,7 +120,7 @@ class User_model extends CI_Model {
 
 			}
 
-			$umnshib = new \UMNShib\Basic\BasicAuthenticator();
+			$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
 			if ($umnshib->hasSession() && $this->user) {
 				$courseArray = explode(";",$umnshib->getAttributeValue('eduCourseMember'));
 
