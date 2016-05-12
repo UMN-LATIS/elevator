@@ -535,7 +535,8 @@ class Permissions extends Instance_Controller {
 		// first, get their info:
 
 		$this->load->library($this->config->item("authHelper"));
-		$authHelper = new $this->config->item("authHelper");
+		$authHelperName = $this->config->item("authHelper");
+		$authHelper = new $authHelperName;
 		
 		$userArray = $authHelper->findUser($userId, "umndid");
 
@@ -708,7 +709,8 @@ class Permissions extends Instance_Controller {
 		}
 
 		$this->load->library($this->config->item("authHelper"));
-		$authHelper = new $this->config->item("authHelper");
+		$authHelperName = $this->config->item("authHelper");
+		$authHelper = new $authHelperName;
 	
 		$user = $authHelper->createUserFromRemote($umndid);
 		return $user->getId();
