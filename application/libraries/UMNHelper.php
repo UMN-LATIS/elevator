@@ -34,11 +34,11 @@ class UMNHelper extends AuthHelper
 		$user->setHasExpiry(false);
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
-		$user->setInstance($this->instance);
+		$user->setInstance($CI->instance);
 		$user->setIsSuperAdmin(false);
 		$user->setFastUpload(false);
-		$this->doctrine->em->persist($user);
-		$this->doctrine->em->flush();
+		$CI->doctrine->em->persist($user);
+		$CI->doctrine->em->flush();
 		return $user;
 	}
 
@@ -64,16 +64,17 @@ class UMNHelper extends AuthHelper
 	}
 
 	public function findUser($key, $field, $createMissing = false) {
-		$ldap_host = $this->config->item('ldapURI');
-		$base_dn = array($this->config->item('ldapSearchBase'),);
+		$CI =& get_instance();
+		$ldap_host = $CI->config->item('ldapURI');
+		$base_dn = array($CI->config->item('ldapSearchBase'),);
 		$filter = "($field=" . $key. ")";
 		$connect = ldap_connect( $ldap_host);
 
 		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
 
-		if($this->config->item('ldapUsername') != "") {
-			$r=ldap_bind($connect, $this->config->item('ldapUsername'), $this->config->item('ldapPassword'));
+		if($CI->config->item('ldapUsername') != "") {
+			$r=ldap_bind($connect, $CI->config->item('ldapUsername'), $CI->config->item('ldapPassword'));
 		}
 		else {
 			$r=ldap_bind($connect);
