@@ -2046,6 +2046,7 @@
         "smalot/pdfparser": 20,
         "buggedcom/phpvideotoolkit": 20,
         "tedivm/stash": 20,
+        "umn-community-shib/basic-authenticator": 20,
         "crocodoc/php-box-view": 20
     },
     "prefer-stable": false,
