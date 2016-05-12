@@ -533,8 +533,11 @@ class Permissions extends Instance_Controller {
 		// assume this a remote user, we need to create them.
 
 		// first, get their info:
-		$userArray = $this->user_model->findUserFromLDAP($userId, "umndid");
 
+		$this->load->library($this->config->item("AuthHelper"));
+		$authHelper = new $this->config->item("AuthHelper");
+		
+		$userArray = $authHelper->findUser($userId, "umndid");
 
 		if(count($userArray) == 0) {
 			// something has gone wrong - this should have been an umndid..
@@ -553,7 +556,6 @@ class Permissions extends Instance_Controller {
 			$groupValue = $result[0]->getId();
 		}
 		else {
-
 			$userObject->setUserType("Remote");
 			$userObject->setCreatedAt(new \DateTime("now"));
 			$userObject->setInstance($this->instance);
@@ -705,7 +707,10 @@ class Permissions extends Instance_Controller {
 			return $user{0}->getId();
 		}
 
-		$user = $this->user_model->createUserFromRemote($umndid);
+		$this->load->library($this->config->item("AuthHelper"));
+		$authHelper = new $this->config->item("AuthHelper");
+	
+		$user = $authHelper->createUserFromRemote($umndid);
 		return $user->getId();
 	}
 
@@ -809,10 +814,6 @@ class Permissions extends Instance_Controller {
 
 		$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION,$this->instance);
 
-		if($accessLevel < PERM_ADMIN && $user->getCreatedBy() != $this->user_model->user) {
-			$this->logging->logError("editUser", "User " . $this->user_model->user->getId() . " tried to edit" . $userId);
-			instance_redirect("errorHandler/error/noPermission");
-		}
 		$groupType = $this->input->post("groupType");
 		$groupValue = $this->input->post("groupValue");
 

@@ -170,57 +170,9 @@ class User_model extends CI_Model {
 
 	}
 
-	public function findUserFromLDAP($searchString, $searchType) {
-
-		$ldap_host = $this->config->item('ldapURI');
-		$base_dn = array($this->config->item('ldapSearchBase'),);
-		$filter = "($searchType=" . $searchString. ")";
-		$connect = ldap_connect( $ldap_host);
-
-		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
-		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
-
-		if($this->config->item('ldapUsername') != "") {
-			$r=ldap_bind($connect, $this->config->item('ldapUsername'), $this->config->item('ldapPassword'));
-		}
-		else {
-			$r=ldap_bind($connect);
-		}
-
-		$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
-		      or exit(">>Unable to search ldap server<<");
-		$returnArray = array();
-		foreach($search as $readItem) {
-
-			$info = ldap_get_entries($connect, $readItem);
-			if($info["count"] == 0) {
-				break;
-			}
-			foreach($info as $entry) {
-				if(!isset($entry["umndid"])) {
-					continue;
-				}
-				$user = new Entity\User;
-				$user->setUsername($entry["umndid"][0]);
-				if(!isset($entry["displayname"])) {
-					$user->setDisplayName(@$entry["umndisplaymail"][0]);
-				}
-				else {
-					$user->setDisplayName($entry["displayname"][0]);
-				}
-
-				$user->setEmail(@$entry["umndisplaymail"][0]);
-
-				$returnArray[] = $user;
-			}
-
-		}
-		return $returnArray;
-	}
 
 
 	public function createUserFromRemote($umndid) {
-
 		$user = $this->findUserFromLDAP($umndid, "umndid");
 
 		if(count($user) == 0) {

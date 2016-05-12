@@ -105,9 +105,12 @@ class LoginManager extends Instance_Controller {
 
 		}
 
-		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$umnshib->getAttributeValue('umnDID')]);
+		$this->load->library($this->config->item("AuthHelper"));
+		$authHelper = new $this->config->item("AuthHelper");
+		
+		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUsernameFromRemote($umnshib)]);
 		if(!$user) {
-			$user = $this->user_model->createUserFromRemote($umnshib->getAttributeValue('umnDID'));
+			$user = $authHelper->createUserFromRemote($umnshib);
 		}
 
 
