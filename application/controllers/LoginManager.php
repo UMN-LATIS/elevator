@@ -105,8 +105,8 @@ class LoginManager extends Instance_Controller {
 
 		}
 
-		$this->load->library($this->config->item("AuthHelper"));
-		$authHelper = new $this->config->item("AuthHelper");
+		$this->load->library($this->config->item("authHelper"));
+		$authHelper = new $this->config->item("authHelper");
 		
 		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUsernameFromRemote($umnshib)]);
 		if(!$user) {
