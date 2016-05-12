@@ -69,7 +69,7 @@ class LoginManager extends Instance_Controller {
 
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
-		$umnshib = new \UMNShib\Basic\BasicAuthenticator();
+		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
 		if ($umnshib->hasSession()) {
 		  $umnshib->redirectToLogout();
 		}
@@ -90,7 +90,7 @@ class LoginManager extends Instance_Controller {
 		$this->force_ssl();
 
 		// Example Object-Oriented instantiation and redirect to login:
-		$umnshib = new \UMNShib\Basic\BasicAuthenticator();
+		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
 		if (!$umnshib->hasSession()) {
 			if($noForcedAuth == "true") {
 				if($redirectURL) {
