@@ -15,7 +15,7 @@ class AuthHelper
 		return false;
 	}
 
-	public function updateUserFromRemote($shibHelper) {
+	public function updateUserFromRemote($shibHelper, $user) {
 		return false;
 	}
 
