@@ -4,7 +4,7 @@
 */
 
 require_once("AuthHelper.php");
-class ClassName extends AuthHelper
+class UMNHelper extends AuthHelper
 {
 	
 	public function __construct()
