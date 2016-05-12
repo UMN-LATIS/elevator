@@ -789,8 +789,8 @@ RegExp.escape= function(s) {
       }
 
       var output = [];
-      for(i in arrays) {
-        output.push(arrays[i]);
+      for(var i in arrays) {
+        output.push('"' + arrays[i] + '"');
       }
 
       // push the value to a callback if one is defined
@@ -826,8 +826,8 @@ RegExp.escape= function(s) {
       }
 
       var output = [];
-      for(i in objects) {
-        output.push(arrays[i]);
+      for(var i in objects) {
+        output.push(objects[i]);
       }
 
       // push the value to a callback if one is defined

@@ -1998,12 +1998,18 @@
         },
         {
             "name": "umn-community-shib/basic-authenticator",
-            "version": "1.1.1",
+            "version": "dev-master",
             "target-dir": "UMNShib/Basic",
             "source": {
                 "type": "git",
-                "url": "https://github.com/cla-rce/umn-shib-php.git",
-                "reference": "bebe420732ee78177a42d30a86c567c10a7c69c3"
+                "url": "https://github.com/UMN-LATIS/umn-shib-php.git",
+                "reference": "1609a67b3277805f60ad79a7da35dd64638bc6c7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/UMN-LATIS/umn-shib-php/zipball/1609a67b3277805f60ad79a7da35dd64638bc6c7",
+                "reference": "1609a67b3277805f60ad79a7da35dd64638bc6c7",
+                "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
@@ -2021,7 +2027,10 @@
                 }
             ],
             "description": "A PHP implementation of the UMN Community Shibboleth basic authentication API and supporting utilities",
-            "time": "2014-03-12 00:42:59"
+            "support": {
+                "source": "https://github.com/UMN-LATIS/umn-shib-php/tree/master"
+            },
+            "time": "2016-05-11 16:11:28"
         }
     ],
     "packages-dev": [],
@@ -2037,6 +2046,7 @@
         "smalot/pdfparser": 20,
         "buggedcom/phpvideotoolkit": 20,
         "tedivm/stash": 20,
+        "umn-community-shib/basic-authenticator": 20,
         "crocodoc/php-box-view": 20
     },
     "prefer-stable": false,
