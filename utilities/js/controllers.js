@@ -1,14 +1,14 @@
 var cascadeController = angular.module('cascadeController', ['ngAnimate']);
 
 cascadeController.directive('selectOnClick', function () {
-    return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-            element.on('click', function () {
-                this.select();
-            });
-        }
-    };
+	return {
+		restrict: 'A',
+		link: function (scope, element, attrs) {
+			element.on('click', function () {
+				this.select();
+			});
+		}
+	};
 });
 
 
@@ -17,7 +17,6 @@ cascadeController.controller('CascadeController', ['$scope', function($scope) {
 		var csvContent = $scope.cleanArray($.csv.toArrays($fileContent));
 
 		var multilevelArray = {};
-
 		for (var i = 0; i <  csvContent.length; i++) {
 			var blankArray = {};
 			var j = csvContent[i].length - 1;
@@ -53,24 +52,44 @@ cascadeController.controller('CascadeController', ['$scope', function($scope) {
 
 
 	};
+
+	$scope.convertContent = function(){
+		var convertedJson = angular.fromJson($scope.jsonText);
+		
+
+		var convertedArray = $scope.flattenObject(convertedJson);
+		var outputText = "";
+		for(var i in convertedArray) {
+			outputText += $.csv.fromArrays(convertedArray[i], {"experimental":true}) + "\r\n";
+		}
+
+		var blob = new Blob([outputText], {type: "text/csv;charset=utf-8"});
+		saveAs(blob, "convertedCSV.csv");
+		// $scope.jsonText = outputText;
+
+
+	};
+
+
+
 	$scope.extendDeep = function extendDeep(dst) {
 		angular.forEach(arguments, function(obj) {
-	if (obj !== dst) {
-		angular.forEach(obj, function(value, key) {
-		if (dst[key] && dst[key].constructor && dst[key].constructor === Object) {
-			extendDeep(dst[key], value);
-		} else {
-			if(dst[key] && dst[key].constructor && dst[key].constructor === Array) {
-				$.merge(value, dst[key]);
-			}
+			if (obj !== dst) {
+				angular.forEach(obj, function(value, key) {
+					if (dst[key] && dst[key].constructor && dst[key].constructor === Object) {
+						extendDeep(dst[key], value);
+					} else {
+						if(dst[key] && dst[key].constructor && dst[key].constructor === Array) {
+							$.merge(value, dst[key]);
+						}
 
-			dst[key] = value;
-		}
+						dst[key] = value;
+					}
+				});
+			}
 		});
-	}
-  });
-  return dst;
-};
+		return dst;
+	};
 	$scope.cleanArray = function(actual){
 		var newArray = [];
 		for(var i = 0; i<actual.length; i++){
@@ -82,7 +101,39 @@ cascadeController.controller('CascadeController', ['$scope', function($scope) {
 			}
 		}
 		return newArray;
-	}
+	};
+
+	$scope.flattenObject = function(sourceObject){
+		var outputArray = [];
+		if(!angular.isArray(sourceObject) && !angular.isObject(sourceObject)) {
+			return [[sourceObject]];
+		}
+
+		for(var i in sourceObject) {
+			if(angular.isString(i) && angular.isArray(sourceObject[i]) && sourceObject[i].length === 0) {
+				outputArray.push([i]);
+				continue;
+			}
+
+			if(angular.isArray(sourceObject[i]) && sourceObject[i].length === 0) {
+				continue;
+			}
+
+			var childrenRows = $scope.flattenObject(sourceObject[i]);
+			for(var j in childrenRows) {
+				if(!Number.isInteger(parseInt(i))) {
+					childrenRows[j].unshift(i);	
+				}
+				
+				outputArray.push(childrenRows[j]);
+			}
+		}
+
+		return outputArray;
+
+
+	};
+
 
 }]);
 
