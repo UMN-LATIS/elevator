@@ -13,6 +13,7 @@ class StOlafHelper extends AuthHelper
 	}
 
 	public function createUserFromRemote($shibHelper) {
+		$CI =& get_instance();
 		$user = new Entity\User;	
 
 		if(is_object($shibHelper)) {
@@ -42,7 +43,7 @@ class StOlafHelper extends AuthHelper
 	}
 
 	public function updateUserFromRemote($shibHelper, $user) {
-
+		$CI =& get_instance();
 		if($user->getDisplayName() == "") {
 			$user->setDisplayName($shibHelper->getAttributeValue('displayName'));
 		}
@@ -55,6 +56,12 @@ class StOlafHelper extends AuthHelper
 	}
 
 	public function findById($key, $createMissing=false) {
+		if($createMissing) {
+			$user = new Entity\User;	
+			$user->setUsername($key);
+			return [$user];
+		}
+
 		return array();
 	}
 

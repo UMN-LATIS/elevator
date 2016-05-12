@@ -13,7 +13,7 @@ class UMNHelper extends AuthHelper
 	}
 
 	public function createUserFromRemote($shibHelper) {
-		
+		$CI =& get_instance();
 		if(is_object($shibHelper)) {
 			$username = $this->getUserIdFromRemote($shibHelper);
 		}

@@ -114,7 +114,7 @@ class LoginManager extends Instance_Controller {
 			$user = $authHelper->createUserFromRemote($umnshib);
 		}
 		else {
-			$authHelper->updateUserFromRemote($user, $umnshib);
+			$authHelper->updateUserFromRemote($umnshib, $user);
 		}
 
 
