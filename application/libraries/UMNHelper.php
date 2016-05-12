@@ -15,13 +15,13 @@ class UMNHelper extends AuthHelper
 	public function createUserFromRemote($shibHelper) {
 		
 		if(is_object($shibHelper)) {
-			$username = $this->getUsernameFromRemote($shibHelper);
+			$username = $this->getUserIdFromRemote($shibHelper);
 		}
 		else {
 			$username = $shibHelper;
 		}
 
-		$user = $this->findUser($username, "umndid");
+		$user = $this->findById($username);
 
 		if(count($user) == 0) {
 			return false;
@@ -42,7 +42,7 @@ class UMNHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUsernameFromRemote($shibHelper) {
+	public function getUserIdFromRemote($shibHelper) {
 		return $shibHelper->getAttributeValue('umnDID');
 	}
 

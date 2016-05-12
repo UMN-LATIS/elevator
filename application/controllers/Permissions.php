@@ -853,7 +853,11 @@ class Permissions extends Instance_Controller {
    			}
 
    			// check for x500 match
-   			$userMatches = $this->user_model->findUserFromLDAP($groupValue, "cn");
+   			$this->load->library($this->config->item("authHelper"));
+			$authHelperName = $this->config->item("authHelper");
+			$authHelper = new $authHelperName;
+		
+   			$userMatches = $authHelper->findUserByUsername($groupValue);
 			foreach($userMatches as $user) {
 				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
 
@@ -870,7 +874,7 @@ class Permissions extends Instance_Controller {
 			}
 
 			// now wildcard names
-			$userMatches = $this->user_model->findUserFromLDAP("*".str_replace(" ", "* ", $groupValue) . "*", "displayname");
+			$userMatches = $authHelper->findUserByName($groupValue);
 
 			$i = 0;
 			foreach($userMatches as $user) {

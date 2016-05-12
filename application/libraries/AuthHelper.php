@@ -19,7 +19,7 @@ class AuthHelper
 		return false;
 	}
 
-	public function getUsernameFromRemote($shibHelper) {
+	public function getUserIdFromRemote($shibHelper) {
 
 	}
 
