@@ -170,31 +170,6 @@ class User_model extends CI_Model {
 
 	}
 
-
-
-	public function createUserFromRemote($umndid) {
-		$user = $this->findUserFromLDAP($umndid, "umndid");
-
-		if(count($user) == 0) {
-			return false;
-		}
-		else {
-			$user = $user[0];
-		}
-
-
-		$user->setHasExpiry(false);
-		$user->setCreatedAt(new \DateTime("now"));
-		$user->setUserType("Remote");
-		$user->setInstance($this->instance);
-		$user->setIsSuperAdmin(false);
-		$user->setFastUpload(false);
-		$this->doctrine->em->persist($user);
-		$this->doctrine->em->flush();
-		return $user;
-
-	}
-
 	function getPermissions($entityType, $groupType, $groupValue, $limit=null) {
 
 		$result = $this->doctrine->em->getRepository("Entity\\" . $entityType)->createQueryBuilder('i')
