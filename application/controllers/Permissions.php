@@ -538,7 +538,7 @@ class Permissions extends Instance_Controller {
 		$authHelperName = $this->config->item("authHelper");
 		$authHelper = new $authHelperName;
 		
-		$userArray = $authHelper->findUser($userId, "umndid");
+		$userArray = $authHelper->findById($userId, true);
 
 		if(count($userArray) == 0) {
 			// something has gone wrong - this should have been an umndid..
