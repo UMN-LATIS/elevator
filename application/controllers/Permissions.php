@@ -825,7 +825,7 @@ class Permissions extends Instance_Controller {
    			$this->load->library($this->config->item("authHelper"));
 			$authHelperName = $this->config->item("authHelper");
 			$authHelper = new $authHelperName;
-			$userMatches = $authHelper->autocompleteUsername($groupValue);
+			$outputArray = $authHelper->autocompleteUsername($groupValue);
 
 		}
 

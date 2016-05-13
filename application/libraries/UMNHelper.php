@@ -56,7 +56,7 @@ class UMNHelper extends AuthHelper
 		
 		$outputArray = parent::autocompleteUsername($partialUsername);
 
-		$userMatches = $CI->findUserByUsername($partialUsername);
+		$userMatches = $this->findUserByUsername($partialUsername);
 		foreach($userMatches as $user) {
 			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
 
@@ -73,7 +73,7 @@ class UMNHelper extends AuthHelper
 		}
 
 		// now wildcard names
-		$userMatches = $CI->findUserByName($partialUsername);
+		$userMatches = $this->findUserByName($partialUsername);
 
 		$i = 0;
 		foreach($userMatches as $user) {
@@ -122,7 +122,7 @@ class UMNHelper extends AuthHelper
 
 		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
-
+		
 		if($CI->config->item('ldapUsername') != "") {
 			$r=ldap_bind($connect, $CI->config->item('ldapUsername'), $CI->config->item('ldapPassword'));
 		}
