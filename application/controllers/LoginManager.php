@@ -70,7 +70,7 @@ class LoginManager extends Instance_Controller {
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
 		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
-		if ($umnshib->hasSession()) {
+		if ($umnshib->hasSession() && $this->config->item("shibbolethLogout")) {
 		  $umnshib->redirectToLogout();
 		}
 
