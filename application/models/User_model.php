@@ -134,12 +134,12 @@ class User_model extends CI_Model {
 				// todo: learn about the actual standard for eduCourseMember
 				foreach($courseArray as $course) {
 					$courseId = substr($course, -6);
-					$explodedString = split("@", $course);
+					$explodedString = explode("@", $course);
 					if(count($explodedString)>0) {
 						$role = $explodedString[0];
 					}
 					if($role == "Instructor") {
-						$courseString = split("/", $course);
+						$courseString = explode("/", $course);
 						$courseName = $courseString[6];
 						$this->coursesTaught[$courseId + 0] = $courseName;
 					}
