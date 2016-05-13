@@ -822,82 +822,10 @@ class Permissions extends Instance_Controller {
    		$outputArray = array();
 		if($groupType == USER_TYPE) {
 
-			$result = $this->doctrine->em->getRepository("Entity\User")->createQueryBuilder('u')
-   				->where('u.instance= :instance')
-   				->andWhere('u.displayName LIKE :name')
-   				->setParameter('instance', $this->instance)
-   				->setParameter('name', '%'.$groupValue.'%')
-   				->getQuery()
-   				->getResult();
-
-   				//TODO: limit number of users
-   				//TODO: only searhc local users
-   				//
-
-   			$userMatches = $this->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$groupValue]);
-
-   			foreach($userMatches as $user) {
-   				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-   				$outputArray[$user->getId()] = $tempArray;
-   			}
-   			$i=0;
-   			foreach($result as $user) {
-   				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-   				if(!array_key_exists($user->getId(), $outputArray)) {
-   					$outputArray[$user->getId()] = $tempArray;
-   				}
-   				$i++;
-   				if($i>10) {
-   					break;
-   				}
-   			}
-
-   			// check for x500 match
    			$this->load->library($this->config->item("authHelper"));
 			$authHelperName = $this->config->item("authHelper");
 			$authHelper = new $authHelperName;
-		
-   			$userMatches = $authHelper->findUserByUsername($groupValue);
-			foreach($userMatches as $user) {
-				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-
-				$duplicate = false;
-				foreach($outputArray as $entry) {
-					if($entry["username"] == $user->getUsername()) {
-						$duplicate = true;
-					}
-				}
-
-				if(!$duplicate) {
-					array_unshift($outputArray, $tempArray);
-				}
-			}
-
-			// now wildcard names
-			$userMatches = $authHelper->findUserByName($groupValue);
-
-			$i = 0;
-			foreach($userMatches as $user) {
-
-				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-
-				$duplicate = false;
-				foreach($outputArray as $entry) {
-					if($entry["username"] == $user->getUsername()) {
-						$duplicate = true;
-					}
-				}
-
-				if(!$duplicate) {
-					$outputArray[] = $tempArray;
-				}
-
-				if($i > 10) {
-					break;
-				}
-				$i++;
-			}
-
+			$userMatches = $authHelper->autocompleteUsername($groupValue);
 
 		}
 
