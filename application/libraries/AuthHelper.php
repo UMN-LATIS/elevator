@@ -48,7 +48,7 @@ class AuthHelper
 		//TODO: limit number of users
 		//TODO: only search local uesrs
 		$userMatches = $CI->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$partialUsername]);
-
+		$outputArray = array();
 		foreach($userMatches as $user) {
 			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
 			$outputArray[$user->getId()] = $tempArray;
