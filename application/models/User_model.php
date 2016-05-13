@@ -29,7 +29,13 @@ class User_model extends CI_Model {
 
 	public function getDisplayNameForUserId($userId) {
 			$user = $this->doctrine->em->find('Entity\User', $userId);
-			return $user->getDisplayName();
+			if($user) {
+				return $user->getDisplayName();	
+			}
+			else {
+				return $userId;
+			}
+			
 	}
 
 	// convenience function, so that we know if they have edit access to any collection,
