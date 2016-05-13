@@ -460,7 +460,7 @@ class AssetManager extends Admin_Controller {
 		if ( ! $this->upload->do_upload())
 		{
 			$error = array('error' => $this->upload->display_errors());
-			var_dump($error);
+			var_dump($error); // TODO: draw this in a view 
 			return;
 		}
 		// TODO: more security here
