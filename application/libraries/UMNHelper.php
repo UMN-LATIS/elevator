@@ -51,6 +51,56 @@ class UMNHelper extends AuthHelper
 
 	}
 
+	public function autocompleteUsername($partialUsername) {
+		$CI =& get_instance();
+		
+		$outputArray = parent::autocompleteUsername($partialUsername);
+
+		$userMatches = $CI->findUserByUsername($partialUsername);
+		foreach($userMatches as $user) {
+			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
+
+			$duplicate = false;
+			foreach($outputArray as $entry) {
+				if($entry["username"] == $user->getUsername()) {
+					$duplicate = true;
+				}
+			}
+
+			if(!$duplicate) {
+				array_unshift($outputArray, $tempArray);
+			}
+		}
+
+		// now wildcard names
+		$userMatches = $CI->findUserByName($partialUsername);
+
+		$i = 0;
+		foreach($userMatches as $user) {
+
+			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
+
+			$duplicate = false;
+			foreach($outputArray as $entry) {
+				if($entry["username"] == $user->getUsername()) {
+					$duplicate = true;
+				}
+			}
+
+			if(!$duplicate) {
+				$outputArray[] = $tempArray;
+			}
+
+			if($i > 10) {
+				break;
+			}
+			$i++;
+		}
+
+		return $outputArray;
+
+	}
+
 	public function findById($key, $createMissing=false) {
 		return $this->findUser($key, "umndid", $createMissing);
 	}
