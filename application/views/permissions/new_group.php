@@ -16,6 +16,11 @@ if($groupObject->getGroupType() == "User") {
 	}
 }
 
+$hints = array();
+foreach($this->user_model->userData as $key=>$value) {
+	$hints[$key] = $value["hints"];
+}
+
 ?>
 
 <div class="row">
@@ -49,24 +54,13 @@ if($groupObject->getGroupType() == "User") {
 				</div>
 			</div>
 
-			<div class="form-group" id="courseList">
-				<label for="inputGroupType" class="col-sm-2 control-label">Suggested Course IDs:</label>
-				<div class="col-sm-5">
-					<select name="courseListSelect" id="courseListSelect" class="form-control">
-						<option value="">-- Select Course --</option>
-						<?foreach($this->user_model->coursesTaught as $courseId=>$courseLabel):?>
-						<option value=<?=$courseId?>><?=$courseLabel?></option>
-						<?endforeach?>
-					</select>
-				</div>
-				<div class="col-sm-4">
-					<A href="http://classinfo.umn.edu" target="_blank">Course ID lookup (5 digit number)</a>
-				</div>
-			</div>
+
 			<script>
 
 			var existingGroups = <?=json_encode($groupArray)?>;
 			var userCache = <?=json_encode($nameArray)?>;
+			var hints = <?=json_encode($hints)?>;
+
 			</script>
 			<button type="button" id="addAnotherValue" class="btn btn-primary">Add Another Value</button>
 			<button type="submit" id="submitButton" class="btn btn-primary">Save</button>
@@ -74,6 +68,20 @@ if($groupObject->getGroupType() == "User") {
 		</form>
 	</div>
 </div>
+
+<script id="hint-selector" type="text/x-handlebars-template">
+<div class="form-group hintSelectorGroup">
+	<label for="inputHintSelector" class="col-sm-2 control-label">Suggested {{hintLabel}}:</label>
+	<div class="col-sm-3">
+		<select name="hintSelector" class="form-control hintSelector" id="inputHintSelector" class="form-control">
+			<option value="">-- Suggested Value --</option>
+			{{#each hints}}
+			<option value={{@key}}>{{this}}</option>
+			{{/each}}
+		</select>
+	</div>
+</div>
+</script>
 
 <script id="group-value" type="text/x-handlebars-template">
 <div class="form-group groupValueGroup">

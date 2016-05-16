@@ -137,6 +137,12 @@ $(document).on("ready", function() {
 			<?endif?>
 			</div>
 		</div>
+
+		<?if(1==0 && $user->getId() == $this->user_model->getId()):?>
+		<pre>
+			<?=var_dump($this->user_model->userData);?>
+		</pre>
+		<?endif?>
 </form>
 
 </div>

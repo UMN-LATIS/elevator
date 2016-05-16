@@ -124,7 +124,7 @@ class User_model extends CI_Model {
 			$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
 
 			$authHelper = $this->getAuthHelper();
-			$this->userData = $authHelperName->populateUserDataFromShib($umnshib);
+			$this->userData = $authHelper->populateUserDataFromShib($umnshib);
 
 			
 			$this->userLoaded = true;
@@ -176,8 +176,10 @@ class User_model extends CI_Model {
 		$authHelper = $this->getAuthHelper();
 		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($groupLookups as $type=>$value) {
-			$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));
+		foreach($groupLookups as $type=>$values) {
+			foreach($values as $value) {
+				$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));	
+			}
 		}
 
 		foreach ($instance_groups as $instance_group) {
@@ -224,8 +226,10 @@ class User_model extends CI_Model {
 
 		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($groupLookups as $type=>$value) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", $type,$value));
+		foreach($groupLookups as $type=>$values) {
+			foreach($values as $value) {
+				$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", $type,$value));
+			}
 		}
 
 		foreach ($drawer_groups as $drawer_group) {
