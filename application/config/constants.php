@@ -63,10 +63,7 @@ define("PERM_ADDASSETS", 50);
 define("PERM_ADMIN", 60);
 
 
-define("COURSE_TYPE", "Course");
 define("USER_TYPE", "User");
-define("JOB_TYPE", "JobCode");
-define("UNIT_TYPE", "Unit");
 define("REMOTE_TYPE", "Authed_remote");
 define("AUTHED_TYPE", "Authed");
 define("ALL_TYPE", "All");
