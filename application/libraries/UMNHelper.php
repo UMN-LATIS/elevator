@@ -13,7 +13,7 @@ define("STATUS_TYPE", "StudentStatus");
 require_once("AuthHelper.php");
 class UMNHelper extends AuthHelper
 {
-	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>JOB_TYPE], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>STATUS_TYPE]];
+	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"]];
 
 	public function __construct()
 	{
@@ -54,7 +54,7 @@ class UMNHelper extends AuthHelper
 		return $shibHelper->getAttributeValue('umnDID');
 	}
 
-	public function updateUserFromRemote($shibHelper) {
+	public function updateUserFromRemote($shibHelper, $user) {
 
 
 	}
@@ -137,8 +137,8 @@ class UMNHelper extends AuthHelper
 				$courses[] = $courseId + 0;
 			}
 
-			$jobCodes = explode(";",$shibHelper->getAttributeValue('umnJobSummary'));
-			foreach($jobCodes as $jobCode) {
+			$jobCodeSummary = explode(";",$shibHelper->getAttributeValue('umnJobSummary'));
+			foreach($jobCodeSummary as $jobCode) {
 				$jobCodeArray = explode(":", $jobCode);
 				if(isset($jobCodeArray[2])) {
 					$jobCodes[] = $jobCodeArray[2] + 0;
@@ -149,19 +149,24 @@ class UMNHelper extends AuthHelper
 
 			}
 
-			$studentStatus = explode(";",$shibHelper->getAttributeValue('umnRegSummary'));
-			foreach($studentStatus as $studentCode) {
+			$regSummary = explode(";",$shibHelper->getAttributeValue('umnRegSummary'));
+			foreach($regSummary as $studentCode) {
 				$studentStatusArray = explode(":", $studentCode);
 				if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
-					$studentStatus[$studentStatusArray[12]] = $studentStatusArray[12];
+					$studentStatus[] = $studentStatusArray[12];
 				}
 			}
 		}
 
 		$userData[COURSE_TYPE] = ["values"=>$courses, "hints"=>$coursesTaught];
 		$userData[JOB_TYPE] = ["values"=>$jobCodes, "hints"=>[]];
-		$userData[UNIT_TYPE] = ["values"=>$units, "hints"=>[]];
-		$userData[STATUS_TYPE] = ["values"=>$studentStatus, "hints"=>["Undergraduate", "Graduate"]];
+
+		$unitHints = array();
+		foreach($units as $unit) {
+			$unitHints[$unit] = $unit;
+		}
+		$userData[UNIT_TYPE] = ["values"=>$units, "hints"=>$unitHints];
+		$userData[STATUS_TYPE] = ["values"=>array_unique($studentStatus), "hints"=>["UGRD"=>"Undergraduate", "GRAD"=>"Graduate"]];
 
 		return $userData;
 
