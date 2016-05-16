@@ -34,9 +34,9 @@ if($groupObject->getGroupType() == "User") {
 						<option value="All" <?=($groupObject->getGroupType()=="All")?"SELECTED":NULL?>>All Users</option>
 						<option value="Authed" <?=($groupObject->getGroupType()=="Authed")?"SELECTED":NULL?>>Authenticated User</option>
 						<option value="Authed_remote" <?=($groupObject->getGroupType()=="Authed_remote")?"SELECTED":NULL?>>Centrally Authenticated User</option>
-						<option value="Course" <?=($groupObject->getGroupType()=="Course")?"SELECTED":NULL?>>Course</option>
-						<option value="Unit" <?=($groupObject->getGroupType()==UNIT_TYPE)?"SELECTED":NULL?>>Unit</option>
-						<option value="JobCode" <?=($groupObject->getGroupType()=="JobCode")?"SELECTED":NULL?>>Job Code</option>
+						<?foreach($authHelper->authTypes as $key=>$value): ?>
+						<option value="<?=$key?>" <?=($groupObject->getGroupType()==$key)?"SELECTED":NULL?>><?=$value['label']?></option>
+						<?endforeach?>
 						<option value="User" <?=($groupObject->getGroupType()=="User")?"SELECTED":NULL?>>Specific People</option>
 					</select>
 				</div>

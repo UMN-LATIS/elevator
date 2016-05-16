@@ -74,7 +74,11 @@ class Permissions extends Instance_Controller {
 
 		$data['myUsers'] = $this->doctrine->em->getRepository("Entity\User")->findBy(["createdBy"=>$this->user_model->user]);
 
+		$authHelper = $this->user_model->getAuthHelper();
 
+		$availablePermissions = $authHelper->authTypes;
+
+		$data["authHelper"] = $authHelper;
 
 		$this->template->title = 'Edit ' . ucfirst($permissionType) . ' Permissions';
 		$this->template->content->view('permissions/edit', $data);
@@ -349,10 +353,19 @@ class Permissions extends Instance_Controller {
 		//		Class, User, JobCode.
 
 		// There's probably a better way to do this separation, but this seems to make the most sense currently.
-		$data['groupCourse'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => COURSE_TYPE, 'instance' => $this->instance]);
+		
+		$authHelper = $this->user_model->getAuthHelper();
+
+		$availablePermissions = $authHelper->authTypes;
+
+		$data["authHelper"] = $authHelper;
+		
 		$data['groupUser'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => USER_TYPE, 'instance' => $this->instance]);
-		$data['groupJobCode'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => JOB_TYPE, 'instance' => $this->instance]);
-		$data['groupUnits'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => UNIT_TYPE, 'instance' => $this->instance]);
+
+		foreach($availablePermissions as $key=>$value) {
+			$data["group" . $key] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => $key, 'instance' => $this->instance]);
+		}
+
 
 		if($permissionType == DRAWER_PERMISSION) {
 			// If the drawer permissions are being added, be sure to include the drawer groups
@@ -534,10 +547,7 @@ class Permissions extends Instance_Controller {
 
 		// first, get their info:
 
-		$this->load->library($this->config->item("authHelper"));
-		$authHelperName = $this->config->item("authHelper");
-		$authHelper = new $authHelperName;
-		
+		$authHelper = $this->user_model->getAuthHelper();
 		$userArray = $authHelper->findById($userId, true);
 
 		if(count($userArray) == 0) {
@@ -708,10 +718,8 @@ class Permissions extends Instance_Controller {
 			return $user{0}->getId();
 		}
 
-		$this->load->library($this->config->item("authHelper"));
-		$authHelperName = $this->config->item("authHelper");
-		$authHelper = new $authHelperName;
-	
+		$authHelper = $this->user_model->getAuthHelper();
+		
 		$user = $authHelper->createUserFromRemote($umndid);
 		return $user->getId();
 	}
@@ -822,9 +830,7 @@ class Permissions extends Instance_Controller {
    		$outputArray = array();
 		if($groupType == USER_TYPE) {
 
-   			$this->load->library($this->config->item("authHelper"));
-			$authHelperName = $this->config->item("authHelper");
-			$authHelper = new $authHelperName;
+   			$authHelper = $this->user_model->getAuthHelper();
 			$outputArray = $authHelper->autocompleteUsername($groupValue);
 
 		}

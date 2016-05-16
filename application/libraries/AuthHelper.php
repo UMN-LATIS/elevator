@@ -2,12 +2,24 @@
 /**
 * Based class for auth helpers
 */
+
 class AuthHelper
 {
 	
+
+	public $authTypes = [];
+
 	public function __construct()
 	{
 
+	}
+
+	public function populateUserDataFromShib($shibHelper) {
+		return array();
+	}
+	
+	public function getGroupMapping($userData) {
+		return array();
 	}
 
 	// can be either a shibboleth class or a username
