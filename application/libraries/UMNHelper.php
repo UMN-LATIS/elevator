@@ -3,10 +3,18 @@
 * UMN Helper
 */
 
+
+define("COURSE_TYPE", "Course");
+define("JOB_TYPE", "JobCode");
+define("UNIT_TYPE", "Unit");
+define("STATUS_TYPE", "StudentStatus");
+
+
 require_once("AuthHelper.php");
 class UMNHelper extends AuthHelper
 {
-	
+	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>JOB_TYPE], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>STATUS_TYPE]];
+
 	public function __construct()
 	{
 
@@ -95,6 +103,75 @@ class UMNHelper extends AuthHelper
 				break;
 			}
 			$i++;
+		}
+
+		return $outputArray;
+
+	}
+
+	public function populateUserDataFromShib($shibHelper) {
+		$userData = array();
+
+		$coursesTaught = array();
+		$courses = array();
+		$jobCodes = array();
+		$units = array();
+		$studentStatus = array();
+
+		if ($shibHelper->hasSession()) {
+			$courseArray = explode(";",$shibHelper->getAttributeValue('eduCourseMember'));
+
+			// hacky stuff to deal with the way this info is passed in
+			// todo: learn about the actual standard for eduCourseMember
+			foreach($courseArray as $course) {
+				$courseId = substr($course, -6);
+				$explodedString = explode("@", $course);
+				if(count($explodedString)>0) {
+					$role = $explodedString[0];
+				}
+				if($role == "Instructor") {
+					$courseString = explode("/", $course);
+					$courseName = $courseString[6];
+					$coursesTaught[$courseId + 0] = $courseName;
+				}
+				$courses[] = $courseId + 0;
+			}
+
+			$jobCodes = explode(";",$shibHelper->getAttributeValue('umnJobSummary'));
+			foreach($jobCodes as $jobCode) {
+				$jobCodeArray = explode(":", $jobCode);
+				if(isset($jobCodeArray[2])) {
+					$jobCodes[] = $jobCodeArray[2] + 0;
+				}
+				if(isset($jobCodeArray[10])) {
+					$units[] = $jobCodeArray[10];
+				}
+
+			}
+
+			$studentStatus = explode(";",$shibHelper->getAttributeValue('umnRegSummary'));
+			foreach($studentStatus as $studentCode) {
+				$studentStatusArray = explode(":", $studentCode);
+				if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
+					$studentStatus[$studentStatusArray[12]] = $studentStatusArray[12];
+				}
+			}
+		}
+
+		$userData[COURSE_TYPE] = ["values"=>$courses, "hints"=>$coursesTaught];
+		$userData[JOB_TYPE] = ["values"=>$jobCodes, "hints"=>[]];
+		$userData[UNIT_TYPE] = ["values"=>$units, "hints"=>[]];
+		$userData[STATUS_TYPE] = ["values"=>$studentStatus, "hints"=>["Undergraduate", "Graduate"]];
+
+		return $userData;
+
+	}
+
+	public function getGroupMapping($userData) {
+		$outputArray = array();
+
+		foreach($userData as $key=>$value) {
+			$outputArray[$key] = $value["values"];
 		}
 
 		return $outputArray;

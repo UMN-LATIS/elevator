@@ -12,12 +12,7 @@ class User_model extends CI_Model {
 	public $user = null;
 	public $userId = null;
 	private $maxRecents = 5;
-	public $jobCodes = array();
-	public $courses= array();
-	public $coursesTaught = array();
-	public $units= array();
-	public $studentStatus= array();
-
+	public $userData = array();
 
 
 	public function __construct()
@@ -127,48 +122,11 @@ class User_model extends CI_Model {
 			}
 
 			$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
-			if ($umnshib->hasSession() && $this->user) {
-				$courseArray = explode(";",$umnshib->getAttributeValue('eduCourseMember'));
 
-				// hacky stuff to deal with the way this info is passed in
-				// todo: learn about the actual standard for eduCourseMember
-				foreach($courseArray as $course) {
-					$courseId = substr($course, -6);
-					$explodedString = explode("@", $course);
-					if(count($explodedString)>0) {
-						$role = $explodedString[0];
-					}
-					if($role == "Instructor") {
-						$courseString = explode("/", $course);
-						$courseName = $courseString[6];
-						$this->coursesTaught[$courseId + 0] = $courseName;
-					}
-					$this->courses[] = $courseId + 0;
-				}
+			$authHelper = $this->getAuthHelper();
+			$this->userData = $authHelperName->populateUserDataFromShib($umnshib);
 
-				$jobCodes = explode(";",$umnshib->getAttributeValue('umnJobSummary'));
-				foreach($jobCodes as $jobCode) {
-					$jobCodeArray = explode(":", $jobCode);
-					if(isset($jobCodeArray[2])) {
-						$this->jobCodes[] = $jobCodeArray[2] + 0;
-					}
-					if(isset($jobCodeArray[10])) {
-						$this->units[] = $jobCodeArray[10];
-					}
-
-				}
-
-				$studentStatus = explode(";",$umnshib->getAttributeValue('umnRegSummary'));
-				foreach($studentStatus as $studentCode) {
-					$studentStatusArray = explode(":", $studentCode);
-					if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
-						$this->studentStatus[$studentStatusArray[12]] = $studentStatusArray[12];
-					}
-				}
-
-			}
-
-
+			
 			$this->userLoaded = true;
 			$this->resolvePermissions();
 		}
@@ -215,17 +173,11 @@ class User_model extends CI_Model {
 
 		}
 
-		foreach($this->jobCodes as $jobcode) {
-			$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", JOB_TYPE, $jobcode));
-		}
+		$authHelper = $this->getAuthHelper();
+		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($this->courses as $course) {
-			$instance_groups = array_merge($instance_groups,$this->getPermissions("InstanceGroup", COURSE_TYPE, $course) );
-		}
-
-		foreach($this->units as $unit) {
-			$instance_groups = array_merge($instance_groups,$this->getPermissions("InstanceGroup", UNIT_TYPE, $unit));
-
+		foreach($groupLookups as $type=>$value) {
+			$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));
 		}
 
 		foreach ($instance_groups as $instance_group) {
@@ -269,22 +221,12 @@ class User_model extends CI_Model {
 			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", USER_TYPE, $this->user->getId()));
 		}
 
-		// TODO Implement job_code and course pulls from user
-		// will come from fleshed out user model
-		foreach($this->jobCodes as $jobcode) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", JOB_TYPE,$jobcode));
-		}
 
-		// TODO Implement job_code and course pulls from user
-		// will come from fleshed out user model
-		foreach($this->courses as $course) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", COURSE_TYPE,$course));
-		}
+		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($this->units as $unit) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", UNIT_TYPE,$unit));
+		foreach($groupLookups as $type=>$value) {
+			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", $type,$value));
 		}
-
 
 		foreach ($drawer_groups as $drawer_group) {
 			foreach ($drawer_group->getPermissions() as $drawerPermission) {
@@ -521,6 +463,12 @@ class User_model extends CI_Model {
 		return $this->recentCollections;
 	}
 
+	public function getAuthHelper() {
+		$this->load->library($this->config->item("authHelper"));
+		$authHelperName = $this->config->item("authHelper");
+		$authHelper = new $authHelperName;
+		return $authHelper;
+	}
 
 
 	/**
@@ -540,7 +488,7 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes","coursesTaught", "studentStatus"];
+		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","userData"];
 
 	}
 
