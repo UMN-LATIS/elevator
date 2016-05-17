@@ -69,8 +69,8 @@ class LoginManager extends Instance_Controller {
 
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
-		$umnshib = new \UMNShib\Basic\BasicAuthenticator();
-		if ($umnshib->hasSession()) {
+		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
+		if ($umnshib->hasSession() && $this->config->item("shibbolethLogout")) {
 		  $umnshib->redirectToLogout();
 		}
 
@@ -90,7 +90,7 @@ class LoginManager extends Instance_Controller {
 		$this->force_ssl();
 
 		// Example Object-Oriented instantiation and redirect to login:
-		$umnshib = new \UMNShib\Basic\BasicAuthenticator();
+		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
 		if (!$umnshib->hasSession()) {
 			if($noForcedAuth == "true") {
 				if($redirectURL) {
@@ -105,9 +105,14 @@ class LoginManager extends Instance_Controller {
 
 		}
 
-		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$umnshib->getAttributeValue('umnDID')]);
+		$authHelper = $this->user_model->getAuthHelper();
+		
+		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUserIdFromRemote($umnshib)]);
 		if(!$user) {
-			$user = $this->user_model->createUserFromRemote($umnshib->getAttributeValue('umnDID'));
+			$user = $authHelper->createUserFromRemote($umnshib);
+		}
+		else {
+			$authHelper->updateUserFromRemote($umnshib, $user);
 		}
 
 
