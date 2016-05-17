@@ -12,12 +12,7 @@ class User_model extends CI_Model {
 	public $user = null;
 	public $userId = null;
 	private $maxRecents = 5;
-	public $jobCodes = array();
-	public $courses= array();
-	public $coursesTaught = array();
-	public $units= array();
-	public $studentStatus= array();
-
+	public $userData = array();
 
 
 	public function __construct()
@@ -29,7 +24,13 @@ class User_model extends CI_Model {
 
 	public function getDisplayNameForUserId($userId) {
 			$user = $this->doctrine->em->find('Entity\User', $userId);
-			return $user->getDisplayName();
+			if($user) {
+				return $user->getDisplayName();	
+			}
+			else {
+				return $userId;
+			}
+			
 	}
 
 	// convenience function, so that we know if they have edit access to any collection,
@@ -120,126 +121,16 @@ class User_model extends CI_Model {
 
 			}
 
-			$umnshib = new \UMNShib\Basic\BasicAuthenticator();
-			if ($umnshib->hasSession() && $this->user) {
-				$courseArray = explode(";",$umnshib->getAttributeValue('eduCourseMember'));
+			$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
 
-				// hacky stuff to deal with the way this info is passed in
-				// todo: learn about the actual standard for eduCourseMember
-				foreach($courseArray as $course) {
-					$courseId = substr($course, -6);
-					$explodedString = split("@", $course);
-					if(count($explodedString)>0) {
-						$role = $explodedString[0];
-					}
-					if($role == "Instructor") {
-						$courseString = split("/", $course);
-						$courseName = $courseString[6];
-						$this->coursesTaught[$courseId + 0] = $courseName;
-					}
-					$this->courses[] = $courseId + 0;
-				}
+			$authHelper = $this->getAuthHelper();
+			$this->userData = $authHelper->populateUserDataFromShib($umnshib);
 
-				$jobCodes = explode(";",$umnshib->getAttributeValue('umnJobSummary'));
-				foreach($jobCodes as $jobCode) {
-					$jobCodeArray = explode(":", $jobCode);
-					if(isset($jobCodeArray[2])) {
-						$this->jobCodes[] = $jobCodeArray[2] + 0;
-					}
-					if(isset($jobCodeArray[10])) {
-						$this->units[] = $jobCodeArray[10];
-					}
-
-				}
-
-				$studentStatus = explode(";",$umnshib->getAttributeValue('umnRegSummary'));
-				foreach($studentStatus as $studentCode) {
-					$studentStatusArray = explode(":", $studentCode);
-					if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
-						$this->studentStatus[$studentStatusArray[12]] = $studentStatusArray[12];
-					}
-				}
-
-			}
-
-
+			
 			$this->userLoaded = true;
 			$this->resolvePermissions();
 		}
 
-
-	}
-
-	public function findUserFromLDAP($searchString, $searchType) {
-
-		$ldap_host = $this->config->item('ldapURI');
-		$base_dn = array($this->config->item('ldapSearchBase'),);
-		$filter = "($searchType=" . $searchString. ")";
-		$connect = ldap_connect( $ldap_host);
-
-		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
-		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
-
-		if($this->config->item('ldapUsername') != "") {
-			$r=ldap_bind($connect, $this->config->item('ldapUsername'), $this->config->item('ldapPassword'));
-		}
-		else {
-			$r=ldap_bind($connect);
-		}
-
-		$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
-		      or exit(">>Unable to search ldap server<<");
-		$returnArray = array();
-		foreach($search as $readItem) {
-
-			$info = ldap_get_entries($connect, $readItem);
-			if($info["count"] == 0) {
-				break;
-			}
-			foreach($info as $entry) {
-				if(!isset($entry["umndid"])) {
-					continue;
-				}
-				$user = new Entity\User;
-				$user->setUsername($entry["umndid"][0]);
-				if(!isset($entry["displayname"])) {
-					$user->setDisplayName(@$entry["umndisplaymail"][0]);
-				}
-				else {
-					$user->setDisplayName($entry["displayname"][0]);
-				}
-
-				$user->setEmail(@$entry["umndisplaymail"][0]);
-
-				$returnArray[] = $user;
-			}
-
-		}
-		return $returnArray;
-	}
-
-
-	public function createUserFromRemote($umndid) {
-
-		$user = $this->findUserFromLDAP($umndid, "umndid");
-
-		if(count($user) == 0) {
-			return false;
-		}
-		else {
-			$user = $user[0];
-		}
-
-
-		$user->setHasExpiry(false);
-		$user->setCreatedAt(new \DateTime("now"));
-		$user->setUserType("Remote");
-		$user->setInstance($this->instance);
-		$user->setIsSuperAdmin(false);
-		$user->setFastUpload(false);
-		$this->doctrine->em->persist($user);
-		$this->doctrine->em->flush();
-		return $user;
 
 	}
 
@@ -282,17 +173,13 @@ class User_model extends CI_Model {
 
 		}
 
-		foreach($this->jobCodes as $jobcode) {
-			$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", JOB_TYPE, $jobcode));
-		}
+		$authHelper = $this->getAuthHelper();
+		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($this->courses as $course) {
-			$instance_groups = array_merge($instance_groups,$this->getPermissions("InstanceGroup", COURSE_TYPE, $course) );
-		}
-
-		foreach($this->units as $unit) {
-			$instance_groups = array_merge($instance_groups,$this->getPermissions("InstanceGroup", UNIT_TYPE, $unit));
-
+		foreach($groupLookups as $type=>$values) {
+			foreach($values as $value) {
+				$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));	
+			}
 		}
 
 		foreach ($instance_groups as $instance_group) {
@@ -336,22 +223,14 @@ class User_model extends CI_Model {
 			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", USER_TYPE, $this->user->getId()));
 		}
 
-		// TODO Implement job_code and course pulls from user
-		// will come from fleshed out user model
-		foreach($this->jobCodes as $jobcode) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", JOB_TYPE,$jobcode));
-		}
 
-		// TODO Implement job_code and course pulls from user
-		// will come from fleshed out user model
-		foreach($this->courses as $course) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", COURSE_TYPE,$course));
-		}
+		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($this->units as $unit) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", UNIT_TYPE,$unit));
+		foreach($groupLookups as $type=>$values) {
+			foreach($values as $value) {
+				$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", $type,$value));
+			}
 		}
-
 
 		foreach ($drawer_groups as $drawer_group) {
 			foreach ($drawer_group->getPermissions() as $drawerPermission) {
@@ -588,6 +467,12 @@ class User_model extends CI_Model {
 		return $this->recentCollections;
 	}
 
+	public function getAuthHelper() {
+		$this->load->library($this->config->item("authHelper"));
+		$authHelperName = $this->config->item("authHelper");
+		$authHelper = new $authHelperName;
+		return $authHelper;
+	}
 
 
 	/**
@@ -607,7 +492,7 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","courses","jobCodes","coursesTaught", "studentStatus"];
+		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","userData"];
 
 	}
 
