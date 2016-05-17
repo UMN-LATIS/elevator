@@ -32,14 +32,14 @@ class InhibitorHook {
 	{
 
 
-		register_shutdown_function(array($this, 'handle_fatal_errors'));
+		// register_shutdown_function(array($this, 'handle_fatal_errors'));
 
 	}
 	public function runtime_error_catcher() {
 
 
-		set_error_handler(array($this, 'handle_errors'));
-		set_exception_handler(array($this, 'handle_exceptions'));
+		// set_error_handler(array($this, 'handle_errors'));
+		// set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
 	/**
