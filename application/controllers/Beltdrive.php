@@ -674,10 +674,16 @@ class Beltdrive extends CI_Controller {
 				$ch = curl_init($importEntry['url']);
 				$fp = fopen($localPath, 'wb');
 				curl_setopt($ch, CURLOPT_FILE, $fp);
-				curl_setopt($ch, CURLOPT_HEADER, 0);
-				curl_exec($ch);
+				curl_setopt($ch, CURLOPT_HEADERFUNCTION, array(&$this, "headerCallback"));
+				$result = curl_exec($ch);
+				var_dump($result);
 				curl_close($ch);
 				fclose($fp);
+
+				if($this->remoteFileName) {
+					$fileContainer->originalFilename = $this->remoteFileName;
+				}
+				$this->remoteFileName = null;
 
 				echo $localPath . "\n";
 				if(file_exists($localPath)) {
@@ -710,8 +716,46 @@ class Beltdrive extends CI_Controller {
 
 	}
 
+	public function headerCallback($ch, $string)
+    {
+        $len = strlen($string);
+        if( !strstr($string, ':') )
+        {
+            $this->response = trim($string);
+            return $len;
+        }
+        list($name, $value) = explode(':', $string, 2);
+        if( strcasecmp($name, 'Content-Disposition') == 0 )
+        {
+            $parts = explode(';', $value);
+            if( count($parts) > 1 )
+            {
+                foreach($parts AS $crumb)
+                {
+                    if( strstr($crumb, '=') )
+                    {
+                        list($pname, $pval) = explode('=', $crumb);
+                        $pname = trim($pname);
+                        if( strcasecmp($pname, 'filename') == 0 )
+                        {
+                            // Using basename to prevent path injection
+                            // in malicious headers.
+                            $this->remoteFileName = basename(
+                                $this->unquote(trim($pval)));
+                        }
+                    }
+                }
+            }
+        }
 
+        $this->headers[$name] = trim($value);
+        return $len;
+    }
+
+	private function unquote($string)
+    {
+        return str_replace(array("'", '"'), '', $string);
+    }
 }
-
 /* End of file  */
 /* Location: ./application/controllers/ */
