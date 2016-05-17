@@ -484,6 +484,76 @@ class AssetManager extends Admin_Controller {
 		$this->template->publish();
 	}
 
+	public function exportCSV() {
+		$searchId = $this->input->post("searchId");
+		$templateId = $this->input->post("templateId");
+		$searchId = "5bfe6f94-695e-464e-b55c-537c10c704ae";
+		$templateId = 39;
+		if(!$searchId) {
+			$this->template->content->view("assetManager/csvExportForm");
+			$this->template->publish();	
+		}
+		else {
+
+			$assetTemplate = new Asset_template($templateId);
+			$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
+			$searchArray = $searchArchiveEntry->getSearchData();
+			$this->load->model("search_model");
+			$matchArray = $this->search_model->find($searchArray, true, null, TRUE);
+			$i=0;
+			echo "<pre>";
+			$out = fopen('php://output', 'w');
+			$widgetArray = array();
+			foreach($assetTemplate->widgetArray as $widgets) {
+				$widgetArray[] = $widgets->getLabel();
+				if(get_class($widgets) == "Upload") {
+					$widgetArray[] = $widgets->getLabel() . " URL";
+				}
+			}
+			fputcsv($out, $widgetArray);
+
+			foreach($matchArray['searchResults'] as $match) {
+
+				$assetModel = new Asset_model($match);
+				if($assetTemplate->getId() != $templateId) {
+					continue;
+				}
+				$outputRow = [];
+				foreach($assetTemplate->widgetArray as $key => $widgets) {
+					if(isset($assetModel->assetObjects[$key])) {
+						$object = $assetModel->assetObjects[$key];
+						$outputRow[] = join("|",$object->getAsText(0));
+						if(get_class($object) == "Upload") {
+							$outputURLs = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$handler = $entry->getFileHandler();
+								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile();
+							}
+							$outputRow[] = join($outputURLs, "|");
+						}
+					}
+					else {
+						$outputRow[] = "";
+					}
+
+				}
+
+				$assetModel = null;
+				$i++;
+				if($i == 50) {
+					gc_collect_cycles();
+					$i = 0;
+				}
+				fputcsv($out, $outputRow);
+			}
+			
+			
+			fclose($out);
+
+		}
+		
+	}
+
 	public function processCSV($hash=null, $offset=null) {
 		set_time_limit(120);
 
@@ -598,7 +668,7 @@ class AssetManager extends Admin_Controller {
 
 
 			$assetModel = new Asset_model();
-			$assetModel->templateId = $templateId;
+			$assetModel->templateId = $cacheArray['templateId'];
 			$assetModel->createObjectFromJSON($newEntry);
 			$assetModel->save();
 
@@ -611,7 +681,7 @@ class AssetManager extends Admin_Controller {
 			
 			$rowCount++;
 
-			if($rowCount % round(($totalLines / 10)) == 0) {
+			if(round($totalLines / 10) == 0 || $rowCount % round(($totalLines / 10)) == 0) {
 				$this->doctrineCache->setNamespace('importCache_');
 				$this->doctrineCache->save($hash, $cacheArray, 900);
 				$offset = $rowCount;
