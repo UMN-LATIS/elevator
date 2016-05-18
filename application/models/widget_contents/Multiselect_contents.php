@@ -3,11 +3,14 @@
 class Multiselect_contents extends Widget_contents_base {
 
 	public function hasContents() {
-		foreach($this->fieldContents as $entry) {
-			if(strlen($entry)>0) {
-				return true;
-			}
+		if(is_array($this->fieldContents )) {
+			foreach($this->fieldContents as $entry) {
+				if(strlen($entry)>0) {
+					return true;
+				}
+			}	
 		}
+		
 		return false;
 	}
 
