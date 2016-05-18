@@ -11,7 +11,7 @@ class AssetManager extends Admin_Controller {
 		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery"];
 		$this->template->loadJavascript($jsLoadArray);
 
-
+		$this->load->helper("multiselect");
 
 		$cssLoadArray = ["datepicker", "bootstrap-tagsinput"];
 		$this->template->loadCSS($cssLoadArray);
@@ -435,6 +435,273 @@ class AssetManager extends Admin_Controller {
 		echo json_encode($outputArray);
 
 	}
+
+	public function importFromCSV() {
+
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if($accessLevel < PERM_ADMIN) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
+		if(!isset($_POST["templateId"])) {
+			$this->template->content->view("assetManager/importCSV", array());
+			$this->template->publish();
+			return;
+		}
+
+		$targetTemplate = $this->input->post("templateId");
+
+		$config['upload_path'] = '/tmp/';
+		$config['max_size']	= '0';
+		$config['allowed_types']	= 'csv';
+
+		$this->load->library('upload', $config);
+		if ( ! $this->upload->do_upload())
+		{
+			$error = array('error' => $this->upload->display_errors());
+			var_dump($error); // TODO: draw this in a view 
+			return;
+		}
+		// TODO: more security here
+		$data = array('upload_data' => $this->upload->data());
+		$filename = $data["upload_data"]["full_path"];
+
+		if(!$fp = fopen($filename, "r")) {
+			$this->logging->logError("error reading file", $filename);
+			$this->errorhandler_helper->callError("genericError");
+			return;
+		}
+
+		$header = fgetcsv($fp, 0, ",");
+		$data["filename"]  = $filename;
+		$data["headerRows"] = $header;
+
+		$template = new Asset_template($targetTemplate);
+		$data["template"] = $template;
+
+		$this->template->content->view("assetManager/matchCSVrows", $data);
+		$this->template->publish();
+	}
+
+	public function exportCSV() {
+		if($accessLevel < PERM_ADMIN) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
+		$searchId = $this->input->post("searchId");
+		$templateId = $this->input->post("templateId");
+		if(!$searchId) {
+			$this->template->content->view("assetManager/exportCSV");
+			$this->template->publish();	
+		}
+		else {
+
+			$assetTemplate = new Asset_template($templateId);
+			$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
+			$searchArray = $searchArchiveEntry->getSearchData();
+			$this->load->model("search_model");
+			$matchArray = $this->search_model->find($searchArray, true, null, TRUE);
+			$i=0;
+
+			$out = fopen('php://output', 'w');
+			$widgetArray = array();
+			foreach($assetTemplate->widgetArray as $widgets) {
+				$widgetArray[] = $widgets->getLabel();
+				if(get_class($widgets) == "Upload") {
+					$widgetArray[] = $widgets->getLabel() . " URL";
+				}
+			}
+			header('Content-Type: application/csv');
+    		// tell the browser we want to save it instead of displaying it
+    		header('Content-Disposition: attachment; filename="csvExport-' . $searchId . '.csv";');
+			fputcsv($out, $widgetArray);
+
+			foreach($matchArray['searchResults'] as $match) {
+
+				$assetModel = new Asset_model($match);
+				if($assetTemplate->getId() != $templateId) {
+					continue;
+				}
+				$outputRow = [];
+				foreach($assetTemplate->widgetArray as $key => $widgets) {
+					if(isset($assetModel->assetObjects[$key])) {
+						$object = $assetModel->assetObjects[$key];
+						$outputRow[] = join("|",$object->getAsText(0));
+						if(get_class($object) == "Upload") {
+							$outputURLs = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$handler = $entry->getFileHandler();
+								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile();
+							}
+							$outputRow[] = join($outputURLs, "|");
+						}
+					}
+					else {
+						$outputRow[] = "";
+					}
+
+				}
+
+				$assetModel = null;
+				$i++;
+				if($i == 50) {
+					gc_collect_cycles();
+					$i = 0;
+				}
+				fputcsv($out, $outputRow);
+			}
+			
+			
+			fclose($out);
+
+		}
+		
+	}
+
+	public function processCSV($hash=null, $offset=null) {
+		set_time_limit(120);
+
+		if($this->input->post("filename")) {
+			$cacheArray['filename'] = $this->input->post("filename");
+			$cacheArray['templateId'] = $this->input->post("templateId");
+			$cacheArray['collectionId'] = $this->input->post("collectionId");
+			$cacheArray['mapping'] = $this->input->post("targetField");
+			$cacheArray['delimiter'] = $this->input->post("delimiter");
+			$hash = sha1(rand());
+		}
+		else {
+
+			if($hash) {
+				$this->doctrineCache->setNamespace('importCache_');
+				$cacheArray = $this->doctrineCache->fetch($hash);
+			}
+			else {
+				$this->logging->logError("Cachine Error");
+				$this->errorhandler_helper->callError("genericError");
+				return;
+			}
+
+		}
+		
+
+
+		if(!$this->collection_model->getCollection($cacheArray['collectionId'])) {
+			$this->template->content->set("Invalid Collection");
+			$this->template->publish();
+			return;
+		}
+
+		$template = new Asset_template($cacheArray['templateId']);
+
+		if(!$fp = fopen($cacheArray['filename'], "r")) {
+			$this->logging->logError("error reading file", $cacheArray['filename']);
+			$this->errorhandler_helper->callError("genericError");
+			return;
+		}
+
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+				
+
+		$rowCount = 0;
+		$totalLines = intval(exec("wc -l '" . $cacheArray['filename'] . "'"));
+
+		$header = fgetcsv($fp, 0, ",");
+		$successArray = [];
+		while($row = fgetcsv($fp, 0, ",")) {
+			if($offset > 0) {
+				if($rowCount < $offset) {
+					$rowCount++;
+					continue;
+				}
+			}
+			$newEntry = array();
+			$newEntry["readyForDisplay"] = true;
+			$newEntry["templateId"] = $cacheArray['templateId'];
+			$newEntry["collectionId"] = $cacheArray['collectionId'];
+			$uploadItems = array();
+			foreach($row as $key=>$cell) {
+				$cell = mb_convert_encoding( $cell, 'UTF-8', 'Windows-1252');;
+				$rowArray = array();
+				if(strlen($cacheArray['delimiter'][$key]) > 0 && strpos($cell, $cacheArray['delimiter'][$key])) {
+					$rowArray = explode($cacheArray['delimiter'][$key], $cell);
+				}
+				else {
+					$rowArray[] = $cell;
+				}
+
+				foreach($rowArray as $rowEntry) {
+					if($cacheArray['mapping'][$key] !== "ignore") {
+						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
+						$widgetContainer = $widget->getContentContainer();
+					
+						if(get_class($widget) == "Upload" && strlen(trim($rowEntry))>0) {
+							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($rowEntry)];
+							continue;
+						}
+						else if(get_class($widget) == "Date") {
+							if(strtotime($rowEntry)) {
+								$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>strtotime($rowEntry)];
+							}
+							
+						}
+						else if(get_class($widget) == "Multiselect") {
+							// let's split and rematch the entry
+							$splitEntry = explode("/", $rowEntry);
+							$topLevels = getTopLevels($widget->getFieldData());
+							$mappedArray = array();
+							for($i=0; $i<count($splitEntry); $i++) {
+								if(isset($topLevels[$i])) {
+									$mappedArray[makeSafeForTitle($topLevels[$i])] = trim($splitEntry[$i]);
+								}
+								else {
+									$mappedArray[] = $splitEntry[$i];
+								}
+								
+							}
+							$widgetContainer->fieldContents = $mappedArray;
+						}
+						else {
+							$widgetContainer->fieldContents = trim($rowEntry);
+						}
+
+						$newEntry[$widget->getFieldTitle()][] = $widgetContainer->getAsArray();
+					}
+				}
+				
+			}
+
+
+			$assetModel = new Asset_model();
+			$assetModel->templateId = $cacheArray['templateId'];
+			$assetModel->createObjectFromJSON($newEntry);
+			$assetModel->save();
+
+			if(count($uploadItems)>0) {
+				$newTask = json_encode(["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems]);
+				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 900);
+			}
+
+			$cacheArray['successArray'][] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $assetModel->getObjectId()) ."\">" . $assetModel->getObjectId() . "</A>)";
+			
+			$rowCount++;
+
+			if(round($totalLines / 10) == 0 || $rowCount % round(($totalLines / 10)) == 0) {
+				$this->doctrineCache->setNamespace('importCache_');
+				$this->doctrineCache->save($hash, $cacheArray, 900);
+				$offset = $rowCount;
+				instance_redirect("assetManager/processCSV/" . $hash . "/" . $offset);
+				return;
+			}
+
+		}
+
+		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $cacheArray['successArray']));
+		$this->template->publish();
+
+	}
+
+
 
 	/**
 	 * If changing collections will result in the file being migrated from one bucket to another, we
