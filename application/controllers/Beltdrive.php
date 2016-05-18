@@ -612,8 +612,150 @@ class Beltdrive extends CI_Controller {
 		}
 	}
 
+	public function urlImport() {
+		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 
+		$count=0;
+		while(1) {
+			$job = $this->pheanstalk->watch('urlImport')->ignore('default')->reserve();
+			if(!is_object($job)) {
+				usleep(5);
+				continue;
+			}
+			//reset doctrine in case we've lost the DB
+			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
+			$this->doctrine->reset();
+
+			$job_encoded = json_decode($job->getData(), true);
+
+			$instanceId = $job_encoded["instance"];
+			$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+
+			$objectId = $job_encoded["objectId"];
+			if(!$objectId || !is_string($objectId)) {
+				$this->pheanstalk->delete($job);
+				continue;
+			}
+			echo "Importing files for: " . $objectId . "\n";
+
+			$assetModel = new Asset_model($objectId);
+			$assetArray = $assetModel->getAsArray();
+
+			$fileArray = $job_encoded["importItems"];
+			foreach($fileArray as $importEntry) {
+
+				if(!is_numeric($assetModel->getGlobalValue("collectionId"))) {
+					continue;
+				}
+				$parsedURL = parse_url($importEntry['url'], PHP_URL_PATH);
+				$urlFile = basename($parsedURL);
+				$fileContainer = new fileContainerS3();
+				$fileContainer->originalFilename = $urlFile;
+
+				// this handler type may get overwritten later - for example, once we identify the contents of a zip
+				$fileHandler = $this->filehandler_router->getHandlerForType($fileContainer->getType());
+
+				$fileHandler->sourceFile = $fileContainer;
+				$fileHandler->parentObjectId = $assetModel->getObjectId();
+				$fileHandler->setCollectionId($assetModel->getGlobalValue("collectionId"));
+				$fileId = $fileHandler->save();
+				
+				$fileContainer->path = "original";
+				$fileContainer->storageType = $this->instance->getS3StorageType();
+				$fileContainer->derivativeType = "source";
+				$fileContainer->setParent($fileHandler);
+				$fileContainer->ready = false;
+
+				
+				
+				
+				$localPath = $fileContainer->getPathToLocalFile();
+
+				$ch = curl_init($importEntry['url']);
+				$fp = fopen($localPath, 'wb');
+				curl_setopt($ch, CURLOPT_FILE, $fp);
+				curl_setopt($ch, CURLOPT_HEADERFUNCTION, array(&$this, "headerCallback"));
+				$result = curl_exec($ch);
+				var_dump($result);
+				curl_close($ch);
+				fclose($fp);
+
+				if($this->remoteFileName) {
+					$fileContainer->originalFilename = $this->remoteFileName;
+				}
+				$this->remoteFileName = null;
+
+				echo $localPath . "\n";
+				if(file_exists($localPath)) {
+					if($fileContainer->copyToRemoteStorage()) {
+						$assetArray[$importEntry['field']][] = ["fileId"=>$fileId, "regenerate"=>"On"];							
+					}
+					else {
+						$this->logging->logError("error importing to " . $assetModel->getObjectId(), $importEntry);
+					}
+				}
+				else {
+					$this->logging->logError("error importing to " . $assetModel->getObjectId(), $importEntry);
+				}
+				$fileHandler->sourceFile->ready = true;
+				$fileHandler->save();
+				echo $fileContainer->getURLForFile() . "\n";
+				$this->pheanstalk->touch($job);
+
+			}
+			$assetModel->createObjectFromJSON($assetArray);
+			$assetModel->save();
+
+			$this->pheanstalk->delete($job);
+			$this->doctrine->em->clear();
+			$count++;
+			if($count % 10 == 0) {
+				gc_collect_cycles();
+			}
+		}
+
+	}
+
+	public function headerCallback($ch, $string)
+    {
+        $len = strlen($string);
+        if( !strstr($string, ':') )
+        {
+            $this->response = trim($string);
+            return $len;
+        }
+        list($name, $value) = explode(':', $string, 2);
+        if( strcasecmp($name, 'Content-Disposition') == 0 )
+        {
+            $parts = explode(';', $value);
+            if( count($parts) > 1 )
+            {
+                foreach($parts AS $crumb)
+                {
+                    if( strstr($crumb, '=') )
+                    {
+                        list($pname, $pval) = explode('=', $crumb);
+                        $pname = trim($pname);
+                        if( strcasecmp($pname, 'filename') == 0 )
+                        {
+                            // Using basename to prevent path injection
+                            // in malicious headers.
+                            $this->remoteFileName = basename(
+                                $this->unquote(trim($pval)));
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->headers[$name] = trim($value);
+        return $len;
+    }
+
+	private function unquote($string)
+    {
+        return str_replace(array("'", '"'), '', $string);
+    }
 }
-
 /* End of file  */
 /* Location: ./application/controllers/ */

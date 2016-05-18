@@ -14,9 +14,15 @@ class collection_model extends CI_Model {
 	}
 
 	public function getCollection($collectionId) {
-
+		if(!is_numeric($collectionId)) {
+			return false;
+		}
 		if(!isset($this->collectionCache[$collectionId])) {
 			$this->collectionCache[$collectionId] = $this->doctrine->em->find('Entity\Collection', $collectionId);
+		}
+
+		if($this->collectionCache[$collectionId] == NULL) {
+			return false;
 		}
 
 		return $this->collectionCache[$collectionId];

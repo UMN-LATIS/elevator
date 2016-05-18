@@ -74,7 +74,11 @@ class Permissions extends Instance_Controller {
 
 		$data['myUsers'] = $this->doctrine->em->getRepository("Entity\User")->findBy(["createdBy"=>$this->user_model->user]);
 
+		$authHelper = $this->user_model->getAuthHelper();
 
+		$availablePermissions = $authHelper->authTypes;
+
+		$data["authHelper"] = $authHelper;
 
 		$this->template->title = 'Edit ' . ucfirst($permissionType) . ' Permissions';
 		$this->template->content->view('permissions/edit', $data);
@@ -349,10 +353,19 @@ class Permissions extends Instance_Controller {
 		//		Class, User, JobCode.
 
 		// There's probably a better way to do this separation, but this seems to make the most sense currently.
-		$data['groupCourse'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => COURSE_TYPE, 'instance' => $this->instance]);
+		
+		$authHelper = $this->user_model->getAuthHelper();
+
+		$availablePermissions = $authHelper->authTypes;
+
+		$data["authHelper"] = $authHelper;
+		
 		$data['groupUser'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => USER_TYPE, 'instance' => $this->instance]);
-		$data['groupJobCode'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => JOB_TYPE, 'instance' => $this->instance]);
-		$data['groupUnits'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => UNIT_TYPE, 'instance' => $this->instance]);
+
+		foreach($availablePermissions as $key=>$value) {
+			$data["group" . $key] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => $key, 'instance' => $this->instance]);
+		}
+
 
 		if($permissionType == DRAWER_PERMISSION) {
 			// If the drawer permissions are being added, be sure to include the drawer groups
@@ -533,8 +546,9 @@ class Permissions extends Instance_Controller {
 		// assume this a remote user, we need to create them.
 
 		// first, get their info:
-		$userArray = $this->user_model->findUserFromLDAP($userId, "umndid");
 
+		$authHelper = $this->user_model->getAuthHelper();
+		$userArray = $authHelper->findById($userId, true);
 
 		if(count($userArray) == 0) {
 			// something has gone wrong - this should have been an umndid..
@@ -553,7 +567,6 @@ class Permissions extends Instance_Controller {
 			$groupValue = $result[0]->getId();
 		}
 		else {
-
 			$userObject->setUserType("Remote");
 			$userObject->setCreatedAt(new \DateTime("now"));
 			$userObject->setInstance($this->instance);
@@ -705,7 +718,9 @@ class Permissions extends Instance_Controller {
 			return $user{0}->getId();
 		}
 
-		$user = $this->user_model->createUserFromRemote($umndid);
+		$authHelper = $this->user_model->getAuthHelper();
+		
+		$user = $authHelper->createUserFromRemote($umndid);
 		return $user->getId();
 	}
 
@@ -809,88 +824,14 @@ class Permissions extends Instance_Controller {
 
 		$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION,$this->instance);
 
-		if($accessLevel < PERM_ADMIN && $user->getCreatedBy() != $this->user_model->user) {
-			$this->logging->logError("editUser", "User " . $this->user_model->user->getId() . " tried to edit" . $userId);
-			instance_redirect("errorHandler/error/noPermission");
-		}
 		$groupType = $this->input->post("groupType");
 		$groupValue = $this->input->post("groupValue");
 
    		$outputArray = array();
 		if($groupType == USER_TYPE) {
 
-			$result = $this->doctrine->em->getRepository("Entity\User")->createQueryBuilder('u')
-   				->where('u.instance= :instance')
-   				->andWhere('u.displayName LIKE :name')
-   				->setParameter('instance', $this->instance)
-   				->setParameter('name', '%'.$groupValue.'%')
-   				->getQuery()
-   				->getResult();
-
-   				//TODO: limit number of users
-   				//TODO: only searhc local users
-   				//
-
-   			$userMatches = $this->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$groupValue]);
-
-   			foreach($userMatches as $user) {
-   				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-   				$outputArray[$user->getId()] = $tempArray;
-   			}
-   			$i=0;
-   			foreach($result as $user) {
-   				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-   				if(!array_key_exists($user->getId(), $outputArray)) {
-   					$outputArray[$user->getId()] = $tempArray;
-   				}
-   				$i++;
-   				if($i>10) {
-   					break;
-   				}
-   			}
-
-   			// check for x500 match
-   			$userMatches = $this->user_model->findUserFromLDAP($groupValue, "cn");
-			foreach($userMatches as $user) {
-				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-
-				$duplicate = false;
-				foreach($outputArray as $entry) {
-					if($entry["username"] == $user->getUsername()) {
-						$duplicate = true;
-					}
-				}
-
-				if(!$duplicate) {
-					array_unshift($outputArray, $tempArray);
-				}
-			}
-
-			// now wildcard names
-			$userMatches = $this->user_model->findUserFromLDAP("*".str_replace(" ", "* ", $groupValue) . "*", "displayname");
-
-			$i = 0;
-			foreach($userMatches as $user) {
-
-				$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-
-				$duplicate = false;
-				foreach($outputArray as $entry) {
-					if($entry["username"] == $user->getUsername()) {
-						$duplicate = true;
-					}
-				}
-
-				if(!$duplicate) {
-					$outputArray[] = $tempArray;
-				}
-
-				if($i > 10) {
-					break;
-				}
-				$i++;
-			}
-
+   			$authHelper = $this->user_model->getAuthHelper();
+			$outputArray = $authHelper->autocompleteUsername($groupValue);
 
 		}
 

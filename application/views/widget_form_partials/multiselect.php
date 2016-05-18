@@ -2,53 +2,6 @@
 <?=$this->load->view("widget_form_partials/widget_header", array("widgetModel"=>$widgetModel), true)?>
 <?endif?>
 
-
-<?
-
-if(!function_exists("flatten")) {
-	function flatten(array $array) {
-	    $return = array();
-	    array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });
-	    return $return;
-	}
-
-}
-
-if(!function_exists("recurseThing")) {
-	function recurseThing($array, $skip) {
-
-		$outputArray = array();
-		foreach($array as $key=>$value) {
-			if(!$skip) {
-				$outputArray[] = $key;
-			}
-			if(is_array($value) || is_object($value)) {
-				$outputArray[] = recurseThing($value, !$skip);
-			}
-
-
-		}
-		return $outputArray;
-	}
-}
-
-
-/**
- * Strip any special characters so we can use these in form names.
- * @param  [string] $sourceName
- * @return [string] sanitized name
- */
-if(!function_exists("makeSafeForTitle")) {
-	function makeSafeForTitle($sourceName) {
-		return preg_replace("/[^a-zA-Z0-9]+/", "", $sourceName);
-	}
-}
-
-
-?>
-
-
-
 <?for($i=0; $i<$widgetModel->drawCount; $i++):?>
 
 
@@ -88,8 +41,8 @@ if(!function_exists("makeSafeForTitle")) {
 
 $encodedField = json_encode($widgetModel->getFieldData());
 
-$topLevels = array_unique(flatten(recurseThing($widgetModel->getFieldData(),0)));
-
+// extract the labels for each dropdwon.
+$topLevels = getTopLevels($widgetModel->getFieldData());
 
 ?>
 
@@ -105,7 +58,7 @@ if(typeof selectedItems === 'undefined') {
 
 selectedItems["<?=$formFieldId?>"] = {};
 
-<?if(isset($fieldContents)):foreach($fieldContents as $key=>$value):?>
+<?if(isset($fieldContents)): foreach($fieldContents as $key=>$value):?>
 selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
 <?endforeach; endif;?>
 

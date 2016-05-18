@@ -279,6 +279,8 @@ class Drawers extends Instance_Controller {
 			$this->doctrine->em->persist($groupObject);
 		}
 
+		$groupObject->addDrawer($drawer);
+
 		$permission = new Entity\DrawerPermission;
 		$permission->setDrawer($drawer);
 		$permission->setGroup($groupObject);
