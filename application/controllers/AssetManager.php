@@ -485,6 +485,9 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function exportCSV() {
+		
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+
 		if($accessLevel < PERM_ADMIN) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
