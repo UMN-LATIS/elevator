@@ -26,7 +26,7 @@ var offset = 0;
 					<td><A href="<?=instance_url("/assetManager/editAsset/".$asset['objectId'])?>"><?=$asset['objectId']?></a></td>
 					<?endif?>
 					<td><?=$asset['title']?></td>
-					<td><?=$this->asset_template->getTemplate($asset['templateId'])->getName()?></td>
+					<td><?=($this->asset_template->getTemplate($asset['templateId'])!==null)?$this->asset_template->getTemplate($asset['templateId'])->getName():null?></td>
 					<td><?=$asset["modifiedDate"]->setTimezone(new DateTimeZone('America/Chicago'))->format("m/d/y H:i:s")?></td>
 					<td><span class="glyphicon <?=$asset["readyForDisplay"]?"glyphicon-ok-circle":"glyphicon-ban-circle"?>"></td>
 

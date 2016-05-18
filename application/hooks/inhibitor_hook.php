@@ -32,14 +32,14 @@ class InhibitorHook {
 	{
 
 
-		// register_shutdown_function(array($this, 'handle_fatal_errors'));
+		register_shutdown_function(array($this, 'handle_fatal_errors'));
 
 	}
 	public function runtime_error_catcher() {
 
 
-		// set_error_handler(array($this, 'handle_errors'));
-		// set_exception_handler(array($this, 'handle_exceptions'));
+		set_error_handler(array($this, 'handle_errors'));
+		set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
 	/**
@@ -95,6 +95,7 @@ class InhibitorHook {
 			$errorText = $exception;
 		}
 
+
 		//reset doctrine in case we've lost the DB
 		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 		$CI->doctrine->reset();
@@ -149,7 +150,8 @@ class InhibitorHook {
             'errline' => $errline,
             'time' => date('Y-m-d H:i:s')
         );
-
+		$e = new Exception;
+		$errorText1 = $e->getTraceAsString();
 
 		$CI =& get_instance();
 
@@ -159,7 +161,7 @@ class InhibitorHook {
 
 		$errorText = join("\n", $data);
 		$log = new Entity\Log();
-		$log->setMessage(substr($errorText, 0, 1000));
+		$log->setMessage(substr($errorText, 0, 1000) . "\n" .  $errorText1);
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
 			$log->setInstance($CI->doctrine->em->merge($CI->instance));
