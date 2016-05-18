@@ -25,11 +25,11 @@ class Search extends Instance_Controller {
 			if($this->user_model) {
 				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
 				if(count($allowedCollections) == 0) {
-					instance_redirect("errorHandler/error/noPermission");
+					$this->errorhandler_helper->callError("noPermission");
 				}
 			}
 			else {
-				instance_redirect("errorHandler/error/noPermission");
+				$this->errorhandler_helper->callError("noPermission");
 			}
 		}
 
@@ -160,7 +160,7 @@ class Search extends Instance_Controller {
 		if($accessLevel < PERM_SEARCH) {
 			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
 			if(count($allowedCollections) == 0) {
-				instance_redirect("errorHandler/error/noPermission");
+				$this->errorhandler_helper->callError("noPermission");
 			}
 			$collections = $this->instance->getCollectionsWithoutParent();
 
@@ -298,11 +298,11 @@ class Search extends Instance_Controller {
 					$allowedCollectionsIds = array_map(function($n) { return $n->getId(); }, $allowedCollections);
 				}
 				else {
-					instance_redirect("errorHandler/error/noPermission");
+					$this->errorhandler_helper->callError("noPermission");
 				}
 			}
 			else {
-				instance_redirect("errorHandler/error/noPermission");
+				$this->errorhandler_helper->callError("noPermission");
 			}
 		}
 
@@ -448,7 +448,7 @@ class Search extends Instance_Controller {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 		$this->template->loadJavascript(["assets/js/templateSearch"]);
 
@@ -465,7 +465,7 @@ class Search extends Instance_Controller {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		$templateArray = array();
@@ -483,7 +483,7 @@ class Search extends Instance_Controller {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		if(!$templateId) {
@@ -511,7 +511,7 @@ class Search extends Instance_Controller {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 		$this->template->loadJavascript(["templateSearch"]);
 
@@ -549,7 +549,7 @@ class Search extends Instance_Controller {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_ADDASSETS) {
-			instance_redirect("errorHandler/error/noPermission");
+			$this->errorhandler_helper->callError("noPermission");
 		}
 
 		$customSearchId = $this->input->post("customSearchId");
