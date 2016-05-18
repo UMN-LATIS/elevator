@@ -485,12 +485,14 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function exportCSV() {
+		if($accessLevel < PERM_ADMIN) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
 		$searchId = $this->input->post("searchId");
 		$templateId = $this->input->post("templateId");
-		$searchId = "5bfe6f94-695e-464e-b55c-537c10c704ae";
-		$templateId = 39;
 		if(!$searchId) {
-			$this->template->content->view("assetManager/csvExportForm");
+			$this->template->content->view("assetManager/exportCSV");
 			$this->template->publish();	
 		}
 		else {
@@ -501,7 +503,7 @@ class AssetManager extends Admin_Controller {
 			$this->load->model("search_model");
 			$matchArray = $this->search_model->find($searchArray, true, null, TRUE);
 			$i=0;
-			echo "<pre>";
+
 			$out = fopen('php://output', 'w');
 			$widgetArray = array();
 			foreach($assetTemplate->widgetArray as $widgets) {
@@ -510,6 +512,9 @@ class AssetManager extends Admin_Controller {
 					$widgetArray[] = $widgets->getLabel() . " URL";
 				}
 			}
+			header('Content-Type: application/csv');
+    		// tell the browser we want to save it instead of displaying it
+    		header('Content-Disposition: attachment; filename="csvExport-' . $searchId . '.csv";');
 			fputcsv($out, $widgetArray);
 
 			foreach($matchArray['searchResults'] as $match) {
@@ -630,7 +635,7 @@ class AssetManager extends Admin_Controller {
 						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
 						$widgetContainer = $widget->getContentContainer();
 					
-						if(get_class($widget) == "Upload") {
+						if(get_class($widget) == "Upload" && strlen(trim($rowEntry))>0) {
 							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($rowEntry)];
 							continue;
 						}
