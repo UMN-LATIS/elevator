@@ -32,14 +32,14 @@ class InhibitorHook {
 	{
 
 
-		register_shutdown_function(array($this, 'handle_fatal_errors'));
+		// register_shutdown_function(array($this, 'handle_fatal_errors'));
 
 	}
 	public function runtime_error_catcher() {
 
 
-		set_error_handler(array($this, 'handle_errors'));
-		set_exception_handler(array($this, 'handle_exceptions'));
+		// set_error_handler(array($this, 'handle_errors'));
+		// set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
 	/**
@@ -94,7 +94,6 @@ class InhibitorHook {
 		else {
 			$errorText = $exception;
 		}
-
 
 		//reset doctrine in case we've lost the DB
 		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -200,7 +199,7 @@ class InhibitorHook {
 	private function _forward_error($message)
 	{
 		$CI =& get_instance();
-
+		session_start();
 		if($CI && !$CI->input->is_cli_request()) {
 			$CI->load->helper('url');
 			$CI->load->library('session');

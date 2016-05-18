@@ -16,18 +16,17 @@
 			if($permission->getGroup()->getGroupType() == "User") {
 				$tempUser->loadUser($permission->getGroup()->getGroupValue());
 			}
-			if($permission->getGroup()->getGroupType() == "JobCode") {
-				$tempUser->jobCodes[] = $permission->getGroup()->getGroupValue();
-				$tempUser->resolvePermissions();
+
+			foreach($authHelper->authTypes as $key=>$value) {
+				if($permission->getGroup()->getGroupType() == $key) {
+					if(!isset($tempUser->userData[$key]["values"])) {
+						$tempUser->userData[$key]["values"] = array();
+					}
+					$tempUser->userData[$key]["values"][] = $permission->getGroup()->getGroupValue();
+					$tempUser->resolvePermissions();
+				}
 			}
-			if($permission->getGroup()->getGroupType() == "Course") {
-				$tempUser->courses[] = $permission->getGroup()->getGroupValue();
-				$tempUser->resolvePermissions();
-			}
-			if($permission->getGroup()->getGroupType() == UNIT_TYPE) {
-				$tempUser->units[] = $permission->getGroup()->getGroupValue();
-				$tempUser->resolvePermissions();
-			}
+
 			$minimumAccessLevel = $tempUser->getAccessLevel("instance",$this->instance);
 			?>
 

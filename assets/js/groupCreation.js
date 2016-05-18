@@ -77,19 +77,15 @@ $(document).ready(function() {
 			$("#groupLabelGroup").hide();
 			$("#courseList").hide();
 			break;
-			case "Course":
-			$("#courseList").show();
-			$(".groupValueGroup").show();
-			$("#groupLabelGroup").show();
-			break;
-			case "JobCode":
-			case "User":
-			case "Unit":
-			$("#courseList").hide();
+			default:
 			$(".groupValueGroup").show();
 			$("#groupLabelGroup").show();
 			break;
 		}
+
+		updateHints($(this));
+
+		
 
 		if($("#inputGroupId").val() === "") {
 			$("#inputGroupLabel").attr("placeholder", ($(this).find("option:selected").text()));
@@ -98,26 +94,24 @@ $(document).ready(function() {
 
 	});
 
-	$("#courseListSelect").on("change", function() {
-		$(".inputGroupValue").last().val($(this).val());
-	});
-
 	$("#createGroupForm").on("submit", function() {
 
 		switch($("#inputGroupType").val()) {
-			case "User":
-			case "JobCode":
-			case "Course":
-			var haveValues = false;
-			$('input[name="groupValue[]"]').each(function(index, el) {
-				if($(el).val() !== "")	{
-					haveValues = true;
+			case "All":
+			case "Authed":
+			case "Authed_remote":
+				break;
+			default:
+				var haveValues = false;
+				$('input[name="groupValue[]"]').each(function(index, el) {
+					if($(el).val() !== "")	{
+						haveValues = true;
+					}
+				});
+				if(!haveValues) {
+					alert("A group value is required");
+					return false;
 				}
-			});
-			if(!haveValues) {
-				alert("A group value is required");
-				return false;
-			}
 			break;
 		}
 		return true;
@@ -127,7 +121,25 @@ $(document).ready(function() {
 
 });
 
+function updateHints(targetElement) {
 
+	$(".hintSelectorGroup").remove();
+	if(hints[targetElement.val()] && Object.keys(hints[targetElement.val()]).length >0) {	
+	
+		var source   = $("#hint-selector").html();
+		var template = Handlebars.compile(source);
+
+		var sourceObject = {};
+		sourceObject.hintLabel = targetElement.val();
+		sourceObject.hints = hints[targetElement.val()];
+		var html = template(sourceObject);
+
+		$("#groupLabelGroup").before(html);
+		$(".hintSelector").on("change", function() {
+			$(".inputGroupValue").last().val($(this).val());
+		});
+	}
+}
 
 function buildAutocomplete() {
 	var source   = $("#person-autocompleter-template").html();
