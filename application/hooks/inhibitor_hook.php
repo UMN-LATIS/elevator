@@ -150,7 +150,8 @@ class InhibitorHook {
             'errline' => $errline,
             'time' => date('Y-m-d H:i:s')
         );
-
+		$e = new Exception;
+		$errorText1 = $e->getTraceAsString();
 
 		$CI =& get_instance();
 
@@ -160,7 +161,7 @@ class InhibitorHook {
 
 		$errorText = join("\n", $data);
 		$log = new Entity\Log();
-		$log->setMessage(substr($errorText, 0, 1000));
+		$log->setMessage(substr($errorText, 0, 1000) . "\n" .  $errorText1);
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
 			$log->setInstance($CI->doctrine->em->merge($CI->instance));
@@ -200,7 +201,7 @@ class InhibitorHook {
 	private function _forward_error($message)
 	{
 		$CI =& get_instance();
-
+		session_start();
 		if($CI && !$CI->input->is_cli_request()) {
 			$CI->load->helper('url');
 			$CI->load->library('session');

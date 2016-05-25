@@ -366,6 +366,9 @@ class Asset_model extends CI_Model {
 		}
 		# get the template for this asset, it contains the widgets
 		$this->assetTemplate = $this->asset_template->getTemplate($this->templateId);
+		if(!$this->assetTemplate) {
+			return false;
+		}
 		$populatedWidgetArray = array();
 
 		# go through all the widgets from the template, see if they're set in the jsonData
