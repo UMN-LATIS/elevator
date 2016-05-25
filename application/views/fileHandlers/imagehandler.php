@@ -137,5 +137,28 @@ $(function ()
 		});
 
 	});
+
+	function debounce(func, wait, immediate) {
+		var timeout;
+		return function() {
+			var context = this, args = arguments;
+			var later = function() {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+	};
+
+	// chrome has an issue in which it won't re-draw an image after scaling, so it's blurry. This forces a redraw.
+	$('.panzoom-element').on('panzoomzoom', debounce( function () {
+	    this.style.display='none';
+	    this.offsetHeight;
+	    this.style.display='';
+	}, 100));
+
 	</script>
 <?endif?>
