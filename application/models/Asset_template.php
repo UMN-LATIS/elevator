@@ -7,7 +7,7 @@ class Asset_template extends CI_Model {
 	private $templateCache = array();
 	private $templateObject = null;
 	public $widgetArray = array();
-	public $name = "";
+	public $name = NULL;
 	public $displayInline = false;
 	public $useCache = true;
 
@@ -62,7 +62,11 @@ class Asset_template extends CI_Model {
 	public function getTemplate($templateId) {
 
 		if(!isset($this->templateCache[$templateId]) || $this->useCache == false) {
-			$this->templateCache[$templateId] = new Asset_template($templateId);
+			$assetTemplate = new Asset_template($templateId);
+			if($assetTemplate->name) {
+				$this->templateCache[$templateId] = $assetTemplate;
+			}
+			
 		}
 		if(isset($this->templateCache[$templateId])) {
 			return $this->templateCache[$templateId];
@@ -173,7 +177,7 @@ class Asset_template extends CI_Model {
 				return call_user_func(array($this->templateObject,$method), $args);
 			}
 		}
-
+		
 		trigger_error("Error Calling object method '$method' " . implode(', ', $args), E_USER_ERROR);
 	}
 
