@@ -7,7 +7,7 @@
 
 
 </style>
-<div id="map" style="height: 600px; width:600px;"></div>
+<div id="map" style="height: 600px; width:100%;"></div>
 
  
     <script type="application/javascript">
@@ -83,7 +83,6 @@
     	//Loading the Zoomify tile layer, notice the URL
     	var layer = L.tileLayer.zoomify(function(coords, tile, done) {
             var error;
-
             // tile.src="tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg";
             var loadStarted = false;
             if(zoomLevelCache[coords.z] && zoomLevelCache[coords.z][coords.x] && zoomLevelCache[coords.z][coords.x][coords.y]) {
@@ -110,10 +109,10 @@
 
                 tileCompletionCache[coords.z][coords.x][coords.y] = { tile: tile, done: done, coords: coords};
                 if(prefetchAttempted[coords.z] && prefetchAttempted[coords.z][coords.x]) {
-                    console.log("prefetch underway for " + coords.z + " " + coords.x);
+                    // console.log("prefetch underway for " + coords.z + " " + coords.x);
                 }
                 else {
-                    console.log("attempting prefetch for" +  coords.z + " " + coords.x);
+                    // console.log("attempting prefetch for" +  coords.z + " " + coords.x);
                     if(!prefetchAttempted[coords.z]) {
                         prefetchAttempted[coords.z] = [];
                     }
@@ -127,11 +126,12 @@
         }, {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
-            tileSize :256,
-            maxZoom: 15,
-            overlap: 2
+            tileSize :<?=$fileObject->sourceFile->metadata["dziTilesize"]?>,
+            maxZoom: <?=$fileObject->sourceFile->metadata["dziMaxZoom"]?> - 1,
+            overlap: <?=$fileObject->sourceFile->metadata["dziOverlap"]?> * 2
 		}).addTo(map);
 
 		//Setting the view to our layer bounds, set by our Zoomify plugin
 		map.fitBounds(layer.getBounds());
+
     </script>
