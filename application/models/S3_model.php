@@ -81,7 +81,7 @@ class S3_model extends CI_Model {
 
 	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_REDUCED) {
 		try {
-			$this->s3Client->uploadDirectory($sourceDirectory, $this->bucket, $destKey);
+			$this->s3Client->uploadDirectory($sourceDirectory, $this->bucket, $destKey, ["concurrency"=>20]);
 		}
 		catch (Exception $e) {
 			$this->logging->logError("uploadDirectory", $e, $sourceFile);
