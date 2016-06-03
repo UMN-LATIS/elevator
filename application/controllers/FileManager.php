@@ -466,6 +466,7 @@ class FileManager extends Instance_Controller {
 		$subPath = $this->input->post("path");
 		$derivative = $this->input->post("derivative");
 
+	
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		$fileHandler->loadByObjectId($fileId);
 

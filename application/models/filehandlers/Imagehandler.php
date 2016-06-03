@@ -264,8 +264,15 @@ class ImageHandler extends FileHandlerBase {
 		$outputFile = $outputPath ."/tiledBase";
 
 		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . "[autorotate] " . $outputFile;
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->pheanstalk->touch($this->job);
+			echo ".";
+		}
 
-		exec($extractString . " 2>/dev/null");
+
 		if(!file_exists($outputFile . ".dzi")) {
 			$this->logging->processingInfo("createDerivative","imageHandler","Tiling failed",$this->getObjectId(),$this->job->getId());
 			return JOB_FAILED;
@@ -287,8 +294,10 @@ class ImageHandler extends FileHandlerBase {
 		$zoomLevels = count($zoomContents) - 2;
 		$this->sourceFile->metadata["dziMaxZoom"] = $zoomLevels;
 
+		echo "\n";
 		$this->pheanstalk->touch($this->job);
-		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled")) {
+		
+		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled", null, $this->job)) {
 			$this->load->helper('file');
 			delete_files($outputPath, true);
 		}

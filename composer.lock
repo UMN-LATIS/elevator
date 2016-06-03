@@ -1,10 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "fe4d365e54c8a2826baced9633e91c9b",
+    "hash": "44b288d5596d74f1b5f4f7382991b1b0",
+    "content-hash": "8e439655738389fcf20aef5ee427e5d0",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -137,6 +138,41 @@
                 "source": "https://github.com/cmcfadden/phpvideotoolkit-v2/tree/master"
             },
             "time": "2015-10-30 22:55:04"
+        },
+        {
+            "name": "cocur/background-process",
+            "version": "v0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cocur/background-process.git",
+                "reference": "e223946f090c9bf8b66c546d1fd0a74890ef78a6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cocur/background-process/zipball/e223946f090c9bf8b66c546d1fd0a74890ef78a6",
+                "reference": "e223946f090c9bf8b66c546d1fd0a74890ef78a6",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Cocur\\BackgroundProcess\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Start processes in the background that continue running when the PHP process exists.",
+            "keywords": [
+                "background",
+                "process",
+                "unix"
+            ],
+            "time": "2015-10-24 17:38:37"
         },
         {
             "name": "crocodoc/php-box-view",
@@ -402,7 +438,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/common/zipball/1fb4d85982a4c18bff80e05659b110312f416de7",
+                "url": "https://api.github.com/repos/doctrine/common/zipball/68c0e2f52fce0b8379ddcee7d5e85f32387559c2",
                 "reference": "1fb4d85982a4c18bff80e05659b110312f416de7",
                 "shasum": ""
             },
@@ -541,7 +577,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/b9ec927612c8b26b51cf23e22ff2e278024578ce",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/9e1300bffb9cae048705bb4ed39c19f33e6896d6",
                 "reference": "b9ec927612c8b26b51cf23e22ff2e278024578ce",
                 "shasum": ""
             },
@@ -1459,7 +1495,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pda/pheanstalk/zipball/ba8c8b1c3265d4a925864bfffe04c806c3364803",
+                "url": "https://api.github.com/repos/pda/pheanstalk/zipball/f095be7568f3438cd5e4d1e59016857bbcb869b1",
                 "reference": "ba8c8b1c3265d4a925864bfffe04c806c3364803",
                 "shasum": ""
             },
@@ -1688,7 +1724,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/smalot/pdfparser/zipball/31590f7938a22f1c7fc4fb292611e3742a62ebaa",
+                "url": "https://api.github.com/repos/smalot/pdfparser/zipball/3cd66972559cbcd53fada447dfe60b57a8f8adf8",
                 "reference": "31590f7938a22f1c7fc4fb292611e3742a62ebaa",
                 "shasum": ""
             },
@@ -1952,7 +1988,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tedious/Stash/zipball/077ed8865abbb975dd38eb7f20231ed4ebd21624",
+                "url": "https://api.github.com/repos/tedious/Stash/zipball/14307205b447da122a1a28ccc2187f0523d99e53",
                 "reference": "077ed8865abbb975dd38eb7f20231ed4ebd21624",
                 "shasum": ""
             },
