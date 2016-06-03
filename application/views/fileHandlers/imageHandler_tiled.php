@@ -33,11 +33,22 @@
     	
         var tileCompletionCache = [];
         var prefetchAttempted = [];
-        var prefetchTiles = function(zoomLevel, x) {
-            $.post(basePath + 'fileManager/getSignedChildrenForObject',
-				{fileId: '<?=$fileObject->getObjectId()?>', derivative: 'tiled', path: "tiledBase_files/" + zoomLevel + "/" + x + "_" },
-				function(data, textStatus, xhr) {
+        var tileLoadCache = [];
 
+        var performFetch =  debounce(function() {
+        	var localTileCache = tileLoadCache.slice(0);
+        	tileLoadCache = [];
+        	var tileURLs = [];
+        	var zoomLevel;
+        	$.each(localTileCache, function(index, val) {
+        		coords = val.coords;
+        		tileURLs.push("tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y);
+        		zoomLevel = coords.z;
+        	});
+
+			$.post(basePath + 'fileManager/getSignedChildrenForObject',
+				{fileId: '<?=$fileObject->getObjectId()?>', derivative: 'tiled', paths: tileURLs },
+				function(data, textStatus, xhr) {
 					var signedURLs;
 					try {
 						signedURLs = $.parseJSON(data);
@@ -59,27 +70,38 @@
 						zoomLevelCache[zoomLevel].push(el);
 					});
 
-					setTimeout(function() {
-		                for(tilec in tileCompletionCache[zoomLevel][x]) {
-		                    tile = tileCompletionCache[zoomLevel][x][tilec];
+					for(tilec in localTileCache) {
+		                    tile = localTileCache[tilec];
 
 		                    foundElement = null;
-		                    $.each(zoomLevelCache[tile.coords.z], function(index, el) {
-								if(el.indexOf("/tiledBase_files/" + tile.coords.z + "/" + tile.coords.x + "_" + tile.coords.y) !== -1) {
+		                    $.each(signedURLs, function(index, el) {
+								if(el.indexOf("/tiledBase_files/" + tile.coords.z + "/" + tile.coords.x + "_" + tile.coords.y + ".") !== -1) {
 									foundElement = el;
 									return false;
 								}
 							});
-		                    tile.tile.src=foundElement;
-		                    var error;
+							if(foundElement == null) {
+								// console.log(tile);
+								// console.log(localTileCache);
+								// console.log(tileURLs);
+								// console.log(data);
+							}
+							else {
+		                    	tile.tile.src=foundElement;
+		                    	var error;
 
-		                    tile.done(error, tile.tile);                    
+		                    	tile.done(error, tile.tile);                    
+							}
+
 		                }
-		            }, 1);
+
+		                
 				});
-		};
 
 
+}, 100);
+
+        
     	//Loading the Zoomify tile layer, notice the URL
     	var layer = L.tileLayer.zoomify(function(coords, tile, done) {
             var error;
@@ -100,25 +122,9 @@
                setTimeout(function() { done(error, tile)}, 1);
             }
             if(!loadStarted) {
-                if(!tileCompletionCache[coords.z]) {
-                    tileCompletionCache[coords.z] = [];
-                }
-                if(!tileCompletionCache[coords.z][coords.x]) {
-                    tileCompletionCache[coords.z][coords.x] = [];
-                }
 
-                tileCompletionCache[coords.z][coords.x][coords.y] = { tile: tile, done: done, coords: coords};
-                if(prefetchAttempted[coords.z] && prefetchAttempted[coords.z][coords.x]) {
-                    // console.log("prefetch underway for " + coords.z + " " + coords.x);
-                }
-                else {
-                    // console.log("attempting prefetch for" +  coords.z + " " + coords.x);
-                    if(!prefetchAttempted[coords.z]) {
-                        prefetchAttempted[coords.z] = [];
-                    }
-                    prefetchAttempted[coords.z][coords.x] = true;
-                    prefetchTiles(coords.z, coords.x);
-                }
+            	tileLoadCache.push({coords: coords, tile: tile, done: done});
+            	performFetch();
             }
 
             return tile;
@@ -130,6 +136,23 @@
             maxZoom: <?=$fileObject->sourceFile->metadata["dziMaxZoom"]?> - 1,
             overlap: <?=$fileObject->sourceFile->metadata["dziOverlap"]?> * 2
 		}).addTo(map);
+
+
+
+    	function debounce(func, wait, immediate) {
+    		var timeout;
+    		return function() {
+    			var context = this, args = arguments;
+    			var later = function() {
+    				timeout = null;
+    				if (!immediate) func.apply(context, args);
+    			};
+    			var callNow = immediate && !timeout;
+    			clearTimeout(timeout);
+    			timeout = setTimeout(later, wait);
+    			if (callNow) func.apply(context, args);
+    		};
+    	};
 
 		//Setting the view to our layer bounds, set by our Zoomify plugin
 		map.fitBounds(layer.getBounds());
