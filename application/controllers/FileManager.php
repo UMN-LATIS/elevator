@@ -463,7 +463,14 @@ class FileManager extends Instance_Controller {
 	function getSignedChildrenForObject() {
 
 		$fileId = $this->input->post("fileId");
-		$subPath = $this->input->post("path");
+		if($this->input->post("path")) {
+			$subPath = $this->input->post("path");
+		}
+
+		if($this->input->post("paths")) {
+			$subPaths = $this->input->post("paths");
+		}
+		
 		$derivative = $this->input->post("derivative");
 
 	
@@ -504,7 +511,16 @@ class FileManager extends Instance_Controller {
 			return;
 		}
 
-		$urls = $fileHandler->getSignedURLs($derivative, true, $subPath);
+		if(isset($subPath)) {
+			$urls = $fileHandler->getSignedURLs($derivative, true, $subPath);	
+		}
+		elseif(isset($subPaths)) {
+			$urls = array();
+			foreach($subPaths as $subPath) {
+				$urls = array_merge($fileHandler->getSignedURLs($derivative, true, $subPath), $urls);	
+			}
+		}
+
 
 		echo json_encode($urls);
 
