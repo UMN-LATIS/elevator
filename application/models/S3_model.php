@@ -79,12 +79,47 @@ class S3_model extends CI_Model {
 	}
 
 
-	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_REDUCED) {
+	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_REDUCED, $job=null) {
 		try {
-			$this->s3Client->uploadDirectory($sourceDirectory, $this->bucket, $destKey, ["concurrency"=>20]);
+			$options["concurrency"] = 50;
+			$this->storageClass = $storageClass;
+			$this->transferCount = 0;
+			if($job) {
+				$this->job = $job;
+			}
+			$beforeFunction = function(Aws\Command $command) {
+				if (in_array($command->getName(), ['PutObject', 'CreateMultipartUpload'])) {
+            		// Set custom cache-control metadata
+            		$command['x-amz-storage-class'] = $this->storageClass;
+        		}
+
+				$this->transferCount++;
+				if($this->transferCount % 100 == 0) {
+					if($this->pheanstalk !== null && $this->job !==null) {
+						$this->pheanstalk->touch($this->job);	
+					}
+					
+					echo ".";
+				}
+
+			};
+
+			if($beforeFunction) {
+				$options["before"] = $beforeFunction;
+			}
+			else {
+				$options["before"] = function(Aws\Command $command) {
+
+				};
+			}
+			$destinationPath = "s3://" . $this->bucket . "/" . $destKey;
+			$manager = new \Aws\S3\Transfer($this->s3Client, $sourceDirectory, $destinationPath, $options);
+			$manager->transfer();
 		}
-		catch (Exception $e) {
-			$this->logging->logError("uploadDirectory", $e, $sourceFile);
+		catch (Aws\Exception\AwsException $e) {
+			echo $sourceDirectory . "\n";
+			echo $destKey . "\n";
+			$this->logging->logError("uploadDirectory", $e);
 			return false;
 		}
 		return true;
@@ -312,9 +347,9 @@ class S3_model extends CI_Model {
 				"version" => "2006-03-01",
 	    		"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
 	    		));
-
-			$this->s3Client->deleteMatchingObjects($this->bucket, $targetKey);
-
+			$listObjectsParams = ['Bucket' => $this->bucket, 'Prefix' => $targetKey]; 
+			$delete = Aws\S3\BatchDelete::fromListObjects($this->s3Client, $listObjectsParams); 
+			$delete->delete();
 
 		}
 		else {
@@ -357,6 +392,7 @@ class S3_model extends CI_Model {
 				echo $e;
 				return false;
 			}
+
 
 		}
 
