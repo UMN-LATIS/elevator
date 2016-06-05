@@ -30,13 +30,22 @@ L.TileLayer.Elevator = L.TileLayer.extend({
         return tile;
     },
 
-    // getTileSize: function() {
-    // 	var size = L.TileLayer.prototype.getTileSize();
-    // 	console.log(size);
-    // 	return size;
+    getTileSize: function() {
+		var map = this._map,
+		    tileSize = L.GridLayer.prototype.getTileSize.call(this),
+		    zoom = this._tileZoom + this.options.zoomOffset,
+		    zoomN = this.options.maxNativeZoom;
 
+	    tileSize.x = tileSize.x + this.options.overlap; // with deepzoom, our tile size removes the overlap, but leaflet needs it.
+	    tileSize.y = tileSize.y + this.options.overlap;
+		// increase tile size when overscaling
+		var outputSize= zoomN !== null && zoom > zoomN ?
+				tileSize.divideBy(map.getZoomScale(zoomN, zoom)).round() :
+				tileSize;
+		
+		return outputSize;
+    },
 
-    // },
 _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaflet.Zoomify
 	var options = this.options,
 	tileSize = options.tileSize || 256
