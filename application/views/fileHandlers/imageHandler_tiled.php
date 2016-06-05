@@ -164,7 +164,7 @@
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
             tileSize :<?=$fileObject->sourceFile->metadata["dziTilesize"]?>,
             maxZoom: <?=$fileObject->sourceFile->metadata["dziMaxZoom"]?> - 1,
-            overlap: <?=$fileObject->sourceFile->metadata["dziOverlap"]?> * 2
+            overlap: <?=$fileObject->sourceFile->metadata["dziOverlap"]?>
 		});
     	layer.addTo(map);
         
