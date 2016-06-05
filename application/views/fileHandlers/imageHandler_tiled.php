@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.fullscreen.css">
-<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet-src.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
 <style type="text/css">
@@ -26,14 +26,24 @@
 	zoomLevelCache[11] = <?=json_encode($fileObject->getSignedURLs("tiled", true, "tiledBase_files/11/"))?>;
 
 
-		var map = L.map('map', {
-            fullscreenControl: true,
-   	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
-    	});
-    	
         var tileCompletionCache = [];
         var prefetchAttempted = [];
         var tileLoadCache = [];
+
+    	function debounce(func, wait, immediate) {
+    		var timeout;
+    		return function() {
+    			var context = this, args = arguments;
+    			var later = function() {
+    				timeout = null;
+    				if (!immediate) func.apply(context, args);
+    			};
+    			var callNow = immediate && !timeout;
+    			clearTimeout(timeout);
+    			timeout = setTimeout(later, wait);
+    			if (callNow) func.apply(context, args);
+    		};
+    	};
 
         var performFetch =  debounce(function() {
         	var localTileCache = tileLoadCache.slice(0);
@@ -87,10 +97,18 @@
 								// console.log(data);
 							}
 							else {
-		                    	tile.tile.src=foundElement;
-		                    	var error;
-
-		                    	tile.done(error, tile.tile);                    
+								var error;
+								var localTile = tile.tile;
+								var done = tile.done;
+								localTile.onload = (function(done, error, localTile) {
+									return function() {
+										console.log("HEY");
+										done(error, localTile);
+									}
+								})(done, error, localTile);
+		                    	localTile.src=foundElement;
+								
+		                    	
 							}
 
 		                }
@@ -102,8 +120,15 @@
 }, 100);
 
         
-    	//Loading the Zoomify tile layer, notice the URL
-    	var layer = L.tileLayer.zoomify(function(coords, tile, done) {
+    	
+
+		var map = L.map('map', {
+            fullscreenControl: true,
+            zoomSnap: 0,
+   	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
+    	}).setView([0, 0], 0);
+    	
+    	var layer = L.tileLayer.elevator(function(coords, tile, done) {
             var error;
             // tile.src="tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg";
             var loadStarted = false;
@@ -118,8 +143,14 @@
                if(foundElement !== null) {
                	loadStarted = true;
                }
-               tile.src = foundElement;
-               setTimeout(function() { done(error, tile)}, 1);
+				tile.onload = (function(done, error, tile) {
+					return function() {
+						done(error, tile);
+					}
+				})(done, error, tile);
+	    		tile.src=foundElement;
+				
+               // setTimeout(function() { done(error, tile)}, 1);
             }
             if(!loadStarted) {
 
@@ -135,26 +166,11 @@
             tileSize :<?=$fileObject->sourceFile->metadata["dziTilesize"]?>,
             maxZoom: <?=$fileObject->sourceFile->metadata["dziMaxZoom"]?> - 1,
             overlap: <?=$fileObject->sourceFile->metadata["dziOverlap"]?> * 2
-		}).addTo(map);
-
-
-
-    	function debounce(func, wait, immediate) {
-    		var timeout;
-    		return function() {
-    			var context = this, args = arguments;
-    			var later = function() {
-    				timeout = null;
-    				if (!immediate) func.apply(context, args);
-    			};
-    			var callNow = immediate && !timeout;
-    			clearTimeout(timeout);
-    			timeout = setTimeout(later, wait);
-    			if (callNow) func.apply(context, args);
-    		};
-    	};
+		});
+    	layer.addTo(map);
+        
 
 		//Setting the view to our layer bounds, set by our Zoomify plugin
-		map.fitBounds(layer.getBounds());
+		// map.fitBounds(layer.getBounds());
 
     </script>
