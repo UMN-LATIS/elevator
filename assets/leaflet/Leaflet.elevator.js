@@ -149,7 +149,7 @@ fitBoundsExactly: function() {
 	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
 	var zoom = map.getScaleZoom(zooms.fit, map.getMaxZoom() + this.options.zoomOffset) ;
 
-	this.options.minZoom = Math.round(zoom);
+	this.options.minZoom = Math.floor(zoom);
 	map._addZoomLimit(this);
 	var fill = map.getScaleZoom(zooms.fill, map.getMaxZoom());
 	

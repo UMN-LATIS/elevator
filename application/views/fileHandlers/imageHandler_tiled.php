@@ -102,7 +102,6 @@
 								var done = tile.done;
 								localTile.onload = (function(done, error, localTile) {
 									return function() {
-										console.log("HEY");
 										done(error, localTile);
 									}
 								})(done, error, localTile);

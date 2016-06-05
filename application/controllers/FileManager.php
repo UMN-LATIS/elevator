@@ -516,9 +516,11 @@ class FileManager extends Instance_Controller {
 		}
 		elseif(isset($subPaths)) {
 			$urls = array();
+			$start = microtime(true);
 			foreach($subPaths as $subPath) {
 				$urls = array_merge($fileHandler->getSignedURLs($derivative, true, $subPath), $urls);	
 			}
+			$end = microtime(true);
 		}
 
 

@@ -303,14 +303,6 @@ class ImageHandler extends FileHandlerBase {
 		}
 
 		$this->pheanstalk->touch($this->job);
-		$fileArray = $this->s3model->getFilesAtKeyPath("derivative/". $this->getReversedObjectId() . "-tiled");
-
-		if(!$derivativeContainer->metadata) {
-			$derivativeContainer->metadata = array();
-		}
-
-		$derivativeContainer->metadata["fileCache"] = $fileArray;
-
 
 		$this->derivatives[$derivativeType] = $derivativeContainer;
 		$this->unlinkLocalSwap();

@@ -528,18 +528,8 @@ class FileHandlerBase extends CI_Model {
 		}
 
 		$derivative = $this->derivatives[$derivativeTitle];
-		if(isset($derivative->metadata["fileCache"])) {
-			$fullFileList = $derivative->metadata["fileCache"];
-			$fileList = array();
-			foreach($fullFileList as $file) {
-				if(strstr($file, $rootFolder)) {
-					$fileList[] = $file;
-				}
-			}
-		}
-		else {
-			$fileList = $this->s3model->getFilesAtKeyPath($derivative->storageKey . "/" . $rootFolder);	
-		}
+
+		$fileList = $this->s3model->getFilesAtKeyPath($derivative->storageKey . "/" . $rootFolder);	
 		
 
 		$signedFileList = array();
