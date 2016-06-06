@@ -28,8 +28,10 @@ class Home extends Instance_Controller {
 		$data = array();
 		if($this->instance->getFeaturedAsset()) {
 			$this->load->model("asset_model");
-			$this->asset_model->loadAssetById($this->instance->getFeaturedAsset());
-			$data['assetData'] = $this->asset_model->getSearchResultEntry();
+			if($this->asset_model->loadAssetById($this->instance->getFeaturedAsset())) {
+				$data['assetData'] = $this->asset_model->getSearchResultEntry();	
+			}
+			
 		}
 
 		$this->template->title = $this->instance->getName();
