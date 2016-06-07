@@ -83,6 +83,10 @@ class S3_model extends CI_Model {
 		try {
 			$options["concurrency"] = 50;
 			$this->storageClass = $storageClass;
+			if(!$this->storageClass) {
+				$this->storageClass = AWS_REDUCED;
+			}
+			
 			$this->transferCount = 0;
 			if($job) {
 				$this->job = $job;
@@ -90,7 +94,8 @@ class S3_model extends CI_Model {
 			$beforeFunction = function(Aws\Command $command) {
 				if (in_array($command->getName(), ['PutObject', 'CreateMultipartUpload'])) {
             		// Set custom cache-control metadata
-            		$command['x-amz-storage-class'] = $this->storageClass;
+            		// $this->logging->logError("storage class", $this->storageClass);
+            		$command['StorageClass'] = $this->storageClass;
         		}
 
 				$this->transferCount++;
