@@ -5,7 +5,7 @@ class Location_contents extends Widget_contents_base {
 	public $longitude = NULL;
 	public $latitude = NULL;
 	public $locationLabel = NULL;
-
+	public $address = NULL;
 
 	public function __construct()
 		{
@@ -19,7 +19,7 @@ class Location_contents extends Widget_contents_base {
 	 */
 	public function getAsArray($serializeNestedObjects=false) {
 
-		return ["locationLabel"=>$this->locationLabel, "loc"=>array("type"=>"Point","coordinates"=>[(float)$this->longitude,(float)$this->latitude]), "isPrimary"=>$this->isPrimary];
+		return ["locationLabel"=>$this->locationLabel, "address"=>$this->address, "loc"=>array("type"=>"Point","coordinates"=>[(float)$this->longitude,(float)$this->latitude]), "isPrimary"=>$this->isPrimary];
 	}
 
 	public function getAsText($serializeNestedObjects=false) {
