@@ -19,6 +19,8 @@
 	$longitudeId = $formFieldId . "_longitude";
 	$labelName = $formFieldName . "[locationLabel]";
 	$labelId = $formFieldId . "_locationLabel";
+	$addressName = $formFieldName . "[address]";
+	$addressId = $formFieldId . "_address";
 
 	$autocomplete = null;
 	if($widgetModel->getAttemptAutocomplete()) {
@@ -31,6 +33,7 @@
 
 
 	$isPrimaryValue = "";
+	$addressContents = "";
 	if($widgetModel->fieldContentsArray) {
 		if($widgetModel->fieldContentsArray[$i]->isPrimary == "on") {
 			$isPrimaryValue = " CHECKED ";
@@ -38,7 +41,9 @@
 		$latitudeContents = $widgetModel->fieldContentsArray[$i]->latitude;
 		$longitudeContents = $widgetModel->fieldContentsArray[$i]->longitude;
 		$labelContents = $widgetModel->fieldContentsArray[$i]->locationLabel;
-
+		if($widgetModel->fieldContentsArray[$i]->address) {
+			$addressContents = $widgetModel->fieldContentsArray[$i]->address;
+		}
 	}
 	else {
 		$latitudeContents = "";
@@ -84,8 +89,7 @@
 
 
 
-			<?=$this->load->view("mapSelector", ["mapId"=>$formFieldMapId], true)?>
-
+			<?=$this->load->view("mapSelector", ["mapId"=>$formFieldMapId, "addressName"=>$addressName, "addressContents"=>$addressContents], true)?>
 
 			<?if($widgetModel->getAllowMultiple()):?>
   			<div class="form-group isPrimary">
