@@ -138,7 +138,7 @@ $(document).ready(function() {
 
 var addAnother = function(target) {
 	$(target).attr("disabled",true);
-	var parentGroup = $(target).parents(".control-group");
+	var parentGroup = $(target).parents(".tab-pane").find(".control-group");
 	var widgetTitle = $(parentGroup).attr('id').replace("controlGroup_", '');
 	var widgetId = $(parentGroup).children(".widget_id").first().val();
 	var offsetCount = $(parentGroup).children("div").length-1;
