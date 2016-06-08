@@ -504,7 +504,7 @@ class AssetManager extends Admin_Controller {
 			$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 			$searchArray = $searchArchiveEntry->getSearchData();
 			$this->load->model("search_model");
-			$matchArray = $this->search_model->find($searchArray, true, null, TRUE);
+			$matchArray = $this->search_model->find($searchArray, false, null, TRUE);
 			$i=0;
 
 			$out = fopen('php://output', 'w');
@@ -513,6 +513,9 @@ class AssetManager extends Admin_Controller {
 				$widgetArray[] = $widgets->getLabel();
 				if(get_class($widgets) == "Upload") {
 					$widgetArray[] = $widgets->getLabel() . " URL";
+				}
+				if(get_class($widgets) == "Related_asset") {
+					$widgetArray[] = $widgets->getLabel() . " ObjectID";
 				}
 			}
 			header('Content-Type: application/csv');
@@ -523,7 +526,7 @@ class AssetManager extends Admin_Controller {
 			foreach($matchArray['searchResults'] as $match) {
 
 				$assetModel = new Asset_model($match);
-				if($assetTemplate->getId() != $templateId) {
+				if($assetModel->templateId != $templateId) {
 					continue;
 				}
 				$outputRow = [];
@@ -539,9 +542,21 @@ class AssetManager extends Admin_Controller {
 							}
 							$outputRow[] = join($outputURLs, "|");
 						}
+						if(get_class($object) == "Related_asset") {
+							$outputObjects = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$objectId = $entry->getRelatedObjectId();
+								$outputObjects[] = $objectId;
+							}
+							$outputRow[] = join($outputObjects, "|");
+						}
 					}
 					else {
+
 						$outputRow[] = "";
+						if(get_class($widgets) == "Upload" || get_class($widgets) == "Related_asset") {
+							$outputRow[] = "";
+						}
 					}
 
 				}
@@ -647,6 +662,17 @@ class AssetManager extends Admin_Controller {
 								$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>strtotime($rowEntry)];
 							}
 							
+						}
+						else if(get_class($widget) == "Tags") {
+							if(strpos($rowEntry, ",")) {
+								$exploded = explode(",", $rowEntry);
+								$widgetContainer->tags = $exploded;
+							}	
+						}
+						else if(get_class($widget) == "Related_asset") {
+							if(strlen($rowEntry)> 15) {
+								$widgetContainer->targetAssetId = $rowEntry;	
+							}	
 						}
 						else if(get_class($widget) == "Multiselect") {
 							// let's split and rematch the entry
