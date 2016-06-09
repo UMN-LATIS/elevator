@@ -61,10 +61,7 @@
         		if(!skipValue) {
         			tileURLs.push("tiledBase_files/" + coords.z + "/" + coords.x + "_");	
         		}
-        		else {
-        			console.log("skipping");
-        		}
-        		
+
         		zoomLevel = coords.z;
         	});
 
