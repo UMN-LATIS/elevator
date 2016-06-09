@@ -1,6 +1,5 @@
 <? /** SOMEONE SHOULD REFACTOR THIS **/ ?>
 
-
 <div class="panel-group nestedGroup">
 	<p><strong><?=$widgetModel->getLabel()?>:</strong></p>
 <?php
@@ -104,11 +103,13 @@
 			<?endif?>
 		<?php endforeach?>
 	<?php else:?>
-		<ul>
-		<?php foreach($widgetModel->fieldContentsArray as $fieldContent):?>
-			<li><a href="<?=instance_url("asset/viewAsset/" . $fieldContent->getRelatedObjectId())?>"><?=join(",", $fieldContent->getRelatedObjectTitle())?></a> <?if($fieldContent->label):?>(<?=$fieldContent->label?>)<?endif?></li>
-		<?php endforeach;?>
-		</ul>
+		<div>
+			<ul>
+			<?php foreach($widgetModel->fieldContentsArray as $fieldContent):?>
+				<li><a href="<?=instance_url("asset/viewAsset/" . $fieldContent->getRelatedObjectId())?>"><?=join(",", $fieldContent->getRelatedObjectTitle())?></a> <?if($fieldContent->label):?>(<?=$fieldContent->label?>)<?endif?></li>
+			<?php endforeach;?>
+			</ul>
+		</div>
 	<?php endif;?>
 
 </div>
