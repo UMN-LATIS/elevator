@@ -114,12 +114,12 @@ onAdd: function (map) {
 },
 
 _getImageBounds: function () {
+
 	var map = this._map
 	, options = this.options
-	, imageSize = L.point(options.width, options.height)
+	, imageSize = L.point(options.width + 400, options.height)
 	, zoom = map.getMaxZoom()+this.options.zoomOffset
 	, nw = map.unproject([0, 0], zoom)
-
 	var se = map.unproject(imageSize, zoom)
 
 	return L.latLngBounds(nw, se)
