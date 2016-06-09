@@ -5,7 +5,7 @@ class MY_Controller extends CI_Controller {
 	public $doctrineCache = null;
 
 	function __construct() {
-
+		
 		parent::__construct();
 		$cssLoadArray = ["bootstrap", "screen"];
 		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "jquery.lazy", "sugar","retina-1.1.0", "mousetrap", "bootbox"];
@@ -30,10 +30,10 @@ class MY_Controller extends CI_Controller {
 
 		// set a forever cookie to help with use in iframes
 		$this->input->set_cookie(["name"=>"ElevatorCookie", "value"=>true, "expire" => 60*60*24*365]);
-		$this->load->driver('cache',  array('adapter' => 'apc'));
+
+		// $this->load->driver('cache',  array('adapter' => 'apc'));
 
 		$this->load->model("user_model");
-
 		//$this->user_model->loadUser(1);
 
 		if($this->config->item('enableCaching')) {
@@ -67,6 +67,36 @@ class MY_Controller extends CI_Controller {
 		else {
 			$this->user_model->resolvePermissions();
 		}
+		$authKey = null;
+		
+		if($this->input->get('apiHandoff', TRUE)) {
+			$signedString = $this->input->get('apiHandoff');
+			$authKey = $this->input->get('authKey');
+			$timestamp = $this->input->get('timestamp');
+			$targetObject = $this->input->get('targetObject');
+			$this->input->set_cookie(["name"=>"ApiHandoff", "value"=>$signedString, "expire"=>0]);
+			$this->input->set_cookie(["name"=>"AuthKey", "value"=>$authKey, "expire"=>0]);
+			$this->input->set_cookie(["name"=>"Timestamp", "value"=>$timestamp, "expire"=>0]);
+			$this->input->set_cookie(["name"=>"TargetObject", "value"=>$targetObject, "expire"=>0]);
+		}
+		elseif($this->input->cookie('ApiHandoff')) {
+			$signedString = $this->input->cookie('ApiHandoff');
+			$authKey = $this->input->cookie('AuthKey');
+			$timestamp = $this->input->cookie('Timestamp');
+			$targetObject = $this->input->cookie('TargetObject');
+		}
+		if($authKey) {
+			$apiKey = $this->doctrine->em->getRepository("Entity\ApiKey")->findOneBy(["apiKey"=>$authKey]);
+			if($apiKey) {
+
+				$secret = $apiKey->getApiSecret();
+				if(sha1($timestamp . $targetObject . $secret) == $signedString) {	
+					$this->user_model->userLoaded=true;
+					$this->user_model->assetPermissions = [$targetObject => PERM_DERIVATIVES_GROUP_2];
+				}
+			}
+		}
+
 	}
 
 	function throwBacktrace() {

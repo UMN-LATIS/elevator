@@ -5,6 +5,7 @@ class User_model extends CI_Model {
 	public $collectionPermissions = array();
 	public $instancePermissions = array();
 	public $drawerPermissions = array();
+	public $assetPermissions = array();
 	public $recentDrawers = null;
 	public $recentCollections = null;
 	public $recentSearches = null;
@@ -89,6 +90,9 @@ class User_model extends CI_Model {
 					if(array_key_exists($instance->getId(), $this->instancePermissions)) {
 						$perm = max($perm, $this->instancePermissions[$instance->getId()]);
 					}
+				}
+				if(array_key_exists($object->getObjectId(),$this->assetPermissions)) {
+					$perm = max($perm, $this->assetPermissions[$object->getObjectId()]);
 				}
 
 				return $perm;
