@@ -41,7 +41,7 @@ class API_Controller extends MY_Controller {
 			header('HTTP/1.0 401 Unauthorized');
 			exit;
 		}
-
+		
 		$apiKey = $this->doctrine->em->getRepository("Entity\ApiKey")->findOneBy(["apiKey"=>$authKey]);
 		if(!$apiKey) {
 			header('HTTP/1.0 401 Unauthorized');
@@ -55,9 +55,7 @@ class API_Controller extends MY_Controller {
 		}
 
 
-
 		$this->apiKey = $apiKey;
-
 		if($authUser) {
 			$this->doctrineCache->setNamespace('userCache_');
 			if($storedObject = $this->doctrineCache->fetch($authUser)) {

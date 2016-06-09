@@ -101,13 +101,16 @@ class asset extends Instance_Controller {
 		}
 
 
-		// rather than checking that they have access to the asset (which we'd normally do) we just
-		// check that they have access to the drawer for this asset, and then let them view it.
+		// we check that they have access to the drawer or the specific asset (for API Calls)
+		// if they have access to the drawer for this asset, and then let them view it.
 		// Luckily, the rest of the auth process will be ok with this, since we don't check again further down the generation.
 		$this->accessLevel = $this->user_model->getAccessLevel("drawer", $excerpt->getDrawer());
-		if($this->accessLevel < PERM_VIEWDERIVATIVES) {
+		$this->assetAccessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+		if($this->accessLevel < PERM_VIEWDERIVATIVES && $this->assetAccessLevel < PERM_VIEWDERIVATIVES) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
+
+		$this->accessLevel = max($this->accessLevel, $this->assetAccessLevel);
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
 
