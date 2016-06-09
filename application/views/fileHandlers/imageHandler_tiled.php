@@ -52,9 +52,22 @@
         	var zoomLevel;
         	$.each(localTileCache, function(index, val) {
         		coords = val.coords;
-        		tileURLs.push("tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y);
+        		var skipValue = false;
+        		$.each(tileURLs, function(tileIndex, tileVal) {
+        			if(tileVal.indexOf("tiledBase_files/" + coords.z + "/" + coords.x + "_") !== -1) {
+        				skipValue = true;
+        			}
+        		});
+        		if(!skipValue) {
+        			tileURLs.push("tiledBase_files/" + coords.z + "/" + coords.x + "_");	
+        		}
+        		else {
+        			console.log("skipping");
+        		}
+        		
         		zoomLevel = coords.z;
         	});
+
 
 			$.post(basePath + 'fileManager/getSignedChildrenForObject',
 				{fileId: '<?=$fileObject->getObjectId()?>', derivative: 'tiled', paths: tileURLs },
@@ -85,7 +98,7 @@
 
 		                    foundElement = null;
 		                    $.each(signedURLs, function(index, el) {
-								if(el.indexOf("/tiledBase_files/" + tile.coords.z + "/" + tile.coords.x + "_" + tile.coords.y + ".") !== -1) {
+								if(el.indexOf("tiledBase_files/" + tile.coords.z + "/" + tile.coords.x + "_" + tile.coords.y + ".") !== -1) {
 									foundElement = el;
 									return false;
 								}
@@ -134,7 +147,7 @@
             if(zoomLevelCache[coords.z] && zoomLevelCache[coords.z][coords.x] && zoomLevelCache[coords.z][coords.x][coords.y]) {
                foundElement = null;
                $.each(zoomLevelCache[coords.z], function(index, el) {
-					if(el.indexOf("/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y) !== -1) {
+					if(el.indexOf("/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".") !== -1) {
 						foundElement = el;
 						return false;
 					}
