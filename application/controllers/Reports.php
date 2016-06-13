@@ -6,11 +6,11 @@ class Reports extends Admin_Controller {
 	{
 		parent::__construct();
 
-		// $accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		// if(!$this->input->is_cli_request() && $accessLevel<PERM_ADMIN) {
-		// 	instance_redirect("/errorHandler/error/noPermission");
-		// 	return;
-		// }
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if(!$this->input->is_cli_request() && $accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
 	}
 
 	public function index()
