@@ -155,6 +155,10 @@ class Search extends Instance_Controller {
 
 	public function listCollections() {
 
+
+		$jsLoadArray[] = "templateSearch";
+		$this->template->loadJavascript($jsLoadArray);
+
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_SEARCH) {
