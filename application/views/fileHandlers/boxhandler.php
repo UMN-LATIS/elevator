@@ -23,6 +23,14 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <?if(!$embedded):?>
 <div class="row assetViewRow">
   <div class="col-md-12">
+<?else:?>
+
+<style>
+.boxContainer {
+  height:100%;
+}
+</style>
+
 <?endif?>
   <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
     <p class="alert alert-info">No derivatives found.
