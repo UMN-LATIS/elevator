@@ -111,14 +111,39 @@ class asset extends API_Controller {
 	public function getEmbedLink($objectId, $instance) {
 		$this->instance = $this->doctrine->em->getRepository("Entity\Instance")->find($instance);
 
-		echo site_url("/" . $this->instance->getDomain() . "/asset/getEmbed/" . $objectId.  "/null/true");
+		$fileHandler = $this->filehandler_router->getHandlerForObject($objectId);
+		if(!$fileHandler) {
+		}
+
+		$fileHandler->loadByObjectId($objectId);
+		if(!$fileHandler->parentObjectId) {
+		}
+		
+		$timestamp = time();
+		$signedString = sha1($timestamp . $fileHandler->parentObjectId . $this->apiKey->getApiSecret());
+
+		$targetQuery = ["apiHandoff"=>$signedString, "authKey"=>$this->apiKey->getApiKey(), "timestamp"=>$timestamp, "targetObject"=>$fileHandler->parentObjectId];
+
+		echo site_url("/" . $this->instance->getDomain() . "/asset/getEmbed/" . $objectId.  "/null/true?" . http_build_query($targetQuery));
 
 	}
 
 	public function getExcerptLink($excerptId, $instance) {
+
 		$this->instance = $this->doctrine->em->getRepository("Entity\Instance")->find($instance);
 
-		echo site_url("/" . $this->instance->getDomain() . "/asset/viewExcerpt/" . $excerptId.  "/true");
+		$excerpt = $this->doctrine->em->getRepository("Entity\DrawerItem")->find($excerptId);
+		$this->load->model("Asset_model");
+		$assetModel = new Asset_model;
+		if(!$assetModel->loadAssetById($excerpt->getAsset())) {
+			// todo
+		}
+
+		$timestamp = time();
+		$signedString = sha1($timestamp . $assetModel->getObjectId() . $this->apiKey->getApiSecret());
+
+		$targetQuery = ["apiHandoff"=>$signedString, "authKey"=>$this->apiKey->getApiKey(), "timestamp"=>$timestamp, "targetObject"=>$assetModel->getObjectId()];
+		echo site_url("/" . $this->instance->getDomain() . "/asset/viewExcerpt/" . $excerptId.  "/true?" . http_build_query($targetQuery));
 
 	}
 
