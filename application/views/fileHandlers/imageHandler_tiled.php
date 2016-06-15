@@ -172,9 +172,9 @@
         }, {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
-            tileSize :<?=$fileObject->sourceFile->metadata["dziTilesize"]?>,
-            maxZoom: <?=$fileObject->sourceFile->metadata["dziMaxZoom"]?> - 1,
-            overlap: <?=$fileObject->sourceFile->metadata["dziOverlap"]?>
+            tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
+            maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
+            overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>
 		});
     	layer.addTo(map);
         
