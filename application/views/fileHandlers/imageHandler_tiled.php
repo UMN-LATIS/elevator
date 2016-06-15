@@ -7,7 +7,7 @@
 
 
 </style>
-<div id="map" style="height: 600px; width:100%;"></div>
+<div class="fullscreenImageContainer" style="height: 550px"><div style="height:100%; width:100%" id="map"></div></div>
 
  
     <script type="application/javascript">
