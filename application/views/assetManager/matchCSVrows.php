@@ -25,7 +25,8 @@
 			<select name="targetField[]" class="form-control">
 				<option value="ignore">Don't import</option>
 			<?foreach($template->widgetArray as $widget):?>
-				<option value="<?=$widget->getFieldTitle()?>"><?=$widget->getLabel()?></option>
+				<? $selected = ($widget->getLabel()==$row)?"selected":null; ?>
+				<option value="<?=$widget->getFieldTitle()?>" <?=$selected?>><?=$widget->getLabel()?></option>
 			<?endforeach?>
 			</select>
 		</div>
