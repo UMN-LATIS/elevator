@@ -26,6 +26,7 @@
     "tedivm/stash": "dev-master",
     "umn-community-shib/basic-authenticator": "dev-master",
     "crocodoc/php-box-view": "dev-master",
-    "aws/aws-sdk-php": ">=3.2.6"
+    "aws/aws-sdk-php": ">=3.2.6",
+    "cocur/background-process": "^0.5.0"
   }
 }
