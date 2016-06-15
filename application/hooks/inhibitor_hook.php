@@ -31,7 +31,6 @@ class InhibitorHook {
 	public function fatal_error_catcher()
 	{
 
-
 		register_shutdown_function(array($this, 'handle_fatal_errors'));
 
 	}
