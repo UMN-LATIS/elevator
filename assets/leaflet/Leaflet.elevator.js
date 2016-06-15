@@ -1,3 +1,5 @@
+// Based on Leaflet zoomify and Mia's tile loader
+
 if(typeof require !== "undefined") var L = require('leaflet')
 
 L.TileLayer.Elevator = L.TileLayer.extend({
@@ -20,11 +22,7 @@ L.TileLayer.Elevator = L.TileLayer.extend({
 	},
 	createTile: function(coords, done) {
 	    var error;
-	    var tile = L.DomUtil.create('img', 'test');
-        // setup tile width and height according to the options
-        // var size = this.getTileSize();
-        // tile.width = size.x;
-        // tile.height = size.y;
+	    var tile = L.DomUtil.create('img', 'elevatorTile');
         coords.z = coords.z+ this.options.zoomOffset;
         this._loadFunction(coords, tile, done);
         return tile;
