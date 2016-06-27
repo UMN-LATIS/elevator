@@ -394,8 +394,11 @@ class Search extends Instance_Controller {
 
 		if($allowedCollectionsIds) {
 			// this user has restricted permissions, lock their results down.
-			$searchArray["collection"] = $allowedCollectionsIds;
+			if(!isset($searchArray['collection']) || (isset($searchArray['collection']) && array_diff($searchArray['collection'],$allowedCollectionsIds))) {
+				$searchArray["collection"] = $allowedCollectionsIds;	
+			}
 		}
+
 
 		$searchArray["searchDate"] = new \DateTime("now");
 
