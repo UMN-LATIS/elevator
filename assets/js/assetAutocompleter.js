@@ -48,7 +48,7 @@ var relatedAssetPreview = function(relatedAssetId, targetContainer, targetParent
  			$(value).autocomplete({
  				source: function(request, response) {
  					var searchRequest = { "searchText": request.term};
- 					var templateId = $(value).closest(".widgetContents").find(".matchAgainstSelector").val();
+ 					var templateId = $(value).closest(targetContainer).find(".matchAgainstSelector").val();
 
  					$.post( basePath + "search/searchResults/", {searchQuery:JSON.stringify(searchRequest), templateId: templateId, suppressRecent:true, showHidden:true}, function( data ) {
  						try{
