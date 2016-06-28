@@ -658,10 +658,29 @@ class AssetManager extends Admin_Controller {
 							continue;
 						}
 						else if(get_class($widget) == "Date") {
-							if(strtotime($rowEntry)) {
-								$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>strtotime($rowEntry)];
+							if(strpos($rowEntry, "-")) { 
+								$exploded = explode("-", $rowEntry);
+								if(strtotime($exploded[0])) {
+									$widgetContainer->start = ["text"=>trim($exploded[0]), "numeric"=>strtotime($exploded[0])];
+								}
+								if(strtotime($exploded[1])) {
+									$widgetContainer->end = ["text"=>trim($exploded[1]), "numeric"=>strtotime($exploded[1])];	
+								}
+							}
+							else {
+								if(strtotime($rowEntry)) {
+									$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>strtotime($rowEntry)];
+								}	
 							}
 							
+							
+						}
+						else if(get_class($widget) == "Location") {
+							if(strpos($rowEntry, ",")) {
+								$exploded = explode(",", $rowEntry);
+								$widgetContainer->latitude = $exploded[0];
+								$widgetContainer->longitude = $exploded[1];
+							}
 						}
 						else if(get_class($widget) == "Tags") {
 							if(strpos($rowEntry, ",")) {
