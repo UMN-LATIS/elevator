@@ -480,6 +480,7 @@ class AssetManager extends Admin_Controller {
 		$template = new Asset_template($targetTemplate);
 		$data["template"] = $template;
 
+
 		$this->template->content->view("assetManager/matchCSVrows", $data);
 		$this->template->publish();
 	}
