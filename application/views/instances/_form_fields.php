@@ -157,17 +157,6 @@ $(document).ready(function() {
 	</div>
 </div>
 
-
-
-
-<div class="form-group">
-	<label for="introText" class="col-sm-2 control-label">Intro Text</label>
-	<div class="col-sm-6">
-		<textarea name="introText" class="form-control introText"><?= $instance->getIntroText(); ?></textarea><br/>
-	</div>
-</div>
-
-
 	<div class="form-group">
 			<div class="col-sm-offset-2 col-sm-8">
 				<label>
