@@ -8,7 +8,7 @@ class AssetManager extends Admin_Controller {
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "formSubmission", "serializeForm", "interWindow", "jquery.gomap-1.3.2",
-		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery"];
+		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery", "assetAutocompleter"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->load->helper("multiselect");
