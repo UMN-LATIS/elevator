@@ -1,32 +1,32 @@
 <script>
 
-var bucketCreationCallback = function(accessKey, secretKey, bucketName, bucketRegion) {
-	$("#inputAmazonS3Key").val(accessKey);
-	$("#inputAmazonS3Secret").val(secretKey);
-	$("#inputDefaultBucket").val(bucketName);
-	$("#inputBucketRegion").val(bucketRegion);
-}
+	var bucketCreationCallback = function(accessKey, secretKey, bucketName, bucketRegion) {
+		$("#inputAmazonS3Key").val(accessKey);
+		$("#inputAmazonS3Secret").val(secretKey);
+		$("#inputDefaultBucket").val(bucketName);
+		$("#inputBucketRegion").val(bucketRegion);
+	}
 
-$(document).ready(function() {
-	$(".s3control").on("change", function() {
-		var notEmpty = false;
-		$(".s3control").each(function() {
-			if($(this).val() != "") {
-				notEmpty = true;
+	$(document).ready(function() {
+		$(".s3control").on("change", function() {
+			var notEmpty = false;
+			$(".s3control").each(function() {
+				if($(this).val() != "") {
+					notEmpty = true;
+				}
+			});
+
+			if(notEmpty) {
+				$(".bucketButton").attr("disabled", true);
 			}
+			else {
+				$(".bucketButton").attr("disabled", false);
+			}
+
 		});
 
-		if(notEmpty) {
-			$(".bucketButton").attr("disabled", true);
-		}
-		else {
-			$(".bucketButton").attr("disabled", false);
-		}
-
+		$(".s3control").trigger('change');
 	});
-
-	$(".s3control").trigger('change');
-});
 
 </script>
 
@@ -57,10 +57,10 @@ $(document).ready(function() {
 
 <div class="form-group">
 	<div class="col-sm-6 col-sm-offset-2">
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary btn-sm bucketButton" data-toggle="modal" data-target="#bucketCreationModal">
-	Create new bucket
-</button>
+		<!-- Button trigger modal -->
+		<button type="button" class="btn btn-primary btn-sm bucketButton" data-toggle="modal" data-target="#bucketCreationModal">
+			Create new bucket
+		</button>
 	</div>
 </div>
 
@@ -121,21 +121,7 @@ $(document).ready(function() {
 		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
 	</div>
 </div>
-<!--
-<div class="form-group">
-	<label for="inputClarifaiId" class="col-sm-2 control-label">Clarifai Id:</label>
-	<div class="col-sm-6">
-		<input type="text" name="clarifaiId" id="inputClarifaiId" class="form-control" value="<?= $instance->getClarifaiId(); ?>">
-	</div>
-</div>
 
-<div class="form-group">
-	<label for="inputClarifaiSecret" class="col-sm-2 control-label">Clarifai Secret:</label>
-	<div class="col-sm-6">
-		<input type="password" data-toggle="password" name="clarifaiSecret" id="inputClarifaiSecret" class="form-control" value="<?= $instance->getClarifaiSecret(); ?>">
-	</div>
-</div>
--->
 <div class="form-group">
 	<label for="inputBoxKey" class="col-sm-2 control-label">Box API Key:</label>
 	<div class="col-sm-6">
@@ -143,13 +129,18 @@ $(document).ready(function() {
 	</div>
 </div>
 
+<div class="assetCompleter">
 <div class="form-group">
 	<label for="inputFeaturedAsset" class="col-sm-2 control-label">Feature Asset:</label>
 	<div class="col-sm-6">
-		<input type="text" name="featuredAsset" id="inputFeaturedAsset" class="form-control" value="<?= $instance->getFeaturedAsset(); ?>">
+		<input type="text" name="featuredAsset" id="inputFeaturedAsset" class="relatedAssetSelectedItem tryAutocompleteAsset form-control" value="<?= $instance->getFeaturedAsset(); ?>">
 	</div>
 </div>
-
+<div class="form-group">
+	<div class="col-sm-8 col-sm-offset-2 assetPreview">
+	</div>
+</div>
+</div>
 <div class="form-group">
 	<label for="inputFeaturedAssetText" class="col-sm-2 control-label">Featured Asset Text</label>
 	<div class="col-sm-6">
@@ -157,48 +148,48 @@ $(document).ready(function() {
 	</div>
 </div>
 
-	<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-8">
-				<label>
-					<input type="checkbox" id="useCustomHeader" name="useCustomHeader" value="On" <?=$instance->getUseCustomHeader()?"checked":null?>>
-					Use Custom Header
-				</label>
-			</div>
-		</div>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="useCustomHeader" name="useCustomHeader" value="On" <?=$instance->getUseCustomHeader()?"checked":null?>>
+			Use Custom Header
+		</label>
+	</div>
+</div>
 
-	<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-8">
-				<label>
-					<input type="checkbox" id="useCustomCSS" name="useCustomCSS" value="On" <?=$instance->getUseCustomCSS()?"checked":null?>>
-					Use Custom CSS
-				</label>
-			</div>
-		</div>
-	<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-8">
-				<label>
-					<input type="checkbox" id="useHeaderLogo" name="useHeaderLogo" value="On" <?=$instance->getUseHeaderLogo()?"checked":null?>>
-					Use Header Logo
-				</label>
-			</div>
-		</div>
-	<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-8">
-				<label>
-					<input type="checkbox" id="useCentralAuth" name="useCentralAuth" value="On" <?=$instance->getUseCentralAuth()?"checked":null?>>
-					Use Central Auth
-				</label>
-			</div>
-		</div>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="useCustomCSS" name="useCustomCSS" value="On" <?=$instance->getUseCustomCSS()?"checked":null?>>
+			Use Custom CSS
+		</label>
+	</div>
+</div>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="useHeaderLogo" name="useHeaderLogo" value="On" <?=$instance->getUseHeaderLogo()?"checked":null?>>
+			Use Header Logo
+		</label>
+	</div>
+</div>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="useCentralAuth" name="useCentralAuth" value="On" <?=$instance->getUseCentralAuth()?"checked":null?>>
+			Use Central Auth
+		</label>
+	</div>
+</div>
 
-			<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-8">
-				<label>
-					<input type="checkbox" id="hideVideoAudio" name="hideVideoAudio" value="On" <?=$instance->getHideVideoAudio()?"checked":null?>>
-					Hide video/audio download links from "view" users <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="This will not prevent tech-savvy users from downloading files."></span>
-				</label>
-			</div>
-		</div>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="hideVideoAudio" name="hideVideoAudio" value="On" <?=$instance->getHideVideoAudio()?"checked":null?>>
+			Hide video/audio download links from "view" users <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="This will not prevent tech-savvy users from downloading files."></span>
+		</label>
+	</div>
+</div>
 
 
 <div class="form-group">
@@ -209,20 +200,27 @@ $(document).ready(function() {
 
 
 <script type="text/javascript">
-$(document).ready(function() {
-	tinymce.init({
-	    mode: "specific_textareas",
-	    editor_selector: "introText",
-	    menubar : false,
-	    plugins: "link",
-	    setup: function(editor) {
- 			editor.on('change', function () {
-            	tinymce.triggerSave();
-        	});
-	    }
-	 });
-	$('[data-toggle="tooltip"]').tooltip()
-});
+	$(document).ready(function() {
+		tinymce.init({
+			mode: "specific_textareas",
+			editor_selector: "introText",
+			menubar : false,
+			plugins: "link",
+			setup: function(editor) {
+				editor.on('change', function () {
+					tinymce.triggerSave();
+				});
+			}
+		});
+		if($(".relatedAssetSelectedItem").val().length > 0) {
+			relatedAssetPreview($(".relatedAssetSelectedItem").val(),$(".relatedAssetSelectedItem"), $(".assetCompleter"));	
+		}
+		$('[data-toggle="tooltip"]').tooltip();
+
+		buildAssetAutocomplete($(".assetCompleter"));
+		
+	});
 
 
 </script>
+<?$this->load->view("handlebarsTemplates");
