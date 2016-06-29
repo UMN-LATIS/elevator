@@ -580,6 +580,29 @@ class AssetManager extends Admin_Controller {
 		
 	}
 
+	public function parseTime($timeString) {
+		if(strtotime($timeString)) {
+			return strtotime($timeString);
+		}
+		else {
+			if(stristr($timeString, "bc")) {
+				$timeString = str_replace(",", "", $timeString);
+				$pattern = "/[0-9]+/g";
+				$matches = array();
+				preg_match($pattern, $timeString, $matches);
+				if(count($matches) > 0) {
+					$yearsAgo = $matches[0];
+					if(stristr($timeString, "century")) {
+						$yearsAgo = $yearsAgo * 100;
+					}
+					$bceDate = (-1 * $yearsAgo * 31556952) - (1970*31556952);
+					return $bceDate;
+				}
+			}
+		}
+		return FALSE;
+	}
+
 	public function processCSV($hash=null, $offset=null) {
 		set_time_limit(120);
 
@@ -661,10 +684,29 @@ class AssetManager extends Admin_Controller {
 							continue;
 						}
 						else if(get_class($widget) == "Date") {
-							if(strtotime($rowEntry)) {
-								$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>strtotime($rowEntry)];
+							if(strpos($rowEntry, "-")) { 
+								$exploded = explode("-", $rowEntry);
+								if($this->parseTime($exploded[0])) {
+									$widgetContainer->start = ["text"=>trim($exploded[0]), "numeric"=>$this->parseTime($exploded[0])];
+								}
+								if($this->parseTime($exploded[1])) {
+									$widgetContainer->end = ["text"=>trim($exploded[1]), "numeric"=>$this->parseTime($exploded[1])];	
+								}
+							}
+							else {
+								if($this->parseTime($rowEntry)) {
+									$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>$this->parseTime($rowEntry)];
+								}	
 							}
 							
+							
+						}
+						else if(get_class($widget) == "Location") {
+							if(strpos($rowEntry, ",")) {
+								$exploded = explode(",", $rowEntry);
+								$widgetContainer->latitude = $exploded[0];
+								$widgetContainer->longitude = $exploded[1];
+							}
 						}
 						else if(get_class($widget) == "Tags") {
 							if(strpos($rowEntry, ",")) {
