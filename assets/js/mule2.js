@@ -275,7 +275,7 @@
             // check for accepted extensions, if applicable
             if(u.settings.accepted_extensions) {
                 // get the file extension
-                var file_extension = file.name.split('.').pop();
+                var file_extension = file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '').split('.').pop();
 
                 // split the given extensions into an array
                 var extensions_array = u.settings.accepted_extensions.split(',');
@@ -303,7 +303,7 @@
             // initialize the file upload
             u.settings.on_select.call(u, file);
             var args = {
-                filename: file.name,
+                filename: file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
                 filesize: file.size,
                 key: u.settings.key,
                 mime_type: u.settings.content_type,
@@ -706,7 +706,7 @@
                     chunk: chunk,
                     key: key,
                     upload_id: upload_id,
-                    filename: u.file.name,
+                    filename: u.file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
                     filesize: u.file.size,
                     mime_type: u.settings.content_type,
                     collectionId: u.settings.collectionId,
@@ -1079,7 +1079,7 @@
             },
             headers: {
                 "x-amz-acl": "public-read",
-                "Content-Disposition": "attachment; filename=" + file.name,
+                "Content-Disposition": "attachment; filename=" + file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
                 "Content-Type": auth.content_type || "application/octet-stream"
             },
             payload: "",
