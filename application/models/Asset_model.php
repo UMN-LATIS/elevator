@@ -86,7 +86,6 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("availableAfter", $record->getAvailableAfter());
 		$this->setGlobalValue("modified", $record->getModifiedAt());
 		$this->setGlobalValue("modifiedBy", $record->getModifiedBy());
-
 		if($this->loadWidgetsFromArray($record->getWidgets())) {
 			return TRUE;
 		}
@@ -114,11 +113,13 @@ class Asset_model extends CI_Model {
 			return FALSE;
 		}
 		$this->assetObject = $asset;
-		$this->loadAssetFromRecord($asset);
-		if($this->asset_model->useObjectCaching == true) {
-			$this->asset_model->objectCache[$objectId] = $this;
+		if($this->loadAssetFromRecord($asset)) {
+			if($this->asset_model->useObjectCaching == true) {
+				$this->asset_model->objectCache[$objectId] = $this;
+			}	
+			return true;
 		}
-		return TRUE;
+		return false;
 	}
 
 
@@ -862,6 +863,15 @@ class Asset_model extends CI_Model {
 		$assetCache->setNeedsRebuild(true);
 
 		$assetCache->setTemplateId($this->templateId);
+
+		// assets without valid collections are a problem.  Don't try to build a cache, just bail.
+		if(!$this->collection_model->getCollection($this->getGlobalValue("collectionId"))) {
+			$assetCache->setNeedsRebuild(false);
+			$assetCache->setRebuildTimestamp(NULL);
+			$this->doctrine->em->persist($assetCache);
+			$this->doctrine->em->flush();
+			return false;
+		}
 
 		$relatedItems = $this->getAllWithinAsset("Related_asset");
 		$relatedAssetCache = array();
