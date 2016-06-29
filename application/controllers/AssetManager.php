@@ -693,6 +693,7 @@ class AssetManager extends Admin_Controller {
 							else {
 								if($this->parseTime($rowEntry)) {
 									$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>$this->parseTime($rowEntry)];
+									$widgetContainer->end = ["text"=>"", "numeric"=>""];
 								}	
 							}
 							
