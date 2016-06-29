@@ -127,6 +127,11 @@ class Instances extends Instance_Controller {
 
 
 	public function customPages() {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
 		$pages = $this->instance->getPages();
 		$this->template->title = 'Custom Pages';
 		$this->template->content->view('instances/pageList', ["pages"=>$pages]);
@@ -149,7 +154,11 @@ class Instances extends Instance_Controller {
 	}
 
 	public function editPage($pageId=null) {
-
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
 
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
 
@@ -168,6 +177,11 @@ class Instances extends Instance_Controller {
 
 
 	public function pageSort() {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
 		 $this->template->loadCSS(['template']);
 		$this->template->title = 'Page sort Order';
 		$this->template->content->view('instances/pagesort');
@@ -175,6 +189,11 @@ class Instances extends Instance_Controller {
 	}
 
 	public function deletePage($pageId) {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
 		$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
 		$this->doctrine->em->remove($page);
 		$this->doctrine->em->flush();
@@ -183,6 +202,11 @@ class Instances extends Instance_Controller {
 	}
 
 	public function savePage() {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
 		if($this->input->post("pageId")) {
 			$page = $this->doctrine->em->find("Entity\InstancePage", $this->input->post("pageId"));
 
