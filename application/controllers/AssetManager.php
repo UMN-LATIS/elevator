@@ -587,7 +587,7 @@ class AssetManager extends Admin_Controller {
 		else {
 			if(stristr($timeString, "bc")) {
 				$timeString = str_replace(",", "", $timeString);
-				$pattern = "/[0-9]+/g";
+				$pattern = "/[0-9]+/";
 				$matches = array();
 				preg_match($pattern, $timeString, $matches);
 				if(count($matches) > 0) {
@@ -602,6 +602,7 @@ class AssetManager extends Admin_Controller {
 		}
 		return FALSE;
 	}
+
 
 	public function processCSV($hash=null, $offset=null) {
 		set_time_limit(120);
@@ -696,6 +697,7 @@ class AssetManager extends Admin_Controller {
 							else {
 								if($this->parseTime($rowEntry)) {
 									$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>$this->parseTime($rowEntry)];
+									$widgetContainer->end = ["text"=>"", "numeric"=>""];
 								}	
 							}
 							
