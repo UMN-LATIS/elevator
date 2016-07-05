@@ -44,7 +44,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 			    			<div class="imageContainer panzoom-element">
 							<?if(count($fileContainers)>0):?>
-									<img class="img-responsive embedImage imageContent" data-no-retina="true" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" />
+									<img class="img-responsive embedImage imageContent" data-no-retina="true" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" alt="<?=($widgetObject && $widgetObject->fileDescription )?htmlspecialchars($widgetObject->fileDescription, ENT_COMPAT):null?>" />
 							<?endif?>
 							</div>
 							<?if($embedded):?>
