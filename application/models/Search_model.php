@@ -226,6 +226,9 @@ class search_model extends CI_Model {
     	$params['id']    = $asset->getObjectId();
 
     	$ret = $this->es->index($params);
+		if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
+    		$this->logging->logError("search error", $ret);
+    	}
     	$this->asset_model->disableObjectCache();
 
 	}
