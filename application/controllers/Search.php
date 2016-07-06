@@ -11,7 +11,7 @@ class Search extends Instance_Controller {
 		$this->load->model("asset_model");
 		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer","drawers", "galleria-1.3.3"];
+		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer","oms","drawers", "galleria-1.3.3"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->content->view("drawers/drawerModal");
@@ -154,6 +154,10 @@ class Search extends Instance_Controller {
 
 
 	public function listCollections() {
+
+
+		$jsLoadArray[] = "templateSearch";
+		$this->template->loadJavascript($jsLoadArray);
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 

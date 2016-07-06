@@ -86,7 +86,6 @@ $(document).ready(function($) {
 						return;
 					}
 					var outputArray = [];
-
 					$(jsonObject).each(function(index, el) {
 						outputArray.push({value: el});
 					});
@@ -102,10 +101,14 @@ capturedScope = scope();
 		typeaheadjs: {
     		displayKey: 'value',
     		valueKey: 'value',
-			source: capturedScope
+			source: capturedScope,
+			addOnBlur: true
 		}
-
 	});
+	$("#<?=$textId?>").tagsinput('input').blur(function() {
+        $("#<?=$textId?>").tagsinput('add', $(this).val());
+        $(this).val('');
+    });
 });
 </script>
 

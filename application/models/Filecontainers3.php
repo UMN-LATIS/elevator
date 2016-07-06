@@ -217,6 +217,10 @@ class FileContainerS3 extends FileContainer {
 	 */
 
 	function deleteFile($serial=null, $mfa=null) {
+		if(strlen($this->storageKey) < 15) {
+			$this->logging->logError("Deletion Error", "Was told to delete ". $this->storageKey . " but refusing due to bad length");
+			return false;
+		}
 		return $this->parent->s3model->deleteObject($this->storageKey,$serial,$mfa);
 	}
 }
