@@ -26,7 +26,7 @@ class asset extends Instance_Controller {
 		$this->load->model("asset_model");
 	}
 
-	function viewAsset($objectId=null) {
+	function viewAsset($objectId=null, $returnJson=false) {
 		$assetModel = new Asset_model;
 		if(!$objectId) {
 			show_404();
@@ -57,13 +57,20 @@ class asset extends Instance_Controller {
 
 		}
 
+		if($returnJson == "true") {
+			echo json_encode($assetModel->getAsArray(null,true));
+		}
+		else {
 		// for subclipping movies
-		$this->template->loadJavascript(["excerpt"]);
+			$this->template->loadJavascript(["excerpt"]);
 
-		$assetTitle = $assetModel->getAssetTitle();
-		$this->template->title = reset($assetTitle);
-		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
-		$this->template->publish();
+
+			$assetTitle = $assetModel->getAssetTitle();
+			$this->template->title = reset($assetTitle);
+			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
+			$this->template->publish();
+	
+		}
 
 
 	}
