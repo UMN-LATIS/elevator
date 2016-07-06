@@ -15,16 +15,41 @@
 				</select>
 			</div>
 		</div>
+		<div class="assetCompleter">
 		<div class="form-group">
 			<label for="inputParent Element" class="col-sm-2 control-label">Parent Object:</label>
 			<div class="col-sm-10">
-				<input type="text" name="parentObject" id="inputParentObject" class="form-control" value="">
+				<input type="text" name="parentObject" id="inputParentObject" class="relatedAssetSelectedItem form-control tryAutocompleteAsset" value="">
 			</div>
 		</div>
-		<div class="form-group hide">
-			<label for="inputTargetField" class="col-sm-2 control-label">Target Field:</label>
+		</div>
+		<script>
+		$(document).ready(function() {
+			buildAssetAutocomplete($(".assetCompleter"));
+			$(".assetCompleter").find(".tryAutocompleteAsset").on("change", function() {
+				if($(this).val().length == 24) {
+
+					$(".targetFields").removeClass('hide');					
+
+					$.getJSON(basePath + "asset/viewAsset/" + $(this).val() + "/true", {}, function(json, textStatus) {
+						if(json.templateId !== 'undefined') {
+							$.getJSON(basePath + "search/getFields/" + json.templateId, {}, function(json, textStatus) {
+								$(".targetFieldSelect").find('option').remove();
+								for(var key in json) {
+									$(".targetFieldSelect").append('<option selected value="' + key +'">' + json[key] + '</option>')
+								}
+							});
+						}
+					});
+				}
+
+			});
+		});
+		</script>
+		<div class="targetFields form-group hide">
+			<label for="inputTargetField" class="col-sm-2 control-label">Related Field:</label>
 			<div class="col-sm-2">
-				<select name="targetField" id="inputTargetField" class="form-control" required="required">
+				<select name="targetFieldSelect" id="inputTargetField" class="form-control targetFieldSelect" required="required">
 					<option value=""></option>
 				</select>
 			</div>
@@ -56,3 +81,4 @@
 
 	
 </div>
+<?$this->load->view("handlebarsTemplates");
