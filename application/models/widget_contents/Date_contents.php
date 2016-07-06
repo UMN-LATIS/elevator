@@ -36,7 +36,7 @@ class Date_contents extends Widget_contents_base {
 		}
 
 		if($this->range) {
-			$returnString ." - " . $this->end["text"];
+			$returnString .= " - " . $this->end["text"];
 		}
 		return $returnString;
 	}
