@@ -88,7 +88,7 @@ var relatedAssetPreview = function(relatedAssetId, targetContainer, targetParent
 
  				},
  				select: function(event, ui){
- 					$(value).closest(targetContainer).find(".relatedAssetSelectedItem").val("ui.item.objectId");
+ 					$(value).closest(targetContainer).find(".relatedAssetSelectedItem").val(ui.item.objectId);
  					var html = template(ui.item);
  					$(this).trigger("change");
  					$(this).closest(targetContainer).find(".autocompletePreview").show();
