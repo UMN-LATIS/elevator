@@ -584,7 +584,7 @@ class AssetManager extends Admin_Controller {
 		else {
 			if(stristr($timeString, "bc")) {
 				$timeString = str_replace(",", "", $timeString);
-				$pattern = "/[0-9]+/g";
+				$pattern = "/[0-9]+/";
 				$matches = array();
 				preg_match($pattern, $timeString, $matches);
 				if(count($matches) > 0) {
