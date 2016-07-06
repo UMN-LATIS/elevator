@@ -8,7 +8,7 @@ class AssetManager extends Admin_Controller {
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "formSubmission", "serializeForm", "interWindow", "jquery.gomap-1.3.2",
-		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery"];
+		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery", "assetAutocompleter"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->load->helper("multiselect");
@@ -480,6 +480,7 @@ class AssetManager extends Admin_Controller {
 		$template = new Asset_template($targetTemplate);
 		$data["template"] = $template;
 
+
 		$this->template->content->view("assetManager/matchCSVrows", $data);
 		$this->template->publish();
 	}
@@ -586,7 +587,7 @@ class AssetManager extends Admin_Controller {
 		else {
 			if(stristr($timeString, "bc")) {
 				$timeString = str_replace(",", "", $timeString);
-				$pattern = "/[0-9]+/g";
+				$pattern = "/[0-9]+/";
 				$matches = array();
 				preg_match($pattern, $timeString, $matches);
 				if(count($matches) > 0) {
@@ -601,6 +602,7 @@ class AssetManager extends Admin_Controller {
 		}
 		return FALSE;
 	}
+
 
 	public function processCSV($hash=null, $offset=null) {
 		set_time_limit(120);
@@ -645,6 +647,30 @@ class AssetManager extends Admin_Controller {
 
 		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 				
+		$targetArray = null;
+		$parentObject = null;
+		$targetField = null;
+
+		if($this->input->post("parentObject") && strlen($this->input->post("parentObject")) == 24 && $this->input->post("targetFieldSelect") && strlen($this->input->post("targetFieldSelect")) > 0) {
+			$cacheArray['parentObject'] = $this->input->post("parentObject");
+			$cacheArray['targetField'] = $this->input->post("targetFieldSelect");
+		}
+		if($cacheArray['parentObject'] && $cacheArray['targetField']) {
+			$parentObject = new Asset_model;
+			$targetField =  $cacheArray['targetField'];
+			$parentObject->loadAssetById($cacheArray['parentObject']);
+
+
+			$objectArray = $parentObject->getAsArray();
+			if(isset($objectArray[$targetField])) {
+				$targetArray = $objectArray[$targetField];
+			}
+			else {
+				$targetArray = array();
+			}
+
+		}
+
 
 		$rowCount = 0;
 		$totalLines = intval(exec("wc -l '" . $cacheArray['filename'] . "'"));
@@ -751,6 +777,10 @@ class AssetManager extends Admin_Controller {
 			$assetModel->createObjectFromJSON($newEntry);
 			$assetModel->save();
 
+			if($targetArray) {
+				$targetArray[]["targetAssetId"] = $assetModel->getObjectId();
+			}
+
 			if(count($uploadItems)>0) {
 				$newTask = json_encode(["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems]);
 				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 900);
@@ -760,14 +790,33 @@ class AssetManager extends Admin_Controller {
 			
 			$rowCount++;
 
-			if(round($totalLines / 10) == 0 || $rowCount % round(($totalLines / 10)) == 0) {
+			if($rowCount % 50 == 0) {
 				$this->doctrineCache->setNamespace('importCache_');
 				$this->doctrineCache->save($hash, $cacheArray, 900);
+
+				if($parentObject && $targetArray) {
+					$objectArray = $parentObject->getAsArray();
+					$objectArray[$targetField] = $targetArray;
+
+					$parentObject->createObjectFromJSON($objectArray);
+					$parentObject->save();
+				}
 				$offset = $rowCount;
 				instance_redirect("assetManager/processCSV/" . $hash . "/" . $offset);
 				return;
 			}
 
+		}
+
+		if($parentObject && $targetArray) {
+			$objectArray = $parentObject->getAsArray();
+			$objectarray[$targetField] = $targetArray;
+			$parentObject->createObjectFromJSON($objectArray);
+			$parentObject->save();
+		}
+
+		if($parentObject) {
+			array_unshift($cacheArray['successArray'],  "Updated parent: " . $parentObject->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $parentObject->getObjectId()) ."\">" . $parentObject->getObjectId() . "</A>)<br>");
 		}
 
 		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $cacheArray['successArray']));
