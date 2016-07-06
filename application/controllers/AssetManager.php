@@ -815,6 +815,9 @@ class AssetManager extends Admin_Controller {
 			$parentObject->save();
 		}
 
+		if($parentObject) {
+			array_unshift($cacheArray['successArray'],  "Updated parent: " . $parentObject->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $parentObject->getObjectId()) ."\">" . $parentObject->getObjectId() . "</A>)<br>");
+		}
 
 		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $cacheArray['successArray']));
 		$this->template->publish();
