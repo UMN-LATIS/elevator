@@ -31,7 +31,12 @@ class Home extends Instance_Controller {
 			if($this->asset_model->loadAssetById($this->instance->getFeaturedAsset())) {
 				$data['assetData'] = $this->asset_model->getSearchResultEntry();	
 			}
-			
+		}
+
+		$pages = $this->doctrine->em->getRepository("Entity\InstancePage")->findBy(["instance"=>$this->instance, "title"=>"Home Page"]);
+		if($pages) {
+			$firstPage = current($pages);
+			$data['homeText'] = $firstPage->getBody();
 		}
 
 		$this->template->title = $this->instance->getName();

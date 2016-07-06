@@ -45,35 +45,6 @@ var toggleTabs = function() {
   $(".leftPane").toggle();
 };
 
-var relatedAssetPreview = function(relatedAssetId, targetContainer) {
-	if(relatedAssetId.length > 0) {
-		var source   = $("#autocompleter-template").html();
-		var template = Handlebars.compile(source);
-		var self = targetContainer;
-		$.get( basePath + "asset/getAssetPreview/" + relatedAssetId,  function( data ) {
-				try{
-					jsonObject = $.parseJSON(data);
-				}
-				catch(e){
-					alert(e + " " + data);
-					return;
-				}
-				if(jsonObject) {
-					var responseObject = jsonObject;
-					responseObject.base_url = basePath;
-					var html = template(responseObject);
-					$(self).closest(".widgetContents").find(".autocompletePreview").show();
-					$(self).closest(".widgetContents").find(".autocompleteEdit").show();
-					$(self).closest(".widgetContents").find(".clearRelated").show();
-					$(self).closest(".widgetContents").find(".assetPreview").html(html);
-					$(self).closest(".widgetContents").find(".newAssetButton").attr("disabled", true);
-
-
-				}
-			});
-	}
-};
-
 
 /**
  * Add checkmarks to sidebar if there's content in their
@@ -245,7 +216,7 @@ $(document).ready(function() {
 	$(".relatedAssetSelectedItem").each(function(index, el) {
 
 		var relatedAssetId = $(el).val();
-		relatedAssetPreview(relatedAssetId, this);
+		relatedAssetPreview(relatedAssetId, this, $(".widgetContents"));
 	});
 
 
@@ -390,74 +361,7 @@ function buildAutocomplete() {
 			});
 		});
 	}
-
-
-	/**
-	 * special autocompleter that does full text search
-	 */
-	if($(".tryAutocompleteAsset").length) {
-		$(".tryAutocompleteAsset").each(function(index, value) {
-			if($(value).val().length>0) {
-				$(value).closest(".widgetContents").find(".autocompletePreview").show();
-				$(value).closest(".widgetContents").find(".autocompleteEdit").show();
-				$(value).closest(".widgetContents").find(".clearRelated").show();
-				$(value).closest(".widgetContents").find(".newAssetButton").attr("disabled",true);
-			}
-			$(value).autocomplete({
-			source: function(request, response) {
-				var searchRequest = { "searchText": request.term};
-				var templateId = $(value).closest(".widgetContents").find(".matchAgainstSelector").val();
-
-				$.post( basePath + "search/searchResults/", {searchQuery:JSON.stringify(searchRequest), templateId: templateId, suppressRecent:true, showHidden:true}, function( data ) {
-					try{
-						jsonObject = $.parseJSON(data);
-					}
-					catch(e){
-						alert(e + " " + data);
-						return;
-					}
-
-					if(jsonObject.success === true) {
-						$.each(jsonObject.matches, function(index, value) {
-							if(!value || value.objectId == $("#inputObjectId").val()) {
-								jsonObject.matches.splice(index,1);
-								return true;
-							}
-							value.value = value.objectId;
-							jsonObject.matches[index] = value;
-						});
-
-						response(jsonObject.matches);
-					}
-				});
-			},
-			messages: {
-				noResults: '',
-				results: function() {}
-			},
-			close: function(event, ui){
-				if(event.which !== undefined) {
-					$(value).val('');
-				}
-
-			},
-			select: function(event, ui){
-				$(value).closest(".widgetContents").find(".relatedAssetSelectedItem").val(ui.item.objectId);
-				var html = template(ui.item);
-				$(this).trigger("change");
-				$(this).closest(".widgetContents").find(".autocompletePreview").show();
-				$(this).closest(".widgetContents").find(".autocompleteEdit").show();
-				$(this).closest(".widgetContents").find(".clearRelated").show();
-				$(this).closest(".widgetContents").find(".newAssetButton").attr("disabled",true);
-				$(this).closest(".widgetContents").find(".assetPreview").html(html);
-			}
-		}).data("ui-autocomplete")._renderItem = function( ul, item ) {
-			item.base_url = basePath;
-			var html = template(item);
-			return $(html).appendTo(ul);
-		};
-	});
-	}
+	buildAssetAutocomplete($(".widgetContents"));
 }
 
 
