@@ -380,6 +380,10 @@ function prepGallery() {
 
 }
 
+ var spiderConfig = {
+    keepSpiderfied: true,
+    event: 'mouseover'
+};
 
 function prepMap() {
 
@@ -395,6 +399,9 @@ function prepMap() {
 		addMarker: "single"
 
 	});
+
+	var markerSpiderfier = new OverlappingMarkerSpiderfier($.goMap.map, spiderConfig);
+
 	if($.goMap.getMarkerCount()>0) {
 		$.goMap.clearMarkers();
 	}
@@ -419,12 +426,12 @@ function prepMap() {
 							var pos = existingMarker.getPosition();
         					//if a marker already exists in the same position as this marker
 
-        					if (google.maps.geometry.spherical.computeDistanceBetween(latlng,pos)<1) {
-            					//update the position of the coincident marker by applying a small multipler to its coordinates
-            					var newLat = latlng.lat() + (Math.random() -.5) / 5500;// * (Math.random() * (max - min) + min);
-            					var newLng = latlng.lng() + (Math.random() -.5) / 5500;// * (Math.random() * (max - min) + min);
-            					finalLatLng = new google.maps.LatLng(newLat,newLng);
-            				}
+        					// if (google.maps.geometry.spherical.computeDistanceBetween(latlng,pos)<1) {
+            	// 				//update the position of the coincident marker by applying a small multipler to its coordinates
+            	// 				var newLat = latlng.lat() + (Math.random() -.5) / 5500;// * (Math.random() * (max - min) + min);
+            	// 				var newLng = latlng.lng() + (Math.random() -.5) / 5500;// * (Math.random() * (max - min) + min);
+            	// 				finalLatLng = new google.maps.LatLng(newLat,newLng);
+            	// 			}
             			}
             		}
             		else {
@@ -435,7 +442,7 @@ function prepMap() {
 						latitude: finalLatLng.lat(),
 						html: html
 					});
-
+					markerSpiderfier.addMarker(marker);
 				});
 			});
 		}
@@ -448,9 +455,16 @@ function prepMap() {
 		var temp = $($.goMap.mapId).data($.goMap.markers[i]);
 		markers.push(temp);
 	}
+	var iw = new google.maps.InfoWindow();
+
+    markerSpiderfier.addListener('click', function(marker, e) {
+    });
+
+    markerSpiderfier.addListener('spiderfy', function(markers) {
+    });
 
 	var markerclusterer = new MarkerClusterer($.goMap.map, markers);
-
+	markerclusterer.setMaxZoom(15);
 	$.goMap.fitBounds();
 }
 

@@ -13,7 +13,7 @@ class ImageHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
 							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
-							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>600, "minimumMegapixels"=>30)],
+							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
 							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
@@ -23,7 +23,7 @@ class ImageHandler extends FileHandlerBase {
 						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
 						  											    ["width"=>4096, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
-						2=>["taskType"=>"tileImage", "config"=>array("ttr"=>600, "minimumMegapixels"=>30)],
+						2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
 							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
@@ -75,6 +75,8 @@ class ImageHandler extends FileHandlerBase {
 		else {
 			$fileObject = $args['fileObject'];
 		}
+
+		$fileObject->metadata = array(); // clear metadata in case we're regenerating.
 
 		$fileStatus = $this->sourceFile->makeLocal();
 
@@ -137,7 +139,7 @@ class ImageHandler extends FileHandlerBase {
 
 
 		if($args['continue'] == true) {
-			$this->queueTask(1, ["ttr"=>600]);
+			$this->queueTask(1, ["ttr"=>1200]);
 		}
 
 		return JOB_SUCCESS;
@@ -212,7 +214,7 @@ class ImageHandler extends FileHandlerBase {
 		}
 		$this->triggerReindex();
 		if($success) {
-			$this->queueTask(2, ["ttr"=>600]);
+			$this->queueTask(2, ["ttr"=>1800]);
 			return JOB_SUCCESS;
 		}
 		else {
@@ -262,8 +264,15 @@ class ImageHandler extends FileHandlerBase {
 		$outputFile = $outputPath ."/tiledBase";
 
 		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . "[autorotate] " . $outputFile;
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->pheanstalk->touch($this->job);
+			echo ".";
+		}
 
-		exec($extractString . " 2>/dev/null");
+
 		if(!file_exists($outputFile . ".dzi")) {
 			$this->logging->processingInfo("createDerivative","imageHandler","Tiling failed",$this->getObjectId(),$this->job->getId());
 			return JOB_FAILED;
@@ -274,13 +283,26 @@ class ImageHandler extends FileHandlerBase {
 		$dzi = new SimpleXMLElement($dziContents);
 		$dziHeight = (int)$dzi->Size[0]["Height"];
 		$dziWidth = (int)$dzi->Size[0]["Width"];
+		$overlap = (int)$dzi["Overlap"];
+		$tilesize = (int)$dzi["TileSize"];
 		$this->sourceFile->metadata["dziWidth"] = $dziWidth;
 		$this->sourceFile->metadata["dziHeight"] = $dziHeight;
+		$this->sourceFile->metadata["dziOverlap"] = $overlap;
+		$this->sourceFile->metadata["dziTilesize"] = $tilesize;
 
-		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled")) {
+		$zoomContents = scandir($outputPath . "/tiledBase_files/");
+		$zoomLevels = count($zoomContents) - 2;
+		$this->sourceFile->metadata["dziMaxZoom"] = $zoomLevels;
+
+		echo "\n";
+		$this->pheanstalk->touch($this->job);
+		
+		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled", null, $this->job)) {
 			$this->load->helper('file');
 			delete_files($outputPath, true);
 		}
+
+		$this->pheanstalk->touch($this->job);
 
 		$this->derivatives[$derivativeType] = $derivativeContainer;
 		$this->unlinkLocalSwap();
@@ -366,7 +388,6 @@ class ImageHandler extends FileHandlerBase {
 
 		if(isset($this->sourceFile->metadata) && isset($this->sourceFile->metadata["width"])) {
 			$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
-
 			if($megapixels > 100) {
 				$source = $this->sourceFile->getPathToLocalFile();
 				$dest = $this->sourceFile->getPathToLocalFile() . ".png";

@@ -38,6 +38,9 @@ class Instances extends Instance_Controller {
 				return;
 			}
 			$instance = new Entity\Instance();
+			$page = new Entity\InstancePage();
+			$page->setTitle("Home Page");
+			$page->setInstance($instance);
 		}
 
 		$instance->setName($this->input->post('name'));
@@ -52,7 +55,7 @@ class Instances extends Instance_Controller {
 		// $instance->setClarifaiId($this->input->post('clarifaiId'));
 		// $instance->setClarifaiSecret($this->input->post('clarifaiSecret'));
 		$instance->setBoxKey($this->input->post('boxKey'));
-		$instance->setIntroText($this->input->post('introText'));
+		// $instance->setIntroText($this->input->post('introText'));
 		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);
 		$instance->setUseCustomCSS($this->input->post('useCustomCSS')?1:0);
@@ -62,6 +65,9 @@ class Instances extends Instance_Controller {
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 
 		$this->doctrine->em->persist($instance);
+		if($page) {
+			$this->doctrine->em->persist($page);
+		}
 		$this->doctrine->em->flush();
 
 		instance_redirect('instances/edit/' . $instance->getId());
@@ -94,7 +100,7 @@ class Instances extends Instance_Controller {
 			show_404();
 		}
 		$this->template->title = 'Edit Instance';
-		$this->template->loadJavascript(["parsley","bootstrap-show-password"]);
+		$this->template->loadJavascript(["handlebars-v1.1.2","parsley","bootstrap-show-password", "assetAutocompleter"]);
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
 		$this->template->content->view('instances/edit', $data);
 		$this->template->publish();

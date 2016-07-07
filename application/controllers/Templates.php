@@ -115,6 +115,10 @@ class Templates extends Instance_Controller {
 					$widget["templateOrder"] = $display;
 				}
 
+				if(strlen(trim($widget['fieldTitle'])) == 0 || strlen(trim($widget['label'])) == 0) {
+					continue;
+				}
+
 				// Create new widget
 				$newWidget = new Entity\Widget();
 

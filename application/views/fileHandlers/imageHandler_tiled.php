@@ -1,14 +1,16 @@
-<script type="text/javascript" src='/assets/seadragon/openseadragon.js'></script>
+<link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
+<link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.fullscreen.css">
+<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
 <style type="text/css">
 
-	.openseadragon1 {
-		width: 100%;
-		height: 600px;
-	}
 
 </style>
-<div id="contentDiv" class="openseadragon1"></div>
-<script type="text/javascript">
+<div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
+
+
+<script type="application/javascript">
 	var zoomLevelCache = {};
 	zoomLevelCache[0] = <?=json_encode($fileObject->getSignedURLs("tiled", true, "tiledBase_files/0/"))?>;
 	zoomLevelCache[1] = <?=json_encode($fileObject->getSignedURLs("tiled", true, "tiledBase_files/1/"))?>;
@@ -22,95 +24,151 @@
 	zoomLevelCache[9] = <?=json_encode($fileObject->getSignedURLs("tiled", true, "tiledBase_files/9/"))?>;
 	zoomLevelCache[10] = <?=json_encode($fileObject->getSignedURLs("tiled", true, "tiledBase_files/10/"))?>;
 	zoomLevelCache[11] = <?=json_encode($fileObject->getSignedURLs("tiled", true, "tiledBase_files/11/"))?>;
-	var tileCache = {};
 
-	var attemptedLoad = {};
-	var preFetchZoom = function(zoom, x) {
-		if(tileCache[zoom] === undefined || tileCache[zoom][x] === undefined) {
-			$.post(basePath + 'fileManager/getSignedChildrenForObject',
-				{fileId: '<?=$fileObject->getObjectId()?>', derivative: 'tiled', path: "tiledBase_files/" + zoom + "/" + x + "_" },
-				function(data, textStatus, xhr) {
 
-					var signedURLs;
-					try {
-						signedURLs = $.parseJSON(data);
-					}
-					catch(e) {
-						console.log("error occurred: " + zoom + " " + x);
-						return;
-					}
+	var tileCompletionCache = [];
+	var prefetchAttempted = [];
+	var tileLoadCache = [];
 
-					var localZoomCache = [];
+	function debounce(func, wait, immediate) {
+		var timeout;
+		return function() {
+			var context = this, args = arguments;
+			var later = function() {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+	};
 
-					$.each(signedURLs, function(index, el) {
-						localZoomCache.push(el);
-					});
-					if(tileCache[zoom] === undefined) {
-						tileCache[zoom] = [];
-					}
-					tileCache[zoom][x] = localZoomCache;
+	var performFetch =  debounce(function() {
+		var localTileCache = tileLoadCache.slice(0);
+		tileLoadCache = [];
+		var tileURLs = [];
+		var zoomLevel;
+		$.each(localTileCache, function(index, val) {
+			coords = val.coords;
+			var skipValue = false;
+			$.each(tileURLs, function(tileIndex, tileVal) {
+				if(tileVal.indexOf("tiledBase_files/" + coords.z + "/" + coords.x + "_") !== -1) {
+					skipValue = true;
 				}
-				);
-		}
-	}
+			});
+			if(!skipValue) {
+				tileURLs.push("tiledBase_files/" + coords.z + "/" + coords.x + "_");	
+			}
+
+			zoomLevel = coords.z;
+		});
 
 
-	var viewer = OpenSeadragon({
-			            // debugMode: true,
-			            id: "contentDiv",
-			            prefixUrl: "/assets/seadragon/images/",
-			            tileSources: {
-			            	height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
-			            	width:  <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
-			            	tileSize: 256,
-			            	OverLap: 1,
-			            	getTileUrl: function(zoom, x, y ) {
-			            		var maxScaleWidth = Math.ceil(viewer.tileSources.width / viewer.tileSources.tileSize);
-			            		var maxScaleHeight = Math.ceil(viewer.tileSources.height / viewer.tileSources.tileSize);
-			            		var maxScale = Math.min(maxScaleHeight, maxScaleWidth);
-			            		if(zoomLevelCache[zoom] == undefined && (tileCache[zoom] === undefined || tileCache[zoom][x] === undefined)) {
-			            			attemptedLoad[zoom] = [];
-			            			attemptedLoad[zoom][x] = true;
-									// fetch and cache signed URLs for this zoom level
-									$.ajaxSetup({async: false});
-									preFetchZoom(zoom,x);
-									$.ajaxSetup({async: true});
-								}
+		$.post(basePath + 'fileManager/getSignedChildrenForObject',
+			{fileId: '<?=$fileObject->getObjectId()?>', derivative: 'tiled', paths: tileURLs },
+			function(data, textStatus, xhr) {
+				var signedURLs;
+				try {
+					signedURLs = $.parseJSON(data);
+				}
+				catch(e) {
+					console.log("error occurred: " + zoomLevel + " " + x);
+					return;
+				}
 
-								var zoomLevel;
-								if(zoomLevelCache[zoom] !== undefined) {
-									zoomLevel = zoomLevelCache[zoom];
-								}
-								else {
-									zoomLevel = tileCache[zoom][x];
-								}
+				var localZoomCache = [];
 
-								var foundElement = null;
+				$.each(signedURLs, function(index, el) {
+					localZoomCache.push(el);
+				});
+				if(zoomLevelCache[zoomLevel] === undefined) {
+					zoomLevelCache[zoomLevel] = [];
+				}
+				$.each(localZoomCache, function(index,el) {
+					zoomLevelCache[zoomLevel].push(el);
+				});
 
-								// console.log(zoomLevel);
-								$.each(zoomLevel, function(index, el) {
-									if(el.indexOf("/tiledBase_files/" + zoom + "/" + x + "_" + y) !== -1) {
-										foundElement = el;
-										return false;
-									}
-								});
+				for(tilec in localTileCache) {
+					tile = localTileCache[tilec];
 
-								// cache the next two zooms
-								// if(zoomLevel +1 <= maxScale && attemptedLoad[zoom+1] === undefined) {
-								// 	// don't spawn a million prefetches
-								// 	attemptedLoad[zoom+1] = true;
-								// 	preFetchZoom(zoom+1);
-								// }
-								// if(zoomLevel +2 <= maxScale && attemptedLoad[zoom+2] === undefined) {
-								// 	// don't spawn a million prefetches
-								// 	attemptedLoad[zoom+2] = true;
-								// 	preFetchZoom(zoom+2);
-								// }
-								return foundElement;
-							}
-						},
-						showNavigator:true,
-						animationTime: 0.5,
+					foundElement = null;
+					$.each(signedURLs, function(index, el) {
+						if(el.indexOf("tiledBase_files/" + tile.coords.z + "/" + tile.coords.x + "_" + tile.coords.y + ".") !== -1) {
+							foundElement = el;
+							return false;
+						}
 					});
+					if(foundElement == null) {
+					}
+					else {
+						var error;
+						var localTile = tile.tile;
+						var done = tile.done;
+						localTile.onload = (function(done, error, localTile) {
+							return function() {
+								done(error, localTile);
+							}
+						})(done, error, localTile);
+						localTile.src=foundElement;
+						
+						
+					}
 
-				</script>
+				}
+
+				
+			});
+
+
+	}, 100);
+
+	
+	
+
+	var map = L.map('map', {
+		fullscreenControl: true,
+		zoomSnap: 0,
+   	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
+   	     }).setView([0, 0], 0);
+	
+	var layer = L.tileLayer.elevator(function(coords, tile, done) {
+		var error;
+		var loadStarted = false;
+		if(zoomLevelCache[coords.z] && zoomLevelCache[coords.z][coords.x] && zoomLevelCache[coords.z][coords.x][coords.y]) {
+			foundElement = null;
+			$.each(zoomLevelCache[coords.z], function(index, el) {
+				if(el.indexOf("/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".") !== -1) {
+					foundElement = el;
+					return false;
+				}
+			});
+			if(foundElement !== null) {
+				loadStarted = true;
+			}
+			tile.onload = (function(done, error, tile) {
+				return function() {
+					done(error, tile);
+				}
+			})(done, error, tile);
+			tile.src=foundElement;
+		}
+		if(!loadStarted) {
+
+			tileLoadCache.push({coords: coords, tile: tile, done: done});
+			performFetch();
+		}
+
+		return tile;
+
+	}, {
+		width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
+		height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
+		tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
+		maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
+		overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>
+	});
+	layer.addTo(map);
+
+</script>
