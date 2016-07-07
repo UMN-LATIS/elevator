@@ -149,6 +149,14 @@
 </div>
 
 <div class="form-group">
+	<label for="inputIntroText" class="col-sm-2 control-label">Intro Text</label>
+	<div class="col-sm-6">
+		Intro Text has moved to the <a href="/instances/customPages">Instance Pages</a> menu ("Home Page" item).
+	</div>
+</div>
+
+
+<div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
 			<input type="checkbox" id="useCustomHeader" name="useCustomHeader" value="On" <?=$instance->getUseCustomHeader()?"checked":null?>>
