@@ -813,6 +813,9 @@ class Permissions extends Instance_Controller {
 		if($this->input->post("isSuperAdmin")) {
 			$user->setIsSuperAdmin($this->input->post("isSuperAdmin")?true:false);
 		}
+		else {
+			$user->setIsSuperAdmin(false);
+		}
 		$user->setFastUpload($this->input->post("fastUpload")?true:false);
 		$this->doctrine->em->persist($user);
 		$this->doctrine->em->flush();
