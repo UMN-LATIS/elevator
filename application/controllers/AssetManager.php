@@ -810,7 +810,7 @@ class AssetManager extends Admin_Controller {
 
 		if($parentObject && $targetArray) {
 			$objectArray = $parentObject->getAsArray();
-			$objectarray[$targetField] = $targetArray;
+			$objectArray[$targetField] = $targetArray;
 			$parentObject->createObjectFromJSON($objectArray);
 			$parentObject->save();
 		}
