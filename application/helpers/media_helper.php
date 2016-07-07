@@ -108,6 +108,8 @@ function identifyImage($sourceImage) {
 
 
 function getImageMetadata($sourceImage) {
+	$CI =& get_instance();
+	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	try {
 		$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile());
 	}
