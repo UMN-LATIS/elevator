@@ -4,11 +4,16 @@
 	<?foreach($widgetModel->fieldContentsArray as $fieldContent):?>
 		<?
 		$haveCoordinates = false;
+		$label = null;
 		if(isset($fieldContent->locationLabel) && strlen($fieldContent->locationLabel)>0) {
 			$label = $fieldContent->locationLabel;
 		}
+
+		if(isset($fieldContents->address) && strlen($fieldContents->address)>0) {
+			$label .= "(" . $fieldContents->address . ")";
+		}
 		else {
-			$label = $fieldContent->latitude . ", " . $fieldContent->longitude;
+			$label .= "(" . $fieldContent->latitude . ", " . $fieldContent->longitude . ")";
 		}
 
 		if($fieldContent->latitude != 0 && $fieldContent->longitude != 0) {
