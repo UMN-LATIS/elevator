@@ -48,7 +48,7 @@
 				 <div class="clearfix"></div>
 				<div class="paginationBlock">
 					<ul class="pager">
-					  <li><a href="#" class="nextPage">Load Moret</a></li>
+					  <li><a href="#" class="nextPage">Load More</a></li>
 					</ul>
 				</div>
 			</div>
