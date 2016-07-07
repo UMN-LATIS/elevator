@@ -13,6 +13,10 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 	max-height: 100%;
 	height: 100%;
 }
+.fixedHeightContainer {
+	height: 100%;
+	max-height: 100%
+}
 .outerContainerForFirefox {
 	height: 100%;
 }
@@ -33,7 +37,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 		<?else:?>
 
 			<?if(array_key_exists("tiled", $fileContainers)):?>
-				<?=$this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject])?>
+				<?=$this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject], true)?>
 			<?else:?>
 				<?if(isset($fileObject->sourceFile->metadata["spherical"])):?>
 					<div style="height:500px">

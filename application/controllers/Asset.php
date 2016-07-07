@@ -26,7 +26,7 @@ class asset extends Instance_Controller {
 		$this->load->model("asset_model");
 	}
 
-	function viewAsset($objectId=null) {
+	function viewAsset($objectId=null, $returnJson=false) {
 		$assetModel = new Asset_model;
 		if(!$objectId) {
 			show_404();
@@ -57,13 +57,20 @@ class asset extends Instance_Controller {
 
 		}
 
+		if($returnJson == "true") {
+			echo json_encode($assetModel->getAsArray(null,true));
+		}
+		else {
 		// for subclipping movies
-		$this->template->loadJavascript(["excerpt"]);
+			$this->template->loadJavascript(["excerpt"]);
 
-		$assetTitle = $assetModel->getAssetTitle();
-		$this->template->title = reset($assetTitle);
-		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
-		$this->template->publish();
+
+			$assetTitle = $assetModel->getAssetTitle();
+			$this->template->title = reset($assetTitle);
+			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
+			$this->template->publish();
+	
+		}
 
 
 	}
@@ -101,13 +108,16 @@ class asset extends Instance_Controller {
 		}
 
 
-		// rather than checking that they have access to the asset (which we'd normally do) we just
-		// check that they have access to the drawer for this asset, and then let them view it.
+		// we check that they have access to the drawer or the specific asset (for API Calls)
+		// if they have access to the drawer for this asset, and then let them view it.
 		// Luckily, the rest of the auth process will be ok with this, since we don't check again further down the generation.
 		$this->accessLevel = $this->user_model->getAccessLevel("drawer", $excerpt->getDrawer());
-		if($this->accessLevel < PERM_VIEWDERIVATIVES) {
+		$this->assetAccessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+		if($this->accessLevel < PERM_VIEWDERIVATIVES && $this->assetAccessLevel < PERM_VIEWDERIVATIVES) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
+
+		$this->accessLevel = max($this->accessLevel, $this->assetAccessLevel);
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
 

@@ -260,7 +260,7 @@ class FileHandlerBase extends CI_Model {
 		}
 
 		$newTask = json_encode(["task"=>$nextTask['taskType'], "config"=>$args, "fileHandlerId"=>$this->getObjectId(), "type"=>$this->sourceFile->getType(), "instance"=>$this->instance->getId(), "host_affinity"=>$hostAffinity]);
-		$ttr = 60;
+		$ttr = 300;
 		if(isset($args['ttr'])){
 			$ttr = $args['ttr'];
 		}
@@ -529,7 +529,8 @@ class FileHandlerBase extends CI_Model {
 
 		$derivative = $this->derivatives[$derivativeTitle];
 
-		$fileList = $this->s3model->getFilesAtKeyPath($derivative->storageKey . "/" . $rootFolder);
+		$fileList = $this->s3model->getFilesAtKeyPath($derivative->storageKey . "/" . $rootFolder);	
+		
 
 		$signedFileList = array();
 		foreach($fileList as $file) {
