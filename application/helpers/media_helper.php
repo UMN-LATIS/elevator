@@ -106,6 +106,21 @@ function identifyImage($sourceImage) {
 	return $image->getImageFormat();
 }
 
+function fastImageDimensions($sourceImage) {
+	$CI =& get_instance();
+	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
+	$commandline = "identify " . $sourceImage->getType().":".$sourceImage->getPathToLocalFile();
+	exec($commandline, $results);
+	if(isset($results)) {
+		$split = explode(" ", $results[0]);
+		$dimensions = $split[2];
+		if(stristr($dimensions, "x")) {
+			$dimensionsSplit = explode("x", $dimensions);	
+			return array("x"=>$dimensionsSplit[0], "y"=>$dimensionsSplit[1]);
+		}
+	}
+	return false;
+}
 
 function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
