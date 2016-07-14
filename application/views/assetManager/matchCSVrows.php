@@ -49,7 +49,7 @@
 		<div class="targetFields form-group hide">
 			<label for="inputTargetField" class="col-sm-2 control-label">Related Field:</label>
 			<div class="col-sm-2">
-				<select name="targetFieldSelect" id="inputTargetField" class="form-control targetFieldSelect" required="required">
+				<select name="targetFieldSelect" id="inputTargetField" class="form-control targetFieldSelect">
 					<option value=""></option>
 				</select>
 			</div>
