@@ -406,8 +406,6 @@ class Instances extends Instance_Controller {
 							"Effect": "Allow",
 							"Action": [
 							"s3:AbortMultipartUpload",
-							"s3:DeleteBucketPolicy",
-							"s3:DeleteBucketWebsite",
 							"s3:DeleteObject",
 							"s3:DeleteObjectVersion",
 							"s3:GetBucketAcl",
@@ -420,7 +418,6 @@ class Instances extends Instance_Controller {
 							"s3:GetBucketTagging",
 							"s3:GetBucketVersioning",
 							"s3:GetBucketWebsite",
-							"s3:GetLifecycleConfiguration",
 							"s3:GetObject",
 							"s3:GetObjectAcl",
 							"s3:GetObjectTorrent",
