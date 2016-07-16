@@ -3,6 +3,7 @@
 use Aws\S3\Model\ClearBucket;
 
 use Aws\Sts\StsClient;
+use Aws\Exception\MultipartUploadException;
 
 class S3_model extends CI_Model {
 
@@ -92,7 +93,7 @@ class S3_model extends CI_Model {
 			do {
 				try {
 					$result = $uploader->upload();
-				} catch (\Aws\S3\MultipartUploadException $e) {
+				} catch (MultipartUploadException $e) {
 					$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
 						'state' => $e->getState(),
 						]);
