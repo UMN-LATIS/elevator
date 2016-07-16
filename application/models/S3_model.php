@@ -79,7 +79,6 @@ class S3_model extends CI_Model {
 			}
 		}
 		else {
-			echo "multipart";
 			$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
 				'bucket' => $this->bucket,
 				'key'    => $destKey,
@@ -92,7 +91,6 @@ class S3_model extends CI_Model {
 
 			do {
 				try {
-					echo ".";
 					$result = $uploader->upload();
 				} catch (\Aws\S3\MultipartUploadException $e) {
 					$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
