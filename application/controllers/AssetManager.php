@@ -783,7 +783,7 @@ class AssetManager extends Admin_Controller {
 
 			if(count($uploadItems)>0) {
 				$newTask = json_encode(["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems]);
-				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 4500);
+				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 900);
 			}
 
 			$cacheArray['successArray'][] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $assetModel->getObjectId()) ."\">" . $assetModel->getObjectId() . "</A>)";

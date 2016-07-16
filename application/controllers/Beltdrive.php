@@ -727,13 +727,16 @@ class Beltdrive extends CI_Controller {
 				if(file_exists($localPath)) {
 					if($fileContainer->copyToRemoteStorage()) {
 						$assetArray[$importEntry['field']][] = ["fileId"=>$fileId, "regenerate"=>"On"];							
+						unlink($localPath);
 					}
 					else {
 						$this->logging->logError("error importing to " . $assetModel->getObjectId(), $importEntry);
+						echo "Error Importing: " . $fileId . " " . $assetModel->getObjectId() . "\n";
 					}
 				}
 				else {
 					$this->logging->logError("error importing to " . $assetModel->getObjectId(), $importEntry);
+					echo "Error loading " . $localPath . "\n";
 				}
 				$fileHandler->sourceFile->ready = true;
 				$fileHandler->save();

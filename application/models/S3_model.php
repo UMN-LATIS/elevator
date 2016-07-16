@@ -59,22 +59,52 @@ class S3_model extends CI_Model {
 	}
 
 	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED) {
-		try {
-			$finfo = finfo_open(FILEINFO_MIME_TYPE);
-			$targetMimeType = finfo_file($finfo, $sourceFile);
-			$targetMimeType = mime_content_type($sourceFile);
-			$this->s3Client->putObject(array(
-				'Bucket' => $this->bucket,
-	    		'Key'    => $destKey,
-    			'Body'   => fopen($sourceFile, "rb"),
-    			'StorageClass'   => $storageClass,
-    			"ContentType" => $targetMimeType
-    		));
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$targetMimeType = finfo_file($finfo, $sourceFile);
+		$targetMimeType = mime_content_type($sourceFile);
+
+		if(filesize($sourceFile) < 100*1024*1024) {
+			try {
+				$this->s3Client->putObject(array(
+					'Bucket' => $this->bucket,
+					'Key'    => $destKey,
+					'Body'   => fopen($sourceFile, "rb"),
+					'StorageClass'   => $storageClass,
+					"ContentType" => $targetMimeType
+					));
+			}
+			catch (Exception $e) {
+				$this->logging->logError("putObject", $e, $sourceFile);
+				return false;
+			}
 		}
-		catch (Exception $e) {
-			$this->logging->logError("putObject", $e, $sourceFile);
-			return false;
+		else {
+			echo "multipart";
+			$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
+				'bucket' => $this->bucket,
+				'key'    => $destKey,
+				'before_initiate' => function(\Aws\Command $command) use ($targetMimeType, $storageClass)  //  HERE IS THE RELEVANT CODE
+    			{
+        			$command['ContentType'] = $targetMimeType; 
+        			$command['StorageClass'] = $storageClass;  
+    			}
+				]);
+
+			do {
+				try {
+					echo ".";
+					$result = $uploader->upload();
+				} catch (\Aws\S3\MultipartUploadException $e) {
+					$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
+						'state' => $e->getState(),
+						]);
+				}
+			} while (!isset($result));
+
+			return $result ? true : false;
 		}
+
+
 		return true;
 	}
 
