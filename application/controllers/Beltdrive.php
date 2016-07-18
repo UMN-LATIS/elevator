@@ -673,14 +673,50 @@ class Beltdrive extends CI_Controller {
 				
 				$localPath = $fileContainer->getPathToLocalFile();
 
-				$ch = curl_init($importEntry['url']);
-				$fp = fopen($localPath, 'wb');
-				curl_setopt($ch, CURLOPT_FILE, $fp);
-				curl_setopt($ch, CURLOPT_HEADERFUNCTION, array(&$this, "headerCallback"));
-				$result = curl_exec($ch);
-				var_dump($result);
-				curl_close($ch);
-				fclose($fp);
+				$headers = get_headers($importEntry['url']);
+				foreach($headers as $header) {
+
+					$len = strlen($header);
+					if( !strstr($header, ':') )
+					{
+					    $this->response = trim($header);
+					    continue;
+					}
+					list($name, $value) = explode(':', $header, 2);
+					if( strcasecmp($name, 'Content-Disposition') == 0 )
+					{
+					    $parts = explode(';', $value);
+					    if( count($parts) > 1 )
+					    {
+					        foreach($parts AS $crumb)
+					        {
+					            if( strstr($crumb, '=') )
+					            {
+					                list($pname, $pval) = explode('=', $crumb);
+					                $pname = trim($pname);
+					                if( strcasecmp($pname, 'filename') == 0 )
+					                {
+					                    // Using basename to prevent path injection
+					                    // in malicious headers.
+					                    $this->remoteFileName = basename(
+					                        $this->unquote(trim($pval)));
+					                }
+					            }
+					        }
+					    }
+					}
+
+					$this->headers[$name] = trim($value);
+				}
+      
+				$extractString = "curl -s -o '" . $localPath . "' " . escapeshellarg($importEntry['url']);
+				$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
+				$process->run();
+				while($process->isRunning()) {
+					sleep(5);
+					$this->pheanstalk->touch($job);
+					echo ".";
+				}
 
 				if($this->remoteFileName) {
 					$fileContainer->originalFilename = $this->remoteFileName;
@@ -691,13 +727,16 @@ class Beltdrive extends CI_Controller {
 				if(file_exists($localPath)) {
 					if($fileContainer->copyToRemoteStorage()) {
 						$assetArray[$importEntry['field']][] = ["fileId"=>$fileId, "regenerate"=>"On"];							
+						unlink($localPath);
 					}
 					else {
 						$this->logging->logError("error importing to " . $assetModel->getObjectId(), $importEntry);
+						echo "Error Importing: " . $fileId . " " . $assetModel->getObjectId() . "\n";
 					}
 				}
 				else {
 					$this->logging->logError("error importing to " . $assetModel->getObjectId(), $importEntry);
+					echo "Error loading " . $localPath . "\n";
 				}
 				$fileHandler->sourceFile->ready = true;
 				$fileHandler->save();
@@ -718,42 +757,7 @@ class Beltdrive extends CI_Controller {
 
 	}
 
-	public function headerCallback($ch, $string)
-    {
-        $len = strlen($string);
-        if( !strstr($string, ':') )
-        {
-            $this->response = trim($string);
-            return $len;
-        }
-        list($name, $value) = explode(':', $string, 2);
-        if( strcasecmp($name, 'Content-Disposition') == 0 )
-        {
-            $parts = explode(';', $value);
-            if( count($parts) > 1 )
-            {
-                foreach($parts AS $crumb)
-                {
-                    if( strstr($crumb, '=') )
-                    {
-                        list($pname, $pval) = explode('=', $crumb);
-                        $pname = trim($pname);
-                        if( strcasecmp($pname, 'filename') == 0 )
-                        {
-                            // Using basename to prevent path injection
-                            // in malicious headers.
-                            $this->remoteFileName = basename(
-                                $this->unquote(trim($pval)));
-                        }
-                    }
-                }
-            }
-        }
-
-        $this->headers[$name] = trim($value);
-        return $len;
-    }
-
+	
 	private function unquote($string)
     {
         return str_replace(array("'", '"'), '', $string);
