@@ -42,6 +42,7 @@ class AudioHandler extends FileHandlerBase {
 
 		if($accessLevel>=$this->getPermission()) {
 			$derivative[] = "mp3";
+			$derivative[] = "m4a";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -139,6 +140,8 @@ class AudioHandler extends FileHandlerBase {
 		$jobIdArray = array();
 
 		$jobIdArray[] = $transcodeCommands->createDerivative($this->getObjectId(), "mp3");
+		$jobIdArray[] = $transcodeCommands->createDerivative($this->getObjectId(), "m4a");
+
 
 		if(count($jobIdArray)>0) {
 			$this->queueTask(3, ["jobId"=>$jobIdArray, "previousTask"=>"createDerivatives"]);
