@@ -44,7 +44,7 @@ Templates that define which type of metadata you'd like to collect, and  are the
 
 ## Behaviors of Templates ##
 
-When adding an asset, template fields that are left entry won't be displayed, so it's ok to have "sometimes" fields in the template.
+When adding an asset, template fields that are left empty won't be displayed, so it's ok to have "sometimes" fields in the template.
 
 There's no special "title" field in a template - whichever field you make the first field in a template will become a title.
 
@@ -269,7 +269,7 @@ All assets contain a "general" tab which contains a handful of settings about th
 
 ### Collection ###
 
-The collection not only defines how the asset will be grouped, but also defined where it will be stored in the cloud.  This must be set before you can upload assets.
+The collection not only defines how the asset will be grouped, but also defines where it will be stored in the cloud.  This must be set before you can upload assets.
 
 ### Available After / Ready For Display ###
 
@@ -289,7 +289,7 @@ You may save at any time by clicking the "save" button.  If you have unsaved cha
 
 You may select multiple files at the same time when uploading assets.  After starting a file uploading, you may move on to other tabs in the sidebar - the file upload will continue.  You will be prompted before leaving the page if the upload is incomplete.
 
-If an upload fails for some reason, simple refresh the asset and select the file again.  It will resume where you left off.
+If an upload fails for some reason, simply refresh the asset and select the file again.  It will resume where you left off.
 
 After a file is uploaded, a small preview will be displayed.  You may add an additional description about the file if you'd like.
 
