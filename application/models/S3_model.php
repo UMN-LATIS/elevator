@@ -59,10 +59,11 @@ class S3_model extends CI_Model {
 
 	}
 
-	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED) {
-		$finfo = finfo_open(FILEINFO_MIME_TYPE);
-		$targetMimeType = finfo_file($finfo, $sourceFile);
-		$targetMimeType = mime_content_type($sourceFile);
+	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null) {
+		if(!$targetMimeType) {
+			$targetMimeType = mime_content_type($sourceFile);
+		}
+		
 
 		if(filesize($sourceFile) < 100*1024*1024) {
 			try {

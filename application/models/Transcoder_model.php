@@ -909,7 +909,9 @@ class Transcoder_Model extends CI_Model {
         		$outputFormat = new \PHPVideoToolkit\AudioFormat_Aac('output', $this->videoToolkitConfig);
 	       		$outputFormat->setFormat("mp4")->setAudioBitrate("256k")->setThreads($this->threadCount);
 
+	       		$derivativeContainer->forcedMimeType = "audio/m4a";
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
+				
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "m4a not created","", "", $this->job->getId());
 					return JOB_FAILED;
@@ -969,7 +971,7 @@ set rmargin 1;
 set tmargin 1;
 set bmargin 1;
 
-plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lines lt rgb 'black';";
+plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 every 2 using 1:2 with lines lt rgb 'black';";
 
 		$targetScript = str_replace("{output}", $pathToOutput, $gnuScript);
 		$targetScript = str_replace("{width}", 500, $targetScript);
@@ -1051,7 +1053,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lin
 			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), $targetPath, $this->job->getId());
 		}
 
-		$process = $videoHandler->getProcess();
+		// $process = $videoHandler->getProcess();
 
 		while($progressHandler->completed !== true)
         {
@@ -1061,7 +1063,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lin
         		return FALSE;
         	}
         	echo $result['percentage'] . " ";
-        	echo $process->getExecutedCommand()."\n";
+        	// echo $process->getExecutedCommand()."\n";
             sleep(5);
 			$this->pheanstalk->touch($this->job);
         }
