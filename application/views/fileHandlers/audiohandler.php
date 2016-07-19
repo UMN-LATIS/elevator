@@ -96,6 +96,9 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
         <?if(isset($fileContainers['mp3']) && $fileContainers['mp3']->ready && (!$this->instance->getHideVideoAudio() || $allowOriginal)):?>
       <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3")?>">Download MP3</a></li>
       <?endif?>
+      <?if(isset($fileContainers['m4a']) && $fileContainers['m4a']->ready && (!$this->instance->getHideVideoAudio() || $allowOriginal)):?>
+      <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/m4a")?>">Download M4A</a></li>
+      <?endif?>
       <?if($allowOriginal):?>
       <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">Download Original</a></li>
       <?endif?>
