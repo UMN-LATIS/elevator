@@ -80,6 +80,19 @@ class S3_model extends CI_Model {
 			}
 		}
 		else {
+
+			$this->transferCount = 0;
+			$beforeFunction = function(Aws\Command $command) {
+				$this->transferCount++;
+				if($this->transferCount % 10 == 0) {
+					if(@$this->pheanstalk !== null && @$this->job !==null) {
+						$this->pheanstalk->touch($this->job);	
+						
+					}
+				}
+
+			};
+
 			$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
 				'bucket' => $this->bucket,
 				'key'    => $destKey,
@@ -87,7 +100,8 @@ class S3_model extends CI_Model {
     			{
         			$command['ContentType'] = $targetMimeType; 
         			$command['StorageClass'] = $storageClass;  
-    			}
+    			},
+    			"before_upload" => $beforeFunction
 				]);
 
 			do {
