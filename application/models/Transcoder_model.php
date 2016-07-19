@@ -960,6 +960,11 @@ class Transcoder_Model extends CI_Model {
 
 		$gnuPath = $this->config->item("gnuPlot");
 
+		$scriptAppend = null;
+		if(filesize($rawData) > 50*1024*1024) {
+			$scriptAppend = "every 4 using 1:4";  // for long recordings, subsample
+		}
+
 		$gnuScript = "set terminal png size {width},{height};
 set output '{output}';
 
@@ -971,7 +976,7 @@ set rmargin 1;
 set tmargin 1;
 set bmargin 1;
 
-plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 every 2 using 1:2 with lines lt rgb 'black';";
+plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scriptAppend . " with lines lt rgb 'black';";
 
 		$targetScript = str_replace("{output}", $pathToOutput, $gnuScript);
 		$targetScript = str_replace("{width}", 500, $targetScript);
