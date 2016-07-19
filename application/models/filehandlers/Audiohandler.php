@@ -42,6 +42,7 @@ class AudioHandler extends FileHandlerBase {
 
 		if($accessLevel>=$this->getPermission()) {
 			$derivative[] = "mp3";
+			$derivative[] = "m4a";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -101,7 +102,14 @@ class AudioHandler extends FileHandlerBase {
 			$this->queueTask(2, []);
 		}
 		elseif($args['previousTask'] == "createDerivatives") {
-			$this->queueTask(4, []);
+			if(isset($args['pendingDerivatives']) && count($args['pendingDerivatives'])>0) {
+
+				$this->queueTask(2, ["pendingDerivatives"=>$args['pendingDerivatives']], false);
+			}
+			else {
+				$this->queueTask(4, [], false);
+			}
+
 		}
 		else {
 			$this->queueTask(6, []);
@@ -134,14 +142,24 @@ class AudioHandler extends FileHandlerBase {
 
 
 	public function createDerivatives($args) {
+		if(isset($args['pendingDerivatives'])) {
+			$targetDerivatives = $args['pendingDerivatives'];
+		}
+		else {
+			$targetDerivatives = ["mp3", "m4a"];
+		}
+
+		$nextDerivative = array_shift($targetDerivatives);
 
 		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-		$jobIdArray = array();
+		$jobId = null;
+		if($nextDerivative) {
+			$jobId = $transcodeCommands->createDerivative($this->getObjectId(), $nextDerivative);	
+		}
+	
 
-		$jobIdArray[] = $transcodeCommands->createDerivative($this->getObjectId(), "mp3");
-
-		if(count($jobIdArray)>0) {
-			$this->queueTask(3, ["jobId"=>$jobIdArray, "previousTask"=>"createDerivatives"]);
+		if($jobId) {
+			$this->queueTask(3, ["jobId"=>$jobId, "pendingDerivatives"=>$targetDerivatives, "previousTask"=>"createDerivatives"]);
 			return JOB_SUCCESS;
 		}
 		else {

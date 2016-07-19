@@ -3,6 +3,7 @@
 use Aws\S3\Model\ClearBucket;
 
 use Aws\Sts\StsClient;
+use Aws\Exception\MultipartUploadException;
 
 class S3_model extends CI_Model {
 
@@ -58,23 +59,66 @@ class S3_model extends CI_Model {
 
 	}
 
-	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED) {
-		try {
-			$finfo = finfo_open(FILEINFO_MIME_TYPE);
-			$targetMimeType = finfo_file($finfo, $sourceFile);
+	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null) {
+		if(!$targetMimeType) {
 			$targetMimeType = mime_content_type($sourceFile);
-			$this->s3Client->putObject(array(
-				'Bucket' => $this->bucket,
-	    		'Key'    => $destKey,
-    			'Body'   => fopen($sourceFile, "rb"),
-    			'StorageClass'   => $storageClass,
-    			"ContentType" => $targetMimeType
-    		));
 		}
-		catch (Exception $e) {
-			$this->logging->logError("putObject", $e, $sourceFile);
-			return false;
+		
+
+		if(filesize($sourceFile) < 100*1024*1024) {
+			try {
+				$this->s3Client->putObject(array(
+					'Bucket' => $this->bucket,
+					'Key'    => $destKey,
+					'Body'   => fopen($sourceFile, "rb"),
+					'StorageClass'   => $storageClass,
+					"ContentType" => $targetMimeType
+					));
+			}
+			catch (Exception $e) {
+				$this->logging->logError("putObject", $e, $sourceFile);
+				return false;
+			}
 		}
+		else {
+
+			$this->transferCount = 0;
+			$beforeFunction = function(Aws\Command $command) {
+				$this->transferCount++;
+				if($this->transferCount % 10 == 0) {
+					if(@$this->pheanstalk !== null && @$this->job !==null) {
+						$this->pheanstalk->touch($this->job);	
+						
+					}
+				}
+
+			};
+
+			$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
+				'bucket' => $this->bucket,
+				'key'    => $destKey,
+				'before_initiate' => function(\Aws\Command $command) use ($targetMimeType, $storageClass)  //  HERE IS THE RELEVANT CODE
+    			{
+        			$command['ContentType'] = $targetMimeType; 
+        			$command['StorageClass'] = $storageClass;  
+    			},
+    			"before_upload" => $beforeFunction
+				]);
+
+			do {
+				try {
+					$result = $uploader->upload();
+				} catch (MultipartUploadException $e) {
+					$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
+						'state' => $e->getState(),
+						]);
+				}
+			} while (!isset($result));
+
+			return $result ? true : false;
+		}
+
+
 		return true;
 	}
 
