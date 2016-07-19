@@ -896,6 +896,36 @@ class Transcoder_Model extends CI_Model {
         			return JOB_FAILED;
         		}
         		break;
+        	case "m4a":
+        		$derivativeContainer->derivativeType = "m4a";
+				$derivativeContainer->path = "derivative";
+				$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "m4a.m4a";
+				$derivativeContainer->setParent($this->fileHandler);
+				$this->fileHandler->derivatives['m4a'] = $derivativeContainer;
+
+				$video = new \PHPVideoToolkit\Audio($localPath, $this->videoToolkitConfig);
+				$process = $video->getProcess();
+				$process->addCommand("-vn");
+        		$outputFormat = new \PHPVideoToolkit\AudioFormat_Aac('output', $this->videoToolkitConfig);
+	       		$outputFormat->setFormat("mp4")->setAudioBitrate("256k")->setThreads($this->threadCount);
+
+	       		$derivativeContainer->forcedMimeType = "audio/m4a";
+				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
+				
+				if(!$output) {
+					$this->logging->processingInfo("createDerivative", "m4a not created","", "", $this->job->getId());
+					return JOB_FAILED;
+				}
+        		echo "Uploading";
+				if($derivativeContainer->copyToRemoteStorage()) {
+        			$derivativeContainer->removeLocalFile();
+        			$derivativeContainer->ready = true;
+        		}
+        		else {
+        			$this->logging->processingInfo("createDerivative", "uploading m4a failed","", "", $this->job->getId());
+        			return JOB_FAILED;
+        		}
+        		break;
         }
 
 
@@ -930,6 +960,11 @@ class Transcoder_Model extends CI_Model {
 
 		$gnuPath = $this->config->item("gnuPlot");
 
+		$scriptAppend = null;
+		if(filesize($rawData) > 50*1024*1024) {
+			$scriptAppend = "every 4 using 1:4";  // for long recordings, subsample
+		}
+
 		$gnuScript = "set terminal png size {width},{height};
 set output '{output}';
 
@@ -941,7 +976,7 @@ set rmargin 1;
 set tmargin 1;
 set bmargin 1;
 
-plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lines lt rgb 'black';";
+plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scriptAppend . " with lines lt rgb 'black';";
 
 		$targetScript = str_replace("{output}", $pathToOutput, $gnuScript);
 		$targetScript = str_replace("{width}", 500, $targetScript);
@@ -1023,7 +1058,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lin
 			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), $targetPath, $this->job->getId());
 		}
 
-		//$process = $videoHandler->getProcess();
+		// $process = $videoHandler->getProcess();
 
 		while($progressHandler->completed !== true)
         {
@@ -1033,7 +1068,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 with lin
         		return FALSE;
         	}
         	echo $result['percentage'] . " ";
-        	//echo '<pre>'.$process->getExecutedCommand().'</pre>';
+        	// echo $process->getExecutedCommand()."\n";
             sleep(5);
 			$this->pheanstalk->touch($this->job);
         }
