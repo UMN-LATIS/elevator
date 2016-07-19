@@ -294,6 +294,60 @@ class Instances extends Instance_Controller {
 				]
 				]);
 
+
+			$useLifecycle = false;
+			$useStandardIA = false;
+			$transition = array();
+			if($this->input->post("useLifecycle")) {
+				$useLifecycle = true;
+				$transition[] = ['Days' => 60,
+	                    			'StorageClass' => 'GLACIER'];
+			}
+			if($this->input->post("useStandardIA")) {
+				$useStandardIA = true;
+				$transition[] = ['Days' => 30,
+	                    			'StorageClass' => 'STANDARD_IA'];
+			}
+
+			$result = $s3Client->putBucketVersioning([
+			    'Bucket' => $bucketName, 
+			    'VersioningConfiguration' => [ 
+			        'MFADelete' => 'Disabled',
+			        'Status' => 'Enabled',
+			    ],
+			]);
+
+			if($useStandardIA || $useLifecycle) {
+				$s3Client->putBucketLifecycleConfiguration([
+					'Bucket'=>$bucketName,
+					'LifecycleConfiguration' => [
+        				'Rules' =>
+        				[ // REQUIRED
+	            			[
+	                			'Expiration' => [
+	                    			'Days' => 7,
+	                			],
+	                			'Prefix' => 'drawer/', // REQUIRED
+	                			'Status' => 'Enabled',
+	            			],
+	            			[
+	                			'Prefix' => 'original/', // REQUIRED
+	                			'Status' => 'Enabled',
+	                			'Transitions' => $transition,
+	            			],
+	            			[
+	            				'Prefix' => '',
+	            				'Status' => 'Enabled',
+	            				'NoncurrentVersionExpiration' => [
+              					'NoncurrentDays' => 15,
+            					],
+	            			]
+        				],
+    				],
+				]);
+			}
+
+
 			$result = $s3Client->putBucketPolicy([
 				'Bucket'=>$bucketName,
 				'Policy'=>'{
@@ -327,6 +381,20 @@ class Instances extends Instance_Controller {
 						}
 					},
 					{
+						"Sid": "Stmt1387382290062",
+						"Effect": "Deny",
+						"Principal": {
+							"AWS": "*"
+						},
+						"Action": "s3:PutLifecycleConfiguration",
+						"Resource": "arn:aws:s3:::' . $bucketName . '",
+						"Condition": {
+							"Null": {
+								"aws:MultiFactorAuthAge": true
+							}
+						}
+					},
+					{
 						"Sid": "Stmt1386963706249",
 						"Effect": "Deny",
 						"Principal": {
@@ -339,42 +407,7 @@ class Instances extends Instance_Controller {
 				}'
 			]);
 
-			$useLifecycle = false;
-			$useStandardIA = false;
-			$transition = array();
-			if($this->input->post("useLifecycle")) {
-				$useLifecycle = true;
-				$transition[] = ['Days' => 60,
-	                    			'StorageClass' => 'GLACIER'];
-			}
-			if($this->input->post("useStandardIA")) {
-				$useStandardIA = true;
-				$transition[] = ['Days' => 30,
-	                    			'StorageClass' => 'STANDARD_IA'];
-			}
-
-			if($useStandardIA || $useLifecycle) {
-				$s3Client->putBucketLifecycleConfiguration([
-					'Bucket'=>$bucketName,
-					'LifecycleConfiguration' => [
-        				'Rules' =>
-        				[ // REQUIRED
-	            			[
-	                			'Expiration' => [
-	                    			'Days' => 7,
-	                			],
-	                			'Prefix' => 'drawer/', // REQUIRED
-	                			'Status' => 'Enabled',
-	            			],
-	            			[
-	                			'Prefix' => 'original/', // REQUIRED
-	                			'Status' => 'Enabled',
-	                			'Transitions' => $transition,
-	            			],
-        				],
-    				],
-				]);
-			}
+			
 
 
 			$newUser = "elevator-bucket_user" . $s3InstanceName;
