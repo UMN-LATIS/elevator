@@ -627,7 +627,9 @@ class Beltdrive extends CI_Controller {
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
-
+			
+			$this->job = $job;
+			
 			$job_encoded = json_decode($job->getData(), true);
 
 			$instanceId = $job_encoded["instance"];
