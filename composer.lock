@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5cee12cf2afee2b17c47237d6f7facda",
-    "content-hash": "3ccc3c702c7d16c192d32d717a9c1a5f",
+    "hash": "942e03b8120e4347b5192214dd665e1a",
+    "content-hash": "b0b710955cbb8a406d3e51cb0c442d32",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2037,13 +2037,13 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/UMNLibraries/umn-shib-php.git",
-                "reference": "c564ecc8097596c3a156e0e0b416b7992d6c24aa"
+                "url": "https://github.com/UMN-LATIS/umn-shib-php-1.git",
+                "reference": "304a52f730a62d5a6ebd19e55d15232a6e2a29fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/UMNLibraries/umn-shib-php/zipball/c564ecc8097596c3a156e0e0b416b7992d6c24aa",
-                "reference": "c564ecc8097596c3a156e0e0b416b7992d6c24aa",
+                "url": "https://api.github.com/repos/UMN-LATIS/umn-shib-php-1/zipball/304a52f730a62d5a6ebd19e55d15232a6e2a29fe",
+                "reference": "304a52f730a62d5a6ebd19e55d15232a6e2a29fe",
                 "shasum": ""
             },
             "require": {
@@ -2063,10 +2063,9 @@
             ],
             "description": "A PHP implementation of the UMN Community Shibboleth basic authentication API and supporting utilities",
             "support": {
-                "source": "https://github.com/UMNLibraries/umn-shib-php/tree/master",
-                "issues": "https://github.com/UMNLibraries/umn-shib-php/issues"
+                "source": "https://github.com/UMN-LATIS/umn-shib-php-1/tree/master"
             },
-            "time": "2016-07-27 16:12:25"
+            "time": "2016-07-27 16:37:14"
         }
     ],
     "packages-dev": [],
