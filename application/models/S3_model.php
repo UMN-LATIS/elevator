@@ -297,6 +297,7 @@ class S3_model extends CI_Model {
 			$options["Key"] = $targetKey;
 
 			if($originalName) {
+				$originalName = preg_replace('/[^\x20-\x7E]/', '', $originalName);
 				$options["ResponseContentDisposition"] = 'attachment; filename="' . $originalName . '"';
 			}
 			else {
