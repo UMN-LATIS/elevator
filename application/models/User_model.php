@@ -125,8 +125,8 @@ class User_model extends CI_Model {
 
 			}
 
-			$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
-
+			$umnshib = new \UMNShib\Basic\BasicAuthenticator(array(), ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
+			$umnshib->setCustomIdPEntityId($this->config->item("shibbolethLogin"));
 			$authHelper = $this->getAuthHelper();
 			$this->userData = $authHelper->populateUserDataFromShib($umnshib);
 
