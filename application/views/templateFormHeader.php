@@ -101,11 +101,31 @@ if(strlen($this->template->collectionId)>0) {
 
 </style>
 <script>
-$(document).ready(function() {
-	$('body').scrollspy({ target: '#tablist', offset: 62 })
+	$(window).load(function() {
+		scrollManage();
+
+		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight })
+		$('.leftPane').affix({
+			offset: {
+				top: navbarToTopHeight + 20,
+				bottom: 50
+			}
+		});
+	});
 
 
-});
+	$(window).resize(function() {
+		scrollManage();
+
+		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight })
+		$('.leftPane').affix({
+			offset: {
+				top: navbarToTopHeight + 20,
+				bottom: 50
+			}
+		});
+	});
+
 
 $(function() {
   $('a[href*=#]:not([href=#])').click(function() {
@@ -116,7 +136,7 @@ $(function() {
       target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
       if (target.length) {
         $('html,body').animate({
-          scrollTop: target.offset().top - 52 //offsets for fixed header
+          scrollTop: target.offset().top - navbarToTopHeight //offsets for fixed header
         }, 300);
         return false;
       }
@@ -127,7 +147,7 @@ $(function() {
       var target = $('#'+location.href.split("#")[1]);
       if (target.length) {
         $('html,body').animate({
-          scrollTop: target.offset().top - 52 //offset height of header here too.
+          scrollTop: target.offset().top - navbarToTopHeight //offset height of header here too.
         }, 300);
         return false;
       }
@@ -139,7 +159,7 @@ $(function() {
 <div class="row theme-<?=$template->getTemplateColor()?>">
 
 	<div class="col-sm-3"> <!-- required for floating -->
-		<div  class="floatTabList leftPane" data-spy="affix" data-offset-top="20" data-offset-bottom="50">
+		<div  class="floatTabList leftPane" >
 		<!-- Nav tabs -->
 		<div class="row">
 			<div class="col-sm-12 miniPreview">
