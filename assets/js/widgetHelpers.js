@@ -435,21 +435,9 @@ function iframeLoaded(iFrame) {
 		var element = $(iFrame).closest(".tab-pane");
 		var id = $(element).attr("id");
 
-		if($(element).hasClass("active")) {
-			var height = $(iFrame).contents().find("html").height();
+		var height = $(iFrame).contents().find("html").height();
 
-			$(iFrame).height(height);
-		}
-		else {
-			$("a[href=#" + id + "]").on('shown.bs.tab', function(e) {
-
-				var height = $(iFrame).contents().find("html").height();
-
-				$(iFrame).height(height);
-
-			});
-
-		}
+		$(iFrame).height(height);
 		$("#collectionId").trigger("change");
 
 

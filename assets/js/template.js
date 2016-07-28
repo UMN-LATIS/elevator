@@ -35,6 +35,7 @@ $(document).ready(function() {
 
 
 var cachedWidth = 0;
+var navbarToTopHeight = 0;
 
  function scrollManage() {
   if(document.documentElement.clientWidth == cachedWidth) {
@@ -44,10 +45,10 @@ var cachedWidth = 0;
   if(!$('.navbar').length) {
     return;
   }
-    var top = $('.navbar').offset().top - parseFloat($('.navbar').css('margin-top').replace(/auto/, 0));
+    navbarToTopHeight = $('.navbar').offset().top - parseFloat($('.navbar').css('margin-top').replace(/auto/, 0));
 
    var _height = $('.navbar').height();
-   if(top === 0) {
+   if(navbarToTopHeight === 0) {
 
     if(document.documentElement.clientWidth > 768) {
       $('.mainContent').css('padding-top', 20 + parseInt($('.navbar').css('height')));
@@ -65,7 +66,7 @@ var cachedWidth = 0;
     if(z > $( document ).height()) {
       return;
     }
-    if (y >= top && (y+_height) < z) {
+    if (y >= navbarToTopHeight && (y+_height) < z) {
 
       if(document.documentElement.clientWidth > 768) {
         $('.mainContent').css('padding-top', parseInt($('.navbar').css('height')) + 20);
