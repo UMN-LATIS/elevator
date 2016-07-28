@@ -104,13 +104,17 @@ $(document).on("hidden.bs.collapse", ".maphost", function(){
 });
 
 $(document).on("shown.bs.collapse", ".maphost", function (){
-	var mapElement = $(this).find(".mapWidget");
 	var mapButton = $(this).parent().find(".mapToggle");
 	mapButton.html("Hide Map");
+	var mapElement = $(this).find(".mapWidget");
+	var latitudeElement = $(parentElement).parent().find('.latitude');
+	var longitudeElement = $(parentElement).parent().find('.longitude');
+	revealMap(mapElement, latitudeElement, longitudeElement);
 
-	var latitudeElement = $(this).parent().find('.latitude');
-	var longitudeElement = $(this).parent().find('.longitude');
+});
 
+var revealMap = function(parentElement, latitudeElement, longtitudeElement) {
+	
 	mapElement.goMap({
 		mapTypeControl:true,
 		maptype: 'ROADMAP',
@@ -160,4 +164,5 @@ $(document).on("shown.bs.collapse", ".maphost", function (){
 	}
 
 
-});
+
+}
