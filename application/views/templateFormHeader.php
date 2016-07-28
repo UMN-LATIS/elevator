@@ -63,7 +63,8 @@ if(strlen($this->template->collectionId)>0) {
 	}
 	.floatTabList {
 		/*position: fixed;*/
-		top: 52px;
+		top: 50px;
+		display: block;
 		width: 292px;
 		padding-left: 15px;
 		margin-left: -15px;
@@ -71,10 +72,31 @@ if(strlen($this->template->collectionId)>0) {
 		overflow-x: hidden;
 		height: 93%;
 	}
-	.floatTableList.affix-top {
+	.floatTableList.affix {
 		/*top: 50px;*/
 	}
 
+}
+
+.tab-pane {
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	background-color: #eff2f3;
+	border: 1px solid #96a2a7;
+	border-radius: 3px;
+}
+
+.leftPane {
+	height: 93vh;
+}
+
+.widgetContentsContainer {
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
 }
 
 </style>
@@ -116,8 +138,8 @@ $(function() {
 
 <div class="row theme-<?=$template->getTemplateColor()?>">
 
-	<div class="col-sm-3 leftPane"> <!-- required for floating -->
-		<div  class="floatTabList" data-spy="affix" data-offset-top="20" data-offset-bottom="50">
+	<div class="col-sm-3"> <!-- required for floating -->
+		<div  class="floatTabList leftPane" data-spy="affix" data-offset-top="20" data-offset-bottom="50">
 		<!-- Nav tabs -->
 		<div class="row">
 			<div class="col-sm-12 miniPreview">
