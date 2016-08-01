@@ -28,6 +28,7 @@
 			<div class="relatedThumbContainer">
 				<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fieldContent->fileId?>" alt="<?=htmlentities($fieldContent->fileDescription, ENT_COMPAT)?>" data-retina="<?=$retina?>" data-hover="<?=$retina?>" data-src="<?=$standard?>">
 			</div>
+			<div class="relatedThumbTitle autoTruncate"><?=htmlentities($fieldContent->fileDescription, ENT_COMPAT)?></div>
 		</div>
 	</div>
 
