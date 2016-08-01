@@ -536,12 +536,12 @@ function prepTimeline() {
 								"title": value.title,
 								"id": "/en/"+value.objectId,
 								"start": formattedStart,
-								"image": basePath+"testController/previewImage/"+value.objectId,
-								"link": basePath+"testController/viewAsset/"+value.objectId,
+								"image": basePath+"asset/previewImage/"+value.objectId,
+								"link": basePath+"asset/viewAsset/"+value.objectId,
 								"description": "Caption goeshere"
 							};
 
-							if(value3.end["numeric"].length>0) {
+							if(value3.end["numeric"] && value3.end["numeric"].length>0) {
 								endTime = parseInt(value3.end["numeric"], 10);
 								if(geoTime) {
 									formattedEnd = Timeline.GeochronoUnit.wrapMA(Math.abs(endTime / 31556900000000));
