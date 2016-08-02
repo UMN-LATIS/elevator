@@ -65,7 +65,7 @@ if(strlen($this->template->collectionId)>0) {
 		/*position: fixed;*/
 		top: 50px;
 		display: block;
-		width: 292px;
+		/*width: 25%;*/
 		padding-left: 15px;
 		margin-left: -15px;
 		overflow-y: auto;
@@ -74,6 +74,28 @@ if(strlen($this->template->collectionId)>0) {
 	}
 	.floatTableList.affix {
 		/*top: 50px;*/
+	}
+
+}
+
+
+@media screen and (min-width: 768px) {
+	.floatTabList {
+		width: 157px;
+	}
+}
+
+
+
+@media screen and (min-width: 992px) {
+	.floatTabList {
+		width: 213px;
+	}
+}
+
+@media screen and (min-width: 1200px) {
+	.floatTabList {
+		width: 262px;
 	}
 
 }
@@ -89,8 +111,10 @@ if(strlen($this->template->collectionId)>0) {
 	border-radius: 3px;
 }
 
-.leftPane {
-	height: 93vh;
+@media (min-width: 768px) {
+	.leftPane {
+		height: 100vh;
+	}
 }
 
 .widgetContentsContainer {
@@ -103,27 +127,41 @@ if(strlen($this->template->collectionId)>0) {
 <script>
 	$(window).load(function() {
 		scrollManage();
+		if($(window).width() > 768) {
+			$(".leftPane").css("height", ($(window).height() - 50) + "px");	
+		}
+		
+		$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
+		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight + 5 })
+		if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
+			$('.leftPane').affix({
+				offset: {
+					top: navbarToTopHeight + 20,
+					bottom: 50
+				}
+			});
+		}
 
-		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight })
-		$('.leftPane').affix({
-			offset: {
-				top: navbarToTopHeight + 20,
-				bottom: 50
-			}
-		});
 	});
 
 
 	$(window).resize(function() {
 		scrollManage();
+		if($(window).width() > 768) {
+			$(".leftPane").css("height", ($(window).height() - 50) + "px");	
+		}
+		
+		$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
+		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight + 5 })
+		if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
+			$('.leftPane').affix({
+				offset: {
+					top: navbarToTopHeight + 20,
+					bottom: 50
+				}
+			});
+		}
 
-		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight })
-		$('.leftPane').affix({
-			offset: {
-				top: navbarToTopHeight + 20,
-				bottom: 50
-			}
-		});
 	});
 
 
