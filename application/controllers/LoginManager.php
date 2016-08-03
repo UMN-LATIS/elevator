@@ -54,7 +54,7 @@ class LoginManager extends Instance_Controller {
 		}
 		$this->force_ssl();
 
-		$this->template->content->view("login/login", ["redirectURL"=>$redirectURL]);
+		$this->template->content->view("login/login", ["redirectURL"=>$redirectURL, "localOnly"=>true]);
 		$this->template->publish();
 	}
 
@@ -146,4 +146,3 @@ class LoginManager extends Instance_Controller {
 }
 
 /* End of file loginManager */
-/* Location: ./application/controllers/loginManager */
