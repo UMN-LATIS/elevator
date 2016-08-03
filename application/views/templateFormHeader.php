@@ -125,44 +125,34 @@ if(strlen($this->template->collectionId)>0) {
 
 </style>
 <script>
-	$(window).load(function() {
-		scrollManage();
-		if($(window).width() > 768) {
-			$(".leftPane").css("height", ($(window).height() - 50) + "px");	
-		}
-		
-		$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
-		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight + 5 })
-		if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
-			$('.leftPane').affix({
-				offset: {
-					top: navbarToTopHeight + 20,
-					bottom: 50
-				}
-			});
-		}
 
-	});
+var affixManagement = function() {
+	if($(window).width() > 768) {
+		$(".leftPane").css("height", ($(window).height() - 50) + "px");	
+	}
+	
+	$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
+	$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight + 5 })
+	if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
+		$('.leftPane').affix({
+			offset: {
+				top: navbarToTopHeight + 20,
+				bottom: 50
+			}
+		});
+	}
+};
+
+$(window).load(function() {
+	scrollManage();
+	affixManagement();
+});
 
 
-	$(window).resize(function() {
-		scrollManage();
-		if($(window).width() > 768) {
-			$(".leftPane").css("height", ($(window).height() - 50) + "px");	
-		}
-		
-		$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
-		$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight + 5 })
-		if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
-			$('.leftPane').affix({
-				offset: {
-					top: navbarToTopHeight + 20,
-					bottom: 50
-				}
-			});
-		}
-
-	});
+$(window).resize(function() {
+	scrollManage();
+	affixManagement();
+});
 
 
 $(function() {
@@ -228,7 +218,6 @@ $(function() {
 				<div class="control-group">
 				<div class="panel widgetContentsContainer">
 					<div class="panel-body widgetContents">
-						<button type="button" class="btn btn-primary toggleTabs pull-right">Toggle Tabs</button>
 						<div class="form-group">
 							<label for="inputObjectId" class="col-sm-2 control-label">Object Id:</label>
 							<div class="col-sm-3">
