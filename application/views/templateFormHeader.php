@@ -132,11 +132,11 @@ var affixManagement = function() {
 	}
 	
 	$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
-	$('body').scrollspy({ target: '#tablist', offset: navbarToTopHeight + 5 })
+	$('body').scrollspy({ target: '#tablist', offset: navbarHeight + 5 })
 	if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
 		$('.leftPane').affix({
 			offset: {
-				top: navbarToTopHeight + 20,
+				top: navbarHeight + 20,
 				bottom: 50
 			}
 		});
@@ -164,7 +164,7 @@ $(function() {
       target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
       if (target.length) {
         $('html,body').animate({
-          scrollTop: target.offset().top - navbarToTopHeight //offsets for fixed header
+          scrollTop: target.offset().top - navbarHeight //offsets for fixed header
         }, 300);
         return false;
       }
@@ -175,7 +175,7 @@ $(function() {
       var target = $('#'+location.href.split("#")[1]);
       if (target.length) {
         $('html,body').animate({
-          scrollTop: target.offset().top - navbarToTopHeight //offset height of header here too.
+          scrollTop: target.offset().top - navbarHeight //offset height of header here too.
         }, 300);
         return false;
       }
