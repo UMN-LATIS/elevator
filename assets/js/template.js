@@ -36,6 +36,7 @@ $(document).ready(function() {
 
 var cachedWidth = 0;
 var navbarToTopHeight = 0;
+var navbarHeight = 0;
 
  function scrollManage() {
   if(document.documentElement.clientWidth == cachedWidth) {
@@ -46,7 +47,7 @@ var navbarToTopHeight = 0;
     return;
   }
     navbarToTopHeight = $('.navbar').offset().top - parseFloat($('.navbar').css('margin-top').replace(/auto/, 0));
-
+    navbarHeight = $('.navbar').height();
    var _height = $('.navbar').height();
    if(navbarToTopHeight === 0) {
 

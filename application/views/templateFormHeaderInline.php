@@ -60,7 +60,6 @@ if(strlen($this->template->collectionId)>0) {
 .widgetContentsContainer {
 	margin-left: 10px;
 	margin-right: 20px;
-	box-shadow: -2px 2px 5px 0px #888888;
 }
 
 .minipreviewContainer {
