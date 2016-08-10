@@ -12,6 +12,7 @@ sourceFiles/*
 composer.phar
 vendor/*
 node_modules/*
+assets/instanceAssets/*
 .tags
 .tags_sorted_by_file
 .DS_Store
