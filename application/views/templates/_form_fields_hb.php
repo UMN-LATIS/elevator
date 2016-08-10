@@ -138,10 +138,18 @@
 					<label>
 						<input type="checkbox" name="widget[{{id}}][clickToSearch]" id="inputWidget[{{id}}][clickToSearch]" {{clickToSearchYes}}>
 						Click To Search
+					</label><br>
+					<label>
+						<input type="radio" name="widget[{{id}}][clickToSearchType]" id="inputWidget[{{id}}][clickToSearchType]" value=0 {{clickToSearchTypeZero}}> Global Search
+					</label>
+					<label>
+						<input type="radio" name="widget[{{id}}][clickToSearchType]" id="inputWidget[{{id}}][clickToSearchType]" value=1 {{clickToSearchTypeOne}}> Field Specific
+						
 					</label>
 				</div>
 			</div>
 		</div>
+
 
 
 		</div>
