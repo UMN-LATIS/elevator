@@ -1,3 +1,13 @@
+		<div class="footerBlock">
+			<script>
+			$(document).ready(function() {
+				$(".footerBlock").height($(window).height() - 200);
+			});
+			$(window).resize(function() {
+				$(".footerBlock").height($(window).height() - 200);
+			});
+			</script>
+		</div>
 		</div> <!-- end tab-content -->
 
 	</div> <!-- end col-sm-9 -->
