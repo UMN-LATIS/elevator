@@ -1079,7 +1079,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 
 	public function mungeAspect(&$process) {
 		if($this->fileHandler->sourceFile->metadata["width"] == 720 && ($this->fileHandler->sourceFile->metadata["height"] == 480 || $this->fileHandler->sourceFile->metadata["height"] == 486)) {
-			if(!isset($this->fileHandler->sourceFile->metadata["aspect"]) || $this->fileHandler->sourceFile->metadata["aspect"] == "3:2") {
+			if(!isset($this->fileHandler->sourceFile->metadata["displayAspect"]) || $this->fileHandler->sourceFile->metadata["displayAspect"] == "3:2") {
 				$process->addCommand("-aspect","4:3");
 			}
 		}

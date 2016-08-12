@@ -11,6 +11,7 @@ class login extends Instance_Controller {
 
 	public function loginAndRedirect($authKey, $authTimestamp, $authHash)
 	{
+		session_start();
 		if(abs(time() - $authTimestamp) > 1000) {
 			header('HTTP/1.0 401 Unauthorized');
 			exit;
@@ -32,7 +33,7 @@ class login extends Instance_Controller {
 				if(isset($_GET['callback'])) {
 					$callback = $_GET['callback'];
 				}
-				elseif($this->session->userdata['callback']) {
+				elseif($this->session->userdata('callback')) {
 					$callback = $this->session->userdata('callback');
 				}
 				$this->session->set_userdata("callback", $callback);
@@ -43,7 +44,7 @@ class login extends Instance_Controller {
 				if(isset($_GET['callback'])) {
 					$callback = $_GET['callback'];
 				}
-				elseif($this->session->userdata['callback']) {
+				elseif($this->session->userdata('callback')) {
 					$callback = $this->session->userdata('callback');
 				}
 				$callback = $callback . "&userId=" . $this->user_model->getId() . "&instanceId=" . $this->user_model->getApiInstance()->getId();
