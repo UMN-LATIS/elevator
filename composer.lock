@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "44b288d5596d74f1b5f4f7382991b1b0",
-    "content-hash": "8e439655738389fcf20aef5ee427e5d0",
+    "hash": "942e03b8120e4347b5192214dd665e1a",
+    "content-hash": "b0b710955cbb8a406d3e51cb0c442d32",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -95,7 +95,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cmcfadden/phpvideotoolkit-v2/zipball/0a6ba251f621de46fd100c32148c66e2ced7c746",
+                "url": "https://api.github.com/repos/cmcfadden/phpvideotoolkit-v2/zipball/de8c6acaef762f134df2e76fcca3a8dd769b5941",
                 "reference": "de8c6acaef762f134df2e76fcca3a8dd769b5941",
                 "shasum": ""
             },
@@ -137,7 +137,7 @@
             "support": {
                 "source": "https://github.com/cmcfadden/phpvideotoolkit-v2/tree/master"
             },
-            "time": "2015-10-30 22:55:04"
+            "time": "2016-07-19 16:26:45"
         },
         {
             "name": "cocur/background-process",
@@ -577,7 +577,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/9e1300bffb9cae048705bb4ed39c19f33e6896d6",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/e69d1cf3bddd269e76d68eb81823c01f02b230d0",
                 "reference": "b9ec927612c8b26b51cf23e22ff2e278024578ce",
                 "shasum": ""
             },
@@ -1495,7 +1495,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pda/pheanstalk/zipball/f095be7568f3438cd5e4d1e59016857bbcb869b1",
+                "url": "https://api.github.com/repos/pda/pheanstalk/zipball/03119b35e018f98929b32203d613749e2e6d8673",
                 "reference": "ba8c8b1c3265d4a925864bfffe04c806c3364803",
                 "shasum": ""
             },
@@ -1988,7 +1988,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tedious/Stash/zipball/14307205b447da122a1a28ccc2187f0523d99e53",
+                "url": "https://api.github.com/repos/tedious/Stash/zipball/6aec97c9cc413223136e5f62dd200cf5eb932d1b",
                 "reference": "077ed8865abbb975dd38eb7f20231ed4ebd21624",
                 "shasum": ""
             },
@@ -2035,16 +2035,15 @@
         {
             "name": "umn-community-shib/basic-authenticator",
             "version": "dev-master",
-            "target-dir": "UMNShib/Basic",
             "source": {
                 "type": "git",
-                "url": "https://github.com/UMN-LATIS/umn-shib-php.git",
-                "reference": "1609a67b3277805f60ad79a7da35dd64638bc6c7"
+                "url": "https://github.com/UMN-LATIS/umn-shib-php-1.git",
+                "reference": "304a52f730a62d5a6ebd19e55d15232a6e2a29fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/UMN-LATIS/umn-shib-php/zipball/1609a67b3277805f60ad79a7da35dd64638bc6c7",
-                "reference": "1609a67b3277805f60ad79a7da35dd64638bc6c7",
+                "url": "https://api.github.com/repos/UMN-LATIS/umn-shib-php-1/zipball/304a52f730a62d5a6ebd19e55d15232a6e2a29fe",
+                "reference": "304a52f730a62d5a6ebd19e55d15232a6e2a29fe",
                 "shasum": ""
             },
             "require": {
@@ -2052,7 +2051,7 @@
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
+                "psr-4": {
                     "UMNShib\\Basic\\": ""
                 }
             },
@@ -2064,9 +2063,9 @@
             ],
             "description": "A PHP implementation of the UMN Community Shibboleth basic authentication API and supporting utilities",
             "support": {
-                "source": "https://github.com/UMN-LATIS/umn-shib-php/tree/master"
+                "source": "https://github.com/UMN-LATIS/umn-shib-php-1/tree/master"
             },
-            "time": "2016-05-11 16:11:28"
+            "time": "2016-07-27 16:37:14"
         }
     ],
     "packages-dev": [],
