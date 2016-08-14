@@ -21,7 +21,14 @@ class StOlafOAuthHelper extends AuthHelper
 		$client->setApplicationName($this->CI->config->item("oAuthApplication"));
 		$client->setClientId($this->CI->config->item("oAuthClient"));
 		$client->setClientSecret($this->CI->config->item("oAuthSecret"));
-		$client->setRedirectUri(site_url("/loginManager/remoteLogin"));
+		if($noForcedAuth == "true") {
+			$client->setRedirectUri(site_url("/loginManager/remoteLogin/true"));
+		}
+		else {
+			$client->setRedirectUri(site_url("/loginManager/remoteLogin"));	
+			$client->setPrompt("select_account");
+		}
+		
 		$client->setState($redirectURL);
 		$client->setScopes(['email', 'profile']);
 		$authURL = $client->createAuthUrl();
@@ -47,6 +54,19 @@ class StOlafOAuthHelper extends AuthHelper
 			return false;
 		}
 		else {
+
+			if($noForcedAuth == "true") {
+				if($redirectURL) {
+					redirect($redirectURL);
+				}
+				elseif($this->getDestination()) {
+					redirect($this->getDestination());
+				}
+				else {
+					instance_redirect("/");
+				}
+				return true;
+			}
 			redirect($authURL);
 			return false;
 		}
@@ -125,7 +145,7 @@ class StOlafOAuthHelper extends AuthHelper
 		$client->setApplicationName($this->CI->config->item("oAuthApplication"));
 		$client->setClientId($this->CI->config->item("oAuthClient"));
 		$client->setClientSecret($this->CI->config->item("oAuthSecret"));
-		$client->setRedirectUri(site_url("/loginManager/remoteLogin"));
+		$client->setRedirectUri(site_url("/loginManager/remoteLogin/true"));
 		$client->setState(current_url());
 		$client->setPrompt("none");
 		if($this->CI->input->cookie("LoginHint")) {
