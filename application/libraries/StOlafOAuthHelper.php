@@ -18,9 +18,9 @@ class StOlafOAuthHelper extends AuthHelper
 
 	public function remoteLogin($redirectURL, $noForcedAuth=false) {
 		$client = new Google_Client();
-		$client->setApplicationName("Elevator");
-		$client->setClientId("905583705976-h48ifn0i4g992e02ig9149hdpgebokpa.apps.googleusercontent.com");
-		$client->setClientSecret("rW3Z7xJ_bNVXteJNPVfr82qb");
+		$client->setApplicationName($this->CI->config->item("oAuthApplication"));
+		$client->setClientId($this->CI->config->item("oAuthClient"));
+		$client->setClientSecret($this->CI->config->item("oAuthSecret"));
 		$client->setRedirectUri(site_url("/loginManager/remoteLogin"));
 		$client->setState($redirectURL);
 		$client->setScopes(['email', 'profile']);
@@ -122,9 +122,9 @@ class StOlafOAuthHelper extends AuthHelper
 	public function templateView() {
 		$hintableURL = false;
 		$client = new Google_Client();
-		$client->setApplicationName("Elevator");
-		$client->setClientId("905583705976-h48ifn0i4g992e02ig9149hdpgebokpa.apps.googleusercontent.com");
-		$client->setClientSecret("rW3Z7xJ_bNVXteJNPVfr82qb");
+		$client->setApplicationName($this->CI->config->item("oAuthApplication"));
+		$client->setClientId($this->CI->config->item("oAuthClient"));
+		$client->setClientSecret($this->CI->config->item("oAuthSecret"));
 		$client->setRedirectUri(site_url("/loginManager/remoteLogin"));
 		$client->setState(current_url());
 		$client->setPrompt("none");
