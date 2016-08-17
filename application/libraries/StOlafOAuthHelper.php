@@ -41,6 +41,10 @@ class StOlafOAuthHelper extends AuthHelper
 					$this->CI->errorhandler_helper->callError("tokenError");
 					return false;
 				}
+				if(!strstr($tokenVerify['email'], "stolaf.edu")) { // todo
+					$this->CI->errorhandler_helper->callError("tokenError");
+					return false;	
+				}
 				$this->email = $tokenVerify["email"];
 				$this->userId = str_replace("@" . $tokenVerify["hd"], "", $this->email);
 				$this->name = $tokenVerify["name"];
