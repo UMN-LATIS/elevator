@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f55f2fe27208b801f566728991fe2feb",
-    "content-hash": "db1bacd47072be977d6fc03c8b8eea82",
+    "hash": "ea8b0d496b5addd802be3c680eeb6504",
+    "content-hash": "1b62d08df92ef477999a918500717a38",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -992,22 +992,22 @@
         },
         {
             "name": "google/apiclient",
-            "version": "v2.0.2",
+            "version": "dev-disableCache",
             "source": {
                 "type": "git",
-                "url": "https://github.com/google/google-api-php-client.git",
-                "reference": "18dd5534280318598e8770cb7929e9a542e91c0d"
+                "url": "https://github.com/cmcfadden/google-api-php-client.git",
+                "reference": "7e5696de1c54e0c10fb7443e0271bb3ddd960953"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client/zipball/18dd5534280318598e8770cb7929e9a542e91c0d",
-                "reference": "18dd5534280318598e8770cb7929e9a542e91c0d",
+                "url": "https://api.github.com/repos/cmcfadden/google-api-php-client/zipball/7e5696de1c54e0c10fb7443e0271bb3ddd960953",
+                "reference": "7e5696de1c54e0c10fb7443e0271bb3ddd960953",
                 "shasum": ""
             },
             "require": {
                 "firebase/php-jwt": "~2.0|~3.0",
-                "google/apiclient-services": "^0.5",
-                "google/auth": "0.9",
+                "google/apiclient-services": "^0.6",
+                "google/auth": "0.10",
                 "guzzlehttp/guzzle": "~5.2|~6.0",
                 "guzzlehttp/psr7": "^1.2",
                 "monolog/monolog": "^1.17",
@@ -1038,7 +1038,6 @@
                     "src/Google/Service/"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "Apache-2.0"
             ],
@@ -1047,21 +1046,23 @@
             "keywords": [
                 "google"
             ],
-            "time": "2016-07-21 18:41:10"
+            "support": {
+                "source": "https://github.com/cmcfadden/google-api-php-client/tree/disableCache"
+            },
+            "time": "2016-08-19 01:27:19"
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.5",
-            "target-dir": "Google/Service",
+            "version": "v0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client-services.git",
-                "reference": "a2d43f4c7eace8c7aa16c5ea83191344c63b4526"
+                "reference": "68290c3645498cf911d0d2552645bcee5c5f23f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/a2d43f4c7eace8c7aa16c5ea83191344c63b4526",
-                "reference": "a2d43f4c7eace8c7aa16c5ea83191344c63b4526",
+                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/68290c3645498cf911d0d2552645bcee5c5f23f2",
+                "reference": "68290c3645498cf911d0d2552645bcee5c5f23f2",
                 "shasum": ""
             },
             "require": {
@@ -1070,7 +1071,7 @@
             "type": "library",
             "autoload": {
                 "psr-0": {
-                    "Google_Service_": ""
+                    "Google_Service_": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1082,20 +1083,20 @@
             "keywords": [
                 "google"
             ],
-            "time": "2016-07-21 18:01:41"
+            "time": "2016-07-27 20:26:55"
         },
         {
             "name": "google/auth",
-            "version": "v0.9",
+            "version": "v0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-auth-library-php.git",
-                "reference": "47c3c6bece495e58381a21fed13a735bd23a51cc"
+                "reference": "760e3fbe4064c0525c22e27e5374eada3c103da8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-auth-library-php/zipball/47c3c6bece495e58381a21fed13a735bd23a51cc",
-                "reference": "47c3c6bece495e58381a21fed13a735bd23a51cc",
+                "url": "https://api.github.com/repos/google/google-auth-library-php/zipball/760e3fbe4064c0525c22e27e5374eada3c103da8",
+                "reference": "760e3fbe4064c0525c22e27e5374eada3c103da8",
                 "shasum": ""
             },
             "require": {
@@ -1130,7 +1131,7 @@
                 "google",
                 "oauth2"
             ],
-            "time": "2016-06-01 22:07:52"
+            "time": "2016-08-02 22:00:48"
         },
         {
             "name": "guzzle/guzzle",
@@ -2411,7 +2412,8 @@
         "buggedcom/phpvideotoolkit": 20,
         "tedivm/stash": 20,
         "umn-community-shib/basic-authenticator": 20,
-        "crocodoc/php-box-view": 20
+        "crocodoc/php-box-view": 20,
+        "google/apiclient": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

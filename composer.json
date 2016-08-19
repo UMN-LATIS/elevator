@@ -11,6 +11,10 @@
      {
       "type": "vcs",
       "url": "https://github.com/UMN-LATIS/umn-shib-php-1.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/cmcfadden/google-api-php-client.git"
     }
   ],
   "require": {
@@ -28,6 +32,6 @@
     "crocodoc/php-box-view": "dev-master",
     "aws/aws-sdk-php": ">=3.2.6",
     "cocur/background-process": "^0.5.0",
-    "google/apiclient": "^2.0"
+    "google/apiclient": "dev-disableCache"
   }
 }
