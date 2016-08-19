@@ -48,7 +48,7 @@ class StOlafOAuthHelper extends AuthHelper
 				$this->email = $tokenVerify["email"];
 				$this->userId = str_replace("@" . $tokenVerify["hd"], "", $this->email);
 				$this->name = $tokenVerify["name"];
-				$this->CI->input->set_cookie(["name"=>"LoginHint", "value"=>$this->email, "expire" => 60*60*24*365]);				// die;
+				$this->CI->input->set_cookie(["name"=>"LoginHint", "value"=>$this->email, "expire" => 60*60*24*365]);
 			}
 			else {
 				$this->CI->errorhandler_helper->callError("tokenError");
@@ -112,12 +112,20 @@ class StOlafOAuthHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUserIdFromRemote($shibHelper) {
+	public function getUserIdFromRemote() {
 		return $this->userId;
 	}
 
-	public function updateUserFromRemote($shibHelper, $user) {
-		
+	public function updateUserFromRemote($user) {
+		$CI =& get_instance();
+		if($user->getDisplayName() == "") {
+			$user->setDisplayName($this->name);
+		}
+		if($user->getEmail() == "") {
+			$user->setEmail($this->email);
+		}
+		$CI->doctrine->em->persist($user);
+		$CI->doctrine->em->flush();
 
 	}
 
