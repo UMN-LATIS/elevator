@@ -57,12 +57,52 @@ class Instances extends Instance_Controller {
 		$instance->setBoxKey($this->input->post('boxKey'));
 		// $instance->setIntroText($this->input->post('introText'));
 		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
+		$instance->setCustomHeaderText($this->input->post("customHeaderText"));
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);
 		$instance->setUseCustomCSS($this->input->post('useCustomCSS')?1:0);
+		$instance->setCustomHeaderCSS($this->input->post("customHeaderCSS"));
 		$instance->setUseCentralAuth($this->input->post('useCentralAuth')?1:0);
 		$instance->setHideVideoAudio($this->input->post('hideVideoAudio')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
+
+		$config['upload_path'] = '/tmp/';
+		$config['max_size']	= '0';
+		$config['allowed_types'] = 'png';
+
+		$this->load->library('upload', $config);
+		if ( ! $this->upload->do_upload('customHeaderImage'))
+		{
+			$error = array('error' => $this->upload->display_errors());
+			var_dump($error); // TODO: draw this in a view 
+			return;
+		}
+		
+		$data = array('upload_data' => $this->upload->data());
+		$filename = $data["upload_data"]["full_path"];
+		if($filename && file_exists($filename)) {
+			$instance->setCustomHeaderImage(file_get_contents($filename));
+		}
+		
+
+
+		if($instance->getUseCustomHeader()) {
+			if(file_exists("assets/instanceAssets/" . $instance->getId() . ".html")) {
+                unlink("assets/instanceAssets/" . $instance->getId() . ".html");
+            }
+		}
+
+		if($instance->getUseCustomCSS()) {
+			if(file_exists("assets/instanceAssets/" . $instance->getId() . ".css")) {
+                unlink("assets/instanceAssets/" . $instance->getId() . ".css");
+            }
+		}
+
+		if($instance->getUseCustomHeader()) {
+			if(file_exists("assets/instanceAssets/" . $instance->getId() . ".png")) {
+                unlink("assets/instanceAssets/" . $instance->getId() . ".png");
+            }
+		}
 
 		$this->doctrine->em->persist($instance);
 		if($page) {
