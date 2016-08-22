@@ -37,6 +37,8 @@ class Instance_Controller extends MY_Controller
                 }
             }
 
+            $this->writeOutAssets();
+
             $this->instanceType = "subdirectory";
             $this->template->relativePath = $this->getRelativePath();
             $this->config->set_item("instance_relative", $this->getRelativePath());
@@ -64,6 +66,8 @@ class Instance_Controller extends MY_Controller
                 }
             }
 
+            $this->writeOutAssets();
+
             $this->instanceType = "subdomain";
             $this->template->relativePath = $this->getRelativePath();
             $this->config->set_item("instance_relative", $this->getRelativePath());
@@ -84,6 +88,28 @@ class Instance_Controller extends MY_Controller
         // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
         if(strtolower($this->uri->segment(1)) !== "loginmanager") {
             session_write_close();
+        }
+
+    }
+
+    function writeOutAssets() {
+
+        if($this->instance->getUseCustomHeader()) {
+            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".html")) {
+                file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".html", $this->instance->getCustomHeaderText());
+            }
+        }
+
+        if($this->instance->getUseCustomCSS()) {
+            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".css")) {
+                file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".css", $this->instance->getCustomHeaderCSS());
+            }
+        }
+
+        if($this->instance->getUseHeaderLogo()) {
+            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".png")) {
+                file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".png", $this->instance->getCustomHeaderImage());
+            }
         }
 
     }
