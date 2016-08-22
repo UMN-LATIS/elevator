@@ -166,6 +166,14 @@
 </div>
 
 <div class="form-group">
+	<label for="inputCustomHeaderText" class="col-sm-2 control-label">Custom Header Content</label>
+	<div class="col-sm-6">
+		<textarea name="customHeaderText" class="form-control"><?= $instance->getCustomHeaderText(); ?></textarea><br/>
+	</div>
+</div>
+
+
+<div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
 			<input type="checkbox" id="useCustomCSS" name="useCustomCSS" value="On" <?=$instance->getUseCustomCSS()?"checked":null?>>
@@ -173,6 +181,15 @@
 		</label>
 	</div>
 </div>
+
+
+<div class="form-group">
+	<label for="inputCustomHeaderCSS" class="col-sm-2 control-label">Custom CSS Content</label>
+	<div class="col-sm-6">
+		<textarea name="customHeaderCSS" class="form-control"><?= $instance->getCustomHeaderCSS(); ?></textarea><br/>
+	</div>
+</div>
+
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
@@ -181,6 +198,16 @@
 		</label>
 	</div>
 </div>
+
+<div class="form-group">
+	<label for="customHeaderImage" class="col-sm-2 control-label">Header Image (PNG): </label>
+	<div class="col-sm-8">
+		<input id="customHeaderImage" type="file" name="customHeaderImage" class="file form-control">
+	</div>
+</div>
+
+
+
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
