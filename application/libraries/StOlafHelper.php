@@ -12,17 +12,17 @@ class StOlafHelper extends AuthHelper
 
 	}
 
-	public function createUserFromRemote($shibHelper) {
+	public function createUserFromRemote($userOverride=null) {
 		$CI =& get_instance();
 		$user = new Entity\User;	
 
-		if(is_object($shibHelper)) {
-			$username = $this->getUserIdFromRemote($shibHelper);
-			$user->setDisplayName($shibHelper->getAttributeValue('displayName'));
-			$user->setEmail(array_pop(explode(";", $shibHelper->getAttributeValue('mail'))));
+		if(!$userOverride) {
+			$username = $this->getUserIdFromRemote();
+			$user->setDisplayName($this->shibboleth->getAttributeValue('displayName'));
+			$user->setEmail(array_pop(explode(";", $this->shibboleth->getAttributeValue('mail'))));
 		}
 		else {
-			$username = $shibHelper;
+			$username = $userOverride;
 		}
 
 		$user->setUsername($username);
@@ -38,17 +38,17 @@ class StOlafHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUserIdFromRemote($shibHelper) {
-		return $shibHelper->getAttributeValue('uid');
+	public function getUserIdFromRemote() {
+		return $this->shibboleth->getAttributeValue('uid');
 	}
 
-	public function updateUserFromRemote($shibHelper, $user) {
+	public function updateUserFromRemote($user) {
 		$CI =& get_instance();
 		if($user->getDisplayName() == "") {
-			$user->setDisplayName($shibHelper->getAttributeValue('displayName'));
+			$user->setDisplayName($this->shibboleth->getAttributeValue('displayName'));
 		}
 		if($user->getEmail() == "") {
-			$user->setEmail(array_pop(explode(";", $shibHelper->getAttributeValue('mail'))));
+			$user->setEmail(array_pop(explode(";", $this->shibboleth->getAttributeValue('mail'))));
 		}
 		$CI->doctrine->em->persist($user);
 		$CI->doctrine->em->flush();
@@ -75,6 +75,10 @@ class StOlafHelper extends AuthHelper
 
 	public function findUser($key, $field, $createMissing = false) {
 		return array();
+	}
+
+	public function templateView() {
+		return $this->CI->load->view("authHelpers/autoRedirect", null, true);
 	}
 
 }
