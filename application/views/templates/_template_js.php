@@ -62,6 +62,8 @@ $(document).ready(function() {
 			<?php if ($widget->getAllowMultiple() == 1): ?>allowMultipleYes: "checked",<?php endif ?>
 			<?php if ($widget->getDirectSearch() == 1): ?>directSearchYes: "checked",<?php endif ?>
 			<?php if ($widget->getClickToSearch() == 1): ?>clickToSearchYes: "checked",<?php endif ?>
+			<?php if ($widget->getClickToSearchType() == 0 || $widget->getClickToSearchType() == NULL): ?>clickToSearchTypeZero: "checked",<?php endif ?>
+			<?php if ($widget->getClickToSearchType() == 1): ?>clickToSearchTypeOne: "checked",<?php endif ?>
 			fieldTitle: "<?= addslashes($widget->getFieldTitle()); ?>",
 			label: "<?= addslashes($widget->getLabel()); ?>",
 			tooltip: "<?= addslashes($widget->getTooltip()); ?>",
