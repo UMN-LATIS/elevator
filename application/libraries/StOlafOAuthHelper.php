@@ -38,11 +38,11 @@ class StOlafOAuthHelper extends AuthHelper
 			if($token = $client->getAccessToken()) {
 				$tokenVerify = $client->verifyIdToken();
 				if(!$tokenVerify) {
-					$this->CI->errorhandler_helper->callError("tokenError");
+					$this->CI->errorhandler_helper->callError("invalidToken");
 					return false;
 				}
-				if(!strstr($tokenVerify['email'], "stolaf.edu")) { // todo
-					$this->CI->errorhandler_helper->callError("tokenError");
+				if(!strstr($tokenVerify['email'], $this->CI->config->item("oAuthDomain"))) { // todo
+					$this->CI->errorhandler_helper->callError("badSource");
 					return false;	
 				}
 				$this->email = $tokenVerify["email"];
@@ -51,7 +51,7 @@ class StOlafOAuthHelper extends AuthHelper
 				$this->CI->input->set_cookie(["name"=>"LoginHint", "value"=>$this->email, "expire" => 60*60*24*365]);
 			}
 			else {
-				$this->CI->errorhandler_helper->callError("tokenError");
+				$this->CI->errorhandler_helper->callError("invalidToken");
 				return false;
 			}
 
