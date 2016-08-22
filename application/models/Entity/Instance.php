@@ -1041,4 +1041,91 @@ class Instance
     {
         return $this->users;
     }
+    /**
+     * @var string
+     */
+    private $customHeaderText;
+
+    /**
+     * @var string
+     */
+    private $customHeaderCSS;
+
+    /**
+     * @var string
+     */
+    private $customHeaderImage;
+
+
+    /**
+     * Set customHeaderText
+     *
+     * @param string $customHeaderText
+     *
+     * @return Instance
+     */
+    public function setCustomHeaderText($customHeaderText)
+    {
+        $this->customHeaderText = $customHeaderText;
+
+        return $this;
+    }
+
+    /**
+     * Get customHeaderText
+     *
+     * @return string
+     */
+    public function getCustomHeaderText()
+    {
+        return $this->customHeaderText;
+    }
+
+    /**
+     * Set customHeaderCSS
+     *
+     * @param string $customHeaderCSS
+     *
+     * @return Instance
+     */
+    public function setCustomHeaderCSS($customHeaderCSS)
+    {
+        $this->customHeaderCSS = $customHeaderCSS;
+
+        return $this;
+    }
+
+    /**
+     * Get customHeaderCSS
+     *
+     * @return string
+     */
+    public function getCustomHeaderCSS()
+    {
+        return $this->customHeaderCSS;
+    }
+
+    /**
+     * Set customHeaderImage
+     *
+     * @param string $customHeaderImage
+     *
+     * @return Instance
+     */
+    public function setCustomHeaderImage($customHeaderImage)
+    {
+        $this->customHeaderImage = $customHeaderImage;
+
+        return $this;
+    }
+
+    /**
+     * Get customHeaderImage
+     *
+     * @return string
+     */
+    public function getCustomHeaderImage()
+    {
+        return $this->customHeaderImage;
+    }
 }
