@@ -145,6 +145,7 @@ class Templates extends Instance_Controller {
 				$newWidget->setFieldType($this->doctrine->em->find('Entity\Field_type', $widget['fieldType']));
 				$newWidget->setDirectSearch(isset($widget['directSearch'])?1:0);
 				$newWidget->setClickToSearch(isset($widget['clickToSearch'])?1:0);
+				$newWidget->setClickToSearchType($widget['clickToSearchType']);
 
 
 				// Persist

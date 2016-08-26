@@ -17,16 +17,16 @@ class UMNHelper extends AuthHelper
 
 	public function __construct()
 	{
-
+		parent::__construct();
 	}
 
-	public function createUserFromRemote($shibHelper) {
+	public function createUserFromRemote($userOverride=null) {
 		$CI =& get_instance();
-		if(is_object($shibHelper)) {
-			$username = $this->getUserIdFromRemote($shibHelper);
+		if(!$userOverride) {
+			$username = $this->getUserIdFromRemote();
 		}
 		else {
-			$username = $shibHelper;
+			$username = $userOverride;
 		}
 
 		$user = $this->findById($username);
@@ -50,11 +50,11 @@ class UMNHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUserIdFromRemote($shibHelper) {
-		return $shibHelper->getAttributeValue('umnDID');
+	public function getUserIdFromRemote() {
+		return $this->shibboleth->getAttributeValue('umnDID');
 	}
 
-	public function updateUserFromRemote($shibHelper, $user) {
+	public function updateUserFromRemote($user) {
 
 
 	}
@@ -109,7 +109,7 @@ class UMNHelper extends AuthHelper
 
 	}
 
-	public function populateUserDataFromShib($shibHelper) {
+	public function populateUserData() {
 		$userData = array();
 
 		$coursesTaught = array();
@@ -118,8 +118,8 @@ class UMNHelper extends AuthHelper
 		$units = array();
 		$studentStatus = array();
 
-		if ($shibHelper->hasSession()) {
-			$courseArray = explode(";",$shibHelper->getAttributeValue('eduCourseMember'));
+		if ($this->shibboleth->hasSession()) {
+			$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
 
 			// hacky stuff to deal with the way this info is passed in
 			// todo: learn about the actual standard for eduCourseMember
@@ -137,7 +137,7 @@ class UMNHelper extends AuthHelper
 				$courses[] = $courseId + 0;
 			}
 
-			$jobCodeSummary = explode(";",$shibHelper->getAttributeValue('umnJobSummary'));
+			$jobCodeSummary = explode(";",$this->shibboleth->getAttributeValue('umnJobSummary'));
 			foreach($jobCodeSummary as $jobCode) {
 				$jobCodeArray = explode(":", $jobCode);
 				if(isset($jobCodeArray[2])) {
@@ -149,7 +149,7 @@ class UMNHelper extends AuthHelper
 
 			}
 
-			$regSummary = explode(";",$shibHelper->getAttributeValue('umnRegSummary'));
+			$regSummary = explode(";",$this->shibboleth->getAttributeValue('umnRegSummary'));
 			foreach($regSummary as $studentCode) {
 				$studentStatusArray = explode(":", $studentCode);
 				if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
@@ -241,6 +241,10 @@ class UMNHelper extends AuthHelper
 
 		}
 		return $returnArray;
+	}
+
+	public function templateView() {
+		return $this->CI->load->view("authHelpers/autoRedirect", null, true);
 	}
 
 }

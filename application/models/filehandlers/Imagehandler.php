@@ -3,7 +3,7 @@
 
 class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs","psd");
+	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd");
 	protected $noDerivatives = false;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
@@ -94,10 +94,22 @@ class ImageHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
+		$dimensions = null;
+		if($dimensions = fastImageDimensions($this->sourceFile)) {
+			$this->sourceFile->metadata["width"] = $dimensions["x"];
+			$this->sourceFile->metadata["height"] = $dimensions["y"];
+		}
+
+
 		$sourceFile = $this->swapLocalForPNG();
 
 
 		$fileObject->metadata = getImageMetadata($sourceFile);
+
+		if($dimensions) {
+			$fileObject->metadata["width"] = $dimensions["x"];
+			$fileObject->metadata["height"] = $dimensions["y"];
+		}
 
 		if(!$fileObject->metadata) {
 			if($fileFormat = identifyImage($sourceFile)) {
@@ -386,24 +398,26 @@ class ImageHandler extends FileHandlerBase {
 			return new FileContainer($dest);
 		}
 
+		$megapixels = 0;
 		if(isset($this->sourceFile->metadata) && isset($this->sourceFile->metadata["width"])) {
 			$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
-			if($megapixels > 100) {
-				$source = $this->sourceFile->getPathToLocalFile();
-				$dest = $this->sourceFile->getPathToLocalFile() . ".png";
-				if(file_exists($dest)) {
-					return new FileContainer($dest);
-				}
-				$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-				exec($convertString . " 2>/dev/null");
-
+		}
+		
+		if($megapixels > 100) {
+			$source = $this->sourceFile->getPathToLocalFile();
+			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
+			if(file_exists($dest)) {
 				return new FileContainer($dest);
-
-
 			}
+			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+			exec($convertString . " 2>/dev/null");
+
+			return new FileContainer($dest);
 
 
 		}
+
+
 		
 		return $this->sourceFile;
 	}

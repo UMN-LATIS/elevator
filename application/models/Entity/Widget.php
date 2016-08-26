@@ -528,4 +528,33 @@ class Widget
     {
         return $this->template;
     }
+    /**
+     * @var integer
+     */
+    private $clickToSearchType;
+
+
+    /**
+     * Set clickToSearchType
+     *
+     * @param integer $clickToSearchType
+     *
+     * @return Widget
+     */
+    public function setClickToSearchType($clickToSearchType)
+    {
+        $this->clickToSearchType = $clickToSearchType;
+
+        return $this;
+    }
+
+    /**
+     * Get clickToSearchType
+     *
+     * @return integer
+     */
+    public function getClickToSearchType()
+    {
+        return $this->clickToSearchType;
+    }
 }

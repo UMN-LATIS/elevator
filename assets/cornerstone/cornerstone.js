@@ -1,4 +1,4 @@
-/*! cornerstone - v0.8.1 - 2015-06-16 | (c) 2014 Chris Hafey | https://github.com/chafey/cornerstone */
+/*! cornerstone - v0.9.0 - 2016-02-03 | (c) 2014 Chris Hafey | https://github.com/chafey/cornerstone */
 if(typeof cornerstone === 'undefined'){
     cornerstone = {
         internal : {},
@@ -266,6 +266,20 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
+    function getImageSize(enabledElement) {
+      if(enabledElement.viewport.rotation === 0 ||enabledElement.viewport.rotation === 180) {
+        return {
+          width: enabledElement.image.width,
+          height: enabledElement.image.height
+        };
+      } else {
+        return {
+          width: enabledElement.image.height,
+          height: enabledElement.image.width
+        };
+      }
+    }
+
     /**
      * Adjusts an images scale and center so the image is centered and completely visible
      * @param element
@@ -273,13 +287,19 @@ if(typeof cornerstone === 'undefined'){
     function fitToWindow(element)
     {
         var enabledElement = cornerstone.getEnabledElement(element);
-        var defaultViewport = cornerstone.internal.getDefaultViewport(enabledElement.canvas, enabledElement.image);
-        enabledElement.viewport.scale = defaultViewport.scale;
-        enabledElement.viewport.translation.x = defaultViewport.translation.x;
-        enabledElement.viewport.translation.y = defaultViewport.translation.y;
-        enabledElement.viewport.rotation = defaultViewport.rotation;
-        enabledElement.viewport.hflip = defaultViewport.hflip;
-        enabledElement.viewport.vflip = defaultViewport.vflip;
+        var imageSize = getImageSize(enabledElement);
+
+        var verticalScale = enabledElement.canvas.height / imageSize.height;
+        var horizontalScale= enabledElement.canvas.width / imageSize.width;
+        if(horizontalScale < verticalScale) {
+          enabledElement.viewport.scale = horizontalScale;
+        }
+        else
+        {
+          enabledElement.viewport.scale = verticalScale;
+        }
+        enabledElement.viewport.translation.x = 0;
+        enabledElement.viewport.translation.y = 0;
         cornerstone.updateImage(element);
     }
 
@@ -339,7 +359,6 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
-
     /**
      * Returns array of pixels with modality LUT transformation applied
      */
@@ -347,12 +366,10 @@ if(typeof cornerstone === 'undefined'){
 
         var storedPixels = cornerstone.getStoredPixels(element, x, y, width, height);
         var ee = cornerstone.getEnabledElement(element);
-        var slope = ee.image.slope;
-        var intercept = ee.image.intercept;
 
-        var modalityPixels = storedPixels.map(function(pixel){
-            return pixel * slope + intercept;
-        });
+        var mlutfn = cornerstone.internal.getModalityLUT(ee.image.slope, ee.image.intercept, ee.viewport.modalityLUT);
+
+        var modalityPixels = storedPixels.map(mlutfn);
 
         return modalityPixels;
     }
@@ -430,9 +447,11 @@ if(typeof cornerstone === 'undefined'){
             },
             invert : viewport.invert,
             pixelReplication: viewport.pixelReplication,
-            rotation: viewport.rotation,
+            rotation: viewport.rotation, 
             hflip: viewport.hflip,
-            vflip: viewport.vflip
+            vflip: viewport.vflip,
+            modalityLUT: viewport.modalityLUT,
+            voiLUT: viewport.voiLUT
         };
     }
 
@@ -449,20 +468,21 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
-    var imageCache = {
-    };
-
+    // dictionary of imageId to cachedImage objects
+    var imageCache = {};
+    // dictionary of sharedCacheKeys to number of imageId's in cache with this shared cache key
+    var sharedCacheKeys = {};
+    // array of cachedImage objects
     var cachedImages = [];
 
     var maximumSizeInBytes = 1024 * 1024 * 1024; // 1 GB
     var cacheSizeInBytes = 0;
 
-    function setMaximumSizeBytes(numBytes)
-    {
-        if(numBytes === undefined) {
+    function setMaximumSizeBytes(numBytes) {
+        if (numBytes === undefined) {
             throw "setMaximumSizeBytes: parameter numBytes must not be undefined";
         }
-        if(numBytes.toFixed === undefined) {
+        if (numBytes.toFixed === undefined) {
             throw "setMaximumSizeBytes: parameter numBytes must be a number";
         }
 
@@ -470,21 +490,19 @@ if(typeof cornerstone === 'undefined'){
         purgeCacheIfNecessary();
     }
 
-    function purgeCacheIfNecessary()
-    {
+    function purgeCacheIfNecessary() {
         // if max cache size has not been exceeded, do nothing
-        if(cacheSizeInBytes <= maximumSizeInBytes)
-        {
+        if (cacheSizeInBytes <= maximumSizeInBytes) {
             return;
         }
 
         // cache size has been exceeded, create list of images sorted by timeStamp
         // so we can purge the least recently used image
         function compare(a,b) {
-            if(a.timeStamp > b.timeStamp) {
+            if (a.timeStamp > b.timeStamp) {
                 return -1;
             }
-            if(a.timeStamp < b.timeStamp) {
+            if (a.timeStamp < b.timeStamp) {
                 return 1;
             }
             return 0;
@@ -492,33 +510,35 @@ if(typeof cornerstone === 'undefined'){
         cachedImages.sort(compare);
 
         // remove images as necessary
-        while(cacheSizeInBytes > maximumSizeInBytes)
-        {
+        while(cacheSizeInBytes > maximumSizeInBytes) {
             var lastCachedImage = cachedImages[cachedImages.length - 1];
             cacheSizeInBytes -= lastCachedImage.sizeInBytes;
             delete imageCache[lastCachedImage.imageId];
             lastCachedImage.imagePromise.reject();
             cachedImages.pop();
+            $(cornerstone).trigger('CornerstoneImageCachePromiseRemoved', {imageId: lastCachedImage.imageId});
         }
+
+        var cacheInfo = cornerstone.imageCache.getCacheInfo();
+        $(cornerstone).trigger('CornerstoneImageCacheFull', cacheInfo);
     }
 
     function putImagePromise(imageId, imagePromise) {
-        if(imageId === undefined)
-        {
+        if (imageId === undefined) {
             throw "getImagePromise: imageId must not be undefined";
         }
-        if(imagePromise === undefined)
-        {
+        if (imagePromise === undefined) {
             throw "getImagePromise: imagePromise must not be undefined";
         }
 
-        if(imageCache.hasOwnProperty(imageId) === true) {
+        if (imageCache.hasOwnProperty(imageId) === true) {
             throw "putImagePromise: imageId already in cache";
         }
 
         var cachedImage = {
             loaded : false,
             imageId : imageId,
+            sharedCacheKey: undefined, // the sharedCacheKey for this imageId.  undefined by default
             imagePromise : imagePromise,
             timeStamp : new Date(),
             sizeInBytes: 0
@@ -530,26 +550,39 @@ if(typeof cornerstone === 'undefined'){
         imagePromise.then(function(image) {
             cachedImage.loaded = true;
 
-            if(image.sizeInBytes === undefined)
-            {
+            if (image.sizeInBytes === undefined) {
                 throw "putImagePromise: image does not have sizeInBytes property or";
             }
-            if(image.sizeInBytes.toFixed === undefined) {
+            if (image.sizeInBytes.toFixed === undefined) {
                 throw "putImagePromise: image.sizeInBytes is not a number";
             }
-            cachedImage.sizeInBytes = image.sizeInBytes;
-            cacheSizeInBytes += cachedImage.sizeInBytes;
+
+            // If this image has a shared cache key, reference count it and only
+            // count the image size for the first one added with this sharedCacheKey
+            if(image.sharedCacheKey) {
+              cachedImage.sizeInBytes = image.sizeInBytes;
+              cachedImage.sharedCacheKey = image.sharedCacheKey;
+              if(sharedCacheKeys[image.sharedCacheKey]) {
+                sharedCacheKeys[image.sharedCacheKey]++;
+              } else {
+                sharedCacheKeys[image.sharedCacheKey] = 1;
+                cacheSizeInBytes += cachedImage.sizeInBytes;
+              }
+            }
+            else {
+              cachedImage.sizeInBytes = image.sizeInBytes;
+              cacheSizeInBytes += cachedImage.sizeInBytes;
+            }
             purgeCacheIfNecessary();
         });
     }
 
     function getImagePromise(imageId) {
-        if(imageId === undefined)
-        {
+        if (imageId === undefined) {
             throw "getImagePromise: imageId must not be undefined";
         }
         var cachedImage = imageCache[imageId];
-        if(cachedImage === undefined) {
+        if (cachedImage === undefined) {
             return undefined;
         }
 
@@ -559,16 +592,30 @@ if(typeof cornerstone === 'undefined'){
     }
 
     function removeImagePromise(imageId) {
-        if(imageId === undefined) {
+        if (imageId === undefined) {
             throw "removeImagePromise: imageId must not be undefined";
         }
         var cachedImage = imageCache[imageId];
-        if(cachedImage === undefined) {
+        if (cachedImage === undefined) {
             throw "removeImagePromise: imageId must not be undefined";
         }
         cachedImages.splice( cachedImages.indexOf(cachedImage), 1);
-        cacheSizeInBytes -= cachedImage.sizeInBytes;
+
+        // If this is using a sharedCacheKey, decrement the cache size only
+        // if it is the last imageId in the cache with this sharedCacheKey
+        if(cachedImages.sharedCacheKey) {
+          if(sharedCacheKeys[cachedImages.sharedCacheKey] === 1) {
+            cacheSizeInBytes -= cachedImage.sizeInBytes;
+            delete sharedCacheKeys[cachedImages.sharedCacheKey];
+          } else {
+            sharedCacheKeys[cachedImages.sharedCacheKey]--;
+          }
+        } else {
+          cacheSizeInBytes -= cachedImage.sizeInBytes;
+        }
         delete imageCache[imageId];
+
+        decache(cachedImage.imagePromise, cachedImage.imageId);
 
         return cachedImage.imagePromise;
     }
@@ -581,25 +628,49 @@ if(typeof cornerstone === 'undefined'){
         };
     }
 
+    function decache(imagePromise, imageId) {
+      imagePromise.then(function(image) {
+        if(image.decache) {
+          image.decache();
+        }
+        imagePromise.reject();
+        delete imageCache[imageId];
+      }).always(function() {
+        delete imageCache[imageId];
+      });
+    }
+
     function purgeCache() {
         while (cachedImages.length > 0) {
-            var removedCachedImage = cachedImages.pop();
-            delete imageCache[removedCachedImage.imageId];
-            removedCachedImage.imagePromise.reject();
+          var removedCachedImage = cachedImages.pop();
+          decache(removedCachedImage.imagePromise, removedCachedImage.imageId);
         }
         cacheSizeInBytes = 0;
     }
 
-    // module exports
+    function changeImageIdCacheSize(imageId, newCacheSize) {
+      var cacheEntry = imageCache[imageId];
+      if(cacheEntry) {
+        cacheEntry.imagePromise.then(function(image) {
+          var cacheSizeDifference = newCacheSize - image.sizeInBytes;
+          image.sizeInBytes = newCacheSize;
+          cacheSizeInBytes += cacheSizeDifference;
+        });
+      }
+    }
 
+    // module exports
     cornerstone.imageCache = {
         putImagePromise : putImagePromise,
         getImagePromise: getImagePromise,
         removeImagePromise: removeImagePromise,
         setMaximumSizeBytes: setMaximumSizeBytes,
         getCacheInfo : getCacheInfo,
-        purgeCache: purgeCache
+        purgeCache: purgeCache,
+        cachedImages: cachedImages,
+        changeImageIdCacheSize: changeImageIdCacheSize
     };
+
 }(cornerstone));
 
 /**
@@ -815,68 +886,110 @@ if(typeof cornerstone === 'undefined'){
 
 (function (cornerstone) {
 
-    "use strict";
+  "use strict";
 
-    /**
-     * Creates a LUT used while rendering to convert stored pixel values to
-     * display pixels
-     *
-     * @param image
-     * @returns {Array}
-     */
-    function generateLut(image, windowWidth, windowCenter, invert)
+  function generateLutNew(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT)
+  {
+    if(image.lut === undefined) {
+      image.lut =  new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue,0)+1);
+    }
+    var lut = image.lut;
+    var maxPixelValue = image.maxPixelValue;
+    var minPixelValue = image.minPixelValue;
+
+    var mlutfn = cornerstone.internal.getModalityLUT(image.slope, image.intercept, modalityLUT);
+    var vlutfn = cornerstone.internal.getVOILUT(windowWidth, windowCenter, voiLUT);
+
+    var offset = 0;
+    if(minPixelValue < 0) {
+      offset = minPixelValue;
+    }
+    var storedValue;
+    var modalityLutValue;
+    var voiLutValue;
+    var clampedValue;
+
+    for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
     {
-        if(image.lut === undefined) {
-            image.lut =  new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue,0)+1);
-        }
-        var lut = image.lut;
+      modalityLutValue = mlutfn(storedValue);
+      voiLutValue = vlutfn(modalityLutValue);
+      clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
+      if(!invert) {
+        lut[storedValue+ (-offset)] = Math.round(clampedValue);
+      } else {
+        lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
+      }
+    }
+    return lut;
+  }
 
-        var maxPixelValue = image.maxPixelValue;
-        var minPixelValue = image.minPixelValue;
-        var slope = image.slope;
-        var intercept = image.intercept;
-        var localWindowWidth = windowWidth;
-        var localWindowCenter = windowCenter;
 
-        var modalityLutValue;
-        var voiLutValue;
-        var clampedValue;
-        var storedValue;
 
-        // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
-        // We improve performance by offsetting the pixel values for signed data to avoid negative indexes
-        // when generating the lut and then undo it in storedPixelDataToCanvasImagedata.  Thanks to @jpambrun
-        // for this contribution!
-
-        var offset = 0;
-        if(minPixelValue < 0) {
-            offset = minPixelValue;
-        }
-
-        if(invert === true) {
-            for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
-            {
-                modalityLutValue = storedValue * slope + intercept;
-                voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
-                clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
-                lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
-            }
-        }
-        else {
-            for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
-            {
-                modalityLutValue = storedValue * slope + intercept;
-                voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
-                clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
-                lut[storedValue+ (-offset)] = Math.round(clampedValue);
-            }
-        }
+  /**
+   * Creates a LUT used while rendering to convert stored pixel values to
+   * display pixels
+   *
+   * @param image
+   * @returns {Array}
+   */
+  function generateLut(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT)
+  {
+    if(modalityLUT || voiLUT) {
+      return generateLutNew(image, windowWidth, windowCenter, invert, modalityLUT, voiLUT);
     }
 
+    if(image.lut === undefined) {
+      image.lut =  new Int16Array(image.maxPixelValue - Math.min(image.minPixelValue,0)+1);
+    }
+    var lut = image.lut;
 
-    // Module exports
-    cornerstone.internal.generateLut = generateLut;
-    cornerstone.generateLut = generateLut;
+    var maxPixelValue = image.maxPixelValue;
+    var minPixelValue = image.minPixelValue;
+    var slope = image.slope;
+    var intercept = image.intercept;
+    var localWindowWidth = windowWidth;
+    var localWindowCenter = windowCenter;
+    var modalityLutValue;
+    var voiLutValue;
+    var clampedValue;
+    var storedValue;
+
+    // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
+    // We improve performance by offsetting the pixel values for signed data to avoid negative indexes
+    // when generating the lut and then undo it in storedPixelDataToCanvasImagedata.  Thanks to @jpambrun
+    // for this contribution!
+
+    var offset = 0;
+    if(minPixelValue < 0) {
+      offset = minPixelValue;
+    }
+
+    if(invert === true) {
+      for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
+      {
+        modalityLutValue =  storedValue * slope + intercept;
+        voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
+        clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
+        lut[storedValue + (-offset)] = Math.round(255 - clampedValue);
+      }
+    }
+    else {
+      for(storedValue = image.minPixelValue; storedValue <= maxPixelValue; storedValue++)
+      {
+        modalityLutValue = storedValue * slope + intercept;
+        voiLutValue = (((modalityLutValue - (localWindowCenter)) / (localWindowWidth) + 0.5) * 255.0);
+        clampedValue = Math.min(Math.max(voiLutValue, 0), 255);
+        lut[storedValue+ (-offset)] = Math.round(clampedValue);
+      }
+    }
+  }
+
+
+  // Module exports
+  cornerstone.internal.generateLutNew = generateLutNew;
+  cornerstone.internal.generateLut = generateLut;
+  cornerstone.generateLutNew = generateLutNew;
+  cornerstone.generateLut = generateLut;
 }(cornerstone));
 
 /**
@@ -915,7 +1028,9 @@ if(typeof cornerstone === 'undefined'){
             pixelReplication: false,
             rotation: 0,
             hflip: false,
-            vflip: false
+            vflip: false,
+            modalityLUT: image.modalityLUT,
+            voiLUT: image.voiLUT
         };
 
         // fit image to window
@@ -965,6 +1080,55 @@ if(typeof cornerstone === 'undefined'){
     cornerstone.storedColorPixelDataToCanvasImageData = cornerstone.internal.storedColorPixelDataToCanvasImageData;
 
 }($, cornerstone));
+/**
+ * This module generates a Modality LUT
+ */
+
+(function (cornerstone) {
+
+  "use strict";
+
+
+  function generateLinearModalityLUT(slope, intercept) {
+    var localSlope = slope;
+    var localIntercept = intercept;
+    return function(sp) {
+      return sp * localSlope + localIntercept;
+    }
+  }
+
+  function generateNonLinearModalityLUT(modalityLUT) {
+    var minValue = modalityLUT.lut[0];
+    var maxValue = modalityLUT.lut[modalityLUT.lut.length -1];
+    var maxValueMapped = modalityLUT.firstValueMapped + modalityLUT.lut.length;
+    return function(sp) {
+      if(sp < modalityLUT.firstValueMapped) {
+        return minValue;
+      }
+      else if(sp >= maxValueMapped)
+      {
+        return maxValue;
+      }
+      else
+      {
+        return modalityLUT.lut[sp];
+      }
+    }
+  }
+
+  function getModalityLUT(slope, intercept, modalityLUT) {
+    if (modalityLUT) {
+      return generateNonLinearModalityLUT(modalityLUT);
+    } else {
+      return generateLinearModalityLUT(slope, intercept);
+    }
+  }
+
+    // Module exports
+    cornerstone.internal.getModalityLUT = getModalityLUT;
+
+}(cornerstone));
+
 /**
  * This module contains a function to convert stored pixel values to display pixel values using a LUT
  */
@@ -1177,6 +1341,52 @@ if(typeof cornerstone === 'undefined'){
     cornerstone.internal.Transform = Transform;
 }(cornerstone));
 /**
+ * This module generates a VOI LUT
+ */
+
+(function (cornerstone) {
+
+  "use strict";
+
+  function generateLinearVOILUT(windowWidth, windowCenter) {
+    return function(modalityLutValue) {
+      return (((modalityLutValue - (windowCenter)) / (windowWidth) + 0.5) * 255.0);
+    }
+  }
+
+  function generateNonLinearVOILUT(voiLUT) {
+    var shift = voiLUT.numBitsPerEntry - 8;
+    var minValue = voiLUT.lut[0] >> shift;
+    var maxValue = voiLUT.lut[voiLUT.lut.length -1] >> shift;
+    var maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length - 1;
+    return function(modalityLutValue) {
+      if(modalityLutValue < voiLUT.firstValueMapped) {
+        return minValue;
+      }
+      else if(modalityLutValue >= maxValueMapped)
+      {
+        return maxValue;
+      }
+      else
+      {
+        return voiLUT.lut[modalityLutValue - voiLUT.firstValueMapped] >> shift;
+      }
+    }
+  }
+
+  function getVOILUT(windowWidth, windowCenter, voiLUT) {
+    if(voiLUT) {
+      return generateNonLinearVOILUT(voiLUT);
+    } else {
+      return generateLinearVOILUT(windowWidth, windowCenter);
+    }
+  }
+
+  // Module exports
+  cornerstone.internal.getVOILUT = getVOILUT;
+}(cornerstone));
+
+/**
  * This module contains a function to make an image is invalid
  */
 (function (cornerstone) {
@@ -1337,7 +1547,7 @@ if(typeof cornerstone === 'undefined'){
             lastRenderedViewport.windowCenter !== enabledElement.viewport.voi.windowCenter ||
             lastRenderedViewport.windowWidth !== enabledElement.viewport.voi.windowWidth ||
             lastRenderedViewport.invert !== enabledElement.viewport.invert ||
-            lastRenderedViewport.rotation !== enabledElement.viewport.rotation ||
+            lastRenderedViewport.rotation !== enabledElement.viewport.rotation ||  
             lastRenderedViewport.hflip !== enabledElement.viewport.hflip ||
             lastRenderedViewport.vflip !== enabledElement.viewport.vflip
             )
@@ -1350,38 +1560,39 @@ if(typeof cornerstone === 'undefined'){
 
     function getRenderCanvas(enabledElement, image, invalidated)
     {
-        // apply the lut to the stored pixel data onto the render canvas
 
-        if(enabledElement.viewport.voi.windowWidth === enabledElement.image.windowWidth &&
-            enabledElement.viewport.voi.windowCenter === enabledElement.image.windowCenter &&
-            enabledElement.viewport.invert === false)
+        // The ww/wc is identity and not inverted - get a canvas with the image rendered into it for
+        // fast drawing
+        if(enabledElement.viewport.voi.windowWidth === 255 &&
+            enabledElement.viewport.voi.windowCenter === 128 &&
+            enabledElement.viewport.invert === false &&
+            image.getCanvas &&
+            image.getCanvas()
+        )
         {
-            // the color image voi/invert has not been modified, request the canvas that contains
-            // it so we can draw it directly to the display canvas
             return image.getCanvas();
         }
-        else
-        {
-            if(doesImageNeedToBeRendered(enabledElement, image) === false && invalidated !== true) {
-                return colorRenderCanvas;
-            }
 
-            // If our render canvas does not match the size of this image reset it
-            // NOTE: This might be inefficient if we are updating multiple images of different
-            // sizes frequently.
-            if(colorRenderCanvas.width !== image.width || colorRenderCanvas.height != image.height) {
-                initializeColorRenderCanvas(image);
-            }
-
-            // get the lut to use
-            var colorLut = getLut(image, enabledElement.viewport);
-
-            // the color image voi/invert has been modified - apply the lut to the underlying
-            // pixel data and put it into the renderCanvas
-            cornerstone.storedColorPixelDataToCanvasImageData(image, colorLut, colorRenderCanvasData.data);
-            colorRenderCanvasContext.putImageData(colorRenderCanvasData, 0, 0);
+        // apply the lut to the stored pixel data onto the render canvas
+        if(doesImageNeedToBeRendered(enabledElement, image) === false && invalidated !== true) {
             return colorRenderCanvas;
         }
+
+        // If our render canvas does not match the size of this image reset it
+        // NOTE: This might be inefficient if we are updating multiple images of different
+        // sizes frequently.
+        if(colorRenderCanvas.width !== image.width || colorRenderCanvas.height != image.height) {
+            initializeColorRenderCanvas(image);
+        }
+
+        // get the lut to use
+        var colorLut = getLut(image, enabledElement.viewport);
+
+        // the color image voi/invert has been modified - apply the lut to the underlying
+        // pixel data and put it into the renderCanvas
+        cornerstone.storedColorPixelDataToCanvasImageData(image, colorLut, colorRenderCanvasData.data);
+        colorRenderCanvasContext.putImageData(colorRenderCanvasData, 0, 0);
+        return colorRenderCanvas;
     }
 
     /**
@@ -1470,22 +1681,39 @@ if(typeof cornerstone === 'undefined'){
         grayscaleRenderCanvasData = grayscaleRenderCanvasContext.getImageData(0,0,image.width, image.height);
     }
 
+    function lutMatches(a, b) {
+      // if undefined, they are equal
+      if(!a && !b) {
+        return true;
+      }
+      // if one is undefined, not equal
+      if(!a || !b) {
+        return false;
+      }
+      // check the unique ids
+      return (a.id !== b.id)
+    }
+
     function getLut(image, viewport, invalidated)
     {
         // if we have a cached lut and it has the right values, return it immediately
         if(image.lut !== undefined &&
             image.lut.windowCenter === viewport.voi.windowCenter &&
             image.lut.windowWidth === viewport.voi.windowWidth &&
+            lutMatches(image.lut.modalityLUT, viewport.modalityLUT) &&
+            lutMatches(image.lut.voiLUT, viewport.voiLUT) &&
             image.lut.invert === viewport.invert &&
             invalidated !== true) {
             return image.lut;
         }
 
         // lut is invalid or not present, regenerate it and cache it
-        cornerstone.generateLut(image, viewport.voi.windowWidth, viewport.voi.windowCenter, viewport.invert);
+        cornerstone.generateLut(image, viewport.voi.windowWidth, viewport.voi.windowCenter, viewport.invert, viewport.modalityLUT, viewport.voiLUT);
         image.lut.windowWidth = viewport.voi.windowWidth;
         image.lut.windowCenter = viewport.voi.windowCenter;
         image.lut.invert = viewport.invert;
+        image.lut.voiLUT = viewport.voiLUT;
+        image.lut.modalityLUT = viewport.modalityLUT;
         return image.lut;
     }
 
@@ -1497,7 +1725,9 @@ if(typeof cornerstone === 'undefined'){
             lastRenderedViewport.invert !== enabledElement.viewport.invert ||
             lastRenderedViewport.rotation !== enabledElement.viewport.rotation ||
             lastRenderedViewport.hflip !== enabledElement.viewport.hflip ||
-            lastRenderedViewport.vflip !== enabledElement.viewport.vflip
+            lastRenderedViewport.vflip !== enabledElement.viewport.vflip ||
+            lastRenderedViewport.modalityLUT !== enabledElement.viewport.modalityLUT ||
+            lastRenderedViewport.voiLUT !== enabledElement.viewport.voiLUT
             )
         {
             return true;
@@ -1577,6 +1807,8 @@ if(typeof cornerstone === 'undefined'){
         lastRenderedViewport.rotation = enabledElement.viewport.rotation;
         lastRenderedViewport.hflip = enabledElement.viewport.hflip;
         lastRenderedViewport.vflip = enabledElement.viewport.vflip;
+        lastRenderedViewport.modalityLUT = enabledElement.viewport.modalityLUT;
+        lastRenderedViewport.voiLUT = enabledElement.viewport.voiLUT;
     }
 
     // Module exports
@@ -1648,6 +1880,28 @@ if(typeof cornerstone === 'undefined'){
     cornerstone.renderWebImage = renderWebImage;
 
 }(cornerstone));
+/**
+ */
+(function (cornerstone) {
+
+  "use strict";
+
+  /**
+   * Resets the viewport to the default settings
+   *
+   * @param element
+   */
+  function reset(element)
+  {
+    var enabledElement = cornerstone.getEnabledElement(element);
+    var defaultViewport = cornerstone.internal.getDefaultViewport(enabledElement.canvas, enabledElement.image);
+    enabledElement.viewport = defaultViewport;
+    cornerstone.updateImage(element);
+  }
+
+  cornerstone.reset = reset;
+}(cornerstone));
+
 /**
  * This module is responsible for enabling an element to display images with cornerstone
  */
@@ -1750,6 +2004,13 @@ if(typeof cornerstone === 'undefined'){
 
     "use strict";
 
+    /**
+     * Sets the viewport for an element and corrects invalid values
+     *
+     * @param element - DOM element of the enabled element
+     * @param viewport - Object containing the viewport properties
+     * @returns {*}
+     */
     function setViewport(element, viewport) {
 
         var enabledElement = cornerstone.getEnabledElement(element);
@@ -1764,10 +2025,13 @@ if(typeof cornerstone === 'undefined'){
         enabledElement.viewport.rotation = viewport.rotation;
         enabledElement.viewport.hflip = viewport.hflip;
         enabledElement.viewport.vflip = viewport.vflip;
+        enabledElement.viewport.modalityLUT = viewport.modalityLUT;
+        enabledElement.viewport.voiLUT = viewport.voiLUT;
 
-        // prevent window width from being < 1
-        if(enabledElement.viewport.voi.windowWidth < 1) {
-            enabledElement.viewport.voi.windowWidth = 1;
+        // prevent window width from being too small (note that values close to zero are valid and can occur with
+        // PET images in particular)
+        if(enabledElement.viewport.voi.windowWidth < 0.000001) {
+            enabledElement.viewport.voi.windowWidth = 0.000001;
         }
         // prevent scale from getting too small
         if(enabledElement.viewport.scale < 0.0001) {

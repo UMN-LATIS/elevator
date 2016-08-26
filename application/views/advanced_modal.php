@@ -69,6 +69,7 @@
   <option value="box">PPT</option>
   <option value="zipobj">3D (obj)</option>
   <option value="ply">3D (ply)</option>
+  <option value="zipmeddicom">DICOM</option>
   <option value="zipscorm">SCORM</option>
 </select>
                   <input type="hidden" name="specificSearchFuzzy[]" value="0"/>

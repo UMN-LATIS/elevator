@@ -152,6 +152,30 @@ class Search extends Instance_Controller {
 		instance_redirect("search#".$this->searchId);
 	}
 
+	public function scopedQuerySearch($fieldName, $searchString = null) {
+		if(!$searchString) {
+			instance_redirect("/search");
+		}
+
+		$searchArray["searchText"] = "";
+		$searchArray["specificSearchField"] = [$fieldName];
+		$searchArray["specificSearchText"] = [rawurldecode($searchString)];
+		$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
+		$searchArchive = new Entity\SearchEntry;
+		$searchArchive->setUser($this->user_model->user);
+		$searchArchive->setInstance($this->instance);
+		$searchArchive->setSearchText("");
+		$searchArchive->setSearchData($searchArray);
+		$searchArchive->setCreatedAt(new DateTime());
+		$searchArchive->setUserInitiated(false);
+
+		$this->doctrine->em->persist($searchArchive);
+		$this->doctrine->em->flush();
+		$this->searchId = $searchArchive->getId();
+
+		instance_redirect("search#".$this->searchId);
+	}
+
 
 	public function listCollections() {
 
