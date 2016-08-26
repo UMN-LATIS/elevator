@@ -79,7 +79,7 @@ function listener(event) {
 			}
 
 			$("#"+messageObject.targetFieldId).val(messageObject.objectId);
-			relatedAssetPreview(messageObject.objectId, $("#"+messageObject.targetFieldId).closest(".widgetContents"));
+			relatedAssetPreview(messageObject.objectId, $("#"+messageObject.targetFieldId), $(".widgetContents"));
 			submitFormWithDelay(true,true);
 		}
 		if(messageObject.status == 'closed') {

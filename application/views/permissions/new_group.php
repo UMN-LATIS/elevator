@@ -12,7 +12,13 @@ if($groupObject->getGroupType() == "User") {
 	//
 
 	foreach($groupArray as $id) {
-		$nameArray[$id] = $this->user_model->getDisplayNameForUserId($id);
+		if( $this->user_model->getDisplayNameForUserId($id)) {
+			$nameArray[$id] = $this->user_model->getDisplayNameForUserId($id);	
+		}
+		elseif($nameArray[$id] = $this->user_model->getUsernameForUserId($id)) {
+			$nameArray[$id] = $this->user_model->getUsernameForUserId($id);	
+		}
+		
 	}
 }
 
