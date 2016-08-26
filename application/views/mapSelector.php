@@ -1,5 +1,5 @@
-
-<div id="<?=$mapId?>" class="collapse maphost">
+<?$collapse = isset($collapse)?$collapse:"collapse"?>
+<div id="<?=$mapId?>" class="<?=$collapse?> maphost">
 	<div class="form-group">
 		<label for="input" class="col-sm-2 control-label">Address:</label>
 		<div class="col-sm-4">

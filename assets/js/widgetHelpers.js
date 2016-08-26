@@ -32,20 +32,6 @@ $(window).bind('beforeunload', function(){
 	}
 });
 
-// command-control-h reveals hidden content (anything flagged advancedContent)
-Mousetrap.bind('command+ctrl+t', function() {
-	toggleTabs();
-});
-
-
-// very simple toggle - we'll make this better eventually right?
-var toggleTabs = function() {
-  $(".rightPane .tab-content>.tab-pane").toggle();
-  $("#general").toggle();
-  $(".leftPane").toggle();
-};
-
-
 /**
  * Add checkmarks to sidebar if there's content in their
  */
@@ -308,11 +294,6 @@ $(document).ready(function() {
 	});
 
 	$("#collectionMigrationInProcess").trigger('change');
-
-	$(".toggleTabs").on("click", function() {
-		toggleTabs();
-	});
-
 });
 
 
@@ -435,21 +416,9 @@ function iframeLoaded(iFrame) {
 		var element = $(iFrame).closest(".tab-pane");
 		var id = $(element).attr("id");
 
-		if($(element).hasClass("active")) {
-			var height = $(iFrame).contents().find("html").height();
+		var height = $(iFrame).contents().find("html").height();
 
-			$(iFrame).height(height);
-		}
-		else {
-			$("a[href=#" + id + "]").on('shown.bs.tab', function(e) {
-
-				var height = $(iFrame).contents().find("html").height();
-
-				$(iFrame).height(height);
-
-			});
-
-		}
+		$(iFrame).height(height);
 		$("#collectionId").trigger("change");
 
 

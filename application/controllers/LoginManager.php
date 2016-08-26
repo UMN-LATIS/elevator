@@ -54,7 +54,7 @@ class LoginManager extends Instance_Controller {
 		}
 		$this->force_ssl();
 
-		$this->template->content->view("login/login", ["redirectURL"=>$redirectURL]);
+		$this->template->content->view("login/login", ["redirectURL"=>$redirectURL, "localOnly"=>true]);
 		$this->template->publish();
 	}
 
@@ -69,10 +69,8 @@ class LoginManager extends Instance_Controller {
 
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
-		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
-		if ($umnshib->hasSession() && $this->config->item("shibbolethLogout")) {
-		  $umnshib->redirectToLogout();
-		}
+		$authHelper = $this->user_model->getAuthHelper();
+		$authHelper->remoteLogout();
 
 		instance_redirect("");
 	}
@@ -89,32 +87,23 @@ class LoginManager extends Instance_Controller {
 		}
 		$this->force_ssl();
 
-		// Example Object-Oriented instantiation and redirect to login:
-		$umnshib = new \UMNShib\Basic\BasicAuthenticator(["idpEntity"=>$this->config->item("shibbolethLogin")], ["logoutEntity"=>$this->config->item("shibbolethLogout")]);
-		if (!$umnshib->hasSession()) {
-			if($noForcedAuth == "true") {
-				if($redirectURL) {
-					redirect($redirectURL);
-				}
-				else {
-					instance_redirect("/");
-				}
-				return;
-			}
-		  	$umnshib->redirectToLogin();
-
-		}
 
 		$authHelper = $this->user_model->getAuthHelper();
-		
-		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUserIdFromRemote($umnshib)]);
-		if(!$user) {
-			$user = $authHelper->createUserFromRemote($umnshib);
-		}
-		else {
-			$authHelper->updateUserFromRemote($umnshib, $user);
+		if($authHelper->remoteLogin($redirectURL, $noForcedAuth)) {
+			return;
 		}
 
+		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUserIdFromRemote()]);
+		if(!$user) {
+			$user = $authHelper->createUserFromRemote();
+		}
+		else {
+			$authHelper->updateUserFromRemote($user);
+		}
+
+		if($authHelper->getDestination()) {
+			$redirectURL = $authHelper->getDestination();
+		}
 
 		if($user) {
 			$array = array(
@@ -144,4 +133,3 @@ class LoginManager extends Instance_Controller {
 }
 
 /* End of file loginManager */
-/* Location: ./application/controllers/loginManager */
