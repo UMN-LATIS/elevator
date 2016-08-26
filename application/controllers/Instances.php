@@ -71,7 +71,7 @@ class Instances extends Instance_Controller {
 		$config['allowed_types'] = 'png';
 
 		$this->load->library('upload', $config);
-		if ( ! $this->upload->do_upload('customHeaderImage'))
+		if ($instance->getUseHeaderLogo() && ! $this->upload->do_upload('customHeaderImage'))
 		{
 			$error = array('error' => $this->upload->display_errors());
 			var_dump($error); // TODO: draw this in a view 
