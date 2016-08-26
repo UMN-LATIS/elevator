@@ -34,6 +34,17 @@ class User_model extends CI_Model {
 			
 	}
 
+	public function getUsernameForUserId($userId) {
+			$user = $this->doctrine->em->find('Entity\User', $userId);
+			if($user) {
+				return $user->getUsername();	
+			}
+			else {
+				return $userId;
+			}
+			
+	}
+
 	// convenience function, so that we know if they have edit access to any collection,
 	//  used to drive the display of various UI elements
 	public function getMaxCollectionPermission() {

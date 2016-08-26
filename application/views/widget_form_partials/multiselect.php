@@ -105,6 +105,9 @@ sourceContent["<?=$formFieldId?>"] = $.parseJSON('<?=preg_replace( "/\r|\n/", ""
 <script>
 $(document).ready(function() {
 	loadGroup("<?=$formFieldId?>");
+	$("#<?=$formFieldId?>").find(".multiSelect").on("change", function() {
+		markSaveDirty();
+	});
 });
 
 </script>
