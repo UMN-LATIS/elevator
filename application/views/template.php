@@ -237,7 +237,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <?else:?>
         <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"><b class="caret"></b></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"><b class="caret"></b></span><span class="signInLink">Sign In</span></a>
           <ul class="dropdown-menu">
             <li><a href="<?=instance_url("loginManager/localLogin/?redirect=".current_url())?>">Local User</a></li>
             <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
