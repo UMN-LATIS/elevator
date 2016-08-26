@@ -68,9 +68,6 @@
 				<div class="col-sm-4">
 					<input type="text"  <?=$required?> autocomplete="off"  class="mainWidgetEntry form-control latitude geoField" id="<?=$latitudeId?>" name="<?=$latitudeName?>" placeholder="Latitude" value="<?=$latitudeContents?>">
 				</div>
-				<div class="col-sm-2">
-					<button type="button"  class="btn btn-info mapToggle" data-toggle="collapse" data-target="#<?=$formFieldMapId?>">Reveal Map</button>
-				</div>
 			</div>
 
 			<div class="form-group">
@@ -89,7 +86,7 @@
 
 
 
-			<?=$this->load->view("mapSelector", ["mapId"=>$formFieldMapId, "addressName"=>$addressName, "addressContents"=>$addressContents], true)?>
+			<?=$this->load->view("mapSelector", ["mapId"=>$formFieldMapId, "addressName"=>$addressName, "addressContents"=>$addressContents,"collapse"=>""], true)?>
 
 			<?if($widgetModel->getAllowMultiple()):?>
   			<div class="form-group isPrimary">
@@ -107,6 +104,17 @@
 		</div>
 	</div>
 
+<script>
+
+$(document).ready(function() {
+	mapElement = $("#<?=$widgetModel->getFieldTitle()?>").find(".mapWidget");
+	latitudeElement= $("#<?=$widgetModel->getFieldTitle()?>").find(".latitude");
+	longitudeElement = $("#<?=$widgetModel->getFieldTitle()?>").find(".longitude");
+	
+	revealMap(mapElement,latitudeElement, longitudeElement);
+
+});
+</script>
 
 <?endfor?>
 <?if($widgetModel->offsetCount==0):?>
