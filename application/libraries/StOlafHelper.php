@@ -9,7 +9,7 @@ class StOlafHelper extends AuthHelper
 	
 	public function __construct()
 	{
-
+		parent::__construct();
 	}
 
 	public function createUserFromRemote($userOverride=null) {
