@@ -6,15 +6,48 @@
 class AuthHelper
 {
 	
-
+	public $shibboleth;
 	public $authTypes = [];
 
 	public function __construct()
 	{
 
+		$this->CI =& get_instance();
+		$this->shibboleth = new \UMNShib\Basic\BasicAuthenticator(array(), ["logoutEntity"=>$this->CI->config->item("shibbolethLogout")]);
+		$this->shibboleth->setCustomIdPEntityId($this->CI->config->item("shibbolethLogin"));
 	}
 
-	public function populateUserDataFromShib($shibHelper) {
+	public function getDestination() { 
+		return NULL;
+	}
+
+	public function remoteLogin($redirectURL, $noForcedAuth=false) {
+		// Example Object-Oriented instantiation and redirect to login:
+		
+		if (!$this->shibboleth->hasSession()) {
+			if($noForcedAuth == "true") {
+				if($redirectURL) {
+					redirect($redirectURL);
+				}
+				else {
+					instance_redirect("/");
+				}
+				return true;
+			}
+		  	$this->shibboleth->redirectToLogin();
+		  	return true;
+		}
+		return false;
+
+	}
+
+	public function remoteLogout() {
+		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
+			$this->shibboleth->redirectToLogout();
+		}
+	}
+
+	public function populateUserData() {
 		return array();
 	}
 	
@@ -23,15 +56,15 @@ class AuthHelper
 	}
 
 	// can be either a shibboleth class or a username
-	public function createUserFromRemote($shibHelper) {
+	public function createUserFromRemote() {
 		return false;
 	}
 
-	public function updateUserFromRemote($shibHelper, $user) {
+	public function updateUserFromRemote($user) {
 		return false;
 	}
 
-	public function getUserIdFromRemote($shibHelper) {
+	public function getUserIdFromRemote() {
 
 	}
 
@@ -77,6 +110,10 @@ class AuthHelper
 			}
 		}
 		return $outputArray;
+	}
+
+	public function templateView() {
+		return $this->CI->load->view("authHelpers/genericRefresh", null,true);
 	}
 
 }

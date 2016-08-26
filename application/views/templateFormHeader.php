@@ -43,9 +43,151 @@ if(strlen($this->template->collectionId)>0) {
 
 <form class="form-horizontal clean" role="form" method="post" name="entryForm" id="entryForm" novalidate onSubmit="submitForm(); return false;">
 
+<style>
+.affix-bottom {
+    position: relative
+}
+@media (max-width: 767px) {
+    .affix {
+        position: static;
+    }
+}
+@media (min-width: 768px) {
+    .affix, .affix-top {
+        /*position: fixed;*/
+    }
+
+	.floatTabList {
+		
+		background-color: white;
+	}
+	.floatTabList {
+		/*position: fixed;*/
+		top: 50px;
+		display: block;
+		/*width: 25%;*/
+		padding-left: 15px;
+		margin-left: -15px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		height: 93%;
+	}
+	.floatTableList.affix {
+		/*top: 50px;*/
+	}
+
+}
+
+
+@media screen and (min-width: 768px) {
+	.floatTabList {
+		width: 157px;
+	}
+}
+
+
+
+@media screen and (min-width: 992px) {
+	.floatTabList {
+		width: 213px;
+	}
+}
+
+@media screen and (min-width: 1200px) {
+	.floatTabList {
+		width: 262px;
+	}
+
+}
+
+.tab-pane {
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	background-color: #eff2f3;
+	border: 1px solid #96a2a7;
+	border-radius: 3px;
+}
+
+@media (min-width: 768px) {
+	.leftPane {
+		height: 100vh;
+	}
+}
+
+.widgetContentsContainer {
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+
+</style>
+<script>
+
+var affixManagement = function() {
+	if($(window).width() > 768) {
+		$(".leftPane").css("height", ($(window).height() - 50) + "px");	
+	}
+	
+	$('.leftPane').removeData('affix').removeClass('affix affix-top affix-bottom');
+	$('body').scrollspy({ target: '#tablist', offset: navbarHeight + 5 })
+	if ($("body").first().innerHeight() > $(".leftPane").height() + 180) {
+		$('.leftPane').affix({
+			offset: {
+				top: navbarHeight + 20,
+				bottom: 50
+			}
+		});
+	}
+};
+
+$(window).load(function() {
+	scrollManage();
+	affixManagement();
+});
+
+
+$(window).resize(function() {
+	scrollManage();
+	affixManagement();
+});
+
+
+$(function() {
+  $('a[href*=#]:not([href=#])').click(function() {
+    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') 
+&& location.hostname == this.hostname) {
+
+      var target = $(this.hash);
+      target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+      if (target.length) {
+        $('html,body').animate({
+          scrollTop: target.offset().top - navbarHeight //offsets for fixed header
+        }, 300);
+        return false;
+      }
+    }
+  });
+  //Executed on page load with URL containing an anchor tag.
+  if($(location.href.split("#")[1])) {
+      var target = $('#'+location.href.split("#")[1]);
+      if (target.length) {
+        $('html,body').animate({
+          scrollTop: target.offset().top - navbarHeight //offset height of header here too.
+        }, 300);
+        return false;
+      }
+    }
+});
+
+</script>
 
 <div class="row theme-<?=$template->getTemplateColor()?>">
-	<div class="col-sm-3 leftPane"> <!-- required for floating -->
+
+	<div class="col-sm-3"> <!-- required for floating -->
+		<div  class="floatTabList leftPane" >
 		<!-- Nav tabs -->
 		<div class="row">
 			<div class="col-sm-12 miniPreview">
@@ -58,24 +200,24 @@ if(strlen($this->template->collectionId)>0) {
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-sm-12">
-				<ul class="nav nav-tabs tabs-left hidden-xs">
+			<div class="col-sm-12" id="tablist">
+				<ul class="nav nav-tabs tabs-left hidden-xs" role="tablist">
 					<li class="active"><a href="#general" data-toggle="tab">General</a></li>
 					<? foreach($widgetList as $widgetTitle=>$widgetLabel):?>
-					<li><a href="#<?=$widgetTitle?>" data-toggle="tab"><?=$widgetLabel?> <span class="glyphicon glyphicon-ok haveContent"></span><span class="glyphicon glyphicon-exclamation-sign requiredContent"></span></a></li>
+					<li><a href="#<?=$widgetTitle?>" ><?=$widgetLabel?> <span class="glyphicon glyphicon-ok haveContent"></span><span class="glyphicon glyphicon-exclamation-sign requiredContent"></span></a></li>
 					<?endforeach?>
 				</ul>
 			</div>
 		</div>
+		</div>
 	</div>
 
 	<div class="col-sm-9 rightPane">
-		<div class="tab-content" >
-			<div class="tab-pane active" id="general">
+		<div class="" >
+			<div class="tab-pane" id="general">
 				<div class="control-group">
-				<div class="panel panel-default widgetContentsContainer">
+				<div class="panel widgetContentsContainer">
 					<div class="panel-body widgetContents">
-						<button type="button" class="btn btn-primary toggleTabs pull-right">Toggle Tabs</button>
 						<div class="form-group">
 							<label for="inputObjectId" class="col-sm-2 control-label">Object Id:</label>
 							<div class="col-sm-3">
