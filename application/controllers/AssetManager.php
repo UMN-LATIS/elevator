@@ -777,7 +777,7 @@ class AssetManager extends Admin_Controller {
 			$assetModel->createObjectFromJSON($newEntry);
 			$assetModel->save();
 
-			if($targetArray) {
+			if(isset($targetArray)) {
 				$targetArray[]["targetAssetId"] = $assetModel->getObjectId();
 			}
 
@@ -794,7 +794,7 @@ class AssetManager extends Admin_Controller {
 				$this->doctrineCache->setNamespace('importCache_');
 				$this->doctrineCache->save($hash, $cacheArray, 900);
 
-				if($parentObject && $targetArray) {
+				if(isset($parentObject) && isset($targetArray)) {
 					$objectArray = $parentObject->getAsArray();
 					$objectArray[$targetField] = $targetArray;
 
@@ -808,14 +808,14 @@ class AssetManager extends Admin_Controller {
 
 		}
 
-		if($parentObject && $targetArray) {
+		if(isset($parentObject) && isset($targetArray)) {
 			$objectArray = $parentObject->getAsArray();
 			$objectArray[$targetField] = $targetArray;
 			$parentObject->createObjectFromJSON($objectArray);
 			$parentObject->save();
 		}
 
-		if($parentObject) {
+		if(isset($parentObject)) {
 			array_unshift($cacheArray['successArray'],  "Updated parent: " . $parentObject->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $parentObject->getObjectId()) ."\">" . $parentObject->getObjectId() . "</A>)<br>");
 		}
 
