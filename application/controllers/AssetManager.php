@@ -809,6 +809,7 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if(isset($parentObject) && isset($targetArray)) {
+			$parentObject->loadAssetById($cacheArray['parentObject']);
 			$objectArray = $parentObject->getAsArray();
 			$objectArray[$targetField] = $targetArray;
 			$parentObject->createObjectFromJSON($objectArray);
