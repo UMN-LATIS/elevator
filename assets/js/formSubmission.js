@@ -7,7 +7,7 @@ function submitFormWithDelay(ignoreWarnings, supressAlertAndBlock) {
 	clearTimeout(submitTimer);
 	submitTimer = setTimeout(function() {
 		submitFormProtected(ignoreWarnings, supressAlertAndBlock);
-	}, 500);
+	}, 1000);
 }
 
 function submitForm(ignoreWarnings, supressAlertAndBlock) {
