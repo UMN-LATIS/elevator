@@ -675,6 +675,11 @@ class AssetManager extends Admin_Controller {
 		$rowCount = 0;
 		$totalLines = intval(exec("wc -l '" . $cacheArray['filename'] . "'"));
 
+		$convertLines = true;
+		if (mb_check_encoding(file_get_contents($cacheArray['filename']), 'UTF-8')) {
+			$convertLines = false;
+		}
+
 		$header = fgetcsv($fp, 0, ",");
 		$successArray = [];
 		while($row = fgetcsv($fp, 0, ",")) {
@@ -690,7 +695,10 @@ class AssetManager extends Admin_Controller {
 			$newEntry["collectionId"] = $cacheArray['collectionId'];
 			$uploadItems = array();
 			foreach($row as $key=>$cell) {
-				$cell = mb_convert_encoding( $cell, 'UTF-8', 'Windows-1252');;
+				if($convertLines)  {
+					$cell = mb_convert_encoding( $cell, 'UTF-8', 'Windows-1252');	
+				}
+				
 				$rowArray = array();
 				if(strlen($cacheArray['delimiter'][$key]) > 0 && strpos($cell, $cacheArray['delimiter'][$key])) {
 					$rowArray = explode($cacheArray['delimiter'][$key], $cell);
@@ -809,7 +817,6 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if(isset($parentObject) && isset($targetArray)) {
-			$parentObject->loadAssetById($cacheArray['parentObject']);
 			$objectArray = $parentObject->getAsArray();
 			$objectArray[$targetField] = $targetArray;
 			$parentObject->createObjectFromJSON($objectArray);
