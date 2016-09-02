@@ -44,6 +44,16 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 					 	<iframe frameborder=0 width="100%" height=100% scrolling="no" allowfullscreen src="/assets/vrview/index.html?image=<?=urlencode(stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
 					</div>
 				<?else:?>
+				<?if(array_values($fileContainers)[0]->derivativeType == "thumbnail"):?>
+					<p class="alert alert-info">Displaying thumbnail image.
+						<?if(!$this->user_model->userLoaded):?>
+						<?=$this->load->view("errors/loginForPermissions")?>
+						<?if($embedded):?>
+						<?=$this->load->view("login/login")?>
+						<?endif?>
+						<?endif?>
+					</p>
+					<?endif?>
 					 <div class="fullscreenImageContainer">
 
 			    			<div class="imageContainer panzoom-element">
@@ -57,7 +67,9 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 									<span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>
 								</div>
 							<?endif?>
+					
 					</div>
+
 				<?endif?>
 
 			<?endif?>
