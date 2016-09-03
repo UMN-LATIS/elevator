@@ -608,15 +608,26 @@ class FileHandlerBase extends CI_Model {
 
 	function deleteSource($serial=null,$mfa=null) {
 
-		if($mfa && $this->sourceFile->deleteFile($serial, $mfa)) {
+		if($mfa && !$this->collection && strlen($this->getObjectId()) >= 24) {
+			$this->logging->logError("purge error", "missing collection " . $this->collectionId . ",  purging " . $this->getObjectId() );
 			$asset = $this->doctrine->em->getRepository("Entity\FileHandler")->findOneBy(["fileObjectId"=>$this->getObjectId()]);
 			$this->doctrine->em->remove($asset);
 			$this->doctrine->em->flush();
 			return true;
 		}
 		else {
-			return false;
+			if($mfa && $this->sourceFile->deleteFile($serial, $mfa)) {
+				$asset = $this->doctrine->em->getRepository("Entity\FileHandler")->findOneBy(["fileObjectId"=>$this->getObjectId()]);
+				$this->doctrine->em->remove($asset);
+				$this->doctrine->em->flush();
+				return true;
+			}
+			else {
+				return false;
+			}	
 		}
+
+		
 	}
 
 }

@@ -267,6 +267,7 @@ class admin extends Admin_Controller {
 	 * the UI can be smart about this I guess?
 	 */
 	public function purgeAll() {
+		set_time_limit(300);
 		$this->load->model("filehandlerbase");
 		$fileList = $this->filehandlerbase->findDeletedItems();
 		$mfa = $this->input->post("mfa");
@@ -284,7 +285,7 @@ class admin extends Admin_Controller {
 			}
 			try {
 				if(!$fileHandler->deleteSource($serial,$mfa)) {
-					$this->logging->logError("purgeAll","Could not delete asset with key" . $serial);
+					$this->logging->logError("purgeAll","Could not delete asset with key" . $fileEntry->getFileObjectId());
 				}
 				$lastUsedToken = $fileHandler->s3model->sessionToken;
 			}
