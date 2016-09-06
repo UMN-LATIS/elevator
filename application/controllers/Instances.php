@@ -71,18 +71,22 @@ class Instances extends Instance_Controller {
 		$config['allowed_types'] = 'png';
 
 		$this->load->library('upload', $config);
-		if ($instance->getUseHeaderLogo() && ! $this->upload->do_upload('customHeaderImage'))
-		{
-			$error = array('error' => $this->upload->display_errors());
-			var_dump($error); // TODO: draw this in a view 
-			return;
+		if($instance->getUseHeaderLogo()) {
+			if (! $this->upload->do_upload('customHeaderImage')) {
+				$error = array('error' => $this->upload->display_errors());
+			// var_dump($error); // TODO: draw this in a view 
+			// return;
+			}
+			else {
+				$data = array('upload_data' => $this->upload->data());
+				$filename = $data["upload_data"]["full_path"];
+				if($filename && file_exists($filename)) {
+					$instance->setCustomHeaderImage(file_get_contents($filename));
+				}
+			}
 		}
+
 		
-		$data = array('upload_data' => $this->upload->data());
-		$filename = $data["upload_data"]["full_path"];
-		if($filename && file_exists($filename)) {
-			$instance->setCustomHeaderImage(file_get_contents($filename));
-		}
 		
 
 
