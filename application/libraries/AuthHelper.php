@@ -13,7 +13,7 @@ class AuthHelper
 	{
 
 		$this->CI =& get_instance();
-		$this->shibboleth = new \UMNShib\Basic\BasicAuthenticator(array(), ["logoutEntity"=>$this->CI->config->item("shibbolethLogout")]);
+		$this->shibboleth = new \UMNShib\Basic\BasicAuthenticator(array(), ["IdPLogoutURL"=>$this->CI->config->item("shibbolethLogout")]);
 		$this->shibboleth->setCustomIdPEntityId($this->CI->config->item("shibbolethLogin"));
 	}
 
