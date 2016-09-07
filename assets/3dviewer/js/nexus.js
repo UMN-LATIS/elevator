@@ -1256,6 +1256,7 @@ Nexus.Renderer.prototype = {
 					} 
 					if(isReady) {
 						node.status = Nexus.Renderer._NODE_READY;
+						// COLIN UPDATE
 						that._signalUpdate();
 					}
 				}
