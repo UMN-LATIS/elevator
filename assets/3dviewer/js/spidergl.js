@@ -616,10 +616,10 @@ SpiderGL.Type.typeSize = (function(){
 
 /**
  * Maps a SpiderGL type symbolic constant to a WebGL type constant.
- * For example, calling this function with SpiderGL.Type.UINT8 as argument will return WebGLRenderingContext.prototype.UNSIGNED_BYTE.
+ * For example, calling this function with SpiderGL.Type.UINT8 as argument will return WebGLRenderingContext.UNSIGNED_BYTE.
  *
  * @param {number} sglType A SpiderGL type symbolic constants, i.e. SpiderGL.Type.UINT8.
- * @return {number} The corresponding WebGLRenderingContext type constant, i.e. WebGLRenderingContext.prototype.UNSIGNED_BYTE.
+ * @return {number} The corresponding WebGLRenderingContext type constant, i.e. WebGLRenderingContext.UNSIGNED_BYTE.
  */
 SpiderGL.Type.typeToGL = (function(){
 	var typeMap = { };
@@ -638,9 +638,9 @@ SpiderGL.Type.typeToGL = (function(){
 
 /**
  * Maps a WebGL type constant to a WebGL type constant.
- * For example, calling this function with WebGLRenderingContext.prototype.UNSIGNED_BYTE as argument will return SpiderGL.Type.UINT8.
+ * For example, calling this function with WebGLRenderingContext.UNSIGNED_BYTE as argument will return SpiderGL.Type.UINT8.
  *
- * @param {number} glType A WebGL type symbolic constants, i.e. WebGLRenderingContext.prototype.UNSIGNED_BYTE.
+ * @param {number} glType A WebGL type symbolic constants, i.e. WebGLRenderingContext.UNSIGNED_BYTE.
  * @return {number} The corresponding SpiderGL type constant, i.e. SpiderGL.Type.UINT8.
  */
 SpiderGL.Type.typeFromGL = (function(){
@@ -661,7 +661,7 @@ SpiderGL.Type.typeFromGL = (function(){
 /**
  * Returns the size of the type expressed by the passed WebGL type symbolic constant.
  *
- * @param {number} glType A WebGL type symbolic constants, i.e. WebGLRenderingContext.prototype.UNSIGNED_BYTE.
+ * @param {number} glType A WebGL type symbolic constants, i.e. WebGLRenderingContext.UNSIGNED_BYTE.
  * @return {number} The size in bytes of the type.
  */
 SpiderGL.Type.typeSizeFromGL = function (glType) {
@@ -1004,7 +1004,7 @@ SpiderGL.Utility.setDefaultValues = function (defaultObj, obj) {
  * Converts the input arguments to a 4-component Float32Array.
  * The input value is handled like WebGL handles constant vertex attributes,
  * that is, if the input parameter is null, a number, or an array with less than four components,
- * missing values are taken from the array [0, 0, 0, 1] at the respective position.
+ * missing values are taken from the array [0, 0, 0, 1] at the respective position. 
  *
  * @param {null|undefined|number|array|Float32Array} x The input value.
  *
@@ -8413,7 +8413,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The SpiderGL.WebGL namespace.
  *
  * @namespace The SpiderGL.WebGL namespace.
- *
+ * 
  * The SpiderGL.WebGL namespace gives access to WebGL functionalities in terms of context creation and enhancement, and object wrappers.
  * The main purpose of the module is to provide a robust and intuitive way of dealing with all native WebGL objects (e.g., textures, framebuffers, etc.).
  * Each specialized wrapper handles creation/destruction, edit operations (i.e. parameter settings), and binding of the underlying native WebGL object (the GL handle).
@@ -8442,7 +8442,7 @@ SpiderGL.WebGL.Context = { };
 SpiderGL.WebGL.Context.WEBGL_STRING = "experimental-webgl";
 
 /**
- * Default value for pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_FLIP_Y_WEBGL.
+ * Default value for pixel unpack parameter WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL.
  *
  * @default true
  *
@@ -8453,7 +8453,7 @@ SpiderGL.WebGL.Context.WEBGL_STRING = "experimental-webgl";
 SpiderGL.WebGL.Context.DEFAULT_UNPACK_FLIP_Y = true;
 
 /**
- * Default value for pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_PREMULTIPLY_ALPHA_WEBGL.
+ * Default value for pixel unpack parameter WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL.
  *
  * @default true
  *
@@ -8464,9 +8464,9 @@ SpiderGL.WebGL.Context.DEFAULT_UNPACK_FLIP_Y = true;
 SpiderGL.WebGL.Context.DEFAULT_UNPACK_PREMULTIPLY_ALPHA = false;
 
 /**
- * Default value for pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_COLORSPACE_CONVERSION_WEBGL.
+ * Default value for pixel unpack parameter WebGLRenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL.
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  *
  * @see SpiderGL.WebGL.Context.DEFAULT_UNPACK_FLIP_Y
  * @see SpiderGL.WebGL.Context.DEFAULT_UNPACK_PREMULTIPLY_ALPHA
@@ -9988,7 +9988,7 @@ SpiderGL.WebGL.Context._setup_SGL_direct_state_access = function (gl, pubExt) {
  * This means that the object must be bound to the WebGL context to modify some parameter or its resource data.
  * As a side effect, binding the object just to modify it has the same result of binding it to be used during rendering.
  * To prevent this side effect, all the WebGLRenderingContext functions that bind and modify object parameters or data, as long as the rendering functions, are wrapped.
- * This allows SpiderGL wrappers (derived from {@link SpiderGL.WebGL.ObjectGL}) to be edited without affecting the binding state of the WebGLRenderingContext.prototype.
+ * This allows SpiderGL wrappers (derived from {@link SpiderGL.WebGL.ObjectGL}) to be edited without affecting the binding state of the WebGLRenderingContext.
  * The following example clarifies how bindings are handled.
  *
  * @example
@@ -10003,7 +10003,7 @@ SpiderGL.WebGL.Context._setup_SGL_direct_state_access = function (gl, pubExt) {
  * gl.drawArrays(gl.TRIANGLES, 0, 3); // textureA is automatically re-bound to keep WebGL semantic
  * textureB.bind(); // bind textureB to WebGL, breaking the binding with textureA
  * gl.drawArrays(gl.TRIANGLES, 0, 3); // textureA is used
- *
+ * 
  * @param {WebGLRenderingContext} gl The WebGLRenderingContext to modify.
  *
  * @returns {bool} True on success, false if the gl argument is not valid or has already been modified.
@@ -10047,7 +10047,7 @@ SpiderGL.WebGL.Context.hijack = function (gl) {
  */
 SpiderGL.WebGL.Context.isHijacked = function (gl) {
 	return !!gl && !!gl._spidergl;
-	return (SpiderGL.Type.instanceOf(gl, WebGLRenderingContext) && gl._spidergl);
+//	return (SpiderGL.Type.instanceOf(gl, WebGLRenderingContext) && gl._spidergl);
 }
 
 /**
@@ -10072,9 +10072,9 @@ SpiderGL.WebGL.Context.getHijacked = function (canvas, args) {
 
 /**
  * Sets pixel store unpack parameters to standard OpenGL SpiderGL values.
- * The parameters to be set are UNPACK_FLIP_Y_WEBGL (true), UNPACK_PREMULTIPLY_ALPHA_WEBGL (false) and UNPACK_COLORSPACE_CONVERSION_WEBGL (WebGLRenderingContext.prototype.NONE).
+ * The parameters to be set are UNPACK_FLIP_Y_WEBGL (true), UNPACK_PREMULTIPLY_ALPHA_WEBGL (false) and UNPACK_COLORSPACE_CONVERSION_WEBGL (WebGLRenderingContext.NONE).
  *
- * @param {WebGLRenderingContext} gl The target WebGLRenderingContext.prototype.
+ * @param {WebGLRenderingContext} gl The target WebGLRenderingContext.
  */
 SpiderGL.WebGL.Context.setStandardGLUnpack = function (gl) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,                true);
@@ -10140,7 +10140,7 @@ SpiderGL.WebGL.ObjectGL = function (gl, target, options) {
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  */
 SpiderGL.WebGL.ObjectGL.TARGET = WebGLRenderingContext.prototype.NONE;
 
@@ -10149,7 +10149,7 @@ SpiderGL.WebGL.ObjectGL.TARGET = WebGLRenderingContext.prototype.NONE;
  *
  * This function is empty and provided only for completeness.
  *
- * @param {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.ObjectGL.unbind = function (gl) { };
 
@@ -10232,7 +10232,7 @@ SpiderGL.WebGL.ObjectGL.prototype = {
 
 	/**
 	 * Destroys the wrapped WebObjectGL.
-	 *
+	 * 
 	 * After calling this method, the object must not be accessed anymore.
 	 */
 	destroy : function () {
@@ -10240,15 +10240,15 @@ SpiderGL.WebGL.ObjectGL.prototype = {
 
 	/**
 	 * Binds the object to the rendering pipeline.
-	 *
-	 * The wrapped WebObjectGL is bound to its default target in the WebGLRenderingContext.prototype.
+	 * 
+	 * The wrapped WebObjectGL is bound to its default target in the WebGLRenderingContext.
 	 */
 	bind : function () {
 	},
 
 	/**
 	 * Binds the null object to the rendering pipeline.
-	 *
+	 * 
 	 * This method is provided for symmetry with {@link SpiderGL.WebGL.ObjectGL#bind}. It binds the null object to the per-object webGL target.
 	 */
 	unbind : function () {
@@ -10268,12 +10268,12 @@ SpiderGL.Type.extend(SpiderGL.WebGL.ObjectGL, SpiderGL.Core.ObjectBase);
  * @augments SpiderGL.WebGL.ObjectGL
  *
  * @param {WebGLRenderingContext} gl A WebGLRenderingContext hijacked with {@link SpiderGL.WebGL.Context.hijack}.
- * @param {number} target The WebGLBuffer target. It must be either WebGLRenderingContext.prototype.ARRAY_BUFFER or WebGLRenderingContext.prototype.ELEMENT_ARRAY_BUFFER.
+ * @param {number} target The WebGLBuffer target. It must be either WebGLRenderingContext.ARRAY_BUFFER or WebGLRenderingContext.ELEMENT_ARRAY_BUFFER.
  * @param {object} [options] Optional parameters.
  * @param {WebGLBuffer} [options.handle] If defined, the provided buffer will be wrapped and its size and usage attributes will be queried to the rendering context. Otherwise an internal buffer will be created.
- * @param {ArrayBuffer|ArrayBufferView} [options.data] Buffer content to be set with WebGLRenderingContext.prototype.bufferData (see {@link setData}). If present, the data will be set both if a handle is provided or internally created.
- * @param {number} [options.size] Buffer size to be set with WebGLRenderingContext.prototype.bufferData (see {@link setData}). If present, it will be set both if a handle is provided or internally created. If data parameter is present, the size field is ignored.
- * @param {number} [options.usage=SpiderGL.WebGL.Buffer.DEFAULT_USAGE] WebGL buffer usage hint parameter for WebGLRenderingContext.prototype.bufferData.
+ * @param {ArrayBuffer|ArrayBufferView} [options.data] Buffer content to be set with WebGLRenderingContext.bufferData (see {@link setData}). If present, the data will be set both if a handle is provided or internally created.
+ * @param {number} [options.size] Buffer size to be set with WebGLRenderingContext.bufferData (see {@link setData}). If present, it will be set both if a handle is provided or internally created. If data parameter is present, the size field is ignored.
+ * @param {number} [options.usage=SpiderGL.WebGL.Buffer.DEFAULT_USAGE] WebGL buffer usage hint parameter for WebGLRenderingContext.bufferData.
  *
  * @example
  * // create a vertex buffer with a specified size
@@ -10351,7 +10351,7 @@ SpiderGL.WebGL.Buffer = function (gl, target, options) {
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  */
 SpiderGL.WebGL.Buffer.TARGET = WebGLRenderingContext.prototype.NONE;
 
@@ -10360,7 +10360,7 @@ SpiderGL.WebGL.Buffer.TARGET = WebGLRenderingContext.prototype.NONE;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.STATIC_DRAW
+ * @default WebGLRenderingContext.STATIC_DRAW
  */
 SpiderGL.WebGL.Buffer.DEFAULT_USAGE = WebGLRenderingContext.prototype.STATIC_DRAW;
 
@@ -10378,7 +10378,7 @@ SpiderGL.WebGL.Buffer.DEFAULT_SUB_DATA_OFFSET = 0;
  *
  * This function is empty and it is provided only for completeness.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.Buffer.unbind = function (gl) { };
 
@@ -10449,7 +10449,7 @@ SpiderGL.WebGL.Buffer.prototype = {
 
 	/**
 	 * The usage hint of the WebGLBuffer.
-	 * It refers to the usage hint as specified in WebGLRenderingContext.prototype.bufferData().
+	 * It refers to the usage hint as specified in WebGLRenderingContext.bufferData().
 	 *
 	 * @type number
 	 *
@@ -10538,7 +10538,7 @@ SpiderGL.Type.extend(SpiderGL.WebGL.Buffer, SpiderGL.WebGL.ObjectGL);
 /**
  * Creates a SpiderGL.WebGL.VertexBuffer.
  *
- * SpiderGL.WebGL.VertexBuffer represents a wrapper for a WebGLBuffer to be bound to the WebGLRenderingContext.prototype.ARRAY_BUFFER target.
+ * SpiderGL.WebGL.VertexBuffer represents a wrapper for a WebGLBuffer to be bound to the WebGLRenderingContext.ARRAY_BUFFER target.
  *
  * @class The SpiderGL.WebGL.VertexBuffer is WebGLBuffer wrapper for vertex buffers.
  *
@@ -10562,7 +10562,7 @@ SpiderGL.WebGL.VertexBuffer = function (gl, options) {
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.ARRAY_BUFFER
+ * @default WebGLRenderingContext.ARRAY_BUFFER
  */
 SpiderGL.WebGL.VertexBuffer.TARGET = WebGLRenderingContext.prototype.ARRAY_BUFFER;
 
@@ -10589,7 +10589,7 @@ SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_SIZE = 3;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.FLOAT
+ * @default WebGLRenderingContext.FLOAT
  */
 SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_TYPE = WebGLRenderingContext.prototype.FLOAT;
 
@@ -10632,16 +10632,16 @@ SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_ENABLE = true;
 /**
  * WebGLBuffer unbinding for vertex buffers.
  *
- * This function binds the null buffer to the WebGLRenderingContext.prototype.ARRAY_BUFFER target.
+ * This function binds the null buffer to the WebGLRenderingContext.ARRAY_BUFFER target.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.VertexBuffer.unbind = function (gl) { gl.bindBuffer(SpiderGL.WebGL.VertexBuffer.TARGET, null); };
 
 SpiderGL.WebGL.VertexBuffer.prototype = {
 	/**
 	 * Latches the WebGL vertex attribute pointer with the internal buffer.
-	 * The effect of this method is to bind the SpiderGL.WebGL.VertexBuffer and call WebGLRenderingContext.prototype.vertexAttribPointer() with the provided parameters.
+	 * The effect of this method is to bind the SpiderGL.WebGL.VertexBuffer and call WebGLRenderingContext.vertexAttribPointer() with the provided parameters.
 	 *
 	 * @param {object} [options] Vertex attribute pointer parameters.
 	 * @param {number} [options.index=SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_INDEX] Attribute index.
@@ -10650,7 +10650,7 @@ SpiderGL.WebGL.VertexBuffer.prototype = {
 	 * @param {number} [options.normalized=SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_NORMALIZED] True if the attribute has an integer type and must be normalized.
 	 * @param {number} [options.stride=SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_STRIDE] Bytes from the beginning of an element and the beginning of the next one.
 	 * @param {number} [options.offset=SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_OFFSET] Offset (in bytes) from the start of the buffer.
-	 * @param {bool} [options.enable=SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_ENABLE] If true, the index-th vertex attribute array will be enabled with WebGLRenderingContext.prototype.enableVertexAttribArray(index).
+	 * @param {bool} [options.enable=SpiderGL.WebGL.VertexBuffer.DEFAULT_ATTRIBUTE_ENABLE] If true, the index-th vertex attribute array will be enabled with WebGLRenderingContext.enableVertexAttribArray(index).
 	 *
 	 * @example
 	 * var vb = new SpiderGL.WebGL.VertexBuffer(...); // create a vertex buffer
@@ -10693,7 +10693,7 @@ SpiderGL.Type.extend(SpiderGL.WebGL.VertexBuffer, SpiderGL.WebGL.Buffer);
 /**
  * Creates a SpiderGL.WebGL.IndexBuffer.
  *
- * SpiderGL.WebGL.IndexBuffer represents a wrapper for a WebGLBuffer to be bound to the WebGLRenderingContext.prototype.ELEMENT_ARRAY_BUFFER target.
+ * SpiderGL.WebGL.IndexBuffer represents a wrapper for a WebGLBuffer to be bound to the WebGLRenderingContext.ELEMENT_ARRAY_BUFFER target.
  *
  * @class The SpiderGL.WebGL.IndexBuffer is WebGLBuffer wrapper for index buffers.
  *
@@ -10717,7 +10717,7 @@ SpiderGL.WebGL.IndexBuffer = function (gl, options) {
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.ELEMENT_ARRAY_BUFFER
+ * @default WebGLRenderingContext.ELEMENT_ARRAY_BUFFER
  */
 SpiderGL.WebGL.IndexBuffer.TARGET = WebGLRenderingContext.prototype.ELEMENT_ARRAY_BUFFER;
 
@@ -10726,7 +10726,7 @@ SpiderGL.WebGL.IndexBuffer.TARGET = WebGLRenderingContext.prototype.ELEMENT_ARRA
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.TRIANGLES
+ * @default WebGLRenderingContext.TRIANGLES
  */
 SpiderGL.WebGL.IndexBuffer.DEFAULT_DRAW_ELEMENTS_MODE  = WebGLRenderingContext.prototype.TRIANGLES;
 
@@ -10745,7 +10745,7 @@ SpiderGL.WebGL.IndexBuffer.DEFAULT_DRAW_ELEMENTS_COUNT  = -1;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.UNSIGNED_SHORT
+ * @default WebGLRenderingContext.UNSIGNED_SHORT
  */
 SpiderGL.WebGL.IndexBuffer.DEFAULT_DRAW_ELEMENTS_TYPE = WebGLRenderingContext.prototype.UNSIGNED_SHORT;
 
@@ -10761,15 +10761,15 @@ SpiderGL.WebGL.IndexBuffer.DEFAULT_DRAW_ELEMENTS_OFFSET = 0;
 /**
  * WebGLBuffer unbinding for index buffers.
  *
- * This function binds the null buffer to the WebGLRenderingContext.prototype.ELEMENT_ARRAY_BUFFER target.
+ * This function binds the null buffer to the WebGLRenderingContext.ELEMENT_ARRAY_BUFFER target.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.IndexBuffer.unbind = function (gl) { gl.bindBuffer(SpiderGL.WebGL.IndexBuffer.TARGET, null); };
 
 SpiderGL.WebGL.IndexBuffer.prototype = {
 	/**
-	 * Binds the index buffers and calls WebGLRenderingContext.prototype.drawElements with the provided parameters.
+	 * Binds the index buffers and calls WebGLRenderingContext.drawElements with the provided parameters.
 	 *
 	 * @param {object} [options] Draw parameters.
 	 * @param {number} [options.glMode=SpiderGL.WebGL.IndexBuffer.DEFAULT_DRAW_ELEMENTS_MODE] The WebGL primitive type.
@@ -10910,7 +10910,7 @@ SpiderGL.WebGL.Framebuffer = function (gl, options) {
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.FRAMEBUFFER
+ * @default WebGLRenderingContext.FRAMEBUFFER
  */
 SpiderGL.WebGL.Framebuffer.TARGET = WebGLRenderingContext.prototype.FRAMEBUFFER;
 
@@ -10937,7 +10937,7 @@ SpiderGL.WebGL.Framebuffer.DEFAULT_ATTACHMENT_TEXTURE_LEVEL = 0;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.TEXTURE_CUBE_MAP_POSITIVE_X
+ * @default WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X
  */
 SpiderGL.WebGL.Framebuffer.DEFAULT_ATTACHMENT_CUBE_MAP_FACE = WebGLRenderingContext.prototype.TEXTURE_CUBE_MAP_POSITIVE_X;
 
@@ -10992,7 +10992,7 @@ SpiderGL.WebGL.Framebuffer.DEFAULT_READ_PIXELS_HEIGHT = -1;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.RGBA
+ * @default WebGLRenderingContext.RGBA
  *
  * @see SpiderGL.WebGL.Framebuffer#readPixels
  */
@@ -11003,7 +11003,7 @@ SpiderGL.WebGL.Framebuffer.DEFAULT_READ_PIXELS_FORMAT = WebGLRenderingContext.pr
  *
  * @type number
  *
- * @default (WebGLRenderingContext.prototype.COLOR_BUFFER_BIT | WebGLRenderingContext.prototype.DEPTH_BUFFER_BIT | WebGLRenderingContext.prototype.STENCIL_BUFFER_BIT)
+ * @default (WebGLRenderingContext.COLOR_BUFFER_BIT | WebGLRenderingContext.DEPTH_BUFFER_BIT | WebGLRenderingContext.STENCIL_BUFFER_BIT)
  *
  * @see SpiderGL.WebGL.Framebuffer#clear
  */
@@ -11014,18 +11014,18 @@ SpiderGL.WebGL.Framebuffer.DEFAULT_CLEAR_MASK = (WebGLRenderingContext.prototype
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.UNSIGNED_BYTE
+ * @default WebGLRenderingContext.UNSIGNED_BYTE
  *
  * @see SpiderGL.WebGL.Framebuffer#readPixels
  */
-SpiderGL.WebGL.Framebuffer.DEFAULT_READ_PIXELS_TYPE = WebGLRenderingContext.prototype.UNSIGNED_BYTE;
+SpiderGL.WebGL.Framebuffer.DEFAULT_READ_PIXELS_TYPE = WebGLRenderingContext.UNSIGNED_BYTE;
 
 /**
  * WebGLFramebuffer unbinding.
  *
- * This function binds the null framebuffer to the WebGLRenderingContext.prototype.FRAMEBUFFER target.
+ * This function binds the null framebuffer to the WebGLRenderingContext.FRAMEBUFFER target.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.Framebuffer.unbind = function (gl) { gl.bindFramebuffer(SpiderGL.WebGL.Framebuffer.TARGET, null); };
 
@@ -11203,7 +11203,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 
 	/**
 	 * Tests if the framebuffer is ready to use.
-	 * A framebuffer is considered ready if its status is WebGLRenderingContext.prototype.FRAMEBUFFER_COMPLETE.
+	 * A framebuffer is considered ready if its status is WebGLRenderingContext.FRAMEBUFFER_COMPLETE.
 	 *
 	 * @type bool
 	 *
@@ -11229,7 +11229,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 	},
 
 	/**
-	 * Indicates if the the status of the framebuffer is WebGLRenderingContext.prototype.FRAMEBUFFER_COMPLETE.
+	 * Indicates if the the status of the framebuffer is WebGLRenderingContext.FRAMEBUFFER_COMPLETE.
 	 *
 	 * @type number
 	 *
@@ -11242,7 +11242,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 	/**
 	 * Gets a 4-component array with the viewport parameters.
 	 *
-	 * Viewport parameters are stored as [0, 0, width, height] and will be set using WebGLRenderingContext.prototype.viewport() during a {@link bind} call if {@link autoViewport} is true.
+	 * Viewport parameters are stored as [0, 0, width, height] and will be set using WebGLRenderingContext.viewport() during a {@link bind} call if {@link autoViewport} is true.
 	 * The width and height parameters corresponds to the width and height of the last resource attached with {@link setAttachments}.
 	 *
 	 * @type array
@@ -11293,7 +11293,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 	/**
 	 * Automatic viewport settings in a call to {@link bind}.
 	 *
-	 * If true, when calling {@link bind} the viewport will be set with a call to WebGLRenderingContext.prototype.viewport().
+	 * If true, when calling {@link bind} the viewport will be set with a call to WebGLRenderingContext.viewport().
 	 *
 	 * @type bool
 	 */
@@ -11310,13 +11310,13 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 	 * It is used to attach resources (SpiderGL.WebGL.Texture2D, SpiderGL.WebGL.TextureCubeMap or SpiderGL.WebGL.Renderbuffer) as render targets.
 	 *
 	 * @param {object} attachments The resources to attach to the WebGLFramebuffer.
-	 * @param {object|SpiderGL.WebGL.Texture2D|SpiderGL.WebGL.TextureCubeMap|SpiderGL.WebGL.Renderbuffer} [attachments.color] The color attachment for target WebGLRenderingContext.prototype.COLOR_ATTACHMENT0; if omitted, the current color attachment is kept; if null, the current color attachment is detached.
+	 * @param {object|SpiderGL.WebGL.Texture2D|SpiderGL.WebGL.TextureCubeMap|SpiderGL.WebGL.Renderbuffer} [attachments.color] The color attachment for target WebGLRenderingContext.COLOR_ATTACHMENT0; if omitted, the current color attachment is kept; if null, the current color attachment is detached.
 	 * @param {SpiderGL.WebGL.Texture2D|SpiderGL.WebGL.TextureCubeMap|SpiderGL.WebGL.Renderbuffer} [attachments.color.resource] The resource to use as a render target for color attachment.
 	 * @param {number} [attachments.color.level=SpiderGL.WebGL.Framebuffer.DEFAULT_ATTACHMENT_TEXTURE_LEVEL] If resource is SpiderGL.WebGL.Texture2D or SpiderGL.WebGL.TextureCubeMap, specifies the texture level to attach. As per WebGL specifications, level must be zero.
 	 * @param {number} [attachments.color.face=SpiderGL.WebGL.Framebuffer.DEFAULT_ATTACHMENT_CUBE_MAP_FACE] If resource is SpiderGL.WebGL.TextureCubeMap, specifies the texture cube map face to attach.
-	 * @param {object|SpiderGL.WebGL.Renderbuffer} [attachments.depth] Same as attachments.color but for WebGLRenderingContext.prototype.DEPTH_ATTACHMENT. To ensure the restrictions of the WebGL specifications, stencil and depthStencil attachments are detached.
-	 * @param {object|SpiderGL.WebGL.Renderbuffer} [attachments.stencil] Same as attachments.color but for WebGLRenderingContext.prototype.STENCIL_ATTACHMENT. To ensure the restrictions of the WebGL specifications, depth and depthStencil attachments are detached.
-	 * @param {object|SpiderGL.WebGL.Renderbuffer} [attachments.depthStencil] Same as attachments.color but for WebGLRenderingContext.prototype.DEPTH_STENCIL_ATTACHMENT. To ensure the restrictions of the WebGL specifications, depth and stencil attachments are detached.
+	 * @param {object|SpiderGL.WebGL.Renderbuffer} [attachments.depth] Same as attachments.color but for WebGLRenderingContext.DEPTH_ATTACHMENT. To ensure the restrictions of the WebGL specifications, stencil and depthStencil attachments are detached.
+	 * @param {object|SpiderGL.WebGL.Renderbuffer} [attachments.stencil] Same as attachments.color but for WebGLRenderingContext.STENCIL_ATTACHMENT. To ensure the restrictions of the WebGL specifications, depth and depthStencil attachments are detached.
+	 * @param {object|SpiderGL.WebGL.Renderbuffer} [attachments.depthStencil] Same as attachments.color but for WebGLRenderingContext.DEPTH_STENCIL_ATTACHMENT. To ensure the restrictions of the WebGL specifications, depth and stencil attachments are detached.
 	 *
 	 * @returns {bool} True if the framebuffer is complete, false otherwise.
 	 *
@@ -11331,7 +11331,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 	 * };
 	 * // use fb
 	 * // ...
-	 *
+	 * 
 	 * // change attachment
 	 * fb.setAttachments({
 	 * 	color: {resource: tCM, face: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z} // if face is omitted, defaults to SpiderGL.WebGL.Framebuffer.DEFAULT_ATTACHMENT_CUBE_MAP_FACE
@@ -11508,7 +11508,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 	/**
 	 * Clears the framebuffer using current clear values.
 	 *
-	 * @param {number} mask The clear mask as for WebGLRenderingContext.prototype.clear.
+	 * @param {number} mask The clear mask as for WebGLRenderingContext.clear.
 	 */
 	clear : function (mask) {
 		mask = SpiderGL.Utility.getDefaultValue(mask, SpiderGL.WebGL.Framebuffer.DEFAULT_CLEAR_MASK);
@@ -11568,7 +11568,7 @@ SpiderGL.WebGL.Framebuffer.prototype = {
 
 	/**
 	 * Binds the wrapped WebGLFramebuffer to the WebGLRenderingContex.FRAMEBUFFER target.
-	 * If setViewport is not specified and autoViewport is true, the stored viewport is set with WebGLRenderingContext.prototype.viewport().
+	 * If setViewport is not specified and autoViewport is true, the stored viewport is set with WebGLRenderingContext.viewport().
 	 *
 	 * @param {bool} [setViewport] If specified, overrides the value of autoViewport.
 	 *
@@ -11711,11 +11711,11 @@ SpiderGL.WebGL.Program = function (gl, options) {
 
 /**
  * Dummy WebGL target for programs.
- * It is equal to WebGLRenderingContext.prototype.NONE and is provided only for completeness with other WebGL wrappers.
+ * It is equal to WebGLRenderingContext.NONE and is provided only for completeness with other WebGL wrappers.
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  */
 SpiderGL.WebGL.Program.TARGET = WebGLRenderingContext.prototype.NONE;
 
@@ -11731,9 +11731,9 @@ SpiderGL.WebGL.Program.DEFAULT_AUTO_LINK = true;
 /**
  * WebGLProgram unbinding.
  *
- * This function binds the null program with WebGLRenderingContext.prototype.useProgram(null).
+ * This function binds the null program with WebGLRenderingContext.useProgram(null).
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.Program.unbind = function (gl) { gl.useProgram(null); };
 
@@ -12097,7 +12097,7 @@ SpiderGL.WebGL.Program.prototype = {
 		return this._autoLink;
 	},
 
-	set autoLink(on) {
+	set autoLink(on) { 
 		this._autoLink = !!on;
 	},
 
@@ -12169,7 +12169,7 @@ SpiderGL.WebGL.Program.prototype = {
 
 	/**
 	 * Validates the program with the current attribute indices, uniforms and WebGLRenderingContext state
-	 * It is performed using WebGLRenderingContext.prototype.validateProgram().
+	 * It is performed using WebGLRenderingContext.validateProgram().
 	 *
 	 * @returns {bool} True if the program has been succesfully validated, false otherwise.
 	 */
@@ -12191,7 +12191,7 @@ SpiderGL.WebGL.Program.prototype = {
 	 *
 	 * @example
 	 * var vertexShaderSrc = "" +
-	 * 	"..." +
+	 * 	"..." + 
 	 * 	"attribute vec3 aPosition; \n" +
 	 * 	"attribute vec3 aNormal;   \n" +
 	 * 	"...";
@@ -12289,7 +12289,7 @@ SpiderGL.WebGL.Program.prototype = {
 	 *
 	 * @example
 	 * var vertexShaderSrc = "" +
-	 * 	"..." +
+	 * 	"..." + 
 	 * 	"uniform mat4  uMVP;      \n" +
 	 * 	"uniform float uScale;    \n" +
 	 * 	"uniform vec3  uLightPos; \n" +
@@ -12402,7 +12402,7 @@ SpiderGL.WebGL.Program.prototype = {
 	},
 
 	/**
-	 * Binds the wrapped WebGLProgram with WebGLRenderingContext.prototype.useProgram().
+	 * Binds the wrapped WebGLProgram with WebGLRenderingContext.useProgram().
 	 *
 	 * @see unbind
 	 */
@@ -12411,7 +12411,7 @@ SpiderGL.WebGL.Program.prototype = {
 	},
 
 	/**
-	 * Binds the "null" program with WebGLRenderingContext.prototype.useProgram(null).
+	 * Binds the "null" program with WebGLRenderingContext.useProgram(null).
 	 * This method is provided only for simmetry with {@link bind} and is not relative to the object state.
 	 *
 	 * @see bind
@@ -12503,16 +12503,16 @@ SpiderGL.WebGL.Renderbuffer = function (gl, options) {
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.RENDERBUFFER
+ * @default WebGLRenderingContext.RENDERBUFFER
  */
 SpiderGL.WebGL.Renderbuffer.TARGET = WebGLRenderingContext.prototype.RENDERBUFFER;
 
 /**
  * WebGLRenderbuffer unbinding.
  *
- * This function binds the null renderbuffer to the WebGLRenderingContext.prototype.RENDERBUFFER target.
+ * This function binds the null renderbuffer to the WebGLRenderingContext.RENDERBUFFER target.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.Renderbuffer.unbind = function (gl) { gl.bindRenderbuffer(SpiderGL.WebGL.Renderbuffer.TARGET, null); };
 
@@ -12707,11 +12707,11 @@ SpiderGL.WebGL.Shader = function (gl, target, type, options) {
 /**
  * Dummy WebGL target for shaders.
  *
- * It is equal to WebGLRenderingContext.prototype.NONE and is provided only for completeness with other WebGL wrappers.
+ * It is equal to WebGLRenderingContext.NONE and is provided only for completeness with other WebGL wrappers.
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  */
 SpiderGL.WebGL.Shader.TARGET = WebGLRenderingContext.prototype.NONE;
 
@@ -12729,7 +12729,7 @@ SpiderGL.WebGL.Shader.DEFAULT_AUTO_COMPILE = true;
  *
  * This function does nothing and it is provided only for simmetry with other wrappers.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.Shader.unbind = function (gl) { };
 
@@ -12914,7 +12914,7 @@ SpiderGL.Type.extend(SpiderGL.WebGL.Shader, SpiderGL.WebGL.ObjectGL);
 /**
  * Creates a SpiderGL.WebGL.VertexShader.
  *
- * SpiderGL.WebGL.VertexShader represents a wrapper for a WebGLShader whose type is type WebGLRenderingContext.prototype.VERTEX_SHADER.
+ * SpiderGL.WebGL.VertexShader represents a wrapper for a WebGLShader whose type is type WebGLRenderingContext.VERTEX_SHADER.
  *
  * @class The SpiderGL.WebGL.VertexShader is a WebGLShader wrapper for vertex shaders.
  *
@@ -12937,11 +12937,11 @@ SpiderGL.WebGL.VertexShader = function (gl, options) {
 /**
  * Dummy WebGL target for vertex shaders.
  *
- * It is equal to WebGLRenderingContext.prototype.NONE and is provided only for completeness with other WebGL wrappers.
+ * It is equal to WebGLRenderingContext.NONE and is provided only for completeness with other WebGL wrappers.
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  */
 SpiderGL.WebGL.VertexShader.TARGET = WebGLRenderingContext.prototype.NONE;
 
@@ -12950,7 +12950,7 @@ SpiderGL.WebGL.VertexShader.TARGET = WebGLRenderingContext.prototype.NONE;
  *
  * This function does nothing and it is provided only for simmetry with other wrappers.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.VertexShader.unbind = function (gl) { };
 
@@ -12961,7 +12961,7 @@ SpiderGL.Type.extend(SpiderGL.WebGL.VertexShader, SpiderGL.WebGL.Shader);
 /**
  * Creates a SpiderGL.WebGL.FragmentShader.
  *
- * SpiderGL.WebGL.FragmentShader represents a wrapper for a WebGLShader whose type is type WebGLRenderingContext.prototype.FRAGMENT_SHADER.
+ * SpiderGL.WebGL.FragmentShader represents a wrapper for a WebGLShader whose type is type WebGLRenderingContext.FRAGMENT_SHADER.
  *
  * @class The SpiderGL.WebGL.FragmentShader is a WebGLShader wrapper for fragment shaders.
  *
@@ -12984,11 +12984,11 @@ SpiderGL.WebGL.FragmentShader = function (gl, options) {
 /**
  * Dummy WebGL target for fragment shaders.
  *
- * It is equal to WebGLRenderingContext.prototype.NONE and is provided only for completeness with other WebGL wrappers.
+ * It is equal to WebGLRenderingContext.NONE and is provided only for completeness with other WebGL wrappers.
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  */
 SpiderGL.WebGL.FragmentShader.TARGET = WebGLRenderingContext.prototype.NONE;
 
@@ -12997,7 +12997,7 @@ SpiderGL.WebGL.FragmentShader.TARGET = WebGLRenderingContext.prototype.NONE;
  *
  * This function does nothing and it is provided only for simmetry with other wrappers.
  *
- * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.prototype.
+ * @param  {WebGLRenderingContext} gl A WebGLRenderingContext.
  */
 SpiderGL.WebGL.FragmentShader.unbind = function (gl) { };
 
@@ -13021,11 +13021,11 @@ SpiderGL.Type.extend(SpiderGL.WebGL.FragmentShader, SpiderGL.WebGL.Shader);
  * @param {string|array} [options.url] The url of the texture image to load. It has precedence over the data optional parameter. For SpiderGL.Texture.Texture2D, url is a string. For SpiderGL.Texture.TextureCubeMap, url is an array of six strings, one for each cube map face, in the order [+X, -X, +Y, -Y, +Z, -Z].
  * @param {ArrayBuffer|ArrayBufferView|ImageData|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} [options.data] The texture image pixel data.
  * @param {number} [options.internalFormat=SpiderGL.WebGL.Texture.DEFAULT_INTERNAL_FORMAT] The texture internal format.
- * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.prototype.
- * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.prototype.
+ * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.
+ * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.
  * @param {number} [options.border=SpiderGL.WebGL.Texture.DEFAULT_BORDER] Texture border.
- * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.prototype.texImage2D.
- * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.prototype.texImage2D.
+ * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.texImage2D.
+ * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.texImage2D.
  * @param {number} [options.magFilter=SpiderGL.WebGL.Texture.DEFAULT_MAG_FILTER] Texture magnification filter (see {@link SpiderGL.WebGL.Texture#magFilter}).
  * @param {number} [options.minFilter=SpiderGL.WebGL.Texture.DEFAULT_MIN_FILTER] Texture minification filter (see {@link SpiderGL.WebGL.Texture#minFilter}).
  * @param {number} [options.wrapS=SpiderGL.WebGL.Texture.DEFAULT_WRAP_S] Texture horizontal wrap mode (see {@link SpiderGL.WebGL.Texture#wrapS}).
@@ -13166,7 +13166,7 @@ SpiderGL.WebGL.Texture.DEFAULT_BORDER = 0;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.RGBA
+ * @default WebGLRenderingContext.RGBA
  */
 SpiderGL.WebGL.Texture.DEFAULT_FORMAT = WebGLRenderingContext.prototype.RGBA;
 
@@ -13184,7 +13184,7 @@ SpiderGL.WebGL.Texture.DEFAULT_AUTO_GENERATE_MIPMAP = false;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.RGBA
+ * @default WebGLRenderingContext.RGBA
  */
 SpiderGL.WebGL.Texture.DEFAULT_INTERNAL_FORMAT = WebGLRenderingContext.prototype.RGBA;
 
@@ -13202,7 +13202,7 @@ SpiderGL.WebGL.Texture.DEFAULT_LEVEL = 0;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.LINEAR
+ * @default WebGLRenderingContext.LINEAR
  */
 SpiderGL.WebGL.Texture.DEFAULT_MAG_FILTER = WebGLRenderingContext.prototype.LINEAR;
 
@@ -13211,7 +13211,7 @@ SpiderGL.WebGL.Texture.DEFAULT_MAG_FILTER = WebGLRenderingContext.prototype.LINE
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.LINEAR
+ * @default WebGLRenderingContext.LINEAR
  */
 SpiderGL.WebGL.Texture.DEFAULT_MIN_FILTER = WebGLRenderingContext.prototype.LINEAR;
 
@@ -13220,7 +13220,7 @@ SpiderGL.WebGL.Texture.DEFAULT_MIN_FILTER = WebGLRenderingContext.prototype.LINE
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.UNSIGNED_BYTE
+ * @default WebGLRenderingContext.UNSIGNED_BYTE
  */
 SpiderGL.WebGL.Texture.DEFAULT_TYPE = WebGLRenderingContext.prototype.UNSIGNED_BYTE;
 
@@ -13229,7 +13229,7 @@ SpiderGL.WebGL.Texture.DEFAULT_TYPE = WebGLRenderingContext.prototype.UNSIGNED_B
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.REPEAT
+ * @default WebGLRenderingContext.REPEAT
  */
 SpiderGL.WebGL.Texture.DEFAULT_WRAP_S = WebGLRenderingContext.prototype.REPEAT;
 
@@ -13238,7 +13238,7 @@ SpiderGL.WebGL.Texture.DEFAULT_WRAP_S = WebGLRenderingContext.prototype.REPEAT;
  *
  * @type number
  *
- * @default WebGLRenderingContext.prototype.REPEAT
+ * @default WebGLRenderingContext.REPEAT
  */
 SpiderGL.WebGL.Texture.DEFAULT_WRAP_T = WebGLRenderingContext.prototype.REPEAT;
 
@@ -13261,7 +13261,7 @@ SpiderGL.WebGL.Texture.DEFAULT_X_OFFSET = 0;
 SpiderGL.WebGL.Texture.DEFAULT_Y_OFFSET = 0;
 
 /**
- * Default value for pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_FLIP_Y_WEBGL when calling setImage or setSubImage.
+ * Default value for pixel unpack parameter WebGLRenderingContext.UNPACK_FLIP_Y_WEBGL when calling setImage or setSubImage.
  *
  * @default true
  *
@@ -13271,7 +13271,7 @@ SpiderGL.WebGL.Texture.DEFAULT_Y_OFFSET = 0;
 SpiderGL.WebGL.Texture.DEFAULT_UNPACK_FLIP_Y = true;
 
 /**
- * Default value for pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_PREMULTIPLY_ALPHA_WEBGL when calling setImage or setSubImage.
+ * Default value for pixel unpack parameter WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL when calling setImage or setSubImage.
  *
  * @default true
  *
@@ -13281,9 +13281,9 @@ SpiderGL.WebGL.Texture.DEFAULT_UNPACK_FLIP_Y = true;
 SpiderGL.WebGL.Texture.DEFAULT_UNPACK_PREMULTIPLY_ALPHA = false;
 
 /**
- * Default value for pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_COLORSPACE_CONVERSION_WEBGL when calling setImage or setSubImage.
+ * Default value for pixel unpack parameter WebGLRenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL when calling setImage or setSubImage.
  *
- * @default WebGLRenderingContext.prototype.NONE
+ * @default WebGLRenderingContext.NONE
  *
  * @see SpiderGL.WebGL.Texture.DEFAULT_UNPACK_FLIP_Y
  * @see SpiderGL.WebGL.Texture.DEFAULT_UNPACK_PREMULTIPLY_ALPHA
@@ -13562,8 +13562,8 @@ SpiderGL.WebGL.Texture.prototype = {
 	/**
 	 * Gets/Sets the flip Y policy.
 	 * It specifies the image data vertical flipping policy when unpacking pixel data in setData or setSubData.
-	 * If set to true, the WebGL pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_FLIP_Y will be set to true
-	 * If set to false, the WebGL pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_FLIP_Y will be set to false
+	 * If set to true, the WebGL pixel unpack parameter WebGLRenderingContext.UNPACK_FLIP_Y will be set to true
+	 * If set to false, the WebGL pixel unpack parameter WebGLRenderingContext.UNPACK_FLIP_Y will be set to false 
 	 * In either case, the unpack parameter will be restored.
 	 * If set to SpiderGL.Core.DONT_CARE, the current WebGLRenderingContext setting will be used (i.e. nothing will be changed).
 	 *
@@ -13582,8 +13582,8 @@ SpiderGL.WebGL.Texture.prototype = {
 	/**
 	 * Gets/Sets the premultiply alpha policy.
 	 * It specifies the image data premultiply alpha policy when unpacking pixel data in setData or setSubData.
-	 * If set to true, the WebGL pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_PREMULTIPLY_ALPHA will be set to true
-	 * If set to false, the WebGL pixel unpack parameter WebGLRenderingContext.prototype.UNPACK_PREMULTIPLY_ALPHA will be set to false
+	 * If set to true, the WebGL pixel unpack parameter WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA will be set to true
+	 * If set to false, the WebGL pixel unpack parameter WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA will be set to false 
 	 * In either case, the unpack parameter will be restored after image data has been set
 	 * If set to SpiderGL.Core.DONT_CARE, the current WebGLRenderingContext setting will be used (i.e. nothing will be changed).
 	 *
@@ -13901,11 +13901,11 @@ SpiderGL.WebGL.Texture2D.prototype = {
 	 * @param {ArrayBuffer|ArrayBufferView|ImageData|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} [options.data] The texture image pixel data.
 	 * @param {number} [options.internalFormat=SpiderGL.WebGL.Texture.DEFAULT_INTERNAL_FORMAT] The texture internal format.
 	 * @param {number} [options.level=SpiderGL.WebGL.Texture.DEFAULT_LEVEL] The texture image mip level.
-	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.prototype.
-	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.prototype.
+	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.
+	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.
 	 * @param {number} [options.border=SpiderGL.WebGL.Texture.DEFAULT_BORDER] Texture border.
-	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.prototype.texImage2D.
-	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.prototype.texImage2D.
+	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.texImage2D.
+	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.texImage2D.
 	 * @param {bool} [options.generateMipmap] If specified, overrides autoMipmap.
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
@@ -13929,11 +13929,11 @@ SpiderGL.WebGL.Texture2D.prototype = {
 	 * @param {ArrayBuffer|ArrayBufferView|ImageData|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} [options.data] The texture sub-image pixel data.
 	 * @param {number} [options.xoffset=SpiderGL.WebGL.Texture.DEFAULT_X_OFFSET] The sub-image x offset.
 	 * @param {number} [options.yoffset=SpiderGL.WebGL.Texture.DEFAULT_Y_OFFSET] The sub-image y offset.
-	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.prototype.
-	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.prototype.
+	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.
+	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.
 	 * @param {number} [options.border=SpiderGL.WebGL.Texture.DEFAULT_BORDER] Texture border.
-	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.prototype.texSubImage2D.
-	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.prototype.texSubImage2D.
+	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.texSubImage2D.
+	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.texSubImage2D.
 	 * @param {bool} [options.generateMipmap] If specified, overrides autoMipmap.
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
@@ -14047,11 +14047,11 @@ SpiderGL.WebGL.TextureCubeMap.prototype = {
 	 * @param {object} options The image data and type parameters (see SpiderGL.WebGL.Texture constructor).
 	 * @param {ArrayBuffer|ArrayBufferView|ImageData|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} [options.data] The texture image pixel data.
 	 * @param {number} [options.internalFormat=SpiderGL.WebGL.Texture.DEFAULT_INTERNAL_FORMAT] The texture internal format.
-	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.prototype.
-	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.prototype.
+	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.
+	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.
 	 * @param {number} [options.border=SpiderGL.WebGL.Texture.DEFAULT_BORDER] Texture border.
-	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.prototype.texImage2D.
-	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.prototype.texImage2D.
+	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.texImage2D.
+	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.texImage2D.
 	 * @param {bool} [options.generateMipmap] If specified, overrides autoMipmap.
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
@@ -14083,11 +14083,11 @@ SpiderGL.WebGL.TextureCubeMap.prototype = {
 	 * @param {ArrayBuffer|ArrayBufferView|ImageData|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement} [options.data] The texture sub-image pixel data.
 	 * @param {number} [options.xoffset=SpiderGL.WebGL.Texture.DEFAULT_X_OFFSET] The sub-image x offset.
 	 * @param {number} [options.yoffset=SpiderGL.WebGL.Texture.DEFAULT_Y_OFFSET] The sub-image y offset.
-	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.prototype.
-	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.prototype.
+	 * @param {number} [options.width] If data is null or a typed array, specifies the texture image width. If handle is provided, the width parameter will supply the width information, not querable to the WebGLRenderingContext.
+	 * @param {number} [options.height] If data is null or a typed array, specifies the texture image height. If handle is provided, the width parameter will supply the height information, not querable to the WebGLRenderingContext.
 	 * @param {number} [options.border=SpiderGL.WebGL.Texture.DEFAULT_BORDER] Texture border.
-	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.prototype.texSubImage2D.
-	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.prototype.texSubImage2D.
+	 * @param {number} [options.format=SpiderGL.WebGL.Texture.DEFAULT_FORMAT] The format parameter used for WebGLRenderingContext.texSubImage2D.
+	 * @param {number} [options.type=SpiderGL.WebGL.Texture.DEFAULT_TYPE] The type parameter used for WebGLRenderingContext.texSubImage2D.
 	 * @param {bool} [options.generateMipmap] If specified, overrides autoMipmap.
 	 * @param {bool} [options.flipY] If specified, overrides flipYPolicy.
 	 * @param {bool} [options.premultiplyAlpha] If specified, overrides premultiplyAlphaPolicy.
@@ -15987,7 +15987,7 @@ SpiderGL.UserInterface.CanvasHandler = function (gl, handler, options) {
 		}
 	};
 	window.addEventListener("message", handleMessage, true);
-
+ 
 	canvas.tabIndex = 0;
 
 	canvas.addEventListener("unload",          function (e) { that._onTerminate       (e); }, false);
@@ -16098,17 +16098,17 @@ SpiderGL.UserInterface.CanvasHandler._touchHandler = function (event) {
 
 	if(touches.length>=2) {
 		/**IE PATCH**/
-		/**/if (navigator.userAgent.toLowerCase().indexOf('trident')<=-1)
+		/**/if (navigator.userAgent.toLowerCase().indexOf('trident')<=-1) 
 		/**IE PATCH**/
 		{
 			if(touches[0].target.id!="draw-canvas"||touches[1].target.id!="draw-canvas") return;
 		}
 
 		var dist = Math.sqrt(Math.pow((touches[0].clientX - touches[1].clientX),2)+Math.pow((touches[0].clientY - touches[1].clientY),2));
-		var diff = dist - SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp;
+		diff = dist - SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp;
 		SpiderGL.UserInterface.CanvasHandler._multiTouch.tmp = dist;
 		/**IE PATCH**/
-		/**/if(event.type=="pointerup") {
+		/**/if(event.type=="pointerup") { 
 		/**/	button = SpiderGL.UserInterface.CanvasHandler._multiTouch.btn;
 		/**/	type = "mousedown";
 		/**/}
@@ -16131,7 +16131,7 @@ SpiderGL.UserInterface.CanvasHandler._touchHandler = function (event) {
 		if (type=="mousedown") {
 			SpiderGL.UserInterface.CanvasHandler._multiTouch.evt = event;
 		}
-		else if (type=="mouseup") {
+		else if (type=="mouseup") { 
 			if(SpiderGL.UserInterface.CanvasHandler._multiTouch.pan) {
 				button = 1;
 				SpiderGL.UserInterface.CanvasHandler._multiTouch.pan   = false;
@@ -16176,9 +16176,9 @@ SpiderGL.UserInterface.CanvasHandler._touchHandler = function (event) {
 
 	if(first){
 		simulatedEvent.initMouseEvent(
-			type, true, true, window, diff,
-			first.screenX, first.screenY,
-			first.clientX, first.clientY, false,
+			type, true, true, window, diff, 
+			first.screenX, first.screenY, 
+			first.clientX, first.clientY, false, 
 			false, false, false, button, null
 		);
 		first.target.dispatchEvent(simulatedEvent);
@@ -16188,8 +16188,8 @@ SpiderGL.UserInterface.CanvasHandler._touchHandler = function (event) {
 	/**/if(event.type=="pointerup") {
 	/**/	for(i=0; i<SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length; i++) {
 	/**/		if (SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i].pointerId>=event.pointerId) {
-	/**/			if (i+1==SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length) SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.pop();
-	/**/			else SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i] = SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i+1];
+	/**/			if (i+1==SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.length) SpiderGL.UserInterface.CanvasHandler._multiTouch.touches.pop(); 
+	/**/			else SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i] = SpiderGL.UserInterface.CanvasHandler._multiTouch.touches[i+1]; 
 	/**/		}
 	/**/	}
 	/**/}
@@ -16221,9 +16221,9 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 
 	_postDrawEvent : function () {
 		this._postDrawCount = 5;
-		if (this._drawEventPending)
+		if (this._drawEventPending) 
 			return;
-
+		
 		this._drawEventPending = true;
 		requestAnimationFrame(this._delegateDraw);
 		//setTimeout(this._drawEventHandler, 0);
@@ -16287,7 +16287,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
-
+		
 		this._keysDown[c] = false;
 		this._dispatch("onKeyUp", c, e);
 	},
@@ -16299,7 +16299,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 			var s = String.fromCharCode(c);
 			c = s.toUpperCase();
 		}
-
+		
 		this._dispatch("onKeyPress", c, e);
 	},
 
@@ -16454,7 +16454,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 			}
 		}
 		else if (e.detail) {
-			delta = -e.detail / 3;
+			delta = e.detail / 3;
 		}
 		if (delta) {
 			this._dispatch("onMouseWheel", delta, xy[0], xy[1], e);
@@ -16521,7 +16521,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	},
 
 	/**
-	 * Gets the canvas hijacked WebGLRenderingContext.prototype.
+	 * Gets the canvas hijacked WebGLRenderingContext.
 	 *
 	 * @type WebGLRenderingContext
 	 *
@@ -16669,7 +16669,7 @@ SpiderGL.UserInterface.CanvasHandler.prototype = {
 	 * Gets/Sets if the key repeat must be ignored.
 	 *
 	 * @type bool
-	 *
+	 * 
 	 * @default SpiderGL.UserInterface.CanvasHandler.DEFAULT_IGNORE_KEY_REPEAT
 	 */
 	get ignoreKeyRepeat() {

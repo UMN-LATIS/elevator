@@ -243,8 +243,131 @@ rnd.resolution_y = int(2000)
 		$objHandler->job = $this->job;
 		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
+		
 
-		$result = $objHandler->createNxsFileInternal($this->derivatives['ply'], $args);
+		$targetDerivative = $this->derivatives['ply'];
+		$targetPath = $this->sourceFile->getPathToLocalFile() . "_extracted";
+		if(!file_exists($targetPath)) {
+			$zip = new ZipArchive;
+			$res = $zip->open($this->sourceFile->getPathToLocalFile());
+			if(!$res) {
+				$this->logging->processingInfo("createDerivative","objHandler","Coudl not extract zip",$this->getObjectId(),$this->job->getId());
+				return JOB_FAILED;
+			}
+
+			$zip->extractTo($targetPath);
+			$zip->close();
+
+		}
+		
+		
+		// flatten any zipped dir structure
+		$d = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS));
+		foreach($d as $file){
+        	if($file->isFile()) { 
+        		rename($file->getPathname(), $targetPath . "/" . $file->getFilename());
+        	}
+		}
+
+		$di = new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS);
+		$it = new RecursiveIteratorIterator($di);
+		$baseFolder = "";
+		$objFile = "";
+		$foundMTL = false;
+		foreach($it as $file) {
+			$onlyFilename = pathinfo($file, PATHINFO_FILENAME);
+			if(substr($onlyFilename, 0,1) == ".") {
+				continue;
+			}
+
+			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "obj") {
+				$objFile = $file;
+				$baseFolder = pathinfo($file, PATHINFO_DIRNAME);
+			}
+			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "mtl") {
+				$foundMTL = TRUE;
+			}
+
+		}
+
+
+		if($foundMTL) {
+			$localPath = $this->sourceFile->getPathToLocalFile();
+			$pathparts = pathinfo($localPath);
+
+			$derivativeContainer = new fileContainerS3();
+			$derivativeContainer->derivativeType = 'ply_texture';
+			$derivativeContainer->path = "derivative";
+			$derivativeContainer->setParent($this->sourceFile->getParent());
+			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply_texture' . '.ply';
+
+			putenv("DISPLAY=:1.0");
+
+			$meshlabCommandLine =  $this->config->item("meshlabPath") . " -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om wt vn";
+
+			exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
+			if(file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
+				$sourceFileLocalName = $targetPath . "/targetFile.ply";
+				rename($derivativeContainer->getPathToLocalFile() . ".ply", $sourceFileLocalName);
+				$targetDerivative = $derivativeContainer;
+			}
+		}
+
+		if($targetDerivative->derivativeType == "ply_texture") {
+			$localPath = $targetDerivative->getPathToLocalFile();
+			$pathparts = pathinfo($localPath);
+
+			$derivativeContainer = new fileContainerS3();
+			$derivativeContainer->derivativeType = "nxs";
+			$derivativeContainer->path = "derivative";
+			$derivativeContainer->setParent($this->sourceFile->getParent());
+			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "nxs" . '.nxs';
+			//TODO: catch errors here
+			$nxsBuild = $this->config->item("nxsBuild");
+			$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
+			exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
+			unlink($sourceFileLocalName);
+
+			$success = true;
+			if(file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) {
+				rename($derivativeContainer->getPathToLocalFile() . ".nxs", $derivativeContainer->getPathToLocalFile());
+				$derivativeContainer->ready = true;
+				if(!$derivativeContainer->copyToRemoteStorage()) {
+					//TODO: log
+					//TODO: remove derivative
+					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
+					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+					$success=false;
+				}
+				else {
+					if(!unlink($derivativeContainer->getPathToLocalFile())) {
+						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+						$success=false;
+					}
+				}
+				$derivativeArray['nxs'] = $derivativeContainer;
+			}
+			else {
+				$this->logging->processingInfo("createNXS", "objHandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
+				echo "Error generating derivatives" . $derivativeContainer->getPathToLocalFile();
+				$success=false;
+			}
+
+			if($success) {
+				$result = $derivativeArray;
+			}
+			else {
+				$result = JOB_FAILED;
+			}
+
+
+
+		}
+		else {
+			$result = $objHandler->createNxsFileInternal($targetDerivative, $args);
+		}
+
 		if($result == JOB_POSTPONE) {
 			return JOB_POSTPONE;
 		}
