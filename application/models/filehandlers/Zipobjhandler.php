@@ -260,6 +260,15 @@ rnd.resolution_y = int(2000)
 
 		}
 		
+		
+		// flatten any zipped dir structure
+		$d = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS));
+		foreach($d as $file){
+        	if($file->isFile()) { 
+        		rename($file->getPathname(), $targetPath . "/" . $file->getFilename());
+        	}
+		}
+
 		$di = new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS);
 		$it = new RecursiveIteratorIterator($di);
 		$baseFolder = "";
@@ -278,7 +287,6 @@ rnd.resolution_y = int(2000)
 			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "mtl") {
 				$foundMTL = TRUE;
 			}
-
 
 		}
 
@@ -317,7 +325,7 @@ rnd.resolution_y = int(2000)
 			//TODO: catch errors here
 			$nxsBuild = $this->config->item("nxsBuild");
 			$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
-			exec($nxsBuilderString . " 2>/dev/null");
+			exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
 			unlink($sourceFileLocalName);
 
 			$success = true;
