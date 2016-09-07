@@ -10,7 +10,7 @@
     },
      {
       "type": "vcs",
-      "url": "https://github.com/UMN-LATIS/umn-shib-php-1.git"
+      "url": "https://github.com/UMNLibraries/umn-shib-php.git"
     },
     {
       "type": "vcs",
