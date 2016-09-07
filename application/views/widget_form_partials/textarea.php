@@ -74,11 +74,13 @@ $(document).ready(function() {
 	    // mode: "specific_textareas",
 	    // editor_selector: "textAreaWidget",
 	    selector: "textarea#<?=$textId?>",
-	    menubar : false,
-	    plugins: "link",
+	    menubar: false,
+	    plugins: "code link",
+	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link code",
 	    setup: function(editor) {
  			editor.on('change', function () {
             	tinymce.triggerSave();
+            	$("textarea#<?=$textId?>").trigger("change");
         	});
 	    }
 	 });

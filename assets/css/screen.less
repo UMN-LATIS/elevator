@@ -565,19 +565,19 @@ body {
 .assetWidget {
     margin-top:5px;
     margin-bottom:5px;
-    & ul {
+    & > ul {
         margin: 0;
         list-style-type: none;
         display: inline-block;
         padding-left:0px;
-        & li {
+        & > li {
             display:inline;
             // padding-left:2px;
         }
-        &:not(.fileList) li:after {
+        &:not(.fileList) > li:after {
             content: ", ";
         }
-        & li:last-child:after {
+        & > li:last-child:after {
             content: "";
         }
     }
