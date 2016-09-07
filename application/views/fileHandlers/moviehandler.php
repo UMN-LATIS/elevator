@@ -92,6 +92,9 @@ if(typeof objectId == 'undefined') {
       <p class="alert alert-info">No derivatives found.
         <?if(!$this->user_model->userLoaded):?>
         <?=$this->load->view("errors/loginForPermissions")?>
+        <?if($embedded):?>
+        <?=$this->load->view("login/login")?>
+        <?endif?>
         <?endif?>
       </p>
 

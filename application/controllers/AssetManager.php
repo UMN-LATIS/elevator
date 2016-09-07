@@ -675,6 +675,11 @@ class AssetManager extends Admin_Controller {
 		$rowCount = 0;
 		$totalLines = intval(exec("wc -l '" . $cacheArray['filename'] . "'"));
 
+		$convertLines = true;
+		if (mb_check_encoding(file_get_contents($cacheArray['filename']), 'UTF-8')) {
+			$convertLines = false;
+		}
+
 		$header = fgetcsv($fp, 0, ",");
 		$successArray = [];
 		while($row = fgetcsv($fp, 0, ",")) {
@@ -690,7 +695,10 @@ class AssetManager extends Admin_Controller {
 			$newEntry["collectionId"] = $cacheArray['collectionId'];
 			$uploadItems = array();
 			foreach($row as $key=>$cell) {
-				$cell = mb_convert_encoding( $cell, 'UTF-8', 'Windows-1252');;
+				if($convertLines)  {
+					$cell = mb_convert_encoding( $cell, 'UTF-8', 'Windows-1252');	
+				}
+				
 				$rowArray = array();
 				if(strlen($cacheArray['delimiter'][$key]) > 0 && strpos($cell, $cacheArray['delimiter'][$key])) {
 					$rowArray = explode($cacheArray['delimiter'][$key], $cell);
@@ -777,7 +785,7 @@ class AssetManager extends Admin_Controller {
 			$assetModel->createObjectFromJSON($newEntry);
 			$assetModel->save();
 
-			if($targetArray) {
+			if(isset($targetArray)) {
 				$targetArray[]["targetAssetId"] = $assetModel->getObjectId();
 			}
 
@@ -794,7 +802,7 @@ class AssetManager extends Admin_Controller {
 				$this->doctrineCache->setNamespace('importCache_');
 				$this->doctrineCache->save($hash, $cacheArray, 900);
 
-				if($parentObject && $targetArray) {
+				if(isset($parentObject) && isset($targetArray)) {
 					$objectArray = $parentObject->getAsArray();
 					$objectArray[$targetField] = $targetArray;
 
@@ -808,14 +816,14 @@ class AssetManager extends Admin_Controller {
 
 		}
 
-		if($parentObject && $targetArray) {
+		if(isset($parentObject) && isset($targetArray)) {
 			$objectArray = $parentObject->getAsArray();
 			$objectArray[$targetField] = $targetArray;
 			$parentObject->createObjectFromJSON($objectArray);
 			$parentObject->save();
 		}
 
-		if($parentObject) {
+		if(isset($parentObject)) {
 			array_unshift($cacheArray['successArray'],  "Updated parent: " . $parentObject->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $parentObject->getObjectId()) ."\">" . $parentObject->getObjectId() . "</A>)<br>");
 		}
 
