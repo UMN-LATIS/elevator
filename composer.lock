@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ea8b0d496b5addd802be3c680eeb6504",
-    "content-hash": "1b62d08df92ef477999a918500717a38",
+    "hash": "b53ea691704110366bf063795e6742bd",
+    "content-hash": "f1c6350d53c873c2e84c98bb1a15b3ae",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -577,7 +577,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/e69d1cf3bddd269e76d68eb81823c01f02b230d0",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/f84b0c161c76737aee32ca793e90bfe5082a7fd3",
                 "reference": "b9ec927612c8b26b51cf23e22ff2e278024578ce",
                 "shasum": ""
             },
@@ -2367,13 +2367,13 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/UMN-LATIS/umn-shib-php-1.git",
-                "reference": "304a52f730a62d5a6ebd19e55d15232a6e2a29fe"
+                "url": "https://github.com/UMNLibraries/umn-shib-php.git",
+                "reference": "b13614a0ed6dbacb8ab3c9a3da25841f6a5f951b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/UMN-LATIS/umn-shib-php-1/zipball/304a52f730a62d5a6ebd19e55d15232a6e2a29fe",
-                "reference": "304a52f730a62d5a6ebd19e55d15232a6e2a29fe",
+                "url": "https://api.github.com/repos/UMNLibraries/umn-shib-php/zipball/b13614a0ed6dbacb8ab3c9a3da25841f6a5f951b",
+                "reference": "b13614a0ed6dbacb8ab3c9a3da25841f6a5f951b",
                 "shasum": ""
             },
             "require": {
@@ -2393,9 +2393,10 @@
             ],
             "description": "A PHP implementation of the UMN Community Shibboleth basic authentication API and supporting utilities",
             "support": {
-                "source": "https://github.com/UMN-LATIS/umn-shib-php-1/tree/master"
+                "source": "https://github.com/UMNLibraries/umn-shib-php/tree/master",
+                "issues": "https://github.com/UMNLibraries/umn-shib-php/issues"
             },
-            "time": "2016-07-27 16:37:14"
+            "time": "2016-09-07 18:32:56"
         }
     ],
     "packages-dev": [],

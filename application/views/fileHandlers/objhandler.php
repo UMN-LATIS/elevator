@@ -76,7 +76,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
   <div id="measurebox" style="background-color:rgba(125,125,125,0.5);color:#f8f8f8;">Measured length:<br/>
   <span id="measure-output" onmousedown="event.stopPropagation()">0.0</span>
  </div>
- <canvas id="draw-canvas" style="background-image: url(/assets/3dviewer/skins/light/background.png)"/>
+ <canvas id="draw-canvas" style=""/>
 </div>
  <canvas id="draw-canvas"/>
 
