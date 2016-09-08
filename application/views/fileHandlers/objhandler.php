@@ -193,6 +193,7 @@ var resizeTarget = function() {
   if($('#full').css("visibility")=="visible"){
     <?if($embedded):?>
       resizeCanvas($('#3dhop').parent().width(),$(window).height());
+      $(".threedelementcontainer").height($('#3dhop').height());
     <?else:?>
       resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());  
     <?endif?>
