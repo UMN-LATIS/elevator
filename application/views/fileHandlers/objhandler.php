@@ -191,7 +191,12 @@ var timer;
 
 var resizeTarget = function() {
   if($('#full').css("visibility")=="visible"){
-    resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());
+    <?if($embedded):?>
+      resizeCanvas($('#3dhop').parent().width(),$(window).height());
+    <?else:?>
+      resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());  
+    <?endif?>
+    
     presenter.ui.postDrawEvent();
   }
 }
@@ -207,6 +212,7 @@ var loadedCallback = function() {
   init3dhop();
   setup3dhop();
    moveMeasurebox(10,10);
+   resizeTarget();
 }
 
 
