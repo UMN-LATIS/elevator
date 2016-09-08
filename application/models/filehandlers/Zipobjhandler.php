@@ -274,6 +274,7 @@ rnd.resolution_y = int(2000)
 		$baseFolder = "";
 		$objFile = "";
 		$foundMTL = false;
+		$foundTexture = false;
 		foreach($it as $file) {
 			$onlyFilename = pathinfo($file, PATHINFO_FILENAME);
 			if(substr($onlyFilename, 0,1) == ".") {
@@ -287,11 +288,14 @@ rnd.resolution_y = int(2000)
 			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "mtl") {
 				$foundMTL = TRUE;
 			}
+			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "jpg" || strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "png") {
+				$foundTexture = TRUE;
+			}
 
 		}
 
 
-		if($foundMTL) {
+		if($foundMTL && $foundTexture) {
 			$localPath = $this->sourceFile->getPathToLocalFile();
 			$pathparts = pathinfo($localPath);
 
