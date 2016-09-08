@@ -78,7 +78,6 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
  </div>
  <canvas id="draw-canvas" style=""/>
 </div>
- <canvas id="draw-canvas"/>
 
  <div id="loadIndicator">
     Loading...
