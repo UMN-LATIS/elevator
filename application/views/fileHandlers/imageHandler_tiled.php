@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.fullscreen.css">
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.6.1.min.js"></script>
+<script src="/assets/js/aws-s3.js"></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
@@ -19,7 +19,14 @@
 var map;
 var s3;
 var AWS;
-$(window).load(function() {
+
+var loadedCallback = function() {
+
+	if(typeof AWS === 'undefined') {
+		console.log("pausing for aws");
+		setTimeout(loadedCallback, 200);
+		return;
+	}
 
 	AWS.config = new AWS.Config();
 	AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
@@ -56,6 +63,6 @@ $(window).load(function() {
 		overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>
 	});
 	layer.addTo(map);
-});
+};
 
 </script>
