@@ -425,7 +425,7 @@ rnd.resolution_y = int(2000)
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "nxs" . '.nxs';
 		//TODO: catch errors here
 		$nxsBuild = $this->config->item("nxsBuild");
-		$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
+		$nxsBuilderString = $nxsBuild . " --top_node_faces 128 -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
 		exec($nxsBuilderString . " 2>/dev/null");
 		unlink($sourceFileLocalName);
 
