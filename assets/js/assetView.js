@@ -1,4 +1,12 @@
 
+// disable cache-busted of embedded JS by jquery
+$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+  if ( options.dataType == 'script' || originalOptions.dataType == 'script' ) {
+      options.cache = true;
+  }
+});
+
+
 
 $(document).on("ready", function() {
 
@@ -286,6 +294,7 @@ $(document).on("click", ".loadView", function(e) {
 	}
 
 	// we pass in the page's objectId so that assets inside drawers load properly.
+
 
 	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
