@@ -11,20 +11,22 @@
 
 <? $token = $fileObject->getSecurityToken("tiled")?>
 
-<script>
 
-AWS.config = new AWS.Config();
-AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
-
-AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
-var s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
-
-</script>
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
 
 <script type="application/javascript">
 
-	var map = L.map('map', {
+var map;
+var s3;
+var AWS;
+$(window).load(function() {
+
+	AWS.config = new AWS.Config();
+	AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
+
+	AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
+	s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
+	map = L.map('map', {
 		fullscreenControl: true,
 		zoomSnap: 0,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
@@ -54,5 +56,6 @@ var s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
 		overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>
 	});
 	layer.addTo(map);
+});
 
 </script>
