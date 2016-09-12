@@ -1228,8 +1228,13 @@ Nexus.Renderer.prototype = {
 
 			tex.img.onload = function() { 
 				urlCreator.revokeObjectURL(tex.img.src); 
-
 				var gl = that._gl;
+
+				if(tex.img.width > gl.getParameter(gl.MAX_TEXTURE_SIZE) || tex.img.height > gl.getParameter(gl.MAX_TEXTURE_SIZE) ) {
+					console.log("ignoring texture of size " + tex.img.width + "x" + tex.img.height + " due to max texture size of " + gl.getParameter(gl.MAX_TEXTURE_SIZE));
+					return;
+				}
+				
 				tex.texture = gl.createTexture();
 				gl.bindTexture(gl.TEXTURE_2D, tex.texture);
 		    	var s = gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.img);
