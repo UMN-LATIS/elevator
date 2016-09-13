@@ -249,7 +249,6 @@ class UMNHelper extends AuthHelper
 			ldap_close($connect);
 			$connect = ldap_connect( $ldap_host);
 			$r=ldap_bind($connect);
-			echo $filter;
 			$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
 		      or exit(">>Unable to search ldap server<<");
 			
