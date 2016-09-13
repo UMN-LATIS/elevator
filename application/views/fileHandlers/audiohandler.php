@@ -24,7 +24,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
   <div class="col-md-12 audioColumn">
 <?endif?>
 
-  <? if(!isset($fileContainers) || count($fileContainers) == 0):?>
+  <? if(!isset($fileContainers) || count($fileContainers) == 2):?>
       <p class="alert alert-info">No derivatives found.
         <?if(!$this->user_model->userLoaded):?>
         <?=$this->load->view("errors/loginForPermissions")?>
