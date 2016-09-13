@@ -41,6 +41,10 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
     .jwplayer.jw-flag-audio-player .jw-preview {
       display:block;
     }
+    /* jw player 7.6 draws video element over audio post.  move it down the dom */
+    .jwplayer .jw-media {
+      z-index: -1;
+    }
     </style>
 
     <script type="text/javascript">
