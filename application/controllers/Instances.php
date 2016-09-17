@@ -446,7 +446,7 @@ class Instances extends Instance_Controller {
 						},
 						"Action": "s3:GetObject",
 						"Resource": "arn:aws:s3:::' . $bucketName . '/derivative/*streaming/stream1.m3u8"
-					},
+					}
 					]
 				}'
 			]);
