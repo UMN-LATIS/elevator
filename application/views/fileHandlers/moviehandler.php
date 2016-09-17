@@ -99,7 +99,9 @@ if(typeof objectId == 'undefined') {
       </p>
 
     <?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
-           <iframe frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="/assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
+    <?# this file must be uploaded to s3 for these to work in safari as of 2016 ?>
+            <script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
+            <iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
     <?else:?>
     <div id="videoElement">Loading the player...</div>
 

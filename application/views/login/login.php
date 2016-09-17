@@ -7,8 +7,13 @@
 			<div class="form-group">
 				<legend>Sign In to <?=$this->instance->getName()?></legend>
 				
-				<A href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>" class="btn btn-primary">University Sign In</A>
-				<a class="btn btn-info" role="button" data-toggle="collapse" href="#localUser" aria-expanded="false" aria-controls="localUser">Local User</a>
+				<A href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>" class="btn btn-primary loginLink"><?=$this->config->item("remoteLoginLabel")?> Sign In</A>
+				<script>
+				if(window.location.hash) {
+					$('.loginLink').attr('href', $('.loginLink').attr('href') + window.location.hash.replace("#","%23"));
+				}
+				</script>
+				<a class="btn btn-info" role="button" data-toggle="collapse" href="#localUser" aria-expanded="false" aria-controls="localUser"><?=$this->config->item("guestLoginLabel")?> User</a>
 			</div>
 
 			<div class="collapse" id="localUser">
@@ -16,7 +21,7 @@
 				<div class="form-group">
 
 			    <div class="col-sm-10">
-			      <p class="form-control-static">Enter your Elevator username and password below.</p></p>
+			      <p class="form-control-static">Enter your <?=$this->config->item("guestLoginLabel")?> username and password below.</p></p>
 			    </div>
 			  </div>
 
@@ -42,7 +47,7 @@
 				</script>
 				<div class="form-group">
 					<div class="col-sm-6 col-sm-offset-2">
-						<button type="submit" class="btn btn-primary">Login</button>
+						<button type="submit" class="btn btn-primary">Sign In</button>
 					</div>
 
 				</div>
