@@ -84,6 +84,8 @@ class LoginManager extends Instance_Controller {
 			if(stristr($redirectURL, "errorHandler")) {
 				$redirectURL = "/";
 			}
+			// we hackily urlencode hashes
+			$redirectURL = str_replace("%23", "#", $redirectURL);
 		}
 		$this->force_ssl();
 

@@ -7,7 +7,12 @@
 			<div class="form-group">
 				<legend>Sign In to <?=$this->instance->getName()?></legend>
 				
-				<A href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>" class="btn btn-primary"><?=$this->config->item("remoteLoginLabel")?> Sign In</A>
+				<A href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>" class="btn btn-primary loginLink"><?=$this->config->item("remoteLoginLabel")?> Sign In</A>
+				<script>
+				if(window.location.hash) {
+					$('.loginLink').attr('href', $('.loginLink').attr('href') + window.location.hash.replace("#","%23"));
+				}
+				</script>
 				<a class="btn btn-info" role="button" data-toggle="collapse" href="#localUser" aria-expanded="false" aria-controls="localUser"><?=$this->config->item("guestLoginLabel")?> User</a>
 			</div>
 
