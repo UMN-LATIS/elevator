@@ -1,6 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.fullscreen.css">
-<script src="/assets/js/aws-s3.js"></script>
+<script src="/assets/js/aws-s3.min.js"></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
