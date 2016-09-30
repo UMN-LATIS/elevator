@@ -546,9 +546,7 @@ class search_model extends CI_Model {
 		$searchParams['index'] = $this->config->item('elasticIndex');
 		$searchParams['body']["suggestion-finder"]["text"] = $searchTerm;
 		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
-		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
 
-		$this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->suggest($searchParams);
 
 		return $queryResponse;
