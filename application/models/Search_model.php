@@ -1,637 +1,671 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+class search_model extends CI_Model {
 
-class Search extends Instance_Controller {
-
-	private $searchId = null;
+	private $es = NULL;
+	public $showHidden = false;
+	public $pageLength = 30;
 
 	public function __construct()
 	{
 		parent::__construct();
-		$this->load->model("asset_model");
-		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
+		$params['hosts'] = array (
+    		$this->config->item('elastic'));
 
-		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer","oms","drawers", "galleria-1.3.3"];
-		$this->template->loadJavascript($jsLoadArray);
+		$this->es = new Elasticsearch\Client($params);
 
-		$this->template->content->view("drawers/drawerModal");
 	}
 
-	public function index()
-	{
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
+	public function remove($asset) {
+		$params['index'] = $this->config->item('elasticIndex');
+    	$params['type']  = 'asset';
+    	$params['id']    = $asset->getObjectId();
+    	if(!$params['id'] || strlen($params['id']<5)) {
+    		// if you don't pass an id, elasticsearch will eat all your data
+    		return;
+    	}
+    	try {
+    		$ret = $this->es->delete($params);
+    		return $ret;
+    	}
+    	catch (Exception $e) {
 
-		if($accessLevel < PERM_SEARCH) {
-			if($this->user_model) {
-				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-				if(count($allowedCollections) == 0) {
-					$this->errorhandler_helper->callError("noPermission");
-				}
-			}
-			else {
-				$this->errorhandler_helper->callError("noPermission");
-			}
-		}
-
-		$jsloadArray = array();
-		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$jsLoadArray = ["search", "searchForm"];
-
-		}
-		else {
-			$jsLoadArray = ["searchMaster"];
-		}
-		$jsLoadArray[] = "spin";
-
-		$this->template->loadJavascript($jsLoadArray);
-		$this->template->addToDrawer->view("drawers/add_to_drawer");
-		$this->template->content->view("search");
-		$this->template->publish();
-	}
-
-	public function advancedSearchModal() {
-
-
-		// TODO: optimize this
-		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
-
-		$widgetArray = array();
-		foreach($directSearch as $widget) {
-			if($this->instance->getTemplates()->contains($widget->getTemplate())) {
-				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId()];
-			}
-		}
-
-		$allowedCollections = array();
-		if($this->user_model) {
-			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-		}
-
-		$this->load->view("advanced_modal", ["collections"=>$this->instance->getCollections(),"allowedCollections"=>$allowedCollections, "searchableWidgets"=>$widgetArray]);
+    	}
 
 
 	}
 
-	public function getFieldInfo() {
-		$field = $this->input->post("fieldTitle");
-		$templateId = $this->input->post("template");
-		$template = $this->asset_template->getTemplate($templateId);
+	public function wipeIndex() {
+		$deleteParams['index'] = $this->config->item('elasticIndex');
+		try {
+			$this->es->indices()->delete($deleteParams);
+		}
+		catch (Exception $e) {
+			$this->logging->logError("admin","wipeindex", "error deletig index" . json_encode($e));
+		}
 
-		$returnInfo = array();
+		$indexParams['index'] = $this->config->item('elasticIndex');
+		try {
+			$this->es->indices()->create($indexParams);
+		}
+		catch (Exception $e) {
+			$this->logging->logError("admin","wipeindex", "error creating index" . json_encode($e));
+		}
 
-		if(!isset($template->widgetArray[$field])) {
-			echo json_encode($returnInfo);
+	}
+
+	public function addOrUpdate($asset) {
+
+		if(!$asset->assetTemplate || !$asset->assetTemplate->getIndexForSearching()) {
 			return;
 		}
+		$this->asset_model->enableObjectCache();
 
-		$widget = $template->widgetArray[$field];
+		/** HACK
+		* for now, make sure we have a mapping each time we add a record
+		*/
+		$params['index'] = $this->config->item('elasticIndex');
+		$params['type']  = 'asset';
 
-		// right now we only special case select fields, everything else is plaintext. Longer term, if adavnced search is widely used,
-		// we could essentially reuse the curation views here
-		//
-		if(get_class($widget) == "Select") {
-			$returnInfo['type'] = "select";
-			$returnInfo['values'] = $widget->parsedFieldData["selectGroup"];
-		}
-		else {
-			$returnInfo['type'] = "text";
-		}
+		$myTypeMapping2 = array(
+			'_source' => array(
+				'enabled' => true
+				),
+			'date_detection' => 0,
+			'properties' => array(
+				'locationCache' => array(
+					'type' => 'geo_point'
+					)
+				)
+			);
+		$params['body']['asset'] = $myTypeMapping2;
 
-		echo json_encode($returnInfo);
+		// Update the index mapping
+		$this->es->indices()->putMapping($params);
 
+ 		$params = array();
 
-
-
-	}
-
-	public function nearbyAssets($latitude, $longitude) {
-		if(!$latitude || !$longitude) {
-			instance_redirect("/search");
-		}
-
-		$searchArray["searchText"] = "";
-		$searchArray["latitude"] = $latitude;
-		$searchArray["longitude"] = $longitude;
-		$searchArray["distance"] = "100"; // miles
-		if(count($searchArray) == 0) {
-			return;
-		}
-
-		$searchArchive = new Entity\SearchEntry;
-		$searchArchive->setUser($this->user_model->user);
-		$searchArchive->setInstance($this->instance);
-		$searchArchive->setSearchText($searchArray['searchText']);
-		$searchArchive->setSearchData($searchArray);
-		$searchArchive->setCreatedAt(new DateTime());
-		$searchArchive->setUserInitiated(false);
-
-		$this->doctrine->em->persist($searchArchive);
-		$this->doctrine->em->flush();
-		$this->searchId = $searchArchive->getId();
-
-		instance_redirect("search#".$this->searchId);
-	}
-
-	public function querySearch($searchString = null) {
-		if(!$searchString) {
-			instance_redirect("/search");
-		}
-
-		$searchArray["searchText"] = rawurldecode($searchString);
-		$searchArchive = new Entity\SearchEntry;
-		$searchArchive->setUser($this->user_model->user);
-		$searchArchive->setInstance($this->instance);
-		$searchArchive->setSearchText($searchArray['searchText']);
-		$searchArchive->setSearchData($searchArray);
-		$searchArchive->setCreatedAt(new DateTime());
-		$searchArchive->setUserInitiated(false);
-
-		$this->doctrine->em->persist($searchArchive);
-		$this->doctrine->em->flush();
-		$this->searchId = $searchArchive->getId();
-		instance_redirect("search#".$this->searchId);
-	}
-
-	public function scopedQuerySearch($fieldName, $searchString = null) {
-		if(!$searchString) {
-			instance_redirect("/search");
-		}
-
-		$searchArray["searchText"] = "";
-		$searchArray["specificSearchField"] = [$fieldName];
-		$searchArray["specificSearchText"] = [rawurldecode($searchString)];
-		$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
-		$searchArchive = new Entity\SearchEntry;
-		$searchArchive->setUser($this->user_model->user);
-		$searchArchive->setInstance($this->instance);
-		$searchArchive->setSearchText("");
-		$searchArchive->setSearchData($searchArray);
-		$searchArchive->setCreatedAt(new DateTime());
-		$searchArchive->setUserInitiated(false);
-
-		$this->doctrine->em->persist($searchArchive);
-		$this->doctrine->em->flush();
-		$this->searchId = $searchArchive->getId();
-
-		instance_redirect("search#".$this->searchId);
-	}
+ 		if(!is_numeric($asset->getGlobalValue("collectionId"))) {
+ 			// we only index things in a collection;
+ 			return;
+ 		}
 
 
-	public function listCollections() {
+    	/**
+    	 * special case location data, one level deep
+    	 */
 
+    	$locations = $asset->getAllWithinAsset("Location",null, 1);
+		$locationArray = array();
+		if(count($locations)>0) {
 
-		$jsLoadArray[] = "templateSearch";
-		$this->template->loadJavascript($jsLoadArray);
-
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		if($accessLevel < PERM_SEARCH) {
-			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-			if(count($allowedCollections) == 0) {
-				$this->errorhandler_helper->callError("noPermission");
-			}
-			$collections = $this->instance->getCollectionsWithoutParent();
-
-			
-			$collections = array_values(array_uintersect($collections, $allowedCollections, function($a, $b) { 
-				if($a->getId() == $b->getId()) { 
-					return 0;
-				}
-				if($a->getId() > $b->getId()) {
-					return 1;
-				}
-				return -1;
-			}));
-
-
-		}
-		else {
-			$collections = $this->instance->getCollectionsWithoutParent();
-		}
-
-
-		foreach($collections as $key=>$collection) {
-
-			if(!$collection->getShowInBrowse()) {
-				unset($collections[$key]);
-			}
-
-		}
-
-		$this->template->loadJavascript(["assets/js/templateSearch"]);
-		$this->template->content->view("listCollections", ["collections"=>$collections]);
-		$this->template->publish();
-
-	}
-
-	public function autocomplete() {
-		$searchTerm = $this->input->post("searchTerm");
-		$fieldTitle = $this->input->post("fieldTitle");
-		$templateId = $this->input->post("templateId");
-
-		$this->load->model("search_model");
-		$resultArray = $this->search_model->autocompleteResults($searchTerm, $fieldTitle, $templateId);
-
-		echo json_encode(array_values($resultArray), true);
-	}
-
-	public function getSuggestion() {
-		$searchTerm = $this->input->post("searchTerm");
-
-		$this->load->model("search_model");
-		$resultArray = $this->search_model->getSuggestions($searchTerm);
-
-		$output = array();
-
-		if(isset($resultArray["suggestion-finder"]) && count($resultArray["suggestion-finder"])>0) {
-			foreach($resultArray["suggestion-finder"] as $entry) {
-				if(count($entry["options"])>0) {
-					if($entry["options"][0]["score"]>= 0.8) {
-						$suggestTerm[$entry["text"]]= $entry["options"][0]["text"];
-					}
-				}
-
-			}
-		}
-
-
-		foreach($suggestTerm as $key=>$value) {
-			$validTerm = false;
-			$result = $this->search_model->find(["searchText"=>$value],true);
-			if($result['totalResults'] > 0) {
-				$validTerm = true;
-			}
-
-
-			if($validTerm) {
-				$output[$key] = $value;
-			}
-		}
-		
-
-		echo json_encode($output);
-
-	}
-
-	public function getHighlight() {
-		$searchId = $this->input->post("searchId");
-		$objectId = $this->input->post("objectId");
-		$this->load->model("search_model");
-
-
-		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
-		$searchArray = $searchArchiveEntry->getSearchData();
-
-		$searchArray['highlightForObject'] = $objectId;
-
-		$matchArray = $this->search_model->find($searchArray, true);
-
-		$highlightArray = array();
-
-		if(isset($matchArray['highlight'])) {
-
-			foreach($matchArray['highlight'] as $entry) {
-				if(is_array($entry)) {
-					foreach ($entry as $individualEntry) {
-						// we know the last thing in a relevant highlight will be the object id we need
-						// if we end up with other cruft here, it doesn't matter - the client will discard it.
-
-						$potentialObject = substr($individualEntry, strrpos($individualEntry, ' ') + 1);
-						if(strlen($potentialObject) == 24)  {
-							$highlightArray[] = $potentialObject;
-						}
-
+			foreach($locations as $location) {
+				foreach($location->fieldContentsArray as $locationContent) {
+					if($locationContent->hasContents()) {
+						$locationArray[] = [floatval($locationContent->longitude), floatval($locationContent->latitude)];
 					}
 				}
 			}
+
+
+
 		}
-
-		$returnArray = array();
-
-		if(count($highlightArray)>1) {
-			// for now, return the first - we should look at scores and stuff and return the best.  But we don't really understand elastic and this seems like a mess.
-			$returnArray = [$highlightArray[0]];
-		}
-		elseif(count($highlightArray)>0) {
-			$returnArray = [$highlightArray[0]];
-		}
-
-
-
-		echo json_encode($returnArray);
-
-	}
-
-
-	public function searchResults($searchId=null, $page=0, $loadAll = false) {
-
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		$loadAll = ($loadAll == "true")?true:false;
-
-		if($this->input->post("searchQuery")) {
-			$searchArray = json_decode($this->input->post("searchQuery"), true);
-		}
-
-		$allowedCollectionsIds = null;
-		if($accessLevel < PERM_SEARCH) {
-			if($this->user_model) {
-				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-				if(count($allowedCollections>0)) {
-					$allowedCollectionsIds = array_map(function($n) { return $n->getId(); }, $allowedCollections);
-				}
-				else {
-					$this->errorhandler_helper->callError("noPermission");
-				}
-			}
-			else {
-				$this->errorhandler_helper->callError("noPermission");
-			}
-		}
-
-		if($this->input->post("page")) {
-			$page = $this->input->post("page");
-		}
-		if($this->input->post("loadAll")) {
-			$loadAll = ($this->input->post("loadAll")=="true")?true:false;
-		}
-
-		if($this->input->post("templateId")) {
-			$searchArray['templateId'] = $this->input->post("templateId");
-		}
-
-
-
 
 		/**
-		 * if they've set "any" (0) for collection specific search, disregard
+		 * special case date date, one level deep
 		 */
-		if(isset($searchArray["collection"])) {
-			foreach($searchArray["collection"] as $collection) {
-				if($collection == 0) {
-					unset($searchArray["collection"]);
+		$dates = $asset->getAllWithinAsset("Date",null, 1);
+		$dateArray = array();
+		if(count($dates)>0) {
+
+			foreach($dates as $date) {
+				foreach($date->fieldContentsArray as $dateContent) {
+					if($dateContent->hasContents()) {
+						$tempArray=array();
+						$tempArray["startDate"]=intval($dateContent->start["numeric"]);
+						if($dateContent->range) {
+							$tempArray["endDate"]=intval($dateContent->end["numeric"]);
+						}
+						else {
+							$tempArray["endDate"]=-631139000000000000; // negative 20 billion years ago
+						}
+						$dateArray[] = $tempArray;
+
+					}
+				}
+			}
+			if(count($dateArray)>0) {
+
+			}
+		}
+
+    	/**
+    	 * special case upload data, no levels deep
+    	 */
+
+    	$uploads = $asset->getAllWithinAsset("Upload",null, 0);
+    	$uploadContentArray = array();
+    	$locationDataArray = array();
+    	$dateDataArray = array();
+		if(count($uploads)>0) {
+			foreach($uploads as $upload) {
+				foreach($upload->fieldContentsArray as $uploadContent) {
+
+					if($uploadContent->hasContents() && $uploadContent->getSearchData() != "") {
+
+						$uploadContentArray[] = $uploadContent->getSearchData();
+						$uploadContent->searchData = "";
+					}
+					if($uploadContent->hasContents() && $uploadContent->getLocationData() != "") {
+
+						$locationDataArray[] = $uploadContent->getLocationData();
+						$uploadContent->locationData = "";
+					}
+					if($uploadContent->hasContents() && $uploadContent->getDateData() != "") {
+						$tempArray = array();
+						$tempArray["startDate"]=intval(strtotime($uploadContent->getDateData()));
+						$tempArray["endDate"]=-631139000000000000; // negative 20 billion years ago
+						$dateDataArray[] = $tempArray;
+						$uploadContent->dateData = "";
+					}
+				}
+			}
+			if(count($uploadContentArray)>0) {
+
+
+			}
+			if(count($locationDataArray) > 0) {
+				$locationArray = array_merge($locationArray, $locationDataArray);
+			}
+
+			if(count($dateDataArray)>0) {
+				$dateArray = array_merge($dateArray, $dateDataArray);
+			}
+
+		}
+
+    	$fileTypes = $asset->getAllWithinAsset("Upload",null, 1);
+		$fileTypeArray = array();
+		if(count($fileTypes)>0) {
+			foreach($fileTypes as $upload) {
+				foreach($upload->fieldContentsArray as $uploadContent) {
+					if($uploadContent->hasContents()) {
+						$fileTypeArray[] = strtolower(str_ireplace("handler", "", get_class($uploadContent->getFileHandler())));
+					}
 				}
 			}
 		}
 
+ 		// only go only level deep in recursion?
+    	$params['body']  = $asset->getSearchEntry(2);
 
-		if(isset($searchArray["specificSearchText"])) {
+		if(isset($locationArray) && count($locationArray)>0) {
+			$params['body']['locationCache'] = $locationArray;
+		}
+		if(isset($dateArray) && count($dateArray)>0) {
+			$params['body']['dateCache'] = $dateArray;
+		}
+		if(isset($uploadContentArray) && count($uploadContentArray)>0) {
+			$params['body']['fileSearchData'] = $uploadContentArray;
+		}
 
-			$searchFieldArray = $searchArray["specificSearchField"];
-			$searchFieldTextArray = $searchArray["specificSearchText"];
-			$searchFieldFuzzyArray = $searchArray["specificSearchFuzzy"];
+		if(isset($fileTypeArray) && count($fileTypeArray)> 0) {
+			$params['body']['fileTypesCache'] = $fileTypeArray;
+		}
 
-			$specificSearchArray = array();
-			for($i=0; $i<count($searchFieldArray); $i++) {
-				if(strlen($searchFieldTextArray[$i]) == 0) {
-					continue;
+		$params['body']['includeInSearch'] = $asset->assetTemplate->getIncludeInSearch();
+
+
+    	/**
+    	 * inject the assetId for searching - we could search against _id too, but that can't be
+    	 * grouped with other results.  This saves us having logic to detect mongoids in the query
+    	 */
+    	$params['body']['assetId'] = $asset->getObjectId();
+    	$params['index'] = $this->config->item('elasticIndex');
+    	$params['type']  = 'asset';
+    	$params['id']    = $asset->getObjectId();
+
+    	$ret = $this->es->index($params);
+		if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
+    		$this->logging->logError("search error", $ret);
+    	}
+    	$this->asset_model->disableObjectCache();
+
+	}
+
+	public function find($searchArray, $readyforDisplayOnly=true, $pageStart=0, $loadAll=false) {
+
+ 		$searchParams['index'] = $this->config->item('elasticIndex');
+    	//$searchParams['type']  = 'asset';
+
+    	$filter = array();
+
+		$collections = array();
+		if(isset($searchArray["collection"]) && is_array($searchArray["collection"])) {
+			foreach($searchArray['collection'] as $collection) {
+				// when we have nested collections selected, we need to flatten them all.
+				$loadedCollection = $this->collection_model->getCollection($collection);
+				$collections[] = $loadedCollection->getId();
+				if($loadedCollection->hasChildren()) {
+					foreach($loadedCollection->getFlattenedChildren() as $child) {
+						$collections[] = $child->getId();
+					}
 				}
-				$specificSearchArray[] = ["field"=>$searchFieldArray[$i], "text"=>$searchFieldTextArray[$i], "fuzzy"=>($searchFieldFuzzyArray[$i]==1)?true:false];
 			}
-			$searchArray["specificFieldSearch"] = $specificSearchArray;
-		}
-
-
-
-		// this finds assets that point to the objectId passed in teh search term
-		if($this->input->post("searchRelated") && $this->input->post("searchRelated") == true) {
-
-			$searchArray["fuzzySearch"] = false;
-			$searchArray["crossFieldOr"] = true;
-			$assetModel = new Asset_model;
-			$assetModel->loadAssetById($searchArray['searchText']);
-			$relatedAssets = $assetModel->getAllWithinAsset("Related_asset", null, 1);
-			$objectIdArray = array();
-			foreach($relatedAssets as $relatedAsset) {
-			 	foreach($relatedAsset->fieldContentsArray as $fieldContents) {
-			 		$objectIdArray[] = $fieldContents->targetAssetId;
-			 	}
-			}
-
-			$objectIdArray[] = $searchArray['searchText'];
-			$searchArray['searchText'] = join(" " ,$objectIdArray);
-
-		}
-
-		$showHidden = false;
-
-		if($searchId) {
-			$this->searchId = $searchId;
-			if(!isset($searchArray)) {
-				$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
-				$searchArray = $searchArchiveEntry->getSearchData();
-			}
-		}
-
-
-		if($this->input->post("showHidden") || isset($searchArray['showHidden'])) {
-			// This will include items that are not yet flagged "Ready for display"
-			$showHidden = true;
-			$searchArray['showHidden'] = true;
-		}
-
-
-		if(count($searchArray) == 0) {
-			return;
-		}
-
-		if($allowedCollectionsIds) {
-			// this user has restricted permissions, lock their results down.
-			if(!isset($searchArray['collection']) || (isset($searchArray['collection']) && array_diff($searchArray['collection'],$allowedCollectionsIds))) {
-				$searchArray["collection"] = $allowedCollectionsIds;	
-			}
-		}
-
-
-		$searchArray["searchDate"] = new \DateTime("now");
-
-
-		if($searchId) {
-			$searchArchive = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 		}
 		else {
-			$searchArchive = new Entity\SearchEntry;
+			foreach($this->instance->getCollections() as $collection) {
+				$collections[] = $collection->getId();
+			}
+
+
+
 		}
 
-		$searchArchive->setUser($this->user_model->user);
-		$searchArchive->setInstance($this->instance);
-		$searchArchive->setSearchText($searchArray['searchText']);
-		$searchArchive->setSearchData($searchArray);
-		$searchArchive->setCreatedAt(new DateTime());
-		$searchArchive->setUserInitiated(false);
-		if(!$this->input->post("suppressRecent")) {
-			$searchArchive->setUserInitiated(true);
+		if(count($collections) == 0) {
+			// if we don't have any collections, we can't search.
+			return ["searchResults"=>array(), "totalResults"=>0];
 		}
 
-		$this->doctrine->em->persist($searchArchive);
-		$this->doctrine->em->flush();
 
-		$this->searchId = $searchArchive->getId();
+		$sort = array();
+		if(isset($searchArray["latitude"]) && isset($searchArray["longitude"]) && strlen($searchArray["latitude"])>0 &&  strlen($searchArray["longitude"])>0 ) {
+			$geoFilter['geo_distance']['locationCache']['lat'] = $searchArray['latitude'];
+			$geoFilter['geo_distance']['locationCache']['lon'] = $searchArray['longitude'];
+			$geoFilter['geo_distance']['distance'] = $searchArray['distance'] . "mi";
+			$filter[] = $geoFilter;
+    		$sortFilter["_geo_distance"]["locationCache"]["lat"] = $searchArray["latitude"];
+    		$sortFilter["_geo_distance"]["locationCache"]["lon"] = $searchArray["longitude"];
+    		$sortFilter["_geo_distance"]["order"] = "asc";
+    		$sortFilter["_geo_distance"]["unit"] = "mi";
 
-		if($this->input->post("storeOnly") == true) {
-
-			echo json_encode(["success"=>true, "searchId"=>$this->searchId]);
-			return;
+    		$sort[] = $sortFilter;
 		}
 
-		$this->load->model("search_model");
-
-		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
-		if(count($matchArray["searchResults"]) == 0) {
-			// let's try again with fuzzyness
-			$searchArray['matchType'] = "phrase_prefix"; // this is a leaky abstraction. But the whole thing is really.
-			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
-		}
-		$matchArray["searchId"] = $this->searchId;
-
-		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));
 
 
-	}
+		if(isset($searchArray["sort"]) && $searchArray["sort"] != "0") {
 
-
-	public function searchList() {
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		if($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
-		}
-		$this->template->loadJavascript(["assets/js/templateSearch"]);
-
-
-		$customSearches = $this->doctrine->em->getRepository("Entity\CustomSearch")->findBy(["instance"=>$this->instance, "user"=>$this->user_model->user]);;
-
-		$this->template->content->view("customSearch/customSearchList", ["searches"=>$customSearches]);
-		$this->template->publish();
-
-	}
-
-
-	public function getTemplates() {
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		if($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
-		}
-
-		$templateArray = array();
-		$templateArray[] = "";
-		foreach($this->instance->getTemplates() as $template) {
-
-			$templateArray[$template->getId()] = $template->getName();
+    		$sortFilter[$searchArray["sort"]]["order"] = "asc";
+    		$sort[] = $sortFilter;
 
 		}
-		echo json_encode($templateArray);
 
-	}
+		if(isset($searchArray["startDate"]) && strlen($searchArray["startDate"])>0) {
+			$startDate = $searchArray["startDate"];
 
-	public function getFields($templateId=null) {
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
+			$endDate = $searchArray["endDate"];
 
-		if($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+			if(strlen($endDate)==0) {
+				$endDate=NULL;
+			}
+
+			$filter[]['range']['dateCache.startDate']['gte'] = intval($startDate);
+
+
+			if($endDate) {
+				$filter[]['range']['dateCache.startDate']['lte'] = intval($endDate);
+				$filter[]['range']['dateCache.endDate']['lte'] = intval($endDate);
+			}
 		}
 
-		if(!$templateId) {
-			return;
+    	if(count($collections) > 0) {
+			$filter[]['terms']['collectionId'] = $collections;
 		}
 
-		$template = $this->asset_template->getTemplate($templateId);
+		if($readyforDisplayOnly) {
+			$filter[]['terms']['readyForDisplay'] = [$readyforDisplayOnly];
+			$filter[]['terms']['includeInSearch'] = [$readyforDisplayOnly];
+		}
 
 
-		$widgetArray = array();
-		$widgetArray[] = "";
-		foreach($template->widgetArray as $widget) {
+		if(isset($searchArray['templateId']) && count($searchArray['templateId']) > 0) {
+			if(count($searchArray['templateId']) == 1 && $searchArray['templateId'][0] == 0) {
 
-			$widgetArray[$widget->getFieldTitle()] = $widget->getLabel();
+			}
+			else {
+				if(is_array($searchArray['templateId'])) {
+					$filter[]['terms']['templateId'] = $searchArray['templateId'];
+				}
+				else {
+					$filter[]['terms']['templateId'] = [$searchArray['templateId']];
+				}
+			}
 
 		}
-		echo json_encode($widgetArray);
 
-	}
-
-
-
-	public function searchBuilder($customSearchId=null) {
-		$this->template->loadJavascript(["customSearch"]);
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		if($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+		$fuzzySearch = false;
+		if (isset($searchArray["fuzzySearch"]) && $searchArray['fuzzySearch']==true) {
+			$fuzzySearch = true;
 		}
-		$this->template->loadJavascript(["templateSearch"]);
 
-		if(!$customSearchId) {
-			$customSearch = new Entity\CustomSearch;
+
+		$query = array();
+		$i=0;
+		if(preg_match("/[?*]+/u", $searchArray["searchText"])) {
+			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
+		}
+		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
+			list($start, $end) = explode("...", strtolower($searchArray["searchText"]));
+			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
+		}
+		else if($searchArray["searchText"] != "") {
+
+			// $searchParams['body']['query']['filtered']['query']['bool']['should'][0]["match_phrase_prefix"]["_all"] = $searchArray["searchText"];
+			// $searchParams['body']['query']['filtered']['query']['bool']['should'][1]["query_string"]["query"] = $searchArray["searchText"];
+			// $searchParams['body']['query']['filtered']['query']['bool']['should'][2]["fuzzy_like_this"]["like_text"] = $searchArray["searchText"];
+			// $searchParams['body']['query']['filtered']['query']['bool']['should'][2]["fuzzy_like_this"]["fuzziness"] = "AUTO";
+			// $searchParams['body']['query']['filtered']['query']['bool']['should'][2]["fuzzy_like_this"]["boost"] = 0.5;
+
+
+
+
+
+// "analysis" :{
+//                 "analyzer": {
+//                     "default": {
+//                         "type" : "snowball",
+//                         "language" : "English"
+//                     }
+//                 }
+//             }
+			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
+
+			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
+			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
+			if(!$fuzzySearch) {
+				$matchType = "cross_fields";
+				if(isset($searchArray['matchType'])) {
+					$matchType = $searchArray['matchType'];
+				}
+				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = $matchType;
+				// by default, we want cross field to be an "and" so our matching document matches all of the relevant search terms
+				// however, sometimes we want to match any document with any of the terms, setting crossFieldOr to true will enable that.
+				// this is primarily used for "related items" searches where we pass in a ton of MongoIds
+				//
+
+				if(!isset($searchArray['crossFieldOr']) || $searchArray['crossFieldOr'] == FALSE) {
+					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['operator'] = "and";
+				}
+
+			}
+			else {
+				//$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['analyzer'] = "snowball";
+				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
+				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
+				 //$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "cross_fields";
+				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
+			}
+			$i++;
+		}
+
+
+		if(isset($searchArray["specificFieldSearch"])) {
+
+			foreach($searchArray["specificFieldSearch"] as $entry) {
+
+				if(preg_match("/[?*]+/u", $entry["text"])) {
+					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
+				}
+				else if(preg_match("/.*\\.\\.\\..*/u", $entry["text"])) {
+					list($start, $end) = explode("...", strtolower($entry["text"]));
+					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
+				}
+				else {
+					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['query'] = $entry["text"];
+					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
+					if($entry["fuzzy"]) {
+						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
+						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
+						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
+					}
+					else {
+						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "phrase_prefix";
+					}
+				}
+
+
+				$i++;
+
+			}
+
+
+		}
+
+		$highlightSingleObject = false;
+		if(isset($searchArray['highlightForObject'])) {
+			$highlightSingleObject = true;
+			$targetObjectId = $searchArray['highlightForObject'];
+			$filter[]['ids']['values'] = [$targetObjectId];
+
+			$searchParams['body']['highlight']['pre_tags'] = [""];
+			$searchParams['body']['highlight']['post_tags'] = [""];
+			$searchParams['body']['highlight']['number_of_fragments'] = 0;
+			$searchParams['body']['highlight']['fields']["*"] = new stdClass();
+
+		}
+
+
+		//$searchParams['body']['query']['match_phrase_prefix']['_all']['query'] = $searchString;
+		//$searchParams['body']['query']['match_phrase_prefix']['_all']['max_expansions'] = 10;
+		//$searchParams['body']['query']['fuzzy']['_all'] = $searchString;
+		//$searchParams['body']['filter']['terms']['collection'] = $collections;
+
+
+		$searchParams['body']['sort'] = $sort;
+
+		// 100% arbitrary right now
+		//$searchParams['body']['min_score'] = 0.3;
+
+		$searchParams['from'] = $pageStart*$this->pageLength;
+		if($loadAll) {
+			$searchParams['size'] = 1000; // this is arbitrary, we don't actually load all the results
 		}
 		else {
-			$customSearch = $this->doctrine->em->getRepository("Entity\CustomSearch")->find($customSearchId);
+			$searchParams['size'] = $this->pageLength;
+		}
+
+		//$searchParams['min_score'] = 0.2;
+
+
+		if(count($filter) > 0) {
+			$searchParams['body']['query']['filtered']['filter']['and'] = $filter;
 		}
 
 
-		$searchParameters = $customSearch->getSearchConfig();
-		if(!$searchParameters) {
-			$searchParameters = "{}";
-		}
-		$searchTitle = $customSearch->getSearchTitle();
 
-		$decodedParams = json_decode($searchParameters);
+    	$searchParams['fields'] = "_id";
+// $this->logging->logError("Query Params", $searchParams);
 
-		$showHidden = null;
-		if(isset($decodedParams->showHidden)) {
-			$showHidden = $decodedParams->showHidden?"CHECKED":null;
-		}
-		$template = null;
-		if(isset($decodedParams->templateId)) {
-			$template = $decodedParams->templateId;
-		}
+    	$queryResponse = $this->es->search($searchParams);
 
-		$this->template->content->view("customSearch/customSearchViewer", ["showHidden"=>$showHidden, "targetTemplate"=>$template, "searchData"=>$searchParameters, "searchTitle"=>$searchTitle, "searchId"=>$customSearchId]);
-		$this->template->publish();
+
+ // $this->logging->logError("Query Response", $queryResponse);
+
+
+    	$matchArray = array();
+    	$matchArray["searchResults"] = array();
+
+
+
+    	$totalResults = $searchParams['from'];
+
+    	$truncatedResults = false;
+    	if(isset($queryResponse['hits'])) {
+    		$maxScore = $queryResponse['hits']['max_score'];
+
+    		if(!$fuzzySearch || $maxScore == NULL) {
+    			$scoreDelta	= 0;
+    			$maxScore = 1;
+    		}
+    		else {
+    			if($maxScore < 1) {
+    				$scoreDelta = "0.1";
+    			}
+    			else {
+    				$scoreDelta = "0.3";
+    			}
+    			if($maxScore <= 0) {
+    				$maxScore = 0.1;
+    			}
+    		}
+
+
+    		foreach($queryResponse['hits']['hits'] as $match) {
+    			if($match['_score'] / $maxScore >= $scoreDelta) {
+    				if($highlightSingleObject && isset($match['highlight'])) {
+    					// we're hightlighting one object here, let's save its highlight index
+    					$matchArray['highlight'] = $match['highlight'];
+    				}
+    				$matchArray["searchResults"][] = $match["_id"];
+    				$totalResults++;
+    			}
+    			else {
+    				$truncatedResults = true;
+    				break;
+    			}
+
+    		}
+    	}
+
+    	if($truncatedResults) {
+    		$matchArray['totalResults'] = $totalResults;
+    	}
+    	else {
+    		$matchArray['totalResults'] = $queryResponse['hits']['total'];
+    	}
+
+
+
+    	return $matchArray;
+	}
+
+	public function getSuggestions($searchTerm) {
+
+		$searchParams = array();
+		$searchParams['index'] = $this->config->item('elasticIndex');
+		$searchParams['body']["suggestion-finder"]["text"] = $searchTerm;
+		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
+		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
+
+		$this->logging->logError("params", $searchParams);
+		$queryResponse = $this->es->suggest($searchParams);
+
+		return $queryResponse;
 
 	}
 
-	public function saveSearch() {
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
+	public function autocompleteResults($searchTerm, $fieldTitle, $templateId) {
+		// todo : do this the right way
 
-		if($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+
+		$searchParams['index'] = $this->config->item('elasticIndex');
+    	//$searchParams['type']  = 'asset';
+
+    	$filter = array();
+
+		$collections = array();
+		if($templateId) {
+			if(is_array($templateId)) {
+				$filter[]['terms']['templateId'] = $templateId;
+			}
+			else {
+				$filter[]['terms']['templateId'] = [$templateId];
+			}
+
 		}
 
-		$customSearchId = $this->input->post("customSearchId");
 
-		if(!is_numeric($customSearchId)) {
-			$customSearch = new Entity\CustomSearch;
-			$customSearch->setUser($this->user_model->user);
-			$customSearch->setInstance($this->instance);
+
+		$query = array();
+
+		$searchParams['body']['query']['filtered']['query']['multi_match']['query'] = $searchTerm;
+
+		$searchParams['body']['query']['filtered']['query']['multi_match']['fields'] = [$fieldTitle];
+		$searchParams['body']['query']['filtered']['query']['multi_match']['type'] = "phrase_prefix";
+
+		if(count($filter)>0) {
+			$searchParams['body']['query']['filtered']['filter']['and'] = $filter;
 		}
-		else {
-			$customSearch = $this->doctrine->em->getRepository("Entity\CustomSearch")->find($customSearchId);
-		}
 
-		$customSearch->setSearchConfig(json_encode($this->input->post("searchData")));
-		$customSearch->setSearchTitle($this->input->post("searchTitle"));
-		$this->doctrine->em->persist($customSearch);
-		$this->doctrine->em->flush();
-		echo $customSearch->getId();
+    	$searchParams['fields'] = $fieldTitle;
+    	$searchParams['size'] = 10;
 
+    	// $this->logging->logError("params", $searchParams);
+		$queryResponse = $this->es->search($searchParams);
+
+    	$termArray = array();
+
+    	if(isset($queryResponse['hits'])) {
+    		foreach($queryResponse['hits']['hits'] as $match) {
+    			if(!is_array($match["fields"][$fieldTitle])) {
+    				if(stristr($match["fields"][$fieldTitle], $searchTerm)) {
+    					$termArray[] = $match["fields"][$fieldTitle];
+    				}
+
+    			}
+    			else {
+    				foreach($match["fields"][$fieldTitle] as $entry) {
+    					if(stristr($entry, $searchTerm)) {
+							$termArray[] = $entry;
+						}
+					}
+    			}
+
+
+    		}
+    	}
+
+    	return  array_unique($termArray);
 	}
 
-	public function deleteSearch($customSearchId) {
+	public function processSearchResults($searchArray, $matchArray) {
 
-		$customSearch = $this->doctrine->em->getRepository("Entity\CustomSearch")->findOneBy(["id"=>$customSearchId, "user"=>$this->user_model->user]);
+		$resultsArray = array();
 
-		if($customSearch) {
-			$this->doctrine->em->remove($customSearch);
-			$this->doctrine->em->flush();
+		$this->asset_model->enableObjectCache();
+		foreach($matchArray["searchResults"] as $match) {
+			$asset = new Asset_model;
+
+			if($asset->loadAssetById($match) === false) {
+				continue;
+			}
+
+			/**
+			 * if they searched for an object id and we found that, make sure it's the first result
+			 */
+			if($asset->getObjectId() == $searchArray["searchText"]) {
+				array_unshift($resultsArray, $asset->getSearchResultEntry());
+			}
+			else {
+				if($this->config->item('enableCaching')) {
+					$this->doctrineCache->setNamespace('searchCache_');
+					if($storedObject = $this->doctrineCache->fetch($match)) {
+
+					}
+					else {
+						$storedObject = $asset->getSearchResultEntry();
+						if($this->config->item('enableCaching')) {
+							$this->doctrineCache->save($match, $storedObject, 900);
+						}
+					}
+				}
+				else {
+					$storedObject = $asset->getSearchResultEntry();
+				}
+				$resultsArray[] = $storedObject;
+
+			}
+			unset($asset);
 		}
-		instance_redirect("search/searchList");
-
+		$this->asset_model->disableObjectCache();
+		$matchArray['matches'] = $resultsArray;
+		$matchArray["success"] = true;
+		$matchArray["searchEntry"] = $searchArray;
+		return $matchArray;
 	}
-
-
 
 }
 
-/* End of file search.php */
-/* Location: ./application/controllers/search.php */
+/* End of file  */
+/* Location: ./application/models/ */
