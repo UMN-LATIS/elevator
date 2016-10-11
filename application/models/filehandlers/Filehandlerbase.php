@@ -544,6 +544,19 @@ class FileHandlerBase extends CI_Model {
 		return $signedFileList;
 	}
 
+	public function getSecurityToken($derivativeTitle) {
+		if(!isset($this->derivatives[$derivativeTitle])) {
+			return array();
+		}
+
+		$derivative = $this->derivatives[$derivativeTitle];
+
+		
+		$token = $this->s3model->getSecurityTokenForPath($derivative->storageKey . "/");
+		return $token;
+
+
+	}
 
 
 	/**
