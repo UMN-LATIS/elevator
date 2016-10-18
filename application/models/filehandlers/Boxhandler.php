@@ -4,7 +4,7 @@
 //require_once("fileHandlerBase.php");
 class BoxHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("pptx", "ppt", "doc", "docx", "pdf", "xls", "xlsx");
+	protected $supportedTypes = array("pptx", "ppt", "doc", "docx", "xls", "xlsx");
 	protected $noDerivatives = true;
 
 	// public $icon = "doc.png";
