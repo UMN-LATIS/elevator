@@ -514,7 +514,17 @@ class Instances extends Instance_Controller {
 							"Resource": [
 							"arn:aws:s3:::' . $bucketName . '*"
 							]
-						}
+						},
+				        {
+				            "Sid": "Stmt1473473594000",
+				            "Effect": "Allow",
+				            "Action": [
+				                "sts:GetFederationToken"
+				            ],
+				            "Resource": [
+				                "arn:aws:sts::*"
+				            ]
+				        }
 						]
 					}',
 					'PolicyName' => 'bucket_policy',
