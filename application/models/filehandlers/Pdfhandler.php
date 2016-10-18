@@ -8,8 +8,8 @@
 //require_once("fileHandlerBase.php");
 class PDFHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array();
-	protected $noDerivatives = true;
+	protected $supportedTypes = array("pdf");
+	protected $noDerivatives = false;
 	public $icon = "pdf.png";
 
 
@@ -20,8 +20,9 @@ class PDFHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]
 						  												],
+						  	2=>["taskType"=>"createDerivatives", "config"=>[]],
 							//2=>["taskType"=>"cleanupOriginal", "config"=>array()],
-							2=>["taskType"=>"updateParent", "config"=>array()]];
+							3=>["taskType"=>"updateParent", "config"=>array()]];
 
 
 
@@ -35,12 +36,16 @@ class PDFHandler extends FileHandlerBase {
 	public function allDerivativesForAccessLevel($accessLevel) {
 		$derivative = array();
 
+		if($accessLevel>=$this->getPermission()) {
+			$derivative[] = "pdf";
+		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
 			$derivative[] = "thumbnail2x";
 			$derivative[] = "tiny";
 			$derivative[] = "tiny2x";
 		}
+
 		/**
 		 * normally, this array should be best to worst, but we pack original in here later so that it
 		 * doesn't get displayed in the view
@@ -87,32 +92,18 @@ class PDFHandler extends FileHandlerBase {
 
 		$this->pheanstalk->touch($this->job);
 
+		$this->load->library("PDFHelper");
+		$pdfHelper = new PDFHelper;
 
-		$parser = new \Smalot\PdfParser\Parser();
-		try {
-			$pdf    = $parser->parseFile($this->sourceFile->getPathToLocalFile());
-			$pages  = $pdf->getPages();
-			$fileObject->metadata = $pdf->getDetails();
-		}
-		catch (Exception $e) {
-			$pages = array();
-			$this->logging->processingInfo("pdf extract", "pdfhandler", "Could not extract text", $this->getObjectId(), $this->job->getId());
-
+		if($metadata = $pdfHelper->getPDFMetadata($this->sourceFile->getPathToLocalFile())) {
+			$fileObject->metadata = $metadata;
 		}
 
-		$pageText = "";
-		foreach ($pages as $page) {
-    		$pageText .= $page->getText();
-    		$this->pheanstalk->touch($this->job);
+		if($pages = $pdfHelper->scrapeText($this->sourceFile->getPathToLocalFile())) {
+			$this->globalMetadata = $pages;
 		}
-
-		$pageText = preg_replace("/\x{00A0}/", " ", $pageText);
-		$pageText = preg_replace("/\n/", " ", $pageText);
-		$pageText = preg_replace("/[^A-Za-z0-9 ]/", '', $pageText);
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
-
-		$this->globalMetadata = $pageText;
 
 		if($args['continue'] == true) {
 			$this->queueTask(1);
@@ -187,6 +178,61 @@ class PDFHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
+	}
+
+	public function createDerivatives($args) {
+		if(!$this->sourceFile->isLocal()) {
+			if($this->sourceFile->makeLocal()) {
+				$this->pheanstalk->touch($this->job);
+			}
+			else {
+				return JOB_FAILED;
+			}
+
+		}
+
+		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
+			return JOB_FAILED;
+		}
+
+		$success = false;
+
+		$this->load->library("PDFHelper");
+		$pdfHelper = new PDFHelper;
+
+		$minified = $pdfHelper->minifyPDF($this->sourceFile->getPathToLocalFile());
+		if(file_exists($minified)) {
+			$pathparts = pathinfo($this->sourceFile->getPathToLocalFile());
+			$derivativeContainer = new fileContainerS3();
+			$derivativeContainer->derivativeType = "pdf";
+			$derivativeContainer->path = "derivative";
+			$derivativeContainer->setParent($this->sourceFile->getParent());
+			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "reduced" . '.pdf';
+			rename($minified, $derivativeContainer->getPathToLocalFile());
+			$derivativeContainer->ready = true;
+			if(!$derivativeContainer->copyToRemoteStorage()) {
+				$success = false;
+				$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
+				echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+			}
+			else {
+				unlink($derivativeContainer->getPathToLocalFile());
+				$this->derivatives["pdf"] = $derivativeContainer;
+				$success = true;
+			}	
+		}
+		else {
+			$success = false;
+		}
+
+
+		if($success) {
+			$this->queueTask(3);
+			return JOB_SUCCESS;
+		}
+		else {
+			return JOB_FAILED;
+		}
 	}
 
 
