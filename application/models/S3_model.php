@@ -320,6 +320,43 @@ class S3_model extends CI_Model {
 
 	}
 
+	
+	public function getSecurityTokenForPath($targetKey, $timeSeconds=3600) {
+		try {
+			
+			$client = StsClient::factory(array(
+			'region'=> 'us-east-1', // TODO should not be hardcoded
+			'version'=> '2011-06-15',
+			'credentials'=> ['key'    => $this->key,
+			'secret' => $this->secret]));
+			
+			 $policy = [
+			    'Statement' => array(
+			      array(
+			        'Sid' => 'SID' . time(),
+			        'Action' => array(
+			          's3:GetObject'
+			        ),
+			        'Effect' => 'Allow',
+			        'Resource' => 'arn:aws:s3:::' . $this->bucket . "/" . $targetKey . "*"
+			      )
+			    )
+			    ];
+
+			$sessionToken = $client->getFederationToken(["Name"=>"policy_" . substr(md5($targetKey), 0, 15), "Policy"=>json_encode($policy), "DurationSeconds"=>$timeSeconds]);
+
+			return $sessionToken['Credentials'];
+
+		}
+		catch (Exception $e) {
+			echo $e;
+			$this->logging->logError("getProtectedURL", $e, $targetKey);
+			return false;
+		}
+
+	}
+
+
 	/**
 	 * We have to copy the object to update the metadata
 	 * this should probably preserve other metadta?
