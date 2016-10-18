@@ -6,10 +6,10 @@ function renderFileMenu($menuArray) {
 	$outputText .= '<div class="row infoRow"><div class="col-md-12">';
 
 	if($menuArray['fileInfo']) {
-		$outputText = '<span class="glyphicon glyphicon-info-sign infoPopover" data-placement="bottom" data-toggle="popover" title="File Info" data-html=true data-content=\'<ul class="list-group">';
+		$outputText .= '<span class="glyphicon glyphicon-info-sign infoPopover" data-placement="bottom" data-toggle="popover" title="File Info" data-html=true data-content=\'<ul class="list-group">';
 		foreach($menuArray['fileInfo'] as $entryKey=>$fileInfoEntry) {
 			if($entryKey == "Location") {
-				$outputText = '<li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="' . $fileInfoEntry['latitude'] . '" data-longitude="' . $fileInfoEntry['longitude'] . '">View Location</a></li>';
+				$outputText .= '<li class="list-group-item assetDetails"><strong>Location: </strong><A href="#mapModal"  data-toggle="modal" data-latitude="' . $fileInfoEntry['latitude'] . '" data-longitude="' . $fileInfoEntry['longitude'] . '">View Location</a></li>';
 			}
 			else {
 				$outputText .= '<li class="list-group-item assetDetails"><strong>' . $entryKey . ':</strong> ' . htmlentities($fileInfoEntry, ENT_QUOTES) . ' </li>';	
@@ -23,7 +23,7 @@ function renderFileMenu($menuArray) {
 
 		$outputText .= '<span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content=\'<ul>';
 		foreach($menuArray['download'] as $downloadKey=>$downloadEntry) {
-			$outputText .= '<li class="list-group-item assetDetails"><a href="' . $downloadEntry . '">' . $downloadKEy . '</a></li>';
+			$outputText .= '<li class="list-group-item assetDetails"><a href="' . $downloadEntry . '">' . $downloadKey . '</a></li>';
 		}
 		$outputText .= '</ul>\'></span>';
 
