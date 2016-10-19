@@ -6,21 +6,21 @@
 
 
 //require_once("fileHandlerBase.php");
-class PDFHandler extends FileHandlerBase {
+class OfficeHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("pdf");
+	protected $supportedTypes = array("doc","docx","ppt","pptx");
 	protected $noDerivatives = true;
 	public $icon = "pdf.png";
 	private $allowedSize = 30000000;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
-						  1=>["taskType"=>"createThumbnails", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
+						  1=>["taskType"=>"createDerivatives", "config"=>["type"=>"shrunk_pdf", "type"=>"pdf"]],
+						  2=>["taskType"=>"createThumbnails", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
 						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
 						  												["width"=>75, "height"=>150, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]
-						  												],
-						  	2=>["taskType"=>"createDerivatives", "config"=>["type"=>"shrunk_pdf"]],
+						  												],	
 							//2=>["taskType"=>"cleanupOriginal", "config"=>array()],
 							3=>["taskType"=>"updateParent", "config"=>array()]];
 
@@ -38,6 +38,7 @@ class PDFHandler extends FileHandlerBase {
 
 		if($accessLevel>=$this->getPermission()) {
 			$derivative[] = "shrunk_pdf";
+			$derivative[] = "pdf";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -92,17 +93,6 @@ class PDFHandler extends FileHandlerBase {
 
 		$this->pheanstalk->touch($this->job);
 
-		$this->load->library("PDFHelper");
-		$pdfHelper = new PDFHelper;
-
-		if($metadata = $pdfHelper->getPDFMetadata($this->sourceFile->getPathToLocalFile())) {
-			$fileObject->metadata = $metadata;
-		}
-
-		if($pages = $pdfHelper->scrapeText($this->sourceFile->getPathToLocalFile())) {
-			$this->globalMetadata = $pages;
-		}
-
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
 
 		if($args['continue'] == true) {
@@ -115,13 +105,22 @@ class PDFHandler extends FileHandlerBase {
 	public function createThumbnails($args) {
 		ini_set('memory_limit', '512M');
 		$success = true;
+
+		if(isset($this->derivatives["pdf"])) {
+			$targetFile = $this->derivatives["pdf"];
+		}
+		else {
+			$this->logging->processingInfo("createThumbnails", "officeHandler", "No PDF found", $this->getObjectId(), $this->job->getId());
+			return JOB_FAILED;
+		}
+
 		foreach($args as $derivativeSetting) {
 			$derivativeType = $derivativeSetting['type'];
 			$width = $derivativeSetting['width'];
 			$height = $derivativeSetting['height'];
 
-			if(!$this->sourceFile->isLocal()) {
-				if($this->sourceFile->makeLocal()) {
+			if(!$targetFile->isLocal()) {
+				if($targetFile->makeLocal()) {
 					$this->pheanstalk->touch($this->job);
 				}
 				else {
@@ -130,11 +129,11 @@ class PDFHandler extends FileHandlerBase {
 
 			}
 
-			if(!file_exists($this->sourceFile->getPathToLocalFile())) {
+			if(!file_exists($targetFile->getPathToLocalFile())) {
 				return JOB_FAILED;
 			}
 
-			$localPath = $this->sourceFile->getPathToLocalFile();
+			$localPath = $targetFile->getPathToLocalFile();
 			$pathparts = pathinfo($localPath);
 
 			$derivativeContainer = new fileContainerS3();
@@ -144,7 +143,7 @@ class PDFHandler extends FileHandlerBase {
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
 
-			if(compressImageAndSave($this->sourceFile, $derivativeContainer, $width, $height)) {
+			if(compressImageAndSave($targetFile, $derivativeContainer, $width, $height)) {
 				$derivativeContainer->ready = true;
 				// $this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				if(!$derivativeContainer->copyToRemoteStorage()) {
@@ -170,14 +169,11 @@ class PDFHandler extends FileHandlerBase {
 			}
 		}
 		$this->triggerReindex();
+
+		unlink($targetFile->getPathToLocalFile());
+
 		if($success) {
-			if(filesize($this->sourceFile->getPathToLocalFile()) < $this->allowedSize) {
-				unlink($this->sourceFile->getPathToLocalFile());
-				$this->queueTask(3);	
-			}
-			else {
-				$this->queueTask(2);
-			}
+			$this->queueTask(3);
 			return JOB_SUCCESS;
 		}
 		else {
@@ -203,38 +199,72 @@ class PDFHandler extends FileHandlerBase {
 
 		$success = false;
 
+
+		$pathparts = pathinfo($this->sourceFile->getPathToLocalFile());
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = "pdf";
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_pdf" . '.pdf';
+
+		$unoconv = Unoconv\Unoconv::create();
+		$unoconv->transcode($this->sourceFile->getPathToLocalFile(), 'pdf', $derivativeContainer->getPathToLocalFile());
+
+		if(!file_exists($derivativeContainer->getPathToLocalFile())) {
+			$this->logging->processingInfo("createDerivatives", "officeHandler", "Could not convert to PDF", $this->getObjectId(), $this->job->getId());
+			return JOB_FAILED;
+		}
+		$derivativeContainer->ready = true;
+		if(!$derivativeContainer->copyToRemoteStorage()) {
+			$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
+			return JOB_FAILED;
+		}
+
 		$this->load->library("PDFHelper");
 		$pdfHelper = new PDFHelper;
+		if($pages = $pdfHelper->scrapeText($derivativeContainer->getPathToLocalFile())) {
+			$this->globalMetadata = $pages;
+		}
 
-		$minified = $pdfHelper->minifyPDF($this->sourceFile->getPathToLocalFile());
-		if(file_exists($minified)) {
-			$pathparts = pathinfo($this->sourceFile->getPathToLocalFile());
-			$derivativeContainer = new fileContainerS3();
-			$derivativeContainer->derivativeType = $args["type"];
-			$derivativeContainer->path = "derivative";
-			$derivativeContainer->setParent($this->sourceFile->getParent());
-			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $args["type"] . '.pdf';
-			rename($minified, $derivativeContainer->getPathToLocalFile());
-			$derivativeContainer->ready = true;
-			if(!$derivativeContainer->copyToRemoteStorage()) {
-				$success = false;
-				$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
-				echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+
+		$this->derivatives["pdf"] = $derivativeContainer;
+
+
+		if(filesize($derivativeContainer->getPathToLocalFile()) > $this->allowedSize) {
+			$this->load->library("PDFHelper");
+			$pdfHelper = new PDFHelper;
+
+			$minified = $pdfHelper->minifyPDF($derivativeContainer->getPathToLocalFile());
+			if(file_exists($minified)) {
+				$pathparts = pathinfo($this->sourceFile->getPathToLocalFile());
+				$derivativeContainer = new fileContainerS3();
+				$derivativeContainer->derivativeType = "shrunk_pdf";
+				$derivativeContainer->path = "derivative";
+				$derivativeContainer->setParent($this->sourceFile->getParent());
+				$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "shrunk_pdf" . '.pdf';
+				rename($minified, $derivativeContainer->getPathToLocalFile());
+				$derivativeContainer->ready = true;
+				if(!$derivativeContainer->copyToRemoteStorage()) {
+					$success = false;
+					$this->logging->processingInfo("createDerivatives", "officeHandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
+					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+				}
+				else {
+					unlink($derivativeContainer->getPathToLocalFile());
+					$this->derivatives["shrunk_pdf"] = $derivativeContainer;
+					$success = true;
+				}	
 			}
 			else {
-				unlink($derivativeContainer->getPathToLocalFile());
-				$this->derivatives[$args["type"]] = $derivativeContainer;
-				$success = true;
-			}	
+				$success = false;
+			}
 		}
 		else {
-			$success = false;
+			$success = true;
 		}
-
-
+		unlink($this->sourceFile->getPathToLocalFile());
 		if($success) {
-			unlink($this->sourceFile->getPathToLocalFile());
-			$this->queueTask(3);
+			$this->queueTask(2);
 			return JOB_SUCCESS;
 		}
 		else {
@@ -242,7 +272,31 @@ class PDFHandler extends FileHandlerBase {
 		}
 	}
 
+	/**
+	 * Override the parent handler and return the pdf_handler
+	 */
 
+	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		if(!$this->parentObject && $this->parentObjectId) {
+			$this->parentObject = new Asset_model($this->parentObjectId);
+		}
+
+		$uploadWidget = null;
+		if($this->parentObject) {
+			$uploadObjects = $this->parentObject->getAllWithinAsset("Upload");
+			foreach($uploadObjects as $upload) {
+				foreach($upload->fieldContentsArray as $widgetContents) {
+					if($widgetContents->fileId == $this->getObjectId()) {
+						$uploadWidget = $widgetContents;
+					}
+				}
+			}
+
+		}
+
+		return $this->load->view("fileHandlers/" . "pdfhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
 
 }
 

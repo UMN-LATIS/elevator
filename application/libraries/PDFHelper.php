@@ -20,7 +20,7 @@ class PDFHelper {
 	public function minifyPDF($pdfFile) {
 		$pathToShrinkScript = $this->pathToScripts . "shrinkpdf.sh";
 		$outFile = $pdfFile . "_shrunk";
-		$commandLine = $pathToShrinkScript . " "  . $pdfFile . " " . $outFile;
+		$commandLine = $pathToShrinkScript . " "  . $pdfFile . " " . $outFile . " 150";
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
 		$process->run();
 		while($process->isRunning()) {
