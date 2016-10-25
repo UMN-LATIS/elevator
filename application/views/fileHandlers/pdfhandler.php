@@ -7,10 +7,10 @@ $embedLink = str_replace("https:", "", $embedLink);
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
 $targetFile = null;
-if(isset($fileContainer['shrunk_pdf'])) {
+if(isset($fileContainers['shrunk_pdf'])) {
 	$targetFile = $fileContainers['shrunk_pdf']->getProtectedURLForFile();
 }
-else if(isset($fileContainer['pdf'])) {
+else if(isset($fileContainers['pdf'])) {
 	$targetFile = $fileContainers['pdf']->getProtectedURLForFile();
 }
 else if($allowOriginal) {
