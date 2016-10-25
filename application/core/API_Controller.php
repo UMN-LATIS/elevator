@@ -9,6 +9,21 @@ class API_Controller extends MY_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+	if (isset($_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header('Access-Control-Allow-Credentials: true');    
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); 
+}   
+header("Access-Control-Allow-Headers: authorization-key, authorization-hash, authorization-timestamp, authorization-user");
+// Access-Control headers are received during OPTIONS requests
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    
+	echo "true";
+	die;
+}
+
+		// header("Access-Control-Allow-Headers: *");
+
 
 		// DOES THIS DO ANYTHING??
 		// if($this->input->get("authKey")) {

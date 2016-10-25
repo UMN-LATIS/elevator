@@ -541,7 +541,7 @@ class AssetManager extends Admin_Controller {
 							$outputURLs = array();
 							foreach($object->fieldContentsArray as $entry) {
 								$handler = $entry->getFileHandler();
-								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile();
+								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+120 minutes");
 							}
 							$outputRow[] = join($outputURLs, "|");
 						}
