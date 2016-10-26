@@ -75,6 +75,7 @@ var globalData = <?=json_encode($finalOutput)?>;
 <?if(!$embedded):?>
 <div class="row assetViewRow" >
   <div class="col-md-12">
+  <div class="dicomContainer">
 <?endif?>
     <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
       <p class="alert alert-info">No derivatives found.
@@ -83,9 +84,12 @@ var globalData = <?=json_encode($finalOutput)?>;
         <?endif?>
       </p>
     <?else:?>
-   <iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="/assets/dicom/index.html"></iframe>
+   
+   <iframe class="dicomViewer" frameborder=0 width="100%" height=100% scrolling="no" allowfullscreen src="/assets/dicom/index.html"></iframe>
+   
   <?endif?>
 <?if(!$embedded):?>
+</div>
   </div>
 </div>
 <?endif?>
@@ -93,7 +97,7 @@ var globalData = <?=json_encode($finalOutput)?>;
 <script>
 $(document).on("click", ".canFullscreen", function() {
     if($.fullscreen.isNativelySupported()) {
-      $(".vrview").first().fullscreen({ "toggleClass": "imageFullscreen"});
+      $(".dicomViewer").first().fullscreen({ "toggleClass": "imageFullscreen"});
     }
   });
 </script>
