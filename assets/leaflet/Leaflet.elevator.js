@@ -178,7 +178,7 @@ adjustAttribution: function() {
 
 	if(!this.options.attribution) {
 		this._map.options.attributionControl = false
-		this._map.attributionControl.remove()
+		// this._map.attributionControl.remove()
 	}
 },
 
