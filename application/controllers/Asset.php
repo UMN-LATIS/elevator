@@ -23,6 +23,7 @@ class asset extends Instance_Controller {
 		$this->template->content->view("drawers/drawerModal");
 
 		$this->load->helper('number');
+		$this->load->helper('fileview');
 		$this->load->model("asset_model");
 	}
 
