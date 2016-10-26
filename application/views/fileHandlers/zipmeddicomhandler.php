@@ -38,17 +38,20 @@ if(isset($fileContainers['dicom'])) {
 
     foreach($series["instanceList"] as $instanceEntry) {
       $assetURL = $fileContainers['dicom']->getProtectedURLForFile($instanceEntry["imageId"], "+30 minutes");
-      $assetURL = "dicomweb:" . stripHTTP($assetURL);
+      $assetURL = "wadouri:" . stripHTTP($assetURL);
 
-      $instanceList[] = ["imageId"=>$assetURL];
+      $instanceList[] = ["url"=>$assetURL, "rows"=>1, "sopInstanceUid"=>"test"];
     }
-    $series['instanceList'] = $instanceList;
+    $series['instances'] = $instanceList;
     $seriesList[$key] = $series;
 
 
   }
+  $finalOutput["transactionId"] = "Elevator";
   $outputJson["seriesList"] = $seriesList;
-
+  $outputJson["seriesList"] = $seriesList;
+  $outputJson["seriesList"] = $seriesList;
+  $finalOutput["studies"] = [$outputJson];
 }
 
 
@@ -63,7 +66,7 @@ if(typeof objectId === 'undefined') {
     objectId = "<?=$fileObjectId?>";
 }
 
-var masterJson = <?=json_encode($outputJson)?>;
+var globalData = <?=json_encode($finalOutput)?>;
 
 </script>
 
@@ -73,53 +76,27 @@ var masterJson = <?=json_encode($outputJson)?>;
 <div class="row assetViewRow" >
   <div class="col-md-12">
 <?endif?>
-
     <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
       <p class="alert alert-info">No derivatives found.
         <?if(!$this->user_model->userLoaded):?>
         You may have access to additional derivatives if you log in.
         <?endif?>
       </p>
-
     <?else:?>
-
-    <div class="dicomEnclosure">
-    <div class="dicomViewer">
-
-<script>
-
-var viewportTemplate; // the viewport template
-var studyViewerTemplate; // the study viewer template
-
-var loadedCallback = function() {
-  loadTemplate("/assets/cornerstone/templates/viewport.html", function(element) {
-      viewportTemplate = element;
-      loadElement($(".dicomViewer"), masterJson);
-  });
-
-  loadTemplate("/assets/cornerstone/templates/studyViewer.html", function(element) {
-      studyViewerTemplate = element;
-      loadElement($(".dicomViewer"), masterJson);
-  });
-
-};
-
-</script>
-  </div>
-</div>
-
-
-
-
-
-
-
+   <iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="/assets/dicom/index.html"></iframe>
   <?endif?>
 <?if(!$embedded):?>
   </div>
-
 </div>
 <?endif?>
+
+<script>
+$(document).on("click", ".canFullscreen", function() {
+    if($.fullscreen.isNativelySupported()) {
+      $(".vrview").first().fullscreen({ "toggleClass": "imageFullscreen"});
+    }
+  });
+</script>
 
 <?if(!$embedded):?>
 
@@ -149,6 +126,7 @@ var loadedCallback = function() {
         <li class="list-group-item assetDetails"><strong>Embed: </strong><input class="form-control embedControl" value="<?=htmlspecialchars($embed, ENT_QUOTES)?>"></li>
        <?endif?>
       </ul>'></span>
+      <span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>
   </div>
 </div>
 
@@ -163,42 +141,3 @@ $(document).ready(function() {
 </script>
 
 <?endif?>
-
-<link rel="stylesheet" href="/assets/cornerstone/font-awesome.min.css">
-<link href="/assets/cornerstone/cornerstone.min.css" rel="stylesheet">
-<link href="/assets/cornerstone/cornerstoneDemo.css" rel="stylesheet">
-<script src="/assets/cornerstone/hammer.js"></script>
-
-<!-- include the cornerstone library -->
-<script src="/assets/cornerstone/cornerstone.js"></script>
-
-<!-- include the cornerstone library -->
-<script src="/assets/cornerstone/cornerstoneMath.js"></script>
-
-<!-- include the cornerstone tools library -->
-<script src="/assets/cornerstone/cornerstoneTools.js"></script>
-
-<script src="/assets/cornerstone/util.js"></script>
-<script src="/assets/cornerstone/arithmetic_decoder.js"></script>
-<script src="/assets/cornerstone/jpx.js"></script>
-<!-- include the cornerstoneWADOImageLoader library -->
-<script src="/assets/cornerstone/cornerstoneWADOImageLoader.js"></script>
-
-<!-- include the cornerstoneWebImageLoader library -->
-<script src="/assets/cornerstone/cornerstoneWebImageLoader.js"></script>
-
-<!-- include the dicomParser library -->
-<script src="/assets/cornerstone/dicomParser.js"></script>
-
-<!-- include cornerstoneDemo.js -->
-<script src="/assets/cornerstone/setupViewport.js"></script>
-<script src="/assets/cornerstone/displayThumbnail.js"></script>
-<script src="/assets/cornerstone/loadStudy.js"></script>
-<script src="/assets/cornerstone/setupButtons.js"></script>
-<script src="/assets/cornerstone/disableAllTools.js"></script>
-<script src="/assets/cornerstone/forEachViewport.js"></script>
-<script src="/assets/cornerstone/imageViewer.js"></script>
-<script src="/assets/cornerstone/loadTemplate.js"></script>
-<script src="/assets/cornerstone/setupViewportOverlays.js"></script>
-
-<script src="/assets/cornerstone/cornerstoneDemo.js"></script>
