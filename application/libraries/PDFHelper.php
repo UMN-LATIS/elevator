@@ -60,7 +60,7 @@ class PDFHelper {
 		}
 		catch (Exception $e) {
 			$this->CI->logging->logError("pdf library", "Could not extract text");
-
+			return "";
 		}
 
 		$pageText = "";
@@ -68,11 +68,30 @@ class PDFHelper {
     		$pageText .= $page->getText();
     		$this->CI->pheanstalk->touch($this->CI->job);
 		}
-
 		$pageText = preg_replace("/\x{00A0}/", " ", $pageText);
 		$pageText = preg_replace("/\n/", " ", $pageText);
 		$pageText = preg_replace("/[^A-Za-z0-9 ]/", '', $pageText);
 		return $pageText;
+
+	}
+
+	public function ocrText($pdfFile) {
+		$pathparts = pathinfo($pdfFile);
+		$outFile = $pathparts['dirname'] . "/" . $pathparts['filename'] . "_ocr.pdf";
+		$commandLine = $this->CI->config->item('pypdfocr') . " "  . $pdfFile;
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->CI->pheanstalk->touch($this->CI->job);
+			echo ".";
+		}
+		if(!file_exists($outFile)) {
+			$this->CI->logging->logError("pdf library","OCRing of pdf failed");
+			return false;
+		}
+		return $outFile;
+
 
 	}
 

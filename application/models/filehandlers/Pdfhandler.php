@@ -20,9 +20,10 @@ class PDFHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]
 						  												],
-						  	2=>["taskType"=>"createDerivatives", "config"=>["type"=>"shrunk_pdf"]],
+						  	2=>["taskType"=>"ocrText", "config"=>["type"=>"ocr_pdf"]],
+						  	3=>["taskType"=>"createDerivatives", "config"=>["type"=>"shrunk_pdf"]],
 							//2=>["taskType"=>"cleanupOriginal", "config"=>array()],
-							3=>["taskType"=>"updateParent", "config"=>array()]];
+							4=>["taskType"=>"updateParent", "config"=>array()]];
 
 
 
@@ -37,6 +38,7 @@ class PDFHandler extends FileHandlerBase {
 		$derivative = array();
 
 		if($accessLevel>=$this->getPermission()) {
+			$derivative[] = "ocr_pdf";
 			$derivative[] = "shrunk_pdf";
 		}
 		if($accessLevel>PERM_NOPERM) {
@@ -171,13 +173,8 @@ class PDFHandler extends FileHandlerBase {
 		}
 		$this->triggerReindex();
 		if($success) {
-			if(filesize($this->sourceFile->getPathToLocalFile()) < $this->allowedSize) {
-				unlink($this->sourceFile->getPathToLocalFile());
-				$this->queueTask(3);	
-			}
-			else {
-				$this->queueTask(2);
-			}
+
+			$this->queueTask(2);
 			return JOB_SUCCESS;
 		}
 		else {
@@ -186,7 +183,8 @@ class PDFHandler extends FileHandlerBase {
 
 	}
 
-	public function createDerivatives($args) {
+	public function ocrText($args) {
+
 		if(!$this->sourceFile->isLocal()) {
 			if($this->sourceFile->makeLocal()) {
 				$this->pheanstalk->touch($this->job);
@@ -197,7 +195,101 @@ class PDFHandler extends FileHandlerBase {
 
 		}
 
-		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
+		if(strlen(trim($this->globalMetadata)) > 10) {
+			// we have some text here, don't bother looking for more.
+			if(filesize($this->sourceFile->getPathToLocalFile()) > $this->allowedSize) {
+				unlink($this->sourceFile->getPathToLocalFile());
+				$this->queueTask(3);	
+			}
+			else {
+				$this->queueTask(4);
+			}
+			return JOB_SUCCESS;
+		}
+		$this->load->library("PDFHelper");
+		$pdfHelper = new PDFHelper;
+
+		$ocrFile = $pdfHelper->ocrText($this->sourceFile->getPathToLocalFile());
+		$textFound = false;
+		$pages = $pdfHelper->scrapeText($ocrFile);
+		if(strlen(trim($pages)) > 10) {
+			$textFound = true;
+			$this->globalMetadata = $pages;	
+		}
+
+		if(!$textFound) {
+
+			unlink($ocrFile);
+			if(filesize($this->sourceFile->getPathToLocalFile()) > $this->allowedSize) {
+				unlink($this->sourceFile->getPathToLocalFile());
+				$this->queueTask(3);	
+			}
+			else {
+				$this->queueTask(4);
+			}
+			return JOB_SUCCESS;
+		}
+
+
+
+		$pathparts = pathinfo($this->sourceFile->getPathToLocalFile());
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = $args["type"];
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $args["type"] . '.pdf';
+		rename($ocrFile, $derivativeContainer->getPathToLocalFile());
+		$derivativeContainer->ready = true;
+		if(!$derivativeContainer->copyToRemoteStorage()) {
+			$success = false;
+			$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
+			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+		}
+		else {
+			$this->derivatives[$args["type"]] = $derivativeContainer;
+			$success = true;
+		}
+
+		// even if OCR fails, we shouldn't give up
+		if(!$success) {
+			$this->queueTask(4);
+		}
+		else {
+			if(filesize($derivativeContainer->getPathToLocalFile()) > $this->allowedSize) {
+			unlink($derivativeContainer->getPathToLocalFile());
+			$this->queueTask(3);	
+			}
+			else {
+				$this->queueTask(4);
+			}	
+		}
+		
+		return JOB_SUCCESS;
+
+
+
+	}
+
+	public function createDerivatives($args) {
+		
+		if(isset($this->derivatives["ocr_pdf"])) {
+			$targetFile = $this->derivatives["ocr_pdf"];
+		}
+		else {
+			$targetFile = $this->sourceFile;
+		}
+
+		if(!$targetFile->isLocal()) {
+			if($targetFile->makeLocal()) {
+				$this->pheanstalk->touch($this->job);
+			}
+			else {
+				return JOB_FAILED;
+			}
+
+		}
+
+		if(!file_exists($targetFile->getPathToLocalFile())) {
 			return JOB_FAILED;
 		}
 
@@ -206,7 +298,7 @@ class PDFHandler extends FileHandlerBase {
 		$this->load->library("PDFHelper");
 		$pdfHelper = new PDFHelper;
 
-		$minified = $pdfHelper->minifyPDF($this->sourceFile->getPathToLocalFile());
+		$minified = $pdfHelper->minifyPDF($targetFile->getPathToLocalFile());
 		if(file_exists($minified)) {
 			$pathparts = pathinfo($this->sourceFile->getPathToLocalFile());
 			$derivativeContainer = new fileContainerS3();
@@ -233,8 +325,8 @@ class PDFHandler extends FileHandlerBase {
 
 
 		if($success) {
-			unlink($this->sourceFile->getPathToLocalFile());
-			$this->queueTask(3);
+			unlink($targetFile->getPathToLocalFile());
+			$this->queueTask(4);
 			return JOB_SUCCESS;
 		}
 		else {
