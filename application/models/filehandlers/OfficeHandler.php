@@ -223,7 +223,7 @@ class OfficeHandler extends FileHandlerBase {
 		$this->load->library("PDFHelper");
 		$pdfHelper = new PDFHelper;
 		if($pages = $pdfHelper->scrapeText($derivativeContainer->getPathToLocalFile())) {
-			$this->globalMetadata = $pages;
+			$this->globalMetadata["text"] = $pages;
 		}
 
 
