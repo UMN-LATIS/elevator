@@ -10,12 +10,6 @@ class Beltdrive extends CI_Controller {
 	public $serverId = null;
 	public $reserveCount = array();
 
-	function reindexthing() {
-		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-		$newTask = json_encode(["objectId"=>"5827a3ccba98a80a693d8e94","instance"=>15]);
-		$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
-	}
-
 	function getMacLinux() {
 		exec('netstat -ie', $result);
 		if(is_array($result)) {
