@@ -1,4 +1,4 @@
-<?php
+	<?php
 
 
 function renderFileMenu($menuArray) {
@@ -21,7 +21,7 @@ function renderFileMenu($menuArray) {
 	
 	if($menuArray['download']) {
 
-		$outputText .= '<span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content=\'<ul>';
+		$outputText .= ' <span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content=\'<ul>';
 		foreach($menuArray['download'] as $downloadKey=>$downloadEntry) {
 			$outputText .= '<li class="list-group-item assetDetails"><a href="' . $downloadEntry . '">' . $downloadKey . '</a></li>';
 		}
@@ -35,7 +35,7 @@ function renderFileMenu($menuArray) {
 	}
 
 	if($menuArray['excerpt']) {
-		$outputText .= '<span data-toggle="collapse" data-target="#excerptGroup" class="glyphicon glyphicon-time excerptTooltip" data-toggle="tooltip" title="Create Excerpt"></span>';
+		$outputText .= ' <span data-toggle="collapse" data-target="#excerptGroup" class="glyphicon glyphicon-time excerptTooltip" data-toggle="tooltip" title="Create Excerpt"></span>';
 	}
 	
 	$outputText .= "</div></div>";

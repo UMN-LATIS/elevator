@@ -9,6 +9,16 @@ class Home extends Instance_Controller {
 		parent::__construct();
 	}
 
+	public function test() {
+		$client = new Google_Client();
+		$client->setAuthConfig("application/controllers/test");
+		$client->setApplicationName("Elevator");
+		$client->setScopes([Google_Service_Directory::ADMIN_DIRECTORY_USER_READONLY]);
+		$service = new Google_Service_Directory($client);
+		var_dump($service->groups->listGroups());
+
+	}
+
 	public function index()
 	{
 

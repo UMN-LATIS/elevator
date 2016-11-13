@@ -5,16 +5,11 @@ class PDFHelper {
 	private $CI = null;
 	private $pathToScripts = null;
 
-	function __construct($apiKey=null)
+	function __construct()
 	{
 		$this->CI =& get_instance();
 		$this->pathToScripts =realpath(NULL) . "/assets/pdf_scripts/";
-	}
-
-	public function ocrPDF($pdfFile) {
-				
-
-
+		ini_set('memory_limit','2048M');
 	}
 
 	public function minifyPDF($pdfFile) {

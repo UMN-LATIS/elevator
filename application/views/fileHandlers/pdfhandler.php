@@ -41,7 +41,7 @@ $menuArray['fileInfo'] = $fileInfo;
 $downloadArray = [];
 
 if(isset($fileContainers['shrunk_pdf']) && $fileContainers['shrunk_pdf']->ready) {
-	// $downloadArray["Download Optimized PDF"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/shrunk_pdf");
+	$downloadArray["Download Optimized PDF"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/shrunk_pdf");
 }
 if(isset($fileContainers['pdf']) && $fileContainers['pdf']->ready) {
 	$downloadArray["Download PDF"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/pdf");

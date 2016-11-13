@@ -96,7 +96,6 @@ class PDFHandler extends FileHandlerBase {
 
 		$this->load->library("PDFHelper");
 		$pdfHelper = new PDFHelper;
-
 		if($metadata = $pdfHelper->getPDFMetadata($this->sourceFile->getPathToLocalFile())) {
 			$fileObject->metadata = $metadata;
 		}
@@ -214,7 +213,7 @@ class PDFHandler extends FileHandlerBase {
 		$pages = $pdfHelper->scrapeText($ocrFile);
 		if(strlen(trim($pages)) > 10) {
 			$textFound = true;
-			$this->globalMetadata = $pages;	
+			$this->globalMetadata["text"] = $pages;	
 		}
 
 		if(!$textFound) {
