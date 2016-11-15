@@ -111,6 +111,7 @@ class ImageHandler extends FileHandlerBase {
 			$fileObject->metadata["height"] = $dimensions["y"];
 		}
 
+
 		if(!$fileObject->metadata) {
 			if($fileFormat = identifyImage($sourceFile)) {
 				$originalName = $sourceFile->originalFilename;
