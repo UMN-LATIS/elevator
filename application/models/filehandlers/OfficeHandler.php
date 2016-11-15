@@ -8,9 +8,9 @@
 //require_once("fileHandlerBase.php");
 class OfficeHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("doc","docx","ppt","pptx");
+	protected $supportedTypes = array("doc","docx","ppt","pptx", "xls", "xlsx");
 	protected $noDerivatives = true;
-	public $icon = "pdf.png";
+	// public $icon = "pdf.png";
 	private $allowedSize = 30000000;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
