@@ -5351,6 +5351,7 @@ var SecondaryToolbar = {
     // Define the toolbar buttons.
     this.toggleButton = options.toggleButton;
     this.presentationModeButton = options.presentationModeButton;
+    this.fullScreenModeButton = options.fullScreenModeButton;
     this.openFile = options.openFile;
     this.print = options.print;
     this.download = options.download;
@@ -5369,6 +5370,8 @@ var SecondaryToolbar = {
       // (except for toggleHandTool, hand_tool.js is responsible for it):
       { element: this.presentationModeButton,
         handler: this.presentationModeClick },
+        { element: this.fullScreenModeButton,
+        handler: this.fullScreenModeClick },
       { element: this.openFile, handler: this.openFileClick },
       { element: this.print, handler: this.printClick },
       { element: this.download, handler: this.downloadClick },
@@ -5392,6 +5395,23 @@ var SecondaryToolbar = {
   // Event handling functions.
   presentationModeClick: function secondaryToolbarPresentationModeClick(evt) {
     PDFViewerApplication.requestPresentationMode();
+    this.close();
+  },
+
+  fullScreenModeClick: function secondaryToolbarFullScreenModeClick(evt) {
+    toggleFullScreen();
+    /* Trigger a recalc */
+    /*if (PDFView.initialized &&
+        (document.getElementById('pageWidthOption').selected ||
+         document.getElementById('pageFitOption').selected ||
+         document.getElementById('pageAutoOption').selected)) {
+      PDFView.setScale(document.getElementById('scaleSelect').value);
+    }
+    updateViewarea();
+
+    // Set the 'max-height' CSS property of the secondary toolbar.
+    SecondaryToolbar.setMaxHeight(PDFView.container);*/
+    
     this.close();
   },
 
@@ -8115,6 +8135,9 @@ function webViewerInitialized() {
   appConfig.toolbar.presentationModeButton.addEventListener('click',
     SecondaryToolbar.presentationModeClick.bind(SecondaryToolbar));
 
+  appConfig.toolbar.fullScreenModeButton.addEventListener('click',
+    SecondaryToolbar.fullScreenModeClick.bind(SecondaryToolbar));
+
   appConfig.toolbar.openFile.addEventListener('click',
     SecondaryToolbar.openFileClick.bind(SecondaryToolbar));
 
@@ -8802,6 +8825,7 @@ function getViewerConfiguration() {
       openFile: document.getElementById('openFile'),
       print: document.getElementById('print'),
       presentationModeButton: document.getElementById('presentationMode'),
+      fullScreenModeButton: document.getElementById('fullScreen'),
       download: document.getElementById('download'),
       viewBookmark: document.getElementById('viewBookmark'),
     },
@@ -8897,6 +8921,31 @@ function webViewerLoad() {
   var config = getViewerConfiguration();
   window.PDFViewerApplication = pdfjsWebLibs.pdfjsWebApp.PDFViewerApplication;
   pdfjsWebLibs.pdfjsWebApp.PDFViewerApplication.run(config);
+}
+
+function toggleFullScreen() {
+  if (!document.fullscreenElement &&
+    !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { // current working methods
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) {
+      document.documentElement.msRequestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', webViewerLoad, true);

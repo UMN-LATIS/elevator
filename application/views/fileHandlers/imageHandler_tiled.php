@@ -10,7 +10,9 @@
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <style type="text/css">
 
-
+.leaflet-top {
+	z-index: 400;
+}
 </style>
 
 <? $token = $fileObject->getSecurityToken("tiled")?>
@@ -124,13 +126,13 @@
 	                },
 	                sqm: {
 	                  //factor: conversionFactor(44568, 20000) / 50000,
-	                  factor: (1 / pixelsPerMillimeter) / 50000,
+	                  factor: (1 /  Math.pow(pixelsPerMillimeter,2)) / 1000000,
 	                  display: 'square meters',
 	                  decimals: 2
 	              },
 	              sqcm: {
 	                  //factor: conversionFactor(44568, 20000) / 500,
-	                  factor: (1 / pixelsPerMillimeter) / 500,
+	                  factor: (1 / Math.pow(pixelsPerMillimeter,2)) / 100,
 	                  display: 'square centimeters',
 	                  decimals: 2
 	              }

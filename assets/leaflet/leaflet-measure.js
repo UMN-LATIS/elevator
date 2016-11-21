@@ -7137,9 +7137,22 @@ L.Control.Measure = L.Control.extend({
     if (this._pixelPos.length < 2) {
       return;
     }
-    var calced = Math.abs(Math.sqrt(Math.pow(this._pixelPos[1][0] - this._pixelPos[0][0], 2) + Math.pow(this._pixelPos[1][1] - this._pixelPos[0][1], 2)));
     var measurement = {};
-    measurement.length = calced;
+    measurement.length = 0;
+    if (this._pixelPos.length >= 2) {
+      for (var i = this._pixelPos.length - 1; i > 0; i--) {
+        measurement.length += Math.sqrt(Math.pow(Math.abs(this._pixelPos[i - 1][0] - this._pixelPos[i][0]), 2) + Math.pow(Math.abs(this._pixelPos[i - 1][1] - this._pixelPos[i][1]), 2));
+      }
+    }
+    if (this._pixelPos.length > 2) {
+      measurement.area = 0;
+      for (var j = this._pixelPos.length - 1; j > 0 ; j--) {
+        measurement.area += ((this._pixelPos[j - 1][0] * this._pixelPos[j][1]) - (this._pixelPos[j][0] * this._pixelPos[j - 1][1]));
+      }
+      measurement.area += ((this._pixelPos[this._pixelPos.length - 1][0] * this._pixelPos[0][1]) - (this._pixelPos[0][0] * this._pixelPos[this._pixelPos.length - 1][1]));
+      measurement.area /= 2;
+      measurement.area = Math.abs(measurement.area);
+    }
     // measurement.area = calced.area;
     originalCalced.length = measurement.length;
     // console.log(calced);
@@ -7169,7 +7182,6 @@ L.Control.Measure = L.Control.extend({
     var latlngs = this._latlngs, calced, resultFeature, popupContainer, popupContent, zoomLink, deleteLink;
     var pixelPos = this._pixelPos;
     this._finishMeasure();
-    var measurement = {};
     if (!latlngs.length) {
       return;
     }
@@ -7186,16 +7198,37 @@ L.Control.Measure = L.Control.extend({
         humanize: humanize,
         i18n: i18n
       });
-    } else if (latlngs.length === 2) {
-      measurement.length = Math.abs(Math.sqrt(Math.pow(pixelPos[1][0] - pixelPos[0][0], 2) + Math.pow(pixelPos[1][1] - pixelPos[0][1], 2)));
-
-      calced.length = measurement.length;
-      resultFeature = L.polyline(latlngs, this._symbols.getSymbol('resultLine'));
-      popupContent = linePopupTemplate({
-        model: _.extend({}, calced, this._getMeasurementDisplayStrings(measurement)),
-        humanize: humanize,
-        i18n: i18n
-      });
+    } else if (latlngs.length >= 2) {
+      calced.length = 0;
+      for (var i = pixelPos.length - 1; i > 0; i--) {
+        calced.length += Math.sqrt(Math.pow(Math.abs(pixelPos[i - 1][0] - pixelPos[i][0]), 2) + Math.pow(Math.abs(pixelPos[i - 1][1] - pixelPos[i][1]), 2));
+      }
+      //calced.length = measurement.length;
+      if (latlngs.length === 2) {
+        resultFeature = L.polyline(latlngs, this._symbols.getSymbol('resultLine'));
+        popupContent = linePopupTemplate({
+          model: _.extend({}, calced, this._getMeasurementDisplayStrings(calced)),
+          humanize: humanize,
+          i18n: i18n
+        });
+      } else {
+        //add length between first and last points so we can get perimeter
+        calced.length += Math.sqrt(Math.pow(Math.abs(pixelPos[0][0] - pixelPos[pixelPos.length - 1][0]), 2) + Math.pow(Math.abs(pixelPos[0][1] - pixelPos[pixelPos.length - 1][1]), 2));
+        //calculate area of arbitrary polygon
+        calced.area = 0;
+        for (var j = pixelPos.length - 1; j > 0 ; j--) {
+          calced.area += ((pixelPos[j - 1][0] * pixelPos[j][1]) - (pixelPos[j][0] * pixelPos[j - 1][1]));
+        }
+        calced.area += ((pixelPos[pixelPos.length - 1][0] * pixelPos[0][1]) - (pixelPos[0][0] * pixelPos[pixelPos.length - 1][1]));
+        calced.area /= 2;
+        calced.area = Math.abs(calced.area);
+        resultFeature = L.polygon(latlngs, this._symbols.getSymbol('resultArea'));
+        popupContent = areaPopupTemplate({
+          model: _.extend({}, calced, this._getMeasurementDisplayStrings(calced)),
+          humanize: humanize,
+          i18n: i18n
+        });
+      }
     } else {
       resultFeature = L.polygon(latlngs, this._symbols.getSymbol('resultArea'));
       popupContent = areaPopupTemplate({

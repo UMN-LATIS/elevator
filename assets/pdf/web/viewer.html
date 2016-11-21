@@ -45,6 +45,13 @@ See https://github.com/adobe-type-tools/cmap-resources
     <script src="debugger.js"></script>
     <script src="viewer.js"></script>
 
+<style>
+.toolbarButton.fullScreen::before,
+.secondaryToolbarButton.fullScreen::before {
+  content: url(images/toolbarButton-fullScreen.png);
+}
+</style>
+
   </head>
 
   <body tabindex="1" class="loadingInProgress">
@@ -174,12 +181,14 @@ See https://github.com/adobe-type-tools/cmap-resources
                 <span id="numPages" class="toolbarLabel"></span>
               </div>
               <div id="toolbarViewerRight">
-                   <button id="presentationMode" class="toolbarButton presentationMode" title="Switch to Presentation Mode" tabindex="31" data-l10n-id="presentation_mode">
+                  <button id="presentationMode" class="toolbarButton presentationMode hidden" title="Switch to Presentation Mode" tabindex="31" data-l10n-id="presentation_mode">
             <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
           </button>
-                <button id="presentationMode" class="toolbarButton presentationMode hiddenLargeView" title="Switch to Presentation Mode" tabindex="31" data-l10n-id="presentation_mode">
-                  <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
-                </button>
+                <button id="fullScreen" class="toolbarButton fullScreen" title="Switch To Full Screen" tabindex="16" data-l10n-id="full_screen">
+              <span data-l10n-id="full_screen_label">Full Screen</span>
+            </button>
+
+
 
                 <button id="openFile" class="toolbarButton openFile hiddenLargeView" title="Open File" tabindex="32" data-l10n-id="open_file">
                   <span data-l10n-id="open_file_label">Open</span>
