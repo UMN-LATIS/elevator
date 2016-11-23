@@ -547,7 +547,6 @@ class search_model extends CI_Model {
 		$searchParams['body']["suggestion-finder"]["text"] = $searchTerm;
 		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
 
-
 		$queryResponse = $this->es->suggest($searchParams);
 
 		return $queryResponse;

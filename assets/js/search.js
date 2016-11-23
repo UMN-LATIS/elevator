@@ -243,6 +243,7 @@ function populateSearchResults(searchObject) {
 	if($('a[href="#grid"]').parent().hasClass("active")) {
 		$("#results").find("img").each(function(el, value){
 			$(value).on("load", function() {
+				$(value).off("load");
 				if(Retina.isRetina()) {
 					$(value).removeAttr("width").removeAttr("height");
 					new RetinaImage(value);
@@ -267,6 +268,7 @@ function populateSearchResults(searchObject) {
 	if($('a[href="#list"]').parent().hasClass("active")) {
 		$("#listResults").find("img").each(function(el, value){
 			$(value).on("load", function() {
+				$(value).off("load");
 				if(Retina.isRetina()) {
 					$(value).removeAttr("width").removeAttr("height");
 					new RetinaImage(value);
