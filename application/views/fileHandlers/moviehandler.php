@@ -138,9 +138,9 @@ $menuArray['download'] = $downloadArray;
 <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
-      <?=$this->load->view("errors/loginForPermissions")?>
+      <?$this->load->view("errors/loginForPermissions")?>
       <?if($embedded):?>
-      <?=$this->load->view("login/login")?>
+      <?$this->load->view("login/login")?>
       <?endif?>
       <?endif?>
     </p>
@@ -218,7 +218,7 @@ $menuArray['download'] = $downloadArray;
 
   <?=renderFileMenu($menuArray)?>
 
-  <?=$this->load->view("fileHandlers/excerpt", true)?>
+  <?$this->load->view("fileHandlers/excerpt")?>
 
   <script>
     $(document).ready(function() {
