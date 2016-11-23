@@ -247,13 +247,28 @@ class Search extends Instance_Controller {
 			foreach($resultArray["suggestion-finder"] as $entry) {
 				if(count($entry["options"])>0) {
 					if($entry["options"][0]["score"]>= 0.8) {
-						$output[$entry["text"]] = $entry["options"][0]["text"];
+						$suggestTerm[$entry["text"]]= $entry["options"][0]["text"];
 					}
 				}
 
 			}
-
 		}
+
+
+		foreach($suggestTerm as $key=>$value) {
+			$validTerm = false;
+			$result = $this->search_model->find(["searchText"=>$value],true);
+			if($result['totalResults'] > 0) {
+				$validTerm = true;
+			}
+
+
+			if($validTerm) {
+				$output[$key] = $value;
+			}
+		}
+		
+
 		echo json_encode($output);
 
 	}
