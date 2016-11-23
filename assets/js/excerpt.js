@@ -24,7 +24,6 @@ $(document).ready(function() {
 			if(e.position > endTimeValue) {
 				jwplayer("videoElement").seek(startTimeValue);
 				suppressSeek = true;
-				jwplayer("videoElement").stop();
 			}
 		});
 	}

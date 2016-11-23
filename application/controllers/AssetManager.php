@@ -454,7 +454,7 @@ class AssetManager extends Admin_Controller {
 
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
-		$config['allowed_types']	= 'csv';
+		$config['allowed_types']	= '*';
 
 		$this->load->library('upload', $config);
 		if ( ! $this->upload->do_upload())
