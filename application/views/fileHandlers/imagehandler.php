@@ -87,7 +87,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 		<? if(!isset($fileContainers) || count($fileContainers) == 1):?>
 		<p class="alert alert-info">No derivatives found.
 			<?if(!$this->user_model->userLoaded):?>
-			<?=$this->load->view("errors/loginForPermissions")?>
+			<?$this->load->view("errors/loginForPermissions")?>
 			<?endif?>
 		</p>
 
@@ -104,9 +104,9 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 				<?if(array_values($fileContainers)[0]->derivativeType == "thumbnail"):?>
 					<p class="alert alert-info">Displaying thumbnail image.
 						<?if(!$this->user_model->userLoaded):?>
-						<?=$this->load->view("errors/loginForPermissions")?>
+						<?$this->load->view("errors/loginForPermissions")?>
 						<?if($embedded):?>
-						<?=$this->load->view("login/login")?>
+						<?$this->load->view("login/login")?>
 						<?endif?>
 						<?endif?>
 					</p>

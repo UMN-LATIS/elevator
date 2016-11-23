@@ -185,7 +185,7 @@ class asset extends Instance_Controller {
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 		if(!$fileHandler) {
-			$embed = $this->load->view("fileHandlers/filenotfound", true);
+			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
 			if($embedded) {
 				$this->template->set_template("noTemplate");
 				$this->template->loadJavascript(["excerpt"]);
