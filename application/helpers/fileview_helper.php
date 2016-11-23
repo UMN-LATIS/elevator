@@ -38,7 +38,7 @@ function renderFileMenu($menuArray) {
 		$outputText .= '</ul>\'></span>';
 	}
 
-	if($menuArray['excerpt']) {
+	if(isset($menuArray['excerpt'])) {
 		$outputText .= ' <span data-toggle="collapse" data-target="#excerptGroup" class="glyphicon glyphicon-time excerptTooltip" data-toggle="tooltip" title="Create Excerpt"></span>';
 	}
 

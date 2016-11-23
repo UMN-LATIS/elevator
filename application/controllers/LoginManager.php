@@ -65,10 +65,10 @@ class LoginManager extends Instance_Controller {
 			$this->doctrineCache->setNamespace('userCache_');
 			$this->doctrineCache->delete($this->user_model->userId);
 		}
-		$this->input->delete_cookie("ApiHandoff");
-		$this->input->delete_cookie("AuthKey");
-		$this->input->delete_cookie("Timestamp");
-		$this->input->delete_cookie("TargetObject");
+		$this->input->set_cookie(["name"=>"ApiHandoff", "expire"=>""]);
+		$this->input->set_cookie(["name"=>"AuthKey", "expire"=>""]);
+		$this->input->set_cookie(["name"=>"Timestamp", "expire"=>""]);
+		$this->input->set_cookie(["name"=>"TargetObject", "expire"=>""]);
 
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
