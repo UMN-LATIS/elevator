@@ -29,7 +29,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
         // safari doesn't allow third party cookies unless the user has accessed the site before, so we need to have them click to launch a popup..
         if(!document.cookie) {
           window.onload = function(e) {
-            document.body.innerHTML = "To load this resource, please click the button below. <input type=button value='Load Resource' onClick='popitup();'>";
+            document.body.innerHTML = "To load this resource, please click the button below.  If you continue to encounter this issue, your web browser may be blocking cookies.  <input type=button value='Load Resource' onClick='popitup();'>";
           }
 
         }
