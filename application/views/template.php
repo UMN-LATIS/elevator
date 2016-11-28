@@ -245,7 +245,10 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
             <li><a class="loginLink" href="<?=instance_url("loginManager/localLogin/?redirect=".current_url())?>"><?=$this->config->item("guestLoginLabel")?> User</a></li>
             <script>
             if(window.location.hash) {
-              $('.loginLink').attr('href', $('.loginLink').attr('href') + window.location.hash.replace("#","%23"));
+              $('.loginLink').each(function(index, el) {
+                $(el).attr('href', $(el).attr('href') + window.location.hash.replace("#","%23"));  
+              });
+              
             }
             </script>
           </ul>
