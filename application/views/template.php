@@ -240,10 +240,17 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"><b class="caret"></b></span><span class="signInLink">Sign In</span></a>
           <ul class="dropdown-menu">
             <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
-            <li class="universityAuth"><a href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>"><?=$this->config->item("remoteLoginLabel")?> User</a></li>
+            <li class="universityAuth"><a class="loginLink" href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>"><?=$this->config->item("remoteLoginLabel")?> User</a></li>
             <?endif?>
-            <li><a href="<?=instance_url("loginManager/localLogin/?redirect=".current_url())?>"><?=$this->config->item("guestLoginLabel")?> User</a></li>
-            
+            <li><a class="loginLink" href="<?=instance_url("loginManager/localLogin/?redirect=".current_url())?>"><?=$this->config->item("guestLoginLabel")?> User</a></li>
+            <script>
+            if(window.location.hash) {
+              $('.loginLink').each(function(index, el) {
+                $(el).attr('href', $(el).attr('href') + window.location.hash.replace("#","%23"));  
+              });
+              
+            }
+            </script>
           </ul>
         </li>
       </ul>
