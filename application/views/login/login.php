@@ -38,7 +38,7 @@
 						<input type="password" name="password" id="inputPassword" class="form-control" required="required" title="">
 					</div>
 				</div>
-
+				<?if(!isset($redirectURL) || $redirectURL == null) { $redirectURL = current_url(); }?>
 				<input type="hidden" name="redirectURL" value="<?=$redirectURL?>" >
 				<script>
 				if(window.location.hash) {
