@@ -242,7 +242,8 @@ class Search extends Instance_Controller {
 		$resultArray = $this->search_model->getSuggestions($searchTerm);
 
 		$output = array();
-
+		$suggestTerm = array();
+		
 		if(isset($resultArray["suggestion-finder"]) && count($resultArray["suggestion-finder"])>0) {
 			foreach($resultArray["suggestion-finder"] as $entry) {
 				if(count($entry["options"])>0) {

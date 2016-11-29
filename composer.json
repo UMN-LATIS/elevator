@@ -32,6 +32,7 @@
     "crocodoc/php-box-view": "dev-master",
     "aws/aws-sdk-php": ">=3.2.6",
     "cocur/background-process": "^0.5.0",
-    "google/apiclient": "dev-disableCache"
+    "google/apiclient": "dev-disableCache",
+    "php-unoconv/php-unoconv": "^0.3.0"
   }
 }

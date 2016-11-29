@@ -269,6 +269,9 @@ class S3_model extends CI_Model {
 		}
 	}
 
+	// 'GlacierJobParameters' => [
+	// 'Tier' => 'Expedited'
+	// ]
 	public function restoreObject($targetKey) {
 		try {
 			$result = $this->s3Client->restoreObject([
