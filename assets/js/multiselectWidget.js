@@ -67,7 +67,7 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 	var selectElement = $(parentGroup).find("[data-cascadenumber=" + selectIndex + "]");
 
 	targetCategory = $(selectElement).data("category");
-	if(!targetCategory) {
+	if(!targetCategory || !target) {
 		return;
 	}
 	target = target[targetCategory];
