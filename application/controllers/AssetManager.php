@@ -581,6 +581,10 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function parseTime($timeString) {
+		if(strlen($timeString) == 4) {
+			$timeString = $timeString . "-01-01";
+		}
+		
 		if(strtotime($timeString)) {
 			return strtotime($timeString);
 		}
