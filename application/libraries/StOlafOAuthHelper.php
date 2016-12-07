@@ -3,7 +3,7 @@
 * St. Olaf OAuth Helper
 */
 
-define("GROUP_MEMBER", "Group");
+define("GROUP_MEMBER", "Google Group");
 
 require_once("AuthHelper.php");
 class StOlafOAuthHelper extends AuthHelper
@@ -138,7 +138,6 @@ class StOlafOAuthHelper extends AuthHelper
 			);
 			
 			// $r = $dir->groups->listGroups($optParams);
-			$hintMembership = array();
 			// foreach($r->getGroups() as $group) {
 			// 	$hintMembership[$group->getId()] = $group->getName();
 			// }
