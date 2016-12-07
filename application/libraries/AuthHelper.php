@@ -47,7 +47,7 @@ class AuthHelper
 		}
 	}
 
-	public function populateUserData() {
+	public function populateUserData($user) {
 		return array();
 	}
 	

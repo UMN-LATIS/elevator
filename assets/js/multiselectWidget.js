@@ -52,7 +52,6 @@ $(document).on("change", ".multiSelect", function(e) {
 
 
 function loadCascadeNumber(parentGroup, selectIndex) {
-
 	var target = sourceContent[$(parentGroup).attr("id")];
 	var groupSelected = selectedItems[$(parentGroup).attr("id")];
 	var targetCategory;
@@ -65,9 +64,9 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 	}
 
 	var selectElement = $(parentGroup).find("[data-cascadenumber=" + selectIndex + "]");
-
+	
 	targetCategory = $(selectElement).data("category");
-	if(!targetCategory) {
+	if(!targetCategory || !target) {
 		return;
 	}
 	target = target[targetCategory];
