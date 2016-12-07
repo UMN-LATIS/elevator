@@ -109,7 +109,7 @@ class UMNHelper extends AuthHelper
 
 	}
 
-	public function populateUserData() {
+	public function populateUserData($user) {
 		$userData = array();
 
 		$coursesTaught = array();
