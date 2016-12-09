@@ -93,6 +93,7 @@ class Beltdrive extends CI_Controller {
 				usleep(5);
 				continue;
 			}
+			$this->job = $job;
 
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
