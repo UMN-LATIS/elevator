@@ -9,6 +9,21 @@ class API_Controller extends MY_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+		if (isset($_SERVER['HTTP_ORIGIN'])) {
+			header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+			header('Access-Control-Allow-Credentials: true');    
+			header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); 
+		}   
+		header("Access-Control-Allow-Headers: authorization-key, authorization-hash, authorization-timestamp, authorization-user");
+// Access-Control headers are received during OPTIONS requests
+		if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+
+			echo "true";
+			die;
+		}
+
+		// header("Access-Control-Allow-Headers: *");
+
 
 		// DOES THIS DO ANYTHING??
 		// if($this->input->get("authKey")) {
@@ -57,18 +72,26 @@ class API_Controller extends MY_Controller {
 
 		$this->apiKey = $apiKey;
 		if($authUser) {
-			$this->doctrineCache->setNamespace('userCache_');
-			if($storedObject = $this->doctrineCache->fetch($authUser)) {
-				$user_model = unserialize($storedObject);
-				if(!$user_model) {
-					$this->user_model->loadUser($authUser);
+			if($this->config->item('enableCaching')) {
+				$this->doctrineCache->setNamespace('userCache_');
+				if($storedObject = $this->doctrineCache->fetch($authUser)) {
+					$user_model = unserialize($storedObject);
+					if(!$user_model) {
+						$this->user_model->loadUser($authUser);
+					}
+					else {
+						$this->user_model = $user_model;
+					}
 				}
 				else {
-					$this->user_model = $user_model;
+					// $this->logging->logError("cache fail" . $authUser);
+					$this->user_model->loadUser($authUser); // we'll give it a try, but we may not have perms if we rely on external auth stuffs.
+					if($this->user_model->getUserType() == "Remote") { // bail
+						$this->user_model->userLoaded = false;
+					}
 				}
 			}
 			else {
-				// $this->logging->logError("cache fail" . $authUser);
 				$this->user_model->loadUser($authUser); // we'll give it a try, but we may not have perms if we rely on external auth stuffs.
 				if($this->user_model->getUserType() == "Remote") { // bail
 					$this->user_model->userLoaded = false;
@@ -80,7 +103,9 @@ class API_Controller extends MY_Controller {
 				$this->isAuthenticated = true;
 
 				// extend cache (if we move to a sane caching library we can remove this)
-				$this->doctrineCache->save($this->user_model->getId(), serialize($this->user_model), 900);
+				if($this->config->item('enableCaching')) {
+					$this->doctrineCache->save($this->user_model->getId(), serialize($this->user_model), 900);
+				}
 
 
 				if(!$this->user_model->getApiInstance()) {
