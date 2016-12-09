@@ -278,7 +278,10 @@ class S3_model extends CI_Model {
 				'Bucket' => $this->bucket,
 				'Key'    => $targetKey,
 				'RestoreRequest' => [
-				'Days' => 15
+				'Days' => 15,
+				'GlacierJobParameters' => [
+					'Tier' => 'Expedited'
+				]
 				]
 				]);
 		}
