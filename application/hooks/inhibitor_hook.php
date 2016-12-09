@@ -100,7 +100,7 @@ class InhibitorHook {
 		$CI->doctrine->reset();
 
 		$log = new Entity\Log();
-		$log->setMessage(substr($errorText, 0, 1000));
+		$log->setMessage(substr($errorText, 0, 2000));
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
 			$log->setInstance($CI->doctrine->em->merge($CI->instance));

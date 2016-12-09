@@ -74,7 +74,7 @@ class PDFHandler extends FileHandlerBase {
 	}
 
 	public function extractMetadata($args) {
-		ini_set('memory_limit', '512M');
+		ini_set('memory_limit', '2048M');
 		if(!isset($args['fileObject'])) {
 			$fileObject = $this->sourceFile;
 		}
@@ -114,7 +114,7 @@ class PDFHandler extends FileHandlerBase {
 	}
 
 	public function createThumbnails($args) {
-		ini_set('memory_limit', '512M');
+		ini_set('memory_limit', '2048M');
 		$success = true;
 		foreach($args as $derivativeSetting) {
 			$derivativeType = $derivativeSetting['type'];

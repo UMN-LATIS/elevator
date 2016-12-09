@@ -136,8 +136,12 @@ class User_model extends CI_Model {
 
 			}
 
-			$authHelper = $this->getAuthHelper();
-			$this->userData = $authHelper->populateUserData();
+			
+			if($this->user->getUserType() == "Remote") {
+				$authHelper = $this->getAuthHelper();
+				$this->userData = $authHelper->populateUserData($this->user);	
+			}
+			
 
 			
 			$this->userLoaded = true;
@@ -148,7 +152,6 @@ class User_model extends CI_Model {
 	}
 
 	function getPermissions($entityType, $groupType, $groupValue, $limit=null) {
-
 		$result = $this->doctrine->em->getRepository("Entity\\" . $entityType)->createQueryBuilder('i')
 
    			->join("i.group_values", "r", "with", "i.group_type = :group_type")
@@ -187,14 +190,13 @@ class User_model extends CI_Model {
 		}
 
 		$authHelper = $this->getAuthHelper();
+		
 		$groupLookups = $authHelper->getGroupMapping($this->userData);
-
 		foreach($groupLookups as $type=>$values) {
 			foreach($values as $value) {
 				$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));	
 			}
 		}
-
 		foreach ($instance_groups as $instance_group) {
 			foreach ($instance_group->getInstancePermissions() as $instancePermission) {
 				if (array_key_exists($instancePermission->getInstance()->getId(), $this->instancePermissions)) {
