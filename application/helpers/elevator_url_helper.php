@@ -19,10 +19,6 @@ function getClickToSearchLink($widgetModel, $linkText, $displayText = null) {
 	if(!$displayText) {
 		$displayText = $linkText;
 	}
-
-	$linkText = str_ireplace("?", "", $linkText);
-	$linkText = str_ireplace("...", "", $linkText);
-
 	if($widgetModel->getClickToSearchType() == 0) {
 		return "<A href=\"".instance_url("/search/querySearch/". rawurlencode($linkText)) ."\">".$displayText."</a>";
 	}
