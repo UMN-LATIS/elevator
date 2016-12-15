@@ -342,7 +342,7 @@ class search_model extends CI_Model {
 
 		$query = array();
 		$i=0;
-		if(preg_match("/[?*]+/u", $searchArray["searchText"])) {
+		if(preg_match("/[*]+/u", $searchArray["searchText"])) {
 			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
