@@ -92,7 +92,7 @@ gulp.task("allCSSFilesIndividually", function() {
 });
 
 
-gulp.task('default', ['3dhop', 'basicFiles', 'basicFiles', 'assetMaster', 'searchMaster', 'allJSFilesIndividually','allCSSFilesIndividually']);
+gulp.task('default', ['3dhop', 'webRTI', 'basicFiles', 'basicFiles', 'assetMaster', 'searchMaster', 'allJSFilesIndividually','allCSSFilesIndividually']);
 
 
 
