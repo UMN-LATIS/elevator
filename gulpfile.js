@@ -29,7 +29,7 @@ gulp.task('3dhop', function() {
 });
 
 gulp.task('webRTI', function() {
-    return gulp.src(["./assets/webViewer/spidergl/spidergl.js", "./assets/webViewer/spidergl/multires_min.js"])
+    return gulp.src(["./assets/webViewer/spidergl/spidergl.js", "./assets/webViewer/spidergl/multires.js"])
         .pipe(sourcemaps.init())
         .pipe(uglify())
         .pipe(concat('webrti.min.js'))
