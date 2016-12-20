@@ -101,11 +101,11 @@ class RTIHandler extends FileHandlerBase {
 		if(file_exists($extractedPath . "/" . "info.xml")) {
 			$fileContents = file_get_contents($extractedPath . "/" . "info.xml");
 			$info = new SimpleXMLElement($fileContents);
-			$fileObject->metadata["type"] = $info->Content["type"][0];
-			$fileObject->metadata["width"] = $info->Content->Size["width"][0];
-			$fileObject->metadata["height"] = $info->Content->Size["height"][0];
-			$fileObject->metadata["scale"] = $info->Content->Scale[0];
-			$fileObject->metadata["bias"] = $info->Content->Bias[0];
+			$fileObject->metadata["type"] = (string)$info->Content["type"][0];
+			$fileObject->metadata["width"] = (string)$info->Content->Size["width"][0];
+			$fileObject->metadata["height"] = (string)$info->Content->Size["height"][0];
+			$fileObject->metadata["scale"] = (string)$info->Content->Scale[0];
+			$fileObject->metadata["bias"] = (string)$info->Content->Bias[0];
 		}
 		else {
 			return JOB_FAILED;

@@ -50,7 +50,7 @@ $menuArray['download'] = $downloadArray;
 
 
 <?else:?>
-TODO
+<script type="text/javascript" src="/assets/webViewer/js/webrti.min.js"></script>
 <?endif?>
 
 <?if(!$embedded):?>
