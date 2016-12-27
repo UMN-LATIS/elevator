@@ -38,10 +38,12 @@ class UMNHelper extends AuthHelper
 			$user = $user[0];
 		}
 
-
 		$user->setHasExpiry(false);
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
+		if($this->shibboleth->getAttributeValue("isGuest") == "Y") {
+			$user->setUserType("Remote-Guest");
+		}
 		$user->setInstance($CI->instance);
 		$user->setIsSuperAdmin(false);
 		$user->setFastUpload(false);
@@ -109,9 +111,8 @@ class UMNHelper extends AuthHelper
 
 	}
 
-	public function populateUserData() {
+	public function populateUserData($user) {
 		$userData = array();
-
 		$coursesTaught = array();
 		$courses = array();
 		$jobCodes = array();

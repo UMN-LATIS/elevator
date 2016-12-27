@@ -82,7 +82,7 @@ foreach($this->user_model->userData as $key=>$value) {
 		<select name="hintSelector" class="form-control hintSelector" id="inputHintSelector" class="form-control">
 			<option value="">-- Suggested Value --</option>
 			{{#each hints}}
-			<option value={{@key}}>{{this}}</option>
+			<option value="{{@key}}">{{this}}</option>
 			{{/each}}
 		</select>
 	</div>
