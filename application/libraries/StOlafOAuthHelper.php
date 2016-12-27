@@ -3,6 +3,8 @@
 * St. Olaf OAuth Helper
 */
 
+define("GROUP_MEMBER", "Google Group");
+
 require_once("AuthHelper.php");
 class StOlafOAuthHelper extends AuthHelper
 {
@@ -10,6 +12,10 @@ class StOlafOAuthHelper extends AuthHelper
 	private $userId;
 	private $name;
 	private $email;
+
+	public $authTypes = [GROUP_MEMBER=>["name"=>GROUP_MEMBER, "label"=>GROUP_MEMBER]];
+
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -88,9 +94,67 @@ class StOlafOAuthHelper extends AuthHelper
 	
 	}
 
+
+	public function getGroupMapping($userData) {
+		$outputArray = array();
+		foreach($userData as $key=>$value) {
+			$outputArray[$key] = $value["values"];
+		}
+		return $outputArray;
+
+	}
+
+	public function populateUserData($user = null) {
+
+		$userData = array();
+		$groupMembershp = array();
+		if($user) {
+
+			// we need to load their group membership from google
+			$client = new Google_Client();
+			$client->setAuthConfig($this->CI->config->item("oAuthDelegate"));
+			$optParams = array(
+			  // 'customer' => 'my_customer',
+			  // 'domain' => 'stolaf.edu',
+			  'userKey' => $user->getEmail()
+			);
+			$client->setApplicationName("Elevator");
+			$client->setScopes(['https://www.googleapis.com/auth/admin.directory.group', 'https://www.googleapis.com/auth/admin.directory.user']);
+			$client->setSubject('googleadmin@stolaf.edu');
+			$dir = new Google_Service_Directory($client);
+			$r = $dir->groups->listGroups($optParams);
+			$groupMembership = array();
+			$hintMembership = array();
+			foreach($r->getGroups() as $group) {
+				$groupId = $group->getEmail();
+				$groupId = str_replace("@stolaf.edu", "", $groupId);
+				$hintMembership[$groupId] = $group->getName();
+				$groupMembership[$groupId] = $groupId;
+			}
+
+			$optParams = array(
+			  // 'customer' => 'my_customer',
+			  'domain' => 'stolaf.edu',
+			);
+			
+			// $r = $dir->groups->listGroups($optParams);
+			// foreach($r->getGroups() as $group) {
+			// 	$hintMembership[$group->getId()] = $group->getName();
+			// }
+			// var_dump($groupMembership);
+			$userData[GROUP_MEMBER] = ["values"=>$groupMembership, "hints"=>$hintMembership];
+
+		}
+		
+		return $userData;
+
+
+	}
+
+
 	public function createUserFromRemote($usernameOverride = null) {
 		$user = new Entity\User;	
-		
+
 		if(!$usernameOverride) {
 			$username = $this->getUserIdFromRemote($shibHelper);
 			$user->setDisplayName($this->name);
@@ -104,7 +168,7 @@ class StOlafOAuthHelper extends AuthHelper
 		$user->setHasExpiry(false);
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
-		$user->setInstance($CI->instance);
+		$user->setInstance($this->CI->instance);
 		$user->setIsSuperAdmin(false);
 		$user->setFastUpload(false);
 		$this->CI->doctrine->em->persist($user);
@@ -117,15 +181,14 @@ class StOlafOAuthHelper extends AuthHelper
 	}
 
 	public function updateUserFromRemote($user) {
-		$CI =& get_instance();
 		if($user->getDisplayName() == "") {
 			$user->setDisplayName($this->name);
 		}
 		if($user->getEmail() == "") {
 			$user->setEmail($this->email);
 		}
-		$CI->doctrine->em->persist($user);
-		$CI->doctrine->em->flush();
+		$this->CI->doctrine->em->persist($user);
+		$this->CI->doctrine->em->flush();
 
 	}
 

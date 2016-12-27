@@ -108,9 +108,11 @@ class asset extends API_Controller {
 
 	}
 
-	public function getEmbedLink($objectId, $instance) {
-		$this->instance = $this->doctrine->em->getRepository("Entity\Instance")->find($instance);
-
+	public function getEmbedLink($objectId, $instance=null) {
+		if($instance) {
+			$this->instance = $this->doctrine->em->getRepository("Entity\Instance")->find($instance);	
+		}
+		
 		$fileHandler = $this->filehandler_router->getHandlerForObject($objectId);
 		if(!$fileHandler) {
 		}

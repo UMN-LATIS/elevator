@@ -541,7 +541,7 @@ class AssetManager extends Admin_Controller {
 							$outputURLs = array();
 							foreach($object->fieldContentsArray as $entry) {
 								$handler = $entry->getFileHandler();
-								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile();
+								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+240 minutes");
 							}
 							$outputRow[] = join($outputURLs, "|");
 						}
@@ -744,6 +744,9 @@ class AssetManager extends Admin_Controller {
 								$exploded = explode(",", $rowEntry);
 								$widgetContainer->latitude = $exploded[0];
 								$widgetContainer->longitude = $exploded[1];
+								if(isset($exploded[2])) {
+									$widgetcontainer->locationLabel = $exploded[2];
+								}
 							}
 						}
 						else if(get_class($widget) == "Tags") {

@@ -23,6 +23,7 @@ class asset extends Instance_Controller {
 		$this->template->content->view("drawers/drawerModal");
 
 		$this->load->helper('number');
+		$this->load->helper('fileview');
 		$this->load->model("asset_model");
 	}
 
@@ -184,7 +185,7 @@ class asset extends Instance_Controller {
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 		if(!$fileHandler) {
-			$embed = $this->load->view("fileHandlers/filenotfound", true);
+			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
 			if($embedded) {
 				$this->template->set_template("noTemplate");
 				$this->template->loadJavascript(["excerpt"]);
