@@ -91,6 +91,11 @@ function submitFormProtected(ignoreWarnings, supressAlertAndBlock) {
 			async: false
 		});
 	}
+	else {
+		$.ajaxSetup({
+			async: true
+		});	
+	}
 
 	$.post( basePath + "assetManager/submission", {formData: JSON.stringify($( "#entryForm" ).serializeForm())}, function( data ) {
 

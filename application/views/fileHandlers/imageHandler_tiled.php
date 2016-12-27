@@ -73,7 +73,9 @@
 		layer.addTo(map);
 
 		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
-
+		if(minimapRatio > 4) {
+			minimapRatio = 1;
+		}
 
 		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
@@ -109,7 +111,7 @@
 					});
 		miniMap.addTo(map);
 
-		if(pixelsPerMillimeter > 0) {
+		if(pixelsPerMillimeter > 10) {
 
 			var measureControl = new L.Control.Measure(
 			{

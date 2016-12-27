@@ -279,6 +279,8 @@ class Search extends Instance_Controller {
 		$objectId = $this->input->post("objectId");
 		$this->load->model("search_model");
 
+		// $searchId = "7f53eb65-316b-4faa-be0b-c288c7c31d74";
+		// $objectId = "585d3408ba98a8f9404059c2";
 
 		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 		$searchArray = $searchArchiveEntry->getSearchData();
@@ -288,7 +290,6 @@ class Search extends Instance_Controller {
 		$matchArray = $this->search_model->find($searchArray, true);
 
 		$highlightArray = array();
-
 		if(isset($matchArray['highlight'])) {
 
 			foreach($matchArray['highlight'] as $entry) {

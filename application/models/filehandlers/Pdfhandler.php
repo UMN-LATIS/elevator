@@ -12,6 +12,7 @@ class PDFHandler extends FileHandlerBase {
 	protected $noDerivatives = true;
 	public $icon = "pdf.png";
 	private $allowedSize = 30000000;
+	private $maxProcessingSize = 262144000;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
 						  1=>["taskType"=>"createThumbnails", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
@@ -74,7 +75,7 @@ class PDFHandler extends FileHandlerBase {
 	}
 
 	public function extractMetadata($args) {
-		ini_set('memory_limit', '2048M');
+		ini_set('memory_limit', '4096M');
 		if(!isset($args['fileObject'])) {
 			$fileObject = $this->sourceFile;
 		}
@@ -95,17 +96,23 @@ class PDFHandler extends FileHandlerBase {
 		$this->pheanstalk->touch($this->job);
 
 		$this->load->library("PDFHelper");
-		$pdfHelper = new PDFHelper;
-		if($metadata = $pdfHelper->getPDFMetadata($this->sourceFile->getPathToLocalFile())) {
-			$fileObject->metadata = $metadata;
-		}
 
-		if($pages = $pdfHelper->scrapeText($this->sourceFile->getPathToLocalFile())) {
-			$this->globalMetadata = $pages;
-		}
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
 
+
+		if($fileObject->metadata["filesize"] < $this->maxProcessingSize) {
+			$pdfHelper = new PDFHelper;
+			if($metadata = $pdfHelper->getPDFMetadata($this->sourceFile->getPathToLocalFile())) {
+				$fileObject->metadata = $metadata;
+			}
+
+			if($pages = $pdfHelper->scrapeText($this->sourceFile->getPathToLocalFile())) {
+				$this->globalMetadata = $pages;
+			}
+
+		}
+		
 		if($args['continue'] == true) {
 			$this->queueTask(1);
 		}
@@ -114,7 +121,7 @@ class PDFHandler extends FileHandlerBase {
 	}
 
 	public function createThumbnails($args) {
-		ini_set('memory_limit', '2048M');
+		ini_set('memory_limit', '4096M');
 		$success = true;
 		foreach($args as $derivativeSetting) {
 			$derivativeType = $derivativeSetting['type'];
@@ -194,9 +201,11 @@ class PDFHandler extends FileHandlerBase {
 
 		}
 
-		if(strlen(trim($this->globalMetadata)) > 10) {
+		$fileSize = filesize($this->sourceFile->getPathToLocalFile());
+		
+		if(strlen(trim($this->globalMetadata)) > 10 || $fileSize > $this->maxProcessingSize) {
 			// we have some text here, don't bother looking for more.
-			if(filesize($this->sourceFile->getPathToLocalFile()) > $this->allowedSize) {
+			if($fileSize > $this->allowedSize) {
 				unlink($this->sourceFile->getPathToLocalFile());
 				$this->queueTask(3);	
 			}

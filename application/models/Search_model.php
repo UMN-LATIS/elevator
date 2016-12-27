@@ -150,9 +150,7 @@ class search_model extends CI_Model {
 		if(count($uploads)>0) {
 			foreach($uploads as $upload) {
 				foreach($upload->fieldContentsArray as $uploadContent) {
-
 					if($uploadContent->hasContents() && $uploadContent->getSearchData() != "") {
-
 						$uploadContentArray[] = $uploadContent->getSearchData();
 						$uploadContent->searchData = "";
 					}

@@ -7142,6 +7142,9 @@ L.Control.Measure = L.Control.extend({
     if (this._pixelPos.length >= 2) {
       for (var i = this._pixelPos.length - 1; i > 0; i--) {
         measurement.length += Math.sqrt(Math.pow(Math.abs(this._pixelPos[i - 1][0] - this._pixelPos[i][0]), 2) + Math.pow(Math.abs(this._pixelPos[i - 1][1] - this._pixelPos[i][1]), 2));
+        if (L.Browser.retina) {
+          measurement.length = measurement.length * 2;
+        }
       }
     }
     if (this._pixelPos.length > 2) {
@@ -7202,6 +7205,10 @@ L.Control.Measure = L.Control.extend({
       calced.length = 0;
       for (var i = pixelPos.length - 1; i > 0; i--) {
         calced.length += Math.sqrt(Math.pow(Math.abs(pixelPos[i - 1][0] - pixelPos[i][0]), 2) + Math.pow(Math.abs(pixelPos[i - 1][1] - pixelPos[i][1]), 2));
+      }
+
+      if (L.Browser.retina) {
+        calced.length = calced.length * 2;
       }
       //calced.length = measurement.length;
       if (latlngs.length === 2) {
