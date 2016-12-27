@@ -35,7 +35,7 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$start = microtime(true);
 		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
-		$this->asset_model->loadAssetById("558c633b81bbd1567c8b4567");
+		$this->asset_model->loadAssetById("585d3408ba98a8f9404059c2");
 		$this->asset_model->save(false, false);
 		$this->asset_model->reindex();
 		$end = microtime(true);
