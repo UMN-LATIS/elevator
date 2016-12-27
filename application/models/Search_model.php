@@ -197,7 +197,12 @@ class search_model extends CI_Model {
 		}
 
  		// only go only level deep in recursion?
-    	$params['body']  = $asset->getSearchEntry(2);
+    	$body  = $asset->getSearchEntry(2);
+
+    	// strip any illegal UTF8 characters, elastic is more picky about this
+    	$body = $this->cleanCharacters($body);
+
+    	$params['body'] = $body;
 
 		if(isset($locationArray) && count($locationArray)>0) {
 			$params['body']['locationCache'] = $locationArray;
@@ -231,6 +236,22 @@ class search_model extends CI_Model {
     	}
     	$this->asset_model->disableObjectCache();
 
+	}
+
+	public function cleanCharacters($nestedArray) {
+		$outputArray = array();
+		foreach($nestedArray as $key=>$item) {
+			if(is_array($item)) {
+				$outputArray[$key] = $this->cleanCharacters($item);
+			}
+			elseif(is_string($item)) {
+				$outputArray[$key] = mb_convert_encoding($item, 'UTF-8', 'UTF-8');
+			}
+			else {
+				$outputArray[$key] = $item;
+			}
+		}
+		return $outputArray;
 	}
 
 	public function find($searchArray, $readyforDisplayOnly=true, $pageStart=0, $loadAll=false) {
@@ -342,7 +363,7 @@ class search_model extends CI_Model {
 
 		$query = array();
 		$i=0;
-		if(preg_match("/[?*]+/u", $searchArray["searchText"])) {
+		if(preg_match("/[*]+/u", $searchArray["searchText"])) {
 			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
