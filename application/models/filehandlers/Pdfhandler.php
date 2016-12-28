@@ -98,14 +98,14 @@ class PDFHandler extends FileHandlerBase {
 		$this->load->library("PDFHelper");
 
 
-		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
-
+		
+		$objectFilesize = $this->sourceFile->getFileSize();
 		if(!is_array($this->globalMetadata)) {
 			$this->globalMetadata = array();
 		}
 
 
-		if($fileObject->metadata["filesize"] < $this->maxProcessingSize) {
+		if($objectFilesize < $this->maxProcessingSize) {
 			$pdfHelper = new PDFHelper;
 			if($metadata = $pdfHelper->getPDFMetadata($this->sourceFile->getPathToLocalFile())) {
 				$fileObject->metadata = $metadata;
@@ -116,6 +116,8 @@ class PDFHandler extends FileHandlerBase {
 			}
 
 		}
+
+		$fileObject->metadata["filesize"] = $objectFilesize;
 		
 		if($args['continue'] == true) {
 			$this->queueTask(1);
