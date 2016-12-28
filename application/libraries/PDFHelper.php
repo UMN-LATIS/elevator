@@ -42,7 +42,7 @@ class PDFHelper {
 		$metadata = array();
 		foreach($output as $entry) {
 			$line = explode(":" , $entry);
-			$metadata[$line[0]] = $line[1];
+			$metadata[trim($line[0])] = trim($line[1]);
 		}
 		return $metadata;
 
@@ -59,7 +59,7 @@ class PDFHelper {
 			echo ".";
 		}
 
-		if(!file_exists($outFile)) {
+		if(!file_exists($output)) {
 			$this->CI->logging->logError("pdf library","Scraping of pdf failed");
 			return "";
 		}
