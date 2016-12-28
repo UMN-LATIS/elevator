@@ -100,6 +100,10 @@ class PDFHandler extends FileHandlerBase {
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
 
+		if(!is_array($this->globalMetadata)) {
+			$this->globalMetadata = array();
+		}
+
 
 		if($fileObject->metadata["filesize"] < $this->maxProcessingSize) {
 			$pdfHelper = new PDFHelper;
@@ -108,7 +112,7 @@ class PDFHandler extends FileHandlerBase {
 			}
 
 			if($pages = $pdfHelper->scrapeText($this->sourceFile->getPathToLocalFile())) {
-				$this->globalMetadata = $pages;
+				$this->globalMetadata["text"] = $pages;
 			}
 
 		}
@@ -202,8 +206,7 @@ class PDFHandler extends FileHandlerBase {
 		}
 
 		$fileSize = filesize($this->sourceFile->getPathToLocalFile());
-		
-		if(strlen(trim($this->globalMetadata)) > 10 || $fileSize > $this->maxProcessingSize) {
+		if((isset($this->globalMetadata["text"]) && strlen(trim($this->globalMetadata["text"])) > 10) || $fileSize > $this->maxProcessingSize) {
 			// we have some text here, don't bother looking for more.
 			if($fileSize > $this->allowedSize) {
 				unlink($this->sourceFile->getPathToLocalFile());
