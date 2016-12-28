@@ -32,37 +32,39 @@ class PDFHelper {
 	}
 
 	public function getPDFMetadata($pdfFile) {
-		$parser = new \Smalot\PdfParser\Parser();
-		try {
-			$pdf    = $parser->parseFile($pdfFile);
-			$metadata = $pdf->getDetails();
-		}
-		catch (Exception $e) {
-			$this->CI->logging->logError("pdf libray","Could not get pdf metadata");
+
+		exec("/usr/bin/pdfinfo " . $pdfFile, $output, $returnVar);
+        
+		if($returnVar > 0) {
+			$this->CI->logging->logError("pdf library","Could not get pdf metadata");
 			return false;
+		}
+		$metadata = array();
+		foreach($output as $entry) {
+			$line = explode(":" , $entry);
+			$metadata[$line[0]] = $line[1];
 		}
 		return $metadata;
 
 	}
 
 	public function scrapeText($pdfFile) {
-		$parser = new \Smalot\PdfParser\Parser();
-		$pages = array();
-
-		try {
-			$pdf    = $parser->parseFile($pdfFile);
-			$pages  = $pdf->getPages();
+		$output = $pdfFile . ".txt";
+		$commandLine = "/usr/bin/pdftotext" . " "  . $pdfFile . " " . $output;
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->CI->pheanstalk->touch($this->CI->job);
+			echo ".";
 		}
-		catch (Exception $e) {
-			$this->CI->logging->logError("pdf library", "Could not extract text");
+
+		if(!file_exists($outFile)) {
+			$this->CI->logging->logError("pdf library","Scraping of pdf failed");
 			return "";
 		}
 
-		$pageText = "";
-		foreach ($pages as $page) {
-    		$pageText .= $page->getText();
-    		$this->CI->pheanstalk->touch($this->CI->job);
-		}
+		$pageText = file_get_contents($output);
 		$pageText = preg_replace("/\x{00A0}/", " ", $pageText);
 		$pageText = preg_replace("/\n/", " ", $pageText);
 		$pageText = preg_replace("/[^A-Za-z0-9 ]/", '', $pageText);
