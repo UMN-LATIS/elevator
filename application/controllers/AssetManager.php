@@ -504,8 +504,13 @@ class AssetManager extends Admin_Controller {
 			$assetTemplate = new Asset_template($templateId);
 			$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 			$searchArray = $searchArchiveEntry->getSearchData();
+			$showHidden = false;
+			if(isset($searchArray['showHidden'])) {
+				// This will include items that are not yet flagged "Ready for display"
+				$showHidden = true;
+			}
 			$this->load->model("search_model");
-			$matchArray = $this->search_model->find($searchArray, false, null, TRUE);
+			$matchArray = $this->search_model->find($searchArray, !$showHidden, null, TRUE);
 			$i=0;
 
 			$out = fopen('php://output', 'w');

@@ -42,6 +42,31 @@ class admin extends Admin_Controller {
 		echo "took" . ($end - $start) . "\n";
 	}
 
+	public function clearRecordsFromSearch() {
+		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', "8c3c897f-c096-4e27-8b3e-e81fc1c66e6b");
+		$searchArray = $searchArchiveEntry->getSearchData();
+		if(isset($searchArray['showHidden'])) {
+			// This will include items that are not yet flagged "Ready for display"
+			$showHidden = true;
+		}
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 31);
+		$this->load->model("asset_model");
+		$this->load->model("search_model");
+		$matchArray = $this->search_model->find($searchArray, !$showHidden, 0, true);
+		foreach($matchArray["searchResults"] as $match) {
+			$params['index'] = $this->config->item('elasticIndex');
+    		$params['type']  = 'asset';
+    		$params['id']    = $match;
+    		if(!$params['id'] || strlen($params['id']<5)) {
+    			// if you don't pass an id, elasticsearch will eat all your data
+    			echo "crap";
+    			break;
+    		}
+    		$ret = $this->search_model->es->delete($params);
+		}
+	}
+
+
 	public function reindex($wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
