@@ -516,6 +516,7 @@ class AssetManager extends Admin_Controller {
 			$out = fopen('php://output', 'w');
 			$widgetArray = array();
 			$widgetArray[] = "objectId";
+			$widgetArray[] = "collection";
 			foreach($assetTemplate->widgetArray as $widgets) {
 				$widgetArray[] = $widgets->getLabel();
 				if(get_class($widgets) == "Upload") {
@@ -538,6 +539,8 @@ class AssetManager extends Admin_Controller {
 				}
 				$outputRow = [];
 				$outputRow[] = $assetModel->getObjectId();
+				$collection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
+				$outputRow[] = $collection->getTitle();
 				foreach($assetTemplate->widgetArray as $key => $widgets) {
 					if(isset($assetModel->assetObjects[$key])) {
 						$object = $assetModel->assetObjects[$key];

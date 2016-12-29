@@ -159,6 +159,7 @@ class asset extends Instance_Controller {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
+		$foundAsset = false;
 		$relatedAssets = $assetModel->getAllWithinAsset("Related_asset");
 		foreach($relatedAssets as $asset) {
 
@@ -167,13 +168,33 @@ class asset extends Instance_Controller {
 				if($contents->targetAssetId == $targetObject) {
 					if(!$contents->getRelatedAsset()) {
 						$this->errorhandler_helper->callError("unknownAsset", $inline=true);
+						$foundAsset = true;
 					}
 					else {
 						$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$contents->getRelatedAsset()]);
+						$foundAsset = true;
 					}
 
 				}
 			}
+		}
+
+		if(!$foundAsset) {
+			// see if we can show them the asset anyways
+			$assetModel = new Asset_model();
+
+			if(!$assetModel->loadAssetById($targetObject)) {
+				$this->errorhandler_helper->callError("unknownAsset");
+			}
+
+			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+			if($this->accessLevel == PERM_NOPERM) {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+
+			$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$assetModel]);
+
 		}
 
 
