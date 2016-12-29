@@ -27,7 +27,7 @@
     <div class="form-group col-md-2">
       <label class="sr-only" for="">Drawer:</label>
       <select name="drawerList" id="drawerList" class="form-control">
-        <?if($this->user_model->userLoaded): foreach($drawerArray as $drawer):?>
+        <?if($this->user_model->userLoaded && is_array($drawerArray)): foreach($drawerArray as $drawer):?>
         <option value="<?=$drawer->getId()?>"><?=$drawer->getTitle()?></option>
         <?endforeach; endif;?>
       </select>
