@@ -34,9 +34,7 @@ if($widgetModel->getRequired()) {
 }
 $autocomplete="";
 $isPrimaryValue = "";
-$pathContents = "";
-$filenameContents = "";
-$filenameContents = "";
+$downloadLink = null;
 $fileType = "";
 $fileId = "";
 $fileDescriptionContents = "";
@@ -49,11 +47,6 @@ if($widgetModel->fieldContentsArray) {
 	if($widgetModel->fieldContentsArray[$i]->isPrimary == "on") {
 		$isPrimaryValue = " CHECKED ";
 	}
-	if($widgetModel->fieldContentsArray[$i]->fileHandler) {
-		$fileHandler = $widgetModel->fieldContentsArray[$i]->fileHandler;
-		$pathContents = $widgetModel->fieldContentsArray[$i]->fileHandler->sourceFile->path;
-			//$filenameContents = $widgetModel->fieldContentsArray[$i]->fileHandler->sourceFile->filename;
-	}
 	$fileId = $widgetModel->fieldContentsArray[$i]->fileId;
 	$fileType = $widgetModel->fieldContentsArray[$i]->fileType;
 	$fileDescriptionContents = $widgetModel->fieldContentsArray[$i]->fileDescription;
@@ -64,7 +57,9 @@ if($widgetModel->fieldContentsArray) {
 	$fileHandler = $widgetModel->fieldContentsArray[$i]->getFileHandler();
 	if($fileHandler) {
 		$sidecarView = $fileHandler->getSidecarView($sidecars, $formFieldName . "[sidecars]");
+		$downloadLink = instance_url("fileManager/getOriginal/". $fileHandler->getObjectId());
 	}
+
 
 
 }
@@ -122,6 +117,9 @@ if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
 				<label class="col-sm-3 control-label">Source File:</label>
 				<div class="col-sm-6 fileLabel">
 					<p><?=$fileHandler->sourceFile->originalFilename?></p>
+					<?if($downloadLink):?>
+					<p><a href="<?=$downloadLink?>">Download Source File</a></p>
+					<?endif?>
 				</div>
 				<div class="col-sm-3">
 					<button type="button" class="deleteFile btn btn-danger">Delete</button>
