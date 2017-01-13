@@ -218,6 +218,9 @@ class Search extends Instance_Controller {
 
 		}
 
+
+		$collections = array_values($collections);  // rekey array
+		
 		$this->template->loadJavascript(["assets/js/templateSearch"]);
 		$this->template->content->view("listCollections", ["collections"=>$collections]);
 		$this->template->publish();
