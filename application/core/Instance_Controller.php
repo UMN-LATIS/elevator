@@ -24,57 +24,20 @@ class Instance_Controller extends MY_Controller
 
         $this->useUnauthenticatedTemplate = false;
 
-        $instanceName = $this->config->item("instance_name");
+        $this->setInstance();
 
-        if($instanceName != FALSE) {
-            $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
-            if(!$this->instance && !$this->noRedirect) {
-                if($this->config->item('missingSiteURL') != '') {
-                    redirect($this->config->item('missingSiteURL'));
-                }
-                else {
-                    redirect("/errorHandler/error/specifyInstance");
-                }
-            }
+        $this->writeOutAssets();
 
-            $this->writeOutAssets();
-
-            $this->instanceType = "subdirectory";
-            $this->template->relativePath = $this->getRelativePath();
-            $this->config->set_item("instance_relative", $this->getRelativePath());
-            $this->config->set_item("instance_absolute", $this->getAbsolutePath());
-            // HACK HACK HACK
-            // Close the session if we're not going to be doing a login, prevent se$
-            if(strtolower($this->uri->segment(2)) !== "loginmanager") {
-            	session_write_close();
-            }
-            return;
+        
+        $this->template->relativePath = $this->getRelativePath();
+        $this->config->set_item("instance_relative", $this->getRelativePath());
+        $this->config->set_item("instance_absolute", $this->getAbsolutePath());
+        // HACK HACK HACK
+        // Close the session if we're not going to be doing a login, prevent se$
+        if(strtolower($this->uri->segment(2)) !== "loginmanager") {
+        	session_write_close();
         }
-
-
-
-        if(isset($_SERVER['HTTP_HOST'])) {
-            $subdomain_arr = $_SERVER['HTTP_HOST'];
-            $instanceName = $subdomain_arr;
-            $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
-            if(!$this->instance && !$this->noRedirect) {
-                if($this->config->item('missingSiteURL') != '') {
-                   redirect($this->config->item('missingSiteURL'));
-                }
-                else {
-                    redirect("/errorHandler/error/specifyInstance");
-                }
-            }
-
-            $this->writeOutAssets();
-
-            $this->instanceType = "subdomain";
-            $this->template->relativePath = $this->getRelativePath();
-            $this->config->set_item("instance_relative", $this->getRelativePath());
-            $this->config->set_item("instance_absolute", $this->getAbsolutePath());
-
-        }
-
+        
         if(!$this->instance && !$this->noRedirect) {
             if($this->config->item('missingSiteURL') != '') {
                 redirect($this->config->item('missingSiteURL'));
@@ -88,6 +51,41 @@ class Instance_Controller extends MY_Controller
         // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
         if(strtolower($this->uri->segment(1)) !== "loginmanager") {
             session_write_close();
+        }
+
+    }
+
+    function setInstance() {
+        $instanceName = $this->config->item("instance_name");
+
+        if($instanceName != FALSE) {
+            $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
+            if(!$this->instance && !$this->noRedirect) {
+                if($this->config->item('missingSiteURL') != '') {
+                    redirect($this->config->item('missingSiteURL'));
+                }
+                else {
+                    redirect("/errorHandler/error/specifyInstance");
+                }
+            }
+            $this->instanceType = "subdirectory";
+            return;
+        }
+
+        if(isset($_SERVER['HTTP_HOST'])) {
+            $subdomain_arr = $_SERVER['HTTP_HOST'];
+            $instanceName = $subdomain_arr;
+            $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
+            if(!$this->instance && !$this->noRedirect) {
+                if($this->config->item('missingSiteURL') != '') {
+                   redirect($this->config->item('missingSiteURL'));
+                }
+                else {
+                    redirect("/errorHandler/error/specifyInstance");
+                }
+            }
+            $this->instanceType = "subdomain";
+            return;
         }
 
     }
