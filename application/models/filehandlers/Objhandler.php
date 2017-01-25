@@ -162,6 +162,7 @@ rnd.resolution_y = int(2000)
 				$success=false;
 			}
 		}
+		$derivativeContainer->ready = true;
 		$this->derivatives["ply"] = $derivativeContainer;
 		if($success) {
 			$this->queueTask(2);
