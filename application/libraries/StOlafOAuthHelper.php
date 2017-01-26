@@ -126,6 +126,9 @@ class StOlafOAuthHelper extends AuthHelper
 			$groupMembership = array();
 			$hintMembership = array();
 			foreach($r->getGroups() as $group) {
+				if(!strstr($groupId, "@stolaf.edu")) {
+					continue;
+				}
 				$groupId = $group->getEmail();
 				$groupId = str_replace("@stolaf.edu", "", $groupId);
 				$hintMembership[$groupId] = $group->getName();
