@@ -315,7 +315,8 @@ function receiveMessage(e) {
 		sessionStorage.elevatorCallbackType = e.data.elevatorCallbackType;
 		sessionStorage.apiKey = e.data.apiKey;
 		sessionStorage.timeStamp = e.data.timeStamp;
-		sessionStorage.entangledSecret = e.data.entangledSecret;
+    sessionStorage.entangledSecret = e.data.entangledSecret;
+		sessionStorage.includeMetadata = e.data.includeMetadata;
 		testAndShowEmbedButton();
 	}
 
@@ -331,6 +332,7 @@ window.onload = function() {
 $(".addToPlugin").on("click", function() {
 
 	fileObjectId = $("#embedView").data("objectid");
+  var currentLocation = window.location.toString();
 	$.ajax({
 		url: basePath + "/api/v1/asset/getEmbedLink/" + fileObjectId,
 		headers: {
@@ -338,11 +340,27 @@ $(".addToPlugin").on("click", function() {
 			"Authorization-Hash": sessionStorage.entangledSecret,
 			"Authorization-Timestamp": sessionStorage.timeStamp
 		},
-		success: function(data) {
-			if(data) {
+		success: function(embedData) {
+			if(embedData) {
+        if(sessionStorage.includeMetadata) {
+          $.ajax({
+            url: basePath + "/api/v1/asset/assetLookup/" + objectId,
+            headers: {
+              "Authorization-Key": sessionStorage.apiKey,
+              "Authorization-Hash": sessionStorage.entangledSecret,
+              "Authorization-Timestamp": sessionStorage.timeStamp
+            },
+            success: function(metadataReturn) {
+              var originalWindow = window.opener;
+              originalWindow.postMessage({"pluginResponse": true, "embedURL": embedData, "metadata": $.parseJSON(metadataReturn), "currentLink": currentLocation}, "*");  
+            }
+          });
 
-				var originalWindow = window.opener;
- 				originalWindow.postMessage({"pluginResponse": true, "embedURL": data }, "*");
+        }
+        else {
+          var originalWindow = window.opener;
+          originalWindow.postMessage({"pluginResponse": true, "embedURL": embedData,  "currentLink": currentLocation }, "*");  
+        }
 			}
 		}
 	}

@@ -43,6 +43,7 @@ class MY_Controller extends CI_Controller {
 		}
 
 		$userId = $this->session->userdata('userId');
+
 		if($userId) {
 			if($this->config->item('enableCaching')) {
 				$this->doctrineCache->setNamespace('userCache_');

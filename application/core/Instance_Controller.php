@@ -32,11 +32,7 @@ class Instance_Controller extends MY_Controller
         $this->template->relativePath = $this->getRelativePath();
         $this->config->set_item("instance_relative", $this->getRelativePath());
         $this->config->set_item("instance_absolute", $this->getAbsolutePath());
-        // HACK HACK HACK
-        // Close the session if we're not going to be doing a login, prevent se$
-        if(strtolower($this->uri->segment(2)) !== "loginmanager") {
-        	session_write_close();
-        }
+
         
         if(!$this->instance && !$this->noRedirect) {
             if($this->config->item('missingSiteURL') != '') {
@@ -47,17 +43,12 @@ class Instance_Controller extends MY_Controller
             }
         }
 
-        // HACK HACK HACK
-        // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
-        if(strtolower($this->uri->segment(1)) !== "loginmanager") {
-            session_write_close();
-        }
+
 
     }
 
     function setInstance() {
         $instanceName = $this->config->item("instance_name");
-
         if($instanceName != FALSE) {
             $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
             if(!$this->instance && !$this->noRedirect) {
@@ -69,6 +60,11 @@ class Instance_Controller extends MY_Controller
                 }
             }
             $this->instanceType = "subdirectory";
+            // HACK HACK HACK
+            // Close the session if we're not going to be doing a login, prevent se$
+            if(strtolower($this->uri->segment(2)) !== "loginmanager") {
+                session_write_close();
+            }
             return;
         }
 
@@ -85,6 +81,11 @@ class Instance_Controller extends MY_Controller
                 }
             }
             $this->instanceType = "subdomain";
+            // HACK HACK HACK
+            // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
+            if(strtolower($this->uri->segment(1)) !== "loginmanager") {
+                session_write_close();
+            }
             return;
         }
 
