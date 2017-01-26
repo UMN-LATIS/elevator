@@ -44,6 +44,14 @@ class PDFHelper {
 			$line = explode(":" , $entry);
 			$metadata[trim($line[0])] = trim($line[1]);
 		}
+
+		// test for 3d content
+		$grepLine = "grep -a Subtype/U3D " . $pdfFile;
+		exec($grepLine, $response);
+		if(count($response) > 0) {
+			$metadata["3dcontent"] = true;
+		}
+
 		return $metadata;
 
 	}

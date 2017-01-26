@@ -331,6 +331,12 @@ rnd.resolution_y = int(2000)
 			$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
 			exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
 			unlink($sourceFileLocalName);
+			if(!file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) { 
+				// try agian without the texture
+				$nxsBuilderString = $nxsBuild . " -u -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
+				exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
+				unlink($sourceFileLocalName);
+			}
 
 			$success = true;
 			if(file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) {

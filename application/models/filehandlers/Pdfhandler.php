@@ -306,6 +306,12 @@ class PDFHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
+		if(isset($this->sourceFile->metadata["3dcontent"]) && $this->sourceFile->metadata["3dcontent"] == true) {
+			// dont minify 3d content
+			$this->queueTask(4);
+			return JOB_SUCCESS;
+		}
+
 		$success = false;
 
 		$this->load->library("PDFHelper");

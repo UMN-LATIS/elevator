@@ -125,13 +125,14 @@ class UMNHelper extends AuthHelper
 			// hacky stuff to deal with the way this info is passed in
 			// todo: learn about the actual standard for eduCourseMember
 			foreach($courseArray as $course) {
-				$courseId = substr($course, -6);
 				$explodedString = explode("@", $course);
 				if(count($explodedString)>0) {
 					$role = $explodedString[0];
 				}
+				$courseString = explode("/", $course);
+				$courseId = $courseString[8];
 				if($role == "Instructor") {
-					$courseString = explode("/", $course);
+					
 					$courseName = $courseString[6];
 					$coursesTaught[$courseId + 0] = $courseName;
 				}
