@@ -70,36 +70,35 @@ class MY_Controller extends CI_Controller {
 		}
 		$authKey = null;
 		
-		if(!$this->user_model->userLoaded) {
-			if($this->input->get('apiHandoff', TRUE)) {
-				$signedString = $this->input->get('apiHandoff');
-				$authKey = $this->input->get('authKey');
-				$timestamp = $this->input->get('timestamp');
-				$targetObject = $this->input->get('targetObject');
-				$this->input->set_cookie(["name"=>"ApiHandoff", "value"=>$signedString, "expire"=>0]);
-				$this->input->set_cookie(["name"=>"AuthKey", "value"=>$authKey, "expire"=>0]);
-				$this->input->set_cookie(["name"=>"Timestamp", "value"=>$timestamp, "expire"=>0]);
-				$this->input->set_cookie(["name"=>"TargetObject", "value"=>$targetObject, "expire"=>0]);
-			}
-			elseif($this->input->cookie('ApiHandoff')) {
-				$signedString = $this->input->cookie('ApiHandoff');
-				$authKey = $this->input->cookie('AuthKey');
-				$timestamp = $this->input->cookie('Timestamp');
-				$targetObject = $this->input->cookie('TargetObject');
-			}
-			if($authKey) {
-				$apiKey = $this->doctrine->em->getRepository("Entity\ApiKey")->findOneBy(["apiKey"=>$authKey]);
-				if($apiKey) {
 
-					$secret = $apiKey->getApiSecret();
-					if(sha1($timestamp . $targetObject . $secret) == $signedString) {	
-						$this->user_model->userLoaded=true;
-						$this->user_model->assetPermissions = [$targetObject => PERM_DERIVATIVES_GROUP_2];
-					}
+		if($this->input->get('apiHandoff', TRUE)) {
+			$signedString = $this->input->get('apiHandoff');
+			$authKey = $this->input->get('authKey');
+			$timestamp = $this->input->get('timestamp');
+			$targetObject = $this->input->get('targetObject');
+			$this->input->set_cookie(["name"=>"ApiHandoff", "value"=>$signedString, "expire"=>0]);
+			$this->input->set_cookie(["name"=>"AuthKey", "value"=>$authKey, "expire"=>0]);
+			$this->input->set_cookie(["name"=>"Timestamp", "value"=>$timestamp, "expire"=>0]);
+			$this->input->set_cookie(["name"=>"TargetObject", "value"=>$targetObject, "expire"=>0]);
+		}
+		elseif($this->input->cookie('ApiHandoff')) {
+			$signedString = $this->input->cookie('ApiHandoff');
+			$authKey = $this->input->cookie('AuthKey');
+			$timestamp = $this->input->cookie('Timestamp');
+			$targetObject = $this->input->cookie('TargetObject');
+		}
+		if($authKey) {
+			$apiKey = $this->doctrine->em->getRepository("Entity\ApiKey")->findOneBy(["apiKey"=>$authKey]);
+			if($apiKey) {
+
+				$secret = $apiKey->getApiSecret();
+				if(sha1($timestamp . $targetObject . $secret) == $signedString) {	
+					$this->user_model->userLoaded=true;
+					$this->user_model->assetPermissions = [$targetObject => PERM_DERIVATIVES_GROUP_2];
 				}
 			}
-	
 		}
+	
 		
 	}
 
