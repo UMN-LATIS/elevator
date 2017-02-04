@@ -224,15 +224,20 @@ class PDFHandler extends FileHandlerBase {
 
 		$ocrFile = $pdfHelper->ocrText($this->sourceFile->getPathToLocalFile());
 		$textFound = false;
-		$pages = $pdfHelper->scrapeText($ocrFile);
-		if(strlen(trim($pages)) > 10) {
-			$textFound = true;
-			$this->globalMetadata["text"] = $pages;	
+		if($ocrFile) {
+			$pages = $pdfHelper->scrapeText($ocrFile);
+			if(strlen(trim($pages)) > 10) {
+				$textFound = true;
+				$this->globalMetadata["text"] = $pages;	
+			}
 		}
+		
 
 		if(!$textFound) {
+			if($ocrFile) {
+				unlink($ocrFile);
+			}
 
-			unlink($ocrFile);
 			if(filesize($this->sourceFile->getPathToLocalFile()) > $this->allowedSize) {
 				unlink($this->sourceFile->getPathToLocalFile());
 				$this->queueTask(3);	

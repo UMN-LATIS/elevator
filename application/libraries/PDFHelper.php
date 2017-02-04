@@ -86,9 +86,17 @@ class PDFHelper {
 		$commandLine = $this->CI->config->item('pypdfocr') . " "  . $pdfFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
 		$process->run();
+		$iterationCount = 0;
 		while($process->isRunning()) {
 			sleep(5);
 			$this->CI->pheanstalk->touch($this->CI->job);
+			$iterationCount++;
+			if($iterationCount > 180) {
+				// we give it a max of 15 minutes to try.
+				// reevaluate this with tesseract 3.04 on ubuntu 16.04
+				$process->stop();
+				break;
+			}
 			echo ".";
 		}
 		if(!file_exists($outFile)) {
