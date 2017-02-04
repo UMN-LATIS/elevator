@@ -333,7 +333,8 @@ $(".addToPlugin").on("click", function() {
 
 	fileObjectId = $("#embedView").data("objectid");
   var currentLocation = window.location.toString();
-	$.ajax({
+	originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*");  
+  $.ajax({
 		url: basePath + "/api/v1/asset/getEmbedLink/" + fileObjectId,
 		headers: {
 			"Authorization-Key": sessionStorage.apiKey,
