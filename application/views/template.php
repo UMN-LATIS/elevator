@@ -100,7 +100,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 <div class="col-sm-3">
       <form class="navbar-form navbar-input-group navbar-left searchForm" role="search">
         <div class="input-group">
-
+          <label for="searchText" class="hide">Search</label>
           <input type="text" class="form-control searchText"  autocomplete="off"  id="searchText" name="searchText" placeholder="Search">
           <input type="hidden" name="fuzzySearch" value=0>
           <span class="input-group-btn">
