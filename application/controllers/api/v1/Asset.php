@@ -104,7 +104,31 @@ class asset extends API_Controller {
 
 		echo json_encode($assetText);
 
+	}
 
+	public function assetPreview($assetId) {
+
+		$isExcerpt = false;
+		$assetModel = null;
+		$this->load->model("asset_model");
+		if(stristr($assetId, "excerpt")) {
+			$assetId = str_replace("excerpt", "", $assetId);
+			$this->load->model("asset_model");
+			$excerpt = $this->doctrine->em->getRepository("Entity\DrawerItem")->find($assetId);
+			$assetModel = new Asset_model;
+			if(!$assetModel->loadAssetById($excerpt->getAsset())) {
+				$this->logging->logError("assetLookup", "could not load asset " . $assetId);
+				return;
+			}
+		}
+		else {
+			$assetModel = new Asset_model;
+			$assetModel->loadAssetById($assetId);
+		}
+
+		$assetText = $assetModel->getSearchResultEntry();
+
+		echo json_encode($assetText);
 
 	}
 
