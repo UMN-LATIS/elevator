@@ -333,39 +333,8 @@ $(".addToPlugin").on("click", function() {
 
 	fileObjectId = $("#embedView").data("objectid");
   var currentLocation = window.location.toString();
-	originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*");  
-  $.ajax({
-		url: basePath + "/api/v1/asset/getEmbedLink/" + fileObjectId,
-		headers: {
-			"Authorization-Key": sessionStorage.apiKey,
-			"Authorization-Hash": sessionStorage.entangledSecret,
-			"Authorization-Timestamp": sessionStorage.timeStamp
-		},
-		success: function(embedData) {
-			if(embedData) {
-        if(sessionStorage.includeMetadata) {
-          $.ajax({
-            url: basePath + "/api/v1/asset/assetLookup/" + objectId,
-            headers: {
-              "Authorization-Key": sessionStorage.apiKey,
-              "Authorization-Hash": sessionStorage.entangledSecret,
-              "Authorization-Timestamp": sessionStorage.timeStamp
-            },
-            success: function(metadataReturn) {
-              var originalWindow = window.opener;
-              originalWindow.postMessage({"pluginResponse": true, "embedURL": embedData, "metadata": $.parseJSON(metadataReturn), "currentLink": currentLocation}, "*");  
-            }
-          });
-
-        }
-        else {
-          var originalWindow = window.opener;
-          originalWindow.postMessage({"pluginResponse": true, "embedURL": embedData,  "currentLink": currentLocation }, "*");  
-        }
-			}
-		}
-	}
-	);
+  var originalWindow = window.opener;
+	originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*"); 
 });
 
 
