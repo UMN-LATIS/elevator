@@ -30,6 +30,9 @@ $fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
 
 $menuArray['fileInfo'] = $fileInfo;
 
+if(count($fileContainers)>0) {
+  $menuArray['embed'] = $embed;
+}
 
 $downloadArray = [];
 $targetAsset = null;
