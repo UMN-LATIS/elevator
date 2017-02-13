@@ -228,7 +228,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <li><a href="http://www.elevatorapp.net">Help</span></a></li>
       </ul>
 
-      <?if($this->user_model->userLoaded):?>
+      <?if($this->user_model->userLoaded && !$this->user_model->assetOverride):?>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></b></a>
@@ -332,6 +332,7 @@ window.onload = function() {
 $(".addToPlugin").on("click", function() {
 
 	fileObjectId = $("#embedView").data("objectid");
+
   var currentLocation = window.location.toString();
   var originalWindow = window.opener;
 	originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*"); 

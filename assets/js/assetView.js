@@ -298,6 +298,8 @@ $(document).on("click", ".loadView", function(e) {
 
 	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
+		$("#embedView").data("objectid", fileObjectId);
+
 		$(document).find(".relatedThumbHighlight").removeClass("relatedThumbHighlight");
 		if($(".rightColumn").find('[data-fileobjectid]').length > 1) {
 			var parentContainer = $(document).find('[data-fileobjectid="' + fileObjectId + '"]').parent();
