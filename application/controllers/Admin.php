@@ -35,12 +35,37 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$start = microtime(true);
 		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
-		$this->asset_model->loadAssetById("558c633b81bbd1567c8b4567");
+		$this->asset_model->loadAssetById("585d3408ba98a8f9404059c2");
 		$this->asset_model->save(false, false);
 		$this->asset_model->reindex();
 		$end = microtime(true);
 		echo "took" . ($end - $start) . "\n";
 	}
+
+	public function clearRecordsFromSearch() {
+		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', "8c3c897f-c096-4e27-8b3e-e81fc1c66e6b");
+		$searchArray = $searchArchiveEntry->getSearchData();
+		if(isset($searchArray['showHidden'])) {
+			// This will include items that are not yet flagged "Ready for display"
+			$showHidden = true;
+		}
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 31);
+		$this->load->model("asset_model");
+		$this->load->model("search_model");
+		$matchArray = $this->search_model->find($searchArray, !$showHidden, 0, true);
+		foreach($matchArray["searchResults"] as $match) {
+			$params['index'] = $this->config->item('elasticIndex');
+    		$params['type']  = 'asset';
+    		$params['id']    = $match;
+    		if(!$params['id'] || strlen($params['id']<5)) {
+    			// if you don't pass an id, elasticsearch will eat all your data
+    			echo "crap";
+    			break;
+    		}
+    		$ret = $this->search_model->es->delete($params);
+		}
+	}
+
 
 	public function reindex($wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null) {
 		set_time_limit(0);

@@ -7124,8 +7124,12 @@ L.Control.Measure = L.Control.extend({
     }
 
     function formatMeasure (val, unit, decPoint, thousandsSep) {
+      var retinaFactor = 1;
+      if (L.Browser.retina) {
+        retinaFactor = 2; // this is potentially incorrect for 3x+ devices
+      }
       return unit && unit.factor && unit.display ?
-        humanize.numberFormat(val * unit.factor, unit.decimals || 0, decPoint || i18n.__('decPoint'), thousandsSep || i18n.__('thousandsSep')) + ' ' + i18n.__([unit.display]) || unit.display :
+        humanize.numberFormat(val * unit.factor * retinaFactor, unit.decimals || 0, decPoint || i18n.__('decPoint'), thousandsSep || i18n.__('thousandsSep')) + ' ' + i18n.__([unit.display]) || unit.display :
         humanize.numberFormat(val, 0, decPoint || i18n.__('decPoint'), thousandsSep || i18n.__('thousandsSep'));
     }
   },
@@ -7203,6 +7207,7 @@ L.Control.Measure = L.Control.extend({
       for (var i = pixelPos.length - 1; i > 0; i--) {
         calced.length += Math.sqrt(Math.pow(Math.abs(pixelPos[i - 1][0] - pixelPos[i][0]), 2) + Math.pow(Math.abs(pixelPos[i - 1][1] - pixelPos[i][1]), 2));
       }
+
       //calced.length = measurement.length;
       if (latlngs.length === 2) {
         resultFeature = L.polyline(latlngs, this._symbols.getSymbol('resultLine'));

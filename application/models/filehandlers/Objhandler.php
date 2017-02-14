@@ -162,6 +162,7 @@ rnd.resolution_y = int(2000)
 				$success=false;
 			}
 		}
+		$derivativeContainer->ready = true;
 		$this->derivatives["ply"] = $derivativeContainer;
 		if($success) {
 			$this->queueTask(2);
@@ -330,7 +331,13 @@ rnd.resolution_y = int(2000)
 		// blender will generate a new output name
 		$targetLargeFile = $targetLargeFileShortName . "0001.jpg";
 
-		exec($blenderCommandLine . " 2>/dev/null");
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($blenderCommandLine);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->pheanstalk->touch($this->job);
+			echo ".";
+		}
 		unlink($sourceFileContainer->getPathToLocalFile() . ".ply");
 		$derivativeArray = array();
 		foreach($args as $derivativeSetting) {

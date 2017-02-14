@@ -197,6 +197,7 @@ rnd.resolution_y = int(2000)
 			$success=false;
 		}
 		else {
+			$derivativeContainer->ready = true;
 			if(!unlink($derivativeContainer->getPathToLocalFile())) {
 				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
 				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
@@ -331,6 +332,12 @@ rnd.resolution_y = int(2000)
 			$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
 			exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
 			unlink($sourceFileLocalName);
+			if(!file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) { 
+				// try agian without the texture
+				$nxsBuilderString = $nxsBuild . " -u -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
+				exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
+				unlink($sourceFileLocalName);
+			}
 
 			$success = true;
 			if(file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) {

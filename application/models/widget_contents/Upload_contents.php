@@ -77,7 +77,7 @@ class Upload_contents extends Widget_contents_base {
 	}
 
 	public function getSearchData() {
-		if($this->searchData !== NULL) {
+		if($this->searchData !== NULL && strlen($this->searchData) > 0) {
 			return $this->searchData;
 		}
 		$fileHandler = $this->getFileHandler();

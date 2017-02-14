@@ -32,37 +32,47 @@ class PDFHelper {
 	}
 
 	public function getPDFMetadata($pdfFile) {
-		$parser = new \Smalot\PdfParser\Parser();
-		try {
-			$pdf    = $parser->parseFile($pdfFile);
-			$metadata = $pdf->getDetails();
-		}
-		catch (Exception $e) {
-			$this->CI->logging->logError("pdf libray","Could not get pdf metadata");
+
+		exec("/usr/bin/pdfinfo " . $pdfFile, $output, $returnVar);
+        
+		if($returnVar > 0) {
+			$this->CI->logging->logError("pdf library","Could not get pdf metadata");
 			return false;
 		}
+		$metadata = array();
+		foreach($output as $entry) {
+			$line = explode(":" , $entry);
+			$metadata[trim($line[0])] = trim($line[1]);
+		}
+
+		// test for 3d content
+		$grepLine = "grep -a Subtype/U3D " . $pdfFile;
+		exec($grepLine, $response);
+		if(count($response) > 0) {
+			$metadata["3dcontent"] = true;
+		}
+
 		return $metadata;
 
 	}
 
 	public function scrapeText($pdfFile) {
-		$parser = new \Smalot\PdfParser\Parser();
-		$pages = array();
-
-		try {
-			$pdf    = $parser->parseFile($pdfFile);
-			$pages  = $pdf->getPages();
+		$output = $pdfFile . ".txt";
+		$commandLine = "/usr/bin/pdftotext" . " "  . $pdfFile . " " . $output;
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->CI->pheanstalk->touch($this->CI->job);
+			echo ".";
 		}
-		catch (Exception $e) {
-			$this->CI->logging->logError("pdf library", "Could not extract text");
+
+		if(!file_exists($output)) {
+			$this->CI->logging->logError("pdf library","Scraping of pdf failed");
 			return "";
 		}
 
-		$pageText = "";
-		foreach ($pages as $page) {
-    		$pageText .= $page->getText();
-    		$this->CI->pheanstalk->touch($this->CI->job);
-		}
+		$pageText = file_get_contents($output);
 		$pageText = preg_replace("/\x{00A0}/", " ", $pageText);
 		$pageText = preg_replace("/\n/", " ", $pageText);
 		$pageText = preg_replace("/[^A-Za-z0-9 ]/", '', $pageText);
@@ -76,9 +86,17 @@ class PDFHelper {
 		$commandLine = $this->CI->config->item('pypdfocr') . " "  . $pdfFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
 		$process->run();
+		$iterationCount = 0;
 		while($process->isRunning()) {
 			sleep(5);
 			$this->CI->pheanstalk->touch($this->CI->job);
+			$iterationCount++;
+			if($iterationCount > 180) {
+				// we give it a max of 15 minutes to try.
+				// reevaluate this with tesseract 3.04 on ubuntu 16.04
+				$process->stop();
+				break;
+			}
 			echo ".";
 		}
 		if(!file_exists($outFile)) {

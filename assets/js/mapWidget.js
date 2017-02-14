@@ -107,15 +107,15 @@ $(document).on("shown.bs.collapse", ".maphost", function (){
 	var mapButton = $(this).parent().find(".mapToggle");
 	mapButton.html("Hide Map");
 	var mapElement = $(this).find(".mapWidget");
-	var latitudeElement = $(parentElement).parent().find('.latitude');
-	var longitudeElement = $(parentElement).parent().find('.longitude');
+	var latitudeElement = $(this).parent().find('.latitude');
+	var longitudeElement = $(this).parent().find('.longitude');
 	revealMap(mapElement, latitudeElement, longitudeElement);
 
 });
 
-var revealMap = function(parentElement, latitudeElement, longtitudeElement) {
+var revealMap = function(parentElement, latitudeElement, longitudeElement) {
 	
-	mapElement.goMap({
+	parentElement.goMap({
 		mapTypeControl:true,
 		maptype: 'ROADMAP',
 		mapTypeControlOptions: {
@@ -126,7 +126,7 @@ var revealMap = function(parentElement, latitudeElement, longtitudeElement) {
 
 	});
 
-	mapElement.on("clickMarker", function(e){
+	parentElement.on("clickMarker", function(e){
 		var marker = e.marker;
 		latitudeElement.val(marker.position.lat());
 		longitudeElement.val(marker.position.lng());
@@ -144,7 +144,7 @@ var revealMap = function(parentElement, latitudeElement, longtitudeElement) {
 			latitude: latitude,
 			longitude: longitude
 		});
-		mapElement.goMap();
+		parentElement.goMap();
 		var marker = $.goMap.createMarker({
 			latitude: latitude,
 			longitude: longitude,

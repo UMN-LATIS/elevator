@@ -55,27 +55,27 @@ class Reports extends Admin_Controller {
 
 	}
 
-	public function resaveAssets() {
+	// public function resaveAssets() {
 
-		set_time_limit(0);
-		ini_set('max_execution_time', 0);
-		$this->doctrine->extendTimeout();
+	// 	set_time_limit(0);
+	// 	ini_set('max_execution_time', 0);
+	// 	$this->doctrine->extendTimeout();
 
-		$results = $this->doctrine->em->getRepository("Entity\FileHandler")->findAll();
+	// 	$results = $this->doctrine->em->getRepository("Entity\FileHandler")->findAll();
 
-		$count = 0;
-		foreach($results as $result) {
-			$fileHandlerBase = new fileHandlerBase();
-			$fileHandlerBase->loadFromObject($result);
-			$fileHandlerBase->save();
-			echo $fileHandlerBase->getObjectId(). "\n";
-			if($count % 100 == 0) {
-				gc_collect_cycles();
-			}
-		}
+	// 	$count = 0;
+	// 	foreach($results as $result) {
+	// 		$fileHandlerBase = new fileHandlerBase();
+	// 		$fileHandlerBase->loadFromObject($result);
+	// 		$fileHandlerBase->save();
+	// 		echo $fileHandlerBase->getObjectId(). "\n";
+	// 		if($count % 100 == 0) {
+	// 			gc_collect_cycles();
+	// 		}
+	// 	}
 
 
-	}
+	// }
 
 
 	// public function fixCollection() {

@@ -152,7 +152,7 @@ class Beltdrive extends CI_Controller {
 			}
 			$fileHandler->loadByObjectId($job_encoded["fileHandlerId"]);
 			$fileHandler->pheanstalk = $this->pheanstalk;
-			echo "Processing " . $fileHandler->sourceFile->originalFilename . " : " . $job_encoded['task'] . "\n";
+			echo "Processing " . $fileHandler->sourceFile->originalFilename . " (" . $fileHandler->getObjectId() . ") : " . $job_encoded['task'] . "\n";
 
 			$success=false;
 

@@ -73,8 +73,18 @@
 		layer.addTo(map);
 
 		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
+		if(minimapRatio > 4) {
+			minimapRatio = 1;
+		}
 
-
+		if(minimapRatio > 1) {
+			heightScale = 1/minimapRatio;
+			widthScale = 1;
+		}
+		else {
+			heightScale = 1;
+			widthScale = minimapRatio;
+		}
 		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
 
@@ -92,15 +102,15 @@
 			return tile;
 
 		}, {
-			width: 256/minimapRatio,
-			height: 256,
+			width: 256*widthScale * 0.9,
+			height: 256*heightScale *0.9,
 			tileSize: 254,
 			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
 			overlap: 1,
 		});
 		var miniMap = new L.Control.MiniMap(miniLayer, {
-			width: 140 * minimapRatio,
-			height: 140,
+			width: 140 * widthScale,
+			height: 140 * heightScale,
 						//position: "topright",
 						toggleDisplay: true,
 						zoomAnimation: false,
@@ -109,7 +119,7 @@
 					});
 		miniMap.addTo(map);
 
-		if(pixelsPerMillimeter > 0) {
+		if(pixelsPerMillimeter > 10) {
 
 			var measureControl = new L.Control.Measure(
 			{

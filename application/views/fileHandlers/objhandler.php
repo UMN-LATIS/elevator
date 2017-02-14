@@ -8,7 +8,8 @@ if($this->user_model->userLoaded) {
     }
 }
 
-$nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
+
+
 ?>
 <?
 
@@ -33,15 +34,24 @@ $fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
 
 $menuArray['fileInfo'] = $fileInfo;
 
+if(count($fileContainers)>0) {
+  $menuArray['embed'] = $embed;
+}
 
 $downloadArray = [];
-
+$targetAsset = null;
 if(isset($fileContainers['nxs']) && $fileContainers['nxs']->ready) {
+  $nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
   $downloadArray["Download Derivative (nxs)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/nxs");
+  $targetAsset = stripHTTP($nxsURL) . "#.nxs";
 }
 
 if(isset($fileContainers['ply']) && $fileContainers['ply']->ready) {
   $downloadArray["Download Derivative (ply)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/ply");
+  $plyURL = isset($fileContainers['ply'])?$fileContainers['ply']->getProtectedURLForFile():null;
+  if(!$targetAsset) {
+    $targetAsset = stripHTTP($plyURL) . "#.ply";
+  }
 }
 
 if(isset($fileContainers['stl']) && $fileContainers['stl']->ready) {
@@ -166,7 +176,7 @@ function setup3dhop() {
 
   presenter.setScene({
     meshes: {
-      "targetAsset" : { url: "<?=stripHTTP($nxsURL)?>#.nxs" },
+      "targetAsset" : { url: "<?=$targetAsset?>" },
       "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
     },
     modelInstances : {

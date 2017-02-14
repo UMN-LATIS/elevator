@@ -3,7 +3,7 @@
 <script id="result-template" type="text/x-handlebars-template">
 <div class="col-lg-3 col-sm-6 col-md-4">
 <div class="resultContainer searchContainer">
-	<h5><a class="assetLink" href="{{base_url}}asset/viewAsset/{{objectId}}">{{#if title.length}} {{join title}} {{else}} (no title) {{/if}}</a></h5>
+	<h5><a class="assetLink" href="{{base_url}}asset/viewAsset/{{objectId}}">{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}</a></h5>
 	<div class="previewCrop ">
 	{{#if primaryHandlerThumbnail}}
 		<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
@@ -34,7 +34,7 @@
 			<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
 	</div>
 	<div class="col-md-9 listTextContainer">
-		<h3><a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink">{{#if title.length}} {{join title}} {{else}} (no title) {{/if}}</a></h3>
+		<h3><a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink">{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}</a></h3>
 			{{#each entries}}
 			<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
 					{{#each this.entries}}
@@ -63,14 +63,14 @@
 	</div>
 	<div class="col-md-10">
 	{{#if this.excerpt}}
-		<h3><a href="{{base_url}}asset/viewExcerpt/{{excerptId}}">{{join title}} (excerpt) </a></h3>
+		<h3><a href="{{base_url}}asset/viewExcerpt/{{excerptId}}">{{{join title}}} (excerpt) </a></h3>
 		{{else}}
-		<h3><a href="{{base_url}}asset/viewAsset/{{objectId}}">{{join title}} </a></h3>
+		<h3><a href="{{base_url}}asset/viewAsset/{{objectId}}">{{{join title}}} </a></h3>
 	{{/if}}
 			{{#each entries}}
 			<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
 					{{#each this.entries}}
-						<li>{{this}}</li>
+						<li>{{{this}}}</li>
 					{{/each}}
 				</ul>
 			</div>
@@ -110,7 +110,7 @@
 		{{#each entries}}
 		<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
 					{{#each this.entries}}
-						<li>{{this}}</li>
+						<li>{{{this}}}</li>
 					{{/each}}
 				</ul>
 		</div>
