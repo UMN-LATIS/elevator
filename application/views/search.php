@@ -80,8 +80,7 @@
 	<div class="tab-pane" id="gallery">
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="galleryContainer">
-				<div id="galleryFrame">
-				</div>
+				<p>The Gallery feature has been temporarily disabled.  Please <a href="mailto:elevator@umn.edu">contact us</a> for more information.</p>
 			</div>
 		</div>
 	</div>
