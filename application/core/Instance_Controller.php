@@ -24,8 +24,31 @@ class Instance_Controller extends MY_Controller
 
         $this->useUnauthenticatedTemplate = false;
 
-        $instanceName = $this->config->item("instance_name");
+        $this->setInstance();
 
+        $this->writeOutAssets();
+
+        
+        $this->template->relativePath = $this->getRelativePath();
+        $this->config->set_item("instance_relative", $this->getRelativePath());
+        $this->config->set_item("instance_absolute", $this->getAbsolutePath());
+
+        
+        if(!$this->instance && !$this->noRedirect) {
+            if($this->config->item('missingSiteURL') != '') {
+                redirect($this->config->item('missingSiteURL'));
+            }
+            else {
+                redirect("/errorHandler/error/specifyInstance");
+            }
+        }
+
+
+
+    }
+
+    function setInstance() {
+        $instanceName = $this->config->item("instance_name");
         if($instanceName != FALSE) {
             $this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
             if(!$this->instance && !$this->noRedirect) {
@@ -36,22 +59,14 @@ class Instance_Controller extends MY_Controller
                     redirect("/errorHandler/error/specifyInstance");
                 }
             }
-
-            $this->writeOutAssets();
-
             $this->instanceType = "subdirectory";
-            $this->template->relativePath = $this->getRelativePath();
-            $this->config->set_item("instance_relative", $this->getRelativePath());
-            $this->config->set_item("instance_absolute", $this->getAbsolutePath());
             // HACK HACK HACK
             // Close the session if we're not going to be doing a login, prevent se$
             if(strtolower($this->uri->segment(2)) !== "loginmanager") {
-            	session_write_close();
+                session_write_close();
             }
             return;
         }
-
-
 
         if(isset($_SERVER['HTTP_HOST'])) {
             $subdomain_arr = $_SERVER['HTTP_HOST'];
@@ -65,29 +80,13 @@ class Instance_Controller extends MY_Controller
                     redirect("/errorHandler/error/specifyInstance");
                 }
             }
-
-            $this->writeOutAssets();
-
             $this->instanceType = "subdomain";
-            $this->template->relativePath = $this->getRelativePath();
-            $this->config->set_item("instance_relative", $this->getRelativePath());
-            $this->config->set_item("instance_absolute", $this->getAbsolutePath());
-
-        }
-
-        if(!$this->instance && !$this->noRedirect) {
-            if($this->config->item('missingSiteURL') != '') {
-                redirect($this->config->item('missingSiteURL'));
+            // HACK HACK HACK
+            // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
+            if(strtolower($this->uri->segment(1)) !== "loginmanager") {
+                session_write_close();
             }
-            else {
-                redirect("/errorHandler/error/specifyInstance");
-            }
-        }
-
-        // HACK HACK HACK
-        // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
-        if(strtolower($this->uri->segment(1)) !== "loginmanager") {
-            session_write_close();
+            return;
         }
 
     }

@@ -8,6 +8,7 @@ class API_Controller extends MY_Controller {
 
 	public function __construct()
 	{
+
 		parent::__construct();
 		if (isset($_SERVER['HTTP_ORIGIN'])) {
 			header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
@@ -15,25 +16,13 @@ class API_Controller extends MY_Controller {
 			header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); 
 		}   
 		header("Access-Control-Allow-Headers: authorization-key, authorization-hash, authorization-timestamp, authorization-user");
-// Access-Control headers are received during OPTIONS requests
+		// Access-Control headers are received during OPTIONS requests
 		if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 			echo "true";
 			die;
 		}
 
-		// header("Access-Control-Allow-Headers: *");
-
-
-		// DOES THIS DO ANYTHING??
-		// if($this->input->get("authKey")) {
-
-		// 	$authKey = $this->input->get("w");
-		// 	$authTimestamp = $this->input->get("timestamp");
-		// 	$authHash = $this->input->get("hash");
-		// 	$authUser = null;
-		// }
-		// else
 		if(isset($_SERVER['HTTP_AUTHORIZATION_KEY'])) {
 
 			$authKey = $_SERVER['HTTP_AUTHORIZATION_KEY'];
@@ -116,6 +105,11 @@ class API_Controller extends MY_Controller {
 					$this->instance = $this->user_model->getApiInstance();
 				}
 			}
+		}
+
+		if(!$this->instance) {
+			require_once("Instance_Controller.php");
+			Instance_Controller::setInstance();
 		}
 
 	}

@@ -12,6 +12,7 @@ class User_model extends CI_Model {
 	public $userLoaded = false;
 	public $user = null;
 	public $userId = null;
+	public $assetOverride = false;
 	private $maxRecents = 5;
 	public $userData = array();
 
