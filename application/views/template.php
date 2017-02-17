@@ -5,6 +5,7 @@
 var basePath = "<?=$this->template->relativePath?>";
 </script>
 
+
 <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
 <script>
 
@@ -131,7 +132,11 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 <?endif?>
       <ul class="nav navbar-nav">
         <?if(isset($this->instance)):?>
-
+        <li>
+        <p class="navbar-btn">
+        	<button class="hide btn addToPlugin btn-default"></button>
+        	</p>
+        	</li>
         <?foreach($this->instance->getPages()->filter(function($entry) { return ($entry->getIncludeInHeader() && $entry->getParent()==null);}) as $page):?>
           <?if(count($page->getChildren())>0):?>
           <li class="dropdown">
@@ -223,7 +228,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <li><a href="http://www.elevatorapp.net">Help</span></a></li>
       </ul>
 
-      <?if($this->user_model->userLoaded):?>
+      <?if($this->user_model->userLoaded && !$this->user_model->assetOverride):?>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></b></a>
@@ -300,5 +305,56 @@ $(document).ready(function() {
    lazyInstance = $('.lazy').Lazy({ chainable: false, autoDestroy:false });
 });
 </script>
+
+
+<script>
+// listen for messages from our javascript pluginSetup
+function receiveMessage(e) {
+	if (typeof e.data.pluginSetup !== 'undefined') {
+		sessionStorage.elevatorPlugin = e.data.elevatorPlugin;
+		sessionStorage.elevatorCallbackType = e.data.elevatorCallbackType;
+		sessionStorage.apiKey = e.data.apiKey;
+		sessionStorage.timeStamp = e.data.timeStamp;
+    sessionStorage.entangledSecret = e.data.entangledSecret;
+		sessionStorage.includeMetadata = e.data.includeMetadata;
+		testAndShowEmbedButton();
+	}
+
+}
+
+window.onload = function() {
+	window.addEventListener('message', receiveMessage);
+	if (this.window.name == "elevatorPlugin") {
+		this.window.opener.postMessage("parentLoaded", "*");
+	}
+}
+
+$(".addToPlugin").on("click", function() {
+
+	fileObjectId = $("#embedView").data("objectid");
+
+  var currentLocation = window.location.toString();
+  var originalWindow = window.opener;
+	originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*"); 
+});
+
+
+var testAndShowEmbedButton =function() {
+	if(sessionStorage.elevatorPlugin) {
+		if($("#embedView").length > 0) {
+			$(".addToPlugin").text("Add to " + sessionStorage.elevatorPlugin);
+			$(".addToPlugin").removeClass('hide');	
+		}
+		
+	}
+}
+
+
+$(document).ready(function() {
+  testAndShowEmbedButton();
+});
+</script>
+
+
 </body>
 </html>

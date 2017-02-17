@@ -147,13 +147,16 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function regenerateFilesOfType($handlerClass) {
+	public function regenerateFilesOfType($handlerClass, $inCollection = null) {
 
 		$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass, "deleted"=>false]);
 		foreach($handlers as $handler) {
 			$collection = $this->collection_model->getCollection($handler->getCollectionId());
 			if(!$collection) {
 				echo "Bad Item: " . $handler->getFileObjectId() . "\n";
+				continue;
+			}
+			if($inCollection != $collection->getId()) {
 				continue;
 			}
 			$instance = $collection->getInstances();
