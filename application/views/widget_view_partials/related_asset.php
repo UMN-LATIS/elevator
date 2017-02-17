@@ -66,7 +66,7 @@
 				<?
 				// standard list view
 				elseif($fieldContent->getRelatedObjectId()):?>
-					<?$title = join(",", $fieldContent->getRelatedObjectTitle()); if($title):?>
+					<?$title = reset($fieldContent->getRelatedObjectTitle()); if($title):?>
 						<div class="panel panel-default relatedAssetContainer relatedListToggle"  data-objectid="<?=$fieldContent->getRelatedObjectId()?>" id="accordion<?=$fieldContent->getRelatedObjectId()?>">
 							<div class="panel-heading">
 								<h4 class="panel-title">

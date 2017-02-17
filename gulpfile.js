@@ -18,15 +18,24 @@ var gulp = require('gulp'),
     changed = require('gulp-changed');
 
 
+
 gulp.task('3dhop', function() {
-	return gulp.src(["./assets/3dviewer/js/spidergl.js", "./assets/3dviewer/js/presenter.js", "./assets/3dviewer/js/ply.js", "./assets/3dviewer/js/trackball_pantilt.js", "./assets/3dviewer/js/trackball_sphere.js","./assets/3dviewer/js/trackball_turntable.js","./assets/3dviewer/js/trackball_turntable_pan.js", "./assets/3dviewer/js/init.js"])
-		.pipe(sourcemaps.init())
-		.pipe(uglify())
-		.pipe(concat('3dviewer.min.js'))
-		.pipe(sourcemaps.write('./'))
-		.pipe(gulp.dest("./assets/3dviewer/js/"));
+    return gulp.src(["./assets/3dviewer/js/spidergl.js", "./assets/3dviewer/js/presenter.js", "./assets/3dviewer/js/ply.js", "./assets/3dviewer/js/trackball_pantilt.js", "./assets/3dviewer/js/trackball_sphere.js","./assets/3dviewer/js/trackball_turntable.js","./assets/3dviewer/js/trackball_turntable_pan.js", "./assets/3dviewer/js/init.js"])
+        .pipe(sourcemaps.init())
+        .pipe(uglify())
+        .pipe(concat('3dviewer.min.js'))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest("./assets/3dviewer/js/"));
 });
 
+gulp.task('webRTI', function() {
+    return gulp.src(["./assets/webViewer/spidergl/spidergl.js", "./assets/webViewer/spidergl/multires.js"])
+        .pipe(sourcemaps.init())
+        .pipe(uglify())
+        .pipe(concat('webrti.min.js'))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest("./assets/webViewer/js/"));
+});
 
 gulp.task('basicFiles', function() {
     return gulp.src(["./assets/js/serializeForm.js", "./assets/js/dateWidget.js", "./assets/js/template.js"])
@@ -83,7 +92,7 @@ gulp.task("allCSSFilesIndividually", function() {
 });
 
 
-gulp.task('default', ['3dhop', 'basicFiles', 'basicFiles', 'assetMaster', 'searchMaster', 'allJSFilesIndividually','allCSSFilesIndividually']);
+gulp.task('default', ['3dhop', 'webRTI', 'basicFiles', 'basicFiles', 'assetMaster', 'searchMaster', 'allJSFilesIndividually','allCSSFilesIndividually']);
 
 
 

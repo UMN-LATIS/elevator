@@ -21,6 +21,10 @@ $embedLink = str_replace("https:", "", $embedLink);
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
 
+if(count($fileContainers)>0) {
+  $menuArray['embed'] = $embed;
+}
+
 $fileInfo = [];
 $fileInfo["File Type"] = "3D Object";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
