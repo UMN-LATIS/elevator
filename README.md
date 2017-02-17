@@ -4,5 +4,5 @@ This repo is a placeholder for Elevator, with a snapshot of the code.  We're in 
 
 We're in the process of moving from MongoDB to Postgres 9.4 (jsonb) for record storage.  This branch reflects that change.
 
-For more information, please contact <cmcfadden@gmail.com>
+For more information, please contact <elevator@umn.edu>
 

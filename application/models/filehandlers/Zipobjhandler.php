@@ -197,6 +197,7 @@ rnd.resolution_y = int(2000)
 			$success=false;
 		}
 		else {
+			$derivativeContainer->ready = true;
 			if(!unlink($derivativeContainer->getPathToLocalFile())) {
 				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
 				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();

@@ -219,11 +219,6 @@ input[type='range']::-webkit-slider-thumb {
     height: 400px;
 }
 
-#galleryFrame {
-    width: 100%;
-    height: 600px;
-}
-
 #mapPane {
   position: absolute;
     top: 0;

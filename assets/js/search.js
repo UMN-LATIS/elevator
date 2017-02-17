@@ -46,7 +46,6 @@ $(document).ready(function() {
 		prepMap();
 	});
 	$('a[href="#gallery"]').on('shown.bs.tab', function() {
-		prepGallery();
 	});
 	$('a[href="#grid"]').on('shown.bs.tab', function() {
 		$("#results").find("img").trigger("show");
@@ -237,7 +236,6 @@ function populateSearchResults(searchObject) {
 	}
 
 	if($('a[href="#gallery"]').parent().hasClass("active")) {
-		prepGallery();
 	}
 
 	if($('a[href="#grid"]').parent().hasClass("active")) {
@@ -317,70 +315,6 @@ function populateSearchResults(searchObject) {
 
 
 
-
-function prepGallery() {
-	var carouselLinks = [];
-	$.each(cachedResults.matches, function(index, value) {
-		value.base_url = basePath;
-		value.searchObject = cachedResults;
-		carouselLinks.push({
-			image: basePath + "fileManager/bestDerivativeByObjectId/"+value.objectId+ "/true",
-			thumb: basePath + "fileManager/previewImage/"+value.objectId,
-			title: value.title,
-			link: basePath+"asset/viewAsset/"+value.objectId
-		});
-
-	});
-
-	Galleria.loadTheme('/assets/themes/twelve/galleria.twelve.min.js');
-	$('#galleryFrame').galleria({
-		data_source: carouselLinks,
-		imageCrop:false,
-		imageTimeout: 90000,
-		popupLinks:true,
-		extend: function(options) {
-			this.attachKeyboard({
-			left: this.prev, // applies the native prev() function
-			right: this.next,
-		});
-			this.setPlaytime(8000);
-			this.setOptions('showInfo', false);
-			this.bind("fullscreen_enter", function(){
-				this.$( 'info' ).hide();
-			});
-			this.bind("fullscreen_exit", function() {
-				this.$( 'info' ).show();
-			});
-		// this.bind("image", function(){
-		//	this.unbind("image");
-		//	this.push(<? $i=0;  $j=0; foreach($assetList as $assetEntry) { if($j>15) { ?>
-		//		<? if($assetEntry->media_type == "image") { ?>
-		//		<? if($i>0) { echo ","; } $i++;?>
-		//	    {
-		//	        image: '<?=site_url("mediabank/download/jpg500"."/".$assetEntry->digital_id)?>',
-		//	        big: '<?=site_url("mediabank/download/jpg1280"."/".$assetEntry->digital_id)?>',
-		//	        thumb: '<?=site_url("mediabank/download/thumb"."/".$assetEntry->digital_id)?>',
-		//	        title: '<?=trim(htmlspecialchars($assetEntry->title, ENT_QUOTES))?>',
-		//	        description: 'For more information, click on the image',
-		//	        link: '<?=site_url("search/show_details/" . $assetEntry->digital_id)?>'
-		//	    }
-		//	<? } else { ?>
-		//		<? if($i>0) { echo ","; } $i++;?>
-		//		{
-		//		  image: '<?=site_url("mediabank/download/thumb"."/".$assetEntry->digital_id)?>',
-		//	      thumb: '<?=site_url("mediabank/download/thumb"."/".$assetEntry->digital_id)?>',
-		//	      title: '<?=trim(htmlspecialchars($assetEntry->title, ENT_QUOTES))?>',
-		//	      description: 'For more information, click on the image',
-		//	      link: '<?=site_url("search/show_details/" . $assetEntry->digital_id)?>'
-		//		}
-		//		<? } } $j++; ?>
-		//	<? } ?>);
-		// });
-}
-});
-
-
-}
 
  var spiderConfig = {
     keepSpiderfied: true,
