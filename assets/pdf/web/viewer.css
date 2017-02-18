@@ -1103,6 +1103,12 @@ html[dir='rtl'] .toolbarButton.pageDown::before {
   content: url(images/toolbarButton-download.png);
 }
 
+.toolbarButton.fullScreen::before,
+.secondaryToolbarButton.fullScreen::before {
+  content: url(images/toolbarButton-fullScreen.png);
+}
+
+
 .toolbarButton.bookmark,
 .secondaryToolbarButton.bookmark {
   -webkit-box-sizing: border-box;
@@ -1877,6 +1883,12 @@ html[dir='rtl'] #documentPropertiesOverlay .row > * {
   .secondaryToolbarButton.download::before {
     content: url(images/toolbarButton-download@2x.png);
   }
+
+  .toolbarButton.fullScreen::before,
+  .secondaryToolbarButton.fullScreen::before {
+  content: url(images/toolbarButton-fullScreen@2x.png);
+  }
+
 
   .toolbarButton.bookmark::before,
   .secondaryToolbarButton.bookmark::before {
