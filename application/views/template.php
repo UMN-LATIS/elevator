@@ -322,12 +322,12 @@ function receiveMessage(e) {
 
 }
 
-window.onload = function() {
-	window.addEventListener('message', receiveMessage);
-	if (this.window.name == "elevatorPlugin") {
-		this.window.opener.postMessage("parentLoaded", "*");
-	}
-}
+window.addEventListener("load",function(){
+  window.addEventListener('message', receiveMessage);
+  if (this.window.name == "elevatorPlugin") {
+    this.window.opener.postMessage("parentLoaded", "*");
+  }
+});
 
 $(".addToPlugin").on("click", function() {
 
