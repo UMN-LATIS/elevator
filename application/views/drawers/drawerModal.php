@@ -24,7 +24,7 @@
         </form>
 
         <hr>
-        <h5>Add Drawer</h5>
+        <h5>Create a New Drawer</h5>
         <form action="<?=instance_url("drawers/addDrawer")?>" method="POST" id="addNewDrawer" class="form-inline" role="form">
           <div class="form-group">
             <label class="sr-only" for="">Drawer Title:</label>
