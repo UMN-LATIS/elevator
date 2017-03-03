@@ -43,8 +43,7 @@ class LoginManager extends Instance_Controller {
 				$array = array(
 					'userId' => $user->getId()
 				);
-
-				$this->session->set_userdata( $array );
+				$this->session->set_userdata($array);
 				redirect($redirectURL);
 				return;
 			}

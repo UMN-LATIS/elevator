@@ -43,6 +43,7 @@ class MY_Controller extends CI_Controller {
 		}
 
 		$userId = $this->session->userdata('userId');
+
 		if($userId) {
 			if($this->config->item('enableCaching')) {
 				$this->doctrineCache->setNamespace('userCache_');
@@ -92,6 +93,9 @@ class MY_Controller extends CI_Controller {
 
 				$secret = $apiKey->getApiSecret();
 				if(sha1($timestamp . $targetObject . $secret) == $signedString) {	
+					if(!$this->user_model->userLoaded) {
+						$this->user_model->assetOverride = true; // set a flag that this isn't a fully loaded user
+					}
 					$this->user_model->userLoaded=true;
 					$this->user_model->assetPermissions = [$targetObject => PERM_DERIVATIVES_GROUP_2];
 				}
