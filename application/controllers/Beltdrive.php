@@ -282,7 +282,9 @@ class Beltdrive extends CI_Controller {
 
 					$this->pheanstalk->delete($job);
 
-					$drawerContent = $this->load->view("email/drawerReady", ["drawerId"=>$drawerId], true);
+					$targetURL = site_url($instance->getDomain() . "/drawers/downloadDrawer/" . $drawerId);
+
+					$drawerContent = $this->load->view("email/drawerReady", ["drawerId"=>$drawerId, "targetURL"=>$targetURL], true);
 
 					$this->load->library('email');
 					$this->email->from('elevator@umn.edu', 'Elevator');
