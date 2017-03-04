@@ -1,0 +1,103 @@
+
+	
+	.toolbarButton
+	{
+		width: 40px !important;
+		height: 40px !important;
+		margin-bottom: 10px !important;
+		background: rgba(0, 0, 0, 0.0) !important;
+		border: 0px !important;
+	}
+	
+	.toolbarIcon
+	{
+		width: 100% !important;
+		height: 100% !important;
+		background-size: 100%;
+		left: 0px !important;
+		top: 0px !important;
+		margin: 0px !important;
+		opacity: 0.85;
+	}
+	
+	.zoomInIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/zoomin.png) !important;
+		
+	}
+
+	.zoomOutIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/zoomout.png) !important;
+	}
+	
+	.lightIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/light.png) !important;
+	}
+	
+	.lightOnIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/light_on.png) !important;
+	}
+	
+	.helpIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/help.png) !important;
+	}
+	
+	.fullIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/full.png) !important;
+	}
+	
+	.fullOnIcon
+	{
+		background-image: url(/assets/webViewer/css/icons/full_on.png) !important;
+	}
+	
+	
+	.ui-state-hover .toolbarIcon
+	{
+		opacity: 1.0;
+	}
+	
+	
+	#guideTable
+	{
+		display:table;
+		width: 100%;
+		height: 100%;
+		font-size: 15px;
+		font-family: Verdana,sans-serif;
+	}
+	
+	#guideCell
+	{
+		display: table-cell;
+		width: 100%;
+		vertical-align: middle;
+		text-align: left;
+	}
+	
+	#guideList
+	{
+		width: 90%;
+		margin: auto;
+	}
+	
+	#guideList li
+	{
+		margin-bottom: 5px;
+	}
+		
+	#guideList span
+	{
+		width: 30px;
+		height: 30px;
+	}
+	
+	#guideList img
+	{
+		width: 30px;
+	}
