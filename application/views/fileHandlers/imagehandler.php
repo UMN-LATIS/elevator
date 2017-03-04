@@ -145,7 +145,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 
 $(function ()
 {
-	// $(".infoPopover").popover({trigger: "focus | click"});
+	$(".infoPopover").popover({trigger: "focus | click"});
 	$(".infoPopover").tooltip({ placement: 'top'});
 
 });
