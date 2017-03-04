@@ -122,7 +122,7 @@ class RTIHandler extends FileHandlerBase {
 		$this->derivatives['tiled'] = $derivativeContainer;
 
 		$this->load->helper("file");
- 		if($this->putAllFilesInFolderToKey($extractedPath, "derivative/". $this->getReversedObjectId() . "-tiled", null)) {
+		if($this->s3model->putDirectory($extractedPath, "derivative/". $this->getReversedObjectId() . "-tiled", null, $this->job)) {
  			$derivativeContainer->ready = true;
  			delete_files($extractedPath, true);
  		}
@@ -203,34 +203,6 @@ class RTIHandler extends FileHandlerBase {
 		else {
 			return JOB_FAILED;
 		}
-
-	}
-
-
-	private function putAllFilesInFolderToKey($folder, $destKey, $mimeType=null) {
-		$files =  array_diff(scandir( $folder),array('..', '.'));
-		foreach($files as $file) {
-			if(substr($file, 0,1) == ".") {
-				continue;
-			}
-			$this->pheanstalk->touch($this->job);
-        	$pathToFile = $folder . "/" . $file;
-
-        	if(!$this->s3model->putObject($pathToFile, $destKey . "/" . $file)) {
-        		$this->logging->processingInfo("putAllFilesInFolderToKey", "uploading file failed","", $pathToFile, $this->job->getId());
-        		continue;
-        	}
-        	if($mimeType) {
-        		$this->s3model->setContentType($destKey . "/" . $file, $mimeType);
-        	}
-        	else {
-        		$finfo = finfo_open(FILEINFO_MIME_TYPE);
-        		$mimeType = finfo_file($finfo, $pathToFile);
-        		finfo_close($finfo);
-        		$this->s3model->setContentType($destKey . "/" . $file, $mimeType);
-        	}
-        }
-        return TRUE;
 
 	}
 
