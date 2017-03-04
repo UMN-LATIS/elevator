@@ -141,7 +141,20 @@ class RTIHandler extends FileHandlerBase {
 		$success = true;
 
 		$tiled = $this->derivatives['tiled'];
+
 		$targetDerivativeURL = $tiled->getProtectedURLForFile("/1_1.jpg");
+		// this is a stab in the dark on finding the right thumb.
+		if(isset($this->sourceFile->metadata["type"])) {
+			if($this->sourceFile->metadata["type"] == "RGB_PTM") {
+				$targetDerivativeURL = $tiled->getProtectedURLForFile("/1_6.jpg");
+			}
+			else if($this->sourceFile->metadata["type"] == "LRGB_PTM") {
+				$targetDerivativeURL = $tiled->getProtectedURLForFile("/1_3.jpg");
+			}
+		}
+
+
+		
 		$targetDerivativeFile = $tiled->getPathToLocalFile();
 		$targetDerivativeContainer = new FileContainer($targetDerivativeFile);
 		file_put_contents($targetDerivativeFile, file_get_contents($targetDerivativeURL));
