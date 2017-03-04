@@ -15,7 +15,7 @@ if($groupObject->getGroupType() == "User") {
 		if( $this->user_model->getDisplayNameForUserId($id)) {
 			$nameArray[$id] = $this->user_model->getDisplayNameForUserId($id);	
 		}
-		elseif($nameArray[$id] = $this->user_model->getUsernameForUserId($id)) {
+		elseif($this->user_model->getUsernameForUserId($id)) {
 			$nameArray[$id] = $this->user_model->getUsernameForUserId($id);	
 		}
 		
@@ -25,6 +25,13 @@ if($groupObject->getGroupType() == "User") {
 $hints = array();
 foreach($this->user_model->userData as $key=>$value) {
 	$hints[$key] = $value["hints"];
+}
+
+$disableGlobal = null;
+
+// don't let regular users share drawers across a whole instance.
+if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("instance",$this->instance)>=PERM_ADMIN)) {
+	$disableGlobal = "disabled";
 }
 
 ?>
@@ -42,9 +49,9 @@ foreach($this->user_model->userData as $key=>$value) {
 				<div class="col-sm-5">
 					<select name="groupType" id="inputGroupType" class="form-control">
 						<option value="">-- Select Group Type --</option>
-						<option value="All" <?=($groupObject->getGroupType()=="All")?"SELECTED":NULL?>>All Users</option>
-						<option value="Authed" <?=($groupObject->getGroupType()=="Authed")?"SELECTED":NULL?>>Authenticated User</option>
-						<option value="Authed_remote" <?=($groupObject->getGroupType()=="Authed_remote")?"SELECTED":NULL?>>Centrally Authenticated User</option>
+						<option value="All" <?=$disableGlobal?> <?=($groupObject->getGroupType()=="All")?"SELECTED":NULL?>>All Users</option>
+						<option value="Authed" <?=$disableGlobal?> <?=($groupObject->getGroupType()=="Authed")?"SELECTED":NULL?>>Authenticated User</option>
+						<option value="Authed_remote" <?=$disableGlobal?> <?=($groupObject->getGroupType()=="Authed_remote")?"SELECTED":NULL?>>Centrally Authenticated User</option>
 						<?foreach($authHelper->authTypes as $key=>$value): ?>
 						<option value="<?=$key?>" <?=($groupObject->getGroupType()==$key)?"SELECTED":NULL?>><?=$value['label']?></option>
 						<?endforeach?>
