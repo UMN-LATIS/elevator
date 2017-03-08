@@ -11,7 +11,12 @@
   <li><a href="#map" data-toggle="tab">Map</a></li>
   <li><a href="#timeline" data-toggle="tab">Timeline</a></li>
   <li><a href="#gallery" data-toggle="tab">Gallery</a></li>
-
+	<li><select class="form-control sortBy">
+        <option value="0">Best Match</option>
+        <option value="modified.date.asc">Modified Date (oldest to newest)</option>
+        <option value="modified.date.desc">Modified Date (newest to oldest)</option>
+        <option value="title.raw">Title</option>
+  </select>
 </ul>
 
 
