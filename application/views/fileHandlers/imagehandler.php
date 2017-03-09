@@ -115,7 +115,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 
 			    			<div class="imageContainer panzoom-element">
 							<?if(count($fileContainers)>0):?>
-									<img class="img-responsive embedImage imageContent" data-no-retina="true" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" alt="<?=($widgetObject && $widgetObject->fileDescription )?htmlspecialchars($widgetObject->fileDescription, ENT_COMPAT):null?>" />
+									<img class="img-responsive embedImage imageContent" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" alt="<?=($widgetObject && $widgetObject->fileDescription )?htmlspecialchars($widgetObject->fileDescription, ENT_COMPAT):null?>" />
 							<?endif?>
 							</div>
 							<?if($embedded):?>

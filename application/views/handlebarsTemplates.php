@@ -6,7 +6,7 @@
 	<h5><a class="assetLink" href="{{base_url}}asset/viewAsset/{{objectId}}">{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}</a></h5>
 	<div class="previewCrop ">
 	{{#if primaryHandlerThumbnail}}
-		<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
+		<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
 	{{/if}}
 	{{#if fileAssets}}
 		<span class="badge alert-success"><span class="glyphicon glyphicon-eye-open"></span> {{fileAssets}}</span>
@@ -31,7 +31,7 @@
 <script id="list-template" type="text/x-handlebars-template">
 <div class="row listResultContainer searchContainer">
 	<div class="col-md-2 listImageContainer">
-			<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
+			<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
 	</div>
 	<div class="col-md-9 listTextContainer">
 		<h3><a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink">{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}</a></h3>
@@ -56,9 +56,9 @@
 {{/if}}
 	<div class="col-md-2">
 		{{#if this.excerpt}}
-			<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive listPreviewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" data-at2x="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true"></a>
+			<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive listPreviewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" srcset="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true 2x"></a>
 		{{else}}
-			<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
+			<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
 		{{/if}}
 	</div>
 	<div class="col-md-10">
@@ -101,9 +101,9 @@
 	{{/if}}
 	<div class="previewCrop">
 		{{#if this.excerpt}}
-	<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive previewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" data-at2x="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true"></a>
+	<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive previewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" srcset="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true 2x"></a>
 	{{else}}
-	<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" data-at2x="{{primaryHandlerThumbnail2x}}"></a>
+	<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
 	{{/if}}
 	</div>
 	<div class="previewContent">
@@ -161,7 +161,7 @@
 <script id="minipreview-template" type="text/x-handlebars-template">
 <div class="row minipreviewContainer">
 	<div class="col-sm-3">
-		<img class="img-responsive" src="{{base_url}}fileManager/previewImage/{{objectId}}?{{random}}" data-at2x="{{base_url}}fileManager/previewImage/{{objectId}}/true?{{random}}">
+		<img class="img-responsive" src="{{base_url}}fileManager/previewImage/{{objectId}}?{{random}}" srcset="{{base_url}}fileManager/previewImage/{{objectId}}/true?{{random}} 2x">
 	</div>
 	<div class="col-sm-9">
 		<p>{{join title}}</p>
