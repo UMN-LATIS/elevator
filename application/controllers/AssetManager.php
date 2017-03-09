@@ -766,7 +766,12 @@ class AssetManager extends Admin_Controller {
 						else if(get_class($widget) == "Related_asset") {
 							if(strlen($rowEntry)> 15) {
 								$widgetContainer->targetAssetId = $rowEntry;	
-							}	
+							}		
+						}
+						else if(get_class($widget) == "Checkbox") {
+							if(strlen($rowEntry)>0 && $rowEntry != "0" && $rowEntry != "off") {
+								$widgetContainer->fieldContents = "on";	
+							}
 						}
 						else if(get_class($widget) == "Multiselect") {
 							// let's split and rematch the entry
@@ -813,7 +818,7 @@ class AssetManager extends Admin_Controller {
 			
 			$rowCount++;
 
-			if($rowCount % 50 == 0) {
+			if($rowCount % 400 == 0) {
 				$this->doctrineCache->setNamespace('importCache_');
 				$this->doctrineCache->save($hash, $cacheArray, 900);
 
