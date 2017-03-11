@@ -239,54 +239,18 @@ function populateSearchResults(searchObject) {
 	}
 
 	if($('a[href="#grid"]').parent().hasClass("active")) {
-		$("#results").find("img").each(function(el, value){
-			$(value).on("load", function() {
-				$(value).off("load");
-				if(Retina.isRetina()) {
-					$(value).removeAttr("width").removeAttr("height");
-					new RetinaImage(value);
-				}
-
-			});
-		});
+		
 	}
 	else {
-		// This is a bad hack to deal with the fact that handlebar.js and retina.js don't work great
-		// together.  Once the internet has a sane way to do retina images, we can drop this and move to that.
-		$("#results").find("img").each(function(el, value){
-			$(value).on("show", function() {
-				if(Retina.isRetina()) {
-					$(value).removeAttr("width").removeAttr("height");
-					new RetinaImage(value);
-				}
-			});
-		});
+		
 	}
 
 	if($('a[href="#list"]').parent().hasClass("active")) {
-		$("#listResults").find("img").each(function(el, value){
-			$(value).on("load", function() {
-				$(value).off("load");
-				if(Retina.isRetina()) {
-					$(value).removeAttr("width").removeAttr("height");
-					new RetinaImage(value);
-				}
-			});
-		});
+		
 	}
 	else {
-		// This is a bad hack to deal with the fact that handlebar.js and retina.js don't work great
-		// together.  Once the internet has a sane way to do retina images, we can drop this and move to that.
-
-		$("#listResults").find("img").each(function(el, value){
-			$(value).on("show", function() {
-				$(value).removeAttr("width").removeAttr("height");
-				if(Retina.isRetina()) {
-					$(value).removeAttr("width").removeAttr("height");
-					new RetinaImage(value);
-				}
-			});
-		});
+		
+		
 	}
 
 	$(".resultsData").html("<p>Total Results: "+ searchObject.totalResults + "</p>");

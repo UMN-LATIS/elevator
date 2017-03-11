@@ -23,7 +23,7 @@
 <div class="resultContainer searchContainer">
 	<h5><a class="assetLink" href="<?=instance_url("asset/viewAsset/" . $assetData['objectId'])?>"><?=$assetData['title']?></a></h5>
 	<div class="previewCrop ">
-		<a href="<?=instance_url("asset/viewAsset/" . $assetData['objectId'])?>" class="assetLink"><img class="img-responsive previewImage" src="<?=$assetData['primaryHandlerThumbnail']?>" data-at2x="<?=$assetData['primaryHandlerThumbnail2x']?>"></a>
+		<a href="<?=instance_url("asset/viewAsset/" . $assetData['objectId'])?>" class="assetLink"><img class="img-responsive previewImage" src="<?=$assetData['primaryHandlerThumbnail']?>" srcset="<?=$assetData['primaryHandlerThumbnail2x']?> 2x"></a>
 	<?if(isset($assetData['fileAssets'])):?>
 		<span class="badge alert-success"><span class="glyphicon glyphicon-eye-open"></span><?=$assetData['fileAssets']?></span>
 	<?endif?>
