@@ -8,7 +8,7 @@ class MY_Controller extends CI_Controller {
 		
 		parent::__construct();
 		$cssLoadArray = ["bootstrap", "screen"];
-		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "jquery.lazy", "sugar","retina-1.1.0", "mousetrap", "bootbox"];
+		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "jquery.lazy", "sugar", "mousetrap", "bootbox"];
 
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
 			$jsLoadArray= array_merge($jsLoadArray, ["serializeForm", "dateWidget", "template"]);
@@ -20,6 +20,10 @@ class MY_Controller extends CI_Controller {
 
 		if($this->router->fetch_class() != "search") {
 			$jsLoadArray[] = "templateSearch";
+		}
+
+		if($this->router->fetch_class() != "home") {
+			$jsLoadArray[] = "retina-1.1.0";
 		}
 
 		$this->template->loadCSS($cssLoadArray);
