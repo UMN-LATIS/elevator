@@ -22,6 +22,10 @@ class MY_Controller extends CI_Controller {
 			$jsLoadArray[] = "templateSearch";
 		}
 
+		if($this->router->fetch_class() != "home") {
+			$jsLoadArray[] = "retina-1.1.0";
+		}
+
 		$this->template->loadCSS($cssLoadArray);
 		$this->template->loadJavascript($jsLoadArray);
 
