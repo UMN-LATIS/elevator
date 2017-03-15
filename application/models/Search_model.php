@@ -368,6 +368,9 @@ class search_model extends CI_Model {
 			list($start, $end) = explode("...", strtolower($searchArray["searchText"]));
 			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
 		}
+		else if(substr($searchArray["searchText"],0,1) == '"' && substr($searchArray["searchText"], -1,1) == '"') {
+			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['match_phrase'] = ["_all"=>strtolower($searchArray["searchText"])];
+		}
 		else if($searchArray["searchText"] != "") {
 
 			// $searchParams['body']['query']['filtered']['query']['bool']['should'][0]["match_phrase_prefix"]["_all"] = $searchArray["searchText"];
