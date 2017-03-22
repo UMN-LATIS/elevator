@@ -97,8 +97,6 @@ class PDFHandler extends FileHandlerBase {
 
 		$this->load->library("PDFHelper");
 
-
-		
 		$objectFilesize = $this->sourceFile->getFileSize();
 		if(!is_array($this->globalMetadata)) {
 			$this->globalMetadata = array();

@@ -1,6 +1,6 @@
 <div class="row rowPadding excerpt collapse out" id="excerptGroup">
   <form action="" method="POST" class="excerptForm" id="excerptForm" role="form">
-    <input type="hidden" name="fileHandlerId" value="<?=$fileObjectId?>"/>
+    <input type="hidden" name="fileHandlerId" value="<?=$fileObject->getObjectId()?>"/>
     <input type="hidden" name="objectId" value="<?=$fileObject->parentObjectId?>"/>
     <div class="form-group col-md-2">
       <label class="sr-only" for="">Excerpt Title</label>

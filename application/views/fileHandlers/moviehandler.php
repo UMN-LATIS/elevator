@@ -218,7 +218,7 @@ $menuArray['download'] = $downloadArray;
 
   <?=renderFileMenu($menuArray)?>
 
-  <?$this->load->view("fileHandlers/excerpt")?>
+  <?$this->load->view("fileHandlers/excerpt", ["drawerArray"=>$drawerArray])?>
 
   <script>
     $(document).ready(function() {

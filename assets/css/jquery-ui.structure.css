@@ -1,14 +1,17 @@
 /*!
- * jQuery UI CSS Framework 1.11.1
+ * jQuery UI CSS Framework 1.12.1
  * http://jqueryui.com
  *
- * Copyright 2014 jQuery Foundation and other contributors
+ * Copyright jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
  *
  * http://api.jqueryui.com/category/theming/
  */
-
+.ui-draggable-handle {
+	-ms-touch-action: none;
+	touch-action: none;
+}
 /* Layout helpers
 ----------------------------------*/
 .ui-helper-hidden {
@@ -43,9 +46,6 @@
 .ui-helper-clearfix:after {
 	clear: both;
 }
-.ui-helper-clearfix {
-	min-height: 0; /* support: IE7 */
-}
 .ui-helper-zfix {
 	width: 100%;
 	height: 100%;
@@ -65,20 +65,27 @@
 ----------------------------------*/
 .ui-state-disabled {
 	cursor: default !important;
+	pointer-events: none;
 }
 
 
 /* Icons
 ----------------------------------*/
-
-/* states and images */
 .ui-icon {
-	display: block;
+	display: inline-block;
+	vertical-align: middle;
+	margin-top: -.25em;
+	position: relative;
 	text-indent: -99999px;
 	overflow: hidden;
 	background-repeat: no-repeat;
 }
 
+.ui-widget-icon-block {
+	left: 50%;
+	margin-left: -8px;
+	display: block;
+}
 
 /* Misc visuals
 ----------------------------------*/
@@ -90,10 +97,6 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-}
-.ui-draggable-handle {
-	-ms-touch-action: none;
-	touch-action: none;
 }
 .ui-resizable {
 	position: relative;
@@ -178,6 +181,19 @@
 	-ms-touch-action: none;
 	touch-action: none;
 }
+.ui-accordion .ui-accordion-header {
+	display: block;
+	cursor: pointer;
+	position: relative;
+	margin: 2px 0 0 0;
+	padding: .5em .5em .5em .7em;
+	font-size: 100%;
+}
+.ui-accordion .ui-accordion-content {
+	padding: 1em 2.2em;
+	border-top: 0;
+	overflow: auto;
+}
 .ui-autocomplete {
 	position: absolute;
 	top: 0;
@@ -189,19 +205,20 @@
 	padding: 0;
 	margin: 0;
 	display: block;
-	outline: none;
+	outline: 0;
 }
 .ui-menu .ui-menu {
 	position: absolute;
 }
 .ui-menu .ui-menu-item {
-	position: relative;
 	margin: 0;
-	padding: 3px 1em 3px .4em;
 	cursor: pointer;
-	min-height: 0; /* support: IE7 */
 	/* support: IE10, see #8844 */
 	list-style-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+}
+.ui-menu .ui-menu-item-wrapper {
+	position: relative;
+	padding: 3px 1em 3px .4em;
 }
 .ui-menu .ui-menu-divider {
 	margin: 5px 0;
@@ -219,7 +236,7 @@
 .ui-menu-icons {
 	position: relative;
 }
-.ui-menu-icons .ui-menu-item {
+.ui-menu-icons .ui-menu-item-wrapper {
 	padding-left: 2em;
 }
 
@@ -236,4 +253,153 @@
 .ui-menu .ui-menu-icon {
 	left: auto;
 	right: 0;
+}
+.ui-button {
+	padding: .4em 1em;
+	display: inline-block;
+	position: relative;
+	line-height: normal;
+	margin-right: .1em;
+	cursor: pointer;
+	vertical-align: middle;
+	text-align: center;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	/* Support: IE <= 11 */
+	overflow: visible;
+}
+
+.ui-button,
+.ui-button:link,
+.ui-button:visited,
+.ui-button:hover,
+.ui-button:active {
+	text-decoration: none;
+}
+
+/* to make room for the icon, a width needs to be set here */
+.ui-button-icon-only {
+	width: 2em;
+	box-sizing: border-box;
+	text-indent: -9999px;
+	white-space: nowrap;
+}
+
+/* no icon support for input elements */
+input.ui-button.ui-button-icon-only {
+	text-indent: 0;
+}
+
+/* button icon element(s) */
+.ui-button-icon-only .ui-icon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -8px;
+	margin-left: -8px;
+}
+
+.ui-button.ui-icon-notext .ui-icon {
+	padding: 0;
+	width: 2.1em;
+	height: 2.1em;
+	text-indent: -9999px;
+	white-space: nowrap;
+
+}
+
+input.ui-button.ui-icon-notext .ui-icon {
+	width: auto;
+	height: auto;
+	text-indent: 0;
+	white-space: normal;
+	padding: .4em 1em;
+}
+
+/* workarounds */
+/* Support: Firefox 5 - 40 */
+input.ui-button::-moz-focus-inner,
+button.ui-button::-moz-focus-inner {
+	border: 0;
+	padding: 0;
+}
+.ui-controlgroup {
+	vertical-align: middle;
+	display: inline-block;
+}
+.ui-controlgroup > .ui-controlgroup-item {
+	float: left;
+	margin-left: 0;
+	margin-right: 0;
+}
+.ui-controlgroup > .ui-controlgroup-item:focus,
+.ui-controlgroup > .ui-controlgroup-item.ui-visual-focus {
+	z-index: 9999;
+}
+.ui-controlgroup-vertical > .ui-controlgroup-item {
+	display: block;
+	float: none;
+	width: 100%;
+	margin-top: 0;
+	margin-bottom: 0;
+	text-align: left;
+}
+.ui-controlgroup-vertical .ui-controlgroup-item {
+	box-sizing: border-box;
+}
+.ui-controlgroup .ui-controlgroup-label {
+	padding: .4em 1em;
+}
+.ui-controlgroup .ui-controlgroup-label span {
+	font-size: 80%;
+}
+.ui-controlgroup-horizontal .ui-controlgroup-label + .ui-controlgroup-item {
+	border-left: none;
+}
+.ui-controlgroup-vertical .ui-controlgroup-label + .ui-controlgroup-item {
+	border-top: none;
+}
+.ui-controlgroup-horizontal .ui-controlgroup-label.ui-widget-content {
+	border-right: none;
+}
+.ui-controlgroup-vertical .ui-controlgroup-label.ui-widget-content {
+	border-bottom: none;
+}
+
+/* Spinner specific style fixes */
+.ui-controlgroup-vertical .ui-spinner-input {
+
+	/* Support: IE8 only, Android < 4.4 only */
+	width: 75%;
+	width: calc( 100% - 2.4em );
+}
+.ui-controlgroup-vertical .ui-spinner .ui-spinner-up {
+	border-top-style: solid;
+}
+
+.ui-checkboxradio-label .ui-icon-background {
+	box-shadow: inset 1px 1px 1px #ccc;
+	border-radius: .12em;
+	border: none;
+}
+.ui-checkboxradio-radio-label .ui-icon-background {
+	width: 16px;
+	height: 16px;
+	border-radius: 1em;
+	overflow: visible;
+	border: none;
+}
+.ui-checkboxradio-radio-label.ui-checkboxradio-checked .ui-icon,
+.ui-checkboxradio-radio-label.ui-checkboxradio-checked:hover .ui-icon {
+	background-image: none;
+	width: 8px;
+	height: 8px;
+	border-width: 4px;
+	border-style: solid;
+}
+.ui-checkboxradio-disabled {
+	pointer-events: none;
 }
