@@ -35,12 +35,13 @@ if(isset($fileContainers['dicom'])) {
       continue;
     }
     $instanceList = array();
-
+    $i = 0;
     foreach($series["instanceList"] as $instanceEntry) {
       $assetURL = $fileContainers['dicom']->getProtectedURLForFile($instanceEntry["imageId"], "+30 minutes");
       $assetURL = "wadouri:" . stripHTTP($assetURL);
 
-      $instanceList[] = ["url"=>$assetURL, "rows"=>1, "sopInstanceUid"=>"test"];
+      $instanceList[] = ["url"=>$assetURL, "rows"=>1, "sopInstanceUid"=>$i . "_uid", "instanceNumber"=>$i];
+      $i++;
     }
     $series['instances'] = $instanceList;
     $seriesList[$key] = $series;
