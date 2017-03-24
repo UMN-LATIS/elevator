@@ -235,7 +235,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
                 <?endif?>
                 </ul>
                 </li>
-      
+      </ul>
       <?if($this->user_model->userLoaded && !$this->user_model->assetOverride):?>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
