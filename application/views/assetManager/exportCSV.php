@@ -8,7 +8,7 @@
 <div class="row">
 	<div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
 		<form action="<?=instance_url("assetManager/exportCSV")?>" class="form-horizontal" method="POST" role="form" enctype="multipart/form-data">
-			<legend>CSV Import</legend>
+			<legend>CSV Export</legend>
 
 
 			<div class="form-group">
