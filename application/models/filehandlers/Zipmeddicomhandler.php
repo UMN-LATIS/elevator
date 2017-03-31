@@ -106,6 +106,7 @@ class ZipMedDicomHandler extends ZipHandler {
 				$imageSets[] = $folder->getFilename();
 			}
 		}
+		natsort($imageSets);
 
 		$seriesNumber = 1;
 		$seriesList = array();

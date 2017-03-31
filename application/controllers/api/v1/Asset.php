@@ -27,8 +27,14 @@ class asset extends API_Controller {
 
 		}
 		else {
-			$fileHandler = $this->filehandler_router->getHandlerForObject($assetId);
-			$fileHandler->loadByObjectId($assetId);
+			if($fileHandler = $this->filehandler_router->getHandlerForObject($assetId)) {
+				$fileHandler->loadByObjectId($assetId);	
+			}
+			else {
+				echo json_encode([]);
+				return;	
+			}
+			
 
 		}
 
@@ -205,7 +211,11 @@ class asset extends API_Controller {
 				}
 				$targetURL = "";
 				try {
-					$targetURL = $contents->getFileHandler()->getPreviewTiny()->getURLForFile(true);
+					$tiny = $contents->getFileHandler()->getPreviewTiny()->getURLForFile(true);
+					$tiny2x = $contents->getFileHandler()->getPreviewTiny(true)->getURLForFile(true);
+					$thumbnail = $contents->getFileHandler()->getPreviewThumbnail(true)->getURLForFile(true);
+					$thumbnail2x = $contents->getFileHandler()->getPreviewThumbnail(true)->getURLForFile(true);
+
 					if($entryTitle) {
 						$outputTitle = $entryTitle;
 					}
@@ -219,7 +229,7 @@ class asset extends API_Controller {
 
 					if(!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
 
-						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>$targetURL);
+						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>$tiny, "primaryHandlerTiny2x"=>$tiny2x, "primaryHandlerThumbnail"=>$thumbnail, "primaryHandlerThumbnail2x"=>$thumbnail2x);
 					}
 				}
 				catch (Exception $e) {
@@ -235,8 +245,8 @@ class asset extends API_Controller {
 					}
 
 					if(!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
-
-						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>site_url("/assets/icons/512px/".$contents->fileHandler->getIcon(), 307));
+						$targetURL = site_url("/assets/icons/512px/".$contents->fileHandler->getIcon(), 307);
+						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>$targetURL,"primaryHandlerTiny2x"=>$targetURL,"primaryHandlerThumbnail"=>$targetURL,"primaryHandlerThumbnail2x"=>$targetURL);
 					}
 					// it's ok not to do anytihng, might not have an entry
 				}
