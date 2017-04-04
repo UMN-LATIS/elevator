@@ -49,7 +49,7 @@
 </div>
 
 <div class="form-group">
-	<label for="inputOwnerHomepage" class="col-sm-2 control-label">Owner Homepage:</label>
+	<label for="inputOwnerHomepage" class="col-sm-2 control-label">Owner Contact (http:// or mailto:):</label>
 	<div class="col-sm-6">
 		<input type="text" name="ownerHomepage" id="inputOwnerHomepage" class="form-control" value="<?= $instance->getOwnerHomepage(); ?>">
 	</div>
