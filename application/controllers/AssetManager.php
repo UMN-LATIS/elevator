@@ -526,7 +526,8 @@ class AssetManager extends Admin_Controller {
 					$widgetArray[] = $widgets->getLabel() . " ObjectID";
 				}
 				if(get_class($widgets) == "Location") {
-					$widgetArray[] = $widgets->getLabel() . " Coordinates";
+					$widgetArray[] = $widgets->getLabel() . " Latitude";
+					$widgetArray[] = $widgets->getLabel() . " Longitude";
 					$widgetArray[] = $widgets->getLabel() . " Label";
 					$widgetArray[] = $widgets->getLabel() . " Address";
 				}
@@ -567,15 +568,18 @@ class AssetManager extends Admin_Controller {
 							$outputRow[] = join($outputObjects, "|");
 						}
 						if(get_class($widgets) == "Location") {
-							$outputCoordinates = array();
+							$outputLatitude = array();
+							$outputLongitude = array();
 							$outputLabel = array();
 							$outputAddress = array();
 							foreach($object->fieldContentsArray as $entry) {
-								$outputCoordinates[] = $entry->latitude . ", " . $entry->longitude;
+								$outputLatitude[] = $entry->latitude;
+								$outputLongitude[] = $entry->longitude;
 								$outputLabel[] = $entry->locationLabel;
 								$outputAddress[] = $entry->address;
 							}
-							$outputRow[] = join($outputCoordinates, "|");
+							$outputRow[] = join($outputLatitude, "|");
+							$outputRow[] = join($outputLongitude, "|");
 							$outputRow[] = join($outputLabel, "|");
 							$outputRow[] = join($outputAddress, "|");
 						}
@@ -587,6 +591,7 @@ class AssetManager extends Admin_Controller {
 							$outputRow[] = "";
 						}
 						if(get_class($widgets) == "Location") {
+							$outputRow[] = "";
 							$outputRow[] = "";
 							$outputRow[] = "";
 							$outputRow[] = "";
