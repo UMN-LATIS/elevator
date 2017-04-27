@@ -479,6 +479,12 @@ class Search extends Instance_Controller {
 			return;
 		}
 
+		if($this->input->post("redirectSearch") == true) {
+			instance_redirect("search#".$this->searchId);
+			return;
+		}
+
+
 		$this->load->model("search_model");
 
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
