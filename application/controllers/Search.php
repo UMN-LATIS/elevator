@@ -337,6 +337,15 @@ class Search extends Instance_Controller {
 		if($this->input->post("searchQuery")) {
 			$searchArray = json_decode($this->input->post("searchQuery"), true);
 		}
+		else {
+			if($this->input->post("searchText")) {
+				$searchArray = array();
+				$searchArray["searchText"] = $this->input->post("searchText");
+				if($this->input->post("collectionId")) {
+					$searchArray["collection"] = $this->input->post("collectionId");
+				}
+			}
+		}
 
 		$allowedCollectionsIds = null;
 		if($accessLevel < PERM_SEARCH) {
