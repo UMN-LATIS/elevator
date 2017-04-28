@@ -77,7 +77,8 @@ class Beltdrive extends CI_Controller {
 			echo "Reindexing " . $objectId . "\n";
 
 			$this->asset_model->loadAssetById($objectId);
-			$this->asset_model->reindex();
+			$parentArray = array();
+			$this->asset_model->reindex($parentArray);
 			$this->pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 		}
