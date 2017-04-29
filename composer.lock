@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6ec2b510c5f68d429dfd55c24acfec5b",
-    "content-hash": "a3592b90d4dbfa41a345a2cfcb001775",
+    "content-hash": "fe414c081590cc136d3ed86be08d9958",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -62,7 +61,7 @@
                 "binary",
                 "driver"
             ],
-            "time": "2016-03-02 13:49:15"
+            "time": "2016-03-02T13:49:15+00:00"
         },
         {
             "name": "aws/aws-sdk-php",
@@ -142,7 +141,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-11-22 23:10:38"
+            "time": "2016-11-22T23:10:38+00:00"
         },
         {
             "name": "buggedcom/phpvideotoolkit",
@@ -231,7 +230,7 @@
                 "process",
                 "unix"
             ],
-            "time": "2015-10-24 17:38:37"
+            "time": "2015-10-24T17:38:37+00:00"
         },
         {
             "name": "crocodoc/php-box-view",
@@ -349,7 +348,7 @@
                 "docblock",
                 "parser"
             ],
-            "time": "2015-08-31 12:32:49"
+            "time": "2015-08-31T12:32:49+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -419,7 +418,7 @@
                 "cache",
                 "caching"
             ],
-            "time": "2016-10-29 11:16:17"
+            "time": "2016-10-29T11:16:17+00:00"
         },
         {
             "name": "doctrine/collections",
@@ -485,7 +484,7 @@
                 "collections",
                 "iterator"
             ],
-            "time": "2015-04-14 22:21:58"
+            "time": "2015-04-14T22:21:58+00:00"
         },
         {
             "name": "doctrine/common",
@@ -762,7 +761,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2015-11-06 14:35:42"
+            "time": "2015-11-06T14:35:42+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -816,7 +815,7 @@
                 "constructor",
                 "instantiate"
             ],
-            "time": "2015-06-14 21:17:01"
+            "time": "2015-06-14T21:17:01+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -870,7 +869,7 @@
                 "lexer",
                 "parser"
             ],
-            "time": "2014-09-09 13:34:57"
+            "time": "2014-09-09T13:34:57+00:00"
         },
         {
             "name": "doctrine/orm",
@@ -950,47 +949,44 @@
         },
         {
             "name": "elasticsearch/elasticsearch",
-            "version": "v0.4.5",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/elastic/elasticsearch-php.git",
-                "reference": "e36b4b3cadea482ce00944c1463b9168158fc797"
+                "reference": "12a400656e4cf4c231d83cb56af3f50a27dcde93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/e36b4b3cadea482ce00944c1463b9168158fc797",
-                "reference": "e36b4b3cadea482ce00944c1463b9168158fc797",
+                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/12a400656e4cf4c231d83cb56af3f50a27dcde93",
+                "reference": "12a400656e4cf4c231d83cb56af3f50a27dcde93",
                 "shasum": ""
             },
             "require": {
-                "ext-curl": "*",
-                "guzzle/guzzle": "~3.7",
-                "monolog/monolog": "~1.5",
-                "php": ">=5.3.9",
-                "pimple/pimple": "~1.0",
+                "guzzlehttp/ringphp": "~1.0",
+                "php": ">=5.4",
                 "psr/log": "~1.0"
             },
             "require-dev": {
-                "athletic/athletic": "~0.1",
                 "cpliakas/git-wrapper": "~1.0",
-                "mikey179/vfsstream": "~1.2",
-                "mockery/mockery": "dev-master@dev",
-                "phpunit/phpunit": "3.7.*",
-                "satooshi/php-coveralls": "dev-master",
-                "symfony/yaml": "2.4.*@dev",
+                "mockery/mockery": "0.9.4",
+                "phpunit/phpunit": "~4.7",
+                "sami/sami": "~3.2",
+                "symfony/yaml": "2.4.3 as 2.4.2",
                 "twig/twig": "1.*"
+            },
+            "suggest": {
+                "ext-curl": "*",
+                "monolog/monolog": "Allows for client-level logging and tracing"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Elasticsearch": "src/",
-                    "Elasticsearch\\Tests": "tests/",
-                    "Elasticsearch\\Benchmarks": "benchmarks/"
+                "psr-4": {
+                    "Elasticsearch\\": "src/Elasticsearch/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Apache 2"
+                "Apache-2.0"
             ],
             "authors": [
                 {
@@ -1003,7 +999,7 @@
                 "elasticsearch",
                 "search"
             ],
-            "time": "2014-06-18 16:06:34"
+            "time": "2016-11-30T17:15:05+00:00"
         },
         {
             "name": "evenement/evenement",
@@ -1049,7 +1045,7 @@
                 "event-dispatcher",
                 "event-emitter"
             ],
-            "time": "2012-11-02 14:49:47"
+            "time": "2012-11-02T14:49:47+00:00"
         },
         {
             "name": "firebase/php-jwt",
@@ -1092,7 +1088,7 @@
             ],
             "description": "A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should conform to the current spec.",
             "homepage": "https://github.com/firebase/php-jwt",
-            "time": "2015-07-22 18:31:08"
+            "time": "2015-07-22T18:31:08+00:00"
         },
         {
             "name": "google/apiclient",
@@ -1187,7 +1183,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2016-07-27 20:26:55"
+            "time": "2016-07-27T20:26:55+00:00"
         },
         {
             "name": "google/auth",
@@ -1235,7 +1231,7 @@
                 "google",
                 "oauth2"
             ],
-            "time": "2016-08-02 22:00:48"
+            "time": "2016-08-02T22:00:48+00:00"
         },
         {
             "name": "guzzle/guzzle",
@@ -1331,7 +1327,7 @@
                 "web service"
             ],
             "abandoned": "guzzlehttp/guzzle",
-            "time": "2015-03-18 18:23:50"
+            "time": "2015-03-18T18:23:50+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1383,7 +1379,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2016-07-15 19:28:39"
+            "time": "2016-07-15T19:28:39+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -1434,7 +1430,7 @@
             "keywords": [
                 "promise"
             ],
-            "time": "2016-11-18 17:47:58"
+            "time": "2016-11-18T17:47:58+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -1492,7 +1488,7 @@
                 "stream",
                 "uri"
             ],
-            "time": "2016-06-24 23:00:38"
+            "time": "2016-06-24T23:00:38+00:00"
         },
         {
             "name": "guzzlehttp/ringphp",
@@ -1543,7 +1539,7 @@
                 }
             ],
             "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function.",
-            "time": "2015-05-20 03:37:09"
+            "time": "2015-05-20T03:37:09+00:00"
         },
         {
             "name": "guzzlehttp/streams",
@@ -1593,7 +1589,7 @@
                 "Guzzle",
                 "stream"
             ],
-            "time": "2014-10-12 19:18:40"
+            "time": "2014-10-12T19:18:40+00:00"
         },
         {
             "name": "markwilson/verbal-expressions-php",
@@ -1714,7 +1710,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-07-29 03:23:52"
+            "time": "2016-07-29T03:23:52+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -1769,7 +1765,7 @@
                 "json",
                 "jsonpath"
             ],
-            "time": "2016-01-05 18:25:05"
+            "time": "2016-01-05T18:25:05+00:00"
         },
         {
             "name": "pda/pheanstalk",
@@ -1869,7 +1865,7 @@
             "keywords": [
                 "unoconv"
             ],
-            "time": "2013-06-25 10:09:59"
+            "time": "2013-06-25T10:09:59+00:00"
         },
         {
             "name": "phpseclib/phpseclib",
@@ -1961,7 +1957,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2016-10-04 00:57:04"
+            "time": "2016-10-04T00:57:04+00:00"
         },
         {
             "name": "pimple/pimple",
@@ -2009,7 +2005,7 @@
                 "container",
                 "dependency injection"
             ],
-            "time": "2013-11-22 08:30:29"
+            "time": "2013-11-22T08:30:29+00:00"
         },
         {
             "name": "psr/cache",
@@ -2055,7 +2051,7 @@
                 "psr",
                 "psr-6"
             ],
-            "time": "2016-08-06 20:24:11"
+            "time": "2016-08-06T20:24:11+00:00"
         },
         {
             "name": "psr/http-message",
@@ -2105,7 +2101,7 @@
                 "request",
                 "response"
             ],
-            "time": "2016-08-06 14:39:51"
+            "time": "2016-08-06T14:39:51+00:00"
         },
         {
             "name": "psr/log",
@@ -2152,7 +2148,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-10-10 12:19:37"
+            "time": "2016-10-10T12:19:37+00:00"
         },
         {
             "name": "react/promise",
@@ -2196,7 +2192,7 @@
                 }
             ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
-            "time": "2016-05-03 17:50:52"
+            "time": "2016-05-03T17:50:52+00:00"
         },
         {
             "name": "smalot/pdfparser",
@@ -2284,7 +2280,7 @@
                 "gif",
                 "php"
             ],
-            "time": "2012-10-13 09:04:46"
+            "time": "2012-10-13T09:04:46+00:00"
         },
         {
             "name": "symfony/console",
@@ -2345,7 +2341,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-16 22:17:09"
+            "time": "2016-11-16T22:17:09+00:00"
         },
         {
             "name": "symfony/debug",
@@ -2402,7 +2398,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-15 12:55:20"
+            "time": "2016-11-15T12:55:20+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -2462,7 +2458,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-10-13 01:43:15"
+            "time": "2016-10-13T01:43:15+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -2521,7 +2517,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-11-14 01:06:16"
+            "time": "2016-11-14T01:06:16+00:00"
         },
         {
             "name": "symfony/process",
@@ -2570,7 +2566,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-29 14:13:09"
+            "time": "2016-09-29T14:13:09+00:00"
         },
         {
             "name": "tecnickcom/tcpdf",
@@ -2633,7 +2629,7 @@
                 "pdf417",
                 "qrcode"
             ],
-            "time": "2015-09-12 10:08:34"
+            "time": "2015-09-12T10:08:34+00:00"
         },
         {
             "name": "tedivm/stash",

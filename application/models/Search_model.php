@@ -9,10 +9,9 @@ class search_model extends CI_Model {
 	public function __construct()
 	{
 		parent::__construct();
-		$params['hosts'] = array (
+		$params= array (
     		$this->config->item('elastic'));
-
-		$this->es = new Elasticsearch\Client($params);
+		$this->es = Elasticsearch\ClientBuilder::create()->setHosts($params)->build();
 
 	}
 
