@@ -337,6 +337,13 @@ class Search extends Instance_Controller {
 		if($this->input->post("searchQuery")) {
 			$searchArray = json_decode($this->input->post("searchQuery"), true);
 		}
+		else if($this->input->post("searchText") !== NULL) { // direct search form
+				$searchArray = array();
+				$searchArray["searchText"] = $this->input->post("searchText");
+				if($this->input->post("collectionId")) {
+					$searchArray["collection"] = [$this->input->post("collectionId")];
+				}
+		}
 
 		$allowedCollectionsIds = null;
 		if($accessLevel < PERM_SEARCH) {
@@ -478,6 +485,12 @@ class Search extends Instance_Controller {
 			echo json_encode(["success"=>true, "searchId"=>$this->searchId]);
 			return;
 		}
+
+		if($this->input->post("redirectSearch") == true) {
+			instance_redirect("search#".$this->searchId);
+			return;
+		}
+
 
 		$this->load->model("search_model");
 

@@ -925,7 +925,7 @@ class Asset_model extends CI_Model {
 
 	// reindex self and children, preventing recursion
 
-	public function reindex($parentArray=array()) {
+	public function reindex(&$parentArray=array()) {
 
 		$this->load->model("search_model");
 
