@@ -525,6 +525,12 @@ class AssetManager extends Admin_Controller {
 				if(get_class($widgets) == "Related_asset") {
 					$widgetArray[] = $widgets->getLabel() . " ObjectID";
 				}
+				if(get_class($widgets) == "Location") {
+					$widgetArray[] = $widgets->getLabel() . " Latitude";
+					$widgetArray[] = $widgets->getLabel() . " Longitude";
+					$widgetArray[] = $widgets->getLabel() . " Label";
+					$widgetArray[] = $widgets->getLabel() . " Address";
+				}
 			}
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
@@ -561,11 +567,33 @@ class AssetManager extends Admin_Controller {
 							}
 							$outputRow[] = join($outputObjects, "|");
 						}
+						if(get_class($widgets) == "Location") {
+							$outputLatitude = array();
+							$outputLongitude = array();
+							$outputLabel = array();
+							$outputAddress = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$outputLatitude[] = $entry->latitude;
+								$outputLongitude[] = $entry->longitude;
+								$outputLabel[] = $entry->locationLabel;
+								$outputAddress[] = $entry->address;
+							}
+							$outputRow[] = join($outputLatitude, "|");
+							$outputRow[] = join($outputLongitude, "|");
+							$outputRow[] = join($outputLabel, "|");
+							$outputRow[] = join($outputAddress, "|");
+						}
 					}
 					else {
 
 						$outputRow[] = "";
 						if(get_class($widgets) == "Upload" || get_class($widgets) == "Related_asset") {
+							$outputRow[] = "";
+						}
+						if(get_class($widgets) == "Location") {
+							$outputRow[] = "";
+							$outputRow[] = "";
+							$outputRow[] = "";
 							$outputRow[] = "";
 						}
 					}
