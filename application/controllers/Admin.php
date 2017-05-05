@@ -66,6 +66,59 @@ class admin extends Admin_Controller {
 		}
 	}
 
+	
+	public function fixRecords() {
+
+		$this->load->model("asset_model");
+		$this->load->model("search_model");
+		
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 12);
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL");
+
+		$qb->andWhere("a.collectionId = ?1");
+		$qb->setParameter(1, 113);
+
+
+		$result = $qb->getQuery()->iterate();
+
+
+		$count = $startValue;
+		foreach($result as $entry) {
+			$entry = $entry[0];
+			$assetModel = new asset_model();
+			$searchModel = new search_model();
+			// $before = microtime(true);
+			if($assetModel->loadAssetFromRecord($entry)) {
+
+				$json = $assetModel->getAsArray();
+
+				$changed = false;
+				if(array_key_exists("location_12", $json) && stristr($json["location_12"][0]["fieldContents"], "Dittman")) {
+					$changed = true;
+					$json["location_12"][0]["fieldContents"] = str_replace("Dittmann", "Center for Art and Dance", $json["location_12"][0]["fieldContents"]);
+
+				}
+				if(array_key_exists("loc_12", $json) && strstr($json["loc_12"][0]["fieldContents"], "DC")) {
+					$changed = true;
+					$json["loc_12"][0]["fieldContents"] = str_replace("DC", "CAD", $json["loc_12"][0]["fieldContents"]);
+					
+				}
+				if($changed) {
+					echo "Saving" . $assetModel->getObjectId();
+					$assetModel->loadWidgetsFromArray($json);
+					$assetModel->save();
+				}
+			}
+		}
+
+	}
+
 
 	public function reindex($wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null) {
 		set_time_limit(0);
