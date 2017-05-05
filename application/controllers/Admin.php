@@ -68,7 +68,7 @@ class admin extends Admin_Controller {
 
 	
 	public function fixRecords() {
-
+		return;
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 		
