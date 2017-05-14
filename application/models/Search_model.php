@@ -215,7 +215,7 @@ class search_model extends CI_Model {
 			$params['body']['fileTypesCache'] = $fileTypeArray;
 		}
 
-		$params['body']['modified'] = $asset->getGlobalValue("modified")->format('Y-m-d\TH:i:s\Z');
+		$params['body']['lastModified'] = $asset->getGlobalValue("modified")->format('Y-m-d\TH:i:s\Z');
 
 
 		$params['body']['includeInSearch'] = $asset->assetTemplate->getIncludeInSearch();
