@@ -218,6 +218,7 @@ class search_model extends CI_Model {
 
 		$params['body']['includeInSearch'] = $asset->assetTemplate->getIncludeInSearch();
 
+		$params['body']['lastModified'] = $asset->getGlobalValue("modified")->format('Y-m-d\TH:i:s\Z');
 
     	/**
     	 * inject the assetId for searching - we could search against _id too, but that can't be

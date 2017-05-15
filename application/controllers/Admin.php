@@ -120,13 +120,17 @@ class admin extends Admin_Controller {
 	}
 
 
-	public function reindex($wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null) {
+	public function reindex($targetIndex=null, $wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null, $lastModifiedDate=null) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
 		$this->doctrine->extendTimeout();
 
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
+
+		if($targetIndex !== "false") {
+			$this->config->set_item('elasticIndex', $targetIndex);
+		}
 
 
 		$qb = $this->doctrine->em->createQueryBuilder();
@@ -136,7 +140,7 @@ class admin extends Admin_Controller {
 		->orWhere("a.deleted IS NULL")
 		->andWhere("a.assetId IS NOT NULL");
 
-		if($searchKey && $searchValue) {
+		if($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
 			$qb->andWhere("a." . $searchKey ." = ?1");
 			$qb->setParameter(1, $searchValue);
 		}
@@ -146,6 +150,11 @@ class admin extends Admin_Controller {
 		}
 		if($maxValue > 0) {
 			$qb->setMaxResults($maxValue);
+		}
+
+		if($lastModifiedDate !== "false" && $lastModifiedDate) {
+			$qb->andWhere("a.modifiedAt > ?1");
+			$qb->setParameter(1, $lastModifiedDate);
 		}
 
 		$result = $qb->getQuery()->iterate();
