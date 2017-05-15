@@ -43,14 +43,23 @@ class Search extends Instance_Controller {
 		}
 		$jsLoadArray[] = "spin";
 
+
+		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
+
+		$widgetArray = array();
+		foreach($directSearch as $widget) {
+			if($this->instance->getTemplates()->contains($widget->getTemplate())) {
+				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId()];
+			}
+		}
+
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
-		$this->template->content->view("search");
+		$this->template->content->view("search", ["searchableWidgets"=>$widgetArray]);
 		$this->template->publish();
 	}
 
 	public function advancedSearchModal() {
-
 
 		// TODO: optimize this
 		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
