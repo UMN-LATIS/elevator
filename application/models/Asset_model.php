@@ -841,6 +841,8 @@ class Asset_model extends CI_Model {
     	return $this->getObjectId();
 	}
 
+
+
 	public function buildCache() {
 		$this->useStaleCaches = FALSE;
 

@@ -126,7 +126,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           </ul>
         </span>
         </div>
-
+        <input type="hidden" name="sort" class="hiddenSort" value="0" />
       </form>
     </div>
 <?endif?>

@@ -129,6 +129,11 @@ body {
     padding-top: 10px;
 }
 
+.input-xs, select.input-xs {
+  height: 20px;
+  line-height: 20px;
+}
+
 .input-mini {
     width: 60px;
 }
@@ -220,6 +225,14 @@ body {
     max-height: 50px;
     margin-top: 0px;
     padding-top: 0px;
+}
+
+
+.sortBy {
+    @media (max-width: 480px) {
+        display: none;
+    }
+    margin-top: 12px;
 }
 
 /** Footer **/

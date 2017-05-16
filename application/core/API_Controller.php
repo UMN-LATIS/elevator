@@ -22,7 +22,6 @@ class API_Controller extends MY_Controller {
 			echo "true";
 			die;
 		}
-
 		if(isset($_SERVER['HTTP_AUTHORIZATION_KEY'])) {
 
 			$authKey = $_SERVER['HTTP_AUTHORIZATION_KEY'];

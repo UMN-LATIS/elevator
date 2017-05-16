@@ -31,6 +31,49 @@ class admin extends Admin_Controller {
 	}
 
 
+	public function fixRecords() {
+
+		$this->load->model("asset_model");
+		$this->load->model("search_model");
+		
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL");
+
+		$qb->andWhere("a.collectionId = ?1");
+		$qb->setParameter(1, 35);
+
+
+		$result = $qb->getQuery()->iterate();
+
+
+		$count = $startValue;
+		foreach($result as $entry) {
+			$entry = $entry[0];
+			$assetModel = new asset_model();
+			$searchModel = new search_model();
+			// $before = microtime(true);
+			if($assetModel->loadAssetFromRecord($entry)) {
+
+				$json = $assetModel->getAsArray();
+				if(stristr($json["speechtitle_1"][0]["fieldContents"], "Candidate Announce Speech")) {
+					$json["speechtitle_1"][0]["fieldContents"] = "Candidate Announce Speech";
+					$assetModel->loadWidgetsFromArray($json);
+					$assetModel->save();
+				}
+				
+
+			}
+		}
+
+	}
+
+
 	public function loadRecordAndReindex() {
 		$this->load->model("asset_model");
 		$start = microtime(true);
@@ -67,13 +110,17 @@ class admin extends Admin_Controller {
 	}
 
 
-	public function reindex($wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null) {
+	public function reindex($targetIndex=null, $wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null, $lastModifiedDate=null) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
 		$this->doctrine->extendTimeout();
 
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
+
+		if($targetIndex !== "false") {
+			$this->config->set_item('elasticIndex', $targetIndex);
+		}
 
 
 		$qb = $this->doctrine->em->createQueryBuilder();
@@ -83,7 +130,7 @@ class admin extends Admin_Controller {
 		->orWhere("a.deleted IS NULL")
 		->andWhere("a.assetId IS NOT NULL");
 
-		if($searchKey && $searchValue) {
+		if($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
 			$qb->andWhere("a." . $searchKey ." = ?1");
 			$qb->setParameter(1, $searchValue);
 		}
@@ -93,6 +140,11 @@ class admin extends Admin_Controller {
 		}
 		if($maxValue > 0) {
 			$qb->setMaxResults($maxValue);
+		}
+
+		if($lastModifiedDate !== "false" && $lastModifiedDate) {
+			$qb->andWhere("a.modifiedAt > ?1");
+			$qb->setParameter(1, $lastModifiedDate);
 		}
 
 		$result = $qb->getQuery()->iterate();

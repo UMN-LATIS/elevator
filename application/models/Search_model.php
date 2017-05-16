@@ -9,10 +9,9 @@ class search_model extends CI_Model {
 	public function __construct()
 	{
 		parent::__construct();
-		$params['hosts'] = array (
+		$params= array (
     		$this->config->item('elastic'));
-
-		$this->es = new Elasticsearch\Client($params);
+		$this->es = Elasticsearch\ClientBuilder::create()->setHosts($params)->build();
 
 	}
 
@@ -216,8 +215,12 @@ class search_model extends CI_Model {
 			$params['body']['fileTypesCache'] = $fileTypeArray;
 		}
 
+		$params['body']['lastModified'] = $asset->getGlobalValue("modified")->format('Y-m-d\TH:i:s\Z');
+
+
 		$params['body']['includeInSearch'] = $asset->assetTemplate->getIncludeInSearch();
 
+		$params['body']['title'] = $asset->getAssetTitle(true);
 
     	/**
     	 * inject the assetId for searching - we could search against _id too, but that can't be
@@ -304,8 +307,15 @@ class search_model extends CI_Model {
 
 
 		if(isset($searchArray["sort"]) && $searchArray["sort"] != "0") {
-
-    		$sortFilter[$searchArray["sort"]]["order"] = "asc";
+			$sortTerm = $searchArray["sort"];
+			if(substr($searchArray["sort"], -5, 5) == ".desc") {
+				$sortTerm = str_replace(".desc", "", $sortTerm);
+				$sortFilter[$sortTerm]["order"] = "desc";
+			}
+			else {
+				$sortTerm = str_replace(".asc", "", $sortTerm);
+				$sortFilter[$sortTerm]["order"] = "asc";
+			}
     		$sort[] = $sortFilter;
 
 		}
