@@ -222,6 +222,7 @@ class search_model extends CI_Model {
 
 		$params['body']['title'] = $asset->getAssetTitle(true);
 
+
     	/**
     	 * inject the assetId for searching - we could search against _id too, but that can't be
     	 * grouped with other results.  This saves us having logic to detect mongoids in the query
