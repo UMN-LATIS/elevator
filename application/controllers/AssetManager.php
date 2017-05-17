@@ -521,6 +521,7 @@ class AssetManager extends Admin_Controller {
 				$widgetArray[] = $widgets->getLabel();
 				if(get_class($widgets) == "Upload") {
 					$widgetArray[] = $widgets->getLabel() . " URL";
+					$widgetArray[] = $widgets->getLabel() . " Derivative";
 				}
 				if(get_class($widgets) == "Related_asset") {
 					$widgetArray[] = $widgets->getLabel() . " ObjectID";
@@ -553,11 +554,14 @@ class AssetManager extends Admin_Controller {
 						$outputRow[] = join("|",$object->getAsText(0));
 						if(get_class($object) == "Upload") {
 							$outputURLs = array();
+							$outputDerivatives = array();
 							foreach($object->fieldContentsArray as $entry) {
 								$handler = $entry->getFileHandler();
 								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+240 minutes");
+								$outputDerivatives[] = instance_url("/fileManager/bestDerivativeByFileId/" . $handler->getObjectId());
 							}
 							$outputRow[] = join($outputURLs, "|");
+							$outputRow[] = join($outputDerivatives, "|");
 						}
 						if(get_class($object) == "Related_asset") {
 							$outputObjects = array();
@@ -588,6 +592,7 @@ class AssetManager extends Admin_Controller {
 
 						$outputRow[] = "";
 						if(get_class($widgets) == "Upload" || get_class($widgets) == "Related_asset") {
+							$outputRow[] = "";
 							$outputRow[] = "";
 						}
 						if(get_class($widgets) == "Location") {
