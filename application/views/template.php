@@ -126,7 +126,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           </ul>
         </span>
         </div>
-
+        <input type="hidden" name="sort" class="hiddenSort" value="0" />
       </form>
     </div>
 <?endif?>
@@ -225,9 +225,17 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
         <?endif?>
       <?endif?>
 
-      <li><a href="http://www.elevatorapp.net">Help</span></a></li>
-      </ul>
 
+  <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="http://www.elevatorapp.net">General Help and Info</span></a></li>
+                <?if($this->instance->getOwnerHomepage()):?>
+                <li><a href="<?=$this->instance->getOwnerHomepage()?>">Contact Us</span></a></li>
+                <?endif?>
+                </ul>
+                </li>
+      </ul>
       <?if($this->user_model->userLoaded && !$this->user_model->assetOverride):?>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">

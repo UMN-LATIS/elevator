@@ -8,6 +8,9 @@
           <id name="id" type="integer">
               <generator strategy="AUTO" />
           </id>
+          <indexes>
+            <index columns="directSearch"/>
+        </indexes>
 
           <many-to-one field="field_type" target-entity="Field_type">
             <join-column name="field_type_id" referenced-column-name="id" />

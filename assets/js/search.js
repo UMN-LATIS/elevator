@@ -156,6 +156,11 @@ $(document).on("click", ".useSuggest", function() {
 
 });
 
+$(document).on("change", ".sortBy", function() {
+	$(".hiddenSort").val($(this).val());
+	$(".searchForm").submit();
+});
+
 
 $(document).on("click", "#loadAllResults", function(e) {
 	e.preventDefault();
