@@ -10,7 +10,6 @@
   <li><a href="#list" data-toggle="tab">List</a></li>
   <li><a href="#map" data-toggle="tab">Map</a></li>
   <li><a href="#timeline" data-toggle="tab">Timeline</a></li>
-  <li><a href="#gallery" data-toggle="tab">Gallery</a></li>
 	<li class="navbar-right"><select class="form-control sortBy input-xs">
         <option value="0">Best Match</option>
         <option value="lastModified.asc">Modified Date (oldest to newest)</option>
@@ -85,13 +84,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="tab-pane" id="gallery">
-		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="galleryContainer">
-				<p>The Gallery feature has been temporarily disabled.  Please <a href="mailto:elevator@umn.edu">contact us</a> for more information.</p>
-			</div>
-		</div>
-	</div>
+	
 </div>
 
 
