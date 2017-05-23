@@ -39,7 +39,7 @@
 					</div>
 				</div>
 				<?if(!isset($redirectURL) || $redirectURL == null) { $redirectURL = current_url(); }?>
-				<input type="hidden" name="redirectURL" value="<?=$redirectURL?>" >
+				<input type="hidden" name="redirectURL" value="<?=htmlspecialchars($redirectURL)?>" >
 				<script>
 				if(window.location.hash) {
 					$('[name="redirectURL"]').val($('[name="redirectURL"]').val() + window.location.hash);
