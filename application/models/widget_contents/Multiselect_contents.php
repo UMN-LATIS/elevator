@@ -2,6 +2,8 @@
 
 class Multiselect_contents extends Widget_contents_base {
 
+	public $topLevels = null;
+
 	public function hasContents() {
 		if(is_array($this->fieldContents )) {
 			foreach($this->fieldContents as $entry) {
@@ -16,7 +18,17 @@ class Multiselect_contents extends Widget_contents_base {
 
 
 	public function getAsText($serializeNestedObjects=false) {
-		return join(", ", array_filter($this->fieldContents));
+		return join(", ", array_filter($this->getSortedValues()));
+	}
+
+	public function getSortedValues() {
+		if($this->topLevels == null) {
+			$this->load->helper("multiselect_helper");      
+			$this->topLevels = getTopLevels($this->parentWidget->getFieldData());
+		}
+
+		$sortedContent = array_replace(array_flip($this->topLevels), $this->fieldContents);
+		return $sortedContent;
 	}
 
 }
