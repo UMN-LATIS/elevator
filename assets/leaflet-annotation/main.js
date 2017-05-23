@@ -1,8 +1,7 @@
+var layerGroup;
 var loadAnnotation = function() {
 
-    map.addControl(new L.Control.Draw());
-
-    var layerGroup = L.layerGroup().addTo(map); //add elements to layergroup that runs on top of map instead of the map itself. This way, we can clear the layer group in one go
+    layerGroup = L.layerGroup().addTo(map); //add elements to layergroup that runs on top of map instead of the map itself. This way, we can clear the layer group in one go
 
     var mapJson = { //map elements that will belong to the layergroup
         'brightness': 50,
@@ -518,7 +517,7 @@ drawToolbar.removeChild(drawToolbar.childNodes[drawToolbar.childNodes.length - 1
 map.on(L.Draw.Event.CREATED, function (e) {
     var type  = e.layerType,
     shape = e.layer,
-        color = layer.options.lineColor //color is set to map layer option that wasn't there originally
+    color = e.layer.options.lineColor //color is set to map layer option that wasn't there originally
     shape.options.color = color //set paintbrush color to the color specified by lineColor
     shape.options.fillOpacity = 0 //make inside opaque
     shape.options.opacity = .5

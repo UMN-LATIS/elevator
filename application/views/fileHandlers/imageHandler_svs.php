@@ -17,7 +17,7 @@
 <script type="text/javascript" src='/assets/leaflet-annotation/L.Tooltip.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/Leaflet.Modal.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet-arrows.js'></script>
-<script type="text/javascript" src='/assets/leaflet-annotation/main.js'></script>
+<script type="text/javascript" src='/assets/leaflet-annotation/main.js?312443f4'></script>
 
 <style type="text/css">
 
@@ -81,6 +81,8 @@
         map = L.map('map', {
             fullscreenControl: true,
             zoomSnap: 0,
+            drawControl: true,
+            layers: [],
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 
