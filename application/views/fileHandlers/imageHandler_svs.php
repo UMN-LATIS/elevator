@@ -37,6 +37,9 @@
                 <button class="btn btn-default" title="Add Scene" type="button" id="add_scene_button"><i class="glyphicon glyphicon-floppy-disk"></i></button>
               </span>
                 <input type="text" class="form-control" id="scene_name_input" placeholder="Scene Name">
+                <span class="input-group-btn">
+                <button class="btn btn-default" title="Clear" type="button" id="clear_current_scene_button"><i class="glyphicon glyphicon-remove-circle"></i></button>
+              </span>
             </div>
             <br>
             <form id="scene_tags">

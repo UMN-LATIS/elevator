@@ -694,6 +694,18 @@ $(document).on("click", ".glyphicon-remove", function() {
     })
 })
 
+
+$("#clear_current_scene_button").click(function() {
+
+    mapJson.brightness = 50;
+    mapJson.contract = 100;
+    mapJson.arrows = [];
+    mapJson.annotations = [];
+    mapJson.shapes = [];
+    setJsonData(mapJson);
+})
+
+
 $("#add_scene_button").click(function() {
     var sceneInput = document.getElementById("scene_name_input")
     var sceneName = sceneInput.value
