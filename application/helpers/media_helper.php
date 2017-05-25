@@ -23,7 +23,13 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	$image->setImageCompressionQuality($compressionQuality);
 	
 	$image->setImageBackgroundColor('white');
-	$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
+	if(!defined(imagick::ALPHACHANNEL_REMOVE)) {
+		$image->setImageAlphaChannel(11);	
+	}
+	else {
+		$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
+	}
+	
 	$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
 	$image->setImageFormat('jpeg');
