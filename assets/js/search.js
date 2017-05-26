@@ -11,8 +11,6 @@ var previousEventComplete = true;
 var dataAvailable = true;
 var disableHashChange = false;
 var totalResults = 0;
-
-
 $(document).ready(function() {
 
 	$(window).scroll(function(){
@@ -87,26 +85,58 @@ $(document).ready(function() {
        }
     });
 
+    function htmlEntities(str) {
+    	return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
+    $(".embedMap").on("click", function(e) {
+    	e.preventDefault();
+    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/map/" + getCurrentSearchId();
+
+    	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
+
+    	embedContent = '<input size=50 class="embedControl" value="' + htmlEntities(iFrameContent) + '"">';
+
+    	bootbox.dialog(
+		{
+			title: "Embed this map",
+			message: "Use the HTML below to embed this map in another page: <br>" + embedContent,
+			buttons: {
+				success: {
+					label: "OK",
+					className: "btn-primary"
+				}
+			}
+		});
+
+    });
+
 });
 
 
+function getCurrentSearchId() {
+	currentURL = window.location.href.replace(window.location.hash,"");
+	currentHash = window.location.hash.replace("#", "");
+	if(currentHash.length == 36) {
+		// this is an old hash, we need to keep that
+		searchId = currentHash;
+		window.history.pushState({}, "Search Results", currentURL + "/s/" +searchId);
+	}
+	else {
+		searchId = currentURL.substr(currentURL.lastIndexOf('/') + 1);
+	}
+	return searchId;
+}
 
 
 function parseSearch() {
-	currentURL = window.location.href.replace(window.location.hash,"");
-	currentHash = window.location.hash.replace("#", "");
-	if((currentURL.substr(currentURL.lastIndexOf('/') + 1).length == 36 ||currentHash.length == 36) && !disableHashChange) {
+	
+	searchId = getCurrentSearchId();
+
+	if(searchId && !disableHashChange) {
 		$("#results").empty();
 		$("#listResults").empty();
 
-		if(currentHash.length == 36) {
-			// this is an old hash, we need to keep that
-			searchId = currentHash;
-			window.history.pushState({}, "Search Results", currentURL + "/s/" +searchId);
-		}
-		else {
-			searchId = currentURL.substr(currentURL.lastIndexOf('/') + 1);
-		}
 
 
 		// you can set a global var "loadAll" to cause us to load all available results at pageload.
@@ -706,5 +736,11 @@ function prepTimeline() {
 
 
 }
+
+
+
+$(document).on("click", ".embedControl", function() {
+	$(this).select();
+});
 
 
