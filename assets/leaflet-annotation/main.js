@@ -381,7 +381,7 @@ function applyJsonData (obj) {
     //load shapes
     obj.shapes.forEach(function(shape) {
         if (shape.type == 'polygon' || shape.type == 'rectangle') {
-            var polygon = new L.polygon(shape.latlngs, {color: shape.color}).addTo(layerGroup)
+            var polygon = new L.polygon(shape.latlngs, {color: shape.color, fillOpacity: 0}).addTo(layerGroup)
         } else if (shape.type == 'polyline') {
             var polyline = new L.polyline(shape.latlngs, {color: shape.color}).addTo(layerGroup)
         }
@@ -517,12 +517,13 @@ drawToolbar.removeChild(drawToolbar.childNodes[drawToolbar.childNodes.length - 1
 map.on(L.Draw.Event.CREATED, function (e) {
     var type  = e.layerType,
     shape = e.layer,
-    color = e.layer.options.lineColor //color is set to map layer option that wasn't there originally
+    color = layer.options.lineColor //color is set to map layer option that wasn't there originally
     shape.options.color = color //set paintbrush color to the color specified by lineColor
     shape.options.fillOpacity = 0 //make inside opaque
     shape.options.opacity = .5
 
-
+    console.log(shape);
+    console.log(layerGroup);
     layerGroup.addLayer(shape) //add shape to layer
 
     if (type == 'polygon' || type == 'rectangle') {

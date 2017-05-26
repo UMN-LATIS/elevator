@@ -17,7 +17,7 @@
 <script type="text/javascript" src='/assets/leaflet-annotation/L.Tooltip.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/Leaflet.Modal.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet-arrows.js'></script>
-<script type="text/javascript" src='/assets/leaflet-annotation/main.js?312443f4'></script>
+<script type="text/javascript" src='/assets/leaflet-annotation/main.js?31254s5543f4'></script>
 
 <style type="text/css">
 
@@ -64,6 +64,7 @@
     var s3;
     var AWS;
     var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
+    var layer;
 
     var loadedCallback = function() {
 
@@ -86,7 +87,7 @@
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 
-        var layer = L.tileLayer.elevator(function(coords, tile, done) {
+        layer = L.tileLayer.elevator(function(coords, tile, done) {
             var error;
 
             var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
@@ -108,7 +109,8 @@
             tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
             maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
             overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
-            pixelsPerMillimeter: pixelsPerMillimeter
+            pixelsPerMillimeter: pixelsPerMillimeter,
+            lineColor: 'blue'
         });
         layer.addTo(map);
 
