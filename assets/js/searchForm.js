@@ -59,18 +59,13 @@ $(document).on("change", ".searchDropdown", function() {
 
 
 $(document).ready(function() {
-
-    parseHash();
+    parseSearch();
 
     $(document).on("submit", ".searchForm", function() {
         $("#results").empty();
         $("#listResults").empty();
         $(".suggest").empty();
         searchId = "";
-        if(window.location.hash.length > 0) {
-            // for now, let's try not persisting search results?
-        //    searchId = window.location.hash.substring(1);
-        }
 
         currentPageNumber = 0;
         previousEventComplete = false;
@@ -95,7 +90,10 @@ $(document).ready(function() {
                 }
                 searchId = cachedResults.searchId;
                 disableHashChange = true;
-                window.location.hash = searchId;
+                currentURL = window.location.href.replace(window.location.hash,"");
+                currentHash = window.location.hash.replace("#", "");
+                var oldSearchId = currentURL.substr(currentURL.lastIndexOf('/') + 1);
+                window.history.pushState({}, "Search Results", window.location.href.replace(oldSearchId, searchId));
 
                 dataAvailable = true;
                 $("#loadAllResults").show();
