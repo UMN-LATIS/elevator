@@ -21,10 +21,10 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
 	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
 	$image->setImageCompressionQuality($compressionQuality);
-	
-	$image->setImageBackgroundColor('white');
-	$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
-	$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
+	$image = $image->flattenImages();
+	// $image->setImageBackgroundColor('white');
+	// $image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
+	// $image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
 	$image->setImageFormat('jpeg');
 	if(isset($sourceImage->metadata["rotation"])) {
