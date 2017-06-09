@@ -45,7 +45,7 @@ class Collections extends Instance_Controller {
 		$this->doctrine->em->flush();
 
 		$this->searchId = $searchArchive->getId();
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 
 	}
 

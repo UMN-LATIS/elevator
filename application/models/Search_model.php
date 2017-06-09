@@ -658,7 +658,7 @@ class search_model extends CI_Model {
 		foreach($matchArray["searchResults"] as $match) {
 			$asset = new Asset_model;
 
-			if($asset->loadAssetById($match) === false) {
+			if($asset->loadAssetById($match, $noHydrate=true) === false) {
 				continue;
 			}
 
@@ -689,6 +689,7 @@ class search_model extends CI_Model {
 			}
 			unset($asset);
 		}
+
 		$this->asset_model->disableObjectCache();
 		$matchArray['matches'] = $resultsArray;
 		$matchArray["success"] = true;

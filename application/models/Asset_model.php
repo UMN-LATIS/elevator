@@ -74,10 +74,14 @@ class Asset_model extends CI_Model {
 	 * go back to the DB.
 	 */
 	public function loadAssetFromRecord($record=null) {
-		if(!$record) {
+		if(!$record && !$this->assetObject) {
 			return;
 		}
-		$this->assetObject = $record;
+
+		if($record) {
+			$this->assetObject = $record;	
+		}
+		
 
 		$this->templateId = $record->getTemplateId();
 		$this->setGlobalValue("readyForDisplay", $record->getReadyForDisplay());
@@ -105,7 +109,7 @@ class Asset_model extends CI_Model {
 		return FALSE;
 	}
 
-	public function loadAssetById($objectId) {
+	public function loadAssetById($objectId, $noHydrate = false) {
 
 		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
 
@@ -113,6 +117,12 @@ class Asset_model extends CI_Model {
 			return FALSE;
 		}
 		$this->assetObject = $asset;
+
+		if($noHydrate) {
+			// dont actually hydrate the object
+			return true;
+		}
+
 		if($this->loadAssetFromRecord($asset)) {
 			if($this->asset_model->useObjectCaching == true) {
 				$this->asset_model->objectCache[$objectId] = $this;

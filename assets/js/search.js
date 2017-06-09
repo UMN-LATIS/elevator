@@ -10,7 +10,7 @@ var resultsAvailable = true;
 var previousEventComplete = true;
 var dataAvailable = true;
 var disableHashChange = false;
-
+var totalResults = 0;
 $(document).ready(function() {
 
 	$(window).scroll(function(){
@@ -21,14 +21,14 @@ $(document).ready(function() {
 		}
 	});
 
-	$(window).bind( 'hashchange', function(e) {
-		parseHash();
-	});
 
-	setTimeout(function() {
-		$.getScript("/assets/timeline_js/ext/geochrono/geochrono-api.js");
-	}, 1000);
 
+	if($("#timelinePane").length > 0) {
+		setTimeout(function() {
+			$.getScript("/assets/timeline_js/ext/geochrono/geochrono-api.js");
+		}, 1000);
+	}
+	
 
 	$(".searchText").on("blur", function() {
 		$(".advancedSearchText").val($(".searchText").val());
@@ -72,17 +72,81 @@ $(document).ready(function() {
 	MarkerTemplate = Handlebars.compile(MarkerSource);
 
 
+	if (location.hash !== '')  {
+		$('a[href="' + location.hash + '"]').tab('show');
+	}
+
+    // remember the hash in the URL without jumping
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+       if(history.pushState) {
+            history.pushState(null, null, '#'+$(e.target).attr('href').substr(1));
+       } else {
+            location.hash = '#'+$(e.target).attr('href').substr(1);
+       }
+    });
+
+    function htmlEntities(str) {
+    	return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
+    $(".embedMap").on("click", function(e) {
+    	e.preventDefault();
+    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/map/" + getCurrentSearchId();
+
+    	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
+
+    	embedContent = '<input size=50 class="embedControl" value="' + htmlEntities(iFrameContent) + '"">';
+
+    	bootbox.dialog(
+		{
+			title: "Embed this map",
+			message: "Use the HTML below to embed this map in another page: <br>" + embedContent,
+			buttons: {
+				success: {
+					label: "OK",
+					className: "btn-primary"
+				}
+			}
+		});
+
+    });
+
 });
 
 
+function getCurrentSearchId() {
+	currentURL = window.location.href.replace(window.location.hash,"");
+	currentHash = window.location.hash.replace("#", "");
+	if(currentHash.length == 36) {
+		// this is an old hash, we need to keep that
+		searchId = currentHash;
+		window.history.pushState({}, "Search Results", currentURL + "/s/" +searchId);
+	}
+	else {
+		searchId = currentURL.substr(currentURL.lastIndexOf('/') + 1);
+	}
+	return searchId;
+}
 
 
-function parseHash() {
-	if(window.location.hash.length>0 && !disableHashChange) {
+function parseSearch() {
+	
+	searchId = getCurrentSearchId();
+
+	if(searchId && !disableHashChange) {
 		$("#results").empty();
 		$("#listResults").empty();
-		searchId = window.location.hash.substring(1);
-		doSearch(searchId, 0);
+
+
+
+		// you can set a global var "loadAll" to cause us to load all available results at pageload.
+		// leaving this here just to make it explicit
+		var localLoadAll = false;
+		if(typeof loadAll !== 'undefined' && loadAll == true) {
+			localLoadAll = true;
+		}
+
+		doSearch(searchId, 0, localLoadAll);
 	}
 }
 
@@ -121,9 +185,9 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 				if(cachedResults.totalResults == 1 ) {
 					// special case - one match, let's just load it
 					var objectId = cachedResults.matches[0].objectId;
-					$.cookie('lastSearch', searchId);
+					$.cookie('lastSearch', searchId, { path: "/"});
 
-					window.location.hash = "";
+					// window.location.hash = "";
 					window.location.pathname = basePath + "/asset/viewAsset/" + objectId;
 				}
 				processSearchResults(cachedResults);
@@ -144,8 +208,8 @@ function processSearchResults(cachedResults) {
 	previousEventComplete = true;
 }
 
-$(document).on("click", ".assetLink", function() {
-	$.cookie('lastSearch', searchId);
+$(document).on("click", ".assetLink", function(e) {
+	$.cookie('lastSearch', searchId, { path: "/"});
 
 });
 
@@ -270,6 +334,7 @@ function populateSearchResults(searchObject) {
 		
 	}
 
+	totalResults = searchObject.totalResults;
 	$(".resultsData").html("<p>Total Results: "+ searchObject.totalResults + "</p>");
 
 	if(dataAvailable && searchObject.matches.length < searchObject.totalResults && searchObject.totalResults < 1000) {
@@ -304,6 +369,10 @@ function populateSearchResults(searchObject) {
 
 function prepMap() {
 
+	if(cachedResults === "") {
+		return;
+	}
+
 	$("#mapPane").removeData();
 
 	$("#mapPane").goMap({
@@ -322,6 +391,8 @@ function prepMap() {
 	if($.goMap.getMarkerCount()>0) {
 		$.goMap.clearMarkers();
 	}
+
+
 
 	$.each(cachedResults.matches, function(index, value) {
 		if(value.locations) {
@@ -387,6 +458,10 @@ function prepMap() {
 
 
 function prepTimeline() {
+	if(cachedResults === "") {
+		return;
+	}
+
 	var earliestDate = null;
 	var latestDate = null;
 	if(Timeline === undefined || Timeline.DateTime === undefined || Timeline.DefaultEventSource === undefined || Timeline.strings === undefined || Timeline.GregorianDateLabeller.monthNames === undefined) {
@@ -673,5 +748,11 @@ function prepTimeline() {
 
 
 }
+
+
+
+$(document).on("click", ".embedControl", function() {
+	$(this).select();
+});
 
 

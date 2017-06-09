@@ -42,7 +42,7 @@ var storeAndSearch = function(searchId, targetForm) {
 
         if(cachedResults.success === true) {
             searchId = cachedResults.searchId;
-            window.location = basePath + "search#" + searchId;
+            window.location = basePath + "search/s/" + searchId;
         }
 
     });
