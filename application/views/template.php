@@ -103,6 +103,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
         <div class="input-group">
           <label for="searchText" class="hide">Search</label>
           <input type="text" class="form-control searchText"  autocomplete="off"  id="searchText" name="searchText" placeholder="Search">
+          <input type="hidden" name="collection[]" id="collection" value=0>
           <input type="hidden" name="fuzzySearch" value=0>
           <span class="input-group-btn">
             <button type="submit" class="btn btn-default searchButton"><span class="glyphicon glyphicon-search"></span></button>

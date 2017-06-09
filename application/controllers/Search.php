@@ -182,7 +182,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 	}
 
 	public function querySearch($searchString = null) {
@@ -202,7 +202,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 	}
 
 	public function scopedQuerySearch($fieldName, $searchString = null) {
@@ -226,7 +226,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 	}
 
 
@@ -540,7 +540,7 @@ class Search extends Instance_Controller {
 		}
 
 		if($this->input->post("redirectSearch") == true) {
-			instance_redirect("search#".$this->searchId);
+			instance_redirect("search/s/".$this->searchId);
 			return;
 		}
 

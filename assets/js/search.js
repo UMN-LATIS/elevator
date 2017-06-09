@@ -222,7 +222,7 @@ $(document).on("click", ".useSuggest", function() {
 
 $(document).on("change", ".sortBy", function() {
 	$(".hiddenSort").val($(this).val());
-	$(".searchForm").submit();
+	performSearchForButtonPress($(".searchForm").first());
 });
 
 
@@ -271,7 +271,19 @@ function populateSearchFields(searchEntry) {
 	}
 
 	$.each(searchEntry, function(index, value) {
-		$("#" + index).val(value);
+		if(Array.isArray(value)) {
+			var targetField = $("#" + index);
+			$.each(value, function(internalIndex, internalValue) {
+				var newField = targetField.clone();
+				$(newField).val(internalValue);
+				$(newField).appendTo($("#" + index).parent());
+			});
+			$(targetField).remove();
+		}
+		else {
+			$("#" + index).val(value);	
+		}
+		
 
 	});
 }
