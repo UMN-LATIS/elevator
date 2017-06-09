@@ -211,12 +211,13 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 
 function processSearchResults(cachedResults) {
 	populateSearchFields(cachedResults.searchEntry);
+	loadCollectionHeader();
 	populateSearchResults(cachedResults);
 	if(cachedResults.matches.length === 0) {
 		dataAvailable = false;
 	}
 	previousEventComplete = true;
-	loadCollectionHeader();
+	
 }
 
 $(document).on("click", ".assetLink", function(e) {
