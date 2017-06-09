@@ -127,6 +127,7 @@ $(document).ready(function() {
             $(this).find("#collection").val('0');
             $(this).find("#specificSearchField").val('');
             $(this).find("#specificSearchText").val('');
+            $(".collectonHeader").html('');
         }
 
         performSearchForButtonPress(this);
