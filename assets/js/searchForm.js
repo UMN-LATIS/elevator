@@ -90,7 +90,11 @@ var performSearchForButtonPress = function(targetForm) {
             }
             searchId = cachedResults.searchId;
             disableHashChange = true;
-            window.location.hash = searchId;
+            currentURL = window.location.href.replace(window.location.hash,"");
+            currentHash = window.location.hash.replace("#", "");
+            var oldSearchId = currentURL.substr(currentURL.lastIndexOf('/') + 1);
+            window.history.pushState({}, "Search Results", window.location.href.replace(oldSearchId, searchId));
+
 
             dataAvailable = true;
             $("#loadAllResults").show();
@@ -112,7 +116,7 @@ var performSearchForButtonPress = function(targetForm) {
 
 $(document).ready(function() {
 
-    parseHash();
+    parseSearch();
 
     $(document).on("submit", ".searchForm", function() {
         if($(this).attr("id") == "advancedSearchForm") {
@@ -121,6 +125,8 @@ $(document).ready(function() {
         else {
             // when they hit the global search button, it should be a global search.  We might have ended up with a stored collection though, expunge that.
             $(this).find("#collection").val('0');
+            $(this).find("#specificSearchField").val('');
+            $(this).find("#specificSearchText").val('');
         }
 
         performSearchForButtonPress(this);
