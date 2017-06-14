@@ -148,6 +148,16 @@ function parseSearch() {
 
 		doSearch(searchId, 0, localLoadAll);
 	}
+
+}
+
+function loadCollectionHeader() {
+	if($("input[name='collection[]']").length == 1 && $("input[name='collection[]']").val() !== "0") {
+		$.get(basePath + "collections/collectionHeader/" + $("input[name='collection[]']").val(), function(data) {
+			$(".collectonHeader").html(data);
+		});
+	}
+
 }
 
 // ignore results is used to force the server to pre-cache the next set of results
@@ -201,11 +211,13 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 
 function processSearchResults(cachedResults) {
 	populateSearchFields(cachedResults.searchEntry);
+	loadCollectionHeader();
 	populateSearchResults(cachedResults);
 	if(cachedResults.matches.length === 0) {
 		dataAvailable = false;
 	}
 	previousEventComplete = true;
+	
 }
 
 $(document).on("click", ".assetLink", function(e) {

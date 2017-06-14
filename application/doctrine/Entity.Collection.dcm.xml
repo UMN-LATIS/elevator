@@ -32,5 +32,6 @@
           <field name="modifiedAt" type="datetime" nullable='true' />
           <field name="bucketRegion" type="string" nullable='true' />
           <field name="showInBrowse" type="boolean" nullable='true' />
+          <field name="collectionDescription" type="text"  nullable='true' />
       </entity>
 </doctrine-mapping>

@@ -464,4 +464,33 @@ class Collection
     {
         return $this->showInBrowse;
     }
+    /**
+     * @var string
+     */
+    private $collectionDescription;
+
+
+    /**
+     * Set collectionDescription
+     *
+     * @param string $collectionDescription
+     *
+     * @return Collection
+     */
+    public function setCollectionDescription($collectionDescription)
+    {
+        $this->collectionDescription = $collectionDescription;
+
+        return $this;
+    }
+
+    /**
+     * Get collectionDescription
+     *
+     * @return string
+     */
+    public function getCollectionDescription()
+    {
+        return $this->collectionDescription;
+    }
 }
