@@ -121,7 +121,6 @@ class Related_asset_contents extends Widget_contents_base {
 	}
 
 	public function getAsText($nestedObjectDepth=0) {
-
 		if($nestedObjectDepth < 0) {
 			return $this->getRelatedObjectTitle(true);
 		}
@@ -146,6 +145,52 @@ class Related_asset_contents extends Widget_contents_base {
 		}
 
 		return $assetText;
+	}
+
+	// make sure we only return searchable content
+	public function getSearchEntry($nestedObjectDepth=false) {
+		if($nestedObjectDepth < 0) {
+			return $this->getRelatedObjectTitle(true);
+		}
+
+		// TODO: check this.  nestDAta is used for two things - drawing things with nesting on the display page,
+		// as well as making sure the search engine "deep indexes" content.
+		if(($nestedObjectDepth>0 || $this->nestData == true) && !($nestedObjectDepth<0)) {
+
+			// decrement to prevent recusion.
+			// TODO: refactor this to use the getSearchEntry on the related asset itself. Just filter the non-asset elements.
+			foreach($this->getRelatedAsset()->assetObjects as $object) {
+				if($object->getSearchable() && $object->hasContents()) {
+					$assetText[] = $this->nestedImplode(" ", $object->getSearchEntry($nestedObjectDepth-1));
+				}
+			}
+			if($this->getRelatedAsset()) {
+				$assetText["objectId"] = $this->getRelatedAsset()->getObjectId();
+			}
+
+
+			return implode(" ", $assetText);
+		}
+		else {
+			$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
+		}
+
+		return $assetText;
+	}
+
+	// walk a recursive array and collapse it to a single string
+	public function nestedImplode($glue, $array) {
+		if(is_array($array)) {
+			$resultArray = array();
+			foreach($array as $entry) {
+				 $resultArray[] = $this->nestedImplode($glue, $entry);
+			}	
+			return implode($glue, $resultArray);
+		}
+		else {
+			return $array;
+		}
+		
 	}
 
 	public function loadContentFromArray($value) {

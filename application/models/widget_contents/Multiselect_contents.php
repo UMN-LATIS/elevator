@@ -25,7 +25,7 @@ class Multiselect_contents extends Widget_contents_base {
 		if($this->topLevels == null) {
 			$this->load->helper("multiselect_helper");      
 			$this->topLevels = getTopLevels($this->parentWidget->getFieldData());
-			$this->topLevels = array_map(makeSafeForTitle, $this->topLevels);
+			$this->topLevels = array_map("makeSafeForTitle", $this->topLevels);
 		}
 
 		$sortedContent = array_replace(array_flip($this->topLevels), $this->fieldContents);
