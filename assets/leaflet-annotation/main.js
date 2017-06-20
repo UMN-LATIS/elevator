@@ -23,7 +23,6 @@ var loadAnnotation = function() {
         },
 
         _startPanning: function(e) {
-            e.preventDefault();
             if (e.keyCode == '38') {
                 this.panDirection = 'up';
             }
@@ -38,6 +37,10 @@ var loadAnnotation = function() {
             }
             else {
                 this.panDirection = null;
+            }
+
+            if(this.panDirection) {
+                e.preventDefault();
             }
 
             if(this.panDirection && !this.isPanning) {
