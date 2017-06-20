@@ -3,7 +3,7 @@ var loadAnnotation = function() {
 
     layerGroup = L.layerGroup().addTo(map); //add elements to layergroup that runs on top of map instead of the map itself. This way, we can clear the layer group in one go
 
-    map.options.keyboard = false;
+
 
     // custom arrow key scrolling for smoother interaction.
     // 
