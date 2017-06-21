@@ -89,6 +89,11 @@ class Upload_contents extends Widget_contents_base {
 	}
 
 	public function getLocationData() {
+
+		if(!$this->extractLocation) {
+			return null;
+		}
+
 		if($this->locationData !== NULL) {
 			return $this->locationData;
 		}
@@ -102,6 +107,11 @@ class Upload_contents extends Widget_contents_base {
 	}
 
 	public function getDateData() {
+
+		if(!$this->extractDate) {
+			return null;
+		}
+
 		if($this->dateData !== NULL) {
 			return $this->dateData;
 		}

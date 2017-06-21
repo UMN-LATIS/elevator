@@ -84,6 +84,7 @@
             zoomSnap: 0,
             drawControl: true,
             layers: [],
+            keyboard: false,
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 

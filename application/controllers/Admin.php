@@ -139,7 +139,8 @@ class admin extends Admin_Controller {
 		->select("a")
 		->where("a.deleted != TRUE")
 		->orWhere("a.deleted IS NULL")
-		->andWhere("a.assetId IS NOT NULL");
+		->andWhere("a.assetId IS NOT NULL")
+		->orderby("a.id", "desc");
 
 		if($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
 			$qb->andWhere("a." . $searchKey ." = ?1");

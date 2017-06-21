@@ -3,6 +3,93 @@ var loadAnnotation = function() {
 
     layerGroup = L.layerGroup().addTo(map); //add elements to layergroup that runs on top of map instead of the map itself. This way, we can clear the layer group in one go
 
+
+
+    // custom arrow key scrolling for smoother interaction.
+    // 
+    L.PanHandler = L.Handler.extend({
+        panAmount: 25,
+        panDirection: 0,
+        isPanning: false,
+
+        addHooks: function() {
+            L.DomEvent.on(window, 'keydown', this._startPanning, this);
+            L.DomEvent.on(window, 'keyup', this._stopPanning, this);
+        },
+
+        removeHooks: function() {
+            L.DomEvent.off(window, 'keydown', this._startPanning, this);
+            L.DomEvent.off(window, 'keyup', this._stopPanning, this);
+        },
+
+        _startPanning: function(e) {
+            if (e.keyCode == '38') {
+                this.panDirection = 'up';
+            }
+            else if (e.keyCode == '40') {
+                this.panDirection = 'down';
+            }
+            else if (e.keyCode == '37') {
+                this.panDirection = 'left';
+            }
+            else if (e.keyCode == '39') {
+                this.panDirection = 'right';
+            }
+            else {
+                this.panDirection = null;
+            }
+
+            if(this.panDirection) {
+                e.preventDefault();
+            }
+
+            if(this.panDirection && !this.isPanning) {
+                this.isPanning = true;
+                requestAnimationFrame(this._doPan.bind(this));   
+            }
+            return false;
+        },
+
+        _stopPanning: function(ev) {
+                // Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
+                this.isPanning = false;
+
+            },
+
+            _doPan: function() {
+
+                var panArray = [];
+                switch(this.panDirection) {
+                    case "up":
+                    panArray = [0, -1 * this.panAmount];
+                    break;
+                    case "down":
+                    panArray = [0, this.panAmount];
+                    break;
+                    case "left":
+                    panArray = [-1 * this.panAmount, 0];
+                    break;
+                    case "right":
+                    panArray = [this.panAmount, 0];
+                    break;
+                }
+
+
+                map.panBy(panArray, {animate: true, delay: 0});
+                if(this.isPanning) {
+                    requestAnimationFrame(this._doPan.bind(this));    
+                }
+                
+            }
+        }
+    );
+
+    map.addHandler('pan', L.PanHandler);
+    map.pan.enable();
+
+
+
+
     var mapJson = { //map elements that will belong to the layergroup
         'brightness': 50,
         'contrast': 100,
