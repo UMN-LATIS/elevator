@@ -129,6 +129,7 @@ function submitFormProtected(ignoreWarnings, supressAlertAndBlock) {
 			markSaveClean();
 
 
+			$(".objectIdText").text(objectId);
 			$("#inputObjectId").val(objectId);
 			$(".viewAsset").show();
 			$(".deleteFile").removeAttr("disabled");

@@ -6,7 +6,6 @@ define('BASEPATH', APPPATH . '/../system/');
 define('ENVIRONMENT', 'development');
 
 
-
 require_once("application/libraries/Doctrine.php");
 require_once("vendor/autoload.php");
 use Doctrine\ORM\Tools\Setup;

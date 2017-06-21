@@ -17,7 +17,7 @@ class Search extends Instance_Controller {
 		$this->template->content->view("drawers/drawerModal");
 	}
 
-	public function index()
+	public function index($searchId)
 	{
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
@@ -58,6 +58,50 @@ class Search extends Instance_Controller {
 		$this->template->content->view("search", ["searchableWidgets"=>$widgetArray]);
 		$this->template->publish();
 	}
+
+	function s($args){
+		$this->index($args);
+	}
+
+
+
+	public function map() {
+
+		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
+
+		if($accessLevel < PERM_SEARCH) {
+			if($this->user_model) {
+				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
+				if(count($allowedCollections) == 0) {
+					$this->errorhandler_helper->callError("noPermission");
+				}
+			}
+			else {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+		}
+
+		$jsloadArray = array();
+		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+			$jsLoadArray = ["search", "searchForm"];
+
+		}
+		else {
+			$jsLoadArray = ["searchMaster"];
+		}
+		$jsLoadArray[] = "spin";
+
+
+		$this->template->set_template("noTemplate");
+		$this->template->loadJavascript($jsLoadArray);
+
+		$this->template->content->view("mapOnly");
+		$this->template->publish();
+
+
+	}
+
+
 
 	public function advancedSearchModal() {
 
@@ -138,7 +182,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 	}
 
 	public function querySearch($searchString = null) {
@@ -158,7 +202,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 	}
 
 	public function scopedQuerySearch($fieldName, $searchString = null) {
@@ -182,7 +226,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
 	}
 
 
@@ -496,13 +540,13 @@ class Search extends Instance_Controller {
 		}
 
 		if($this->input->post("redirectSearch") == true) {
-			instance_redirect("search#".$this->searchId);
+			instance_redirect("search/s/".$this->searchId);
 			return;
 		}
 
 
 		$this->load->model("search_model");
-
+		
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		if(count($matchArray["searchResults"]) == 0) {
 			// let's try again with fuzzyness

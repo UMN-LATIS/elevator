@@ -1,3 +1,5 @@
+<div class="collectonHeader">
+</div>
 
 
 <div class="row suggest" style="padding-top:10px">
@@ -27,7 +29,6 @@
 	<div class="tab-pane active" id="grid">
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" >
-
 				<div class="resultsData">
 
 				</div>
@@ -69,7 +70,13 @@
 
 
 				</div>
+
 			</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+				<a style="padding-left:5px" href="" class="embedMap">Embed Map</a>
 			</div>
 		</div>
 	</div>

@@ -45,7 +45,28 @@ class Collections extends Instance_Controller {
 		$this->doctrine->em->flush();
 
 		$this->searchId = $searchArchive->getId();
-		instance_redirect("search#".$this->searchId);
+		instance_redirect("search/s/".$this->searchId);
+
+	}
+
+	public function collectionHeader($collectionId) {
+		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
+
+		if($accessLevel < PERM_SEARCH) {
+			if($this->user_model) {
+				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
+				if(!in_array($collectionId, $collectionId)) {
+					$this->errorhandler_helper->callError("noPermission");
+				}
+			}
+			else {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+		}
+
+		$collection= $this->collection_model->getCollection($collectionId);
+		
+		echo $this->load->view("collectionHeader", ["collectionDescription"=>$collection->getCollectionDescription(), "collectionTitle"=>$collection->getTitle()]);
 
 	}
 

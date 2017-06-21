@@ -92,8 +92,9 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 		</p>
 
 		<?else:?>
-
-			<?if(array_key_exists("tiled", $fileContainers)):?>
+			<?if($fileObject->sourceFile->getType() == "svs"):?>
+				<?=$this->load->view("fileHandlers/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
+			<?elseif(array_key_exists("tiled", $fileContainers)):?>
 				<?=$this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject], true)?>
 			<?else:?>
 				<?if(isset($fileObject->sourceFile->metadata["spherical"])):?>

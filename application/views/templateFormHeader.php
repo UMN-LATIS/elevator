@@ -221,7 +221,8 @@ $(function() {
 						<div class="form-group">
 							<label for="inputObjectId" class="col-sm-2 control-label">Object Id:</label>
 							<div class="col-sm-3">
-								<input type="text" name="objectId" displayed id="inputObjectId" class="form-control" disabled value="<?=$objectId?>" >
+      							<p class="form-control-static objectIdText"><?=$objectId?></p>
+								<input type="text" name="objectId" id="inputObjectId" class="form-control hide" value="<?=$objectId?>" >
 							</div>
 
 						</div>

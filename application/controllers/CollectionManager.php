@@ -69,6 +69,7 @@ class CollectionManager extends Instance_Controller {
 		}
 
 		$this->template->title = 'Edit Collection';
+		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
   		$this->template->content->view('collectionManager/edit', $data);
     	$this->template->publish();
 	}
@@ -94,6 +95,7 @@ class CollectionManager extends Instance_Controller {
 		$collection->setS3Key($this->input->post('S3Key'));
 		$collection->setS3Secret($this->input->post('S3Secret'));
 		$collection->setShowInBrowse($this->input->post('showInBrowse')=="on"?1:0);
+		$collection->setCollectionDescription($this->input->post('collectionDescription'));
 
 		if($this->input->post("parent") !== "0") {
 
