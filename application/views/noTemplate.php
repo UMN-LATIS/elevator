@@ -1,5 +1,11 @@
   <script>
   var basePath = "<?=$this->template->relativePath?>";
+
+  if(window.name == 'loginRedirectWindow') {
+    window.opener.childWindowWillClose();
+    window.close();
+  }
+
   </script>
 
 <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
