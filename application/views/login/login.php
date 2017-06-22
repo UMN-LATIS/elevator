@@ -9,9 +9,33 @@
 				
 				<A href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>" class="btn btn-primary loginLink"><?=$this->config->item("remoteLoginLabel")?> Sign In</A>
 				<script>
+
+				function isCrossOriginFrame() {
+					try {
+						return (!window.top.location.hostname);
+					} catch (e) {
+						return true;
+					}
+				}
+
 				if(window.location.hash) {
 					$('.loginLink').attr('href', $('.loginLink').attr('href') + window.location.hash.replace("#","%23"));
 				}
+
+				function childWindowWillClose() {
+					location.reload();
+				}
+
+				$(document).ready(function() {
+					if(isCrossOriginFrame()) {
+						$(".loginLink").on('click', function(e) {
+							e.preventDefault();
+							var myWindow = window.open($(".loginLink").attr("href"), "Login", "width=640,height=480");
+							myWindow.name = 'loginRedirectWindow';
+						});
+					}
+				});
+
 				</script>
 				<a class="btn btn-info" role="button" data-toggle="collapse" href="#localUser" aria-expanded="false" aria-controls="localUser"><?=$this->config->item("guestLoginLabel")?> User</a>
 			</div>

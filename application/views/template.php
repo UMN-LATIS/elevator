@@ -9,6 +9,10 @@ var basePath = "<?=$this->template->relativePath?>";
 <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
 <script>
 
+  if(window.name == 'loginRedirectWindow') {
+    window.opener.childWindowWillClose();
+    window.close();
+  }
 
 function inIframe () {
     try {
