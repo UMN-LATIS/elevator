@@ -19,5 +19,6 @@
           <field name="apiSecret" type="string"  nullable='true' />
           <field name="allowsRead" type="boolean"  nullable='true' />
           <field name="allowsWrite" type="boolean"  nullable='true' />
+          <field name="systemAccount" type="boolean"  nullable='true' />
       </entity>
 </doctrine-mapping>
