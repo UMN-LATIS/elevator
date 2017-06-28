@@ -786,7 +786,7 @@ class AssetManager extends Admin_Controller {
 								$widgetContainer->latitude = $exploded[0];
 								$widgetContainer->longitude = $exploded[1];
 								if(isset($exploded[2])) {
-									$widgetcontainer->locationLabel = $exploded[2];
+									$widgetContainer->locationLabel = $exploded[2];
 								}
 							}
 						}
