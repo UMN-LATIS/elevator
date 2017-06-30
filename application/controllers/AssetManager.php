@@ -93,6 +93,19 @@ class AssetManager extends Admin_Controller {
 
 	}
 
+	public function getTemplate($templateId) {
+	
+	
+		if(!$templateId) {
+			$this->logging->logError("no template", $_SERVER);
+			instance_redirect("/errorHandler/error/unknownTemplate");
+		}
+
+		$template = $this->asset_template->getTemplate($templateId);
+
+		echo json_encode($template->getAsArray());
+	}
+
 
 	function editAsset($objectId, $inlineForm=false) {
 
@@ -786,7 +799,7 @@ class AssetManager extends Admin_Controller {
 								$widgetContainer->latitude = $exploded[0];
 								$widgetContainer->longitude = $exploded[1];
 								if(isset($exploded[2])) {
-									$widgetcontainer->locationLabel = $exploded[2];
+									$widgetContainer->locationLabel = $exploded[2];
 								}
 							}
 						}
