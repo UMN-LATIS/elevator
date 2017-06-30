@@ -17,7 +17,7 @@
       <lticm:options name="editor_button">
       	<lticm:property name="message_type">ContentItemSelectionRequest</lticm:property>
         <lticm:property name="url"><?=instance_url("api/v1/lti/launchLTI")?></lticm:property>
-        <lticm:property name="text"></lticm:property>
+        <lticm:property name="text">Add asset from <?=$instance->getName()?></lticm:property>
         <lticm:property name="selection_width">1024</lticm:property>
         <lticm:property name="selection_height">700</lticm:property>
         <lticm:property name="enabled">true</lticm:property>
