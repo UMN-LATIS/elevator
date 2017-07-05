@@ -66,7 +66,7 @@ class Collections extends Instance_Controller {
 
 		$collection= $this->collection_model->getCollection($collectionId);
 		
-		echo $this->load->view("collectionHeader", ["collectionDescription"=>$collection->getCollectionDescription(), "collectionTitle"=>$collection->getTitle()]);
+		echo $this->load->view("collectionHeader", ["collectionDescription"=>$collection->getCollectionDescription(), "collectionTitle"=>$collection->getTitle()], true);
 
 	}
 

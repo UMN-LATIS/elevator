@@ -468,6 +468,45 @@ class admin extends Admin_Controller {
 		$this->template->publish();
 	}
 
+	
+	public function deleteFilesFromCollection($collectionId, $skip=0) {
+		$saveArray["collectionId"] = $collectionId;
+		if($templateId) {
+			$saveArray["templateId"] = $templateId;
+		}
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.collectionId = ?1")
+		->setParameter(1, $collectionId);
+
+		if($skip>0) {
+			$qb->setFirstResult($skip);
+		}
+
+		$assets = $qb->getQuery()->iterate();
+		// $assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
+		$this->load->model("asset_model");
+		$this->load->model("asset_template");
+		$this->load->model("search_model");
+		$countStart = $skip;
+		foreach($assets as $assetRecord) {
+			if(!$assetRecord[0]->getAssetId()) {
+				continue;
+			}
+			$asset = new Asset_model();
+			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord[0]);
+			$asset->delete();
+			$this->search_model->remove($asset);
+			$this->doctrine->em->clear();
+			echo "count: " . $countStart . "\n";
+			$countStart++;
+		}
+		echo "done.\n";
+
+	}
+
 	public function deletedAssets() {
 		foreach($this->instance->getCollections() as $collection) {
 			$collections[] = $collection->getId();
