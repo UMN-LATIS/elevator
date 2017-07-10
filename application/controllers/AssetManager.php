@@ -103,7 +103,26 @@ class AssetManager extends Admin_Controller {
 
 		$template = $this->asset_template->getTemplate($templateId);
 
-		echo json_encode($template->getAsArray());
+		$templateArray = $template->getAsArray();
+
+		$allowedCollectionsObject = $this->user_model->getAllowedCollections(PERM_ADDASSETS);
+		$allowedCollections = array();
+		foreach($allowedCollectionsObject as $collection) {
+			$allowedCollections[$collection->getId()] = $collection->getTitle();
+		}
+
+		if(strlen($this->template->collectionId)>0) {
+			$collectionId = intval($this->template->collectionId->__toString());
+		}
+
+		$collections = $this->buildCollectionArray($this->instance->getCollectionsWithoutParent());
+
+
+		$templateArray["collections"] = $collections;
+		$templateArray["allowedCollections"] = $allowedCollections;
+		$templateArray["templates"] = $templates;
+
+		echo json_encode($templateArray);
 	}
 
 
@@ -136,6 +155,25 @@ class AssetManager extends Admin_Controller {
 		$this->template->publish();
 
 	}
+
+
+	public function buildCollectionArray($collections) {
+
+		$collectionReturn = array();
+		foreach($collections as $collection) {
+			if(!$collection->hasChildren()) {
+				$collectionReturn[$collection->getId()] = $collection->getTitle();
+			}
+			else {
+				$collectionReturn[$collection->getId()] = [$collection->getTitle() => $this->buildCollectionArray($collection->getChildren())];
+			}
+
+			
+		}
+		return $collectionReturn;
+
+	}
+
 
 	// Used for restoring an asset state from our history table.  We copy it out of the history and save it with the
 	// existing object id
