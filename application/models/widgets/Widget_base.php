@@ -59,6 +59,19 @@ class Widget_base extends CI_Model {
 
 	}
 
+	public function getWidgetDataAsArray() {
+		$widgetArray = [];
+		$widgetArray["widgetId"] = $this->fieldId;
+		$widgetArray["type"] = $this->widgetObject->getFieldType()->getName();
+		$widgetArray["allowMultiple"] = $this->widgetObject->getAllowMultiple();
+		$widgetArray["attemptAutocomplete"] = $this->widgetObject->getAttemptAutocomplete();
+		$widgetArray["fieldTitle"] = $this->widgetObject->getFieldTitle();
+		$widgetArray["label"] = $this->widgetObject->getLabel();
+		$widgetArray["tooltip"] = $this->widgetObject->getTooltip();
+		$widgetArray["fieldData"] = $this->widgetObject->getFieldData();
+		return $widgetArray;
+	}
+
 	public function getContentContainer() {
 		$containerClass = get_class($this) . "_contents";
 		if(file_exists(APPPATH."models/widget_contents/".ucfirst(strtolower($containerClass)).".php")) {

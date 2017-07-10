@@ -93,6 +93,38 @@ class AssetManager extends Admin_Controller {
 
 	}
 
+	public function getTemplate($templateId) {
+	
+	
+		if(!$templateId) {
+			$this->logging->logError("no template", $_SERVER);
+			instance_redirect("/errorHandler/error/unknownTemplate");
+		}
+
+		$template = $this->asset_template->getTemplate($templateId);
+
+		$templateArray = $template->getAsArray();
+
+		$allowedCollectionsObject = $this->user_model->getAllowedCollections(PERM_ADDASSETS);
+		$allowedCollections = array();
+		foreach($allowedCollectionsObject as $collection) {
+			$allowedCollections[$collection->getId()] = $collection->getTitle();
+		}
+
+		if(strlen($this->template->collectionId)>0) {
+			$collectionId = intval($this->template->collectionId->__toString());
+		}
+
+		$collections = $this->buildCollectionArray($this->instance->getCollectionsWithoutParent());
+
+
+		$templateArray["collections"] = $collections;
+		$templateArray["allowedCollections"] = $allowedCollections;
+		$templateArray["templates"] = $templates;
+
+		echo json_encode($templateArray);
+	}
+
 
 	function editAsset($objectId, $inlineForm=false) {
 
@@ -123,6 +155,25 @@ class AssetManager extends Admin_Controller {
 		$this->template->publish();
 
 	}
+
+
+	public function buildCollectionArray($collections) {
+
+		$collectionReturn = array();
+		foreach($collections as $collection) {
+			if(!$collection->hasChildren()) {
+				$collectionReturn[$collection->getId()] = $collection->getTitle();
+			}
+			else {
+				$collectionReturn[$collection->getId()] = [$collection->getTitle() => $this->buildCollectionArray($collection->getChildren())];
+			}
+
+			
+		}
+		return $collectionReturn;
+
+	}
+
 
 	// Used for restoring an asset state from our history table.  We copy it out of the history and save it with the
 	// existing object id
@@ -786,7 +837,7 @@ class AssetManager extends Admin_Controller {
 								$widgetContainer->latitude = $exploded[0];
 								$widgetContainer->longitude = $exploded[1];
 								if(isset($exploded[2])) {
-									$widgetcontainer->locationLabel = $exploded[2];
+									$widgetContainer->locationLabel = $exploded[2];
 								}
 							}
 						}
