@@ -70,7 +70,7 @@ class search_model extends CI_Model {
 			'_source' => array(
 				'enabled' => true
 				),
-			'date_detection' => 0,
+			'date_detection' => false,
 			'properties' => array(
 				'locationCache' => array(
 					'type' => 'geo_point'
@@ -233,6 +233,7 @@ class search_model extends CI_Model {
     	$params['id']    = $asset->getObjectId();
 
     	$ret = $this->es->index($params);
+
 		if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
     		$this->logging->logError("search error", $ret);
     	}
@@ -373,14 +374,14 @@ class search_model extends CI_Model {
 		$query = array();
 		$i=0;
 		if(preg_match("/[*]+/u", $searchArray["searchText"])) {
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
+			$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
 			list($start, $end) = explode("...", strtolower($searchArray["searchText"]));
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
+			$searchParams['body']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
 		}
 		else if(substr($searchArray["searchText"],0,1) == '"' && substr($searchArray["searchText"], -1,1) == '"') {
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['match_phrase'] = ["_all"=>strtolower($searchArray["searchText"])];
+			$searchParams['body']['query']['bool']['should'][$i]['match_phrase'] = ["_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if($searchArray["searchText"] != "") {
 
@@ -402,32 +403,32 @@ class search_model extends CI_Model {
 //                     }
 //                 }
 //             }
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
+			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
 
 			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
+			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
 			if(!$fuzzySearch) {
 				$matchType = "cross_fields";
 				if(isset($searchArray['matchType'])) {
 					$matchType = $searchArray['matchType'];
 				}
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = $matchType;
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = $matchType;
 				// by default, we want cross field to be an "and" so our matching document matches all of the relevant search terms
 				// however, sometimes we want to match any document with any of the terms, setting crossFieldOr to true will enable that.
 				// this is primarily used for "related items" searches where we pass in a ton of MongoIds
 				//
 
 				if(!isset($searchArray['crossFieldOr']) || $searchArray['crossFieldOr'] == FALSE) {
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['operator'] = "and";
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['operator'] = "and";
 				}
 
 			}
 			else {
 				//$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['analyzer'] = "snowball";
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
 				 //$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "cross_fields";
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
 			}
 			$i++;
 		}
@@ -438,22 +439,22 @@ class search_model extends CI_Model {
 			foreach($searchArray["specificFieldSearch"] as $entry) {
 
 				if(preg_match("/[?*]+/u", $entry["text"])) {
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
+					$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
 				}
 				else if(preg_match("/.*\\.\\.\\..*/u", $entry["text"])) {
 					list($start, $end) = explode("...", strtolower($entry["text"]));
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
+					$searchParams['body']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
 				}
 				else {
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['query'] = $entry["text"];
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $entry["text"];
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
 					if($entry["fuzzy"]) {
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
 					}
 					else {
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "phrase_prefix";
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "phrase_prefix";
 					}
 				}
 
@@ -502,13 +503,14 @@ class search_model extends CI_Model {
 
 
 		if(count($filter) > 0) {
-			$searchParams['body']['query']['filtered']['filter']['and'] = $filter;
+			$searchParams['body']['query']['bool']['filter'] = $filter;
 		}
 
 
 
-    	$searchParams['fields'] = "_id";
-// $this->logging->logError("Query Params", $searchParams);
+    	$searchParams['body']['stored_fields'] = "_id";
+
+$this->logging->logError("Query Params", $searchParams);
 
     	$queryResponse = $this->es->search($searchParams);
 
@@ -610,16 +612,16 @@ class search_model extends CI_Model {
 
 		$query = array();
 
-		$searchParams['body']['query']['filtered']['query']['multi_match']['query'] = $searchTerm;
+		$searchParams['body']['query']['multi_match']['query'] = $searchTerm;
 
-		$searchParams['body']['query']['filtered']['query']['multi_match']['fields'] = [$fieldTitle];
-		$searchParams['body']['query']['filtered']['query']['multi_match']['type'] = "phrase_prefix";
+		$searchParams['body']['query']['multi_match']['fields'] = [$fieldTitle];
+		$searchParams['body']['query']['multi_match']['type'] = "phrase_prefix";
 
 		if(count($filter)>0) {
-			$searchParams['body']['query']['filtered']['filter']['and'] = $filter;
+			$searchParams['body']['filter']['and'] = $filter;
 		}
 
-    	$searchParams['fields'] = $fieldTitle;
+    	// $searchParams['fields'] = $fieldTitle;
     	$searchParams['size'] = 10;
 
     	// $this->logging->logError("params", $searchParams);

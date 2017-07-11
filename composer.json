@@ -24,7 +24,7 @@
     "doctrine/orm": "2.5.*@dev",
     "doctrine/data-fixtures": "2.0.*@dev",
     "pda/pheanstalk": "dev-master",
-    "elasticsearch/elasticsearch": "2.3.0",
+    "elasticsearch/elasticsearch": "~5.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
     "tedivm/stash": "dev-master",

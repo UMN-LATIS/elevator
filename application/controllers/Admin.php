@@ -129,7 +129,7 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 
-		if($targetIndex !== "false") {
+		if($targetIndex !== "false" && $targetIndex) {
 			$this->config->set_item('elasticIndex', $targetIndex);
 		}
 

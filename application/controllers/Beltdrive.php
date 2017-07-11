@@ -77,7 +77,9 @@ class Beltdrive extends CI_Controller {
 			echo "Reindexing " . $objectId . "\n";
 
 			$this->asset_model->loadAssetById($objectId);
+
 			$parentArray = array();
+
 			$this->asset_model->reindex($parentArray);
 			$this->pheanstalk->delete($job);
 			$this->doctrine->em->clear();
@@ -258,7 +260,7 @@ class Beltdrive extends CI_Controller {
 				if($allDerivativesLocal) {
 					$this->pheanstalk->touch($job);
 					echo "compressing\n";
-					$id = new MongoId();
+					$id = new MongoDB\BSON\ObjectId();
 					$zipname = $this->config->item("scratchSpace") . $id.'.zip';
     				$zip = new ZipArchive;
     				$zip->open($zipname, ZipArchive::OVERWRITE);
