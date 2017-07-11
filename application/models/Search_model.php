@@ -221,6 +221,22 @@ class search_model extends CI_Model {
 		$params['body']['includeInSearch'] = $asset->assetTemplate->getIncludeInSearch();
 
 		$params['body']['title'] = $asset->getAssetTitle(true);
+		foreach($params['body'] as $key=>$value) {
+			if(is_string($value)) {
+				$params['body'][$key] = strtolower($value);
+			}
+			elseif(is_array($value)) {
+				$returnArray = array();
+				foreach($value as $nestedKey => $nestedValue) {
+					if(is_string($nestedValue)) {
+						$value[$nestedKey] = strtolower($nestedValue);
+					}
+				}
+				$params['body'][$key] = $value;
+
+			}
+		}
+
 
 
     	/**
@@ -370,6 +386,9 @@ class search_model extends CI_Model {
 			$fuzzySearch = true;
 		}
 
+		// make sure at least one of our "should" matches
+		$searchParams['body']['query']['bool']['minimum_should_match'] = 1;
+
 
 		$query = array();
 		$i=0;
@@ -431,6 +450,9 @@ class search_model extends CI_Model {
 				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
 			}
 			$i++;
+		}
+		else {
+			$searchParams['body']['query']['bool']['minimum_should_match'] = 0;
 		}
 
 
@@ -510,13 +532,8 @@ class search_model extends CI_Model {
 
     	$searchParams['body']['stored_fields'] = "_id";
 
-$this->logging->logError("Query Params", $searchParams);
 
     	$queryResponse = $this->es->search($searchParams);
-
-
- // $this->logging->logError("Query Response", $queryResponse);
-
 
     	$matchArray = array();
     	$matchArray["searchResults"] = array();
@@ -570,8 +587,6 @@ $this->logging->logError("Query Params", $searchParams);
     		$matchArray['totalResults'] = $queryResponse['hits']['total'];
     	}
 
-
-
     	return $matchArray;
 	}
 
@@ -621,27 +636,36 @@ $this->logging->logError("Query Params", $searchParams);
 			$searchParams['body']['query']['bool']['filter'] = $filter;
 		}
 
-    	// $searchParams['fields'] = $fieldTitle;
+    	$searchParams['_source'] = $fieldTitle;
     	$searchParams['size'] = 10;
 
     	$this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
 
     	$termArray = array();
-
+    	$this->logging->logError("queryParams", $queryResponse);
     	if(isset($queryResponse['hits'])) {
     		foreach($queryResponse['hits']['hits'] as $match) {
-    			if(!is_array($match["fields"][$fieldTitle])) {
-    				if(stristr($match["fields"][$fieldTitle], $searchTerm)) {
-    					$termArray[] = $match["fields"][$fieldTitle];
+    			if(!is_array($match["_source"][$fieldTitle])) {
+    				if(stristr($match["_source"][$fieldTitle], $searchTerm)) {
+    					$termArray[] = $match["_source"][$fieldTitle];
     				}
 
     			}
     			else {
-    				foreach($match["fields"][$fieldTitle] as $entry) {
-    					if(stristr($entry, $searchTerm)) {
-							$termArray[] = $entry;
-						}
+    				foreach($match["_source"][$fieldTitle] as $entry) {
+    					if(is_array($entry)) {
+    						foreach($entry as $nestedEntry) {
+    							if(stristr($nestedEntry, $searchTerm)) {
+									$termArray[] = $nestedEntry;
+								}
+    						}
+    					} else {
+							if(stristr($entry, $searchTerm)) {
+								$termArray[] = $entry;
+							}
+    					}
+    					
 					}
     			}
 
