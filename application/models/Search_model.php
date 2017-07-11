@@ -612,19 +612,19 @@ $this->logging->logError("Query Params", $searchParams);
 
 		$query = array();
 
-		$searchParams['body']['query']['multi_match']['query'] = $searchTerm;
+		$searchParams['body']['query']['bool']['must']['multi_match']['query'] = $searchTerm;
 
-		$searchParams['body']['query']['multi_match']['fields'] = [$fieldTitle];
-		$searchParams['body']['query']['multi_match']['type'] = "phrase_prefix";
+		$searchParams['body']['query']['bool']['must']['multi_match']['fields'] = [$fieldTitle];
+		$searchParams['body']['query']['bool']['must']['multi_match']['type'] = "phrase_prefix";
 
 		if(count($filter)>0) {
-			$searchParams['body']['filter']['and'] = $filter;
+			$searchParams['body']['query']['bool']['filter'] = $filter;
 		}
 
     	// $searchParams['fields'] = $fieldTitle;
     	$searchParams['size'] = 10;
 
-    	// $this->logging->logError("params", $searchParams);
+    	$this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
 
     	$termArray = array();
