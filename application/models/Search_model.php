@@ -498,6 +498,7 @@ class search_model extends CI_Model {
 			$searchParams['body']['highlight']['post_tags'] = [""];
 			$searchParams['body']['highlight']['number_of_fragments'] = 0;
 			$searchParams['body']['highlight']['fields']["*"] = new stdClass();
+			$searchParams['body']['highlight']['require_field_match'] = false;
 
 		}
 
@@ -532,8 +533,9 @@ class search_model extends CI_Model {
 
     	$searchParams['body']['stored_fields'] = "_id";
 
-
-    	$queryResponse = $this->es->search($searchParams);
+    	// $this->logging->logError("params", $searchParams);
+		$queryResponse = $this->es->search($searchParams);
+    	// $this->logging->logError("queryParams", $queryResponse);
 
     	$matchArray = array();
     	$matchArray["searchResults"] = array();
@@ -639,11 +641,11 @@ class search_model extends CI_Model {
     	$searchParams['_source'] = $fieldTitle;
     	$searchParams['size'] = 10;
 
-    	$this->logging->logError("params", $searchParams);
+    	// $this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
 
     	$termArray = array();
-    	$this->logging->logError("queryParams", $queryResponse);
+    	// $this->logging->logError("queryParams", $queryResponse);
     	if(isset($queryResponse['hits'])) {
     		foreach($queryResponse['hits']['hits'] as $match) {
     			if(!is_array($match["_source"][$fieldTitle])) {
