@@ -120,44 +120,51 @@ class UMNHelper extends AuthHelper
 		$studentStatus = array();
 
 		if ($this->shibboleth->hasSession()) {
-			$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
+			if($this->shibboleth->getAttributeValue('eduCourseMember')) {
+				$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
 
-			// hacky stuff to deal with the way this info is passed in
-			// todo: learn about the actual standard for eduCourseMember
-			foreach($courseArray as $course) {
-				$explodedString = explode("@", $course);
-				if(count($explodedString)>0) {
-					$role = $explodedString[0];
-				}
-				$courseString = explode("/", $course);
-				$courseId = $courseString[8];
-				if($role == "Instructor") {
-					
-					$courseName = $courseString[6];
-					$coursesTaught[$courseId + 0] = $courseName;
-				}
-				$courses[] = $courseId + 0;
-			}
-
-			$jobCodeSummary = explode(";",$this->shibboleth->getAttributeValue('umnJobSummary'));
-			foreach($jobCodeSummary as $jobCode) {
-				$jobCodeArray = explode(":", $jobCode);
-				if(isset($jobCodeArray[2])) {
-					$jobCodes[] = $jobCodeArray[2] + 0;
-				}
-				if(isset($jobCodeArray[10])) {
-					$units[] = $jobCodeArray[10];
-				}
-
-			}
-
-			$regSummary = explode(";",$this->shibboleth->getAttributeValue('umnRegSummary'));
-			foreach($regSummary as $studentCode) {
-				$studentStatusArray = explode(":", $studentCode);
-				if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
-					$studentStatus[] = $studentStatusArray[12];
+				// hacky stuff to deal with the way this info is passed in
+				// todo: learn about the actual standard for eduCourseMember
+				foreach($courseArray as $course) {
+					$explodedString = explode("@", $course);
+					if(count($explodedString)>0) {
+						$role = $explodedString[0];
+					}
+					$courseString = explode("/", $course);
+					$courseId = $courseString[8];
+					if($role == "Instructor") {
+						
+						$courseName = $courseString[6];
+						$coursesTaught[$courseId + 0] = $courseName;
+					}
+					$courses[] = $courseId + 0;
 				}
 			}
+			
+			if($this->shibboleth->getAttributeValue('umnJobSummary')) {
+				$jobCodeSummary = explode(";",$this->shibboleth->getAttributeValue('umnJobSummary'));
+				foreach($jobCodeSummary as $jobCode) {
+					$jobCodeArray = explode(":", $jobCode);
+					if(isset($jobCodeArray[2])) {
+						$jobCodes[] = $jobCodeArray[2] + 0;
+					}
+					if(isset($jobCodeArray[10])) {
+						$units[] = $jobCodeArray[10];
+					}
+
+				}
+			}
+			
+			if($this->shibboleth->getAttributeValue('umnRegSummary')) {
+				$regSummary = explode(";",$this->shibboleth->getAttributeValue('umnRegSummary'));
+				foreach($regSummary as $studentCode) {
+					$studentStatusArray = explode(":", $studentCode);
+					if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
+						$studentStatus[] = $studentStatusArray[12];
+					}
+				}	
+			}
+			
 		}
 
 		$userData[COURSE_TYPE] = ["values"=>$courses, "hints"=>$coursesTaught];
