@@ -1,5 +1,11 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+// FFMPEG 3 has a regression which breaks manual rotation. 
+// watch this thread: https://trac.ffmpeg.org/ticket/6370
+// even when this is fixed (if it's fixed), may need to add noautorotate to be able to manually handle rotation
+// 
+define("DISABLE_FFMPEG_ROTATION", true);
+
 class Transcoder_Model extends CI_Model {
 
 	public $videoToolkitConfig;
@@ -192,6 +198,11 @@ class Transcoder_Model extends CI_Model {
 
 		}
 
+		if(DISABLE_FFMPEG_ROTATION) {
+			$isRotated = false;
+			$rotationString = null;
+		}
+
 
 		$process = $video->getProcess();
 		$process->addCommand("-vf", $rotationString . "fps=1/" . $rate . ",scale=iw*sar:ih", true);
@@ -276,6 +287,11 @@ class Transcoder_Model extends CI_Model {
 					break;
 			}
 
+		}
+
+		if(DISABLE_FFMPEG_ROTATION) {
+			$isRotated = false;
+			$rotationString = null;
 		}
 
 
@@ -381,6 +397,11 @@ class Transcoder_Model extends CI_Model {
 
 		}
 
+		if(DISABLE_FFMPEG_ROTATION) {
+			$isRotated = false;
+			$rotationString = null;
+		}
+
 
 		$process = $video->getProcess();
 		$process->setProcessTimelimit(60);
@@ -450,6 +471,11 @@ class Transcoder_Model extends CI_Model {
 					break;
 			}
 
+		}
+
+		if(DISABLE_FFMPEG_ROTATION) {
+			$isRotated = false;
+			$rotationString = null;
 		}
 
 
@@ -584,6 +610,11 @@ class Transcoder_Model extends CI_Model {
 					break;
 			}
 
+		}
+
+		if(DISABLE_FFMPEG_ROTATION) {
+			$isRotated = false;
+			$rotationString = null;
 		}
 
 
