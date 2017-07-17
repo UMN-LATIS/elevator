@@ -107,6 +107,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <input type="hidden" name="collection[]" id="collection" value=0>
           <input type="hidden" name="specificSearchField[]" id="specificSearchField">
           <input type="hidden" name="specificSearchText[]" id="specificSearchText">
+          <input type="hidden" name="specificSearchFuzzy[]" id="specificSearchFuzzy">
           <input type="hidden" name="fuzzySearch" value=0>
         <div class="input-group">
           <label for="searchText" class="hide">Search</label>
@@ -141,9 +142,9 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
         <?if(isset($this->instance)):?>
         <li>
         <p class="navbar-btn">
-        	<button class="hide btn addToPlugin btn-default"></button>
-        	</p>
-        	</li>
+          <button class="hide btn addToPlugin btn-default"></button>
+          </p>
+          </li>
         <?foreach($this->instance->getPages()->filter(function($entry) { return ($entry->getIncludeInHeader() && $entry->getParent()==null);}) as $page):?>
           <?if(count($page->getChildren())>0):?>
           <li class="dropdown">
@@ -325,15 +326,15 @@ $(document).ready(function() {
 <script>
 // listen for messages from our javascript pluginSetup
 function receiveMessage(e) {
-	if (typeof e.data.pluginSetup !== 'undefined') {
-		sessionStorage.elevatorPlugin = e.data.elevatorPlugin;
-		sessionStorage.elevatorCallbackType = e.data.elevatorCallbackType;
-		sessionStorage.apiKey = e.data.apiKey;
-		sessionStorage.timeStamp = e.data.timeStamp;
+  if (typeof e.data.pluginSetup !== 'undefined') {
+    sessionStorage.elevatorPlugin = e.data.elevatorPlugin;
+    sessionStorage.elevatorCallbackType = e.data.elevatorCallbackType;
+    sessionStorage.apiKey = e.data.apiKey;
+    sessionStorage.timeStamp = e.data.timeStamp;
     sessionStorage.entangledSecret = e.data.entangledSecret;
-		sessionStorage.includeMetadata = e.data.includeMetadata;
-		testAndShowEmbedButton();
-	}
+    sessionStorage.includeMetadata = e.data.includeMetadata;
+    testAndShowEmbedButton();
+  }
 
 }
 
@@ -346,22 +347,22 @@ window.addEventListener("load",function(){
 
 $(".addToPlugin").on("click", function() {
 
-	fileObjectId = $("#embedView").data("objectid");
+  fileObjectId = $("#embedView").data("objectid");
 
   var currentLocation = window.location.toString();
   var originalWindow = window.opener;
-	originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*"); 
+  originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*"); 
 });
 
 
 var testAndShowEmbedButton =function() {
-	if(sessionStorage.elevatorPlugin) {
-		if($("#embedView").length > 0) {
-			$(".addToPlugin").text("Add to " + sessionStorage.elevatorPlugin);
-			$(".addToPlugin").removeClass('hide');	
-		}
-		
-	}
+  if(sessionStorage.elevatorPlugin) {
+    if($("#embedView").length > 0) {
+      $(".addToPlugin").text("Add to " + sessionStorage.elevatorPlugin);
+      $(".addToPlugin").removeClass('hide');  
+    }
+    
+  }
 }
 
 
