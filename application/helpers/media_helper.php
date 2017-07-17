@@ -16,9 +16,14 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		// get the first page
 		$append = "[0]";
 	}
+
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
+	$image=new Imagick();
+	if($sourceImage->getType() == "dcm") {
+		$image->setOption('dcm:rescale', "true");
+	}
+	$image->readImage($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
 	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
 	$image->setImageCompressionQuality($compressionQuality);
 	// $image = $image->flattenImages();
