@@ -18,7 +18,7 @@
         <option value="lastModified.asc">Modified Date (oldest to newest)</option>
         <option value="title.raw">Default Title</option>
         <?foreach($searchableWidgets as $title=>$values):?>
-		<option value="<?=$title?>.keyword"><?=$values['label']?></option>
+		<option value="<?=$title?>.raw"><?=$values['label']?></option>
 		<?endforeach?>
   </select>
 </ul>

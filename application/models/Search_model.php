@@ -5,6 +5,7 @@ class search_model extends CI_Model {
 	private $es = NULL;
 	public $showHidden = false;
 	public $pageLength = 30;
+	public $bulkUpdates = ['body'=>[]];
 
 	public function __construct()
 	{
@@ -53,7 +54,7 @@ class search_model extends CI_Model {
 
 	}
 
-	public function addOrUpdate($asset) {
+	public function addOrUpdate($asset, $bulk) {
 
 		if(!$asset->assetTemplate || !$asset->assetTemplate->getIndexForSearching()) {
 			return;
@@ -63,24 +64,24 @@ class search_model extends CI_Model {
 		/** HACK
 		* for now, make sure we have a mapping each time we add a record
 		*/
-		$params['index'] = $this->config->item('elasticIndex');
-		$params['type']  = 'asset';
+		// $params['index'] = $this->config->item('elasticIndex');
+		// $params['type']  = 'asset';
 
-		$myTypeMapping2 = array(
-			'_source' => array(
-				'enabled' => true
-				),
-			'date_detection' => false,
-			'properties' => array(
-				'locationCache' => array(
-					'type' => 'geo_point'
-					)
-				)
-			);
-		$params['body']['asset'] = $myTypeMapping2;
+		// $myTypeMapping2 = array(
+		// 	'_source' => array(
+		// 		'enabled' => true
+		// 		),
+		// 	'date_detection' => false,
+		// 	'properties' => array(
+		// 		'locationCache' => array(
+		// 			'type' => 'geo_point'
+		// 			)
+		// 		)
+		// 	);
+		// $params['body']['asset'] = $myTypeMapping2;
 
 		// Update the index mapping
-		$this->es->indices()->putMapping($params);
+		// $this->es->indices()->putMapping($params);
 
  		$params = array();
 
@@ -248,13 +249,32 @@ class search_model extends CI_Model {
     	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
 
-    	$ret = $this->es->index($params);
-
-		if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
-    		$this->logging->logError("search error", $ret);
+    	if($bulk) {
+    		$bulkArrayEntry = [];
+    		$bulkArrayEntry["index"] =  ["_index"=> $params["index"], "_type"=>$params['type'], "_id"=> $params["id"]];
+    		$bulkArrayEntry["value"] = $params["body"];
+    		$this->bulkUpdates['body'][] = ["index" => $bulkArrayEntry["index"]];
+    		$this->bulkUpdates['body'][] = $bulkArrayEntry["value"];
     	}
+    	else {
+    		$ret = $this->es->index($params);
+
+			if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
+    			$this->logging->logError("search error", $ret);
+    		}	
+    	}
+    	
     	$this->asset_model->disableObjectCache();
 
+	}
+
+	public function flushBulkUpdates() {
+		if(count($this->bulkUpdates) == 0 || count($this->bulkUpdates['body']) == 0) {
+			return;
+		}
+		$result = $this->es->bulk($this->bulkUpdates);
+		$this->bulkUpdates = ['body'=>[]];
+		return true;
 	}
 
 	public function cleanCharacters($nestedArray) {
