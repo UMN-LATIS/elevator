@@ -222,23 +222,6 @@ class search_model extends CI_Model {
 		$params['body']['includeInSearch'] = $asset->assetTemplate->getIncludeInSearch();
 
 		$params['body']['title'] = $asset->getAssetTitle(true);
-		foreach($params['body'] as $key=>$value) {
-			if(is_string($value)) {
-				$params['body'][$key] = strtolower($value);
-			}
-			elseif(is_array($value)) {
-				$returnArray = array();
-				foreach($value as $nestedKey => $nestedValue) {
-					if(is_string($nestedValue)) {
-						$value[$nestedKey] = strtolower($nestedValue);
-					}
-				}
-				$params['body'][$key] = $value;
-
-			}
-		}
-
-
 
     	/**
     	 * inject the assetId for searching - we could search against _id too, but that can't be
