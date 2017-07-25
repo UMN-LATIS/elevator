@@ -54,7 +54,7 @@ class search_model extends CI_Model {
 
 	}
 
-	public function addOrUpdate($asset, $bulk) {
+	public function addOrUpdate($asset, $bulk = false) {
 
 		if(!$asset->assetTemplate || !$asset->assetTemplate->getIndexForSearching()) {
 			return;
