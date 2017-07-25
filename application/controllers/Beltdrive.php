@@ -77,7 +77,9 @@ class Beltdrive extends CI_Controller {
 			echo "Reindexing " . $objectId . "\n";
 
 			$this->asset_model->loadAssetById($objectId);
+
 			$parentArray = array();
+
 			$this->asset_model->reindex($parentArray);
 			$this->pheanstalk->delete($job);
 			$this->doctrine->em->clear();
@@ -254,14 +256,13 @@ class Beltdrive extends CI_Controller {
 					}
 				}
 
-
 				if($allDerivativesLocal) {
 					$this->pheanstalk->touch($job);
 					echo "compressing\n";
-					$id = new MongoId();
-					$zipname = $this->config->item("scratchSpace") . $id.'.zip';
+					$id = new MongoDB\BSON\ObjectId();
+					$zipname = $this->config->item("scratchSpace") ."/". $id.'.zip';
     				$zip = new ZipArchive;
-    				$zip->open($zipname, ZipArchive::OVERWRITE);
+    				$zip->open($zipname, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
 					foreach($derivativeArray as $bestDerivative) {
 						echo "adding file " . $bestDerivative->getPathToLocalFile() . "\n";
 						$zip->addFile($bestDerivative->getPathToLocalFile(),$bestDerivative->originalFilename);
@@ -274,12 +275,12 @@ class Beltdrive extends CI_Controller {
 					$this->s3_model->loadFromInstance($instance);
 					$this->s3_model->bucket = $instance->getDefaultBucket();
 					$this->pheanstalk->touch($job);
-					$this->s3_model->putObject($this->config->item("scratchSpace") . $id.'.zip', "drawer/".$drawerId.".zip", $instance->getS3StorageType());
+					$this->s3_model->putObject($zipname, "drawer/".$drawerId.".zip", $instance->getS3StorageType());
 
 					foreach($derivativeArray as $bestDerivative) {
 						$bestDerivative->removeLocalFile();
 					}
-					unlink($this->config->item("scratchSpace").$id.".zip");
+					unlink($zipname);
 
 					$this->pheanstalk->delete($job);
 

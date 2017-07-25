@@ -342,7 +342,7 @@ class FileHandlerBase extends CI_Model {
 		}
 
 		if(!$this->getObjectId()) {
-			$fileObject->setFileObjectId((string)new MongoId());
+			$fileObject->setFileObjectId((string)new MongoDB\BSON\ObjectId());
 		}
 
 		$this->doctrine->em->persist($fileObject);

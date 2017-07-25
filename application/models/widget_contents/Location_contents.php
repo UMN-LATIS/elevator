@@ -25,10 +25,9 @@ class Location_contents extends Widget_contents_base {
 	public function getAsText($serializeNestedObjects=false) {
 		$returnString =  $this->locationLabel;
 		
-		if($returnString == null) {
+		if($returnString == null || strlen($returnString) == 0) {
 			$returnString = $this->address;
 		}
-
 
 		if($returnString == NULL && $this->longitude != 0 && $this->latitude != 0) {
 			$returnString = "(". $this->latitude . ", " . $this->longitude . ")";

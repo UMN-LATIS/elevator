@@ -5,6 +5,7 @@ class search_model extends CI_Model {
 	private $es = NULL;
 	public $showHidden = false;
 	public $pageLength = 30;
+	public $bulkUpdates = ['body'=>[]];
 
 	public function __construct()
 	{
@@ -53,7 +54,7 @@ class search_model extends CI_Model {
 
 	}
 
-	public function addOrUpdate($asset) {
+	public function addOrUpdate($asset, $bulk) {
 
 		if(!$asset->assetTemplate || !$asset->assetTemplate->getIndexForSearching()) {
 			return;
@@ -63,24 +64,24 @@ class search_model extends CI_Model {
 		/** HACK
 		* for now, make sure we have a mapping each time we add a record
 		*/
-		$params['index'] = $this->config->item('elasticIndex');
-		$params['type']  = 'asset';
+		// $params['index'] = $this->config->item('elasticIndex');
+		// $params['type']  = 'asset';
 
-		$myTypeMapping2 = array(
-			'_source' => array(
-				'enabled' => true
-				),
-			'date_detection' => 0,
-			'properties' => array(
-				'locationCache' => array(
-					'type' => 'geo_point'
-					)
-				)
-			);
-		$params['body']['asset'] = $myTypeMapping2;
+		// $myTypeMapping2 = array(
+		// 	'_source' => array(
+		// 		'enabled' => true
+		// 		),
+		// 	'date_detection' => false,
+		// 	'properties' => array(
+		// 		'locationCache' => array(
+		// 			'type' => 'geo_point'
+		// 			)
+		// 		)
+		// 	);
+		// $params['body']['asset'] = $myTypeMapping2;
 
 		// Update the index mapping
-		$this->es->indices()->putMapping($params);
+		// $this->es->indices()->putMapping($params);
 
  		$params = array();
 
@@ -100,7 +101,7 @@ class search_model extends CI_Model {
 
 			foreach($locations as $location) {
 				foreach($location->fieldContentsArray as $locationContent) {
-					if($locationContent->hasContents()) {
+					if($locationContent->hasContents() && abs(floatval($locationContent->longitude) /90) <= 1 && abs(floatval($locationContent->latitude) / 180) <= 1) {
 						$locationArray[] = [floatval($locationContent->longitude), floatval($locationContent->latitude)];
 					}
 				}
@@ -222,7 +223,6 @@ class search_model extends CI_Model {
 
 		$params['body']['title'] = $asset->getAssetTitle(true);
 
-
     	/**
     	 * inject the assetId for searching - we could search against _id too, but that can't be
     	 * grouped with other results.  This saves us having logic to detect mongoids in the query
@@ -232,12 +232,32 @@ class search_model extends CI_Model {
     	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
 
-    	$ret = $this->es->index($params);
-		if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
-    		$this->logging->logError("search error", $ret);
+    	if($bulk) {
+    		$bulkArrayEntry = [];
+    		$bulkArrayEntry["index"] =  ["_index"=> $params["index"], "_type"=>$params['type'], "_id"=> $params["id"]];
+    		$bulkArrayEntry["value"] = $params["body"];
+    		$this->bulkUpdates['body'][] = ["index" => $bulkArrayEntry["index"]];
+    		$this->bulkUpdates['body'][] = $bulkArrayEntry["value"];
     	}
+    	else {
+    		$ret = $this->es->index($params);
+
+			if(!isset($ret["_id"]) || $ret["_id"] !== $asset->getObjectId()) {
+    			$this->logging->logError("search error", $ret);
+    		}	
+    	}
+    	
     	$this->asset_model->disableObjectCache();
 
+	}
+
+	public function flushBulkUpdates() {
+		if(count($this->bulkUpdates) == 0 || count($this->bulkUpdates['body']) == 0) {
+			return;
+		}
+		$result = $this->es->bulk($this->bulkUpdates);
+		$this->bulkUpdates = ['body'=>[]];
+		return true;
 	}
 
 	public function cleanCharacters($nestedArray) {
@@ -369,18 +389,21 @@ class search_model extends CI_Model {
 			$fuzzySearch = true;
 		}
 
+		// make sure at least one of our "should" matches
+		$searchParams['body']['query']['bool']['minimum_should_match'] = 1;
+
 
 		$query = array();
 		$i=0;
 		if(preg_match("/[*]+/u", $searchArray["searchText"])) {
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
+			$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
 			list($start, $end) = explode("...", strtolower($searchArray["searchText"]));
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
+			$searchParams['body']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
 		}
 		else if(substr($searchArray["searchText"],0,1) == '"' && substr($searchArray["searchText"], -1,1) == '"') {
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['match_phrase'] = ["_all"=>strtolower($searchArray["searchText"])];
+			$searchParams['body']['query']['bool']['should'][$i]['match_phrase'] = ["_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if($searchArray["searchText"] != "") {
 
@@ -402,34 +425,37 @@ class search_model extends CI_Model {
 //                     }
 //                 }
 //             }
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
+			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
 
 			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
-			$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
+			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
 			if(!$fuzzySearch) {
 				$matchType = "cross_fields";
 				if(isset($searchArray['matchType'])) {
 					$matchType = $searchArray['matchType'];
 				}
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = $matchType;
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = $matchType;
 				// by default, we want cross field to be an "and" so our matching document matches all of the relevant search terms
 				// however, sometimes we want to match any document with any of the terms, setting crossFieldOr to true will enable that.
 				// this is primarily used for "related items" searches where we pass in a ton of MongoIds
 				//
 
 				if(!isset($searchArray['crossFieldOr']) || $searchArray['crossFieldOr'] == FALSE) {
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['operator'] = "and";
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['operator'] = "and";
 				}
 
 			}
 			else {
 				//$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['analyzer'] = "snowball";
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
 				 //$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "cross_fields";
-				$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
+				$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
 			}
 			$i++;
+		}
+		else {
+			$searchParams['body']['query']['bool']['minimum_should_match'] = 0;
 		}
 
 
@@ -438,22 +464,22 @@ class search_model extends CI_Model {
 			foreach($searchArray["specificFieldSearch"] as $entry) {
 
 				if(preg_match("/[?*]+/u", $entry["text"])) {
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
+					$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
 				}
 				else if(preg_match("/.*\\.\\.\\..*/u", $entry["text"])) {
 					list($start, $end) = explode("...", strtolower($entry["text"]));
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
+					$searchParams['body']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
 				}
 				else {
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['query'] = $entry["text"];
-					$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $entry["text"];
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
 					if($entry["fuzzy"]) {
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fuzziness'] = "AUTO";
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['prefix_length'] = 2;
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "best_fields";
 					}
 					else {
-						$searchParams['body']['query']['filtered']['query']['bool']['should'][$i]['multi_match']['type'] = "phrase_prefix";
+						$searchParams['body']['query']['bool']['should'][$i]['multi_match']['type'] = "phrase_prefix";
 					}
 				}
 
@@ -475,6 +501,7 @@ class search_model extends CI_Model {
 			$searchParams['body']['highlight']['post_tags'] = [""];
 			$searchParams['body']['highlight']['number_of_fragments'] = 0;
 			$searchParams['body']['highlight']['fields']["*"] = new stdClass();
+			$searchParams['body']['highlight']['require_field_match'] = false;
 
 		}
 
@@ -502,19 +529,16 @@ class search_model extends CI_Model {
 
 
 		if(count($filter) > 0) {
-			$searchParams['body']['query']['filtered']['filter']['and'] = $filter;
+			$searchParams['body']['query']['bool']['filter'] = $filter;
 		}
 
 
 
-    	$searchParams['fields'] = "_id";
-// $this->logging->logError("Query Params", $searchParams);
+    	$searchParams['body']['stored_fields'] = "_id";
 
-    	$queryResponse = $this->es->search($searchParams);
-
-
- // $this->logging->logError("Query Response", $queryResponse);
-
+    	// $this->logging->logError("params", $searchParams);
+		$queryResponse = $this->es->search($searchParams);
+    	// $this->logging->logError("queryParams", $queryResponse);
 
     	$matchArray = array();
     	$matchArray["searchResults"] = array();
@@ -568,8 +592,6 @@ class search_model extends CI_Model {
     		$matchArray['totalResults'] = $queryResponse['hits']['total'];
     	}
 
-
-
     	return $matchArray;
 	}
 
@@ -610,36 +632,45 @@ class search_model extends CI_Model {
 
 		$query = array();
 
-		$searchParams['body']['query']['filtered']['query']['multi_match']['query'] = $searchTerm;
+		$searchParams['body']['query']['bool']['must']['multi_match']['query'] = $searchTerm;
 
-		$searchParams['body']['query']['filtered']['query']['multi_match']['fields'] = [$fieldTitle];
-		$searchParams['body']['query']['filtered']['query']['multi_match']['type'] = "phrase_prefix";
+		$searchParams['body']['query']['bool']['must']['multi_match']['fields'] = [$fieldTitle];
+		$searchParams['body']['query']['bool']['must']['multi_match']['type'] = "phrase_prefix";
 
 		if(count($filter)>0) {
-			$searchParams['body']['query']['filtered']['filter']['and'] = $filter;
+			$searchParams['body']['query']['bool']['filter'] = $filter;
 		}
 
-    	$searchParams['fields'] = $fieldTitle;
+    	$searchParams['_source'] = $fieldTitle;
     	$searchParams['size'] = 10;
 
     	// $this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
 
     	$termArray = array();
-
+    	// $this->logging->logError("queryParams", $queryResponse);
     	if(isset($queryResponse['hits'])) {
     		foreach($queryResponse['hits']['hits'] as $match) {
-    			if(!is_array($match["fields"][$fieldTitle])) {
-    				if(stristr($match["fields"][$fieldTitle], $searchTerm)) {
-    					$termArray[] = $match["fields"][$fieldTitle];
+    			if(!is_array($match["_source"][$fieldTitle])) {
+    				if(stristr($match["_source"][$fieldTitle], $searchTerm)) {
+    					$termArray[] = $match["_source"][$fieldTitle];
     				}
 
     			}
     			else {
-    				foreach($match["fields"][$fieldTitle] as $entry) {
-    					if(stristr($entry, $searchTerm)) {
-							$termArray[] = $entry;
-						}
+    				foreach($match["_source"][$fieldTitle] as $entry) {
+    					if(is_array($entry)) {
+    						foreach($entry as $nestedEntry) {
+    							if(stristr($nestedEntry, $searchTerm)) {
+									$termArray[] = $nestedEntry;
+								}
+    						}
+    					} else {
+							if(stristr($entry, $searchTerm)) {
+								$termArray[] = $entry;
+							}
+    					}
+    					
 					}
     			}
 

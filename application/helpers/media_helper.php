@@ -16,15 +16,20 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		// get the first page
 		$append = "[0]";
 	}
+
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
+	$image=new Imagick();
+	if($sourceImage->getType() == "dcm") {
+		$image->setOption('dcm:rescale', "true");
+	}
+	$image->readImage($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
 	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
 	$image->setImageCompressionQuality($compressionQuality);
-	$image = $image->flattenImages();
-	// $image->setImageBackgroundColor('white');
-	// $image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
-	// $image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
+	// $image = $image->flattenImages();
+	$image->setImageBackgroundColor('white');
+	$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
+	$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
 	$image->setImageFormat('jpeg');
 	if(isset($sourceImage->metadata["rotation"])) {

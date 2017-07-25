@@ -110,7 +110,6 @@ class Asset_model extends CI_Model {
 	}
 
 	public function loadAssetById($objectId, $noHydrate = false) {
-
 		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
 
 		if(!isset($asset)) {
@@ -777,7 +776,7 @@ class Asset_model extends CI_Model {
 		$this->assetObject->setDeleted(false);
 
 		if(!$this->getObjectId()) {
-			$this->assetObject->setAssetId((string)new MongoId());
+			$this->assetObject->setAssetId((string)new MongoDB\BSON\ObjectId());
 			$this->doctrine->em->persist($this->assetObject);
 			$this->doctrine->em->flush();
     	}

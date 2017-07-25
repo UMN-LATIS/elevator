@@ -129,7 +129,7 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 
-		if($targetIndex !== "false") {
+		if($targetIndex !== "false" && $targetIndex) {
 			$this->config->set_item('elasticIndex', $targetIndex);
 		}
 
@@ -169,10 +169,11 @@ class admin extends Admin_Controller {
 
 
 		$count = $startValue;
+		$searchModel = new search_model();
 		foreach($result as $entry) {
 			$entry = $entry[0];
 			$assetModel = new asset_model();
-			$searchModel = new search_model();
+			// $searchModel = new search_model();
 			// $before = microtime(true);
 			if($assetModel->loadAssetFromRecord($entry)) {
 				// $after = microtime(true);
@@ -188,23 +189,28 @@ class admin extends Admin_Controller {
 
 				if($assetModel->asset_template && !$noIndex) {
 					echo "updating: " . $assetModel->getObjectId(). " (".$count.")\n";
-					$searchModel->addOrUpdate($assetModel);
+					$searchModel->addOrUpdate($assetModel, true);
 					$count++;
 				}
 
 			}
-			unset($searchModel);
+			// unset($searchModel);
 			unset($assetModel);
 			$this->doctrine->em->clear();
 			if($count % 100 == 0) {
 				gc_collect_cycles();
+			}
+			if($count % 500 == 0) {
+				echo "Flushing bulk update\n";
+				$searchModel->flushBulkUpdates();
 			}
 			if($count % 10000 == 0) {
 				$this->doctrine->reset();
 				$this->doctrine->extendTimeout();
 			}
 		}
-
+		echo "Flushing final bulk update\n";
+		$searchModel->flushBulkUpdates();
 		echo "Completed reindexing " . $count . "\n";
 
 		instance_redirect("admin");

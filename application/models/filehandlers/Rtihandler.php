@@ -97,6 +97,7 @@ class RTIHandler extends FileHandlerBase {
 
 		
 		$options = "cd " . $extractedPath . "; /usr/bin/xvfb-run " . $rtiPath . " " . $destinationName;
+
 		exec($options);
 		if(file_exists($extractedPath . "/" . "info.xml")) {
 			$fileContents = file_get_contents($extractedPath . "/" . "info.xml");
@@ -158,6 +159,7 @@ class RTIHandler extends FileHandlerBase {
 		$targetDerivativeFile = $tiled->getPathToLocalFile();
 		$targetDerivativeContainer = new FileContainer($targetDerivativeFile);
 		file_put_contents($targetDerivativeFile, file_get_contents($targetDerivativeURL));
+		$targetDerivativeContainer->originalFilename = "tiled.jpg"; // just give it a name so we can identify the type properly
 
 		foreach($args as $key=>$derivativeSetting) {
 			$this->pheanstalk->touch($this->job);
@@ -185,6 +187,7 @@ class RTIHandler extends FileHandlerBase {
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
 			echo "Compressing " . $width . " x " . $height . "\n";
+
 			if(compressImageAndSave($targetDerivativeContainer, $derivativeContainer, $width, $height)) {
 				$derivativeContainer->ready = true;
 				if(!$derivativeContainer->copyToRemoteStorage()) {

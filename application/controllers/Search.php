@@ -554,7 +554,6 @@ class Search extends Instance_Controller {
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
 		$matchArray["searchId"] = $this->searchId;
-
 		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));
 
 
