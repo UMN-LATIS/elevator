@@ -491,6 +491,24 @@ class User_model extends CI_Model {
 	}
 
 
+	public function generateKeys() {
+
+		$apiKey = new Entity\ApiKey;
+
+		$apiKey->setLabel("Generated Key");
+		$apiKey->setApiKey(sha1($this->userId . "secretHash"));
+		$apiKey->setApiSecret(sha1($this->userId . "secretKey"));
+		$apiKey->setOwner($this->user);
+		$apiKey->setRead(true);
+		$this->doctrine->em->persist($apiKey);
+
+		$this->doctrine->em->flush();
+		return $apiKey;
+
+
+	}
+
+
 	/**
 	 * Catch invalid method calls and see if our Doctrine child instance
 	 * will respond - if so, call through to that.  Otherwise, flag an error.

@@ -342,4 +342,33 @@ class ApiKey
     {
         return $this->apiSecret;
     }
+    /**
+     * @var boolean
+     */
+    private $systemAccount;
+
+
+    /**
+     * Set systemAccount
+     *
+     * @param boolean $systemAccount
+     *
+     * @return ApiKey
+     */
+    public function setSystemAccount($systemAccount)
+    {
+        $this->systemAccount = $systemAccount;
+
+        return $this;
+    }
+
+    /**
+     * Get systemAccount
+     *
+     * @return boolean
+     */
+    public function getSystemAccount()
+    {
+        return $this->systemAccount;
+    }
 }
