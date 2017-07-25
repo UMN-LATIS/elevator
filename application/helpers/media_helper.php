@@ -114,7 +114,7 @@ function fastImageDimensions($sourceImage) {
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	$commandline = "identify " . $sourceImage->getType().":".$sourceImage->getPathToLocalFile();
 	exec($commandline, $results);
-	if(isset($results)) {
+	if(isset($results) && is_array($results)) {
 		$split = explode(" ", $results[0]);
 		$dimensions = $split[2];
 		if(stristr($dimensions, "x")) {
