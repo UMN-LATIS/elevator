@@ -1,5 +1,20 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+class SortedIterator extends SplHeap
+{
+    public function __construct(Iterator $iterator)
+    {
+        foreach ($iterator as $item) {
+            $this->insert($item);
+        }
+    }
+    public function compare($b,$a)
+    {
+        return strcmp($a->getRealpath(), $b->getRealpath());
+    }
+}
+
+
 class ZipMedDicomHandler extends ZipHandler {
 	protected $supportedTypes = array("dicom.zip");
 	protected $noDerivatives = false;
@@ -117,8 +132,9 @@ class ZipMedDicomHandler extends ZipHandler {
 
 			$di = new RecursiveDirectoryIterator($targetPath . "/" . $imageSet,RecursiveDirectoryIterator::SKIP_DOTS);
 			$it = new RecursiveIteratorIterator($di);
+			$sit = new SortedIterator($it);
 			$fileSet = array();
-			foreach($it as $entry) {
+			foreach($sit as $entry) {
 				if($entry->getFilename()[0] === ".") {
 					continue;
 				}
