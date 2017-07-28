@@ -122,7 +122,7 @@ function fastImageDimensions($sourceImage) {
 	if(isset($results) && is_array($results)) {
 		$split = explode(" ", $results[0]);
 		if(count($split)<3) {
-			$this->logging->logError("identify failure","invalid count, identify returned" . $results[0]);
+			$CI->logging->logError("identify failure","invalid count, identify returned" . $results[0]);
 		}
 		$dimensions = $split[2];
 		if(stristr($dimensions, "x")) {
