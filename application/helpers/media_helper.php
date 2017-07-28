@@ -119,7 +119,7 @@ function fastImageDimensions($sourceImage) {
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	$commandline = "identify " . $sourceImage->getType().":".$sourceImage->getPathToLocalFile();
 	exec($commandline, $results);
-	if(isset($results) && is_array($results)) {
+	if(isset($results) && is_array($results) && count($results)> 0) {
 		$split = explode(" ", $results[0]);
 		if(count($split)<3) {
 			$CI->logging->logError("identify failure","invalid count, identify returned" . $results[0]);

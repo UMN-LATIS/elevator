@@ -109,6 +109,11 @@ class ImageHandler extends FileHandlerBase {
 		if($dimensions) {
 			$fileObject->metadata["width"] = $dimensions["x"];
 			$fileObject->metadata["height"] = $dimensions["y"];
+			if(get_class($sourceFile) == "FileContainer") {
+				// we're dealing with a local swap, scale up by 10x
+				$fileObject->metadata["width"] = $fileObject->metadata["width"]  * 10;
+				$fileObject->metadata["height"] = $fileObject->metadata["height"]  * 10;
+			}
 		}
 
 
