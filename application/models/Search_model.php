@@ -459,7 +459,7 @@ class search_model extends CI_Model {
 		}
 
 
-		if(isset($searchArray["specificFieldSearch"])) {
+		if(isset($searchArray["specificFieldSearch"]) && count($searchArray["specificFieldSearch"]) > 0) {
 			foreach($searchArray["specificFieldSearch"] as $entry) {
 
 				if(preg_match("/[?*]+/u", $entry["text"])) {
@@ -486,7 +486,7 @@ class search_model extends CI_Model {
 				$i++;
 
 			}
-			// $searchParams['body']['query']['bool']['minimum_should_match'] = 1;
+			$searchParams['body']['query']['bool']['minimum_should_match'] = 1;
 
 		}
 
