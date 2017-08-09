@@ -22,6 +22,7 @@ class Asset_model extends CI_Model {
 
 	// if necessary, shoudl we use stale caches?
 	public $useStaleCaches = TRUE;
+	public $hydrated = false;
 
 	public function __construct($objectId=null)
 	{
@@ -121,6 +122,7 @@ class Asset_model extends CI_Model {
 			// dont actually hydrate the object
 			return true;
 		}
+		$this->hydrated = true;
 
 		if($this->loadAssetFromRecord($asset)) {
 			if($this->asset_model->useObjectCaching == true) {
@@ -722,6 +724,10 @@ class Asset_model extends CI_Model {
 			if(!$assetCache->getNeedsRebuild()) {
 				return $assetCache->getSearchResultCache();
 			}
+		}
+		if(!$this->hydrated) {
+			// make sure to hydra
+			$this->loadAssetById($this->getObjectId());
 		}
 
 		return $this->buildSearchResultEntry();
