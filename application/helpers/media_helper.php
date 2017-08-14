@@ -16,15 +16,20 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		// get the first page
 		$append = "[0]";
 	}
+
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
+	$image=new Imagick();
+	if($sourceImage->getType() == "dcm") {
+		$image->setOption('dcm:rescale', "true");
+	}
+	$image->readImage($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
 	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
 	$image->setImageCompressionQuality($compressionQuality);
-	$image = $image->flattenImages();
-	// $image->setImageBackgroundColor('white');
-	// $image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
-	// $image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
+	// $image = $image->flattenImages();
+	$image->setImageBackgroundColor('white');
+	$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
+	$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
 	$image->setImageFormat('jpeg');
 	if(isset($sourceImage->metadata["rotation"])) {
@@ -114,8 +119,11 @@ function fastImageDimensions($sourceImage) {
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	$commandline = "identify " . $sourceImage->getType().":".$sourceImage->getPathToLocalFile();
 	exec($commandline, $results);
-	if(isset($results)) {
+	if(isset($results) && is_array($results) && count($results)> 0) {
 		$split = explode(" ", $results[0]);
+		if(count($split)<3) {
+			$CI->logging->logError("identify failure","invalid count, identify returned" . $results[0]);
+		}
 		$dimensions = $split[2];
 		if(stristr($dimensions, "x")) {
 			$dimensionsSplit = explode("x", $dimensions);	

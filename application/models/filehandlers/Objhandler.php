@@ -359,7 +359,9 @@ rnd.resolution_y = int(2000)
 			$image->setImageCompression(Imagick::COMPRESSION_JPEG);
 			$image->setImageCompressionQuality(80);
 			$image->rotateimage(new ImagickPixel('#00000000'), 90);
-			$image = $image->flattenImages();
+			$image->setImageBackgroundColor('white');
+			$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
+			$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
 			$image->resizeImage($width,$height,imagick::FILTER_LANCZOS,1,true);
 

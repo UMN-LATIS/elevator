@@ -22,6 +22,7 @@ class Asset_model extends CI_Model {
 
 	// if necessary, shoudl we use stale caches?
 	public $useStaleCaches = TRUE;
+	public $hydrated = false;
 
 	public function __construct($objectId=null)
 	{
@@ -110,7 +111,6 @@ class Asset_model extends CI_Model {
 	}
 
 	public function loadAssetById($objectId, $noHydrate = false) {
-
 		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
 
 		if(!isset($asset)) {
@@ -122,6 +122,7 @@ class Asset_model extends CI_Model {
 			// dont actually hydrate the object
 			return true;
 		}
+		$this->hydrated = true;
 
 		if($this->loadAssetFromRecord($asset)) {
 			if($this->asset_model->useObjectCaching == true) {
@@ -724,6 +725,10 @@ class Asset_model extends CI_Model {
 				return $assetCache->getSearchResultCache();
 			}
 		}
+		if(!$this->hydrated) {
+			// make sure to hydra
+			$this->loadAssetById($this->getObjectId());
+		}
 
 		return $this->buildSearchResultEntry();
 	}
@@ -777,7 +782,7 @@ class Asset_model extends CI_Model {
 		$this->assetObject->setDeleted(false);
 
 		if(!$this->getObjectId()) {
-			$this->assetObject->setAssetId((string)new MongoId());
+			$this->assetObject->setAssetId((string)new MongoDB\BSON\ObjectId());
 			$this->doctrine->em->persist($this->assetObject);
 			$this->doctrine->em->flush();
     	}

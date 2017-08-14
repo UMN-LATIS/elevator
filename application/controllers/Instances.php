@@ -102,7 +102,7 @@ class Instances extends Instance_Controller {
             }
 		}
 
-		if($instance->getUseCustomHeader()) {
+		if($instance->getUseHeaderLogo()) {
 			if(file_exists("assets/instanceAssets/" . $instance->getId() . ".png")) {
                 unlink("assets/instanceAssets/" . $instance->getId() . ".png");
             }

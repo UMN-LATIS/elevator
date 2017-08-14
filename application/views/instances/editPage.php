@@ -50,7 +50,8 @@ $(document).ready(function() {
 	    menubar : false,
 	    relative_urls : false,
 	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | image link ",
-	    plugins: ["link", "code", "image"]
+	    plugins: ["link", "code", "image"],
+	    extended_valid_elements: "svg[*],defs[*],pattern[*],desc[*],metadata[*],g[*],mask[*],path[*],line[*],marker[*],rect[*],circle[*],ellipse[*],polygon[*],polyline[*],linearGradient[*],radialGradient[*],stop[*],image[*],view[*],text[*],textPath[*],title[*],tspan[*],glyph[*],symbol[*],switch[*],use[*]"
 	 });
 });
 </script>
