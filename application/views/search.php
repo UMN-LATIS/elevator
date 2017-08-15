@@ -12,6 +12,7 @@
   <li><a href="#list" data-toggle="tab">List</a></li>
   <li><a href="#map" data-toggle="tab">Map</a></li>
   <li><a href="#timeline" data-toggle="tab">Timeline</a></li>
+  <?if(!isset($hideSort) || $hideSort == false):?>
 	<li class="navbar-right"><select class="form-control sortBy input-xs">
         <option value="0">Best Match</option>
         <option value="lastModified.desc">Modified Date (newest to oldest)</option>
@@ -21,6 +22,7 @@
 		<option value="<?=$title?>.raw"><?=$values['label']?></option>
 		<?endforeach?>
   </select>
+  <?endif?>
 </ul>
 
 
