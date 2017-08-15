@@ -118,9 +118,23 @@ class Drawers extends Instance_Controller {
 				}
 				$outputArray[] = $matchItem;
 			}
+			function customSort($a, $b) {
+				$aSort = $a["title"];
+				$bSort = $b["title"];
+				if(isset($a["excerptLabel"])) {
+					$aSort = $a["excerptLabel"];
+				}
+				if(isset($b["excerptLabel"])) {
+					$bSort = $b["excerptLabel"];
+				}
+				return strcmp($aSort, $bSort);
+			}
+			usort($outputArray, "customSort");
+			
 			$resultArray["matches"] = $outputArray;
 			$resultArray["totalResults"] = count($outputArray);
 			$resultArray["drawerId"] = $drawerId;
+
 			echo json_encode($resultArray);
 		}
 		else {
@@ -128,7 +142,6 @@ class Drawers extends Instance_Controller {
 		}
 
 	}
-
 
 
 	public function removeFromDrawer($drawerId, $assetId) {
