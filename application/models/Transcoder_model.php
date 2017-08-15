@@ -1012,7 +1012,7 @@ set rmargin 1;
 set tmargin 1;
 set bmargin 1;
 
-plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scriptAppend . " with lines lt rgb 'black';";
+plot '<cat' every 10 binary filetype=bin format='%int16' endian=little array=1:0 " . $scriptAppend . " with lines lt rgb 'black';";
 
 		$targetScript = str_replace("{output}", $pathToOutput, $gnuScript);
 		$targetScript = str_replace("{width}", 500, $targetScript);
