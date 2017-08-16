@@ -583,4 +583,43 @@ class User
     {
         return $this->apiInstance;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $api_keys;
+
+
+    /**
+     * Add apiKey
+     *
+     * @param \Entity\ApiKey $apiKey
+     *
+     * @return User
+     */
+    public function addApiKey(\Entity\ApiKey $apiKey)
+    {
+        $this->api_keys[] = $apiKey;
+
+        return $this;
+    }
+
+    /**
+     * Remove apiKey
+     *
+     * @param \Entity\ApiKey $apiKey
+     */
+    public function removeApiKey(\Entity\ApiKey $apiKey)
+    {
+        $this->api_keys->removeElement($apiKey);
+    }
+
+    /**
+     * Get apiKeys
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getApiKeys()
+    {
+        return $this->api_keys;
+    }
 }

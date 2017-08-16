@@ -25,7 +25,12 @@ $(document).on("ready", function() {
 		}
 	})
 
+	
+	$(document).on("click", ".autoSelectField", function() {
+		$(this).select();
+	});	
 });
+
 
 </script>
 
@@ -86,6 +91,14 @@ $(document).on("ready", function() {
 
 
 		<?endif?>
+
+		<div class="form-group">
+			<label for="inputEmail" class="col-sm-2 control-label">Canvas (LTI) Config URL:</label>
+			<div class="col-sm-5">
+				<input type="text" value="<?=instance_url("/api/v1/lti/ltiConfig")?>" class="autoSelectField form-control">
+			</div>
+		</div>
+
 
 <!--
 
