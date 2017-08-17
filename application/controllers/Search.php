@@ -527,11 +527,6 @@ class Search extends Instance_Controller {
 		if(!$haveSort && !$haveSearchText && !$haveSpecificSearch) {
 			$searchArray["sort"] = "title.raw";
 		}
-		$this->logging->logError("sort", $haveSort);
-		$this->logging->logError("haveSearchText", $haveSearchText);
-		$this->logging->logError("haveSpecificSearch", $haveSpecificSearch);
-
-
 
 		$searchArray["searchDate"] = new \DateTime("now");
 
