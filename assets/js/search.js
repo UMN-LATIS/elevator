@@ -282,6 +282,8 @@ function populateSearchFields(searchEntry) {
 		getSuggestions(searchEntry.searchText);
 	}
 
+	$(".sortBy").val(searchEntry.sort);
+
 	$.each(searchEntry, function(index, value) {
 		if(Array.isArray(value)) {
 			var targetField = $("#" + index);
@@ -295,8 +297,7 @@ function populateSearchFields(searchEntry) {
 		else {
 			$("#" + index).val(value);	
 		}
-		
-
+	
 	});
 }
 

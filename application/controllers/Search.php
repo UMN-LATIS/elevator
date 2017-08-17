@@ -393,6 +393,7 @@ class Search extends Instance_Controller {
 		else if($this->input->post("searchText") !== NULL) { // direct search form
 				$searchArray = array();
 				$searchArray["searchText"] = $this->input->post("searchText");
+
 				if($this->input->post("collectionId")) {
 					$searchArray["collection"] = [$this->input->post("collectionId")];
 				}
@@ -457,7 +458,6 @@ class Search extends Instance_Controller {
 		}
 
 
-
 		// this finds assets that point to the objectId passed in teh search term
 		if($this->input->post("searchRelated") && $this->input->post("searchRelated") == true) {
 
@@ -506,6 +506,31 @@ class Search extends Instance_Controller {
 				$searchArray["collection"] = $allowedCollectionsIds;	
 			}
 		}
+
+		$this->logging->logError("search", $searchArray);
+
+		$haveSort = false;
+		if(isset($searchArray["sort"]) && $searchArray["sort"] != "0") {
+			$haveSort = true;
+		}
+
+		$haveSearchText = false;
+		if(!isset($searchText) && strlen(trim($searchArray["searchText"])) > 0) {
+			$haveSearchText = true;
+		}
+
+		$haveSpecificSearch = false;
+		if(isset($searchArray['specificFieldSearch']) && count($searchArray['specificFieldSearch']) > 0) {
+			$haveSpecificSearch = true;
+		}
+
+		if(!$haveSort && !$haveSearchText && !$haveSpecificSearch) {
+			$searchArray["sort"] = "title.raw";
+		}
+		$this->logging->logError("sort", $haveSort);
+		$this->logging->logError("haveSearchText", $haveSearchText);
+		$this->logging->logError("haveSpecificSearch", $haveSpecificSearch);
+
 
 
 		$searchArray["searchDate"] = new \DateTime("now");
