@@ -35,7 +35,7 @@ function renderFileMenu($menuArray) {
 	if(isset($menuArray['embed'])) {
 		$outputText .= '  <span class="glyphicon glyphicon-share infoPopover" data-placement="bottom" data-toggle="popover" title="Share" data-html="true" data-content=\'<ul>';
 		$outputText .= '<li class="list-group-item assetDetails"><strong>Embed: </strong><input class="form-control embedControl" value="' . htmlspecialchars($menuArray['embed'], ENT_QUOTES) . '"></li>';
-		$outputText .= '<li class="list-group-item assetDetails"><strong>Direct Link: </strong><input class="form-control embedControl" value="' . htmlspecialchars($menuArray['embedLink'], ENT_QUOTES) . '"></li>';
+		$outputText .= '<li class="list-group-item assetDetails"><strong>Link: </strong><input class="form-control embedControl" value="' . htmlspecialchars($menuArray['embedLink'], ENT_QUOTES) . '"></li>';
 		$outputText .= '</ul>\'></span>';
 	}
 
