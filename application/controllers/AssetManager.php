@@ -992,11 +992,14 @@ class AssetManager extends Admin_Controller {
 					if($sidecarContent = json_decode($this->input->post("sidecarContent"))) {
 						$uploadHandlerContent->sidecars[$sidecarType] = $sidecarContent;
 						$this->asset_model->save();
+						echo json_encode(["status"=>"success"]);
+						return;
 					}
 					
 				}
 			}
 		}
+		echo json_encode(["status"=>"failure"]);
 	}
 
 
