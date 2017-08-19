@@ -958,6 +958,47 @@ class AssetManager extends Admin_Controller {
 
 	}
 
+	/**
+	 * Allow sidecars to be updated independently of the asset
+	 */
+	public function setSidecarForFile($fileId, $sidecarType) {
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if($accessLevel < PERM_ADDASSETS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
+		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+		$fileHandler->loadByObjectId($fileId);
+
+		if(!($fileHandler)) {
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
+
+		if(!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
+			$this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
+
+		$uploadHandlers = $this->asset_model->getAllWithinAsset("Upload", null, 0);
+
+		foreach($uploadHandlers as $uploadHandler) {
+
+			foreach($uploadHandler->fieldContentsArray as $uploadHandlerContent) {
+
+				if($uploadHandlerContent->fileId == $fileId) {
+					if($sidecarContent = json_decode($this->input->post("sidecarContent"))) {
+						$uploadHandlerContent->sidecars[$sidecarType] = $sidecarContent;
+						$this->asset_model->save();
+					}
+					
+				}
+			}
+		}
+	}
+
 
 }
 
