@@ -406,7 +406,6 @@ function prepMap() {
 	}
 
 
-
 	$.each(cachedResults.matches, function(index, value) {
 		if(value.locations) {
 			$.each(value.locations, function (index2, value2) {
