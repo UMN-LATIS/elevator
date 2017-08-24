@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+	<button id="populate">Populate with 10 markers</button>
+
+	<script>
+		var radius = 1000;
+		var lat = 51.505;
+		var lng = -0.09;
+
+		var map = L.map('map').setView([lat, lng], 13);
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+
+		var circle = new L.circle([lat, lng], radius);
+		map.addLayer( circle );
+
+		var zooming = false;
+
+		map
+		  .on("zoomstart", function(){
+		    zooming = true;
+		  })
+		  .on("zoomend", function(){
+		    zooming = false;
+		  })
+		  .on("move", function(){
+		    var center = map.getCenter();
+		    circle.setLatLng( center );
+		  });
+	</script>
+</body>
+</html>
