@@ -11,6 +11,7 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 $menuArray = [];
 if(count($fileContainers)>0) {
   $menuArray['embed'] = $embed;
+  $menuArray['embedLink'] = $embedLink;
 }
 
 $fileInfo = [];
