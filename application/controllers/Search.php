@@ -229,6 +229,41 @@ class Search extends Instance_Controller {
 		instance_redirect("search/s/".$this->searchId);
 	}
 
+	public function test() {
+		$allowedCollectionsObject = $this->user_model->getAllowedCollections(PERM_ADDASSETS);
+		$allowedCollections = array();
+		foreach($allowedCollectionsObject as $collection) {
+			$allowedCollections[$collection->getId()] = $collection->getTitle();
+		}
+
+		if(strlen($this->template->collectionId)>0) {
+			$collectionId = intval($this->template->collectionId->__toString());
+		}
+
+		$collections = $this->buildCollectionArray($this->instance->getCollectionsWithoutParent());
+
+		echo "<select>";
+		echo $this->load->view("collection_select_partial", ["selectCollection"=>0, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections],true);
+		echo "</select>";
+	}
+
+	public function buildCollectionArray($collections) {
+
+		$collectionReturn = array();
+		foreach($collections as $collection) {
+			if(!$collection->hasChildren()) {
+				$collectionReturn[$collection->getId()] = $collection->getTitle();
+			}
+			else {
+				$collectionReturn[$collection->getId()] = [$collection->getTitle() => $this->buildCollectionArray($collection->getChildren())];
+			}
+
+			
+		}
+		return $collectionReturn;
+
+	}
+
 
 	public function listCollections() {
 
