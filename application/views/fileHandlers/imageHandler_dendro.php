@@ -1,3 +1,19 @@
+<?
+
+// time to get hacky, but this is special case code
+$innerYear = null;
+if($widgetObject->parentWidget->dendroField) {
+	$targetField = $widgetObject->parentWidget->dendroField;
+	if(isset($fileObject->parentObject->assetObjects[$targetField])) {
+
+		$result = $fileObject->parentObject->assetObjects[$targetField]->getAsText();
+		$innerYear = $result[0];
+	}
+}
+
+?>
+
+
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/node_modules/font-awesome-4.7.0/css/font-awesome.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -17,7 +33,7 @@
 <script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 <script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
 <script src="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
-<script src="/assets/leaflet-treering/main.js"></script>
+<script src="/assets/leaflet-treering/leaflet-treering.js"></script>
     
     <script src="/assets/leaflet/Leaflet.elevator.js"></script>
 
@@ -42,18 +58,16 @@
 <? $token = $fileObject->getSecurityToken("tiled")?>
 
 <div id="button_area">
-    <a href="#" id="save-local" download="data.json"><i class="material-icons md-18">save</i></a>
-    <div id="admin-save"></div>
-    <div class="file-upload">
-        <label for="file">
-            <i id="upload_button" class="material-icons md-18">file_upload</i>
-        </label>
+        <a href="#" id="save-local" download="data.json"><i class="material-icons md-18">save</i></a>
+        <div id="admin-save"></div>
+        <div class="file-upload">
+            <label for="file">
+                <i id="upload_button" class="material-icons md-18">file_upload</i>
+            </label>
 
-         <input type="file" id="file" onchange="loadFile()"/>
+            <input type="file" id="file" onchange="treering.loadFile()"/>
+        </div>
     </div>
-    <a href="#" id="download"><i class="material-icons md-18">file_download</i></a>
-   
-</div>
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
 
 <script type="application/javascript">
@@ -62,14 +76,14 @@
 	var s3;
 	var AWS;
 	var layer;
-	var sideCar = null;
+	var sideCar = {};
 
 	<?if(isset($widgetObject->sidecars) && array_key_exists("dendro", $widgetObject->sidecars)):?>
 	sideCar = <?=json_encode($widgetObject->sidecars['dendro'])?>;
 	<?endif?>
 
 	var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
-
+	var miniLayer;
 	var loadedCallback = function() {
 
 		if(typeof AWS === 'undefined') {
@@ -128,7 +142,8 @@
 			heightScale = 1;
 			widthScale = minimapRatio;
 		}
-		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
+		
+		miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
 
 			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
@@ -145,34 +160,29 @@
 			return tile;
 
 		}, {
-			width: 256*widthScale * 0.9,
-			height: 256*heightScale *0.9,
-			tileSize: 254,
-			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
-			overlap: 1,
+		width: 231782,
+        height: 4042,
+        tileSize: 254,
+        maxZoom: 13,
+        overlap: 1,
 		});
-		var miniMap = new L.Control.MiniMap(miniLayer, {
-			width: 140 * widthScale,
-			height: 140 * heightScale,
-						//position: "topright",
-						toggleDisplay: true,
-						zoomAnimation: false,
-						zoomLevelOffset: -3,
-						zoomLevelFixed: -3
-					});
-		miniMap.addTo(map);
-
 		
-
-		loadInterface("/assets/leaflet-treering/");
-
-		if(sideCar !== null) {
-			loadNewData(sideCar);
-		}
-		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
-		addSaveButton(basePath + "/assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro");
+		var innerYear = "";
+		<?if($innerYear):?>
+		innerYear = <?=$innerYear?>;
 		<?endif?>
 
+
+		var saveURL = "";
+		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
+		saveURL = basePath + "/assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
+		<?endif?>
+
+		var treering = new leafletTreering(map, basePath, saveURL, sideCar, '<?=$fileObject->parentObject->getAssetTitle(true)?>', innerYear);
+    	treering.loadInterface();
+    	if(saveURL != "") {
+    		treering.addSaveButton();
+    	}
 	};
 
 </script>
