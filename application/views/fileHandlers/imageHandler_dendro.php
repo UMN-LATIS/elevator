@@ -172,7 +172,9 @@ if($widgetObject->parentWidget->dendroField) {
 		innerYear = <?=$innerYear?>;
 		<?endif?>
 
-
+		if(sideCar.points !== undefined && sideCar.points.length < 2) {
+			sideCar = {};
+		}
 		var saveURL = "";
 		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
 		saveURL = basePath + "/assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
