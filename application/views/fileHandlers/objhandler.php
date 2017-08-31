@@ -36,6 +36,7 @@ $menuArray['fileInfo'] = $fileInfo;
 
 if(count($fileContainers)>0) {
   $menuArray['embed'] = $embed;
+  $menuArray['embedLink'] = $embedLink;
 }
 
 $downloadArray = [];
