@@ -65,6 +65,7 @@
     var layer = L.tileLayer.elevator(function(coords, tile, done) {
         var error;
         var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         tile.onload = (function(done, error, tile) {
             return function() {
                 done(error, tile);
@@ -78,6 +79,8 @@
     {
         width: 231782,
         height: 4042,
+        //width: 200521,
+        //height: 4196,
         tileSize :254,
         maxZoom: 19 - 1,
         overlap: 1,
@@ -89,6 +92,7 @@
     var miniLayer = new L.tileLayer.elevator(function(coords, tile, done) {
         var error;
         var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         tile.onload = (function(done, error, tile) {
             return function() {
                 done(error, tile)
@@ -102,13 +106,15 @@
     {
         width: 231782,
         height: 4042,
+        //width: 200521,
+        //height: 4196,
         tileSize: 254,
         maxZoom: 13,
         overlap: 1,
     });
-    console.log(miniLayer);
 
-    //basePath, saveURL, initialData, assetName, innerYear
-    var treering = new leafletTreering(map, "", "", {}, "ABC00X", 1234);
+    //map, basePath, saveURL, {initialData: json, assetName: string, datingInner: int, hasLatewood: bool}
+    var treering = new leafletTreering(map, "", "", {'initialData': {}, 'assetName': "ABC00X", 'datingInner': 1234, 'hasLatewood': true});
     treering.loadInterface();
+    treering.addSaveButton();
 </script>

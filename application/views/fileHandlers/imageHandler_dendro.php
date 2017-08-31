@@ -2,12 +2,19 @@
 
 // time to get hacky, but this is special case code
 $innerYear = null;
-if($widgetObject->parentWidget->dendroField) {
-	$targetField = $widgetObject->parentWidget->dendroField;
-	if(isset($fileObject->parentObject->assetObjects[$targetField])) {
+$haveLateWood = false;
+if($widgetObject->parentWidget->dendroFields) {
+	$innerYearField = $widgetObject->parentWidget->dendroFields["innerYear"];
+	if(isset($fileObject->parentObject->assetObjects[$innerYearField])) {
 
-		$result = $fileObject->parentObject->assetObjects[$targetField]->getAsText();
+		$result = $fileObject->parentObject->assetObjects[$innerYearField]->getAsText();
 		$innerYear = $result[0];
+	}
+
+	$latewoodField = $widgetObject->parentWidget->dendroFields["lateWood"];
+	if(isset($fileObject->parentObject->assetObjects[$latewoodField])) {
+		$result = $fileObject->parentObject->assetObjects[$latewoodField]->getAsArray();
+		$haveLateWood = $result[0]["fieldContents"];
 	}
 }
 
@@ -42,15 +49,8 @@ if($widgetObject->parentWidget->dendroField) {
 .leaflet-top {
 	z-index: 400;
 }
-.fixedHeightContainer {
-	margin-left: 50px;
-}
-
-.easy-button-container button {
-	margin-right: 5px;
-}
-.easy-button-container .disabled {
-	padding: 0px;
+.leaflet-left .leaflet-control {
+	margin-left: 1px;
 }
 
 </style>
@@ -180,7 +180,7 @@ if($widgetObject->parentWidget->dendroField) {
 		saveURL = basePath + "/assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
 		<?endif?>
 
-		var treering = new leafletTreering(map, basePath, saveURL, sideCar, '<?=$fileObject->parentObject->getAssetTitle(true)?>', innerYear);
+		var treering = new leafletTreering(map, basePath, saveURL, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	if(saveURL != "") {
     		treering.addSaveButton();

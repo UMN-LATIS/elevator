@@ -1,6 +1,6 @@
 #map_container{
 	position: relative;
-	margin-left: 40px;
+	margin-left: 0px;
 	height: 100%;
 }
 
@@ -9,37 +9,33 @@
 }
 
 #button_area{
-	text-align: center;
-	padding-top: 10px;
-	z-index: 1;
+	font-size: .9em;
+	color: #616161;
+	text-align: left;
+	padding-top: 5px;
+	padding-left: 7px;
+	z-index: 9999;
 	position: absolute;
-	float: left;
-	width: 40px;
-	height: 100%;
-	border-width: 0px;
-	background-color: #33434B;
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	bottom: 10px;
+  	left: 10px;
+	width: 34px;
+	height: 105px;
+	border-radius: 5px;
+	background-color: white;/*#33434B;*/
+	box-shadow: 0px 0px 0px 2.5px rgba(0, 0, 0, 0.2);
 }
 
-#save-local, #save-cloud, #download{
-	color: #78909C;
+#save-local, #save-cloud, #upload_button{
+	color: #414141;
 }
 
-#save-local:hover, #save-cloud:hover, #download:hover{
-	color: #80DEEA;
+#save-local:hover, #save-cloud:hover, #upload_button:hover{
+	color: #757575;
+	cursor: pointer;
 }
 
-#admin-save{
+#admin-save, .file-upload{
 	padding-top: 5px;
-}
-
-.file-upload{
-	padding-top: 5px;
-	color: #78909C;
-}
-
-.file-upload:hover{
-	color: #80DEEA;
 }
 
 .file-upload > input
@@ -47,12 +43,17 @@
     display: none;
 }
 
+.leaflet-bar button{
+	padding: 0;
+	padding-left: 1px;
+}
+
 .leaflet-container {
 	background: #d8dfe2;
 }
 
 .material-icons.md-18{
-	padding-top: 3px;
+	padding-top: 5px;
 	font-size: 1.7em;
 }
 
@@ -61,13 +62,17 @@ table{
 }
 
 #map .easy-button-button{
-  transition-duration: .3s;
-  position: relative;
-  border-radius: 4px;
-  border: solid 0px transparent; }
+	transition-duration: .3s;
+	position: relative;
+	border-radius: 4px;
+	border: solid 0px transparent;
+}
 
 #map .easy-button-container{
-  background-color: white;}
+	background-color: white;
+}
 
 #map .easy-button-button.disabled {
-  height: 0;}
+	height: 0;
+	padding: 0;
+}
