@@ -93,12 +93,23 @@ $(document).on("ready", function() {
 		<?endif?>
 
 		<div class="form-group">
-			<label for="inputEmail" class="col-sm-2 control-label">Canvas (LTI) Config URL:</label>
+			<label for="inputEmail" class="col-sm-2 control-label">Canvas (LTI) URL:</label>
 			<div class="col-sm-5">
 				<input type="text" value="<?=instance_url("/api/v1/lti/ltiConfig")?>" class="autoSelectField form-control">
 			</div>
 		</div>
-
+		<div class="form-group">
+			<label for="inputAPIKey" class="col-sm-2 control-label">API Key:</label>
+			<div class="col-sm-5">
+				<input type="text" name="apikey" id="inputAPIKey" class="form-control" value="<?=$apiKey->getApiKey()?>" >
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputAPISecret" class="col-sm-2 control-label">API Secret:</label>
+			<div class="col-sm-5">
+				<input type="password" data-toggle="password"  name="apisecret" id="inputAPISecret" class="form-control" value="<?=$apiKey->getAPISecret()?>" >
+			</div>
+		</div>
 
 <!--
 

@@ -23,6 +23,7 @@ else if($allowOriginal) {
 $menuArray = [];
 if(count($fileContainers)>0) {
   $menuArray['embed'] = $embed;
+  $menuArray['embedLink'] = $embedLink;
 }
 
 $fileInfo = [];
