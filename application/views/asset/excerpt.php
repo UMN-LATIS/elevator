@@ -43,7 +43,7 @@ $(document).ready(function(){
 	//bootstrap pushes these into the data over the span for a popover,so we can't update it until it's revealed.
 	$(".infoPopover").on("shown.bs.popover", function() {
 		$(".frameEmbed").val("<?=addslashes($frameLink)?>");
-		$(".linkEmbed").val("<?=addslashes($embedLink)?>");
+		$(".linkEmbed").val("http:<?=addslashes($embedLink)?>");
 	});
 
 
