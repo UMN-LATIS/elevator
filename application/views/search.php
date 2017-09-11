@@ -67,6 +67,9 @@
 	<div class="tab-pane" id="map">
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="mapContainer">
+				<div class="resultsData">
+
+				</div>
 				<div id="mapFrame">
 				<div id="mapPane">
 
@@ -85,7 +88,9 @@
 	<div class="tab-pane" id="timeline">
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="timelineContainer">
+				<div class="resultsData">
 
+				</div>
 				<div id="timelinePane" style="width: 100%; height: 500px;">
 
 

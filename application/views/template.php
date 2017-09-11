@@ -361,7 +361,6 @@ window.addEventListener("load",function(){
 });
 
 $(".addToPlugin").on("click", function() {
-
   fileObjectId = $("#embedView").data("objectid");
   if(sessionStorage.elevatorCallbackType == "lti") {
     $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId}, function(data, textStatus, xhr) {
@@ -378,7 +377,7 @@ $(".addToPlugin").on("click", function() {
 
 
   }
-  else if(elevatorCallbackType == "js") {
+  else if(sessionStorage.elevatorCallbackType == "JS") {
     var currentLocation = window.location.toString();
     var originalWindow = window.opener;
     originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*");   
