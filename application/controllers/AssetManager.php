@@ -647,7 +647,10 @@ class AssetManager extends Admin_Controller {
 					else {
 
 						$outputRow[] = "";
-						if(get_class($widgets) == "Upload" || get_class($widgets) == "Related_asset") {
+						if(get_class($widgets) == "Related_asset") {
+							$outputRow[] = "";
+						}
+						if(get_class($widgets) == "Upload") {
 							$outputRow[] = "";
 							$outputRow[] = "";
 						}
@@ -661,6 +664,7 @@ class AssetManager extends Admin_Controller {
 
 				}
 				$outputRow[] = $assetModel->getLastModifiedName();
+
 				
 				$assetModel = null;
 				$i++;
