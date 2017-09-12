@@ -149,6 +149,8 @@ class Asset_template extends CI_Model {
 
 		$pageHTML = "";
 
+		$data['lastModifiedBy'] = $asset->getLastModifiedName();
+
 		if($this->displayInline) {
 			$pageHTML .= $this->load->view("templateFormHeaderInline", $data, TRUE);
 		}
