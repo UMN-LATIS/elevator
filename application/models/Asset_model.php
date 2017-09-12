@@ -994,8 +994,8 @@ class Asset_model extends CI_Model {
 
 	public function getLastModifiedName() {
 		$lastModifiedBy = "Unknown";
-		if($asset->getGlobalValue("modifiedBy") !== 0) {
-			$lastModifiedId = $asset->getGlobalValue("modifiedBy");
+		if($this->getGlobalValue("modifiedBy") !== 0) {
+			$lastModifiedId = $this->getGlobalValue("modifiedBy");
 			$user = $this->doctrine->em->find('Entity\User', $lastModifiedId);
 			$lastModifiedBy = $user->getDisplayName();
 		}
