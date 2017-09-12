@@ -268,9 +268,9 @@ $(function() {
 						</div>
 						<?if($this->user_model->isInstanceAdmin() || $this->user_model->getIsSuperAdmin()):?>
 							<div class="form-group">
-							<label for="inputAvailableAfter" class="col-sm-2 control-label">Last Updated By:</label>
+							<label for="inputAvailableAfter" class="col-sm-2 control-label">Last Modified By:</label>
 							<div class="col-sm-3">
-								<?=$lastModifiedBy?>
+								<p class="form-control-static"><?=$lastModifiedBy?></p>
 							</div>
 						</div>
 						<?endif?>

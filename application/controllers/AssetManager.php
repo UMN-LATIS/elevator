@@ -660,7 +660,7 @@ class AssetManager extends Admin_Controller {
 					}
 
 				}
-				$outputRow[] = $match->getLastModifiedName();
+				$outputRow[] = $assetModel->getLastModifiedName();
 				
 				$assetModel = null;
 				$i++;
