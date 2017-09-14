@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script type="text/javascript" src="../../build/deps.js"></script>
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+<p>Zoom end count: <span id="zoomEnds">0</span> (zoom: <span id="zoom">10</span>)</p>
+<button id="zoomIn">Zoom In</button>
+<button id="zoomOut">Zoom Out</button>
+	<script type="text/javascript">
+
+var map = L.map("map");
+L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png").addTo(map);
+
+var zoomEnds = document.getElementById("zoomEnds"),
+    zoomEndsCount = 0,
+    zoom = document.getElementById("zoom");
+
+map.setView([51.5, 0], 10);
+
+map.on("zoomend", function () {
+    var z = map.getZoom();
+    
+	zoomEndsCount += 1;
+    zoomEnds.innerHTML = zoomEndsCount;
+    zoom.innerHTML = z;
+    
+    console.log(zoomEndsCount + " / " + z);
+});
+
+document.getElementById("zoomIn").addEventListener("click", function () {
+	map.zoomIn();
+});
+
+document.getElementById("zoomOut").addEventListener("click", function () {
+	map.zoomOut();
+});
+
+	</script>
+</body>
+</html>
