@@ -406,9 +406,6 @@ class User_model extends CI_Model {
 			$allowedCollections = $instanceCollections;
 		}
 
-
-
-
 		return $allowedCollections;
 
 	}

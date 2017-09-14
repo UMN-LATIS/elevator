@@ -114,15 +114,18 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                 <span id="search_concept">Everywhere</span> <span class="caret"></span>
               </button>
+              <style>
+              .dropdown-menu {
+                overflow: scroll;
+                max-height: 90vh;
+              }
+              </style>
               <ul class="dropdown-menu" role="menu">
                 <li><a href="#contains">Everywhere</a></li>
                 <li class="divider"></li>
-                <li><a href="#contains">Contains</a></li>
-                <li><a href="#its_equal">It's equal</a></li>
-                <li><a href="#greather_than">Greather than ></a></li>
-                <li><a href="#less_than">Less than < </a></li>
-                
-                <li><a href="#all">Anything</a></li>
+                <?foreach($this->instance->getCollections() as $collection):?>
+                    <li><a href="#<?=$collection->getId()?>"><?=$collection->getTitle()?></a></li>
+                <?endforeach?>
               </ul>
           </div>
           <label for="searchText" class="hide">Search</label>

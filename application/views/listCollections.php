@@ -1,7 +1,6 @@
 <? $totalCollections = count($collections);?>
 <? $columnSize = ceil($totalCollections/3);?>
 
-
 <script>
 $(document).on("hide.bs.collapse", ".collectionGroup", function(e) {
 	$(this).find(".expandChildren").first().removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
@@ -15,7 +14,6 @@ $(document).on("show.bs.collapse", ".collectionGroup", function(e) {
 	<div class="col-md-4">
 		<ul>
 			<?for($i=0; $i<$columnSize; $i++):?>
-
 				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
 
 			<?endfor?>
