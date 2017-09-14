@@ -10,7 +10,7 @@ $embedLink = instance_url("asset/viewExcerpt/" . $excerptId . "/true");
 $embedLink = str_replace("http:", "", $embedLink);
 $embedLink = str_replace("https:", "", $embedLink);
 
-$embedLink = '<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>';
+$frameLink = '<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>';
 
 
 ?>
@@ -42,7 +42,8 @@ var objectId = "<?=$asset->getObjectId()?>";
 $(document).ready(function(){
 	//bootstrap pushes these into the data over the span for a popover,so we can't update it until it's revealed.
 	$(".infoPopover").on("shown.bs.popover", function() {
-		$(".embedControl").val("<?=addslashes($embedLink)?>");
+		$(".frameEmbed").val("<?=addslashes($frameLink)?>");
+		$(".linkEmbed").val("http:<?=addslashes($embedLink)?>");
 	});
 
 

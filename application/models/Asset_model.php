@@ -992,6 +992,16 @@ class Asset_model extends CI_Model {
 		return NULL;
 	}
 
+	public function getLastModifiedName() {
+		$lastModifiedBy = "Unknown";
+		if($this->getGlobalValue("modifiedBy") !== 0) {
+			$lastModifiedId = $this->getGlobalValue("modifiedBy");
+			$user = $this->doctrine->em->find('Entity\User', $lastModifiedId);
+			$lastModifiedBy = $user->getDisplayName();
+		}
+		return $lastModifiedBy;
+	}
+
 	/**
 	 * Re-sort the widget array by one of the two sort values we store
 	 * @param  [type] $sortType [description]

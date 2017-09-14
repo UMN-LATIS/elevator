@@ -143,6 +143,9 @@ class AssetManager extends Admin_Controller {
 		$this->template->javascript->add("assets/js/widgetHelpers.js");
 		$assetTemplate = $this->asset_template->getTemplate($this->asset_model->templateId);
 
+
+
+
 		$this->template->title = "Edit Asset | ". $assetTemplate->getName() . "";
 
 		if($inlineForm) {
@@ -584,6 +587,8 @@ class AssetManager extends Admin_Controller {
 					$widgetArray[] = $widgets->getLabel() . " Address";
 				}
 			}
+			$widgetArray[] = "last modified by";
+
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
     		header('Content-Disposition: attachment; filename="csvExport-' . $searchId . '.csv";');
@@ -642,7 +647,10 @@ class AssetManager extends Admin_Controller {
 					else {
 
 						$outputRow[] = "";
-						if(get_class($widgets) == "Upload" || get_class($widgets) == "Related_asset") {
+						if(get_class($widgets) == "Related_asset") {
+							$outputRow[] = "";
+						}
+						if(get_class($widgets) == "Upload") {
 							$outputRow[] = "";
 							$outputRow[] = "";
 						}
@@ -655,7 +663,9 @@ class AssetManager extends Admin_Controller {
 					}
 
 				}
+				$outputRow[] = $assetModel->getLastModifiedName();
 
+				
 				$assetModel = null;
 				$i++;
 				if($i == 50) {
