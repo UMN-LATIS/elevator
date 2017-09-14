@@ -17,8 +17,12 @@ class Search extends Instance_Controller {
 		$this->template->content->view("drawers/drawerModal");
 	}
 
-	public function index($searchId)
+	public function index($searchId = null)
 	{
+		if(!$searchId) {
+			instance_redirect("/");
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_SEARCH) {
