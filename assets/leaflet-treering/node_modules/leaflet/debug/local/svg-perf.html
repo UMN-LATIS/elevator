@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leaflet debug page</title>
+
+  <link rel="stylesheet" href="../../dist/leaflet.css" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="../css/screen.css" />
+
+  <script type="text/javascript" src="../../build/deps.js"></script>
+  <script src="../leaflet-include.js"></script>
+</head>
+<body>
+  <div id='map'></div>
+
+
+  <script src="zones.js"></script>
+  <script>
+    // Remember to include either the Leaflet 0.7.3 or the Leaflet 1.0.0-beta1 library
+    var myCenter = new L.LatLng(55.5673097006514,37.60336569448);
+    var map = new L.Map('map', {center: myCenter, zoom: 7});
+
+    var zoneLayer = L.layerGroup();
+    map.addLayer(zoneLayer);
+    
+    zones.forEach(function(zone){
+      var polygon = L.polygon(zone, {color:'black', weight:1});
+      zoneLayer.addLayer(polygon);
+    });
+
+    function pan(i) {
+        if (i > 10) return;
+        map.panBy([20 * Math.cos(i), 20 * Math.sin(i)]);
+        setTimeout(function () { pan(i + 1); }, 250);
+    }
+
+    pan(0);
+  </script>
+</body>
+</html>

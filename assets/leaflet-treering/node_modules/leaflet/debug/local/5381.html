@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+	<style type="text/css">
+		#map { width:100vw; height: 100vh; }
+	</style>
+
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+	<button id="populate">Populate with 10 markers</button>
+
+	<script>
+    var map = new L.Map('map').setView(L.latLng(49, 8.4),3);
+
+    var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+    }).addTo(map);
+
+
+    function doTheWheel(amount) {
+      var mapSize = map.getSize();
+      var ev = new WheelEvent('wheel', {
+
+        deltaX: 0,
+        deltaY: amount,
+        deltaZ: 0,
+        deltaMode: 0,
+
+        clientX: mapSize.x / 2,
+        clientY: mapSize.y / 2
+      });
+
+      map.getContainer().dispatchEvent(ev);
+    }
+
+    function doTheWheelClosure(amount) {
+      return function() {
+        return doTheWheel(amount);
+      }
+    }
+    
+    L.DomEvent.on(map.getContainer(), 'wheel', ev=>console.log(ev.deltaY))
+  
+	for(var i = 0; i < 100; i++)
+		setTimeout(doTheWheelClosure(-200), 4000 + 10*i);
+
+	for(var i = 0; i < 4; i++)
+		setTimeout(doTheWheelClosure(60), 4000 + 10 * 100 + 360 * i);
+    
+	</script>
+</body>
+</html>

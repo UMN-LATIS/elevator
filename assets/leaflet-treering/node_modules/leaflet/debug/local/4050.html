@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+
+	<script>
+var geojsonFeature = {
+  "type": "Feature",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [38.2024491820346, 54.5524873126707],
+        [38.4183321614213, 54.7274329242398],
+        [38.5262109935841, 54.679602980295],
+        [38.5003353357618, 54.6120668521827],
+        [38.2024491820346, 54.5524873126707]
+      ]
+    ]
+  },
+  "properties": {}
+}
+var map = L.map("map");
+
+var geojson = L.geoJSON(geojsonFeature);
+map.fitBounds(geojson.getBounds());
+geojson.addTo(map);
+
+var bringingToFront = false;
+geojson.on("mouseover", function (e) {
+    console.log("mouseover");
+	e.target.bringToFront();
+});
+
+geojson.on("mouseout", function (e) {
+    console.log("No event after bringToFront on IE11");
+});
+
+geojson.bindTooltip("my tooltip text");
+	</script>
+</body>
+</html>

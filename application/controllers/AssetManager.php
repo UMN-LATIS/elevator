@@ -143,6 +143,9 @@ class AssetManager extends Admin_Controller {
 		$this->template->javascript->add("assets/js/widgetHelpers.js");
 		$assetTemplate = $this->asset_template->getTemplate($this->asset_model->templateId);
 
+
+
+
 		$this->template->title = "Edit Asset | ". $assetTemplate->getName() . "";
 
 		if($inlineForm) {
@@ -584,6 +587,8 @@ class AssetManager extends Admin_Controller {
 					$widgetArray[] = $widgets->getLabel() . " Address";
 				}
 			}
+			$widgetArray[] = "last modified by";
+
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
     		header('Content-Disposition: attachment; filename="csvExport-' . $searchId . '.csv";');
@@ -642,7 +647,10 @@ class AssetManager extends Admin_Controller {
 					else {
 
 						$outputRow[] = "";
-						if(get_class($widgets) == "Upload" || get_class($widgets) == "Related_asset") {
+						if(get_class($widgets) == "Related_asset") {
+							$outputRow[] = "";
+						}
+						if(get_class($widgets) == "Upload") {
 							$outputRow[] = "";
 							$outputRow[] = "";
 						}
@@ -655,7 +663,9 @@ class AssetManager extends Admin_Controller {
 					}
 
 				}
+				$outputRow[] = $assetModel->getLastModifiedName();
 
+				
 				$assetModel = null;
 				$i++;
 				if($i == 50) {
@@ -956,6 +966,50 @@ class AssetManager extends Admin_Controller {
 		}
 
 
+	}
+
+	/**
+	 * Allow sidecars to be updated independently of the asset
+	 */
+	public function setSidecarForFile($fileId, $sidecarType) {
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if($accessLevel < PERM_ADDASSETS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
+		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+		$fileHandler->loadByObjectId($fileId);
+
+		if(!($fileHandler)) {
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
+
+		if(!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
+			$this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
+
+		$uploadHandlers = $this->asset_model->getAllWithinAsset("Upload", null, 0);
+
+		foreach($uploadHandlers as $uploadHandler) {
+
+			foreach($uploadHandler->fieldContentsArray as $uploadHandlerContent) {
+
+				if($uploadHandlerContent->fileId == $fileId) {
+					if($sidecarContent = json_decode($this->input->post("sidecarContent"))) {
+						$uploadHandlerContent->sidecars[$sidecarType] = $sidecarContent;
+						$this->asset_model->save();
+						echo json_encode(["status"=>"success"]);
+						return;
+					}
+					
+				}
+			}
+		}
+		echo json_encode(["status"=>"failure"]);
 	}
 
 

@@ -13,7 +13,7 @@ class Drawers extends Instance_Controller {
 	}
 
 	public function listDrawers() {
-		$drawers = $this->user_model->getDrawers();
+		$drawers = $this->user_model->getDrawers($adminOnly=false, $nonGlobalOnly=true);
 		$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
 		$this->template->publish();
 	}

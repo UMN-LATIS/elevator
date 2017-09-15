@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script type="text/javascript" src="../../build/deps.js"></script>
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+	<button id="populate">Populate with 10 markers</button>
+
+	<script type="text/javascript">
+	var mad = [40.40, -3.7];
+
+    var map = new L.Map('map', {center: mad, zoom: 2, worldCopyJump: true});
+
+    var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+    }).addTo(map);
+
+    targetDrawing = L.circle( mad, 30000, { className: 'target' });
+    targetDrawing.addTo(map);
+    
+    map.dragging.disable();
+    map.dragging.enable();
+	</script>
+</body>
+</html>
