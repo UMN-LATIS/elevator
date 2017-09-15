@@ -685,11 +685,16 @@ class Permissions extends Instance_Controller {
 		}
 		$instanceList = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
 
+		 $apiKey = $this->user_model->getApiKeys()?$this->user_model->getApiKeys()->first():null;
+		if(!$apiKey) {
+			$apiKey = $this->user_model->generateKeys();
+		}
 
-		$this->template->loadJavascript(["bootstrap-datepicker"]);
+
+		$this->template->loadJavascript(["bootstrap-datepicker","bootstrap-show-password"]);
 		$this->template->loadCSS(["datepicker"]);
 
-		$this->template->content->view('permissions/addUser', ["user"=>$user, "instanceList"=>$instanceList]);
+		$this->template->content->view('permissions/addUser', ["user"=>$user, "instanceList"=>$instanceList, "apiKey"=>$apiKey]);
 		$this->template->content->view('user/hiddenAssets', ["hiddenAssets"=>$hiddenAssetArray, "isOffset"=>false]);
 		$this->template->publish();
 

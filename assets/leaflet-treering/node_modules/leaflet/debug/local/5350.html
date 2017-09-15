@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script src="../../build/deps.js"></script>
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+	<button id="populate">Populate with 10 markers</button>
+
+	<script type="text/javascript">
+	    // Remember to include either the Leaflet 0.7.3 or the Leaflet 1.0.0-beta1 library
+
+	    var myCenter = new L.LatLng(50.5, 30.51);
+	    var map = new L.Map('map', {center: myCenter, zoom: 15});
+
+	    L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+	    }).addTo(map);
+
+	    var marker = new L.Marker(myCenter);
+	    map.addLayer(marker);
+
+	    marker.bindPopup("<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Nullam malesuada erat ut turpis. Suspendisse urna nibh, viverra non, semper suscipit, posuere a, pede.</p><p>Donec nec justo eget felis facilisis fermentum. Aliquam porttitor mauris sit amet orci. Aenean dignissim pellentesque felis.</p>");
+
+		setTimeout(function() {
+			var leafLetBounds = [
+			      [48.902157, 2.224122],
+			      [48.815575, 2.46976]
+			    ]
+
+
+			map.flyToBounds(leafLetBounds)
+			map.once('moveend', function() {
+			    console.log('moveend!');
+			    map.setMaxBounds(leafLetBounds);
+			  
+			  	// add marker
+				var parisLatLng = new L.LatLng(48.854934, 2.350983);
+				var markerParis = new L.Marker(parisLatLng);
+				map.addLayer(markerParis);
+		    });
+
+	   }, 2000)
+	</script>
+</body>
+</html>

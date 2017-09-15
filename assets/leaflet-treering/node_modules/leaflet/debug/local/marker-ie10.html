@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script type="text/javascript" src="../../build/deps.js"></script>
+	<script src="../../dist/leaflet-src.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+
+	<script type="text/javascript">
+var map = L.map('map');
+
+layer = L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	attribution: 'OpenStreetMap'
+}).addTo(map);
+
+var mapCorners = [];
+mapCorners.push([24.7433195, -124.7844079]);  // U.S. southwest
+mapCorners.push([49.3457868, -66.9513812]);   // U.S. northeast
+map.fitBounds(mapCorners);
+
+var geoJSON = {"type":"FeatureCollection","features":[
+{"type":"Feature","id":"USA-CO","properties":{"fips":"08","name":"Colorado"},"geometry":{"type":"Polygon","coordinates":[[[-107.919731,41.003906],[-105.728954,40.998429],[-104.053011,41.003906],[-102.053927,41.003906],[-102.053927,40.001626],[-102.042974,36.994786],[-103.001438,37.000263],[-104.337812,36.994786],[-106.868158,36.994786],[-107.421329,37.000263],[-109.042503,37.000263],[-109.042503,38.166851],[-109.058934,38.27639],[-109.053457,39.125316],[-109.04798,40.998429],[-107.919731,41.003906]]]}},
+{"type":"Feature","id":"USA-WY","properties":{"fips":"56","name":"Wyoming"},"geometry":{"type":"Polygon","coordinates":[[[-109.080842,45.002073],[-105.91517,45.002073],[-104.058488,44.996596],[-104.053011,43.002989],[-104.053011,41.003906],[-105.728954,40.998429],[-107.919731,41.003906],[-109.04798,40.998429],[-111.047063,40.998429],[-111.047063,42.000709],[-111.047063,44.476286],[-111.05254,45.002073],[-109.080842,45.002073]]]}}
+]};
+
+var layerConfig = {
+	colorFill: '99ccff',
+  weight: 1,
+	onEachFeature: function(feature, layer) {
+		layer.on('mouseover', function(e) {
+			layer.setStyle({
+				colorFill: 'ff0000',
+        weight: 3
+			});
+		});
+		
+		layer.on('mouseout', function(e) {
+			layer.setStyle({
+				colorFill: '99ccff',
+        weight: 1
+			});
+		});
+	}
+};
+
+var geoJSONLayer = L.geoJson(geoJSON.features, layerConfig).addTo(map);
+	</script>
+</body>
+</html>

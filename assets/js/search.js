@@ -205,6 +205,16 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 				cachedResults.searchResults = $.merge(cachedResults.searchResults, oldResults);
 				cachedResults.matches = newArray;
 
+				// we want these to use the full stored set, not just the curret batch, so we run them after merging.
+				if($('a[href="#map"]').parent().hasClass("active")) {
+					prepMap();
+				}
+
+				if($('a[href="#timeline"]').parent().hasClass("active")) {
+					cachedDates = null;
+					prepTimeline();
+				}
+
 			}
 		});
 }
@@ -282,6 +292,8 @@ function populateSearchFields(searchEntry) {
 		getSuggestions(searchEntry.searchText);
 	}
 
+	$(".sortBy").val(searchEntry.sort);
+
 	$.each(searchEntry, function(index, value) {
 		if(Array.isArray(value)) {
 			var targetField = $("#" + index);
@@ -295,8 +307,7 @@ function populateSearchFields(searchEntry) {
 		else {
 			$("#" + index).val(value);	
 		}
-		
-
+	
 	});
 }
 
@@ -317,34 +328,6 @@ function populateSearchResults(searchObject) {
 		$("#results").append(html);
 		$("#listResults").append(listHTML);
 	});
-
-
-
-	if($('a[href="#map"]').parent().hasClass("active")) {
-		prepMap();
-	}
-
-	if($('a[href="#timeline"]').parent().hasClass("active")) {
-		prepTimeline();
-	}
-
-	if($('a[href="#gallery"]').parent().hasClass("active")) {
-	}
-
-	if($('a[href="#grid"]').parent().hasClass("active")) {
-		
-	}
-	else {
-		
-	}
-
-	if($('a[href="#list"]').parent().hasClass("active")) {
-		
-	}
-	else {
-		
-		
-	}
 
 	totalResults = searchObject.totalResults;
 	$(".resultsData").html("<p>Total Results: "+ searchObject.totalResults + "</p>");
@@ -403,8 +386,6 @@ function prepMap() {
 	if($.goMap.getMarkerCount()>0) {
 		$.goMap.clearMarkers();
 	}
-
-
 
 	$.each(cachedResults.matches, function(index, value) {
 		if(value.locations) {

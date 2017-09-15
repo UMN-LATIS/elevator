@@ -346,12 +346,28 @@ window.addEventListener("load",function(){
 });
 
 $(".addToPlugin").on("click", function() {
-
   fileObjectId = $("#embedView").data("objectid");
+  if(sessionStorage.elevatorCallbackType == "lti") {
+    $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId}, function(data, textStatus, xhr) {
+        returnForm = '<form id="ltiForm" action="' + sessionStorage.returnURL + '" method="post" encType="application/x-www-form-urlencoded"> \
+                  <input type="hidden" name="lti_message_type" value="ContentItemSelection" /> \
+                  <input type="hidden" name="lti_version" value="LTI-1p0" /> \
+                  <input type=hidden name="content_items" value="" id="lti_content" /> \
+                </form>';
 
-  var currentLocation = window.location.toString();
-  var originalWindow = window.opener;
-  originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*"); 
+        $("body").append(returnForm);
+        $("#lti_content").val(data);
+        $("#ltiForm").submit();      
+    });
+
+
+  }
+  else if(sessionStorage.elevatorCallbackType == "JS") {
+    var currentLocation = window.location.toString();
+    var originalWindow = window.opener;
+    originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*");   
+  }
+
 });
 
 

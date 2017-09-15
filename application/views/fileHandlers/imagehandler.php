@@ -45,7 +45,7 @@ $menuArray['fileInfo'] = $fileInfo;
 $downloadArray = [];
 
 if(isset($fileContainers['screen']) && $fileContainers['screen']->ready) {
-$downloadArray["Download Derivative"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/screen");
+$downloadArray["Download Derivative (jpg)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/screen");
 }
 
 if($allowOriginal) {
@@ -96,7 +96,16 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 			<?if($fileObject->sourceFile->getType() == "svs"):?>
 				<?=$this->load->view("fileHandlers/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
 			<?elseif(array_key_exists("tiled", $fileContainers)):?>
-				<?=$this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject], true)?>
+				<?
+				$uploadWidget = $fileObject->getUploadWidget();
+				if($uploadWidget->parentWidget->enableDendro) {
+					echo $this->load->view("fileHandlers/imageHandler_dendro", ["fileObject"=>$fileObject], true);
+				}
+				else {
+					echo $this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject], true);
+				}
+				?>
+
 			<?else:?>
 				<?if(isset($fileObject->sourceFile->metadata["spherical"])):?>
 					<div style="height:500px">

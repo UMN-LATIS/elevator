@@ -16,6 +16,7 @@ class User_model extends CI_Model {
 	private $maxRecents = 5;
 	public $userData = array();
 
+	public $nonGlobalDrawerPermissions = array(); // drawers that are only available to this user due to specific perms, show up in their list
 
 	public function __construct()
 	{
@@ -235,8 +236,12 @@ class User_model extends CI_Model {
 			$drawer_groups = array_merge($drawer_groups, $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(['group_type' => 'Authed_remote', 'group_value' => 1]));
 		}
 
+		$nonGlobalDrawers = array();
+
 		if($this->user) {
-			$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", USER_TYPE, $this->user->getId()));
+			$userDrawers = $this->getPermissions("DrawerGroup", USER_TYPE, $this->user->getId());
+			$drawer_groups = array_merge($drawer_groups, $userDrawers);
+			$nonGlobalDrawers = array_merge($nonGlobalDrawers, $userDrawers);
 		}
 
 
@@ -244,9 +249,13 @@ class User_model extends CI_Model {
 
 		foreach($groupLookups as $type=>$values) {
 			foreach($values as $value) {
-				$drawer_groups = array_merge($drawer_groups,$this->getPermissions("DrawerGroup", $type,$value));
+				$localPermDrawers = $this->getPermissions("DrawerGroup", $type,$value);
+				$drawer_groups = array_merge($drawer_groups, $localPermDrawers);
+				$nonGlobalDrawers = array_merge($nonGlobalDrawers, $localPermDrawers);
 			}
 		}
+
+
 
 		foreach ($drawer_groups as $drawer_group) {
 			foreach ($drawer_group->getPermissions() as $drawerPermission) {
@@ -258,6 +267,18 @@ class User_model extends CI_Model {
 				}
 			}
 		}
+
+		foreach ($nonGlobalDrawers as $drawer_group) {
+			foreach ($drawer_group->getPermissions() as $drawerPermission) {
+				if (array_key_exists($drawerPermission->getDrawer()->getId(), $this->drawerPermissions)) {
+					$this->nonGlobalDrawerPermissions[$drawerPermission->getDrawer()->getId()] = max($this->drawerPermissions[$drawerPermission->getDrawer()->getId()], $drawerPermission->getPermission()->getLevel());
+				}
+				else {
+					$this->nonGlobalDrawerPermissions[$drawerPermission->getDrawer()->getId()] = $drawerPermission->getPermission()->getLevel();
+				}
+			}
+		}
+
 	}
 
 	public function isInstanceAdmin() {
@@ -364,10 +385,16 @@ class User_model extends CI_Model {
 	}
 
 
-	public function getDrawers($adminOnly=false)
+	public function getDrawers($adminOnly=false, $nonGlobalDrawers=false)
 	{
 		$targetArray = array();
-		foreach($this->drawerPermissions as $drawerId=>$perm) {
+
+		$targetArray = $this->drawerPermissions;
+		if($nonGlobalDrawers) {
+			$targetArray = $this->nonGlobalDrawerPermissions;
+		}
+
+		foreach($targetArray as $drawerId=>$perm) {
 			if(!$adminOnly && $perm>PERM_NOPERM) {
 				$targetArray[] = $drawerId;
 			}
@@ -491,6 +518,24 @@ class User_model extends CI_Model {
 	}
 
 
+	public function generateKeys() {
+
+		$apiKey = new Entity\ApiKey;
+
+		$apiKey->setLabel("Generated Key");
+		$apiKey->setApiKey(sha1($this->userId . "secretHash"));
+		$apiKey->setApiSecret(sha1($this->userId . "secretKey"));
+		$apiKey->setOwner($this->user);
+		$apiKey->setRead(true);
+		$this->doctrine->em->persist($apiKey);
+
+		$this->doctrine->em->flush();
+		return $apiKey;
+
+
+	}
+
+
 	/**
 	 * Catch invalid method calls and see if our Doctrine child instance
 	 * will respond - if so, call through to that.  Otherwise, flag an error.
@@ -508,7 +553,7 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","userData"];
+		return ["collectionPermissions","instancePermissions","drawerPermissions","nonGlobalDrawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","userData"];
 
 	}
 
