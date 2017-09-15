@@ -511,8 +511,6 @@ class Search extends Instance_Controller {
 			}
 		}
 
-		$this->logging->logError("search", $searchArray);
-
 		$haveSort = false;
 		if(isset($searchArray["sort"]) && $searchArray["sort"] != "0") {
 			$haveSort = true;
