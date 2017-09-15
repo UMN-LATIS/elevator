@@ -275,41 +275,12 @@ class Search extends Instance_Controller {
 		$jsLoadArray[] = "templateSearch";
 		$this->template->loadJavascript($jsLoadArray);
 
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		if($accessLevel < PERM_SEARCH) {
-			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-			if(count($allowedCollections) == 0) {
-				$this->errorhandler_helper->callError("noPermission");
-			}
-			$collections = $this->instance->getCollectionsWithoutParent();
-
-			
-			$collections = array_values(array_uintersect($collections, $allowedCollections, function($a, $b) { 
-				if($a->getId() == $b->getId()) { 
-					return 0;
-				}
-				if($a->getId() > $b->getId()) {
-					return 1;
-				}
-				return -1;
-			}));
-
-
-		}
-		else {
-			$collections = $this->instance->getCollectionsWithoutParent();
-		}
-
-
+		$collections = $this->collection_model->getUserCollections();
 		foreach($collections as $key=>$collection) {
-
 			if(!$collection->getShowInBrowse()) {
 				unset($collections[$key]);
 			}
-
 		}
-
 
 		$collections = array_values($collections);  // rekey array
 		

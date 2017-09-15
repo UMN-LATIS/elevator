@@ -102,56 +102,70 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
     </div>
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 <?if(!$this->useUnauthenticatedTemplate):?>
-<div class="col-sm-3">
-      <form class="navbar-form navbar-input-group navbar-left searchForm" role="search">
+  <div class="col-sm-3">
+    <form class="navbar-form navbar-input-group navbar-left searchForm" role="search">
       <input type="hidden" name="collection[]" id="collection" value=0>
-          <input type="hidden" name="specificSearchField[]" id="specificSearchField">
-          <input type="hidden" name="specificSearchText[]" id="specificSearchText">
-          <input type="hidden" name="specificSearchFuzzy[]" id="specificSearchFuzzy">
-          <input type="hidden" name="fuzzySearch" value=0>
-        <div class="input-group">
-         <div class="input-group-btn search-panel">
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                <span id="search_concept">Everywhere</span> <span class="caret"></span>
-              </button>
-              <style>
-              .dropdown-menu {
-                overflow: scroll;
-                max-height: 90vh;
-              }
-              </style>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="#contains">Everywhere</a></li>
-                <li class="divider"></li>
-                <?foreach($this->instance->getCollections() as $collection):?>
-                    <li><a href="#<?=$collection->getId()?>"><?=$collection->getTitle()?></a></li>
-                <?endforeach?>
-              </ul>
-          </div>
-          <label for="searchText" class="hide">Search</label>
-          <input type="text" class="form-control searchText"  autocomplete="off"  id="searchText" name="searchText" placeholder="Search">
-          <span class="input-group-btn">
-            <button type="submit" class="btn btn-default searchButton"><span class="glyphicon glyphicon-search"></span></button>
-          <button type="button" class="btn btn-default dropdown-toggle advanced-search-toggle" data-toggle="dropdown">
-            <span class="caret"></span>
-            <span class="sr-only">Toggle Dropdown</span>
+      <input type="hidden" name="specificSearchField[]" id="specificSearchField">
+      <input type="hidden" name="specificSearchText[]" id="specificSearchText">
+      <input type="hidden" name="specificSearchFuzzy[]" id="specificSearchFuzzy">
+      <input type="hidden" name="fuzzySearch" value=0>
+      <div class="input-group">
+      
+        <input type="text" class="form-control searchText"  aria-label="Search" autocomplete="off"  id="searchText" name="searchText" placeholder="Search">
+        <div class="input-group-btn search-panel">
+          <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span id="search_concept" class="hidden-md hidden-sm">All Collections</span> <span class="caret"></span>
           </button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="<?=instance_url("/search/advancedSearchModal")?>" data-toggle="modal" data-target="#advancedSearchModal">Advanced Search</a></li>
-            <li class="divider"></li>
-            <li class="disabled"><a href="#">Recent Searches:</a></li>
-            <?if($this->user_model->userLoaded):?>
+          <style>
+          .dropdown-menu {
+            overflow: scroll;
+            max-height: 90vh;
+          }
+        </style>
+        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+          <li><a href="#contains" class="collectionFilterSelect" data-collection-id="0">All Collections</a></li>
+          <li class="divider"></li>
+          <?
+
+          function drawNestedCollections($collectionList, $indentMarker=null) {
+            foreach($collectionList as $collection) {
+              echo '<li><a href="#' .$collection->getId() . '" class="collectionFilterSelect" data-collection-id="' . $collection->getId() . '">' . $indentMarker . " " . $collection->getTitle(). '</a></li>';
+              if($collection->hasChildren()) {
+                drawNestedCollections($collection->getChildren(), $indentMarker . "-");
+              }  
+            }
+
+          }
+          drawNestedCollections($this->collection_model->getUserCollections());
+
+          ?>
+        </ul>
+      </div>
+        <button type="submit" class="btn btn-default searchButton"><span class="glyphicon glyphicon-search"></span></button>
+        <div class="btn-group  hidden-md hidden-sm">
+        <button type="button" class="btn btn-default dropdown-toggle advanced-search-toggle" data-toggle="dropdown">
+          <span class="caret"></span>
+          <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu " role="menu">
+          <li><a href="<?=instance_url("/search/advancedSearchModal")?>" data-toggle="modal" data-target="#advancedSearchModal">Advanced Search</a></li>
+          <li class="divider"></li>
+          <li class="disabled"><a href="#">Recent Searches:</a></li>
+          <?if($this->user_model->userLoaded):?>
             <?foreach($this->user_model->getRecentSearches() as $search):?>
-            <li><a href="<?=instance_url("search/s/". $search->getId())?>"><?=$search->getSearchText()?></a></li>
-            <?endforeach?>
-            <?endif?>
-            <?if($this->user_model->userLoaded && $this->user_model->getIsSuperAdmin() || $this->user_model->getAccessLevel("instance",$this->instance)>=PERM_ADDASSETS || $this->user_model->getMaxCollectionPermission() >= PERM_ADDASSETS):?>
-            <li class="divider"></li>
-            <li><a href="<?=instance_url("search/searchList")?>">Custom Searches</a></li>
-            <?endif?>
+              <li><a href="<?=instance_url("search/s/". $search->getId())?>"><?=$search->getSearchText()?></a></li>
+              <?endforeach?>
+              <?endif?>
+              <?if($this->user_model->userLoaded && $this->user_model->getIsSuperAdmin() || $this->user_model->getAccessLevel("instance",$this->instance)>=PERM_ADDASSETS || $this->user_model->getMaxCollectionPermission() >= PERM_ADDASSETS):?>
+                <li class="divider"></li>
+                <li><a href="<?=instance_url("search/searchList")?>">Custom Searches</a></li>
+              <?endif?>
           </ul>
-        </span>
         </div>
+          </div>
+
+          </div>
         <input type="hidden" name="sort" class="hiddenSort" value="0" />
       </form>
     </div>

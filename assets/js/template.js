@@ -34,6 +34,8 @@ $(document).ready(function() {
     $(".advancedSearchText").val($(".searchText").val());
   });
 
+
+
 });
 
 
@@ -104,3 +106,14 @@ $(window).resize(function() {
 Mousetrap.bind('command+ctrl+h', function() {
   $(".advancedContent").toggle();
 });
+
+$(".collectionFilterSelect").on("click", function(e) {
+
+  e.preventDefault();
+
+  targetItem = $(this).data("collection-id");
+
+  $("#collection").val(targetItem);
+  $("#search_concept").text($(this).text());
+});
+

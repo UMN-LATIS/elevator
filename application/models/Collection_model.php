@@ -46,6 +46,70 @@ class collection_model extends CI_Model {
 
 		return $this->s3collectionCache[$collectionId];
 	}
+
+	public function getUserCollections($user=null) {
+		if(!$user && $this->user_model && $this->user_model->userLoaded) {
+			$user = $this->user_model;
+		}
+
+		if(!$user) {
+			return array();
+		}
+
+		$accessLevel = $user->getAccessLevel("instance",$this->instance);
+
+		if($accessLevel < PERM_SEARCH) {
+			$allowedCollections = $user->getAllowedCollections(PERM_SEARCH);
+			if(count($allowedCollections) == 0) {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+			$allParents = $this->instance->getCollectionsWithoutParent();
+
+			
+			$collections = array_values(array_uintersect($allParents, $allowedCollections, function($a, $b) { 
+				if($a->getId() == $b->getId()) { 
+					return 0;
+				}
+				if($a->getId() > $b->getId()) {
+					return 1;
+				}
+				return -1;
+			}));
+
+			$collections = array_merge($collections, $this->findOrphans($allParents, $allowedCollections, $collections));
+
+
+
+		}
+		else {
+			$collections = $this->instance->getCollectionsWithoutParent();
+		}
+
+		return $collections;
+
+	}
+
+	public function findOrphans($allParents, $allowedCollections, $foundCollections) {
+		$orphans = [];
+
+		foreach($allParents as $collection) {
+
+			if(!in_array($collection, $allowedCollections)) {
+				// see if this collection has any children we should allow
+				$children = $collection->getFlattenedChildren();
+				foreach($children as $child) {
+					if(!in_array($child, $foundCollections) && in_array($child, $allowedCollections)) {
+						$orphans[] = $child;
+					}
+				}	
+			}
+			
+		}
+		return $orphans;
+
+	}
+
+
 }
 
 /* End of file  */
