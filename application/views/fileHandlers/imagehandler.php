@@ -45,7 +45,7 @@ $menuArray['fileInfo'] = $fileInfo;
 $downloadArray = [];
 
 if(isset($fileContainers['screen']) && $fileContainers['screen']->ready) {
-$downloadArray["Download Derivative"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/screen");
+$downloadArray["Download Derivative (jpg)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/screen");
 }
 
 if($allowOriginal) {
