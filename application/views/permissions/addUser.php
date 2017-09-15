@@ -92,7 +92,7 @@ $(document).on("ready", function() {
 
 		<?endif?>
 
-		<div class="form-group">
+		<div class="form-group" style="display:none;">
 			<label for="inputEmail" class="col-sm-2 control-label">Canvas (LTI) URL:</label>
 			<div class="col-sm-5">
 				<input type="text" value="<?=instance_url("/api/v1/lti/ltiConfig")?>" class="autoSelectField form-control">
