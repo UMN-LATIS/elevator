@@ -625,7 +625,8 @@ class Permissions extends Instance_Controller {
 		$tempUser = new Entity\User;
 		$tempUser->setUserType("Local");
 
-		$this->template->content->view('permissions/addUser', ["user"=>$tempUser]);
+		$apiKey = new Entity\ApiKey;
+		$this->template->content->view('permissions/addUser', ["user"=>$tempUser, 'apikey'=>$apiKey]);
 		$this->template->publish();
 	}
 
