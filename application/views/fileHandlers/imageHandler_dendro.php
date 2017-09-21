@@ -77,7 +77,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	var AWS;
 	var layer;
 	var sideCar = {};
-
+	var treering;
 	<?if(isset($widgetObject->sidecars) && array_key_exists("dendro", $widgetObject->sidecars)):?>
 	sideCar = <?=json_encode($widgetObject->sidecars['dendro'])?>;
 	<?endif?>
@@ -172,15 +172,14 @@ if($widgetObject->parentWidget->dendroFields) {
 		innerYear = <?=$innerYear?>;
 		<?endif?>
 
-		if(sideCar.points !== undefined && sideCar.points.length < 2) {
+		if(sideCar.points !== undefined && sideCar.points.length < 2 && sideCar.annotations == undefined || sideCar.annotations.length < 1) {
 			sideCar = {};
 		}
 		var saveURL = "";
 		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
 		saveURL = basePath + "assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
 		<?endif?>
-
-		var treering = new leafletTreering(map, basePath, saveURL, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		treering = new leafletTreering(map, basePath, saveURL, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	if(saveURL != "") {
     		treering.addSaveButton();
