@@ -138,7 +138,7 @@ class ZipMedDicomHandler extends ZipHandler {
 				if($entry->getFilename()[0] === ".") {
 					continue;
 				}
-				if($entry->isFile() && pathinfo($entry->getPathname(), PATHINFO_EXTENSION) == "dcm") {
+				if($entry->isFile() && strtolower(pathinfo($entry->getPathname(), PATHINFO_EXTENSION)) == "dcm") {
 					$fileSet[] = str_replace($targetPath, "", $entry->getPathname());
 
 					if($firstEntry) {
