@@ -276,17 +276,35 @@ class Search extends Instance_Controller {
 		$this->template->loadJavascript($jsLoadArray);
 
 		$collections = $this->collection_model->getUserCollections();
-		foreach($collections as $key=>$collection) {
-			if(!$collection->getShowInBrowse()) {
-				unset($collections[$key]);
-			}
-		}
+		$this->buildPreviews($collections);
 
 		$collections = array_values($collections);  // rekey array
 		
-		$this->template->loadJavascript(["assets/js/templateSearch"]);
+		$this->template->loadJavascript(["templateSearch"]);
 		$this->template->content->view("listCollections", ["collections"=>$collections]);
 		$this->template->publish();
+
+	}
+
+	public function buildPreviews(&$collectionArray) {
+		foreach($collectionArray as $key=>$collection) {
+			if(!$collection->getShowInBrowse()) {
+				unset($collectionArray[$key]);
+			}
+			else {
+				if($collection->getPreviewImage() !== null && $collection->getPreviewImage() !== "") {
+					$fileObject = $this->filehandler_router->getHandledObject($collection->getPreviewImage());
+					$collection->previewImageHandler = $fileObject;
+				}
+				else {
+					$collection->previewImageHandler = null;
+				}
+				if($collection->hasChildren()) {
+					$this->buildPreviews($collection->getChildren());
+				}
+			}
+		}
+
 
 	}
 

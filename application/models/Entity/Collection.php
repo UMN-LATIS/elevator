@@ -493,4 +493,33 @@ class Collection
     {
         return $this->collectionDescription;
     }
+    /**
+     * @var string
+     */
+    private $previewImage;
+
+
+    /**
+     * Set previewImage
+     *
+     * @param string $previewImage
+     *
+     * @return Collection
+     */
+    public function setPreviewImage($previewImage)
+    {
+        $this->previewImage = $previewImage;
+
+        return $this;
+    }
+
+    /**
+     * Get previewImage
+     *
+     * @return string
+     */
+    public function getPreviewImage()
+    {
+        return $this->previewImage;
+    }
 }

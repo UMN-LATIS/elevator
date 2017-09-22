@@ -17,8 +17,6 @@ function renderFileMenu($menuArray) {
 			else {
 				$outputText .= '<li class="list-group-item assetDetails"><strong>' . $entryKey . ':</strong> ' . htmlentities($fileInfoEntry, ENT_QUOTES) . ' </li>';	
 			}
-
-			
 		}
 		$outputText .= '</ul>\'></span>';
 	}
