@@ -37,6 +37,12 @@ class Upload_contents extends Widget_contents_base {
 				$dateData = array();
 			}
 
+			foreach($this->sidecars as $key=>$value) {
+				if($this->isJson($value)) {
+					$this->sidecars[$key] = json_decode($value); // we store decoded objects and let them get jsonified
+				}
+			}
+
 			return array_merge($dateData, ["fileId"=>$this->fileHandler->getObjectId(), "fileDescription"=>$this->fileDescription, "fileType"=>$this->fileHandler->sourceFile->getType(), "searchData"=>$this->getSearchData(), "loc"=>$location, "sidecars"=>$this->sidecars, "isPrimary"=>$this->isPrimary]);
 		}
 		else {
@@ -176,6 +182,11 @@ class Upload_contents extends Widget_contents_base {
 
 	public function getContent() {
 		return $this->fileId;
+	}
+
+	function isJson($string) {
+ 		json_decode($string);
+ 		return (json_last_error() == JSON_ERROR_NONE);
 	}
 
 }
