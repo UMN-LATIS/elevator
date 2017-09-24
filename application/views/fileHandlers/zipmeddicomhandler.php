@@ -144,4 +144,16 @@ $(document).ready(function() {
 
 </script>
 
+<?else:?>
+<style>
+html {
+    height:100%;
+}
+
+body {
+    height: 100%;
+    overflow: hidden;
+}
+</style>
+
 <?endif?>
