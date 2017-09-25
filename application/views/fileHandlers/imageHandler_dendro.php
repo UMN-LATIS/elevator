@@ -176,10 +176,12 @@ if($widgetObject->parentWidget->dendroFields) {
 			sideCar = {};
 		}
 		var saveURL = "";
+		var canSave = false;
 		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
 		saveURL = basePath + "assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
+		canSave = true;
 		<?endif?>
-		treering = new leafletTreering(map, basePath, saveURL, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		treering = new leafletTreering(map, basePath, saveURL, canSave, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	if(saveURL != "") {
     		treering.addSaveButton();
