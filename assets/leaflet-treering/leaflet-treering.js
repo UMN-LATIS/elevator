@@ -198,19 +198,19 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
     //creating colored icons for points
     var markerIcon = {
         light_blue: L.icon({
-            iconUrl: '/assets/leaflet-treering/images/light_blue_icon_transparent.png',
+            iconUrl: Lt.basePath + 'images/light_blue_icon_transparent.png',
             iconSize: [32, 32] // size of the icon
         }),
         dark_blue: L.icon({
-            iconUrl: '/assets/leaflet-treering/images/dark_blue_icon_transparent.png',
+            iconUrl: Lt.basePath + 'images/dark_blue_icon_transparent.png',
             iconSize: [32, 32] // size of the icon
         }),
         white: L.icon({
-            iconUrl: '/assets/leaflet-treering/images/white_icon_transparent.png',
+            iconUrl: Lt.basePath + 'images/white_icon_transparent.png',
             iconSize: [32, 32] // size of the icon
         }),
         grey: L.icon({
-            iconUrl: '/assets/leaflet-treering/images/grey_icon_transparent.png',
+            iconUrl: Lt.basePath + 'images/grey_icon_transparent.png',
             iconSize: [32, 32] // size of the icon
         })
     };

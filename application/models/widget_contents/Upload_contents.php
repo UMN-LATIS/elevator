@@ -38,7 +38,7 @@ class Upload_contents extends Widget_contents_base {
 			}
 
 			foreach($this->sidecars as $key=>$value) {
-				if($this->isJson($value)) {
+				if(is_string($value) && $this->isJson($value)) {
 					$this->sidecars[$key] = json_decode($value); // we store decoded objects and let them get jsonified
 				}
 			}

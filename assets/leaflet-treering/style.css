@@ -76,3 +76,7 @@ table{
 	height: 0;
 	padding: 0;
 }
+
+.leaflet-fullscreen-on div.leaflet-top.leaflet-left {
+	margin-left: 10px;
+}
