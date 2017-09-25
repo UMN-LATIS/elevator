@@ -172,7 +172,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		innerYear = <?=$innerYear?>;
 		<?endif?>
 
-		if(sideCar.points !== undefined && sideCar.points.length < 2 && (sideCar.annotations === undefined || sideCar.annotations.length < 1)) {
+		if(sideCar == null || (sideCar.points !== undefined && sideCar.points.length < 2 && (sideCar.annotations === undefined || sideCar.annotations.length < 1)) {
 			sideCar = {};
 		}
 		var saveURL = "";
