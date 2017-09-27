@@ -36,6 +36,7 @@ function renderFileMenu($menuArray) {
 		$outputText .= '  <span class="glyphicon glyphicon-share infoPopover" data-placement="bottom" data-toggle="popover" title="Share" data-html="true" data-content=\'<ul>';
 		$outputText .= '<li class="list-group-item assetDetails"><strong>Embed: </strong><input class="form-control embedControl frameEmbed" value="' . htmlspecialchars($menuArray['embed'], ENT_QUOTES) . '"></li>';
 		$outputText .= '<li class="list-group-item assetDetails"><strong>Link: </strong><input class="form-control embedControl linkEmbed" value="' . htmlspecialchars("http:".$menuArray['embedLink'], ENT_QUOTES) . '"></li>';
+		$outputText .= '<li class="list-group-item assetDetails"><strong>Open in Window: </strong><a onclick="' . htmlspecialchars('window.open(\'http:'.$menuArray['embedLink'] . '\', \'_blank\', \'location=yes,height=600,width=800,scrollbars=yes,status=yes\')', ENT_QUOTES) . '">Open</a></li>';
 		$outputText .= '</ul>\'></span>';
 	}
 
