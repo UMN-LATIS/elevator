@@ -276,6 +276,7 @@ class asset extends Instance_Controller {
 			$this->template->set_template("noTemplate");
 			$this->template->loadJavascript(["excerpt", "embedTriggers"]);
 			$this->template->content = $embed;
+			$this->template->title = $assetModel->getAssetTitle(true);
 			$this->template->publish();
 		}
 		else {
