@@ -399,7 +399,13 @@ class ImageHandler extends FileHandlerBase {
 				return new FileContainer($dest);
 			}
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-			exec($convertString . " 2>/dev/null");
+			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
+			$process->run();
+			while($process->isRunning()) {
+				sleep(5);
+				$this->pheanstalk->touch($this->job);
+				echo ".";
+			}
 
 			return new FileContainer($dest);
 		}
@@ -416,7 +422,13 @@ class ImageHandler extends FileHandlerBase {
 				return new FileContainer($dest);
 			}
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-			exec($convertString . " 2>/dev/null");
+			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
+			$process->run();
+			while($process->isRunning()) {
+				sleep(5);
+				$this->pheanstalk->touch($this->job);
+				echo ".";
+			}
 
 			return new FileContainer($dest);
 
