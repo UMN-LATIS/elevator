@@ -141,7 +141,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             function(){
                 var day = this.date.getDate();
                 var month = this.date.getMonth() + 1;
-                var year = this.date.getYear();
+                var year = this.date.getFullYear();
                 return {'day': day, 'month': month, 'year': year};
             },
         saveDisplayTime:
@@ -158,24 +158,27 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 }
                 else{
                     var time = autosave.getCurrentTime();
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved at " + time.hour + ":" + time.minute + time.am_pm;
+                    document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved at " + time.hour + ":" + ('0' + time.minute).slice(-2) + time.am_pm;
                 }
             },
         saveDisplayDate:
             function(){
                 var currentDate = this.getCurrentDate();
-                if(saveDate != undefined){
+                if(saveDate != undefined && saveDate.year != undefined){
                     if(saveDate.year == currentDate.year && saveDate.month == currentDate.month){
                         if(saveDate.day == currentDate.day){
-                            document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved today at " + saveTime.hour + ":" + saveTime.minute + saveTime.am_pm;
+                            document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved today at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;
                         }
                         else if(saveDate.day == (currentDate.day - 1)){
-                            document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved yesterday at " + saveTime.hour + ":" + saveTime.minute + saveTime.am_pm;    
+                            document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved yesterday at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;    
                         } 
                     }
                     else{
-                        document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved on " + saveDate.month + "/" + saveDate.day + "/" + saveDate.year + " at " + saveTime.hour + ":" + saveTime.minute + saveTime.am_pm;
+                        document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved on " + saveDate.month + "/" + saveDate.day + "/" + saveDate.year + " at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;
                     }
+                }
+                else{
+                     document.getElementById("leaflet-save-time-tag").innerHTML = "Save history unavailable";
                 }
             },
         debounce:
@@ -189,6 +192,9 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             },
         saveCloud:
             function(){
+                /*this.saveTime = -1;
+                autosave.saveDisplayTime();
+                console.log("saved");*/
                 dataJSON = {'saveDate': autosave.getCurrentDate(), 'saveTime': autosave.getCurrentTime(), 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
                 $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg){
                         this.saveTime = -1;
@@ -361,11 +367,13 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 //plot the data back onto the map
                 if(points != undefined){
                     Object.values(points).map(function(e, i){
-                        if(e.latLng != undefined){
-                            visualAsset.newLatLng(points, i, e.latLng);
-                        }
-                        else{
-                            visualAsset.newLatLng(points, i, [0, 0]);
+                        if(e != undefined){
+                            if(e.latLng != undefined){
+                                visualAsset.newLatLng(points, i, e.latLng);
+                            }
+                            else{
+                                visualAsset.newLatLng(points, i, [0, 0]);
+                            }
                         }
                     });
                 }
@@ -1662,6 +1670,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     document.getElementById('map').style.cursor = "pointer";
 
                     var self = this;
+                    map.doubleClickZoom.disable();
                     $(map._container).dblclick(function(e){
                         latLng = map.mouseEventToLatLng(e);
                         anchor = map.mouseEventToContainerPoint(e);
@@ -1672,6 +1681,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             disable:
                 function(){
                     this.btn.state('inactive');
+                    map.doubleClickZoom.enable();
                     $(map._container).off('dblclick');
                     $('.comment_submit').off('click');
                     document.getElementById('map').style.cursor = "default";
@@ -1992,6 +2002,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 },
             action:
                 function(){
+                    data.deleteAll.disable();
                     if(points != undefined && points[1] != undefined){
                         if(Lt.hasLatewood){
 
@@ -2203,9 +2214,54 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     }]
                 })
         },
+        deleteAll: {
+            dialog: L.control.dialog({'size': [240, 140], 'anchor': [150, 50], 'initOpen': false})
+                        .setContent('<p>This action will delete all data points. Annotations will not be effected. Are you sure you want to continue?</p>' +
+                                '<p><button class="confirm_delete">confirm</button><button class="cancel_delete">cancel</button></p>')
+                        .addTo(map),
+            enable:
+                function(){
+                    data.dialog.close()
+
+                    this.dialog.lock();
+                    this.dialog.open();
+
+                    var self = this;
+
+                    $('.confirm_delete').click(function(){
+                        points = [];
+                        visualAsset.reload();
+                        data.action();
+                        self.disable();
+                    })
+                    $('.cancel_delete').click(function(){
+                        self.disable();
+                    })
+                },
+            disable:
+                function(){
+                    data.dialog.open();
+                    this.dialog.close();
+                    $('confirm_delete').off('click');
+                    $('cancel_delete').off('click');
+                },
+            btn:
+                L.easyButton ({
+                    states: [
+                    {
+                        stateName:  'delete-all',
+                        icon:       '<icon class="material-icons md-18">delete</i>',
+                        title:      'Delete all data points',
+                        onClick:    function(btn, map){
+                            data.deleteAll.enable();
+                        }
+                    }]
+                })
+        },
         saveLocal: {
             action:
                 function(){
+                    data.deleteAll.disable();
                     dataJSON = {'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
                     var file = new File([JSON.stringify(dataJSON)], (Lt.assetName+'.json'), {type: "text/plain;charset=utf-8"});
                     saveAs(file);
@@ -2226,6 +2282,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
         loadLocal: {
             input:
                 function(){
+                    data.deleteAll.disable();
                     var self = this;
                     var input = document.createElement("input");
                     input.type = 'file';
@@ -2326,6 +2383,9 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     });
                     this.dialog.setContent(string + "</table>");
                 }
+                else{
+                    this.dialog.setContent('<h3>There are no data points to measure</h3>');
+                }
                 this.dialog.open();
                 return;
             },
@@ -2333,6 +2393,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             function(){
                 this.btn.state('collapse');
                 this.dialog.close();
+                this.deleteAll.btn.disable();
                 this.download.btn.disable();
                 this.saveLocal.btn.disable();
                 this.loadLocal.btn.disable();
@@ -2347,6 +2408,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     onClick:    function(btn, map){
                         btn.state('expand');
                         data.action();
+                        data.deleteAll.btn.enable();
                         data.download.btn.enable();
                         data.saveLocal.btn.enable();
                         data.loadLocal.btn.enable();
@@ -2401,7 +2463,8 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
     annotation.lineMarker.btn.disable();
     annotation.deleteAnnotation.btn.disable();
 
-    var dataBar = L.easyBar([data.btn, data.download.btn, data.saveLocal.btn, data.loadLocal.btn]);
+    var dataBar = L.easyBar([data.btn, data.deleteAll.btn, data.download.btn, data.saveLocal.btn, data.loadLocal.btn]);
+    data.deleteAll.btn.disable();
     data.download.btn.disable();
     data.saveLocal.btn.disable();
     data.loadLocal.btn.disable();
