@@ -21,7 +21,7 @@
 
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="node_modules/jszip/dist/jszip.min.js"></script>
-    <script src="node_modules/file-saver/FileSaver.js"></script>
+    <script src="node_modules/file-saver/FileSaver.min.js"></script>
 
     <script src="node_modules/leaflet/dist/leaflet.js"></script>
     <script src="node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
@@ -33,7 +33,7 @@
 </head>
 
 <body>
-    <div id="button_area">
+    <!--<div id="button_area">
         <a href="#" id="save-local" download="data.json"><i class="material-icons md-18">save</i></a>
         <div id="admin-save"></div>
         <div class="file-upload">
@@ -43,7 +43,7 @@
 
             <input type="file" id="file" onchange="treering.loadFile()"/>
         </div>
-    </div>
+    </div>-->
     <div id="map_container"><div id="map"></div></div>    
 
 </body>
@@ -114,7 +114,7 @@
     });
 
     //map, basePath, saveURL, savePermission, {initialData: json, assetName: string, datingInner: int, hasLatewood: bool}
-    var treering = new leafletTreering(map, "", "", false, {'initialData': {}, 'assetName': "ABC00X", 'datingInner': 1234, 'hasLatewood': true});
+    var treering = new leafletTreering(map, "", "", true, {'initialData': {'saveDate': {'day': 2, 'month': 10, 'year': 2017}, 'saveTime': {'hour': 11, 'minute': 48, 'am_pm': " AM"}}, 'assetName': "ABC00X", 'datingInner': 1234, 'hasLatewood': true});
     treering.loadInterface();
-    treering.addSaveButton();
+    //treering.addSaveButton();
 </script>
