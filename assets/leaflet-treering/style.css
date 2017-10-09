@@ -80,3 +80,8 @@ table{
 .leaflet-fullscreen-on div.leaflet-top.leaflet-left {
 	margin-left: 10px;
 }
+
+#leaflet-save-time-tag{
+	font-size: 12px;
+	margin: 4px;
+}
