@@ -220,8 +220,8 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 document.getElementsByClassName("leaflet-bottom leaflet-left")[0].appendChild(saveTimeDiv);
 
                 if(Lt.savePermission){
-                    this.timeoutHandle = window.setTimeout(this.saveCloud, 1000000000);
-                    this.intervalHandle = window.setInterval(this.saveDisplayTime, 1000000000);
+                    this.timeoutHandle = window.setTimeout(null, 1000);
+                    this.intervalHandle = window.setInterval(null, 1000000000);
                 }
             }
     }
@@ -442,7 +442,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 //tell marker what to do when being draged
                 
 
-                //tell marker waht to do when the draggin is done
+                //tell marker what to do when the draggin is done
                 if(!p[i].skip){ 
                     this.markers[i].on('drag', function(e){
                         //adjusting the line from the previous and preceeding point if they exist
@@ -456,7 +456,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                             self.lines[i+1] = L.polyline([e.target._latlng, self.lines[i+1]._latlngs[1]], {color: '#00BCD4', opacity: '.5', weight: '5'});
                             self.lineLayer.addLayer(self.lines[i+1]);
                         }
-                        else if(self.lines[i+2] != undefined){
+                        else if(self.lines[i+2] != undefined && !p[i+1].start){
                             self.lineLayer.removeLayer(self.lines[i+2]);
                             self.lines[i+2] = L.polyline([e.target._latlng, self.lines[i+2]._latlngs[1]], {color: '#00BCD4', opacity: '.5', weight: '5'});
                             self.lineLayer.addLayer(self.lines[i+2]);
@@ -2264,7 +2264,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     states: [
                     {
                         stateName:  'delete-all',
-                        icon:       '<icon class="material-icons md-18">delete</i>',
+                        icon:       '<icon class="material-icons md-18">delete_sweep</i>',
                         title:      'Delete all data points',
                         onClick:    function(btn, map){
                             data.deleteAll.enable();
