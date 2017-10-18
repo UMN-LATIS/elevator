@@ -346,6 +346,14 @@ function populateSearchResults(searchObject) {
 		resultsAvailable = false;
 	}
 
+	if($('a[href="#map"]').parent().hasClass("active")) {
+		prepMap();
+	}
+
+	if($('a[href="#timeline"]').parent().hasClass("active")) {
+		prepTimeline();
+	}
+
 	// have the server precache the new results
 	if(searchId !== null) {
 		doSearch(searchId, currentPageNumber+1, false, true);
