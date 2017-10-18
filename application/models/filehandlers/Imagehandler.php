@@ -6,7 +6,7 @@ class ImageHandler extends FileHandlerBase {
 	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd");
 	protected $noDerivatives = false;
 
-	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
+	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true, "ttr"=>600]],
 						  1=>["taskType"=>"createDerivative", "config"=>["ttr"=>600, ["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
 						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
 						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
@@ -109,9 +109,7 @@ class ImageHandler extends FileHandlerBase {
 		if($dimensions) {
 			$fileObject->metadata["width"] = $dimensions["x"];
 			$fileObject->metadata["height"] = $dimensions["y"];
-			echo "Class of SourceFile:" . get_class($sourceFile) . "\n";
 			if(get_class($sourceFile) == "FileContainer") {
-				echo "rescaling\n";
 				// we're dealing with a local swap, scale up by 10x
 				$fileObject->metadata["width"] = $fileObject->metadata["width"]  * 10;
 				$fileObject->metadata["height"] = $fileObject->metadata["height"]  * 10;
@@ -401,7 +399,13 @@ class ImageHandler extends FileHandlerBase {
 				return new FileContainer($dest);
 			}
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-			exec($convertString . " 2>/dev/null");
+			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
+			$process->run();
+			while($process->isRunning()) {
+				sleep(5);
+				$this->pheanstalk->touch($this->job);
+				echo ".";
+			}
 
 			return new FileContainer($dest);
 		}
@@ -418,7 +422,13 @@ class ImageHandler extends FileHandlerBase {
 				return new FileContainer($dest);
 			}
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-			exec($convertString . " 2>/dev/null");
+			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
+			$process->run();
+			while($process->isRunning()) {
+				sleep(5);
+				$this->pheanstalk->touch($this->job);
+				echo ".";
+			}
 
 			return new FileContainer($dest);
 

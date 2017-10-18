@@ -56,18 +56,6 @@ if($widgetObject->parentWidget->dendroFields) {
 </style>
 
 <? $token = $fileObject->getSecurityToken("tiled")?>
-
-<div id="button_area">
-        <a href="#" id="save-local" download="data.json"><i class="material-icons md-18">save</i></a>
-        <div id="admin-save"></div>
-        <div class="file-upload">
-            <label for="file">
-                <i id="upload_button" class="material-icons md-18">file_upload</i>
-            </label>
-
-            <input type="file" id="file" onchange="treering.loadFile()"/>
-        </div>
-    </div>
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
 
 <script type="application/javascript">
@@ -183,9 +171,9 @@ if($widgetObject->parentWidget->dendroFields) {
 		<?endif?>
 		treering = new leafletTreering(map, basePath + "assets/leaflet-treering/", saveURL, canSave, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
-    	if(saveURL != "") {
-    		treering.addSaveButton();
-    	}
+    	// if(saveURL != "") {
+    	// 	treering.addSaveButton();
+    	// }
 	};
 
 </script>
