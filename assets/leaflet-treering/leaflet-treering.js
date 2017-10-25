@@ -1,27 +1,25 @@
 
-var leafletTreering = function(map, basePath, saveURL, savePermission, options){
+var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, options){
     var Lt = this;
 
     Lt.map = map;
+    Lt.ppm = ppm;
     Lt.basePath = basePath;
     Lt.saveURL = saveURL;
     Lt.savePermission = savePermission;
 
-    //default
-    Lt.initialData = {};
-    Lt.assetName = "N/A";
-    Lt.datingInner = 0;
-    Lt.hasLatewood = true;
+    //options
+    Lt.initialData = options.initialData || {};
+    Lt.assetName = options.assetName || "N/A";
+    Lt.hasLatewood = options.hasLatewood || false;
 
     //options
-    if(options.initialData != undefined)
+    /*if(options.initialData != undefined)
         Lt.initialData = options.initialData;
     if(options.assetName != undefined)
         Lt.assetName = options.assetName;
-    if(options.datingInner != undefined)
-        Lt.datingInner = options.datingInner; 
     if(options.hasLatewood != undefined)
-        Lt.hasLatewood = options.hasLatewood;
+        Lt.hasLatewood = options.hasLatewood;*/
 
     var saveDate = {};
     var saveTime = {};
@@ -31,16 +29,16 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
 
         autoScroll.on();
 
-        map.on('resize', function(e){
+        Lt.map.on('resize', function(e){
             autoScroll.reset();
         });
 
         //set up the cursor
-        map.on('movestart', function(e){
+        Lt.map.on('movestart', function(e){
             document.getElementById('map').style.cursor = 'move';
         });
-        map.on('moveend', function(e){
-            if(create.dataPoint.active || annotation.lineMarker.active || annotation.comment.active || annotation.dateMarker.active || annotation.deleteAnnotation.active || edit.addBreak.active || edit.addZeroGrowth.active || edit.deletePoint.active || edit.cut.active){
+        Lt.map.on('moveend', function(e){
+            if(create.dataPoint.active || annotation.active || edit.addBreak.active || edit.addZeroGrowth.active || edit.deletePoint.active || edit.cut.active){
                 document.getElementById('map').style.cursor = 'pointer';
             }
             else{
@@ -53,16 +51,16 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
         //add all UI elements to map
         miniMap.addTo(map);
 
-        undoRedoBar.addTo(map);
-        timeBar.addTo(map);
+        annotation.btn.addTo(map);
         createBar.addTo(map);
+        timeBar.addTo(map);
         editBar.addTo(map);
-        annotationBar.addTo(map);
         dataBar.addTo(map);
+        undoRedoBar.addTo(map);
 
         L.control.layers(baseLayer, overlay).addTo(map);
 
-        map.on("contextmenu", function(e){
+        Lt.map.on("contextmenu", function(e){
             create.dataPoint.disable();
             create.breakPoint.disable();
             edit.deletePoint.disable();
@@ -70,27 +68,50 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             edit.addData.disable();
             edit.addZeroGrowth.disable();
             edit.addBreak.disable();
-            annotation.comment.disable();
-            annotation.dateMarker.disable();
-            annotation.lineMarker.disable();
+            annotation.disable();
         });
-
-        autosave.initialize();
 
         loadData(Lt.initialData);
 
-        autosave.saveDisplayDate();
+        if(Lt.savePermission){
+            data.saveCloud.initialize();
+        }
+
+        data.saveCloud.saveDisplayDate();
     };
 
-    //parses and loads data
+ distance = function(p1, p2){
+        lastPoint = Lt.map.project(p1, Lt.map.getMaxZoom());
+        newPoint =  Lt.map.project(p2, Lt.map.getMaxZoom());
+        // Math.sqrt(Math.pow(Math.abs(this._pixelPos[i - 1][0] - this._pixelPos[i][0]), 2) + Math.pow(Math.abs(this._pixelPos[i - 1][1] - this._pixelPos[i][1]), 2));
+        length = Math.sqrt(Math.pow(Math.abs(lastPoint.x - newPoint.x), 2) + Math.pow(Math.abs(newPoint.y - lastPoint.y), 2));
+        pixelsPerMillimeter = 1;
+        Lt.map.eachLayer(function(layer){
+            if(layer.options.pixelsPerMillimeter >0) {
+                pixelsPerMillimeter = Lt.ppm;
+            }
+        });
+        length = length / pixelsPerMillimeter;
+        retinaFactor = 1;
+        if (L.Browser.retina) {
+            retinaFactor = 2; // this is potentially incorrect for 3x+ devices
+        }
+        return length * retinaFactor;
+    };
+
+    //parses and loads  
     var loadData = function(newData){
-        if(newData.saveDate != undefined){
-            saveDate = newData.saveDate;
-        }
-        if(newData.saveTime != undefined){
-            saveTime = newData.saveTime;
-        }
-        if(newData.points != undefined){
+        saveDate = newData.saveDate || {};
+
+        index = newData.index || 0;
+        year = newData.year || 0;
+        earlywood = newData.earlywood || true;
+        points = newData.points || {};
+        annotations = newData.annotations || {};
+
+        visualAsset.reload();
+        annotation.reload();
+        /*if(newData.points != undefined){
             index = newData.index;
             year = newData.year;
             earlywood = newData.earlywood;
@@ -100,14 +121,14 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
         if(newData.annotations != undefined){
             annotations = newData.annotations;
             annotation.reload();
-        }
+        }*/
         time.collapse();
-        annotation.collapse();
+        annotation.disable();
         edit.collapse();
         create.collapse(); 
     };
 
-    var autosave = {
+    /*var autosave = {
         date:
             new Date(),
         timeoutHandle:
@@ -200,10 +221,10 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             },
         saveCloud:
             function(){
-                /*this.saveTimer = -1;
+                this.saveTimer = -1;
                 autosave.saveDisplayTime();
-                console.log("saved");*/
-                dataJSON = {'saveDate': autosave.getCurrentDate(), 'saveTime': autosave.getCurrentTime(), 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
+                console.log("saved");
+                /*dataJSON = {'saveDate': autosave.getCurrentDate(), 'saveTime': autosave.getCurrentTime(), 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
                 $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg){
                         this.saveTimer = -1;
                         autosave.saveDisplayTime();
@@ -224,46 +245,46 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     this.intervalHandle = window.setInterval(null, 1000000000);
                 }
             }
-    }
+    }*/
 
     var autoScroll = {
         on:
             function(){
                 //map scrolling
-                var mapSize = map.getSize();    //size of the map used for map scrolling
+                var mapSize = Lt.map.getSize();    //size of the map used for map scrolling
                 var mousePos = 0;               //an initial mouse position
 
-                map.on('mousemove', function(e){
+                Lt.map.on('mousemove', function(e){
                     var oldMousePos = mousePos;      //save the old mouse position
                     mousePos = e.containerPoint;    //container point of the mouse
                     var mouseLatLng = e.latlng;         //latLng of the mouse
-                    var mapCenter = map.getCenter();    //center of the map   
+                    var mapCenter = Lt.map.getCenter();    //center of the map   
 
                     //left bound of the map
                     if(mousePos.x <= 40 && mousePos.y > 450 && oldMousePos.x > mousePos.x){
                         //map.panTo([mapCenter.lat, (mapCenter.lng - .015)]);     //defines where the map view should move to
-                        map.panBy([-200, 0]);
+                        Lt.map.panBy([-200, 0]);
                     }
                     //right bound of the map
                     if(mousePos.x + 40 > mapSize.x && mousePos.y > 100 && oldMousePos.x < mousePos.x){
                         //map.panTo([mapCenter.lat, (mapCenter.lng + .015)]);
-                        map.panBy([200, 0]);
+                        Lt.map.panBy([200, 0]);
                     }
                     //upper bound of the map
                     if(mousePos.x + 40 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y){
                         //map.panTo([mapCenter.lat, (mapCenter.lng + .015)]);
-                        map.panBy([0, -40]);
+                        Lt.map.panBy([0, -40]);
                     }
                     //lower bound of the map
                     if(mousePos.x >= 40 && mousePos.y > mapSize.y - 40 && oldMousePos.y < mousePos.y){
                         //map.panTo([mapCenter.lat, (mapCenter.lng - .015)]);     //defines where the map view should move to
-                        map.panBy([0, 40]);
+                        Lt.map.panBy([0, 40]);
                     }
                 });
             },
         off:
             function(){
-                map.off('mousemove');
+                Lt.map.off('mousemove');
             },
         reset:
             function(){
@@ -272,82 +293,68 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             }
     } 
 
-    var points = {};            //object with all the point data
-    var annotations = {};       //object with all annotations data
-    var year = Lt.datingInner;  //year
-    var earlywood = true;       //earlywood or latewood
-    var index = 0;              //points index
+    //var points = {};            //object with all the point data
+    //var annotations = {};       //object with all annotations data
+    //var year = 0;               //year
+    //var earlywood = true;       //earlywood or latewood
+    //var index = 0;              //points index
 
     //creating colored icons for points
     var markerIcon = {
         light_blue: L.icon({
-            iconUrl: Lt.basePath + 'images/light_blue_icon_transparent.png',
-            iconSize: [32, 32] // size of the icon
+            iconUrl: Lt.basePath + 'images/light_blue_tick_icon.png',
+            iconSize: [32, 48] // size of the icon
         }),
         dark_blue: L.icon({
-            iconUrl: Lt.basePath + 'images/dark_blue_icon_transparent.png',
-            iconSize: [32, 32] // size of the icon
+            iconUrl: Lt.basePath + 'images/dark_blue_tick_icon.png',
+            iconSize: [32, 48] // size of the icon
         }),
         white: L.icon({
-            iconUrl: Lt.basePath + 'images/white_icon_transparent.png',
-            iconSize: [32, 32] // size of the icon
+            iconUrl: Lt.basePath + 'images/white_tick_icon.png',
+            iconSize: [32, 48] // size of the icon
         }),
         grey: L.icon({
             iconUrl: Lt.basePath + 'images/grey_icon_transparent.png',
             iconSize: [32, 32] // size of the icon
-        })
+        }),
     };
 
     //when user adds new markers lines and hbars will be created from the mouse
     var interactiveMouse = {
         layer:
             L.layerGroup().addTo(map),
-        lineFrom:
-            function(latLng){
-                var self = this;
-                $(map._container).mousemove(function lineToMouse(e){
-                    //only create lines when collecting data
-                    if(annotation.lineMarker.active){
-                        self.layer.clearLayers(); //continously delete previous lines
-                        var mouseLatLng = map.mouseEventToLatLng(e);
-                        var point = map.latLngToLayerPoint(latLng);
-
-                        //create lines and add them to mouseLine layer
-                        self.layer.addLayer(L.polyline([latLng, mouseLatLng], {color: '#000', opacity: '.5', weight: '6'}));
-                    }
-                });
-            },
         hbarFrom:
             function(latLng){
                 var self = this;
-                $(map._container).mousemove(function lineToMouse(e){
+                $(Lt.map._container).mousemove(function lineToMouse(e){
                     if(create.dataPoint.active){
                         self.layer.clearLayers();
-                        var mousePoint = map.mouseEventToLayerPoint(e);
-                        var mouseLatLng = map.mouseEventToLatLng(e);
-                        var point = map.latLngToLayerPoint(latLng);
+                        var mousePoint = Lt.map.mouseEventToLayerPoint(e);
+                        var mouseLatLng = Lt.map.mouseEventToLatLng(e);
+                        var point = Lt.map.latLngToLayerPoint(latLng);
 
                         //getting the four points for the h bars, this is doing 90 degree rotations on mouse point
                         var newX = mousePoint.x + (point.x - mousePoint.x)*Math.cos(Math.PI/2) - (point.y - mousePoint.y)*Math.sin(Math.PI/2);
                         var newY = mousePoint.y + (point.x - mousePoint.x)*Math.sin(Math.PI/2) + (point.y - mousePoint.y)*Math.cos(Math.PI/2);
-                        var topRightPoint = map.layerPointToLatLng([newX, newY]);
+                        var topRightPoint = Lt.map.layerPointToLatLng([newX, newY]);
 
                         var newX = mousePoint.x + (point.x - mousePoint.x)*Math.cos(Math.PI/2*3) - (point.y - mousePoint.y)*Math.sin(Math.PI/2*3);
                         var newY = mousePoint.y + (point.x - mousePoint.x)*Math.sin(Math.PI/2*3) + (point.y - mousePoint.y)*Math.cos(Math.PI/2*3);
-                        var bottomRightPoint = map.layerPointToLatLng([newX, newY]);
+                        var bottomRightPoint = Lt.map.layerPointToLatLng([newX, newY]);
 
                         //doing rotations 90 degree rotations on latlng
                         var newX = point.x + (mousePoint.x - point.x)*Math.cos(Math.PI/2) - (mousePoint.y - point.y)*Math.sin(Math.PI/2);
                         var newY = point.y + (mousePoint.x - point.x)*Math.sin(Math.PI/2) + (mousePoint.y - point.y)*Math.cos(Math.PI/2);
-                        var topLeftPoint = map.layerPointToLatLng([newX, newY]);
+                        var topLeftPoint = Lt.map.layerPointToLatLng([newX, newY]);
 
                         var newX = point.x + (mousePoint.x - point.x)*Math.cos(Math.PI/2*3) - (mousePoint.y - point.y)*Math.sin(Math.PI/2*3);
                         var newY = point.y + (mousePoint.x - point.x)*Math.sin(Math.PI/2*3) + (mousePoint.y - point.y)*Math.cos(Math.PI/2*3);
-                        var bottomLeftPoint = map.layerPointToLatLng([newX, newY]);
+                        var bottomLeftPoint = Lt.map.layerPointToLatLng([newX, newY]);
 
-                        self.layer.addLayer(L.polyline([latLng, mouseLatLng], {color: '#00BCD4', opacity: '.5', weight: '5'}));
-                        self.layer.addLayer(L.polyline([topLeftPoint, bottomLeftPoint], {color: '#00BCD4', opacity: '.5', weight: '5'}));
-                        self.layer.addLayer(L.polyline([topRightPoint, bottomRightPoint], {color: '#00BCD4', opacity: '.5', weight: '5'}));
+                        self.layer.addLayer(L.polyline([latLng, mouseLatLng], {color: '#00BCD4', opacity: '.75', weight: '3'}));
+                        self.layer.addLayer(L.polyline([topLeftPoint, bottomLeftPoint], {color: '#00BCD4', opacity: '.75', weight: '3'}));
+                        self.layer.addLayer(L.polyline([topRightPoint, bottomRightPoint], {color: '#00BCD4', opacity: '.75', weight: '3'}));
+                        
                     }
                 });
             }
@@ -394,28 +401,28 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
 
                 //check if index is the start point
                 if(p[i].start){
-                    var marker = L.marker(leafLatLng, {icon: markerIcon.white, draggable: true, title: "Start Point"});
+                    var marker = L.marker(leafLatLng, {icon: markerIcon.white, draggable: true, title: "Start Point", riseOnHover: true});
                 }
                 //check if point is a break
                 else if(p[i].break){
-                    var marker = L.marker(leafLatLng, {icon: markerIcon.white, draggable: true, title: "Break Point"})
+                    var marker = L.marker(leafLatLng, {icon: markerIcon.white, draggable: true, title: "Break Point", riseOnHover: true})
                 }
                 else if(p[i].skip){
                     leafLatLng = L.latLng([p[i-1].latLng.lat + .0005, p[i-1].latLng.lng]);
-                    var marker = L.marker(leafLatLng, {icon: markerIcon.grey, draggable: true, title: "Year " + p[i].year + ", None"})
+                    var marker = L.marker(leafLatLng, {icon: markerIcon.grey, draggable: true, title: "Year " + p[i].year + ", None", riseOnHover: true})
                 }
                 //check if point is earlywood
                 else if(Lt.hasLatewood){
                     if(p[i].earlywood){
-                        var marker = L.marker(leafLatLng, {icon: markerIcon.light_blue, draggable: true, title: "Year " + p[i].year + ", earlywood"});         
+                        var marker = L.marker(leafLatLng, {icon: markerIcon.light_blue, draggable: true, title: "Year " + p[i].year + ", earlywood", riseOnHover: true});         
                     }
                     //otherwise it's latewood
                     else{
-                        var marker = L.marker(leafLatLng, {icon: markerIcon.dark_blue, draggable: true, title: "Year " + p[i].year + ", latewood"});
+                        var marker = L.marker(leafLatLng, {icon: markerIcon.dark_blue, draggable: true, title: "Year " + p[i].year + ", latewood", riseOnHover: true});
                     }
                 }
                 else{
-                    var marker = L.marker(leafLatLng, {icon: markerIcon.light_blue, draggable: true, title: "Year " + p[i].year}); 
+                    var marker = L.marker(leafLatLng, {icon: markerIcon.light_blue, draggable: true, title: "Year " + p[i].year, riseOnHover: true}); 
                 }
 
                 /*//deal with previous skip point if one exists
@@ -448,17 +455,17 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         //adjusting the line from the previous and preceeding point if they exist
                         if(!p[i].start){
                             self.lineLayer.removeLayer(self.lines[i]);
-                            self.lines[i] = L.polyline([self.lines[i]._latlngs[0], e.target._latlng], {color: '#00BCD4', opacity: '.5', weight: '5'});
+                            self.lines[i] = L.polyline([self.lines[i]._latlngs[0], e.target._latlng], {color: '#00BCD4', opacity: '.75', weight: '3'});
                             self.lineLayer.addLayer(self.lines[i]);
                         }
                         if(self.lines[i+1] != undefined){
                             self.lineLayer.removeLayer(self.lines[i+1]);
-                            self.lines[i+1] = L.polyline([e.target._latlng, self.lines[i+1]._latlngs[1]], {color: '#00BCD4', opacity: '.5', weight: '5'});
+                            self.lines[i+1] = L.polyline([e.target._latlng, self.lines[i+1]._latlngs[1]], {color: '#00BCD4', opacity: '.75', weight: '3'});
                             self.lineLayer.addLayer(self.lines[i+1]);
                         }
                         else if(self.lines[i+2] != undefined && !p[i+1].start){
                             self.lineLayer.removeLayer(self.lines[i+2]);
-                            self.lines[i+2] = L.polyline([e.target._latlng, self.lines[i+2]._latlngs[1]], {color: '#00BCD4', opacity: '.5', weight: '5'});
+                            self.lines[i+2] = L.polyline([e.target._latlng, self.lines[i+2]._latlngs[1]], {color: '#00BCD4', opacity: '.75', weight: '3'});
                             self.lineLayer.addLayer(self.lines[i+2]);
                         }
                     });
@@ -473,6 +480,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     if(edit.deletePoint.active){
                         edit.deletePoint.action(i);
                     }
+                    console.log(p[i])
                     if(!p[i].skip){
                         if(edit.cut.active){
                             if(edit.cut.point != -1){
@@ -508,11 +516,11 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 //drawing the line if the previous point exists
                 if(p[i-1] != undefined && !p[i].start && !p[i].skip){
                     if(p[i-1].skip && p[i-2] != undefined && !p[i-2].start){
-                        this.lines[i] = L.polyline([p[i-2].latLng, leafLatLng], {color: '#00BCD4', opacity: '.5', weight: '5'});
+                        this.lines[i] = L.polyline([p[i-2].latLng, leafLatLng], {color: '#00BCD4', opacity: '.75', weight: '3'});
                         this.lineLayer.addLayer(this.lines[i]);
                     }
                     else{
-                        this.lines[i] = L.polyline([p[i-1].latLng, leafLatLng], {color: '#00BCD4', opacity: '.5', weight: '5'});
+                        this.lines[i] = L.polyline([p[i-1].latLng, leafLatLng], {color: '#00BCD4', opacity: '.75', weight: '3'});
                         this.lineLayer.addLayer(this.lines[i]);
                     }
                 }
@@ -538,6 +546,15 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
         pop:
             function(){
                 if(this.stack.length > 0){
+                    if(points[index-1].start){
+                        create.dataPoint.disable();
+                    }
+                    else{
+                        interactiveMouse.hbarFrom(points[index-2].latLng);
+                    }
+
+
+
                     redo.btn.enable();
                     var restore_points = JSON.parse(JSON.stringify(points));
                     redo.stack.push({'year': year, 'earlywood': earlywood, 'index': index, 'points': restore_points});
@@ -549,7 +566,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     year = dataJSON.year;
                     earlywood = dataJSON.earlywood;
 
-                    autosave.debounce();
 
                     visualAsset.reload();
 
@@ -588,8 +604,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 index = dataJSON.index;
                 year = dataJSON.year;
                 earlywood = dataJSON.earlywood;
-
-                autosave.debounce();
 
                 visualAsset.reload();
 
@@ -665,7 +679,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                 visualAsset.reload();
                             }
 
-                            autosave.debounce();
+    
 
                             self.disable();
                         }, false);
@@ -753,7 +767,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                 visualAsset.reload();
                             }
 
-                            autosave.debounce();
+    
 
                             self.disable();
                         }, false);
@@ -801,7 +815,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                             points[i].year = parseInt(points[i].year) + x;
                         }
                     }
-                    autosave.debounce();
 
                     visualAsset.reload();
                 },
@@ -840,7 +853,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     icon:       '<i class="material-icons md-18">access_time</i>',
                     title:      'Set and adjust timeline',
                     onClick:    function(btn, map){
-                        annotation.collapse();
+                        annotation.disable();
                         edit.collapse();
                         create.collapse();
 
@@ -886,10 +899,10 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     document.getElementById('map').style.cursor = "pointer";
 
                     var self = this;
-                    $(map._container).click(function startLine(e){
+                    $(Lt.map._container).click(function startLine(e){
                         document.getElementById('map').style.cursor = "pointer";
 
-                        var latLng = map.mouseEventToLatLng(e);
+                        var latLng = Lt.map.mouseEventToLatLng(e);
 
                         undo.push();
 
@@ -924,12 +937,12 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
 
                         index++;
                         self.active = true;     //activate dataPoint after one point is made
-                        autosave.debounce();
+
                     });
                 },
             disable:
                 function(){
-                    $(map._container).off('click');  //turn off the mouse clicks from previous function
+                    $(Lt.map._container).off('click');  //turn off the mouse clicks from previous function
                     this.btn.state('inactive');
                     this.active = false;
                     interactiveMouse.layer.clearLayers(); //clear the mouseline
@@ -970,7 +983,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         year++;
                         index++;
 
-                        autosave.debounce();
+
                     }
                     else{
                         alert("First year cannot be missing!")
@@ -999,31 +1012,31 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     document.getElementById('map').style.cursor = "pointer";
 
                     var self = this;
-                    $(map._container).click(function(e){
+                    $(Lt.map._container).click(function(e){
                         document.getElementById('map').style.cursor = "pointer";
 
-                        var latLng = map.mouseEventToLatLng(e);
+                        var latLng = Lt.map.mouseEventToLatLng(e);
 
                         interactiveMouse.hbarFrom(latLng)
 
                         undo.push();
 
-                        map.dragging.disable();
+                        Lt.map.dragging.disable();
                         points[index] = {'start': false, 'skip': false, 'break': true, 'latLng':latLng};
                         visualAsset.newLatLng(points, index, latLng);
                         index++;
                         self.disable();
 
-                        autosave.debounce();
+
 
                         create.dataPoint.enable();
                     });
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
-                    map.dragging.enable();
+                    Lt.map.dragging.enable();
                 },
             btn:
                 L.easyButton ({
@@ -1062,7 +1075,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
 
                         data.collapse();
                         edit.collapse();
-                        annotation.collapse();
+                        annotation.disable();
                         time.collapse();
                     }
                 },
@@ -1169,10 +1182,8 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                             delete points[index];
                         }
                     }
-                    autosave.debounce();
 
                     visualAsset.reload();
-                    this.disable();
                 },
             enable:
                 function(){
@@ -1182,7 +1193,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
                     this.active = false;
                     document.getElementById('map').style.cursor = 'default';
@@ -1244,7 +1255,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         alert("You cannot select the same point");
                     }
 
-                    autosave.debounce();
 
                     visualAsset.reload();
                     edit.cut.disable();
@@ -1258,7 +1268,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
                     this.active = false;
                     document.getElementById('map').style.cursor = 'default';
@@ -1305,9 +1315,9 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     interactiveMouse.hbarFrom(points[i].latLng);
 
                     var self = this;
-                    $(map._container).click(function(e){
-                        var latLng = map.mouseEventToLatLng(e);
-                        map.dragging.disable();
+                    $(Lt.map._container).click(function(e){
+                        var latLng = Lt.map.mouseEventToLatLng(e);
+                        Lt.map.dragging.disable();
 
                         interactiveMouse.hbarFrom(latLng);
 
@@ -1327,7 +1337,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                 new_points[k] = e;
                                 k++;
                             })
-                            $(map._container).off('click');
+                            $(Lt.map._container).off('click');
 
                             undo.push();
 
@@ -1335,7 +1345,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                             index = k;
                             year++;
 
-                            autosave.debounce();
+    
 
                             visualAsset.reload();
                             self.disable();
@@ -1349,7 +1359,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
                     this.active = false;
                     //map.dragging.enable();
@@ -1397,11 +1407,10 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         points[k] = e;
                         k++;
                     })
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     index = k;
                     year++;
 
-                    autosave.debounce();
 
                     visualAsset.reload();
                     this.disable();
@@ -1414,11 +1423,11 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
                     document.getElementById('map').style.cursor = 'default';
                     this.active = false;
-                    map.dragging.enable();
+                    Lt.map.dragging.enable();
                     interactiveMouse.layer.clearLayers();
                     create.dataPoint.active = false;
                 },
@@ -1461,9 +1470,9 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     interactiveMouse.hbarFrom(points[i].latLng);
 
                     var self = this;
-                    $(map._container).click(function(e){
-                        var latLng = map.mouseEventToLatLng(e);
-                        map.dragging.disable();
+                    $(Lt.map._container).click(function(e){
+                        var latLng = Lt.map.mouseEventToLatLng(e);
+                        Lt.map.dragging.disable();
 
                         interactiveMouse.hbarFrom(latLng);
 
@@ -1481,14 +1490,14 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                 new_points[k] = e;
                                 k++;
                             })
-                            $(map._container).off('click');
+                            $(Lt.map._container).off('click');
 
                             undo.push();
 
                             points = new_points;
                             index = k;
 
-                            autosave.debounce();
+    
 
                             visualAsset.reload();
                             self.disable();
@@ -1503,11 +1512,11 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
                     this.active = false;
                     document.getElementById('map').style.cursor = 'default';
-                    map.dragging.enable();
+                    Lt.map.dragging.enable();
                     interactiveMouse.layer.clearLayers();
                     create.dataPoint.active = false;
                 },
@@ -1550,7 +1559,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         edit.addZeroGrowth.btn.enable();
                         edit.addBreak.btn.enable();
 
-                        annotation.collapse();
+                        annotation.disable();
                         create.collapse();
                         time.collapse();
                         data.collapse();
@@ -1567,7 +1576,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             })
     }
 
-    //all annotations tools will fall under the annotation object
     var annotation = {
         index:
             0,
@@ -1575,57 +1583,199 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             new Array(),
         layer:
             L.layerGroup().addTo(map),
-        newAnnotation:
-            function(i){
-                var ref = annotations[i];
-                if(ref.dateMarker || ref.comment){
-                    var circle = L.circle(ref.latLng, {radius: .0002, color: '#000', weight: '6'})
-                    if(ref.comment){
-                        circle = L.circle(ref.latLng, {radius: .0002, color: 'red', weight: '6'});
-                    }
-                    this.markers.push(circle);
+        active:
+            false,
+        input:
+            L.circle([0,0], {radius: .0001, color: 'red', weight: '6'})
+                .bindPopup('<textarea class="comment_input" name="message" rows="2" cols="15"></textarea>', {closeButton: false}),
+        reload:
+            function(){
+                self = this;
+                self.layer.clearLayers();
+                self.markers = new Array();
+                self.index = 0;
+                if(annotations != undefined){
+                    var reduced = Object.values(annotations).filter(e => e != undefined);
+                    annotations = {};
+                    reduced.map((e, i) => annotations[i] = e);
 
-                    var self = this;
-                    this.markers[i].on('mouseover', function(e){
-                        if(ref.comment){
-                            self.comment.dialog.options.anchor = [e.containerPoint.y, e.containerPoint.x];
-                            self.comment.dialog.setContent(ref.text);
-                            self.comment.dialog.lock();
-                            self.comment.dialog.open();
-                        }
-                    });
-                    this.markers[i].on('mouseout', function(e){
-                        if(ref.comment){
-                            self.comment.dialog.close();
-                        }
-                    });
-                    this.markers[i].on('click', function(e){
-                        if(self.deleteAnnotation.active){
-                            self.deleteAnnotation.action(i);
-                            if(ref.comment){
-                                self.comment.dialog.close();
-                            }
-                        }
-                    });
-                    this.layer.addLayer(this.markers[i]);
-
-                    autosave.debounce();
-                }
-                else if(ref.lineMarker){
-                    this.markers.push(L.polyline([ref.first_point, ref.second_point], {color: '#000', weight: '6'}));
-                    var self = this;
-                    this.markers[i].on('click', function(e){
-                        self.deleteAnnotation.action(i);
-                    });
-                    this.layer.addLayer(this.markers[i]);
-
-                    autosave.debounce();
+                    Object.values(annotations).map(function(e, i){self.newAnnotation(i);self.index++});
                 }
             },
+        popupMouseover:
+            function(e){
+                this.openPopup();
+                //self.markers[i].openPopup();
+            },
+        popupMouseout:
+            function(e){
+                this.closePopup();
+                //self.markers[i].closePopup();
+            },
+        newAnnotation:
+            function(i){
+                var self = this;
+
+                var ref = annotations[i];
+                var circle = L.circle(ref.latLng, {radius: .0001, color: 'red', weight: '6'});
+                circle.bindPopup(ref.text, {closeButton: false})
+                self.markers[i] = circle;
+
+                $(self.markers[i]).click(function(e){
+                    self.markers[i].closePopup();  
+                })
+
+                $(self.markers[i]).mouseover(self.popupMouseover);
+                $(self.markers[i]).mouseout(self.popupMouseout);
+
+                self.layer.addLayer(self.markers[i]);
+
+                if(ref.text == ""){
+                    self.deleteAnnotation(i);
+                }
+            },
+        action:
+            function(i, latLng){
+                var self = this;
+                    
+                self.input.setLatLng(latLng);
+                self.input.addTo(Lt.map);
+                self.input.openPopup();
+
+                document.getElementsByClassName('comment_input')[0].select();
+
+                $(document).keypress(function(e){
+                    var key = e.which || e.keyCode;
+                    if(key === 13){
+                        var string = ($('.comment_input').val()).slice(0);
+
+                        self.input.remove();
+
+                        if(string != ""){
+                            annotations[i] = {'latLng': latLng, 'text': string};
+                            self.newAnnotation(i);
+                            self.index++;
+                            self.markers[i].openPopup();
+                        }
+
+                        $(Lt.map._container).off('click');
+                        $(document).off('keypress');
+                    }
+                });
+            },
+        enable:
+            function(){
+                this.markers.map(function(e){ $(e).off('dblclick'); });
+
+                this.btn.state('active');
+                this.active = true;
+                document.getElementById('map').style.cursor = "pointer";
+
+                var self = this;
+                Lt.map.doubleClickZoom.disable();
+                $(Lt.map._container).dblclick(function(e){
+                    $(Lt.map._container).click(function(e){
+                        self.disable();
+                        self.enable();
+                    });
+                    latLng = Lt.map.mouseEventToLatLng(e);
+                    self.action(self.index, latLng);
+                })
+            },
+        disable:
+            function(){
+                this.btn.state('inactive');
+                Lt.map.doubleClickZoom.enable();
+                $(Lt.map._container).off('dblclick');
+                $(Lt.map._container).off('click');
+                $(document).off('keypress');
+                document.getElementById('map').style.cursor = "default";
+                this.input.remove();
+                this.active = false;
+                this.markers.map(function(e, i){
+                    $(e).dblclick(function(){
+                        self.editAnnotation(i);
+                    });
+                })
+            },
+        editAnnotation:
+            function(i){
+                var self = this;
+                var marker = self.markers[i]; 
+
+                $(marker).off('mouseover');
+                $(marker).off('mouseout');
+
+                marker.closePopup();
+                marker.setPopupContent('<textarea class="comment_input" name="message" rows="2" cols="15">' + annotations[i].text + '</textarea>');
+                marker.openPopup();
+                document.getElementsByClassName('comment_input')[0].select();
+
+                $(document).keypress(function(e){
+                    var key = e.which || e.keyCode;
+                    if(key === 13){
+                        var string = ($('.comment_input').val()).slice(0);
+
+                        if(string != ""){
+                            marker.setPopupContent(string);
+                            $(marker).mouseover(self.popupMouseover);
+                            $(marker).mouseout(self.popupMouseout);
+                        }
+                        else{
+                            self.deleteAnnotation(i);
+                        }
+
+                        self.disable();
+                    }
+                });
+            },
+        deleteAnnotation: 
+            function(i){
+                console.log(i);
+                this.layer.removeLayer(self.markers[i]);
+                delete annotations[i];
+                this.reload();
+            },
+        btn:
+            L.easyButton({
+                states: [
+                {
+                    stateName:  'inactive',
+                    icon:       '<i class="material-icons md-18">comment</i>',
+                    title:      'Make an annotation',
+                    onClick:    function(btn, map){
+                        edit.collapse();
+                        create.collapse();
+                        time.collapse();
+                        data.collapse();
+
+                        annotation.enable();
+                    }
+                },
+                {
+                    stateName:  'active',
+                    icon:       '<i class="material-icons md-18">clear</i>',
+                    title:      'Cancel (Esc)',
+                    onClick:    function(btn, map){
+                        annotation.disable();
+                    }
+                }]
+            })
+    }
+
+    //all annotations tools will fall under the annotation object
+    /*var annotation = {
+        index:
+            0,
+        markers:
+            new Array(),
+        layer:
+            L.layerGroup().addTo(map),
         reload:
             function(){
                 this.layer.clearLayers();
                 this.markers = new Array();
+                this.comment.markers = new Array();
                 this.index = 0;
                 if(annotations != undefined){
                     var reduced = Object.values(annotations).filter(e => e != undefined);
@@ -1639,37 +1789,66 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             function(){
                 this.btn.state('collapse');
                 this.comment.btn.disable();
-                this.dateMarker.btn.disable();
-                this.lineMarker.btn.disable();
                 this.deleteAnnotation.btn.disable();
 
                 this.comment.disable();
-                this.dateMarker.disable();
-                this.lineMarker.disable();
                 this.deleteAnnotation.disable();
             },
         comment: {
-            active: false,
-            input: L.control.dialog({'size': [245, 160], 'anchor': [80, 50], 'initOpen': false})
-                        .setContent('<textarea class="comment_input" name="message" rows="5" cols="30"></textarea>' +
-                                    '<br>' +
-                                    '<button class="comment_submit">enter</button>')
-                        .addTo(map),
-            dialog: L.control.dialog({'size': [200, 140], 'anchor': [80, 50], 'initOpen': false})
-                        .setContent('')
-                        .addTo(map),
+            active:
+                false,
+            input:
+                L.circle([0,0], {radius: .0001, color: 'red', weight: '6'})
+                    .bindPopup('<textarea class="comment_input" name="message" rows="2" cols="15"></textarea>', {closeButton: false}),
+            newComment:
+                function(k){
+                    self = annotation;
+                    var ref = annotations[k];
+                    var circle = L.circle(ref.latLng, {radius: .0001, color: 'red', weight: '6'});
+                    circle.bindPopup(ref.text, {closeButton: false})
+                    self.markers[k] = circle;
+
+                    self.markers[k].on('mouseover', function(e){
+                        self.markers[k].openPopup();
+                    });
+                    self.markers[k].on('mouseout', function(e){
+                        self.markers[k].closePopup();
+                    });
+
+                    self.markers[k].on('click', function(e){
+                        if(annotation.deleteAnnotation.active){
+                            annotation.deleteAnnotation.action(k);
+                        }
+                    });
+
+                    annotation.layer.addLayer(self.markers[k]);
+                },
             action:
                 function(i, latLng, anchor){
-                    this.input.options.anchor = [anchor.y, anchor.x];
-                    this.input.lock();
-                    this.input.open();
                     var self = this;
-                    $('.comment_submit').click(function(){
-                        var string = ($('.comment_input').val()).slice(0);
-                        annotations[i] = {'comment': true, 'dateMarker': false, 'lineMarker': false, 'latLng': latLng, 'text': string};
-                        annotation.newAnnotation(i);
-                        self.disable(); 
-                    })
+                    
+                    self.input.setLatLng(latLng);
+                    self.input.addTo(Lt.map);
+                    self.input.openPopup();
+
+                    document.getElementsByClassName('comment_input')[0].select();
+
+                    $(document).keypress(function(e){
+                        var key = e.which || e.keyCode;
+                        if(key === 13){
+                            var string = ($('.comment_input').val()).slice(0);
+
+                            console.log(string);
+                            self.input.remove();
+
+                            annotations[i] = {'latLng': latLng, 'text': string};
+                            self.newComment(i);
+                            
+                            $(document).off('keypress');
+                            self.disable();
+                            self.enable();
+                        }
+                    });
                 },
             enable:
                 function(){
@@ -1678,10 +1857,10 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     document.getElementById('map').style.cursor = "pointer";
 
                     var self = this;
-                    map.doubleClickZoom.disable();
-                    $(map._container).dblclick(function(e){
-                        latLng = map.mouseEventToLatLng(e);
-                        anchor = map.mouseEventToContainerPoint(e);
+                    Lt.map.doubleClickZoom.disable();
+                    $(Lt.map._container).dblclick(function(e){
+                        latLng = Lt.map.mouseEventToLatLng(e);
+                        anchor = Lt.map.mouseEventToContainerPoint(e);
                         self.action(annotation.index, latLng, anchor);
                         annotation.index++;
                     })
@@ -1689,11 +1868,12 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             disable:
                 function(){
                     this.btn.state('inactive');
-                    map.doubleClickZoom.enable();
-                    $(map._container).off('dblclick');
+                    Lt.map.doubleClickZoom.enable();
+                    $(Lt.map._container).off('dblclick');
                     $('.comment_submit').off('click');
+                    $(document).off('keypress');
                     document.getElementById('map').style.cursor = "default";
-                    this.input.close();
+                    this.input.remove();
                     this.active = false;
                 },
             btn:
@@ -1705,8 +1885,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         title:      'Make a comment',
                         onClick:    function(btn, map){
                             annotation.deleteAnnotation.disable();
-                            annotation.lineMarker.disable();
-                            annotation.dateMarker.disable();
                             annotation.comment.enable();
                         }
                     },
@@ -1720,143 +1898,26 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     }]
                 })
         },
-        dateMarker: {
-            active: true,
-            action:
-                function(i, latLng){
-                    annotations[i] = {'comment': false, 'dateMarker': true, 'lineMarker': false, 'latLng': latLng};
-                    annotation.newAnnotation(i);
-                },
-            enable:
-                function(){
-                    this.btn.state('active');
-                    this.active = true;
-                    document.getElementById('map').style.cursor = "pointer";
-
-
-                    map.doubleClickZoom.disable();
-                    var self = this;
-                    $(map._container).dblclick(function(e){
-                        var latLng = map.mouseEventToLatLng(e);
-                        self.action(annotation.index, latLng);
-                        annotation.index++;
-                    });
-                },
-            disable:
-                function(){
-                    this.btn.state('inactive');
-                    $(map._container).off('dblclick');
-                    map.doubleClickZoom.enable();
-                    document.getElementById('map').style.cursor = "default";
-                    this.active = false;
-                },
-            btn:
-                L.easyButton ({
-                    states: [
-                    {
-                        stateName:  'inactive',
-                        icon:       '<i class="material-icons md-18">fiber_manual_record</i>',
-                        title:      'Create a circle marker',
-                        onClick:    function(btn, map){
-                            annotation.deleteAnnotation.disable();
-                            annotation.lineMarker.disable();
-                            annotation.dateMarker.enable();
-                        }
-                    },
-                    {
-                        stateName:  'active',
-                        icon:       '<i class="material-icons md-18">clear</i>',
-                        title:      'Cancel (Esc)',
-                        onClick:    function(btn, map){
-                            annotation.dateMarker.disable();
-                        }
-                    }]
-                })
-        },
-        lineMarker: {
-            active:
-                false,
-            action:
-                function(i, first_point, second_point){
-                    annotations[i] = {'comment': false, 'dateMarker': false, 'lineMarker': true, 'first_point': first_point, 'second_point': second_point};
-                    annotation.newAnnotation(i);
-                },
-            enable:
-                function(){
-                    this.btn.state('active');
-                    document.getElementById('map').style.cursor = "pointer";
-                    var start = true;
-
-                    var self = this;
-                    $(map._container).click(function(e){
-                        document.getElementById('map').style.cursor = "pointer";
-                        if(start){
-                            first_point = map.mouseEventToLatLng(e);
-                            self.active = true;
-                            interactiveMouse.lineFrom(first_point);
-                            start = false;
-                        }
-                        else{
-                            second_point = map.mouseEventToLatLng(e);
-                            self.action(annotation.index, first_point, second_point);
-                            annotation.index++;
-                            self.disable();
-                        }
-                    })
-                },
-            disable:
-                function(){
-                    $(map._container).off('click');
-                    document.getElementById('map').style.cursor = "default";
-                    this.btn.state('inactive');
-                    this.active = false;
-                    interactiveMouse.layer.clearLayers();
-                },
-            btn:
-                L.easyButton({
-                    states: [
-                    {
-                        stateName:  'inactive',
-                        icon:       '<i class="material-icons md-18">format_clear</i>',
-                        title:      'Create a line marker',
-                        onClick:    function(btn, map){
-                            annotation.dateMarker.disable();
-                            annotation.deleteAnnotation.disable();
-                            annotation.lineMarker.enable();
-                        } 
-                    },
-                    {
-                        stateName:  'active',
-                        icon:       '<i class="material-icons md-18">clear</i>',
-                        title:      'Cancel (Esc)',
-                        onClick:    function(btn, map){
-                            annotation.lineMarker.disable();
-                        }
-                    }]
-                })
-        },
         deleteAnnotation: {
             active:
                 false,
             action:
                 function(i){
                     if(this.active){
-                        delete annotations[i]
-                        autosave.debounce();
+                        delete annotations[i];
                         annotation.reload();
                     }
                 },
             enable: 
                 function(){
-                    annotation.dateMarker.btn.state('inactive');
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('active');
                     this.active = true;
                     document.getElementById('map').style.cursor = 'pointer';
                 },
             disable:
                 function(){
-                    $(map._container).off('click');
+                    $(Lt.map._container).off('click');
                     this.btn.state('inactive');
                     this.active = false;
                     document.getElementById('map').style.cursor = 'default';
@@ -1869,8 +1930,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         icon:       '<i class="material-icons md-18">delete</i>',
                         title:      'Delete an annotation',
                         onClick:    function(btn, map){
-                            annotation.dateMarker.disable();
-                            annotation.lineMarker.disable();
                             annotation.deleteAnnotation.enable();
                         }
                     },
@@ -1894,8 +1953,6 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     onClick:    function(btn, map){
                         btn.state('expand');
                         annotation.comment.btn.enable();
-                        annotation.dateMarker.btn.enable();
-                        annotation.lineMarker.btn.enable();
                         annotation.deleteAnnotation.btn.enable();
 
                         edit.collapse();
@@ -1913,7 +1970,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                     }
                 }]
             })
-    }
+    }*/
 
     //displaying and dowloading data fall under the data object
     var data = {
@@ -2051,7 +2108,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                         y++;
                                     }
                                     else{
-                                        length = Math.round(map.distance(last_latLng, e.latLng)*1000000)
+                                        length = Math.round(distance(last_latLng, e.latLng)*1000)
                                         if(length == 9999){
                                             length = 9998;
                                         }
@@ -2112,7 +2169,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                         }
                                     }
                                     else{
-                                        length = Math.round(map.distance(last_latLng, e.latLng)*1000000)
+                                        length = Math.round(distance(last_latLng, e.latLng)*1000)
                                         if(length == 9999){
                                             length = 9998;
                                         }
@@ -2176,7 +2233,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                         y++;
                                     }
                                     else{
-                                        length = Math.round(map.distance(last_latLng, e.latLng)*1000000)
+                                        length = Math.round(distance(last_latLng, e.latLng)*1000)
                                         if(length == 9999){
                                             length = 9998;
                                         }
@@ -2241,10 +2298,15 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
 
                     $('.confirm_delete').click(function(){
                         undo.push();
-                        points = [];
+
+                        points = {};
+                        year = 0;
+                        earlywood = true;
+                        index = 0;
+
                         visualAsset.reload();
                         data.action();
-                        autosave.debounce();
+
                         self.disable();
                         data.collapse();
                     })
@@ -2276,7 +2338,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
             action:
                 function(){
                     data.deleteAll.disable();
-                    dataJSON = {'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
+                    dataJSON = {'SaveDate': saveDate, 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
                     var file = new File([JSON.stringify(dataJSON)], (Lt.assetName+'.json'), {type: "text/plain;charset=utf-8"});
                     saveAs(file);
                 },
@@ -2290,6 +2352,64 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         onClick:    function(btn, map){
                             data.saveLocal.action();
                         }  
+                    }]
+                })
+        },
+        saveCloud: {
+            date:
+                new Date(),
+            updateDate:
+                function(){
+                    var day = this.date.getDate();
+                    var month = this.date.getMonth() + 1;
+                    var year = this.date.getFullYear();
+                    saveDate = {'day': day, 'month': month, 'year': year};
+                },
+            saveDisplayDate:
+                function(){    
+                    if(saveDate != {}){
+                        document.getElementById("leaflet-save-time-tag").innerHTML = "Saved to cloud on " + saveDate.month + "/" + saveDate.day + "/" + saveDate.year;
+                    }
+                    else{
+                        document.getElementById("leaflet-save-time-tag").innerHTML = "No data saved to cloud";
+                    }
+                },
+            action:
+                function(){
+                    if(Lt.savePermission){
+                        this.updateDate();
+                        this.saveDisplayDate();
+                        console.log("saved");
+                        self = this;
+                        /*dataJSON = {'saveDate': saveDate, 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
+                        $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg){
+                                self.saveDisplayDate();
+                                console.log("saved");
+                            })
+                            .fail(function(xhr, status, error){
+                                alert("Error: failed to save changes");
+                            })*/
+                    }
+                    else{
+                        alert("Authentication Error: save to cloud permission not granted");
+                    }
+                },
+            initialize:
+                function(){
+                    var saveTimeDiv = document.createElement("div");
+                    saveTimeDiv.innerHTML = "<div class='leaflet-control-attribution leaflet-control'><p id='leaflet-save-time-tag'></p></div>";
+                    document.getElementsByClassName("leaflet-bottom leaflet-left")[0].appendChild(saveTimeDiv);
+                },
+            btn:
+                L.easyButton ({
+                    states: [
+                    {
+                        stateName:  'saveCloud',
+                        icon:       '<i class="material-icons md-18">cloud_upload</i>',
+                        title:      'Save to cloud.',
+                        onClick:    function(btn, map){
+                            data.saveCloud.action();
+                        }
                     }]
                 })
         },
@@ -2353,7 +2473,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                             last_point = e;
                         }
                         else if(e.break){
-                            break_length = Math.round(map.distance(last_point.latLng, e.latLng)*1000000)/1000;
+                            break_length = Math.round(distance(last_point.latLng, e.latLng)*1000)/1000;
                             last_point = e;
                         }
                         else{
@@ -2366,7 +2486,7 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                                 y++;
                             }
                             else{
-                                length = Math.round(map.distance(last_point.latLng, e.latLng)*1000000)/1000;
+                                length = Math.round(distance(last_point.latLng, e.latLng)*1000)/1000;
                                 if(last_point.break){
                                     length += break_length;
                                 }
@@ -2411,13 +2531,14 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                 this.download.btn.disable();
                 this.saveLocal.btn.disable();
                 this.loadLocal.btn.disable();
+                this.saveCloud.btn.disable();
             },
         btn:
             L.easyButton ({
                 states: [
                 {
                     stateName:  'collapse',
-                    icon:       '<i class="material-icons md-18">show_chart</i>',
+                    icon:       '<i class="material-icons md-18">storage</i>',
                     title:      'View and download data',
                     onClick:    function(btn, map){
                         btn.state('expand');
@@ -2426,11 +2547,14 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
                         data.download.btn.enable();
                         data.saveLocal.btn.enable();
                         data.loadLocal.btn.enable();
+                        if(Lt.savePermission){
+                            data.saveCloud.btn.enable();
+                        }
 
                         create.collapse();
                         time.collapse();
                         edit.collapse();
-                        annotation.collapse();
+                        annotation.disable();
                     }  
                 },
                 {
@@ -2471,16 +2595,20 @@ var leafletTreering = function(map, basePath, saveURL, savePermission, options){
     edit.addZeroGrowth.btn.disable();
     edit.addBreak.btn.disable();
 
-    var annotationBar = L.easyBar([annotation.btn, annotation.comment.btn, annotation.dateMarker.btn, annotation.lineMarker.btn, annotation.deleteAnnotation.btn]);
+    /*var annotationBar = L.easyBar([annotation.btn, annotation.comment.btn, annotation.deleteAnnotation.btn]);
     annotation.comment.btn.disable();
-    annotation.dateMarker.btn.disable();
-    annotation.lineMarker.btn.disable();
-    annotation.deleteAnnotation.btn.disable();
+    annotation.deleteAnnotation.btn.disable();*/
 
-    var dataBar = L.easyBar([data.btn, data.deleteAll.btn, data.download.btn, data.saveLocal.btn, data.loadLocal.btn]);
+    if(Lt.savePermission){
+        var dataBar = L.easyBar([data.btn, data.deleteAll.btn, data.download.btn, data.saveLocal.btn, data.saveCloud.btn, data.loadLocal.btn]);
+    }
+    else{
+        var dataBar = L.easyBar([data.btn, data.deleteAll.btn, data.download.btn, data.saveLocal.btn, data.loadLocal.btn]);
+    }
     data.deleteAll.btn.disable();
     data.download.btn.disable();
     data.saveLocal.btn.disable();
+    data.saveCloud.btn.disable();
     data.loadLocal.btn.disable();
 
     //the default minimap is square which doesn't look nice

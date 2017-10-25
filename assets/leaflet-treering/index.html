@@ -59,62 +59,65 @@
         drawControl: true,
         layers: [],
         doubleClickZoom: false,
-        zoomControl: false
+        zoomControl: false,
+        trackResize: false
     }).setView([0, 0], 0);
 
     var layer = L.tileLayer.elevator(function(coords, tile, done) {
         var error;
-        //var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         tile.onload = (function(done, error, tile) {
             return function() {
                 done(error, tile);
             }
         })(done, error, tile);
-        //tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
-        tile.src = params.Key;
+        tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
+        //tile.src = params.Key;
         src = tile.src;
         return tile.src;
     },
     {
-        //width: 231782,
-        //height: 4042,
-        width: 200521,
-        height: 4196,
+        width: 231782,
+        height: 4042,
+        //width: 200521,
+        //height: 4196,
         tileSize :254,
-        maxZoom: 19 - 1,
+        maxZoom: 13 - 1,
         overlap: 1,
-        pixelsPerMillimeter: 468, //(NEW)
+        pixelsPerMillimeter: 480, //(NEW)
         lineColor: 'blue'
     }).addTo(map);
 
     //minimap
     var miniLayer = new L.tileLayer.elevator(function(coords, tile, done) {
         var error;
-        //var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         tile.onload = (function(done, error, tile) {
             return function() {
                 done(error, tile)
             }
         })(done, error, tile);
-        //tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
-        tile.src = params.Key;
+        tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
+        //tile.src = params.Key;
         src = tile.src;
         return tile.src;
     },
     {
-        //width: 231782,
-        //height: 4042,
-        width: 200521,
-        height: 4196,
+        width: 231782,
+        height: 4042,
+        //width: 200521,
+        //height: 4196,
         tileSize: 254,
         maxZoom: 13,
         overlap: 1,
     });
 
-    //map, basePath, saveURL, savePermission, {initialData: json, assetName: string, datingInner: int, hasLatewood: bool}
-    var treering = new leafletTreering(map, "", "", true, {'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}, 'saveTime': {'hour': 11, 'minute': 48, 'am_pm': " AM"}}, 'assetName': "ABC00X", 'datingInner': 1234, 'hasLatewood': true});
+    //map, ppm, basePath, saveURL, savePermission, {initialData: json, assetName: string, hasLatewood: bool}
+    var treering = new leafletTreering(map, layer.options.pixelsPerMillimeter, "", "", true, {'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}}, 'assetName': "ABC00X", 'hasLatewood': true});
     treering.loadInterface();
     //treering.addSaveButton();
 </script>
