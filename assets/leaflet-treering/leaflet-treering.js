@@ -2377,18 +2377,16 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
             action:
                 function(){
                     if(Lt.savePermission){
-                        this.updateDate();
-                        this.saveDisplayDate();
-                        console.log("saved");
                         self = this;
-                        /*dataJSON = {'saveDate': saveDate, 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
+                        dataJSON = {'saveDate': saveDate, 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
                         $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg){
+                                this.updateDate();
                                 self.saveDisplayDate();
                                 console.log("saved");
                             })
                             .fail(function(xhr, status, error){
                                 alert("Error: failed to save changes");
-                            })*/
+                            })
                     }
                     else{
                         alert("Authentication Error: save to cloud permission not granted");
