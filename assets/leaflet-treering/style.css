@@ -85,3 +85,8 @@ table{
 	font-size: 12px;
 	margin: 4px;
 }
+
+textarea{
+	resize: none;
+	border: none;
+}

@@ -62,7 +62,7 @@ $menuArray['download'] = $downloadArray;
 	<div class="col-md-12">
 <?endif?>
 <?if($targetFile):?>
-	<iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="/assets/pdf/web/viewer.html?file=<?=urlencode(striphttp($targetFile))?>#zoom=page-fit&page=0"></iframe>
+	<iframe class="vrview" frameborder=0 width="100%" height=<?=$embedded?"100%":"480px"?> scrolling="no" allowfullscreen src="/assets/pdf/web/viewer.html?file=<?=urlencode(striphttp($targetFile))?>#zoom=page-fit&page=0"></iframe>
 <?else:?>
 	<img src="<?=isset($fileContainers['thumbnail2x'])?stripHTTP($fileContainers['thumbnail2x']->getProtectedURLForFile()):"/assets/icons/512px/pdf.png"?>" class="img-responsive embedImage" style="width: 50%; margin-left:auto; margin-right:auto"/>
 <?endif?>
