@@ -63,10 +63,10 @@
   <option value="image">Image</option>
   <option value="movie">Video</option>
   <option value="audio">Audio</option>
-  <option value="box">Doc</option>
+  <option value="office">Doc</option>
   <option value="txt">TXT</option>
-  <option value="box">PDF</option>
-  <option value="box">PPT</option>
+  <option value="pdf">PDF</option>
+  <option value="office">PPT</option>
   <option value="zipobj">3D (obj)</option>
   <option value="ply">3D (ply)</option>
   <option value="zipmeddicom">DICOM</option>
