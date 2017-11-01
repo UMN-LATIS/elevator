@@ -87,6 +87,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
 		map = L.map('map', {
 			fullscreenControl: true,
+			zoomControl: false,
 			zoomSnap: 0,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
