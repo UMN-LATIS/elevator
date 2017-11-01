@@ -1,5 +1,5 @@
 
-var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, options){
+var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, popoutUrl, options){
     var Lt = this;
 
     Lt.map = map;
@@ -7,19 +7,12 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
     Lt.basePath = basePath;
     Lt.saveURL = saveURL;
     Lt.savePermission = savePermission;
+    Lt.popoutUrl = popoutUrl;
 
     //options
     Lt.initialData = options.initialData || {};
     Lt.assetName = options.assetName || "N/A";
     Lt.hasLatewood = options.hasLatewood || false;
-
-    //options
-    /*if(options.initialData != undefined)
-        Lt.initialData = options.initialData;
-    if(options.assetName != undefined)
-        Lt.assetName = options.assetName;
-    if(options.hasLatewood != undefined)
-        Lt.hasLatewood = options.hasLatewood;*/
 
     var saveDate = {};
     var saveTime = {};
@@ -49,16 +42,17 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
         document.getElementById('map').style.cursor = 'default';
 
         //add all UI elements to map
-        miniMap.addTo(map);
+        miniMap.addTo(Lt.map);
 
-        annotation.btn.addTo(map);
-        createBar.addTo(map);
-        timeBar.addTo(map);
-        editBar.addTo(map);
-        dataBar.addTo(map);
-        undoRedoBar.addTo(map);
+        popout.btn.addTo(Lt.map);
+        annotation.btn.addTo(Lt.map);
+        createBar.addTo(Lt.map);
+        timeBar.addTo(Lt.map);
+        editBar.addTo(Lt.map);
+        dataBar.addTo(Lt.map);
+        undoRedoBar.addTo(Lt.map);
 
-        L.control.layers(baseLayer, overlay).addTo(map);
+        L.control.layers(baseLayer, overlay).addTo(Lt.map);
 
         Lt.map.on("contextmenu", function(e){
             create.dataPoint.disable();
@@ -111,141 +105,12 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
 
         visualAsset.reload();
         annotation.reload();
-        /*if(newData.points != undefined){
-            index = newData.index;
-            year = newData.year;
-            earlywood = newData.earlywood;
-            points = newData.points;
-            visualAsset.reload();
-        }
-        if(newData.annotations != undefined){
-            annotations = newData.annotations;
-            annotation.reload();
-        }*/
+
         time.collapse();
         annotation.disable();
         edit.collapse();
         create.collapse(); 
     };
-
-    /*var autosave = {
-        date:
-            new Date(),
-        timeoutHandle:
-            null,
-        intervalHandle:
-            null,
-        saveTimer:
-            -1,
-        getCurrentTime:
-            function(){
-                var hour = this.date.getHours();
-                var minute = this.date.getMinutes();
-                var am_pm;
-                if(hour == 0){
-                    hour = 12;
-                    am_pm = " AM";
-                }
-                else if(hour <= 11){
-                    am_pm = " AM";
-                }
-                else if(hour == 12){
-                    am_pm = " PM";
-                }
-                else if(hour >= 13){
-                    hour = hour - 12;
-                    am_pm = " PM";
-                }
-                return {'hour': hour, 'minute': minute, 'am_pm': am_pm};
-            },
-        getCurrentDate:
-            function(){
-                var day = this.date.getDate();
-                var month = this.date.getMonth() + 1;
-                var year = this.date.getFullYear();
-                return {'day': day, 'month': month, 'year': year};
-            },
-        saveDisplayTime:
-            function(){
-                this.saveTimer++;
-                if(this.saveTimer == 0){
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "All changes saved to cloud";
-                    seconds_ago = function(){ document.getElementById("leaflet-save-time-tag").innerHTML = "All changes saved seconds ago"; }
-                    window.setTimeout(seconds_ago, 5000);
-                }
-                else if(this.saveTimer == 1){
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved less then a minute ago";
-                }
-                else if(this.saveTimer == 2){
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved a minute ago";
-                }
-                else if(this.saveTimer <= 8){
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved minutes ago";
-                }
-                else{
-                    var time = autosave.getCurrentTime();
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved at " + time.hour + ":" + ('0' + time.minute).slice(-2) + time.am_pm;
-                }
-            },
-        saveDisplayDate:
-            function(){
-                var currentDate = this.getCurrentDate();
-                if(saveDate != undefined && saveDate.year != undefined){
-                    if(saveDate.year == currentDate.year && saveDate.month == currentDate.month){
-                        if(saveDate.day == currentDate.day){
-                            document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved today at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;
-                        }
-                        else if(saveDate.day == (currentDate.day - 1)){
-                            document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved yesterday at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;    
-                        } 
-                        else{
-                        document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved on " + saveDate.month + "/" + saveDate.day + "/" + saveDate.year + " at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;
-                        }
-                    }
-                    else{
-                        document.getElementById("leaflet-save-time-tag").innerHTML = "Last changes saved on " + saveDate.month + "/" + saveDate.day + "/" + saveDate.year + " at " + saveTime.hour + ":" + ('0' + saveTime.minute).slice(-2) + saveTime.am_pm;
-                    }
-                }
-                else{
-                    document.getElementById("leaflet-save-time-tag").innerHTML = "Save history unavailable";
-                }
-            },
-        debounce:
-            function(){
-                if(Lt.savePermission){
-                    window.clearTimeout(this.timeoutHandle);
-                    this.timeoutHandle = window.setTimeout(this.saveCloud, 5000);
-                    window.clearInterval(this.intervalHandle);
-                    this.intervalHandle = window.setInterval(this.saveDisplayTime, 30000);
-                }
-            },
-        saveCloud:
-            function(){
-                this.saveTimer = -1;
-                autosave.saveDisplayTime();
-                console.log("saved");
-                /*dataJSON = {'saveDate': autosave.getCurrentDate(), 'saveTime': autosave.getCurrentTime(), 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
-                $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg){
-                        this.saveTimer = -1;
-                        autosave.saveDisplayTime();
-                        console.log("saved");
-                    })
-                    .fail(function(xhr, status, error){
-                        alert("Error: failed to save changes");
-                    })
-            },
-        initialize:
-            function(){
-                var saveTimeDiv = document.createElement("div");
-                saveTimeDiv.innerHTML = "<div class='leaflet-control-attribution leaflet-control'><p id='leaflet-save-time-tag'></p></div>";
-                document.getElementsByClassName("leaflet-bottom leaflet-left")[0].appendChild(saveTimeDiv);
-
-                if(Lt.savePermission){
-                    this.timeoutHandle = window.setTimeout(null, 1000);
-                    this.intervalHandle = window.setInterval(null, 1000000000);
-                }
-            }
-    }*/
 
     var autoScroll = {
         on:
@@ -293,12 +158,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
             }
     } 
 
-    //var points = {};            //object with all the point data
-    //var annotations = {};       //object with all annotations data
-    //var year = 0;               //year
-    //var earlywood = true;       //earlywood or latewood
-    //var index = 0;              //points index
-
     //creating colored icons for points
     var markerIcon = {
         light_blue: L.icon({
@@ -322,7 +181,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
     //when user adds new markers lines and hbars will be created from the mouse
     var interactiveMouse = {
         layer:
-            L.layerGroup().addTo(map),
+            L.layerGroup().addTo(Lt.map),
         hbarFrom:
             function(latLng){
                 var self = this;
@@ -367,9 +226,9 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
         lines:
             new Array(),
         markerLayer:
-            L.layerGroup().addTo(map),
+            L.layerGroup().addTo(Lt.map),
         lineLayer:
-            L.layerGroup().addTo(map),
+            L.layerGroup().addTo(Lt.map),
         reload:
             function(){
                 //erase the markers
@@ -425,32 +284,11 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                     var marker = L.marker(leafLatLng, {icon: markerIcon.light_blue, draggable: true, title: "Year " + p[i].year, riseOnHover: true}); 
                 }
 
-                /*//deal with previous skip point if one exists
-                if(p[i-1] != undefined && p[i-1].skip){
-                    if(i-1){
-                        average = L.latLng([(leafLatLng.lat + this.previousLatLng.lat)/2, (leafLatLng.lng + this.previousLatLng.lng)/2]);
-                    }
-                    else{
-                        average = L.latLng([leafLatLng.lat, (leafLatLng.lng - .001)]);
-                    }
-                    skip_marker = L.marker(average, {icon: markerIcon.grey, draggable: true, title: "Year " + p[i-1].year + ", None"});
-                    skip_marker.on('click', function(e){
-                        if(edit.deletePoint.active){
-                            edit.deletePoint.action(i-1);
-                        }
-                    });
-                    this.markers[i-1] = skip_marker;
-                    this.markerLayer.addLayer(this.markers[i-1]);
-                }*/
-
                 this.markers[i] = marker;     //add created marker to marker_list
                 var self = this;
 
-                //tell marker what to do when being draged
-                
-
-                //tell marker what to do when the draggin is done
                 if(!p[i].skip){ 
+                    //tell marker what to do when being draged
                     this.markers[i].on('drag', function(e){
                         //adjusting the line from the previous and preceeding point if they exist
                         if(!p[i].start){
@@ -469,6 +307,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                             self.lineLayer.addLayer(self.lines[i+2]);
                         }
                     });
+                    //tell marker what to do when the draggin is done
                     this.markers[i].on('dragend', function(e){
                         undo.push();
                         p[i].latLng = e.target._latlng;
@@ -525,10 +364,24 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                     }
                 }
                 
-
                 this.previousLatLng = leafLatLng;
                 this.markerLayer.addLayer(this.markers[i]);    //add the marker to the marker layer
             },
+    }
+
+    var popout = {
+        btn:
+            L.easyButton ({
+                states: [
+                {
+                    stateName:  'popout',
+                    icon:       '<i class="material-icons md-18">launch</i>',
+                    title:      'Popout Window',
+                    onClick:    function(btn, map){
+                        window.open(Lt.popoutUrl, '_blank', 'location=yes,height=600,width=800,scrollbars=yes,status=yes');
+                    }
+                }]
+            }) 
     }
 
     //undo changes to points using a stack
@@ -553,8 +406,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                         interactiveMouse.hbarFrom(points[index-2].latLng);
                     }
 
-
-
                     redo.btn.enable();
                     var restore_points = JSON.parse(JSON.stringify(points));
                     redo.stack.push({'year': year, 'earlywood': earlywood, 'index': index, 'points': restore_points});
@@ -565,7 +416,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                     index = dataJSON.index;
                     year = dataJSON.year;
                     earlywood = dataJSON.earlywood;
-
 
                     visualAsset.reload();
 
@@ -645,7 +495,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                 L.control.dialog({'size': [270, 65], 'anchor': [80, 50], 'initOpen': false})
                     .setContent('Year: <input type="number" size="4" maxlength="4" id="year_input"/>' +
                                 '<button id="year_submit">enter</button>')
-                    .addTo(map),
+                    .addTo(Lt.map),
             action:
                 function(i){    
                     if(points[i].start){
@@ -678,8 +528,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                                 year = new_year;
                                 visualAsset.reload();
                             }
-
-    
 
                             self.disable();
                         }, false);
@@ -726,7 +574,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                 L.control.dialog({'size': [270, 65], 'anchor': [80, 50], 'initOpen': false})
                     .setContent('Year: <input type="number" size="4" maxlength="4" id="end_year_input"/>' +
                                 '<button id="end_year_submit">enter</button>')
-                    .addTo(map),
+                    .addTo(Lt.map),
             action:    
                 function(i){    
                     if(!(points[i+1] != undefined) || points[i+1].break || points[i+1].start){
@@ -982,8 +830,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
 
                         year++;
                         index++;
-
-
                     }
                     else{
                         alert("First year cannot be missing!")
@@ -1026,8 +872,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                         visualAsset.newLatLng(points, index, latLng);
                         index++;
                         self.disable();
-
-
 
                         create.dataPoint.enable();
                     });
@@ -1255,7 +1099,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                         alert("You cannot select the same point");
                     }
 
-
                     visualAsset.reload();
                     edit.cut.disable();
                 },
@@ -1344,8 +1187,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                             points = new_points;
                             index = k;
                             year++;
-
-    
 
                             visualAsset.reload();
                             self.disable();
@@ -1497,8 +1338,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                             points = new_points;
                             index = k;
 
-    
-
                             visualAsset.reload();
                             self.disable();
                         }
@@ -1582,8 +1421,10 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
         markers:
             new Array(),
         layer:
-            L.layerGroup().addTo(map),
+            L.layerGroup().addTo(Lt.map),
         active:
+            false,
+        markerClicked:
             false,
         input:
             L.circle([0,0], {radius: .0001, color: 'red', weight: '6'})
@@ -1628,6 +1469,21 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                 $(self.markers[i]).mouseover(self.popupMouseover);
                 $(self.markers[i]).mouseout(self.popupMouseout);
 
+                $(self.markers[i]).dblclick(function(){
+                    if(!self.active){
+                        $(Lt.map._container).click(function(e){
+                            self.markers[i].setPopupContent(ref.text);
+                            $(self.markers[i]).mouseover(self.popupMouseover);
+                            $(self.markers[i]).mouseout(self.popupMouseout);
+                            self.disable();
+                        });
+                        self.editAnnotation(i);
+                    }
+                    else{
+                        self.markerClicked = true;
+                    }
+                });
+
                 self.layer.addLayer(self.markers[i]);
 
                 if(ref.text == ""){
@@ -1665,8 +1521,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
             },
         enable:
             function(){
-                this.markers.map(function(e){ $(e).off('dblclick'); });
-
                 this.btn.state('active');
                 this.active = true;
                 document.getElementById('map').style.cursor = "pointer";
@@ -1674,12 +1528,15 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                 var self = this;
                 Lt.map.doubleClickZoom.disable();
                 $(Lt.map._container).dblclick(function(e){
-                    $(Lt.map._container).click(function(e){
-                        self.disable();
-                        self.enable();
-                    });
-                    latLng = Lt.map.mouseEventToLatLng(e);
-                    self.action(self.index, latLng);
+                    if(!self.markerClicked){
+                        $(Lt.map._container).click(function(e){
+                            self.disable();
+                            self.enable();
+                        });
+                        latLng = Lt.map.mouseEventToLatLng(e);
+                        self.action(self.index, latLng);
+                    }
+                    self.markerClicked = false;
                 })
             },
         disable:
@@ -1692,11 +1549,6 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                 document.getElementById('map').style.cursor = "default";
                 this.input.remove();
                 this.active = false;
-                this.markers.map(function(e, i){
-                    $(e).dblclick(function(){
-                        self.editAnnotation(i);
-                    });
-                })
             },
         editAnnotation:
             function(i){
@@ -1706,33 +1558,34 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                 $(marker).off('mouseover');
                 $(marker).off('mouseout');
 
-                marker.closePopup();
-                marker.setPopupContent('<textarea class="comment_input" name="message" rows="2" cols="15">' + annotations[i].text + '</textarea>');
+                //marker.closePopup();
+                marker.setPopupContent('<textarea id="comment_input" name="message" rows="2" cols="15">' + annotations[i].text + '</textarea>');
                 marker.openPopup();
-                document.getElementsByClassName('comment_input')[0].select();
+                document.getElementById('comment_input').select();
 
                 $(document).keypress(function(e){
-                    var key = e.which || e.keyCode;
+                    var key = e.which// || e.keyCode;
                     if(key === 13){
-                        var string = ($('.comment_input').val()).slice(0);
+                        if($('#comment_input').val() != undefined){
+                            var string = ($('#comment_input').val()).slice(0);
 
-                        if(string != ""){
-                            marker.setPopupContent(string);
-                            $(marker).mouseover(self.popupMouseover);
-                            $(marker).mouseout(self.popupMouseout);
+                            if(string != ""){
+                                annotations[i].text = string;
+                                marker.setPopupContent(string);
+                                $(marker).mouseover(self.popupMouseover);
+                                $(marker).mouseout(self.popupMouseout);
+                            }
+                            else{
+                                self.deleteAnnotation(i);
+                            }
                         }
-                        else{
-                            self.deleteAnnotation(i);
-                        }
-
                         self.disable();
                     }
                 });
             },
         deleteAnnotation: 
             function(i){
-                console.log(i);
-                this.layer.removeLayer(self.markers[i]);
+                this.layer.removeLayer(this.markers[i]);
                 delete annotations[i];
                 this.reload();
             },
@@ -1770,7 +1623,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
         markers:
             new Array(),
         layer:
-            L.layerGroup().addTo(map),
+            L.layerGroup().addTo(Lt.map),
         reload:
             function(){
                 this.layer.clearLayers();
@@ -2286,7 +2139,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
             dialog: L.control.dialog({'size': [240, 140], 'anchor': [150, 50], 'initOpen': false})
                         .setContent('<p>This action will delete all data points. Annotations will not be effected. Are you sure you want to continue?</p>' +
                                 '<p><button class="confirm_delete">confirm</button><button class="cancel_delete">cancel</button></p>')
-                        .addTo(map),
+                        .addTo(Lt.map),
             enable:
                 function(){
                     data.dialog.close()
@@ -2380,7 +2233,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
                         self = this;
                         dataJSON = {'saveDate': saveDate, 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
                         $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg){
-                                this.updateDate();
+                                self.updateDate();
                                 self.saveDisplayDate();
                                 console.log("saved");
                             })
@@ -2460,7 +2313,7 @@ var leafletTreering = function(map, ppm, basePath, saveURL, savePermission, opti
         dialog:
             L.control.dialog({'size': [240, 350], 'anchor': [5, 50], 'initOpen': false})
                 .setContent('<h3>There are no data points to measure</h3>')
-                .addTo(map),
+                .addTo(Lt.map),
         action:
             function(){
                 if(points[0] != undefined){

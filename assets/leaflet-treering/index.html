@@ -116,8 +116,8 @@
         overlap: 1,
     });
 
-    //map, ppm, basePath, saveURL, savePermission, {initialData: json, assetName: string, hasLatewood: bool}
-    var treering = new leafletTreering(map, layer.options.pixelsPerMillimeter, "", "", true, {'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}}, 'assetName': "ABC00X", 'hasLatewood': true});
+    //map, ppm, basePath, saveURL, savePermission, popoutUrl, {initialData: json, assetName: string, hasLatewood: bool}
+    var treering = new leafletTreering(map, layer.options.pixelsPerMillimeter, "", "", true, "", {'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}}, 'assetName': "ABC00X", 'hasLatewood': true});
     treering.loadInterface();
     //treering.addSaveButton();
 </script>
