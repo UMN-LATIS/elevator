@@ -24,6 +24,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/node_modules/font-awesome-4.7.0/css/font-awesome.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
@@ -87,6 +88,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
 		map = L.map('map', {
 			fullscreenControl: true,
+			trackResize: true,
 			zoomControl: false,
 			zoomSnap: 0,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
@@ -171,7 +173,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		canSave = true;
 		<?endif?>
 		popoutURL = "<?=stripHTTP(instance_url("asset/getEmbed/" . $fileObject->getObjectId() . "/null/true"));?>";
-		treering = new leafletTreering(map, layer.options.pixelsPerMillimeter, basePath + "assets/leaflet-treering/", saveURL, canSave, popoutURL, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		treering = new leafletTreering(map, basePath + "assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	// if(saveURL != "") {
     	// 	treering.addSaveButton();

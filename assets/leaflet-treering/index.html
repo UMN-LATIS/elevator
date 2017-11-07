@@ -6,6 +6,7 @@
 	<title>Tree Rings</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
     <link rel="stylesheet" href="node_modules/font-awesome-4.7.0/css/font-awesome.css">
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
@@ -33,19 +34,7 @@
 </head>
 
 <body>
-    <!--<div id="button_area">
-        <a href="#" id="save-local" download="data.json"><i class="material-icons md-18">save</i></a>
-        <div id="admin-save"></div>
-        <div class="file-upload">
-            <label for="file">
-                <i id="upload_button" class="material-icons md-18">file_upload</i>
-            </label>
-
-            <input type="file" id="file" onchange="treering.loadFile()"/>
-        </div>
-    </div>-->
     <div id="map_container"><div id="map"></div></div>    
-
 </body>
 </html>
 <script type="application/javascript" src="leaflet-treering.js"></script>
@@ -53,21 +42,19 @@
 <script>
     var src;
     var map = L.map('map', {
-        fullscreenControl: true,
         zoomSnap: 0,
         crs: L.CRS.Simple,
         drawControl: true,
         layers: [],
         doubleClickZoom: false,
         zoomControl: false,
-        trackResize: false
+        trackResize: true
     }).setView([0, 0], 0);
 
     var layer = L.tileLayer.elevator(function(coords, tile, done) {
         var error;
         var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        //var params = {Bucket: 'elevator-assets', Key: "tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         tile.onload = (function(done, error, tile) {
             return function() {
                 done(error, tile);
@@ -95,7 +82,6 @@
         var error;
         var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        //var params = {Bucket: 'elevator-assets', Key: "tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
         tile.onload = (function(done, error, tile) {
             return function() {
                 done(error, tile)
@@ -116,8 +102,7 @@
         overlap: 1,
     });
 
-    //map, ppm, basePath, saveURL, savePermission, popoutUrl, {initialData: json, assetName: string, hasLatewood: bool}
-    var treering = new leafletTreering(map, layer.options.pixelsPerMillimeter, "", "", true, "", {'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}}, 'assetName': "ABC00X", 'hasLatewood': true});
+    //map, basePath, {ppm: int, saveURL: string, savePermission: bool, popoutUrl: string, assetName: string, hasLatewood: bool, initialData: json}
+    var treering = new leafletTreering(map, "", {'ppm': layer.options.pixelsPerMillimeter, 'popoutUrl': "index.html", 'assetName': "ABC00X", 'hasLatewood': true, 'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}}});
     treering.loadInterface();
-    //treering.addSaveButton();
 </script>
