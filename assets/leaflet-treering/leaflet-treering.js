@@ -211,9 +211,15 @@ var leafletTreering = function(map, basePath, options) {
             var newY = point.y + (mousePoint.x - point.x)*Math.sin(Math.PI/2*3) + (mousePoint.y - point.y)*Math.cos(Math.PI/2*3);
             var bottomLeftPoint = Lt.map.layerPointToLatLng([newX, newY]);
 
-            self.layer.addLayer(L.polyline([latLng, mouseLatLng], {color: '#00BCD4', opacity: '.75', weight: '3'}));
-            self.layer.addLayer(L.polyline([topLeftPoint, bottomLeftPoint], {color: '#00BCD4', opacity: '.75', weight: '3'}));
-            self.layer.addLayer(L.polyline([topRightPoint, bottomRightPoint], {color: '#00BCD4', opacity: '.75', weight: '3'}));
+            if (earlywood) {
+              var color = '#00BCD4';
+            } else {
+              var color = '#00838f';
+            }
+
+            self.layer.addLayer(L.polyline([latLng, mouseLatLng], {color: color, opacity: '.75', weight: '3'}));
+            self.layer.addLayer(L.polyline([topLeftPoint, bottomLeftPoint], {color: color, opacity: '.75', weight: '3'}));
+            self.layer.addLayer(L.polyline([topRightPoint, bottomRightPoint], {color: color, opacity: '.75', weight: '3'}));
             
           }
         });
@@ -1633,7 +1639,7 @@ var leafletTreering = function(map, basePath, options) {
             dataJSON = {'saveDate': saveDate, 'year': year, 'earlywood': earlywood, 'index': index, 'points': points, 'annotations': annotations};
             $.post(Lt.saveURL, {sidecarContent: JSON.stringify(dataJSON)}).done(function(msg) {
                 self.updateDate();
-                self.saveDisplayDate();
+                self.displayDate();
                 console.log("saved");
               })
               .fail(function(xhr, status, error) {
@@ -1688,8 +1694,6 @@ var leafletTreering = function(map, basePath, options) {
             newDataJSON = JSON.parse(e.target.result);
 
             loadData(newDataJSON);
-            fileIO.action();
-
           }
 
           fr.readAsText(files.item(0));
@@ -2066,7 +2070,10 @@ var leafletTreering = function(map, basePath, options) {
           });
           this.dialog.setContent(string + "</table>");
         } else {
-          this.dialog.setContent("<h3>There are no data points to measure</h3>");
+          var string = "<div><button id='download-button' class='mdc-button mdc-button--unelevated mdc-button-compact' disabled>download</button>" +
+            "<button id='delete-button' class='mdc-button mdc-button--unelevated mdc-button-compact'>delete all</button></div>" +
+            "<h3>There are no data points to measure</h3>";
+          this.dialog.setContent(string);
         }
         this.dialog.lock();
         this.dialog.open();
