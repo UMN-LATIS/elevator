@@ -91,6 +91,7 @@ if($widgetObject->parentWidget->dendroFields) {
 			trackResize: true,
 			zoomControl: false,
 			zoomSnap: 0,
+			detectRetina: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
 
@@ -116,7 +117,8 @@ if($widgetObject->parentWidget->dendroFields) {
 			tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
 			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
-			pixelsPerMillimeter: pixelsPerMillimeter
+			pixelsPerMillimeter: pixelsPerMillimeter,
+			detectRetina: false,
 		});
 		layer.addTo(map);
 
