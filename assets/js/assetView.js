@@ -15,8 +15,12 @@ $(document).on("ready", function() {
 		$("head").append('<style> .canFullscreen { display: none;</style>');
 	}
 
+	slicePoint = 400;
+	if(slicePointDefault !== undefined) {
+		slicePoint = slicePointDefault;
+	}
 	$(".textareaView li div").expander({
-		slicePoint: 400
+		slicePoint: slicePoint
 	});
 
 	// show nearby assets
