@@ -16,7 +16,7 @@ $(document).on("ready", function() {
 	}
 
 	slicePoint = 400;
-	if(slicePointDefault &&  typeof slicePointDefault !== undefined) {
+	if(typeof slicePointDefault !== 'undefined') {
 		slicePoint = slicePointDefault;
 	}
 	$(".textareaView li div").expander({
