@@ -170,7 +170,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		}
 		var saveURL = "";
 		var canSave = false;
-		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
+		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS || $this->user_model->getAccessLevel("collection",$fileObject->collection) >= PERM_ADDASSETS):?>
 		saveURL = basePath + "assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
 		canSave = true;
 		<?endif?>
