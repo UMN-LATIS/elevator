@@ -24,6 +24,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/node_modules/font-awesome-4.7.0/css/font-awesome.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
@@ -87,7 +88,10 @@ if($widgetObject->parentWidget->dendroFields) {
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
 		map = L.map('map', {
 			fullscreenControl: true,
+			trackResize: true,
+			zoomControl: false,
 			zoomSnap: 0,
+			detectRetina: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
 
@@ -113,7 +117,8 @@ if($widgetObject->parentWidget->dendroFields) {
 			tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
 			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
-			pixelsPerMillimeter: pixelsPerMillimeter
+			pixelsPerMillimeter: pixelsPerMillimeter,
+			detectRetina: false,
 		});
 		layer.addTo(map);
 
@@ -165,11 +170,12 @@ if($widgetObject->parentWidget->dendroFields) {
 		}
 		var saveURL = "";
 		var canSave = false;
-		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS):?>
+		<?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS || $this->user_model->getAccessLevel("collection",$fileObject->collection) >= PERM_ADDASSETS):?>
 		saveURL = basePath + "assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/dendro";
 		canSave = true;
 		<?endif?>
-		treering = new leafletTreering(map, layer.options.pixelsPerMillimeter, basePath + "assets/leaflet-treering/", saveURL, canSave, {'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		popoutURL = "<?=stripHTTP(instance_url("asset/getEmbed/" . $fileObject->getObjectId() . "/null/true"));?>";
+		treering = new leafletTreering(map, basePath + "assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	// if(saveURL != "") {
     	// 	treering.addSaveButton();
