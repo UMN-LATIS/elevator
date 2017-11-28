@@ -4,7 +4,8 @@
 */
 
 
-define("COURSE_TYPE", "Course");
+define("COURSE_TYPE", "Class Number");
+define("DEPT_COURSE_TYPE", "Dept/Course Number");
 define("JOB_TYPE", "JobCode");
 define("UNIT_TYPE", "Unit");
 define("STATUS_TYPE", "StudentStatus");
@@ -13,7 +14,7 @@ define("STATUS_TYPE", "StudentStatus");
 require_once("AuthHelper.php");
 class UMNHelper extends AuthHelper
 {
-	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"]];
+	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], DEPT_COURSE_TYPE=>["name"=>DEPT_COURSE_TYPE, "label"=>DEPT_COURSE_TYPE, "helpText"=>"DEPT.NUMBER.SECTION.TYPE or use % for wildcard (DEPT.NUMBER%)"], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"]];
 
 	public function __construct()
 	{
@@ -115,6 +116,7 @@ class UMNHelper extends AuthHelper
 		$userData = array();
 		$coursesTaught = array();
 		$courses = array();
+		$deptCourses = array();
 		$jobCodes = array();
 		$units = array();
 		$studentStatus = array();
@@ -132,12 +134,15 @@ class UMNHelper extends AuthHelper
 					}
 					$courseString = explode("/", $course);
 					$courseId = $courseString[8];
+					$deptCourse = $courseString[6];
 					if($role == "Instructor") {
 						
 						$courseName = $courseString[6];
 						$coursesTaught[$courseId + 0] = $courseName;
+						$deptCoursesTaught[$courseName] = $courseName;
 					}
 					$courses[] = $courseId + 0;
+					$deptCourses[] = $deptCourse;
 				}
 			}
 			
@@ -168,6 +173,7 @@ class UMNHelper extends AuthHelper
 		}
 
 		$userData[COURSE_TYPE] = ["values"=>$courses, "hints"=>$coursesTaught];
+		$userData[DEPT_COURSE_TYPE] = ["values"=>$deptCourses, "hints"=>$deptCoursesTaught];
 		$userData[JOB_TYPE] = ["values"=>$jobCodes, "hints"=>[]];
 
 		$unitHints = array();
@@ -176,8 +182,8 @@ class UMNHelper extends AuthHelper
 		}
 		$userData[UNIT_TYPE] = ["values"=>$units, "hints"=>$unitHints];
 		$userData[STATUS_TYPE] = ["values"=>array_unique($studentStatus), "hints"=>["UGRD"=>"Undergraduate", "GRAD"=>"Graduate"]];
-
-		return $userData;
+		var_dump($userData);
+		return $userDatata;
 
 	}
 

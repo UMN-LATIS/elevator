@@ -23,8 +23,17 @@ if($groupObject->getGroupType() == "User") {
 }
 
 $hints = array();
+$helpText = array();
+
 foreach($this->user_model->userData as $key=>$value) {
 	$hints[$key] = $value["hints"];
+}
+
+foreach($authHelper->authTypes as $key=>$value) {
+	if(isset($value["helpText"])) {
+		$helpText[$key] = $value["helpText"];	
+	}
+	
 }
 
 $disableGlobal = null;
@@ -65,6 +74,7 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 				<div class="col-sm-5">
 					<input type="text" name="groupLabel" id="inputGroupLabel" class="form-control" value="<?=$groupObject->getGroupLabel()?>" >
 				</div>
+				<p class="help-block" id="helpText"></p>
 			</div>
 
 
@@ -73,6 +83,7 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 			var existingGroups = <?=json_encode($groupArray)?>;
 			var userCache = <?=json_encode($nameArray)?>;
 			var hints = <?=json_encode($hints)?>;
+			var helpText = <?=json_encode($helpText)?>;
 
 			</script>
 			<button type="button" id="addAnotherValue" class="btn btn-primary">Add Another Value</button>
