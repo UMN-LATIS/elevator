@@ -42,6 +42,103 @@ class dclImporter extends Instance_Controller {
 
 	}
 
+	public function buildDrawersFromFile($filePath, $targetOwner, $targetInstance) {
+		$fp = fopen($filePath, "r");
+		$header = fgetcsv($fp);
+
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $targetInstance);
+	 	$this->user_model->loadUser($targetOwner);
+		while($line = fgetcsv($fp)) {
+
+			$drawerTitle = $line[7];
+			$asset = $line[2];
+			echo "Adding " . $asset . " to " . $drawerTitle . "\n";
+			$drawer = $this->doctrine->em->getRepository("Entity\Drawer")->findOneBy(["title"=>$drawerTitle]);
+			if(!$drawer) {
+				echo "making new drawer\n";
+				$drawer = new Entity\Drawer;
+				$drawer->setTitle($drawerTitle);
+				$drawer->setInstance($this->instance);
+				echo "Hey1\n";
+				// \Doctrine\Common\Util\Debug::dump($drawer);
+				$this->doctrine->em->persist($drawer);
+
+				echo "Hey\n";
+				$groupObject = $this->user_model->getPermissions("DrawerGroup", "User", $this->user_model->getId(), $this->user_model->user);
+				if(count($groupObject)) {
+					$groupObject = array_shift($groupObject);
+				}
+				$groupObject->addDrawer($drawer);
+
+				$permission = new Entity\DrawerPermission;
+				$permission->setDrawer($drawer);
+				$permission->setGroup($groupObject);
+				$permissionType = $this->doctrine->em->getRepository("Entity\Permission")->findOneBy(["level"=>PERM_CREATEDRAWERS]);
+				$permission->setPermission($permissionType);
+				// \Doctrine\Common\Util\Debug::dump($permission);
+				$this->doctrine->em->persist($permission);
+
+
+				if($line[33] && $line[34] && $line[33] != "NULL") {
+					$courseCombo = $line[33] . "." . $line[34];
+					if(strlen($courseCombo)>3){
+						$courseComboWithPercent = $courseCombo .  "%";
+						$groupObject = $this->user_model->getPermissions("DrawerGroup", "Dept/Course Number", $courseCombo, $this->user_model->user);
+						if(count($groupObject)) {
+							$groupObject = array_shift($groupObject);
+						}
+						else {
+							$groupObject = new Entity\DrawerGroup;
+							$groupObject->setUser($this->user_model->user);
+							$groupObject->setGroupType("Dept/Course Number");
+							$groupValueObject = new Entity\GroupEntry();
+
+							$groupValueObject->setGroupValue($courseComboWithPercent);
+							$this->doctrine->em->persist($groupValueObject);
+							$groupObject->addGroupValue($groupValueObject);
+							$groupObject->setGroupLabel($courseCombo);
+							$this->doctrine->em->persist($groupObject);
+						}
+						$groupObject->addDrawer($drawer);
+
+						$permission = new Entity\DrawerPermission;
+						$permission->setDrawer($drawer);
+						$permission->setGroup($groupObject);
+						$permissionType = $this->doctrine->em->getRepository("Entity\Permission")->findOneBy(["level"=>PERM_DERIVATIVES_GROUP_2]);
+						$permission->setPermission($permissionType);
+						$this->doctrine->em->persist($permission);
+	
+
+					}
+
+				}
+				$this->doctrine->em->flush();
+
+
+			}
+
+			$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_7", "fieldContents", $asset);
+			$assetId = null;
+			if($foundRecord) {
+				if($return) {
+					$assetId = $foundRecord['assetid'];
+				}
+			}
+			if(!$assetId) {
+				continue;
+			}
+
+			$drawerItem = new Entity\DrawerItem;
+			$drawerItem->setAsset($assetId);
+			$drawerItem->setDrawer($drawer);
+			$this->doctrine->em->persist($drawerItem);
+			$this->doctrine->em->flush();
+			gc_collect_cycles();
+		}
+
+
+	}
+
 
 	public function fixOrders() {
 		set_time_limit(0);

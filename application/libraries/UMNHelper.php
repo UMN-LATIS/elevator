@@ -120,7 +120,8 @@ class UMNHelper extends AuthHelper
 		$jobCodes = array();
 		$units = array();
 		$studentStatus = array();
-
+		$deptCoursesTaught = array();
+		
 		if ($this->shibboleth->hasSession()) {
 			if($this->shibboleth->getAttributeValue('eduCourseMember')) {
 				$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
@@ -182,8 +183,7 @@ class UMNHelper extends AuthHelper
 		}
 		$userData[UNIT_TYPE] = ["values"=>$units, "hints"=>$unitHints];
 		$userData[STATUS_TYPE] = ["values"=>array_unique($studentStatus), "hints"=>["UGRD"=>"Undergraduate", "GRAD"=>"Graduate"]];
-		var_dump($userData);
-		return $userDatata;
+		return $userData;
 
 	}
 

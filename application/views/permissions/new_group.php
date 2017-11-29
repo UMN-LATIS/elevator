@@ -74,7 +74,6 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 				<div class="col-sm-5">
 					<input type="text" name="groupLabel" id="inputGroupLabel" class="form-control" value="<?=$groupObject->getGroupLabel()?>" >
 				</div>
-				<p class="help-block" id="helpText"></p>
 			</div>
 
 
@@ -118,6 +117,7 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 	<div class="col-sm-offset-2col-sm-3">
 		<button type="button" class="btn btn-default removeValueButton">Remove</button>
 	</div>
+	<p class="help-block" id="helpText"></p>
 </div>
 
 </script>
