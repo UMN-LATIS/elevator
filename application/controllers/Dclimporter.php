@@ -48,9 +48,11 @@ class dclImporter extends Instance_Controller {
 
 		$this->instance = $this->doctrine->em->find("Entity\Instance", $targetInstance);
 	 	$this->user_model->loadUser($targetOwner);
+	 	$drawerAssets = array();
 		while($line = fgetcsv($fp)) {
 
 			$drawerTitle = $line[7];
+			$drawerAssets[$drawerTitle] = array();
 			$asset = $line[2];
 			echo "Adding " . $asset . " to " . $drawerTitle . "\n";
 			$drawer = $this->doctrine->em->getRepository("Entity\Drawer")->findOneBy(["title"=>$drawerTitle]);
@@ -127,7 +129,10 @@ class dclImporter extends Instance_Controller {
 			if(!$assetId) {
 				continue;
 			}
-
+			if(in_array($assetId, $drawerAssets[$drawerTitle])) {
+				continue;
+			}
+			$drawerAssets[$drawerTitle][] = $assetId;
 			$drawerItem = new Entity\DrawerItem;
 			$drawerItem->setAsset($assetId);
 			$drawerItem->setDrawer($drawer);
