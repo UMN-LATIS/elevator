@@ -17,6 +17,13 @@ class lti extends Instance_Controller {
 
 	public function ltiConfig() 
 	{
+
+        if($this->input->get("Instance_Name")) {
+            $this->config->set_item("instance_name", $this->input->get("Instance_Name"));
+            Instance_Controller::setInstance();
+            $this->config->set_item("instance_absolute", Instance_Controller::getAbsolutePath());
+        }
+
         echo $this->load->view("lti/ltiConfig", ["instance"=>$this->instance], true);
 	}
 

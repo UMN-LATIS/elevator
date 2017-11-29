@@ -36,6 +36,9 @@
     <field name="group_value" type="string"  nullable='true' />
     <field name="group_label" type="string"  nullable='true' />
     <field name="expiration" type="datetime" nullable='true' />
-
+    <indexes>
+      <index columns="group_type"/>
+      <index columns="group_value"/>
+    </indexes>
   </entity>
 </doctrine-mapping>

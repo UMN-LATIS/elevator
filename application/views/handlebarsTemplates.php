@@ -54,14 +54,14 @@
 {{else}}
 <div class="row rowPadding listResultContainer searchContainer {{objectId}}">
 {{/if}}
-	<div class="col-md-2">
+	<div class="col-md-2 listImageContainer">
 		{{#if this.excerpt}}
 			<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive listPreviewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" srcset="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true 2x"></a>
 		{{else}}
 			<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
 		{{/if}}
 	</div>
-	<div class="col-md-10">
+	<div class="col-md-9 listTextContainer">
 	{{#if this.excerpt}}
 		<h3><a href="{{base_url}}asset/viewExcerpt/{{excerptId}}">{{{join title}}} (excerpt) </a></h3>
 		{{else}}

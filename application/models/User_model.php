@@ -51,8 +51,18 @@ class User_model extends CI_Model {
 	//  used to drive the display of various UI elements
 	public function getMaxCollectionPermission() {
 		$maxPermission = 0;
-		foreach($this->collectionPermissions as $permission) {
-			$maxPermission = max($permission, $maxPermission);
+
+		if(count($this->collectionPermissions) == 0) {
+			return;
+		}
+
+		foreach($this->instance->getCollections() as $collection) {
+			$collections[$collection->getId()] = 1;
+		}
+		foreach($this->collectionPermissions as $collection=>$permission) {
+			if(isset($collections[$collection])) {
+				$maxPermission = max($permission, $maxPermission);	
+			}	
 		}
 		return $maxPermission;
 	}
@@ -194,11 +204,13 @@ class User_model extends CI_Model {
 		$authHelper = $this->getAuthHelper();
 		
 		$groupLookups = $authHelper->getGroupMapping($this->userData);
+
 		foreach($groupLookups as $type=>$values) {
 			foreach($values as $value) {
 				$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));	
 			}
 		}
+
 		foreach ($instance_groups as $instance_group) {
 			foreach ($instance_group->getInstancePermissions() as $instancePermission) {
 				if (array_key_exists($instancePermission->getInstance()->getId(), $this->instancePermissions)) {
@@ -222,7 +234,6 @@ class User_model extends CI_Model {
 
 			}
 		}
-
 
 		// a place to store the all of the groups that the user is in
 		$drawer_groups = array();
