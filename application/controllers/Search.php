@@ -53,7 +53,7 @@ class Search extends Instance_Controller {
 		$widgetArray = array();
 		foreach($directSearch as $widget) {
 			if($this->instance->getTemplates()->contains($widget->getTemplate())) {
-				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId()];
+				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId(), "type"=>$widget->getFieldType()->getName()];	
 			}
 		}
 

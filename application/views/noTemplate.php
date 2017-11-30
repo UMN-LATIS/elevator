@@ -35,6 +35,8 @@
 <?=$this->template->meta; ?>
 <?=$this->template->stylesheet; ?>
 
+<title><?= $this->template->title->default(isset($this->instance)?$this->instance->getName():"Elevator"); ?></title>
+
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?else:?>

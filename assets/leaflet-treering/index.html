@@ -6,6 +6,7 @@
 	<title>Tree Rings</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
     <link rel="stylesheet" href="node_modules/font-awesome-4.7.0/css/font-awesome.css">
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
@@ -21,7 +22,7 @@
 
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="node_modules/jszip/dist/jszip.min.js"></script>
-    <script src="node_modules/file-saver/FileSaver.js"></script>
+    <script src="node_modules/file-saver/FileSaver.min.js"></script>
 
     <script src="node_modules/leaflet/dist/leaflet.js"></script>
     <script src="node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
@@ -33,19 +34,7 @@
 </head>
 
 <body>
-    <div id="button_area">
-        <a href="#" id="save-local" download="data.json"><i class="material-icons md-18">save</i></a>
-        <div id="admin-save"></div>
-        <div class="file-upload">
-            <label for="file">
-                <i id="upload_button" class="material-icons md-18">file_upload</i>
-            </label>
-
-            <input type="file" id="file" onchange="treering.loadFile()"/>
-        </div>
-    </div>
     <div id="map_container"><div id="map"></div></div>    
-
 </body>
 </html>
 <script type="application/javascript" src="leaflet-treering.js"></script>
@@ -53,13 +42,13 @@
 <script>
     var src;
     var map = L.map('map', {
-        fullscreenControl: true,
         zoomSnap: 0,
         crs: L.CRS.Simple,
         drawControl: true,
         layers: [],
         doubleClickZoom: false,
-        zoomControl: false
+        zoomControl: false,
+        trackResize: true
     }).setView([0, 0], 0);
 
     var layer = L.tileLayer.elevator(function(coords, tile, done) {
@@ -82,9 +71,9 @@
         //width: 200521,
         //height: 4196,
         tileSize :254,
-        maxZoom: 19 - 1,
+        maxZoom: 13 - 1,
         overlap: 1,
-        pixelsPerMillimeter: 468, //(NEW)
+        pixelsPerMillimeter: 480, //(NEW)
         lineColor: 'blue'
     }).addTo(map);
 
@@ -113,8 +102,7 @@
         overlap: 1,
     });
 
-    //map, basePath, saveURL, {initialData: json, assetName: string, datingInner: int, hasLatewood: bool}
-    var treering = new leafletTreering(map, "", "", {'initialData': {}, 'assetName': "ABC00X", 'datingInner': 1234, 'hasLatewood': true});
+    //map, basePath, {ppm: int, saveURL: string, savePermission: bool, popoutUrl: string, assetName: string, hasLatewood: bool, initialData: json}
+    var treering = new leafletTreering(map, "", {'ppm': layer.options.pixelsPerMillimeter, 'popoutUrl': "index.html", 'assetName': "ABC00X", 'hasLatewood': true, 'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017}}});
     treering.loadInterface();
-    treering.addSaveButton();
 </script>

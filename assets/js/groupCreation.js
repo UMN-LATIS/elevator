@@ -84,6 +84,7 @@ $(document).ready(function() {
 		}
 
 		updateHints($(this));
+		updateHelptext($(this));
 
 		
 
@@ -138,6 +139,12 @@ function updateHints(targetElement) {
 		$(".hintSelector").on("change", function() {
 			$(".inputGroupValue").last().val($(this).val());
 		});
+	}
+}
+function updateHelptext(targetElement) {
+	$("#helpText").text("");
+	if(helpText[targetElement.val()] && Object.keys(helpText[targetElement.val()]).length >0) {	
+		$("#helpText").text(helpText[targetElement.val()]);
 	}
 }
 
