@@ -52,7 +52,9 @@ class dclImporter extends Instance_Controller {
 		while($line = fgetcsv($fp)) {
 
 			$drawerTitle = $line[7];
-			$drawerAssets[$drawerTitle] = array();
+			if(!isset($drawerAssets[$drawerTitle])) {
+				$drawerAssets[$drawerTitle] = array();
+			}
 			$asset = $line[2];
 			echo "Adding " . $asset . " to " . $drawerTitle . "\n";
 			$drawer = $this->doctrine->em->getRepository("Entity\Drawer")->findOneBy(["title"=>$drawerTitle]);
@@ -61,11 +63,8 @@ class dclImporter extends Instance_Controller {
 				$drawer = new Entity\Drawer;
 				$drawer->setTitle($drawerTitle);
 				$drawer->setInstance($this->instance);
-				echo "Hey1\n";
 				// \Doctrine\Common\Util\Debug::dump($drawer);
 				$this->doctrine->em->persist($drawer);
-
-				echo "Hey\n";
 				$groupObject = $this->user_model->getPermissions("DrawerGroup", "User", $this->user_model->getId(), $this->user_model->user);
 				if(count($groupObject)) {
 					$groupObject = array_shift($groupObject);
@@ -122,23 +121,34 @@ class dclImporter extends Instance_Controller {
 			$foundRecord = $this->getExistingRecord("Old DCL Views", "viewid_7", "fieldContents", $asset);
 			$assetId = null;
 			if($foundRecord) {
-				if($return) {
-					$assetId = $foundRecord['assetid'];
+				$viewAssetId = $foundRecord['assetid'];
+				$asset = new Asset_model($viewAssetId);
+				$assetArray = $asset->getAsArray();
+				if($assetArray["workid_7"][0]["fieldContents"]) {
+					$foundWorkRecord = $this->getExistingRecord("Old DCL Works", "workid_7", "fieldContents", $assetArray["workid_7"][0]["fieldContents"]);	
+					if($foundWorkRecord) {
+						$assetId = $foundWorkRecord["assetid"];
+					}
 				}
+				
 			}
 			if(!$assetId) {
 				continue;
 			}
 			if(in_array($assetId, $drawerAssets[$drawerTitle])) {
+				echo "skipping\n";
 				continue;
 			}
+			echo "Adding " . $assetId . "\n";
 			$drawerAssets[$drawerTitle][] = $assetId;
+
 			$drawerItem = new Entity\DrawerItem;
 			$drawerItem->setAsset($assetId);
 			$drawerItem->setDrawer($drawer);
 			$this->doctrine->em->persist($drawerItem);
 			$this->doctrine->em->flush();
 			gc_collect_cycles();
+
 		}
 
 
