@@ -121,6 +121,18 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           .dropdown-menu {
             overflow: scroll;
             max-height: 90vh;
+            width: 250px;
+          }
+          #search_concept {
+            max-width: 150px;
+            display:inline-block; 
+            text-overflow:ellipsis;
+            overflow:hidden; 
+          }
+          .dropdown-menu li a {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; 
           }
         </style>
         <ul class="dropdown-menu dropdown-menu-right" role="menu">

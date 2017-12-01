@@ -1,21 +1,5 @@
 <style>
-.columns {
-	background-color: #d9dee2;
-	padding: 10px;
-	-webkit-column-count: 1; /* Chrome, Safari, Opera */
-    -moz-column-count: 1; /* Firefox */
-    column-count: 1;
-}
 
-@media only screen and (min-width: 768px) {
-.columns {
-	background-color: #d9dee2;
-	padding: 10px;
-	-webkit-column-count: 3; /* Chrome, Safari, Opera */
-    -moz-column-count: 3; /* Firefox */
-    column-count: 3;
-}
-}
 
 
 .columnImageContainer {
@@ -37,7 +21,7 @@
 .columnContainer {
 	display: block;
 	width: 100%;
-	height: 90px;
+	height: 80px;
 
 	/*margin-top: 5px;*/
 	/*margin-bottom: 5px;*/
@@ -63,7 +47,7 @@
 }
 
 .bulkContainer {
-	width: 62%;
+	width: 60%;
 	float:left;
 	height: 100%;
 	font-size: 1.5em;
@@ -100,6 +84,8 @@
 }
 
 </style>
+<? $totalCollections = count($collections);?>
+<? $columnSize = ceil($totalCollections/3);?>
 
 
 <script>
@@ -111,11 +97,32 @@ $(document).on("show.bs.collapse", ".collectionGroup", function(e) {
 	$(this).find(".expandChildren").first().removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 });
 </script>
-<div class="row rowContainer">
-	<div class="columns">
-	<?foreach($collections as $collection):?>
-		<?=$this->load->view("collection_partial", ["collection"=>$collection],true);?>
-	<?endforeach?>
-</div>
-</div>
+<div class="row rowContainer collectionList">
+	<div class="col-md-4">
+		<ul>
+			<?for($i=0; $i<$columnSize; $i++):?>
 
+				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
+
+			<?endfor?>
+		</ul>
+	</div>
+	<?if(count($collections)>=$columnSize*2):?>
+	<div class="col-md-4">
+		<ul>
+			<?for($i=$columnSize; $i<$columnSize*2; $i++):?>
+				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
+			<?endfor?>
+		</ul>
+	</div>
+	<?endif?>
+	<div class="col-md-4">
+		<ul>
+			<?for($i=$columnSize*2; $i<$totalCollections; $i++):?>
+				<?=$this->load->view("collection_partial", ["collection"=>$collections[$i]], true)?>
+			<?endfor?>
+		</ul>
+	</div>
+
+	</div>
+</div>
