@@ -607,7 +607,20 @@ class AssetManager extends Admin_Controller {
 				foreach($assetTemplate->widgetArray as $key => $widgets) {
 					if(isset($assetModel->assetObjects[$key])) {
 						$object = $assetModel->assetObjects[$key];
-						$outputRow[] = join("|",$object->getAsText(0));
+
+						// special case textarea to get the html out (for St. Olaf)
+						// 
+						if(get_class($object) == "Textarea") { 
+							$outputObjects = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$outputObjects[] = $entry->fieldContents;
+							}
+							$outputRow[] = join($outputObjects, "|");
+						}
+						else {
+							$outputRow[] = join("|",$object->getAsText(0));	
+						}
+						
 						if(get_class($object) == "Upload") {
 							$outputURLs = array();
 							$outputDerivatives = array();
@@ -683,7 +696,7 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function parseTime($timeString) {
-		if(strlen($timeString) == 4) {
+		if(strlen($timeString) <= 4) {
 			$timeString = $timeString . "-01-01";
 		}
 		
