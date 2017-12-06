@@ -609,7 +609,7 @@ class AssetManager extends Admin_Controller {
 						$object = $assetModel->assetObjects[$key];
 
 						// special case textarea to get the html out (for St. Olaf)
-						// 
+						// should fix this in a more real way at some point
 						if(get_class($object) == "Textarea") { 
 							$outputObjects = array();
 							foreach($object->fieldContentsArray as $entry) {
