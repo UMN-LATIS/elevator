@@ -55,7 +55,7 @@ class Collections extends Instance_Controller {
 		if($accessLevel < PERM_SEARCH) {
 			if($this->user_model) {
 				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-				if(!in_array($collectionId, $collectionId)) {
+				if(!in_array($collectionId, $allowedCollections)) {
 					$this->errorhandler_helper->callError("noPermission");
 				}
 			}
