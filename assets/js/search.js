@@ -200,6 +200,7 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 					// window.location.hash = "";
 					window.location.pathname = basePath + "/asset/viewAsset/" + objectId;
 				}
+				cachedResults.totalLoadedCount = cachedResults.matches.length + oldMatches.length;
 				processSearchResults(cachedResults);
 				newArray = $.merge(cachedResults.matches, oldMatches);
 				cachedResults.searchResults = $.merge(cachedResults.searchResults, oldResults);
@@ -254,6 +255,8 @@ $(document).on("click", "#loadAllResults", function(e) {
 		doSearch(searchId, currentPageNumber+1, true);
 		dataAvailable = false;
 		$("#loadAllResults").hide();
+		$(".paginationBlock").hide();
+		resultsAvailable = false;
 	}
 
 
@@ -337,11 +340,17 @@ function populateSearchResults(searchObject) {
 	}
 
 
-	if(searchObject.totalResults > searchObject.matches.length) {
+	if(searchObject.totalResults > searchObject.totalLoadedCount) {
 		$(".paginationBlock").show();
 		resultsAvailable = true;
 	}
 	else {
+		$(".paginationBlock").hide();
+		resultsAvailable = false;
+	}
+
+	
+	if(searchObject.matches.length == 0) {
 		$(".paginationBlock").hide();
 		resultsAvailable = false;
 	}
