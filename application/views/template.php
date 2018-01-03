@@ -117,23 +117,6 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span id="search_concept" class="hidden-md hidden-sm">All Collections</span> <span class="caret"></span>
           </button>
-          <style>
-          .dropdown-menu {
-            overflow: scroll;
-            max-height: 90vh;
-            width: 250px;
-          }
-          #search_concept {
-            max-width: 150px;
-            text-overflow:ellipsis;
-            overflow:hidden; 
-          }
-          .dropdown-menu li a {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis; 
-          }
-        </style>
         <ul class="dropdown-menu dropdown-menu-right" role="menu">
           <li><a href="#contains" class="collectionFilterSelect" data-collection-id="0">All Collections</a></li>
           <li class="divider"></li>
