@@ -799,16 +799,27 @@ class Asset_model extends CI_Model {
         		$newCollection = $this->collection_model->getCollection($this->getGlobalValue("collectionId"));
 
 
-        		if($oldCollection && $newCollection && $oldCollection->getBucket() != $newCollection->getBucket()) {
-        			$this->assetObject->setCollectionId($oldAsset->getGlobalValue("collectionId"));
-        			$this->assetObject->setCollectionMigration(true);
+        		if($oldCollection && $newCollection) {
+        			if($oldCollection->getBucket() != $newCollection->getBucket()) {
+        				$this->assetObject->setCollectionId($oldAsset->getGlobalValue("collectionId"));
+        				$this->assetObject->setCollectionMigration(true);
 
-					$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-					$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId(), "targetCollection"=>$this->getGlobalValue("collectionId")]);
-					$jobId= $pheanstalk->useTube('collectionMigration')->put($newTask, NULL, 1, 900);
-
+						$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+						$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId(), "targetCollection"=>$this->getGlobalValue("collectionId")]);
+						$jobId= $pheanstalk->useTube('collectionMigration')->put($newTask, NULL, 1, 900);
+        			}
+        			else {
+        				// collection is changing but bucket isn't, just update the handlers
+        				$uploadHandlers = $this->getAllWithinAsset("Upload");
+        				foreach($uploadHandlers as $uploadHandler) {
+							foreach($uploadHandler->fieldContentsArray as $key=>$uploadContents) {
+								$fileHandler = $uploadContents->getFileHandler();
+								$fileHandler->setCollectionId($newCollection->getId());
+								$fileHandler->save();
+        					}
+        				}
+        			}
         		}
-
         	}
 
         	$this->doctrine->em->detach($oldAssetObject);
@@ -846,6 +857,11 @@ class Asset_model extends CI_Model {
 			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 			$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId()]);
 			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+		}
+
+		if($noIndex) {
+			// make sure the item isn't in the index
+			$this->search_model->remove($this);
 		}
 
 		if(!$noCache) {

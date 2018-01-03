@@ -300,7 +300,8 @@ class Search extends Instance_Controller {
 					$collection->previewImageHandler = null;
 				}
 				if($collection->hasChildren()) {
-					$this->buildPreviews($collection->getChildren());
+					$children = $collection->getChildren();
+					$this->buildPreviews($children);
 				}
 			}
 		}
