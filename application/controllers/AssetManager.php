@@ -564,6 +564,7 @@ class AssetManager extends Admin_Controller {
 				$showHidden = true;
 			}
 			$this->load->model("search_model");
+			$this->search_model->loadAllLength = 3000;
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, null, TRUE);
 			$i=0;
 
@@ -607,7 +608,20 @@ class AssetManager extends Admin_Controller {
 				foreach($assetTemplate->widgetArray as $key => $widgets) {
 					if(isset($assetModel->assetObjects[$key])) {
 						$object = $assetModel->assetObjects[$key];
-						$outputRow[] = join("|",$object->getAsText(0));
+
+						// special case textarea to get the html out (for St. Olaf)
+						// should fix this in a more real way at some point
+						if(get_class($object) == "Textarea") { 
+							$outputObjects = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$outputObjects[] = $entry->fieldContents;
+							}
+							$outputRow[] = join($outputObjects, "|");
+						}
+						else {
+							$outputRow[] = join("|",$object->getAsText(0));	
+						}
+						
 						if(get_class($object) == "Upload") {
 							$outputURLs = array();
 							$outputDerivatives = array();
@@ -683,7 +697,7 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function parseTime($timeString) {
-		if(strlen($timeString) == 4) {
+		if(strlen($timeString) <= 4) {
 			$timeString = $timeString . "-01-01";
 		}
 		

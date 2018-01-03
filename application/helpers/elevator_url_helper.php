@@ -2,13 +2,22 @@
 
 // strip leading http/https from a string
 function stripHTTP($source) {
-
 	$parsedURL = parse_url($source);
 	if(!array_key_exists("scheme", $parsedURL)) {
 		return $source;
 	}
 	return str_ireplace($parsedURL["scheme"] . ":", "", $source);
+}
 
+// strip leading http/https:// from a string
+function matchScheme($source) {
+	$parsedURL = parse_url($source);
+	if(!array_key_exists("scheme", $parsedURL)) {
+		return $source;
+	}
+	$stripped = str_ireplace($parsedURL["scheme"] . ":", "", $source);
+	$scheme = empty($_SERVER['HTTPS'])?"http":"https";
+	return $scheme . ":" . $stripped;
 }
 
 function getClickToSearchLink($widgetModel, $linkText, $displayText = null) {

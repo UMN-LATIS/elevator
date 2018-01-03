@@ -5,6 +5,7 @@ class search_model extends CI_Model {
 	private $es = NULL;
 	public $showHidden = false;
 	public $pageLength = 30;
+	public $loadAllLength = 1000;
 	public $bulkUpdates = ['body'=>[]];
 
 	public function __construct()
@@ -518,7 +519,7 @@ class search_model extends CI_Model {
 
 		$searchParams['from'] = $pageStart*$this->pageLength;
 		if($loadAll) {
-			$searchParams['size'] = 1000; // this is arbitrary, we don't actually load all the results
+			$searchParams['size'] = $this->loadAllLength; // this is arbitrary, we don't actually load all the results
 		}
 		else {
 			$searchParams['size'] = $this->pageLength;
