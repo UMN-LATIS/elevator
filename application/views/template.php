@@ -125,7 +125,6 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           }
           #search_concept {
             max-width: 150px;
-            display:inline-block; 
             text-overflow:ellipsis;
             overflow:hidden; 
           }
