@@ -445,7 +445,6 @@ class User_model extends CI_Model {
 		}
 
 		return $allowedCollections;
-
 	}
 
 	public function havePermForCollection($permLevel=false, $collectionId) {

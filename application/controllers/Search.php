@@ -233,6 +233,41 @@ class Search extends Instance_Controller {
 		instance_redirect("search/s/".$this->searchId);
 	}
 
+	public function test() {
+		$allowedCollectionsObject = $this->user_model->getAllowedCollections(PERM_ADDASSETS);
+		$allowedCollections = array();
+		foreach($allowedCollectionsObject as $collection) {
+			$allowedCollections[$collection->getId()] = $collection->getTitle();
+		}
+
+		if(strlen($this->template->collectionId)>0) {
+			$collectionId = intval($this->template->collectionId->__toString());
+		}
+
+		$collections = $this->buildCollectionArray($this->instance->getCollectionsWithoutParent());
+
+		echo "<select>";
+		echo $this->load->view("collection_select_partial", ["selectCollection"=>0, "collections"=>$this->instance->getCollectionsWithoutParent(), "allowedCollections"=>$allowedCollections],true);
+		echo "</select>";
+	}
+
+	public function buildCollectionArray($collections) {
+
+		$collectionReturn = array();
+		foreach($collections as $collection) {
+			if(!$collection->hasChildren()) {
+				$collectionReturn[$collection->getId()] = $collection->getTitle();
+			}
+			else {
+				$collectionReturn[$collection->getId()] = [$collection->getTitle() => $this->buildCollectionArray($collection->getChildren())];
+			}
+
+			
+		}
+		return $collectionReturn;
+
+	}
+
 
 	public function listCollections() {
 
@@ -240,47 +275,36 @@ class Search extends Instance_Controller {
 		$jsLoadArray[] = "templateSearch";
 		$this->template->loadJavascript($jsLoadArray);
 
-		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
-
-		if($accessLevel < PERM_SEARCH) {
-			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-			if(count($allowedCollections) == 0) {
-				$this->errorhandler_helper->callError("noPermission");
-			}
-			$collections = $this->instance->getCollectionsWithoutParent();
-
-			
-			$collections = array_values(array_uintersect($collections, $allowedCollections, function($a, $b) { 
-				if($a->getId() == $b->getId()) { 
-					return 0;
-				}
-				if($a->getId() > $b->getId()) {
-					return 1;
-				}
-				return -1;
-			}));
-
-
-		}
-		else {
-			$collections = $this->instance->getCollectionsWithoutParent();
-		}
-
-
-		foreach($collections as $key=>$collection) {
-
-			if(!$collection->getShowInBrowse()) {
-				unset($collections[$key]);
-			}
-
-		}
-
+		$collections = $this->collection_model->getUserCollections();
+		$this->buildPreviews($collections);
 
 		$collections = array_values($collections);  // rekey array
 		
-		$this->template->loadJavascript(["assets/js/templateSearch"]);
+		$this->template->loadJavascript(["templateSearch"]);
 		$this->template->content->view("listCollections", ["collections"=>$collections]);
 		$this->template->publish();
+
+	}
+
+	public function buildPreviews(&$collectionArray) {
+		foreach($collectionArray as $key=>$collection) {
+			if(!$collection->getShowInBrowse()) {
+				unset($collectionArray[$key]);
+			}
+			else {
+				if($collection->getPreviewImage() !== null && $collection->getPreviewImage() !== "") {
+					$fileObject = $this->filehandler_router->getHandledObject($collection->getPreviewImage());
+					$collection->previewImageHandler = $fileObject;
+				}
+				else {
+					$collection->previewImageHandler = null;
+				}
+				if($collection->hasChildren()) {
+					$this->buildPreviews($collection->getChildren());
+				}
+			}
+		}
+
 
 	}
 
