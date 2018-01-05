@@ -1,10 +1,14 @@
 var targetTemplate = "#drawer-template";
 var listTemplate = "#drawer-list-template";
 
-
-$(document).on("click", ".removeButton",function () {
+function getDrawer() {
 	var url = window.location.href;
 	var drawerId = url.substring(url.lastIndexOf('/') + 1);
+	return drawerId;
+}
+
+$(document).on("click", ".removeButton",function () {
+	drawerId= getDrawer();
 	if($(this).data("assettype") == "excerpt") {
 		$.get(basePath+"drawers/removeExcerpt/"+drawerId + "/" + $(this).data("excerptid"));
 		$("."+$(this).data("excerptid")).remove();
@@ -19,21 +23,42 @@ $(document).on("click", ".removeButton",function () {
 });
 
 $(document).ready(function() {
+	loadDrawer();
 
+	$(document).off("change", ".sortBy");
+	$(document).on("change", ".sortBy", function() {
+		updateDrawerSortAndReload();
+	});
 
-	var url = window.location.href;
-	var drawerId = url.substring(url.lastIndexOf('/') + 1);
+	
+});
+
+function updateDrawerSortAndReload() {
+	drawerSort = $(".sortBy").val();
+	drawerId = getDrawer();
+	$.get(basePath + "drawers/setSortOrder/" + drawerId + "/" + drawerSort, function() {
+		loadDrawer();	
+	});
+	
+}
+
+function loadDrawer() {
+	drawerId= getDrawer();
+    $("#results").empty();
+    $("#listResults").empty();
 	$.getJSON(basePath+"drawers/getDrawer/"+drawerId, function(data){
 		cachedResults = data;
 		cachedDates = null;
 
 		if(cachedResults.success === true) {
             populateSearchResults(cachedResults);
-        }
+            $("#results").sortable({
+    	update: function (e, ui) {
+	alert("HEY");
 
+		}
     });
 
-
-
-
-});
+        }
+    });
+}

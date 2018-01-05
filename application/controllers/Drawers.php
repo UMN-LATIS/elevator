@@ -30,7 +30,8 @@ class Drawers extends Instance_Controller {
 
 		$this->user_model->addRecentDrawer($this->doctrine->em->find('Entity\Drawer', $drawerId));
 
-		$this->template->content->view("search", ["hideSort"=>true]);
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+		$this->template->content->view("search", ["drawerMode"=>true, "orderBy"=>$drawer->getSortBy()]);
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
 
@@ -129,7 +130,10 @@ class Drawers extends Instance_Controller {
 				}
 				return strcmp($aSort, $bSort);
 			}
-			usort($outputArray, "customSort");
+			if(!$drawer->getSortBy() || $drawer->getSortBy() == "title.raw") {
+				usort($outputArray, "customSort");	
+			}
+			
 			
 			$resultArray["matches"] = $outputArray;
 			$resultArray["totalResults"] = count($outputArray);
@@ -315,7 +319,17 @@ class Drawers extends Instance_Controller {
 
 	}
 
+	public function setSortOrder($drawerId, $sortOrder) {
+		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
 
+		if($accessLevel < PERM_CREATEDRAWERS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+		$drawer->setSortBy($sortOrder);
+		$this->doctrine->em->flush();
+
+	}
 
 }
 
