@@ -50,7 +50,7 @@
 	width: 60%;
 	float:left;
 	height: 100%;
-	font-size: 1.5em;
+	font-size: 1.3em;
 	vertical-align: middle;
 	padding-left: 10px;
 }

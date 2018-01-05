@@ -48,7 +48,7 @@ class collection_model extends CI_Model {
 	}
 
 	public function getUserCollections($user=null) {
-		if(!$user && $this->user_model && $this->user_model->userLoaded) {
+		if(!$user && $this->user_model && $this->user_model) {
 			$user = $this->user_model;
 		}
 
