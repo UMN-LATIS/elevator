@@ -117,7 +117,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <div id="search_concept" class="hidden-md hidden-sm">All Collections</span> <span class="caret"></div>
           </button>
-        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+        <ul class="dropdown-menu dropdown-menu-right collectionMenu" role="menu">
           <li><a href="#contains" class="collectionFilterSelect" data-collection-id="0">All Collections</a></li>
           <li class="divider"></li>
           <?
