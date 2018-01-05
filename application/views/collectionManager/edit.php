@@ -113,6 +113,13 @@ $(document).ready(function() {
 				</div>
 			</div>
 
+				<div class="form-group">
+					<label for="inputPreviewImage" class="col-sm-2 control-label">Preview Image (ObjectID):</label>
+					<div class="col-sm-6">
+						<input type="text" name="previewImage" id="inputPreviewImage" class="form-control" value="<?=$collection->getPreviewImage() ?>" >
+					</div>
+				</div>
+
 			<input type="submit" name="submit" value="Update Collection" class='btn btn-primary' />
 
 		</form>

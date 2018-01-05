@@ -124,7 +124,7 @@ $(document).ready(function() {
         }
         else {
             // when they hit the global search button, it should be a global search.  We might have ended up with a stored collection though, expunge that.
-            $(this).find("#collection").val('0');
+            // $(this).find("#collection").val('0');
             $(this).find("#specificSearchField").val('');
             $(this).find("#specificSearchText").val('');
             $(".collectonHeader").html('');

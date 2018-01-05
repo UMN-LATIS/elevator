@@ -12,13 +12,13 @@
 </div>
 <div class="checkbox">
 	<label>
-		<input type="checkbox" value="On" name="includeInSearch" <?=$template->getIncludeInSearch()?"checked":null?>>
+		<input type="checkbox" value="On" id="includeInSearch" name="includeInSearch" <?=$template->getIncludeInSearch()?"checked":null?>>
 		Include In Public Search Results
 	</label>
 </div>
 <div class="checkbox">
 	<label>
-		<input type="checkbox" value="On" name="indexforSearching" <?=$template->getIndexForSearching()?"checked":null?>>
+		<input type="checkbox" value="On" id="indexforSearching" name="indexforSearching" <?=$template->getIndexForSearching()?"checked":null?>>
 		Index For Searching
 	</label>
 </div>

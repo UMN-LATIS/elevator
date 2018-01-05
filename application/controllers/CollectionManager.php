@@ -88,7 +88,6 @@ class CollectionManager extends Instance_Controller {
 
 		// TODO: check for recursion on parents!!!
 
-
 		$collection->setTitle($this->input->post('title'));
 		$collection->setBucket($this->input->post('bucket'));
 		$collection->setBucketRegion($this->input->post('bucketRegion'));
@@ -96,6 +95,7 @@ class CollectionManager extends Instance_Controller {
 		$collection->setS3Secret($this->input->post('S3Secret'));
 		$collection->setShowInBrowse($this->input->post('showInBrowse')=="on"?1:0);
 		$collection->setCollectionDescription($this->input->post('collectionDescription'));
+		$collection->setPreviewImage($this->input->post('previewImage'));
 
 		if($this->input->post("parent") !== "0") {
 

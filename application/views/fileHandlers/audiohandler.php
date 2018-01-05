@@ -43,6 +43,7 @@ if($widgetObject) {
   }
 }
 
+$fileInfo["Object ID"] = $fileObject->getObjectId();
 $menuArray['fileInfo'] = $fileInfo;
 
 $downloadArray = [];

@@ -433,11 +433,6 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function setCollectionId($collectionId) {
-		if(isset($this->collectionId) && $this->collectionId != $collectionId) {
-			throw new Exception('Cannot currently transfer between collections');
-			return;
-			// TODO :copy files between corects
-		}
 		$this->collectionId = $collectionId;
 		$this->collection = $this->collection_model->getCollection($this->collectionId);
 		$this->load->model("S3_model");

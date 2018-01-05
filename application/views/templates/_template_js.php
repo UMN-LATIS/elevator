@@ -99,6 +99,7 @@ $(document).ready(function() {
 
 	});
 
+
 	$(document).on("change", ".displayPreviewWidget", function() {
 		$("#needsRebuildId").val(1);
 	});
