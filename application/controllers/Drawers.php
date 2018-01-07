@@ -331,6 +331,37 @@ class Drawers extends Instance_Controller {
 
 	}
 
+	public function setCustomOrder($drawerId) {
+		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+
+		if($accessLevel < PERM_CREATEDRAWERS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+		$orderArray = json_decode($this->input->post("orderArray"));
+		if(!is_array($orderArray) || count($orderArray) == 0) {
+			return;
+		}
+
+		foreach($drawer->getItems() as $item) {
+			$sortOrder = null;
+			if($item->getExcerptAsset() !== null) {
+				$sortOrder = array_search($item->getId(), $orderArray);
+			}
+			else {
+				$sortOrder = array_search($item->getAsset(), $orderArray);
+			}
+
+			if($sortOrder !== null) {
+				$item->setSortOrder($sortOrder);
+			}
+		}
+
+		$this->doctrine->em->flush();
+
+	}
+
 }
 
 /* End of file  */
