@@ -281,7 +281,7 @@ class ImageHandler extends FileHandlerBase {
 
 		$outputFile = $outputPath ."/tiledBase";
 
-		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . "[autorotate] " . $outputFile;
+		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . " " . $outputFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 		$process->run();
 		while($process->isRunning()) {
