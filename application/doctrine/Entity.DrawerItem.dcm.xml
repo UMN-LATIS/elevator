@@ -18,7 +18,7 @@
       <field name="excerptStart" type="float"  nullable='true' />
       <field name="excerptEnd" type="float"  nullable='true' />
       <field name="excerptLabel" type="string"  nullable='true' />
-
+      <field name="sortOrder" type="integer" nullable='true' />
     </entity>
 </doctrine-mapping>
 

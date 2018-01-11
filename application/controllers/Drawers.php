@@ -30,11 +30,12 @@ class Drawers extends Instance_Controller {
 
 		$this->user_model->addRecentDrawer($this->doctrine->em->find('Entity\Drawer', $drawerId));
 
-		$this->template->content->view("search", ["hideSort"=>true]);
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+		$this->template->content->view("search", ["drawerMode"=>true, "orderBy"=>$drawer->getSortBy()]);
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer","drawers", "galleria-1.3.3", "search", "loadDrawer"];
+		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer", "oms","drawers",  "search", "loadDrawer"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->addToDrawer->view("drawers/edit_drawer",["drawerId"=>$drawerId]);
@@ -129,7 +130,10 @@ class Drawers extends Instance_Controller {
 				}
 				return strcmp($aSort, $bSort);
 			}
-			usort($outputArray, "customSort");
+			if(!$drawer->getSortBy() || $drawer->getSortBy() == "title.raw") {
+				usort($outputArray, "customSort");	
+			}
+			
 			
 			$resultArray["matches"] = $outputArray;
 			$resultArray["totalResults"] = count($outputArray);
@@ -315,7 +319,48 @@ class Drawers extends Instance_Controller {
 
 	}
 
+	public function setSortOrder($drawerId, $sortOrder) {
+		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
 
+		if($accessLevel < PERM_CREATEDRAWERS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+		$drawer->setSortBy($sortOrder);
+		$this->doctrine->em->flush();
+
+	}
+
+	public function setCustomOrder($drawerId) {
+		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+
+		if($accessLevel < PERM_CREATEDRAWERS) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+		$orderArray = json_decode($this->input->post("orderArray"));
+		if(!is_array($orderArray) || count($orderArray) == 0) {
+			return;
+		}
+
+		foreach($drawer->getItems() as $item) {
+			$sortOrder = null;
+			if($item->getExcerptAsset() !== null) {
+				$sortOrder = array_search($item->getId(), $orderArray);
+			}
+			else {
+				$sortOrder = array_search($item->getAsset(), $orderArray);
+			}
+
+			if($sortOrder !== null) {
+				$item->setSortOrder($sortOrder);
+			}
+		}
+
+		$this->doctrine->em->flush();
+
+	}
 
 }
 

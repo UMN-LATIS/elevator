@@ -12,7 +12,7 @@
   <li><a href="#list" data-toggle="tab">List</a></li>
   <li><a href="#map" data-toggle="tab">Map</a></li>
   <li><a href="#timeline" data-toggle="tab">Timeline</a></li>
-  <?if(!isset($hideSort) || $hideSort == false):?>
+  <?if(!isset($drawerMode) || $drawerMode == false):?>
 	<li class="navbar-right"><select class="form-control sortBy input-xs">
         <option value="0">Best Match</option>
         <option value="lastModified.desc">Modified Date (newest to oldest)</option>
@@ -27,7 +27,13 @@
 			<?endif?>
 		<?endforeach?>
   </select>
+  <?else:?>
+  	<li class="navbar-right"><select class="form-control sortBy input-xs">
+        <option value="title.raw" <?=(!$orderBy || $orderBy=="title.raw")?"SELECTED":null?>>Default Title</option>
+        <option value="custom" <?=($orderBy=="custom")?"SELECTED":null?>>Custom Order</option>
+  </select>
   <?endif?>
+
 </ul>
 
 
