@@ -111,6 +111,7 @@ var addAnother = function(target) {
 
 		$(parentGroup).find('.isPrimary').show();
 		buildAutocomplete();
+		buildSortable();
 		$(self).removeAttr("disabled");
 
 		if(parentGroup.height() > $(".mainRow").height()) {
@@ -127,6 +128,36 @@ var addAnother = function(target) {
  * Add an additional element
  */
 $(document).on("click", ".addAnother",function(e) { addAnother(this); });
+
+
+// we disable tincyMCE while dragging, otherwise it fails after the drag.
+// 
+var buildSortable = function() {
+	$( ".control-group" ).sortable({
+		start: function(event, ui) {
+			$(ui.item).find('textarea').each(function () {
+     			tinymce.execCommand('mceRemoveEditor', false, $(this).attr('id'));
+  			});
+		},
+		stop: function(event, ui) {
+			$(ui.item).find('textarea').each(function () {
+     			tinymce.execCommand('mceAddEditor', true, $(this).attr('id'));
+  			});
+			updateNames($(this));
+		}
+    });
+}
+
+function updateNames($list) {
+    $list.find('.panel').each(function (idx) {
+        var $inp = $(this).find('input, select, textarea');
+        $inp.each(function () {
+            this.name = this.name.replace(/(\[\d\])/, '[' + idx + ']');            
+        });
+
+		$(this).find(".isPrimary input").val(idx);
+    });
+}
 
 
 $(document).on("change", ".templateSelector", function(e) {
@@ -160,6 +191,7 @@ $(document).ready(function() {
 		}
 	});
 
+	buildSortable();
 
 	// make sure nested items have the same collection
 	$("#collectionId").on("change", function(e) {
