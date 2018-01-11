@@ -35,7 +35,7 @@ class Drawers extends Instance_Controller {
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer","drawers", "galleria-1.3.3", "search", "loadDrawer"];
+		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer", "oms","drawers",  "search", "loadDrawer"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->addToDrawer->view("drawers/edit_drawer",["drawerId"=>$drawerId]);
