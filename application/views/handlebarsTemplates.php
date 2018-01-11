@@ -50,15 +50,17 @@
 
 <script id="drawer-list-template" type="text/x-handlebars-template">
 {{#if this.excerpt}}
-<div class="row rowPadding listResultContainer searchContainer {{excerptId}}">
+<div class="row rowPadding listResultContainer searchContainer {{excerptId}}" data-drawerobjectid="{{excerptId}}">
 {{else}}
-<div class="row rowPadding listResultContainer searchContainer {{objectId}}">
+<div class="row rowPadding listResultContainer searchContainer {{objectId}}" data-drawerobjectid="{{objectId}}">
 {{/if}}
 	<div class="col-md-2 listImageContainer">
 		{{#if this.excerpt}}
 			<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive listPreviewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" srcset="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true 2x"></a>
 		{{else}}
+			{{#if primaryHandlerThumbnail}}
 			<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
+			{{/if}}
 		{{/if}}
 	</div>
 	<div class="col-md-9 listTextContainer">
@@ -88,12 +90,12 @@
 
 
 <script id="drawer-template" type="text/x-handlebars-template">
+<div class="col-lg-3 col-sm-6 col-md-4" data-drawerobjectid="{{excerptId}}">
 {{#if this.excerpt}}
-<div class="col-lg-3 col-sm-6 col-md-4 {{excerptId}}">
+<div class="resultContainer searchContainer drawerContainer" data-drawerobjectid="{{excerptId}}">
 {{else}}
-<div class="col-lg-3 col-sm-6 col-md-4 {{objectId}}">
+<div class="resultContainer searchContainer drawerContainer" data-drawerobjectid="{{objectId}}">
 {{/if}}
-<div class="resultContainer searchContainer drawerContainer">
 	{{#if this.excerpt}}
 	<h5><a class="assetLink" href="{{base_url}}asset/viewExcerpt/{{excerptId}}">{{excerptLabel}}</a></h5>
 	{{else}}
@@ -101,10 +103,12 @@
 	{{/if}}
 	<div class="previewCrop">
 		{{#if this.excerpt}}
-	<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive previewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" srcset="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true 2x"></a>
-	{{else}}
-	<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
-	{{/if}}
+			<a href="{{base_url}}asset/viewExcerpt/{{excerptId}}"><img class="img-responsive previewImage" src="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}" srcset="{{base_url}}fileManager/previewImageByFileId/{{excerptAsset}}/true 2x"></a>
+		{{else}}
+			{{#if primaryHandlerThumbnail}}
+				<a href="{{base_url}}asset/viewAsset/{{objectId}}"><img class="img-responsive previewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
+			{{/if}}
+		{{/if}}
 	</div>
 	<div class="previewContent">
 		{{#each entries}}

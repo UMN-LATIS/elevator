@@ -298,4 +298,33 @@ class Drawer
     {
         return $this->groups;
     }
+    /**
+     * @var string
+     */
+    private $sortBy;
+
+
+    /**
+     * Set sortBy
+     *
+     * @param string $sortBy
+     *
+     * @return Drawer
+     */
+    public function setSortBy($sortBy)
+    {
+        $this->sortBy = $sortBy;
+
+        return $this;
+    }
+
+    /**
+     * Get sortBy
+     *
+     * @return string
+     */
+    public function getSortBy()
+    {
+        return $this->sortBy;
+    }
 }

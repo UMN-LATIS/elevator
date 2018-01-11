@@ -33,7 +33,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 
 	$image->setImageFormat('jpeg');
 	if(isset($sourceImage->metadata["rotation"])) {
-		//$image->setImageOrientation($sourceImage->metadata["rotation"]);
+		
 		switch($sourceImage->metadata["rotation"]) {
         case imagick::ORIENTATION_BOTTOMRIGHT:
             $image->rotateimage(new ImagickPixel('#00000000'), 180); // rotate 180 degrees
@@ -47,6 +47,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
             $image->rotateimage(new ImagickPixel('#00000000'), -90); // rotate 90 degrees CCW
         break;
     	}
+    	$image->setImageOrientation(0);
 
 	}
 	if ((isset($sourceImage->metadata["width"]) && isset($sourceImage->metadata["height"])) && ($sourceImage->metadata["width"]<= $width && $sourceImage->metadata["height"] <= $height)) {

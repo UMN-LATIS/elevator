@@ -192,4 +192,33 @@ class DrawerItem
     {
         return $this->drawer;
     }
+    /**
+     * @var integer
+     */
+    private $sortOrder;
+
+
+    /**
+     * Set sortOrder
+     *
+     * @param integer $sortOrder
+     *
+     * @return DrawerItem
+     */
+    public function setSortOrder($sortOrder)
+    {
+        $this->sortOrder = $sortOrder;
+
+        return $this;
+    }
+
+    /**
+     * Get sortOrder
+     *
+     * @return integer
+     */
+    public function getSortOrder()
+    {
+        return $this->sortOrder;
+    }
 }
