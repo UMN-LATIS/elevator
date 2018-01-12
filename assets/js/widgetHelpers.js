@@ -133,7 +133,8 @@ $(document).on("click", ".addAnother",function(e) { addAnother(this); });
 // we disable tincyMCE while dragging, otherwise it fails after the drag.
 // 
 var buildSortable = function() {
-	$( ".control-group" ).sortable({
+	$( ".sortableBlock" ).sortable({
+		//handle: ".handle"
 		start: function(event, ui) {
 			$(ui.item).find('textarea').each(function () {
      			tinymce.execCommand('mceRemoveEditor', false, $(this).attr('id'));
