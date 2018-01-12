@@ -22,7 +22,7 @@
 
 <script type="application/javascript">
 
-	var map;
+	var map = undefined;
 	var s3;
 	var AWS;
 	var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
@@ -35,6 +35,10 @@
 			return;
 		}
 
+		if(map !== undefined) {
+			map.remove(); // tear down any existing leaflets so we clear handlers.
+		}
+		
 		AWS.config = new AWS.Config();
 		AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
 
