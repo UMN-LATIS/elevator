@@ -52,7 +52,11 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?endif?>
-
+<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <script src="/assets/minifiedjs/jquery.min.js"></script>
 </head>
 
@@ -113,7 +117,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       
         <input type="text" class="form-control searchText"  aria-label="Search" autocomplete="off"  id="searchText" name="searchText" placeholder="Search">
         <div class="input-group-btn search-panel">
-          <div class="btn-group">
+          <div class="btn-group hidden-md hidden-sm">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <div id="search_concept" class="hidden-md hidden-sm">All Collections</span> <span class="caret"></div>
           </button>

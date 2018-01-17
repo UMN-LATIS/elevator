@@ -47,7 +47,6 @@ class Search extends Instance_Controller {
 		}
 		$jsLoadArray[] = "spin";
 
-
 		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
 
 		$widgetArray = array();
@@ -70,7 +69,18 @@ class Search extends Instance_Controller {
 
 
 	public function map() {
+		$this->generateEmbed("map");
+	}
 
+	public function timeline() {
+		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
+		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
+
+		$this->generateEmbed("timeline");
+	}
+
+
+	private function generateEmbed($type) {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_SEARCH) {
@@ -99,13 +109,10 @@ class Search extends Instance_Controller {
 		$this->template->set_template("noTemplate");
 		$this->template->loadJavascript($jsLoadArray);
 
-		$this->template->content->view("mapOnly");
+		$this->template->content->view($type . "Only");
 		$this->template->publish();
 
-
 	}
-
-
 
 	public function advancedSearchModal() {
 
