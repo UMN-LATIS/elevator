@@ -524,7 +524,7 @@ function prepTimeline() {
 				startTime = parseInt(date.start["numeric"], 10);
 				newItem.start_date = {};
 				if(geoTime) {
-					startYear = -1 * Math.abs(startTime / 31556900);
+					startYear = -1 * Math.abs((startTime + (1970*31556900)) / 31556900);
 					newItem.start_date.year = startYear;
 				}
 				else {
@@ -543,7 +543,7 @@ function prepTimeline() {
 					endTime = parseInt(date.end["numeric"], 10);
 					
 					if(geoTime) {
-						endYear = -1 * Math.abs(endTime / 31556900);
+						endYear = -1 * Math.abs((endTime+ (1970*31556900)) / 31556900);
 						newItem.end_date.year = endYear;
 					}
 					else {
@@ -564,9 +564,13 @@ function prepTimeline() {
 				newElement = $("<a/>", {"href": basePath + "asset/viewAsset/" + match.objectId, "text": match.title});
 				newItem.text.headline = newElement.prop("outerHTML");
 				newItem.text.text = html;
-				newItem.media = {};
-				newItem.media.thumb = match.primaryHandlerThumbnail2x;
-				newItem.media.url = match.primaryHandlerThumbnail2x;
+				
+				if(match.hasOwnProperty("primaryHandlerThumbnail2x")) {
+					newItem.media = {};
+					newItem.media.thumb = match.primaryHandlerThumbnail2x;
+					newItem.media.url = match.primaryHandlerThumbnail2x;	
+				}
+				
 				compiledDate.events.push(newItem);
 
 			}
@@ -579,7 +583,7 @@ function prepTimeline() {
 	if(geoTime) {
 		compiledDate.scale = "cosmological"
 	}
-
+	console.log(JSON.stringify(compiledDate));
 
 	var timeline = new TL.Timeline('timelinePane', compiledDate, {
         timenav_position: "bottom",

@@ -55,7 +55,8 @@ class Search extends Instance_Controller {
 				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId(), "type"=>$widget->getFieldType()->getName()];	
 			}
 		}
-
+		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
+		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
 		$this->template->content->view("search", ["searchableWidgets"=>$widgetArray]);

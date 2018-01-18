@@ -53,7 +53,7 @@ function parseDateString(dateString, event) {
 						yearsAgo = yearsAgo * 100;
 					}
 
-					var bceDate = (-1 * yearsAgo * 31556952) - (1970*31556952); // seconds in a year
+					var bceDate = (-1 * yearsAgo * 31556900) - (1970*31556900); // seconds in a year
 					if(event) {
 						$(event.target).siblings('.dateHidden').val(bceDate);
 					}

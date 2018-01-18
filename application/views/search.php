@@ -102,7 +102,7 @@
 				<div class="resultsData">
 
 				</div>
-				<div id="timelinePane" style="width: 100%; height: 500px;">
+				<div id="timelinePane" style="width: 100%; height: 600px;">
 
 
 				</div>
