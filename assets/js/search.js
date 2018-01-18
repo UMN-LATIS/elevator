@@ -524,7 +524,7 @@ function prepTimeline() {
 				startTime = parseInt(date.start["numeric"], 10);
 				newItem.start_date = {};
 				if(geoTime) {
-					startYear = -1 * Math.abs((startTime + (1970*31556900)) / 31556900);
+					startYear = -1 * Math.round(Math.abs((startTime + (1970*31556900)) / 31556900));
 					newItem.start_date.year = startYear;
 				}
 				else {
@@ -543,7 +543,7 @@ function prepTimeline() {
 					endTime = parseInt(date.end["numeric"], 10);
 					
 					if(geoTime) {
-						endYear = -1 * Math.abs((endTime+ (1970*31556900)) / 31556900);
+						endYear = -1 * Math.round(Math.abs((endTime+ (1970*31556900)) / 31556900));
 						newItem.end_date.year = endYear;
 					}
 					else {
@@ -570,6 +570,7 @@ function prepTimeline() {
 					newItem.media.thumb = match.primaryHandlerThumbnail2x;
 					newItem.media.url = match.primaryHandlerThumbnail2x;	
 				}
+
 				
 				compiledDate.events.push(newItem);
 
@@ -582,8 +583,11 @@ function prepTimeline() {
 
 	if(geoTime) {
 		compiledDate.scale = "cosmological"
+		injectStyles(".tl-timeaxis-minor { display: none; }");
 	}
-	console.log(JSON.stringify(compiledDate));
+	else {
+		$("#hackyGeoStyle").remove();
+	}
 
 	var timeline = new TL.Timeline('timelinePane', compiledDate, {
         timenav_position: "bottom",
@@ -593,6 +597,12 @@ function prepTimeline() {
 
 }
 
+function injectStyles(rule) {
+  var div = $("<div />", {
+    id: "hackyGeoStyle",
+    html: '&shy;<style>' + rule + '</style>'
+  }).appendTo("body");    
+}
 
 
 $(document).on("click", ".embedControl", function() {
