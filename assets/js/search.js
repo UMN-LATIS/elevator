@@ -571,8 +571,19 @@ function prepTimeline() {
 					newItem.media.url = match.primaryHandlerThumbnail2x;	
 				}
 
+				// dedupe our array
+				var ignoreItem = false;
+				for(var existingDate of compiledDate.events) {
+					if(JSON.stringify(existingDate) == JSON.stringify(newItem)) {
+						ignoreItem = true;
+					}
+
+				}
 				
-				compiledDate.events.push(newItem);
+				if(!ignoreItem) {
+					compiledDate.events.push(newItem);	
+				}
+				
 
 			}
 		}
