@@ -14,11 +14,10 @@
 <? $token = $fileObject->getSecurityToken("tiled")?>
 
 
-<div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
+<div class="fixedHeightContainer"><div style="height:100%; width:100%" id="mapElement"></div></div>
 
 <script type="application/javascript">
 
-	var map = undefined;
 	var s3;
 	var AWS;
 	var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
@@ -30,16 +29,19 @@
 			setTimeout(loadedCallback, 200);
 			return;
 		}
-
+		console.log("entry");
+		if(typeof map !== 'undefined'){
+			console.log("teardown");
+			map.remove(); // tear down any existing leaflets so we clear handlers.
+		}
+		
 		AWS.config = new AWS.Config();
 		AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
 
 		AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
-		if(map !== undefined){
-			map.remove();
-		}
-		map = new L.map('map', {
+
+		map = new L.map('mapElement', {
 			fullscreenControl: true,
 			zoomSnap: 0,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
