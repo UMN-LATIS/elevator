@@ -89,6 +89,9 @@ var performSearchForButtonPress = function(targetForm) {
                 window.location.pathname = basePath + "/asset/viewAsset/" + objectId;
             }
             searchId = cachedResults.searchId;
+            
+            cachedResults.totalLoadedCount = cachedResults.matches.length;
+            
             disableHashChange = true;
             currentURL = window.location.href.replace(window.location.hash,"");
             currentHash = window.location.hash.replace("#", "");
