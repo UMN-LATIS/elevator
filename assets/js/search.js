@@ -1,6 +1,8 @@
 
 var MarkerSource;
 var MarkerTemplate;
+var TimelineTemplate;
+var TimelineTemplate;
 var cachedResults = "";
 var cachedDates = null;
 var searchId = null;
@@ -20,15 +22,6 @@ $(document).ready(function() {
 			}
 		}
 	});
-
-
-
-	if($("#timelinePane").length > 0) {
-		setTimeout(function() {
-			$.getScript("/assets/timeline_js/ext/geochrono/geochrono-api.js");
-		}, 1000);
-	}
-	
 
 	$(".searchText").on("blur", function() {
 		$(".advancedSearchText").val($(".searchText").val());
@@ -71,6 +64,9 @@ $(document).ready(function() {
 	MarkerSource   = $("#marker-template").html();
 	MarkerTemplate = Handlebars.compile(MarkerSource);
 
+	TimelineSource   = $("#timeline-template").html();
+	TimelineTemplate = Handlebars.compile(TimelineSource);
+
 
 	if (location.hash !== '')  {
 		$('a[href="' + location.hash + '"]').tab('show');
@@ -101,6 +97,28 @@ $(document).ready(function() {
 		{
 			title: "Embed this map",
 			message: "Use the HTML below to embed this map in another page: <br>" + embedContent,
+			buttons: {
+				success: {
+					label: "OK",
+					className: "btn-primary"
+				}
+			}
+		});
+
+    });
+
+    $(".embedTimeline").on("click", function(e) {
+    	e.preventDefault();
+    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/timeline/" + getCurrentSearchId();
+
+    	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
+
+    	embedContent = '<input size=50 class="embedControl" value="' + htmlEntities(iFrameContent) + '"">';
+
+    	bootbox.dialog(
+		{
+			title: "Embed this timeline",
+			message: "Use the HTML below to embed this timeline in another page: <br>" + embedContent,
 			buttons: {
 				success: {
 					label: "OK",
@@ -478,293 +496,123 @@ function prepTimeline() {
 		return;
 	}
 
-	var earliestDate = null;
-	var latestDate = null;
-	if(Timeline === undefined || Timeline.DateTime === undefined || Timeline.DefaultEventSource === undefined || Timeline.strings === undefined || Timeline.GregorianDateLabeller.monthNames === undefined) {
-		setTimeout(function() {
-			prepTimeline();
-		}, 1000);
-		return;
-	}
-	$("#timelinePane").empty();
-
+	var compiledDate = {};
 	var geoTime = false;
 
-	if(cachedDates=== null) {
-		cachedDates = {
-//			"dateTimeFormat": "iso8601",
-			"events": []
-		};
+	compiledDate.events = new Array();
+	for (var match of cachedResults.matches) {
 
-
-		$.each(cachedResults.matches, function(index, value) {
-			if(value.dates) {
-				$.each(value.dates, function(index, value2) {
-					$.each(value2.dateAsset, function(index, value3) {
-						if(value3.start) {
-							startTime = parseInt(value3.start["numeric"], 10);
-							if(startTime < -6373557595440) {
-								geoTime = true;
-							}
-						}
-
-					});
-				});
-			}
-		});
-
-		$.each(cachedResults.matches, function(index, value) {
-			if(value.dates) {
-				$.each(value.dates, function(index, value2) {
-					$.each(value2.dateAsset, function(index, value3) {
-						if(value3.start && value3.start["numeric"].toString().length > 0) {
-							var startTime = null;
-							var endTime = null;
-							var formattedStart = null;
-							var formattedEnd = null;
-							var t = null;
-							startTime = parseInt(value3.start["numeric"], 10);
-
-							if(geoTime) {
-								/**
-								 * at this point, let's work in millions of years ago
-								 */
-								formattedStart = Timeline.GeochronoUnit.wrapMA(Math.abs(startTime / 31556900000000));
-
-							}
-							else {
-								t = new Date(1970,0,1);
-								t.setSeconds(startTime);
-								formattedStart = Date.utc.create(t);
-							}
-
-
-							formattedValue = {
-								"miscData": value,
-								"title": value.title,
-								"id": "/en/"+value.objectId,
-								"start": formattedStart,
-								"image": basePath+"asset/previewImage/"+value.objectId,
-								"link": basePath+"asset/viewAsset/"+value.objectId,
-								"description": "Caption goeshere"
-							};
-
-							if(value3.end["numeric"] && value3.end["numeric"].length>0) {
-								endTime = parseInt(value3.end["numeric"], 10);
-								if(geoTime) {
-									formattedEnd = Timeline.GeochronoUnit.wrapMA(Math.abs(endTime / 31556900000000));
-								}
-								else {
-									t = new Date(1970,0,1);
-									t.setSeconds(endTime);
-									formattedEnd = Date.utc.create(t);
-								}
-								formattedValue.end = formattedEnd;
-								formattedValue.durationEvent = true;
-							}
-
-							if(earliestDate === null || startTime < earliestDate) {
-								earliestDate = startTime;
-							}
-							if(latestDate === null || startTime > latestDate) {
-								latestDate = startTime;
-							}
-							if (endTime > latestDate) {
-								latestDate = endTime;
-							}
-
-							cachedDates.events.push(formattedValue);
-						}
-					});
-				});
-			}
-		});
-	}
-
-
-	if(eventSource) {
-		eventSource.clear();
-	}
-
-
-	var oldFillInfoBubble = Timeline.DefaultEventSource.Event.prototype.fillInfoBubble;
-	Timeline.DefaultEventSource.Event.prototype.fillInfoBubble = function(elmt, theme, labeller) {
-		//oldFillInfoBubble.call(this, elmt, theme, labeller);
-
-		var eventObject = this;
-
-		var div = document.createElement("div");
-		div.innerHTML = MarkerTemplate(eventObject._obj.miscData);
-		elmt.appendChild(div);
-	};
-
-
-
-
-	if(geoTime) {
-		eventSource = new Timeline.DefaultEventSource(new SimileAjax.EventIndex(Timeline.GeochronoUnit));
-	}
-	else {
-		eventSource = new Timeline.DefaultEventSource(0);
-	}
-
-
-	eventSource.loadJSON(cachedDates, "localJson");
-
-	var theme = Timeline.ClassicTheme.create();
-
-	var d = null;
-	var midPoint = null;
-	if(geoTime) {
-		midPoint = Math.abs(((earliestDate + latestDate) / 2) / 31556900000000);
-		d = Timeline.GeochronoUnit.wrapMA(midPoint);
-	}
-	else {
-		midPoint = (earliestDate + latestDate)/2;
-		var t = new Date(1970,0,1);
-		t.setSeconds(midPoint);
-
-		d = Date.create(t);
-	}
-	var range = latestDate - earliestDate;
-	var bigBand = null;
-	var smallBand = null;
-	var smallInterval = 200;
-	if(range < 60*60) { // we're on a day scale
-		bigBand = Timeline.DateTime.MINUTE;
-		smallBand = Timeline.DateTime.HOUR;
-	}
-	else if(range < 60*60*24) { //month scale
-		bigBand = Timeline.DateTime.HOUR;
-		smallBand = Timeline.DateTime.DAY;
-	}
-	else if(range< 60*60*24*30) { //year scale
-		bigBand = Timeline.DateTime.DAY;
-		smallBand = Timeline.DateTime.MONTH;
-	}
-	else if(range< 60*60*24*30*12) { //decade
-		bigBand = Timeline.DateTime.MONTH;
-		smallBand = Timeline.DateTime.YEAR;
-	}
-	else if(range< 60*60*24*30*12*10) { //century
-		bigBand = Timeline.DateTime.YEAR;
-		smallBand = Timeline.DateTime.DECADE;
-	}
-	else if(range< 60*60*24*30*12*10*10) { //millenia
-		bigBand = Timeline.DateTime.DECADE;
-		smallBand = Timeline.DateTime.CENTURY;
-	}
-	else if(range< 60*60*24*30*12*10*10*10) { //bigger
-		bigBand = Timeline.DateTime.CENTURY;
-		smallBand = Timeline.DateTime.MILLENNIUM;
-
-	}
-	else {
-		bigBand = Timeline.DateTime.MILLENNIUM;
-		smallBand = Timeline.DateTime.MILLENNIUM;
-		smallInterval = 80;
-	}
-
-	if(geoTime) {
-
-		bigBand = Timeline.GeochronoUnit.MA;
-		smallBand = Timeline.GeochronoUnit.EPOCH;
-	}
-
-	SimileAjax.History.enabled = false;
-	var bandInfos;
-	if(geoTime) {
-        bandInfos  = [
-            Timeline.Geochrono.createBandInfo({
-                eventSource:    eventSource,
-                timeZone: -1 * (new Date().getTimezoneOffset()/60),
-                date:           d,
-                width:          "86%",
-                intervalUnit:   bigBand,
-                intervalPixels: 100,
-                trackGap:       0.2,
-                trackHeight:    1.3,
-                theme:          theme,
-                eventPainter:   Timeline.CompactEventPainter,
-                eventPainterParams: {
-					iconLabelGap:     5,
-					labelRightMargin: 20,
-					iconWidth:        80, // These are for per-event custom icons
-					iconHeight:       80,
-					stackConcurrentPreciseInstantEvents: {
-						limit: 5,
-						moreMessageTemplate:    "%0 More Events",
-						icon:                   "no-image-80.png", // default icon in stacks
-						iconWidth:              80,
-						iconHeight:             80
-					}
+		// if we don't have a special dates propery, we can ignore this one
+		if(!match.hasOwnProperty("dates")) {
+			continue;
+		}
+		
+		for(var dates of match.dates) {
+			for(var date of dates.dateAsset) {
+				startTime = parseInt(date.start["numeric"], 10);
+				if(startTime < -6373557595440) {
+					geoTime = true;
 				}
-            }),
-            Timeline.Geochrono.createBandInfo({
-				width:          "10%",
-				timeZone: -1 * (new Date().getTimezoneOffset()/60),
-				intervalUnit:   smallBand,
-				intervalPixels: smallInterval,
-				eventSource:    eventSource,
-				date:           d,
-				theme:          theme,
-				overview:         'overview'  // original, overview, detailed
-			})
-        ];
-		bandInfos[1].syncWith = 0;
-		bandInfos[1].highlight = true;
-	}
-	else {
-		bandInfos = [
-			Timeline.createBandInfo({
-				width:          "90%",
-				intervalUnit:   bigBand,
-				timeZone: -1 * (new Date().getTimezoneOffset()/60),
-				intervalPixels: 200,
-				eventSource:    eventSource,
-				date:           d,
-				theme:          theme,
-				eventPainter:   Timeline.CompactEventPainter,
-				eventPainterParams: {
-					iconLabelGap:     5,
-					labelRightMargin: 20,
-					iconWidth:        80, // These are for per-event custom icons
-					iconHeight:       80,
-					stackConcurrentPreciseInstantEvents: {
-						limit: 5,
-						moreMessageTemplate:    "%0 More Events",
-						icon:                   "/assets/timeline_js/images/blue-circle.png", // default icon in stacks
-						iconWidth:              80,
-						iconHeight:             80
-					}
-				}
-			}),
-			Timeline.createBandInfo({
-				width:          "10%",
-				timeZone: -1 * (new Date().getTimezoneOffset()/60),
-				intervalUnit:   smallBand,
-				intervalPixels: smallInterval,
-				eventSource:    eventSource,
-				date:           d,
-				theme:          theme,
-				overview:         'overview'  // original, overview, detailed
-			})
-		];
-		bandInfos[1].syncWith = 0;
-		bandInfos[1].highlight = true;
-	}
+			}
+		}
 
+
+
+		for(var dates of match.dates) {
+			for(var date of dates.dateAsset) {
+				var newItem = {};
+				startTime = parseInt(date.start["numeric"], 10);
+				newItem.start_date = {};
+				if(geoTime) {
+					startYear = -1 * Math.round(Math.abs((startTime + (1970*31556900)) / 31556900));
+					newItem.start_date.year = startYear;
+				}
+				else {
+					t = new Date(1970,0,1);
+					t.setSeconds(startTime);
+					formattedStart = Date.utc.create(t);
+
+					newItem.start_date.year = formattedStart.getFullYear();
+					newItem.start_date.month = formattedStart.getMonth() + 1;
+					newItem.start_date.day = formattedStart.getDay() + 1;
+
+				}
+				if(date.end["numeric"] && date.end["numeric"].toString().length>0) {
+					newItem.end_date = {};
+					endTime = parseInt(date.end["numeric"], 10);
+
+					if(geoTime) {
+						endYear = -1 * Math.round(Math.abs((endTime+ (1970*31556900)) / 31556900));
+						newItem.end_date.year = endYear;
+					}
+					else {
+						t = new Date(1970,0,1);
+						t.setSeconds(endTime);
+						formattedEnd = Date.utc.create(t);
+						newItem.end_date.year = formattedEnd.getFullYear();
+						newItem.end_date.month = formattedEnd.getMonth() + 1;
+						newItem.end_date.day = formattedEnd.getDay() + 1;
+
+					}
+
+				}
+
+				var html    = TimelineTemplate(match);
+
+				newItem.text = {};
+				newElement = $("<a/>", {"href": basePath + "asset/viewAsset/" + match.objectId, "text": match.title});
+				newItem.text.headline = newElement.prop("outerHTML");
+				newItem.text.text = html;
+
+				if(match.hasOwnProperty("primaryHandlerThumbnail2x")) {
+					newItem.media = {};
+					newItem.media.thumb = match.primaryHandlerThumbnail2x;
+					newItem.media.url = match.primaryHandlerThumbnail2x;	
+				}
+
+				// dedupe our array
+				var ignoreItem = false;
+				for(var existingDate of compiledDate.events) {
+					if(JSON.stringify(existingDate) == JSON.stringify(newItem)) {
+						ignoreItem = true;
+					}
+
+				}
+				
+				if(!ignoreItem) {
+					compiledDate.events.push(newItem);	
+				}
+				
+
+			}
+		}
+
+
+
+	}
 
 	if(geoTime) {
-		tl = Timeline.create(document.getElementById("timelinePane"), bandInfos, Timeline.HORIZONTAL, Timeline.GeochronoUnit);
+		compiledDate.scale = "cosmological"
+		injectStyles(".tl-timeaxis-minor { display: none; }");
 	}
 	else {
-		tl = Timeline.create(document.getElementById("timelinePane"), bandInfos, Timeline.HORIZONTAL);
+		$("#hackyGeoStyle").remove();
 	}
+
+	var timeline = new TL.Timeline('timelinePane', compiledDate, {
+        timenav_position: "bottom",
+        timenav_height_percentage: "70"
+	});
 
 
 }
 
+function injectStyles(rule) {
+  var div = $("<div />", {
+    id: "hackyGeoStyle",
+    html: '&shy;<style>' + rule + '</style>'
+  }).appendTo("body");    
+}
 
 
 $(document).on("click", ".embedControl", function() {

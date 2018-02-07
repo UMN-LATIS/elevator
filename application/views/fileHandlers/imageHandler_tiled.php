@@ -3,11 +3,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/Control.MiniMap.min.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet-measure.css">
 <script src="/assets/js/aws-s3.js"></script>
-<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
-<script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
+
 <style type="text/css">
 
 .leaflet-top {
@@ -44,6 +40,7 @@
 
 		AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
+
 		map = new L.map('mapElement', {
 			fullscreenControl: true,
 			zoomSnap: 0,

@@ -102,30 +102,19 @@
 				<div class="resultsData">
 
 				</div>
-				<div id="timelinePane" style="width: 100%; height: 500px;">
+				<div id="timelinePane" style="width: 100%; height: 600px;">
 
 
+				</div>
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+						<a style="padding-left:5px" href="" class="embedTimeline">Embed Timeline</a>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 	
 </div>
-
-
-
-<script>
-/**
- * SIMILE is old and sad.  It needs global variables available before the script is loaded.  Sad.
- */
-var tl;
-var Timeline_ajax_url="<?=site_url("assets/timeline_ajax/simile-ajax-api.js")?>";
-var Timeline_urlPrefix='<?=site_url("assets/timeline_js/")?>/';
-var Timeline_parameters='bundle=true';
-</script>
-<script src="<?=site_url("assets/timeline_js/timeline-api.js")?>" type="text/javascript"></script>
-
-
-
 
 <?$this->load->view("handlebarsTemplates");?>

@@ -107,7 +107,6 @@ onAdd: function (map) {
 	map.options.maxBoundsViscosity = 0.8
 	L.TileLayer.prototype.onAdd.call(this, map);
 	this.fitImage()
-
 	map.on('resize', self._mapResized.bind(self))
 },
 
