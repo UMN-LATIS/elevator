@@ -531,7 +531,7 @@ function prepTimeline() {
 					t = new Date(1970,0,1);
 					t.setSeconds(startTime);
 					formattedStart = Date.utc.create(t);
-
+					newItem.start_date.display_date = date.start["text"];
 					newItem.start_date.year = formattedStart.getFullYear();
 					newItem.start_date.month = formattedStart.getMonth() + 1;
 					newItem.start_date.day = formattedStart.getDay() + 1;
@@ -549,6 +549,7 @@ function prepTimeline() {
 						t = new Date(1970,0,1);
 						t.setSeconds(endTime);
 						formattedEnd = Date.utc.create(t);
+						newItem.end_date.display_date = date.end["text"];
 						newItem.end_date.year = formattedEnd.getFullYear();
 						newItem.end_date.month = formattedEnd.getMonth() + 1;
 						newItem.end_date.day = formattedEnd.getDay() + 1;
