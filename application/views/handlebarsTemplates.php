@@ -213,6 +213,18 @@
 </div>
 </script>
 
+
+<script id="timeline-template" type="text/x-handlebars-template">
+{{#each entries}}
+<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
+			{{#each this.entries}}
+				<li>{{this}}</li>
+			{{/each}}
+		</ul>
+</div>
+{{/each}}
+</script>
+
 <script id="related-template" type="text/x-handlebars-template">
 <div class="row relatedAsset">
 	<div class="col-md-12">

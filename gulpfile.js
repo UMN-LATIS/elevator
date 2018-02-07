@@ -3,7 +3,6 @@ var gulp = require('gulp'),
     autoprefixer = require('gulp-autoprefixer'),
     minifycss = require('gulp-minify-css'),
     jshint = require('gulp-jshint'),
-    uglify = require('gulp-uglify'),
     imagemin = require('gulp-imagemin'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
@@ -17,6 +16,7 @@ var gulp = require('gulp'),
     uglifycss = require('gulp-uglifycss');
     changed = require('gulp-changed');
 
+let uglify = require('gulp-uglify-es').default;
 
 
 gulp.task('3dhop', function() {
