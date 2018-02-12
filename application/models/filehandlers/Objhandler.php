@@ -128,7 +128,7 @@ rnd.resolution_y = int(2000)
 
 		$localPath = $this->sourceFile->getPathToLocalFile();
 		$pathparts = pathinfo($localPath);
-		$originalExtension = pathinfo($localPath, PATHINFO_EXTENSION);
+		$originalExtension = pathinfo($this->sourceFile->originalFilename, PATHINFO_EXTENSION);
 
 		$objFile = $localPath . "." .$originalExtension;
 
@@ -478,4 +478,4 @@ rnd.resolution_y = int(2000)
 }
 
 /* End of file  */
-/* Location: ./application/controllers/ */
+/* Location: ./application/controllers/ */co
