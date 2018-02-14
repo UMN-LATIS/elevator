@@ -1,7 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class ObjHandler extends FileHandlerBase {
-	protected $supportedTypes = array("obj");
+	protected $supportedTypes = array("obj", "stl");
 	protected $noDerivatives = false;
 
 	protected $pathToBlenderStage;
@@ -128,8 +128,9 @@ rnd.resolution_y = int(2000)
 
 		$localPath = $this->sourceFile->getPathToLocalFile();
 		$pathparts = pathinfo($localPath);
+		$originalExtension = pathinfo($this->sourceFile->originalFilename, PATHINFO_EXTENSION);
 
-		$objFile = $localPath . ".obj";
+		$objFile = $localPath . "." .$originalExtension;
 
 		rename($localPath, $objFile);
 		$baseFolder = pathinfo($localPath, PATHINFO_DIRNAME);
@@ -477,4 +478,4 @@ rnd.resolution_y = int(2000)
 }
 
 /* End of file  */
-/* Location: ./application/controllers/ */
+/* Location: ./application/controllers/ 

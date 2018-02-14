@@ -17,6 +17,7 @@ class asset extends Instance_Controller {
 		}
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry&sensor=false");
+
 		$jsLoadArray = array_merge($jsLoadArray, ["jquery.fullscreen-0.4.1", "jquery.gomap-1.3.2", "markerclusterer", "mapWidget","panzoom","jquery.expander"]);
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");

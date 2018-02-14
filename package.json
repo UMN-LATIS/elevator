@@ -18,8 +18,12 @@
     "gulp-sass": "^2.1.0",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-uglify": "^1.5.1",
+    "gulp-uglify-es": "^1.0.0",
     "gulp-uglifycss": "^1.0.4",
     "guppy-pre-commit": "^0.3.0",
     "jshint": "^2.8.0"
+  },
+  "dependencies": {
+    "gulp": "^3.9.1"
   }
 }
