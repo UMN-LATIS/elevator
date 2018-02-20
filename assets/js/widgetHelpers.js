@@ -145,7 +145,9 @@ var buildSortable = function() {
      			tinymce.execCommand('mceAddEditor', true, $(this).attr('id'));
   			});
 			updateNames($(this));
-		}
+		},
+		revert: true,
+		cancel: ".sortableBlock p, .sortableBlock label"
     });
 }
 
