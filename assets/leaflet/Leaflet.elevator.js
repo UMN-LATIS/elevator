@@ -26,7 +26,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 	createTile: function(coords, done) {
 		var error;
 		var tile = L.DomUtil.create('img', 'elevatorTile');
-		coords.z = coords.z;
+		coords.z = coords.z  + this.options.zoomOffset;
 		this._loadFunction(coords, tile, done);
 		return tile;
 	},
@@ -76,19 +76,20 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 	maxX = maxZoomGrid.x * this.options.tileSize,
 	maxY = maxZoomGrid.y * this.options.tileSize,
 	southEast = map.unproject([maxX, maxY], maxNativeZoom);
+
 	this.options.bounds = new L.LatLngBounds([[0, 0], southEast]);
 
-	this.options.maxNativeZoom = maxNativeZoom;
+	this.options.maxNativeZoom = maxNativeZoom - 1;
 	if(!this.options.maxZoom) {
 		this.options.maxZoom = this.options.maxNativeZoom;
 	}
-	this.options.maxAdjustedZoom = this.options.maxNativeZoom;
+	this.options.maxAdjustedZoom = maxNativeZoom;
 
 
 },
 
 _getGridSize: function (imageSize) {
-	var tileSize = this.options.tileSize;
+	var tileSize = this.options.tileSize * 2;
 	return L.point(Math.ceil(imageSize.x / tileSize), Math.ceil(imageSize.y / tileSize));
 },
 
@@ -99,7 +100,7 @@ _adjustNonSquareTile: function (data) {
 
 	if(this._adjustForRetina) tileSize = tileSize.divideBy(2)
 
-		tile.style.width = tileSize.x + pad + 'px';
+	tile.style.width = tileSize.x + pad + 'px';
 	tile.style.height = tileSize.y + pad + 'px';
 
 },
@@ -124,7 +125,7 @@ _getImageBounds: function () {
 	var map = this._map
 	, options = this.options
 	, imageSize = L.point(options.width -200, options.height)
-	, zoom = this.options.maxNativeZoom + this.options.zoomOffset
+	, zoom = this.options.maxAdjustedZoom
 	, nw = map.unproject([0, 0], zoom)
 	var se = map.unproject(imageSize, zoom)
 
@@ -136,6 +137,7 @@ fitImage: function () {
 	, bounds = this._getImageBounds()
 
 	this.options.bounds = bounds // used by `GridLayer.js#_isValidTile`
+	
 	map.setMaxBounds(bounds)
 	this.fitBoundsExactly()
 },
@@ -162,11 +164,11 @@ fitBoundsExactly: function() {
 	, containerAspectRatio = cAR = containerSize.x/containerSize.y
 	, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
 	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
-	var zoom = map.getScaleZoom(zooms.fit, this.options.maxNativeZoom + this.options.zoomOffset) ;
+	var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
 
 	this.options.minZoom = Math.floor(zoom);
 	map._addZoomLimit(this);
-	var fill = map.getScaleZoom(zooms.fill, this.options.maxNativeZoom + this.options.zoomOffset);
+	var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
 	
 	if(map.getZoom() < fill) {
 		map.setZoom(zoom);
@@ -176,7 +178,7 @@ fitBoundsExactly: function() {
 fillContainer: function() {
 	var map = this._map;
 
-	map.setZoom(map.getScaleZoom(this.options.zooms.fill, this.options.maxNativeZoom + this.options.Zoom));
+	map.setZoom(map.getScaleZoom(this.options.zooms.fill, this.options.maxAdjustedZoom + this.options.Zoom));
 },
 
 // Remove the 'Leaflet' attribution from the map.
