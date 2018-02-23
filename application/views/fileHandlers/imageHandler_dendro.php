@@ -115,7 +115,7 @@ if($widgetObject->parentWidget->dendroFields) {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
 			tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
-			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
+			maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
 			pixelsPerMillimeter: pixelsPerMillimeter,
 			detectRetina: false,
