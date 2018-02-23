@@ -2,47 +2,50 @@
 
 if(typeof require !== "undefined") var L = require('leaflet')
 
-L.TileLayer.Elevator = L.TileLayer.extend({
-	options: {
-		crs: L.CRS.Simple,
-		infinite: false,
-		noWrap: true,
-		attributionControl: false,
-		detectRetina: true,
-		edgeBufferTiles: 1,
-	},
+	L.TileLayer.Elevator = L.TileLayer.extend({
+		options: {
+			crs: L.CRS.Simple,
+			infinite: false,
+			noWrap: true,
+			attributionControl: false,
+			detectRetina: true,
+			edgeBufferTiles: 1,
+		},
 
-	initialize: function(tileLoadFunction, options) {
+		initialize: function(tileLoadFunction, options) {
 		// this.options.crs.wrapLat = this.options.crs.wrapLng =  null
 		L.TileLayer.prototype.initialize.call(this, null, options)
 		this._loadFunction = tileLoadFunction;
 		this._adjustForRetina = this.options.detectRetina && L.Browser.retina
+		if(!options.maxZoom) {
+			this.options.maxZoom = null;
+		}
 		this._computeImageAndGridSize()
 		this.on('tileload', this._adjustNonSquareTile)
 	},
 	createTile: function(coords, done) {
-	    var error;
-	    var tile = L.DomUtil.create('img', 'elevatorTile');
-        coords.z = coords.z+ this.options.zoomOffset;
-        this._loadFunction(coords, tile, done);
-        return tile;
-    },
+		var error;
+		var tile = L.DomUtil.create('img', 'elevatorTile');
+		coords.z = coords.z  + this.options.zoomOffset;
+		this._loadFunction(coords, tile, done);
+		return tile;
+	},
 
-    getTileSize: function() {
+	getTileSize: function() {
 		var map = this._map,
-		    tileSize = L.GridLayer.prototype.getTileSize.call(this),
-		    zoom = this._tileZoom + this.options.zoomOffset,
-		    zoomN = this.options.maxNativeZoom;
+		tileSize = L.GridLayer.prototype.getTileSize.call(this),
+		zoom = this._tileZoom,
+		zoomN = this.options.maxNativeZoom;
 
-	    tileSize.x = tileSize.x + this.options.overlap; // with deepzoom, our tile size removes the overlap, but leaflet needs it.
-	    tileSize.y = tileSize.y + this.options.overlap;
+		tileSize.x = tileSize.x + this.options.overlap; // with deepzoom, our tile size removes the overlap, but leaflet needs it.
+		tileSize.y = tileSize.y + this.options.overlap;
 		// increase tile size when overscaling
 		var outputSize= zoomN !== null && zoom > zoomN ?
-				tileSize.divideBy(map.getZoomScale(zoomN, zoom)).round() :
-				tileSize;
+		tileSize.divideBy(map.getZoomScale(zoomN, zoom)).round() :
+		tileSize;
 		
 		return outputSize;
-    },
+	},
 
 _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaflet.Zoomify
 	var options = this.options,
@@ -50,18 +53,18 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 
 	if(this._adjustForRetina) tileSize = tileSize*2 // Don't build the grid off half-sized retina tiles
 
-	var imageSize = L.point(this.options.width, this.options.height);
+		var imageSize = L.point(this.options.width, this.options.height);
 
 	// Build the zoom sizes of the pyramid and cache them in an array
 	this._imageSize = [imageSize];
 	this._gridSize = [this._getGridSize(imageSize)];
 
 	// Register the image size in pixels and the grid size in # of tiles for each zoom level
-		while (imageSize.x > 0 || imageSize.y > 0) {
+	while (imageSize.x > 0 || imageSize.y > 0) {
 		imageSize = imageSize.divideBy(2).floor();
-    	this._imageSize.push(imageSize);
-    	this._gridSize.push(this._getGridSize(imageSize));
-    }
+		this._imageSize.push(imageSize);
+		this._gridSize.push(this._getGridSize(imageSize));
+	}
 
 	// We built the cache from bottom to top, but leaflet uses a top to bottom index for the zoomlevel,
 	// so reverse it for easy indexing by current zoomlevel
@@ -73,14 +76,20 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 	maxX = maxZoomGrid.x * this.options.tileSize,
 	maxY = maxZoomGrid.y * this.options.tileSize,
 	southEast = map.unproject([maxX, maxY], maxNativeZoom);
+
 	this.options.bounds = new L.LatLngBounds([[0, 0], southEast]);
 
-	this.options.maxNativeZoom = maxNativeZoom;
-	this.options.maxZoom = this.options.maxNativeZoom - this.options.zoomOffset;
+	this.options.maxNativeZoom = maxNativeZoom - 1;
+	if(!this.options.maxZoom) {
+		this.options.maxZoom = this.options.maxNativeZoom;
+	}
+	this.options.maxAdjustedZoom = maxNativeZoom;
+
+
 },
 
 _getGridSize: function (imageSize) {
-	var tileSize = this.options.tileSize;
+	var tileSize = this.options.tileSize * 2;
 	return L.point(Math.ceil(imageSize.x / tileSize), Math.ceil(imageSize.y / tileSize));
 },
 
@@ -88,6 +97,7 @@ _adjustNonSquareTile: function (data) {
 	var tile = data.tile
 	, pad = 1
 	, tileSize = L.point(tile.naturalWidth, tile.naturalHeight)
+
 	if(this._adjustForRetina) tileSize = tileSize.divideBy(2)
 
 	tile.style.width = tileSize.x + pad + 'px';
@@ -114,8 +124,8 @@ _getImageBounds: function () {
 
 	var map = this._map
 	, options = this.options
-	, imageSize = L.point(options.width + 400, options.height)
-	, zoom = map.getMaxZoom()+this.options.zoomOffset
+	, imageSize = L.point(options.width -200, options.height)
+	, zoom = this.options.maxAdjustedZoom
 	, nw = map.unproject([0, 0], zoom)
 	var se = map.unproject(imageSize, zoom)
 
@@ -127,6 +137,7 @@ fitImage: function () {
 	, bounds = this._getImageBounds()
 
 	this.options.bounds = bounds // used by `GridLayer.js#_isValidTile`
+	
 	map.setMaxBounds(bounds)
 	this.fitBoundsExactly()
 },
@@ -153,11 +164,11 @@ fitBoundsExactly: function() {
 	, containerAspectRatio = cAR = containerSize.x/containerSize.y
 	, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
 	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
-	var zoom = map.getScaleZoom(zooms.fit, map.getMaxZoom() + this.options.zoomOffset) ;
+	var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
 
 	this.options.minZoom = Math.floor(zoom);
 	map._addZoomLimit(this);
-	var fill = map.getScaleZoom(zooms.fill, map.getMaxZoom());
+	var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
 	
 	if(map.getZoom() < fill) {
 		map.setZoom(zoom);
@@ -167,7 +178,7 @@ fitBoundsExactly: function() {
 fillContainer: function() {
 	var map = this._map;
 
-	map.setZoom(map.getScaleZoom(this.options.zooms.fill, map.getMaxZoom()));
+	map.setZoom(map.getScaleZoom(this.options.zooms.fill, this.options.maxAdjustedZoom + this.options.Zoom));
 },
 
 // Remove the 'Leaflet' attribution from the map.
