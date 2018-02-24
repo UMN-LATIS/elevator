@@ -178,7 +178,7 @@ var arrowOptions = {
     popupContent: function(data) {
         return '<em>' + data.title + '</em>'
     },
-    arrowheadLength: 0.8,
+    arrowheadLength: 0.2,
     color: 'blue'
 }
 
