@@ -12,7 +12,7 @@ class Asset_model extends CI_Model {
 	/**
 	 * These are the values that are valid for all items, regardless of metadata schema.  In a relational database, these would be columns.
 	 */
-	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null];
+	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null, "deleted"=>false];
 
 	public $assetTemplate = null;
 	public $assetObjects = array();
@@ -91,6 +91,7 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("availableAfter", $record->getAvailableAfter());
 		$this->setGlobalValue("modified", $record->getModifiedAt());
 		$this->setGlobalValue("modifiedBy", $record->getModifiedBy());
+		$this->setGlobalValue("deleted", $record->getDeleted());
 		if($this->loadWidgetsFromArray($record->getWidgets())) {
 			return TRUE;
 		}

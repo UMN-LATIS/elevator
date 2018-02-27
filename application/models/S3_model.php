@@ -285,9 +285,28 @@ class S3_model extends CI_Model {
 				]
 				]);
 		}
-		catch (Exception $e) {
-			$this->logging->logError("restoreObject", $e, $targetKey);
-			return false;
+		catch (Aws\S3\Exception\S3Exception $e) {
+			if($e->getAwsErrorCode() == "GlacierExpeditedRetrievalNotAvailable") {
+				// try again non-expedited
+				try {
+					$result = $this->s3Client->restoreObject([
+						'Bucket' => $this->bucket,
+						'Key'    => $targetKey,
+						'RestoreRequest' => [
+						'Days' => 15,
+						]
+						]);
+				}
+				catch (Aws\S3\Exception\S3Exception $e) {
+					$this->logging->logError("restoreObject", $e->__toString(), $targetKey);
+					return false;
+
+				}
+			}
+			else {
+				$this->logging->logError("restoreObject", $e->__toString(), $targetKey);
+				return false;
+			}
 		}
 	}
 
