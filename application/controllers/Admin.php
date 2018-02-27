@@ -352,8 +352,11 @@ class admin extends Admin_Controller {
 		$deletionArray = array();
 		foreach($fileList as $fileEntry) {
 			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry->getFileObjectId());
-			$fileHandler->loadFromObject($fileEntry);
-			$deletionArray[] = ["objectId"=>$fileHandler->getObjectId(), "filename"=>$fileHandler->sourceFile->originalFilename];
+			if($fileHandler) {
+
+				$fileHandler->loadFromObject($fileEntry);
+				$deletionArray[] = ["objectId"=>$fileHandler->getObjectId(), "filename"=>$fileHandler->sourceFile->originalFilename];	
+			}
 		}
 
 		$this->template->content->view('admin/purgeDeletions', ["objectArray"=>$deletionArray]);
@@ -377,7 +380,14 @@ class admin extends Admin_Controller {
 		$lastUsedToken = null;
 		foreach($fileList as $fileEntry) {
 			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry->getFileObjectId());
-			$fileHandler->loadFromObject($fileEntry);
+			if(!$fileHandler) { 
+				continue;
+			}
+			
+			if(!$fileHandler->loadFromObject($fileEntry)) {
+				continue;
+			}
+			
 			if(isset($lastUsedToken)) {
 				$fileHandler->s3model->sessionToken = $lastUsedToken;
 			}
