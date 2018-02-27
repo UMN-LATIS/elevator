@@ -151,9 +151,12 @@ class Asset_template extends CI_Model {
 
 		if($asset) {
 			$data['lastModifiedBy'] = $asset->getLastModifiedName();	
+			$data['lastModifiedAt'] = $asset->getGlobalValue("modified")->format('Y-m-d H:i:s');	
+
 		}
 		else {
 			$data['lastModifiedBy'] = "";
+			$data['lastModifiedBAt'] = "";
 		}
 		
 

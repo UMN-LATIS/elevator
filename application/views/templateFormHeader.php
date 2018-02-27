@@ -269,8 +269,16 @@ $(function() {
 						<?if($this->user_model->isInstanceAdmin() || $this->user_model->getIsSuperAdmin()):?>
 							<div class="form-group">
 							<label for="inputAvailableAfter" class="col-sm-2 control-label">Last Modified By:</label>
-							<div class="col-sm-3">
-								<p class="form-control-static"><?=$lastModifiedBy?></p>
+							<div class="col-sm-6">
+								<p class="form-control-static"><?=$lastModifiedBy?> (<?=$lastModifiedAt?>)</p>
+							</div>
+						</div>
+						<?endif?>
+						<?if(isset($asset)):?>
+						<div class="form-group">
+							<label for="inputStatus" class="col-sm-2 control-label">Status:</label>
+							<div class="col-sm-6">
+								<p class="form-control-static"><?=$asset->getGlobalValue("deleted")?"Deleted":"Active"?></p>
 							</div>
 						</div>
 						<?endif?>
