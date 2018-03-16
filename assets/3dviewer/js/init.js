@@ -96,11 +96,11 @@ function init3dhop() {
 		$('#full_on').click(function() {exitFullscreen();});
 	}
 
-	$(window).on('load mouseup touchend dragend', function() { //focus handler
-		var x = window.scrollX, y = window.scrollY;
-		$('#draw-canvas').focus();
-		window.scrollTo(x, y);
-	});
+	// $(window).on('load mouseup touchend dragend', function() { //focus handler
+	// 	var x = window.scrollX, y = window.scrollY;
+	// 	$('#draw-canvas').focus();
+	// 	window.scrollTo(x, y);
+	// });
 
 	resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());
 
