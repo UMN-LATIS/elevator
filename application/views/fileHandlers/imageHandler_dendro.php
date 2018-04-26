@@ -7,8 +7,11 @@ if($widgetObject->parentWidget->dendroFields) {
 	$innerYearField = $widgetObject->parentWidget->dendroFields["innerYear"];
 	if(isset($fileObject->parentObject->assetObjects[$innerYearField])) {
 
-		$result = $fileObject->parentObject->assetObjects[$innerYearField]->getAsText();
-		$innerYear = $result[0];
+		$result = $fileObject->parentObject->assetObjects[$innerYearField]->getAsArray();
+		if(isset($result[0]['start']['text'] && is_numeric($result[0]['start']['text'])) {
+			$innerYear = $result[0]['start']['text'];	
+		}
+		
 	}
 
 	$latewoodField = $widgetObject->parentWidget->dendroFields["lateWood"];
