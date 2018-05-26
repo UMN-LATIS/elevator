@@ -106,7 +106,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
     </div>
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 <?if(!$this->useUnauthenticatedTemplate):?>
-  <div class="col-sm-3">
+  <div class="col-sm-3 search-group">
     <form class="navbar-form navbar-input-group navbar-left searchForm" role="search">
       <input type="hidden" name="collection[]" id="collection" value=0>
       <input type="hidden" name="specificSearchField[]" id="specificSearchField">
@@ -118,7 +118,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
         <input type="text" class="form-control searchText"  aria-label="Search" autocomplete="off"  id="searchText" name="searchText" placeholder="Search">
         <div class="input-group-btn search-panel">
           <div class="btn-group hidden-md hidden-sm">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+          <button type="button" class="btn btn-default dropdown-toggle collection-list-toggle" data-toggle="dropdown">
             <div id="search_concept" class="hidden-md hidden-sm">All Collections</span> <span class="caret"></div>
           </button>
         <ul class="dropdown-menu dropdown-menu-right collectionMenu" role="menu">
@@ -275,7 +275,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
                 </li>
       </ul>
       <?if($this->user_model->userLoaded && !$this->user_model->assetOverride):?>
-      <ul class="nav navbar-nav navbar-right">
+      <ul class="nav navbar-nav navbar-right login-group">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></b></a>
           <ul class="dropdown-menu">
@@ -286,7 +286,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
         </li>
       </ul>
       <?else:?>
-        <ul class="nav navbar-nav navbar-right">
+        <ul class="nav navbar-nav navbar-right login-group">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"><b class="caret"></b></span><span class="signInLink">Sign In</span></a>
           <ul class="dropdown-menu">
