@@ -29,6 +29,13 @@
 		$isPrimaryValue = "CHECKED";
 	}
 
+	$multiselect = null;
+	$size = null;
+	if(isset($widgetModel->parsedFieldData["multiSelect"]) && $widgetModel->parsedFieldData["multiSelect"] == true) {
+		$multiselect = "multiple";
+		$size = "size=10";
+	}
+
 ?>
 
 <div class="panel panel-default widgetContentsContainer">
@@ -37,7 +44,7 @@
 		<div class="form-group">
 			<label for="<?=$selectId?>" class="col-sm-2 control-label"><?=$labelText?></label>
 			<div class="col-sm-4">
-				<select <?=$required?> class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
+				<select <?=$size?> <?=$multiselect?> <?=$required?> class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
 		<? foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption): ?>
 			<?if(!is_numeric($key)):?>
 				<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $key==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?> value="<?=trim($key)?>"><?=trim($key)?></option>
