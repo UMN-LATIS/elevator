@@ -5,36 +5,36 @@
 
 <?
 
-	$formFieldName = $widgetModel->getFieldTitle() . "[" . ($widgetModel->offsetCount + $i). "]";
-	$formFieldId = $widgetModel->getFieldTitle() . "_" . ($widgetModel->offsetCount + $i) . "";
-	$labelText = $widgetModel->getLabel();
-	$toolTip = $widgetModel->getToolTip();
-	$primaryGlobal = $widgetModel->getFieldTitle() . "[isPrimary]";
-	$primaryId = $formFieldId . "_isPrimary";
+$formFieldName = $widgetModel->getFieldTitle() . "[" . ($widgetModel->offsetCount + $i). "]";
+$formFieldId = $widgetModel->getFieldTitle() . "_" . ($widgetModel->offsetCount + $i) . "";
+$labelText = $widgetModel->getLabel();
+$toolTip = $widgetModel->getToolTip();
+$primaryGlobal = $widgetModel->getFieldTitle() . "[isPrimary]";
+$primaryId = $formFieldId . "_isPrimary";
 
-	$selectName = $formFieldName . "[fieldContents]";
-	$selectId = $formFieldId . "_fieldContents";
-	$isPrimaryValue = "";
-	$required = null;
-	if($widgetModel->getRequired()) {
-		$required = 'required="required"';
+$selectName = $formFieldName . "[fieldContents]";
+$selectId = $formFieldId . "_fieldContents";
+$isPrimaryValue = "";
+$required = null;
+if($widgetModel->getRequired()) {
+	$required = 'required="required"';
+}
+if($widgetModel->fieldContentsArray) {
+	if($widgetModel->fieldContentsArray[$i]->isPrimary == "on") {
+		$isPrimaryValue = " CHECKED ";
 	}
-	if($widgetModel->fieldContentsArray) {
-		if($widgetModel->fieldContentsArray[$i]->isPrimary == "on") {
-			$isPrimaryValue = " CHECKED ";
-		}
-	}
+}
 
-	if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
-		$isPrimaryValue = "CHECKED";
-	}
+if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
+	$isPrimaryValue = "CHECKED";
+}
 
-	$multiselect = null;
-	$size = null;
-	if(isset($widgetModel->parsedFieldData["multiSelect"]) && $widgetModel->parsedFieldData["multiSelect"] == true) {
-		$multiselect = "multiple";
-		$size = "size=10";
-	}
+$multiselect = null;
+$size = null;
+if(isset($widgetModel->parsedFieldData["multiSelect"]) && $widgetModel->parsedFieldData["multiSelect"] == true) {
+	$multiselect = "multiple";
+	$size = "size=10";
+}
 
 ?>
 
@@ -45,15 +45,46 @@
 			<label for="<?=$selectId?>" class="col-sm-2 control-label"><?=$labelText?></label>
 			<div class="col-sm-4">
 				<select <?=$size?> <?=$multiselect?> <?=$required?> class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
-		<? foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption): ?>
-			<?if(!is_numeric($key)):?>
-				<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $key==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?> value="<?=trim($key)?>"><?=trim($key)?></option>
-			<?else:?>
+					<? 
+					foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption) {
+						$selected = NULL;
+						if(!is_numeric($key)) {
+							$searchValue = $key;
+						}
+						else {
+							$searchValue = $selectOption;
+						}
+							
+						if(isset($widgetModel->fieldContentsArray[$i])) {
+							if(is_array($widgetModel->fieldContentsArray[$i]->fieldContents)) {
+								foreach($widgetModel->fieldContentsArray[$i]->fieldContents as $fieldContentValue) {
+									if($searchValue == $fieldContentValue) {
+										$selected = "SELECTED";
+									}
+								}
+							}
+							else {
+								if($searchValue == $widgetModel->fieldContentsArray[$i]->fieldContents) {
+									$selected = "SELECTED";
+								}
+							}
+						}
 
-			<option <?=(isset($widgetModel->fieldContentsArray[$i]) && $selectOption==$widgetModel->fieldContentsArray[$i]->fieldContents)?"SELECTED":null?>><?=$selectOption?></option>
-			<?endif?>
-		<? endforeach?>
-		</select>
+						if(!is_numeric($key)) {
+							?>
+							<option <?=$selected?> value="<?=trim($key)?>"><?=trim($key)?></option>
+							<?
+						}
+						else {
+							?>
+							<option <?=$selected?>><?=$selectOption?></option>
+							<?
+						}
+							
+					}
+					?>
+
+				</select>
 			</div>
 		</div>
 
