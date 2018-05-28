@@ -19,6 +19,10 @@ class Select_contents extends Widget_contents_base {
 		
 	}
 
+	public function getSearchEntry($serializeNestedObjects=false) {
+		return $this->fieldContents;
+	}
+
 
 }
 
