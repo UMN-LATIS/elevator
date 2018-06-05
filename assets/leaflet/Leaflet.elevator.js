@@ -17,6 +17,8 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		L.TileLayer.prototype.initialize.call(this, null, options)
 		this._loadFunction = tileLoadFunction;
 		this._adjustForRetina = this.options.detectRetina && L.Browser.retina
+
+
 		if(!options.maxZoom) {
 			this.options.maxZoom = null;
 		}
@@ -79,7 +81,7 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 
 	this.options.bounds = new L.LatLngBounds([[0, 0], southEast]);
 
-	this.options.maxNativeZoom = maxNativeZoom - 1;
+	this.options.maxNativeZoom = maxNativeZoom - this.options.zoomOffset;
 	if(!this.options.maxZoom) {
 		this.options.maxZoom = this.options.maxNativeZoom;
 	}
@@ -89,6 +91,7 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 },
 
 _getGridSize: function (imageSize) {
+
 	var tileSize = this.options.tileSize * 2;
 	return L.point(Math.ceil(imageSize.x / tileSize), Math.ceil(imageSize.y / tileSize));
 },
