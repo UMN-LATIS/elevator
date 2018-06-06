@@ -186,7 +186,7 @@ var arrowData = {
     latlng: L.latLng(46.95, 7.4),
     degree: 77,
     distance: 10,
-    title: 'Demo'
+    title: ''
 }
 
 function degreeBetweenTwoLatLngs (latlng1, latlng2) { //calculates degree between the head of the arrow and where your mouse is because this plugin uses polar coordinates
@@ -268,6 +268,26 @@ var arrowButton = L.easyButton ({
         }
     }]
 })
+
+
+map.on('zoomend', function() {
+    var currentZoom = map.getZoom();
+    layerGroup.eachLayer(function(layer) {
+
+        if(currentZoom <= 11) {
+            layer.options.arrowheadLength = 0.8;
+        }
+        else if(currentZoom <= 14) {
+            layer.options.arrowheadLength = 0.5;
+        }
+        else {
+            layer.options.arrowheadLength = 0.3;   
+        }
+
+        map.removeLayer(layer);
+        map.addLayer(layer);
+    });
+});
 
 //snap to location
 
