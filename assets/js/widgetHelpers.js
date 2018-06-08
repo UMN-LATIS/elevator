@@ -136,18 +136,18 @@ var buildSortable = function() {
 	$( ".sortableBlock" ).sortable({
 		//handle: ".handle"
 		start: function(event, ui) {
-			$(ui.item).find('textarea').each(function () {
+			$(ui.item).find('.textAreaWidget').each(function () {
      			tinymce.execCommand('mceRemoveEditor', false, $(this).attr('id'));
   			});
 		},
 		stop: function(event, ui) {
-			$(ui.item).find('textarea').each(function () {
+			$(ui.item).find('.textAreaWidget').each(function () {
      			tinymce.execCommand('mceAddEditor', true, $(this).attr('id'));
   			});
 			updateNames($(this));
 		},
 		revert: true,
-		cancel: ".sortableBlock p, .sortableBlock label"
+		cancel: ".sortableBlock p, .sortableBlock label, .mainWidgetEntry, .sortableBlock select, .sortableBlock input, .maphost, .mce-container, .sortableBlock textarea"
     });
 }
 

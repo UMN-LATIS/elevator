@@ -258,7 +258,7 @@ $(document).ready(function(){
         fileObjectPreview(el);
 
         if($(el).val() !== "") {
-            $(".deleteFile").show();
+            $(el).closest(".widgetContents").find(".deleteFile").show();
         }
 
     });
