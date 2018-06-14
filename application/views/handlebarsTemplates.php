@@ -31,7 +31,9 @@
 <script id="list-template" type="text/x-handlebars-template">
 <div class="row listResultContainer searchContainer">
 	<div class="col-md-2 listImageContainer">
+			{{#if primaryHandlerThumbnail}}
 			<a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink"><img class="img-responsive listPreviewImage" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x"></a>
+			{{/if}}
 	</div>
 	<div class="col-md-9 listTextContainer">
 		<h3><a href="{{base_url}}asset/viewAsset/{{objectId}}" class="assetLink">{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}</a></h3>
