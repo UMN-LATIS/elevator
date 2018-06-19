@@ -564,7 +564,7 @@ class AssetManager extends Admin_Controller {
 				$showHidden = true;
 			}
 			$this->load->model("search_model");
-			$this->search_model->loadAllLength = 3000;
+			$this->search_model->loadAllLength = 10000;
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, null, TRUE);
 			$i=0;
 
