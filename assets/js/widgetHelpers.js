@@ -110,6 +110,8 @@ var addAnother = function(target) {
 		$(parentGroup).append(returnInfo);
 
 		$(parentGroup).find('.isPrimary').show();
+		$(parentGroup).find('.moveDownButton').show();
+		$(parentGroup).find('.moveUpButton').show();
 		buildAutocomplete();
 		buildSortable();
 		$(self).removeAttr("disabled");
@@ -136,20 +138,63 @@ var buildSortable = function() {
 	$( ".sortableBlock" ).sortable({
 		//handle: ".handle"
 		start: function(event, ui) {
+			$(ui.item).css("max-height", "600px");
+			$(ui.item).css("overflow", "hidden");
 			$(ui.item).find('.textAreaWidget').each(function () {
      			tinymce.execCommand('mceRemoveEditor', false, $(this).attr('id'));
   			});
 		},
 		stop: function(event, ui) {
+			$(ui.item).css("max-height", "");
+			$(ui.item).css("overflow", "");
 			$(ui.item).find('.textAreaWidget').each(function () {
      			tinymce.execCommand('mceAddEditor', true, $(this).attr('id'));
   			});
 			updateNames($(this));
 		},
 		revert: true,
-		cancel: ".sortableBlock p, .sortableBlock label, .mainWidgetEntry, .sortableBlock select, .sortableBlock input, .maphost, .mce-container, .sortableBlock textarea"
+		cancel: ".nestedAsset, .tooltipRow, .sortableBlock p, .sortableBlock label, .mainWidgetEntry, .sortableBlock select, .sortableBlock input, .maphost, .mce-container, .sortableBlock textarea"
     });
 }
+
+function testUnsetIframes() {
+	var fail = false;
+	$(".nestedAsset").find("iframe").each(function() {
+		if($(this).attr("src").indexOf("editAsset") === -1) {
+			fail = true;
+		}
+		
+
+	});
+	if(fail) {
+		bootbox.dialog({
+				message: "Please save this page and reload before moving nested assets",
+				title: "Reload Rquired",
+				backdrop: true,
+				closeButton: true
+			});
+		return false;
+	}
+	return true;
+}
+
+$(document).on("click", ".moveUp", function() {
+	if(testUnsetIframes()) {
+		var current = $(this).closest(".widgetContentsContainer");
+		current.prevAll(".widgetContentsContainer:first").before(current);
+	}
+		
+
+});
+
+$(document).on("click", ".moveDown", function() {
+	if(testUnsetIframes()) {
+		var current = $(this).closest(".widgetContentsContainer");
+		current.nextAll(".widgetContentsContainer:first").after(current);	
+	}
+	
+
+});
 
 function updateNames($list) {
     $list.find('.panel').each(function (idx) {
@@ -216,6 +261,12 @@ $(document).ready(function() {
 	$(".control-group").each(function(index, el) {
 		if($(el).find('.isPrimary').length > 1) {
 			$(el).find('.isPrimary').show();
+		}
+		if($(el).find('.moveDownButton').length > 1) {
+			$(el).find('.moveDownButton').show();
+		}
+		if($(el).find('.moveUpButton').length > 1) {
+			$(el).find('.moveUpButton').show();
 		}
 	});
 
