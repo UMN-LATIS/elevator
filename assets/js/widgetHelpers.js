@@ -136,13 +136,15 @@ var buildSortable = function() {
 	$( ".sortableBlock" ).sortable({
 		//handle: ".handle"
 		start: function(event, ui) {
-			$(ui.item).find(".inlineRelatedAsset").css("display", "none");
+			$(ui.item).css("max-height", "600px");
+			$(ui.item).css("overflow", "hidden");
 			$(ui.item).find('.textAreaWidget').each(function () {
      			tinymce.execCommand('mceRemoveEditor', false, $(this).attr('id'));
   			});
 		},
 		stop: function(event, ui) {
-			$(ui.item).find(".inlineRelatedAsset").css("display", "block");
+			$(ui.item).css("max-height", "");
+			$(ui.item).css("overflow", "");
 			$(ui.item).find('.textAreaWidget').each(function () {
      			tinymce.execCommand('mceAddEditor', true, $(this).attr('id'));
   			});
