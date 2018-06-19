@@ -23,6 +23,18 @@ class Select_contents extends Widget_contents_base {
 		return $this->fieldContents;
 	}
 
+	public function hasContents() {
+		if($this->fieldContents != NULL) {
+			if(is_array($this->fieldContents) && count($this->fieldContents) == 1 && strlen($this->fieldContents[0]) == 0) {
+				return false;
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 
 }
 
