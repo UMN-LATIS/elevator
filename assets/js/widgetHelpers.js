@@ -151,7 +151,7 @@ var buildSortable = function() {
 			updateNames($(this));
 		},
 		revert: true,
-		cancel: ".tooltipRow, .sortableBlock p, .sortableBlock label, .mainWidgetEntry, .sortableBlock select, .sortableBlock input, .maphost, .mce-container, .sortableBlock textarea"
+		cancel: ".nestedAsset, .tooltipRow, .sortableBlock p, .sortableBlock label, .mainWidgetEntry, .sortableBlock select, .sortableBlock input, .maphost, .mce-container, .sortableBlock textarea"
     });
 }
 
