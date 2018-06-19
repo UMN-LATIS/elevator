@@ -71,13 +71,19 @@
 			<div class="col-sm-2">
 				<button type="button" class="btn btn-primary clearRelated">Clear</button>
 			</div>
-			<div class="col-sm-10 isPrimary">
+			<div class="col-sm-6 isPrimary">
 				<div class="checkbox">
 					<label>
 						<input id="<?=$primaryId?>" value=<?=$widgetModel->offsetCount + $i?> name="<?=$primaryGlobal?>" type="radio" <?=$isPrimaryValue?>>
 						Primary Entry
 					</label>
 				</div>
+			</div>
+			<div class="col-sm-2 moveUpButton">
+				<button type="button" class="btn btn-primary moveUp">Move Up</button>
+			</div>
+			<div class="col-sm-2 moveDownButton">
+				<button type="button" class="btn btn-primary moveDown">Move Down</button>
 			</div>
 		</div>
 		<?endif?>
