@@ -388,11 +388,11 @@ var brightnessContrastModal = L.easyButton( '<i title="Brightness and Contrast" 
             var contrastSlider = document.getElementById("contrast-slider")
             contrastSlider.value = getJson('contrast')
             $(contrastSlider).change(function changeBrightness () {
-                document.getElementsByClassName("leaflet-pane")[0].style.filter = "contrast(" + contrastSlider.value + "%)"
+                document.getElementsByClassName("leaflet-pane")[0].style.filter = "contrast(" + contrastSlider.value + "%) brightness(" + brightnessSlider.value / 50 + ")";
                 addToJson('contrast', contrastSlider.value)
             })
             $(brightnessSlider).change(function changeContrast() {
-                document.getElementsByClassName("leaflet-pane")[0].style.filter = "brightness(" + brightnessSlider.value / 50 + ")"
+                document.getElementsByClassName("leaflet-pane")[0].style.filter = "contrast(" + contrastSlider.value + "%) brightness(" + brightnessSlider.value / 50 + ")";
                 addToJson('brightness', brightnessSlider.value)
             })
         },
