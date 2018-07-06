@@ -750,6 +750,14 @@ class AssetManager extends Admin_Controller {
 		}
 		
 
+		$isUpdate = false;
+		$updateField = null;
+		foreach($cacheArray['mapping'] as $key=>$value) {
+			if($value == "objectId") {
+				$isUpdate = true;
+				$updateField = $key;
+			}
+		}
 
 		if(!$this->collection_model->getCollection($cacheArray['collectionId'])) {
 			$this->template->content->set("Invalid Collection");
@@ -775,7 +783,7 @@ class AssetManager extends Admin_Controller {
 			$cacheArray['parentObject'] = $this->input->post("parentObject");
 			$cacheArray['targetField'] = $this->input->post("targetFieldSelect");
 		}
-		if($cacheArray['parentObject'] && $cacheArray['targetField']) {
+		if(isset($cacheArray['parentObject']) && isset($cacheArray['targetField'])) {
 			$parentObject = new Asset_model;
 			$targetField =  $cacheArray['targetField'];
 			$parentObject->loadAssetById($cacheArray['parentObject']);
@@ -809,10 +817,26 @@ class AssetManager extends Admin_Controller {
 					continue;
 				}
 			}
-			$newEntry = array();
+			$assetModel = null;
+			if($isUpdate) {
+				$assetModel = new asset_model();
+				if(!$assetModel->loadAssetById($row[$updateField])) {
+					$cacheArray['successArray'][] = "could not find asset: " . $row[$updateField];
+					continue;
+				}
+				$newEntry = $assetModel->getAsArray();
+			}
+			else {
+				$newEntry = array();
+			}
+
 			$newEntry["readyForDisplay"] = true;
-			$newEntry["templateId"] = $cacheArray['templateId'];
-			$newEntry["collectionId"] = $cacheArray['collectionId'];
+			
+			if(!$isUpdate) {
+				$newEntry["templateId"] = $cacheArray['templateId'];
+				$newEntry["collectionId"] = $cacheArray['collectionId'];	
+			}
+			
 			$uploadItems = array();
 			foreach($row as $key=>$cell) {
 				if($convertLines)  {
@@ -828,10 +852,15 @@ class AssetManager extends Admin_Controller {
 				}
 
 				foreach($rowArray as $rowEntry) {
-					if($cacheArray['mapping'][$key] !== "ignore") {
+					if($cacheArray['mapping'][$key] !== "ignore" && $cacheArray['mapping'][$key] !== "objectId") {
 						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
 						$widgetContainer = $widget->getContentContainer();
-					
+
+						if($isUpdate) {
+							// for updates, clear existing content
+							$newEntry[$widget->getFieldTitle()] = array();
+						}
+
 						if(get_class($widget) == "Upload" && strlen(trim($rowEntry))>0) {
 							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($rowEntry)];
 							continue;
@@ -907,10 +936,16 @@ class AssetManager extends Admin_Controller {
 				
 			}
 
-
-			$assetModel = new Asset_model();
-			$assetModel->templateId = $cacheArray['templateId'];
-			$assetModel->createObjectFromJSON($newEntry);
+			if(!$isUpdate) {
+				$assetModel = new Asset_model();
+				$assetModel->templateId = $cacheArray['templateId'];
+				$assetModel->createObjectFromJSON($newEntry);
+			}
+			else {
+				$assetModel->loadWidgetsFromArray($newEntry);
+			}
+			
+			
 			$assetModel->save();
 
 			if(isset($targetArray)) {

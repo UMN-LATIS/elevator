@@ -63,6 +63,7 @@
 			<div class="col-sm-4">
 				<select name="targetField[]" class="form-control">
 					<option value="ignore">Don't import</option>
+					<option value="objectId">Object ID (for updates)</option>
 					<?foreach($template->widgetArray as $widget):?>
 					<? $selected = ($widget->getLabel()==$row)?"selected":null; ?>
 					<option value="<?=$widget->getFieldTitle()?>" <?=$selected?>><?=$widget->getLabel()?></option>
