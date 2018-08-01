@@ -857,7 +857,7 @@ class AssetManager extends Admin_Controller {
 						}
 						else if(get_class($widget) == "Location") {
 							if(strpos($rowEntry, ",")) {
-								$exploded = explode(",", $rowEntry);
+								$exploded = preg_split("/,/", $rowEntry, 3);
 								$widgetContainer->latitude = $exploded[0];
 								$widgetContainer->longitude = $exploded[1];
 								if(isset($exploded[2])) {
