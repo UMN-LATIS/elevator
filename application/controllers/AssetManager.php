@@ -627,8 +627,11 @@ class AssetManager extends Admin_Controller {
 							$outputDerivatives = array();
 							foreach($object->fieldContentsArray as $entry) {
 								$handler = $entry->getFileHandler();
-								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+240 minutes");
-								$outputDerivatives[] = instance_url("/fileManager/bestDerivativeByFileId/" . $handler->getObjectId());
+								if($handler->sourceFile) {
+									$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+240 minutes");	
+									$outputDerivatives[] = instance_url("/fileManager/bestDerivativeByFileId/" . $handler->getObjectId());
+								}
+								
 							}
 							$outputRow[] = join($outputURLs, "|");
 							$outputRow[] = join($outputDerivatives, "|");
