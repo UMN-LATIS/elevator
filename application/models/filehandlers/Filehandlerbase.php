@@ -414,7 +414,7 @@ class FileHandlerBase extends CI_Model {
 
 	public function getSidecarView($sidecars, $formFieldName) {
 		if(file_exists("application/views/fileHandlers/" . strtolower(get_class($this)) . "_sidecars.php")) {
-			return $this->load->view("fileHandlers/" . strtolower(get_class($this)) . "_sidecars.php", ["sidecarData"=>$sidecars, "formFieldRoot"=>$formFieldName], true);
+			return $this->load->view("fileHandlers/" . strtolower(get_class($this)) . "_sidecars.php", ["sidecarData"=>$sidecars, "formFieldRoot"=>$formFieldName, "fileHandler"=>$this], true);
 		}
 		else {
 			return "";

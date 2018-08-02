@@ -93,11 +93,15 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 		</p>
 
 		<?else:?>
-			<?if($fileObject->sourceFile->getType() == "svs"):?>
+			<?$uploadWidget = $fileObject->getUploadWidget();?>
+
+			<?if($uploadWidget->parentWidget->enableIframe && isset($uploadWidget->sidecars) && array_key_exists("iframe", $uploadWidget->sidecars)):
+				echo $this->load->view("fileHandlers/imageHandler_iframe", ["fileObject"=>$fileObject], true);
+			elseif($fileObject->sourceFile->getType() == "svs"):
+			?>
 				<?=$this->load->view("fileHandlers/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
 			<?elseif(array_key_exists("tiled", $fileContainers)):?>
 				<?
-				$uploadWidget = $fileObject->getUploadWidget();
 				if($uploadWidget->parentWidget->enableDendro) {
 					echo $this->load->view("fileHandlers/imageHandler_dendro", ["fileObject"=>$fileObject], true);
 				}
