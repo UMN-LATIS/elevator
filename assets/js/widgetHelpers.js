@@ -200,7 +200,7 @@ function updateNames($list) {
     $list.find('.panel').each(function (idx) {
         var $inp = $(this).find('input, select, textarea');
         $inp.each(function () {
-            this.name = this.name.replace(/(\[\d\])/, '[' + idx + ']');            
+            this.name = this.name.replace(/(\[\d+\])/, '[' + idx + ']');            
         });
 
 		$(this).find(".isPrimary input").val(idx);

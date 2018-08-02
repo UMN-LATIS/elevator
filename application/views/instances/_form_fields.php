@@ -121,13 +121,13 @@
 		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
 	</div>
 </div>
-
+<!--
 <div class="form-group">
 	<label for="inputBoxKey" class="col-sm-2 control-label">Box API Key:</label>
 	<div class="col-sm-6">
 		<input type="password" data-toggle="password" name="boxKey" id="inputBoxKey" class="form-control" value="<?= $instance->getBoxKey(); ?>">
 	</div>
-</div>
+</div>-->
 
 <div class="assetCompleter">
 <div class="form-group">

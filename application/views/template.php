@@ -128,7 +128,9 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 
           function drawNestedCollections($collectionList, $indentMarker=null) {
             foreach($collectionList as $collection) {
-              echo '<li><a href="#' .$collection->getId() . '" class="collectionFilterSelect" data-collection-id="' . $collection->getId() . '">' . $indentMarker . " " . $collection->getTitle(). '</a></li>';
+              if($collection->getShowInBrowse()) {
+                echo '<li><a href="#' .$collection->getId() . '" class="collectionFilterSelect" data-collection-id="' . $collection->getId() . '">' . $indentMarker . " " . $collection->getTitle(). '</a></li>';
+              }
               if($collection->hasChildren()) {
                 drawNestedCollections($collection->getChildren(), $indentMarker . "-");
               }  

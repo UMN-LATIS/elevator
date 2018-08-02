@@ -627,8 +627,11 @@ class AssetManager extends Admin_Controller {
 							$outputDerivatives = array();
 							foreach($object->fieldContentsArray as $entry) {
 								$handler = $entry->getFileHandler();
-								$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+240 minutes");
-								$outputDerivatives[] = instance_url("/fileManager/bestDerivativeByFileId/" . $handler->getObjectId());
+								if($handler->sourceFile) {
+									$outputURLs[] = $handler->sourceFile->getProtectedURLForFile(null, "+240 minutes");	
+									$outputDerivatives[] = instance_url("/fileManager/bestDerivativeByFileId/" . $handler->getObjectId());
+								}
+								
 							}
 							$outputRow[] = join($outputURLs, "|");
 							$outputRow[] = join($outputDerivatives, "|");
@@ -886,7 +889,7 @@ class AssetManager extends Admin_Controller {
 						}
 						else if(get_class($widget) == "Location") {
 							if(strpos($rowEntry, ",")) {
-								$exploded = explode(",", $rowEntry);
+								$exploded = preg_split("/,/", $rowEntry, 3);
 								$widgetContainer->latitude = $exploded[0];
 								$widgetContainer->longitude = $exploded[1];
 								if(isset($exploded[2])) {

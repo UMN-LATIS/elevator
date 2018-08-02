@@ -7,8 +7,8 @@
 				$fileHandler = $fieldContent->getFileHandler();
 				if($fileHandler) {
 
-					$retina = $fileHandler->getPreviewTiny(true)->getURLForFile();
-					$standard = $fileHandler->getPreviewTiny(false)->getURLForFile();
+					$retina = $fileHandler->getPreviewTiny(true)->getURLForFile(true);
+					$standard = $fileHandler->getPreviewTiny(false)->getURLForFile(true);
 				}
 			}
 			catch (Exception $e) {

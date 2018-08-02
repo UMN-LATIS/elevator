@@ -392,6 +392,8 @@ function populateSearchResults(searchObject) {
 		doSearch(searchId, currentPageNumber+1, false, true);
 	}
 
+	event = new Event("searchUpdated");
+  	document.dispatchEvent(event);
 
 }
 
