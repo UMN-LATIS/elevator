@@ -9,12 +9,13 @@ define("DEPT_COURSE_TYPE", "Dept/Course Number");
 define("JOB_TYPE", "JobCode");
 define("UNIT_TYPE", "Unit");
 define("STATUS_TYPE", "StudentStatus");
+define("EMPLOYEE_TYPE", "EmployeeType");
 
 
 require_once("AuthHelper.php");
 class UMNHelper extends AuthHelper
 {
-	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], DEPT_COURSE_TYPE=>["name"=>DEPT_COURSE_TYPE, "label"=>DEPT_COURSE_TYPE, "helpText"=>"Use % for wildcard, like DEPT.NUMBER% to include all sections."], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"]];
+	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], DEPT_COURSE_TYPE=>["name"=>DEPT_COURSE_TYPE, "label"=>DEPT_COURSE_TYPE, "helpText"=>"Use % for wildcard, like DEPT.NUMBER% to include all sections."], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"], EMPLOYEE_TYPE=>["name"=>EMPLOYEE_TYPE, "label"=>"Employee Type"]];
 
 	public function __construct()
 	{
@@ -121,6 +122,7 @@ class UMNHelper extends AuthHelper
 		$units = array();
 		$studentStatus = array();
 		$deptCoursesTaught = array();
+		$employeeType = array();
 		
 		if ($this->shibboleth->hasSession()) {
 			if($this->shibboleth->getAttributeValue('eduCourseMember')) {
@@ -170,8 +172,13 @@ class UMNHelper extends AuthHelper
 					}
 				}	
 			}
+
+			if($this->shibboleth->getAttributeValue('eduPersonAffiliation')) {
+				$employeeType = explode(";",$this->shibboleth->getAttributeValue('eduPersonAffiliation'));
+			}
 			
 		}
+
 
 		$userData[COURSE_TYPE] = ["values"=>$courses, "hints"=>$coursesTaught];
 		$userData[DEPT_COURSE_TYPE] = ["values"=>$deptCourses, "hints"=>$deptCoursesTaught];
@@ -183,6 +190,9 @@ class UMNHelper extends AuthHelper
 		}
 		$userData[UNIT_TYPE] = ["values"=>$units, "hints"=>$unitHints];
 		$userData[STATUS_TYPE] = ["values"=>array_unique($studentStatus), "hints"=>["UGRD"=>"Undergraduate", "GRAD"=>"Graduate"]];
+
+		$userData[EMPLOYEE_TYPE] = ["values"=>array_unique($employeeType), "hints"=>["Faculty" => "Faculty","Student" => "Student","Staff" => "Staff","Alum " => "Alum" ,"Member" => "Member","Affiliate" => "Affiliate"]];
+
 		return $userData;
 
 	}
