@@ -61,7 +61,7 @@ class lti extends Instance_Controller {
               "displayHeight": "480"
             },
             "text": "",
-            "title": "Embeded Asset",
+            "title": "Embedded Asset",
             "url": "' . $embedLink  .'"
           }
         ]
