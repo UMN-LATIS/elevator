@@ -133,7 +133,7 @@
         layer.addTo(map);
 
         var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
-        if(minimapRatio > 4) {
+        if(minimapRatio > 4 || minimapRatio < 1) {
             minimapRatio = 1;
         }
 
