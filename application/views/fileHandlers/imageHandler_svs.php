@@ -133,7 +133,7 @@
         layer.addTo(map);
 
         var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
-        if(minimapRatio > 4) {
+        if(minimapRatio > 4 || minimapRatio < 1) {
             minimapRatio = 1;
         }
 
@@ -162,8 +162,8 @@
             return tile;
 
         }, {
-            width: 256*widthScale * 0.9,
-            height: 256*heightScale *0.9,
+            width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
+            height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
             tileSize: 254,
             maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
             overlap: 1,
