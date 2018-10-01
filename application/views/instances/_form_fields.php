@@ -226,6 +226,16 @@
 	</div>
 </div>
 
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="allowIndexing" name="allowIndexing" value="On" <?=$instance->getAllowIndexing()?"checked":null?>>
+			Allow indexing by search engines (Google)
+		</label>
+	</div>
+</div>
+
+
 
 <div class="form-group">
 	<div class="col-sm-6 col-offset-2">

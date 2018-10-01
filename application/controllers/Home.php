@@ -44,6 +44,17 @@ class Home extends Instance_Controller {
 		$this->template->publish();
 	}
 
+	public function robots() {
+		if(!$this->instance->getAllowIndexing()) {
+			echo "no robots";
+		}
+		else {
+			echo "robots!";
+		}
+
+
+	}
+
 }
 
 /* End of file home.php */

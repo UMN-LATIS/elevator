@@ -1128,4 +1128,33 @@ class Instance
     {
         return $this->customHeaderImage;
     }
+    /**
+     * @var boolean
+     */
+    private $allowIndexing;
+
+
+    /**
+     * Set allowIndexing
+     *
+     * @param boolean $allowIndexing
+     *
+     * @return Instance
+     */
+    public function setAllowIndexing($allowIndexing)
+    {
+        $this->allowIndexing = $allowIndexing;
+
+        return $this;
+    }
+
+    /**
+     * Get allowIndexing
+     *
+     * @return boolean
+     */
+    public function getAllowIndexing()
+    {
+        return $this->allowIndexing;
+    }
 }
