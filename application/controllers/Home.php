@@ -45,13 +45,23 @@ class Home extends Instance_Controller {
 	}
 
 	public function robots() {
-		if(!$this->instance->getAllowIndexing()) {
-			echo "no robots";
+
+		if($this->instanceType == "subdomain") {
+			$allowRoot = $this->instance->getAllowIndexing();
 		}
 		else {
-			echo "robots!";
+			$allowRoot = false;
 		}
 
+		$instances = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
+
+		$paths = Array();
+		foreach($instances as $instance) {
+			$status = ($this->instanceType == "subdomain")?false:$instance->getAllowIndexing();
+			$paths[$instance->getDomain()] = $status;
+		}
+
+		$this->load->view("robots", ["paths"=>$paths, "allowRoot"=>$allowRoot]);
 
 	}
 
