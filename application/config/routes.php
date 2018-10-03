@@ -40,7 +40,7 @@
 
 $route['default_controller'] = "home";
 $route['404_override'] = '';
-
+$route['robots.txt'] = "home/robots";
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
