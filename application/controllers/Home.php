@@ -44,6 +44,27 @@ class Home extends Instance_Controller {
 		$this->template->publish();
 	}
 
+	public function robots() {
+
+		if($this->instanceType == "subdomain") {
+			$allowRoot = $this->instance->getAllowIndexing();
+		}
+		else {
+			$allowRoot = false;
+		}
+
+		$instances = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
+
+		$paths = Array();
+		foreach($instances as $instance) {
+			$status = ($this->instanceType == "subdomain")?false:$instance->getAllowIndexing();
+			$paths[$instance->getDomain()] = $status;
+		}
+
+		$this->load->view("robots", ["paths"=>$paths, "allowRoot"=>$allowRoot]);
+
+	}
+
 }
 
 /* End of file home.php */
