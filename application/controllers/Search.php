@@ -9,7 +9,7 @@ class Search extends Instance_Controller {
 	{
 		parent::__construct();
 		$this->load->model("asset_model");
-		$this->template->javascript->add("//maps.google.com/maps/api/js?libraries=geometry");
+		$this->template->javascript->add("//maps.google.com/maps/api/js?key=AIzaSyAUKw-3Mb7ESyYZbLGCO4ZHq8U0em1EZgo&libraries=geometry");
 
 		$jsLoadArray = ["handlebars-v1.1.2", "jquery.gomap-1.3.2", "mapWidget", "markerclusterer","oms","drawers"];
 		$this->template->loadJavascript($jsLoadArray);

@@ -20,7 +20,7 @@ $(document).ready(function() {
     if(!jQuery().goMap) {
       var doc_write = document.write; // Remember original method;
       document.write = function(s) {$(s).appendTo('body');};
-      $.mapGetScript("http://maps.google.com/maps/api/js?sensor=false").done(function() {
+      $.mapGetScript("http://maps.google.com/maps/api/js?key=AIzaSyAUKw-3Mb7ESyYZbLGCO4ZHq8U0em1EZgo&sensor=false").done(function() {
         setTimeout(function() {
           document.write = doc_write;
           $.mapGetScript("/assets/js/jquery.gomap-1.3.2.js", function(){}, true);
