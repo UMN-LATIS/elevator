@@ -3,6 +3,7 @@
 <head>
 <script>
 var basePath = "<?=$this->template->relativePath?>";
+var googleAPIKey = "<?=$this->config->item("googleapi")?>";
 </script>
 
 

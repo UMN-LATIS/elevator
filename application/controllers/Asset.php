@@ -16,7 +16,7 @@ class asset extends Instance_Controller {
 			$jsLoadArray[] = "assetMaster";
 		}
 
-		$this->template->javascript->add("//maps.google.com/maps/api/js?key=AIzaSyAUKw-3Mb7ESyYZbLGCO4ZHq8U0em1EZgo&libraries=geometry&sensor=false");
+		$this->template->javascript->add("//maps.google.com/maps/api/js?key=" . $this->config->item("googleapi") . "&libraries=geometry&sensor=false");
 
 		$jsLoadArray = array_merge($jsLoadArray, ["jquery.fullscreen-0.4.1", "jquery.gomap-1.3.2", "markerclusterer", "mapWidget","panzoom","jquery.expander"]);
 		$this->template->loadJavascript($jsLoadArray);
