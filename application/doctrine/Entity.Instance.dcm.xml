@@ -75,6 +75,6 @@
           <field name="customHeaderText" type="text" nullable='true' />
           <field name="customHeaderCSS" type="text" nullable='true' />
           <field name="customHeaderImage" type="blob" nullable='true' />
-
+          <field name="allowIndexing" type="boolean" nullable='true' />
       </entity>
 </doctrine-mapping>

@@ -61,6 +61,8 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 <script src="/assets/minifiedjs/jquery.min.js"></script>
 </head>
 
+
+
 <?if(isset($this->instance) && $this->instance->getGoogleAnalyticsKey()):?>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

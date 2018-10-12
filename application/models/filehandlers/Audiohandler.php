@@ -65,6 +65,43 @@ class AudioHandler extends FileHandlerBase {
 	}
 
 
+	public function getPreviewThumbnail($retina=false) {
+
+		if($targetFileObject = $this->getAltWidget()) {
+			return $targetFileObject->getPreviewThumbnail($retina);
+		}
+
+		return parent::getPreviewThumbnail($retina);
+	}
+
+	public function getPreviewTiny($retina=false) {
+		
+		if($targetFileObject = $this->getAltWidget()) {
+			return $targetFileObject->getPreviewTiny($retina);
+		}
+
+		return parent::getPreviewTiny($retina);
+
+	}
+
+	public function getAltWidget() {
+		$widgetContents = $this->getUploadWidget();
+		$widget = $widgetContents->parentWidget;
+		if(isset($widget->thumbnailTarget)) {
+			$targetField = $widget->thumbnailTarget;
+			if(!isset($this->parentObject->assetObjects[$targetField])) {
+				return false;
+			}
+			$targetWidget = $this->parentObject->assetObjects[$targetField];
+			return $targetWidget->fieldContentsArray[0]->getFileHandler();
+		}
+		else {
+			return false;
+		}
+
+	}
+
+
 
 	public function waitForCompletion($args) {
 		if(!$args['jobId']) {
