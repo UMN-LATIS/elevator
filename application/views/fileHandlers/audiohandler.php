@@ -1,6 +1,11 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
 
+$stretchingSetting = "exactfit";
+if($fileObject->getAltWidget()) {
+  $stretchingSetting = "uniform";
+}
+
 $drawerArray = array();
 if($this->user_model->userLoaded) {
     foreach($this->user_model->getDrawers(true) as $drawer) {
@@ -107,7 +112,7 @@ $menuArray['download'] = $downloadArray;
       <?else:?>
       height: "480px",
       <?endif?>
-      stretching: "exactfit"
+      stretching: "<?=$stretchingSetting?>"
     });
 
     $(".audioColumn").on("remove", function() {
