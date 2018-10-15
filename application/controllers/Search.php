@@ -540,7 +540,13 @@ class Search extends Instance_Controller {
 		if($allowedCollectionsIds) {
 			// this user has restricted permissions, lock their results down.
 			if(!isset($searchArray['collection']) || (isset($searchArray['collection']) && array_diff($searchArray['collection'],$allowedCollectionsIds))) {
-				$searchArray["collection"] = $allowedCollectionsIds;	
+				if(isset($searchArray['collection'])) {	
+					$searchArray["collection"] = array_diff($searchArray['collection'],$allowedCollectionsIds);
+				}
+				else {
+					$searchArray["collection"] = $allowedCollectionsIds;		
+				}
+				
 			}
 		}
 
