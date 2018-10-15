@@ -541,7 +541,7 @@ class Search extends Instance_Controller {
 			// this user has restricted permissions, lock their results down.
 			if(!isset($searchArray['collection']) || (isset($searchArray['collection']) && array_diff($searchArray['collection'],$allowedCollectionsIds))) {
 				if(isset($searchArray['collection'])) {	
-					$searchArray["collection"] = array_diff($searchArray['collection'],$allowedCollectionsIds);
+					$searchArray["collection"] = array_diff($allowedCollectionsIds,$searchArray['collection']);
 				}
 				else {
 					$searchArray["collection"] = $allowedCollectionsIds;		
