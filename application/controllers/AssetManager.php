@@ -682,7 +682,8 @@ class AssetManager extends Admin_Controller {
 				}
 				$outputRow[] = $assetModel->getLastModifiedName();
 
-				
+				unset($assetModel);
+				$this->doctrine->em->clear();
 				$assetModel = null;
 				$i++;
 				if($i == 50) {
