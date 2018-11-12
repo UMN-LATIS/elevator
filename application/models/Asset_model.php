@@ -861,6 +861,7 @@ class Asset_model extends CI_Model {
 		}
 
 		if($noIndex) {
+			$this->load->model("search_model");
 			// make sure the item isn't in the index
 			$this->search_model->remove($this);
 		}
