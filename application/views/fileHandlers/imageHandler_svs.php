@@ -83,7 +83,7 @@
         </div>
     </div>
         <style>
-        .leaflet-tile-container { -webkit-filter: brightness(0.5); filter: brightness(1) contrast(100%); }
+        /*.leaflet-tile-container { -webkit-filter: brightness(0.5); filter: brightness(1) contrast(100%); }*/
         .contrast {
             -webkit-filter: contrast(180%);
             filter: contrast(180%);
