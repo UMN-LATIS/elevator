@@ -419,13 +419,14 @@ class admin extends Admin_Controller {
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->select("a")->from("Entity\Asset", "a")
 			->where("a.availableAfter <= CURRENT_DATE()")
-			->andWhere("a.assetId IS NOT NULL");
+			->andWhere("a.assetId IS NOT NULL")
+			->andWhere("a.deleted = FALSE");
 
 		$assets = $qb->getQuery()->execute();
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
 			$this->search_model->addOrUpdate($this->asset_model);
-			echo $this->asset_model->getAssetTitle(true) . "<br />";
+			echo $this->asset_model->getAssetTitle(true) . "\n";
 		}
 
 	}
