@@ -35,3 +35,12 @@
 
 	</div>
 </div>
+
+<script>
+
+$(document).ready(function() {
+	if(window.location.hash.length > 10) {
+		$("#inputSearchId").val(window.location.hash.replace("#", ""));
+	}
+});
+</script>

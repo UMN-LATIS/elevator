@@ -623,3 +623,9 @@ $(document).on("click", ".embedControl", function() {
 });
 
 
+$(document).on("click", ".exportCSV", function(e) {
+	e.preventDefault();
+	target = e.target.href;
+	window.location = target + "#" + searchId;
+
+});
