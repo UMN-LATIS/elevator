@@ -55,7 +55,7 @@
     height: 100%;
 }
 .fixedHeightContainer {
-    height: 90%;
+    height: calc(100% - 120px);
     max-height: 100%
 }
 .outerContainerForFirefox {
