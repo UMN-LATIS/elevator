@@ -315,7 +315,10 @@ function startUpload(targetFrame) {
     }
 
     jQuery.ajaxSetup({async:false}); // run sync so we wait for the next element
-    target = addAnother(targetFrame, $(fileElement).prop("files").length - 1);
+    if($(fileElement).prop("files").length > 1) {
+        target = addAnother(targetFrame, $(fileElement).prop("files").length - 1);    
+    }
+    
     $(target).find(".cancelButton").show();
 
     jQuery.ajaxSetup({async:true});
@@ -343,10 +346,7 @@ function startUpload(targetFrame) {
             var sourceArray = responseArray[item.index];
             $(fileElement).data('uploader', uploadFile(sourceArray.file, item, sourceArray.target));
         });
-        
-
-        
-
+    
     });
 
     // $.each($(fileElement).prop("files"), function(index, el) {
