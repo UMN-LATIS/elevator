@@ -8,7 +8,7 @@ class AssetManager extends Admin_Controller {
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?key=". $this->config->item("googleApi") ."&sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "formSubmission", "serializeForm", "interWindow", "jquery.gomap-1.3.2",
-		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery", "assetAutocompleter"];
+		"markerclusterer", "mapWidget","dateWidget","mule2", "uploadWidget","multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery", "assetAutocompleter", "jquery.debounce", "jquery.visible"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->load->helper("multiselect");
@@ -33,7 +33,7 @@ class AssetManager extends Admin_Controller {
 	 * gets the current count so we can build the fields with the right ID
 	 * Dear god, why isn't this all done client side?  Please rebuild this in React and a proper design.
 	 */
-	public function getWidget($widgetId, $widgetCount) {
+	public function getWidget($widgetId, $widgetCount, $totalNeeded=1) {
 		$widgetObject = $this->doctrine->em->find('Entity\Widget', $widgetId);
 		if(!$widgetObject) {
 			$this->output->set_status_header(500, 'error loading widget');
@@ -42,8 +42,13 @@ class AssetManager extends Admin_Controller {
 		}
 		$this->load->library("widget_router");
 		$widget = $this->widget_router->getWidget($widgetObject);
-		$widget->offsetCount = $widgetCount;
-		echo $widget->getForm();
+		$return = "";
+		for($i=0; $i<$totalNeeded; $i++) {
+			$widget->offsetCount = $widgetCount;
+			$return .= $widget->getForm();
+			$widgetCount++;
+		}
+		echo $return;
 	}
 
 
@@ -156,7 +161,7 @@ class AssetManager extends Admin_Controller {
 		$this->template->content->set($assetTemplate->templateForm($this->asset_model));
 
 		$this->template->publish();
-
+		
 	}
 
 
@@ -336,32 +341,41 @@ class AssetManager extends Admin_Controller {
 	 * This can result in stray file containers sitting in the DB - eventually we should probably have some code to purge these or reconnect them
 	 */
 	public function getFileContainer() {
-		$collectionId = $this->input->post("collectionId");
-		$filename = $this->input->post("filename");
-		// TODO: check that we can actually write to this bucket
-		// right now, it'll fail silently (though if you look at the browser debugger it's obvious)
-		$collection = $this->collection_model->getCollection($collectionId);
-		$fileObjectId = $this->input->post("fileObjectId");
-		$fileContainer = new fileContainerS3();
-		$fileContainer->originalFilename = $filename;
-		$fileContainer->path = "original";
+		$containers = $this->input->post("containers");
+		$containersArray = json_decode($containers, true);
+		$returnArray = [];
+		foreach($containersArray as $container) {
+			$collectionId = $container["collectionId"];
+			$index = $container["index"];
+			$filename = $container["filename"];
+			$fileObjectId = $container["fileObjectId"];
+			$collection = $this->collection_model->getCollection($collectionId);
+			$fileContainer = new fileContainerS3();
+			$fileContainer->originalFilename = $filename;
+			$fileContainer->path = "original";
 
-		if(!$fileObjectId) {
-			$fileContainer->ready = false;
+			if(!$fileObjectId) {
+				$fileContainer->ready = false;
 
 			// this handler type may get overwritten later - for example, once we identify the contents of a zip
-			$fileHandler = $this->filehandler_router->getHandlerForType($fileContainer->getType());
+				$fileHandler = $this->filehandler_router->getHandlerForType($fileContainer->getType());
 
-			$fileHandler->sourceFile = $fileContainer;
-			$fileHandler->collectionId = $collectionId;
-			$fileId = $fileHandler->save();
+				$fileHandler->sourceFile = $fileContainer;
+				$fileHandler->collectionId = $collectionId;
+				$fileId = $fileHandler->save();
 
+			}
+			else {
+				$fileId = $fileObjectId;
+			}
+
+			$returnArray[] = ["fileObjectId"=>$fileId, "collectionId"=>$collectionId, "bucket"=>$collection->getBucket(), "bucketKey"=>$collection->getS3Key(), "path"=>$fileContainer->path,  "index"=>$index];
 		}
-		else {
-			$fileId = $fileObjectId;
-		}
 
-		echo json_encode(["fileObjectId"=>$fileId, "collectionId"=>$collectionId, "bucket"=>$collection->getBucket(), "bucketKey"=>$collection->getS3Key(), "path"=>$fileContainer->path]);
+		// TODO: check that we can actually write to this bucket
+		// right now, it'll fail silently (though if you look at the browser debugger it's obvious)
+
+		echo json_encode($returnArray);
 
 	}
 

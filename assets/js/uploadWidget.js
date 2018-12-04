@@ -314,30 +314,63 @@ function startUpload(targetFrame) {
         console.log("error");
     }
 
+    jQuery.ajaxSetup({async:false}); // run sync so we wait for the next element
+    target = addAnother(targetFrame, $(fileElement).prop("files").length - 1);
+    $(target).find(".cancelButton").show();
+
+    jQuery.ajaxSetup({async:true});
+    
+    var responseArray = [];
+    var target = null;
     $.each($(fileElement).prop("files"), function(index, el) {
-        var target = null;
         if(index === 0) { //operate on the real one
             target = parentElement;
         }
         else {
-            jQuery.ajaxSetup({async:false}); // run sync so we wait for the next element
-            target = addAnother(targetFrame);
-            $(target).find(".cancelButton").show();
+            target = target.nextAll(".panel").eq(0);
         }
+
         var file = el;
         var internalTarget = target;
         fileObjectId = $(target).find(".fileObjectId").val();
-        jQuery.ajaxSetup({async:true});
-        $.post(basePath+ 'assetManager/getFileContainer', {collectionId: collectionId, filename: file.name, fileObjectId: fileObjectId}, function(data, textStatus, xhr) {
-            uploadSettings = $.parseJSON(data);
-            var internalTarget = target;
+        responseArray[index] = {index: index, collectionId: collectionId, filename: file.name, fileObjectId: fileObjectId, target: internalTarget, file:file};
+    });
 
-            $(fileElement).data('uploader', uploadFile(file, uploadSettings, internalTarget));
+    $.post(basePath+ 'assetManager/getFileContainer', {containers: JSON.stringify(responseArray)}, function(data, textStatus, xhr) {
+        uploadSettings = $.parseJSON(data);
 
+        $(uploadSettings).each(function(index, item) {
+            var sourceArray = responseArray[item.index];
+            $(fileElement).data('uploader', uploadFile(sourceArray.file, item, sourceArray.target));
         });
+        
 
+        
 
     });
+
+    // $.each($(fileElement).prop("files"), function(index, el) {
+    //     var target = null;
+    //     if(index === 0) { //operate on the real one
+    //         target = parentElement;
+    //     }
+    //     else {
+            
+    //     }
+    //     // var file = el;
+    //     // var internalTarget = target;
+    //     // fileObjectId = $(target).find(".fileObjectId").val();
+    //     // jQuery.ajaxSetup({async:true});
+    //     // $.post(basePath+ 'assetManager/getFileContainer', {collectionId: collectionId, filename: file.name, fileObjectId: fileObjectId}, function(data, textStatus, xhr) {
+    //     //     uploadSettings = $.parseJSON(data);
+    //     //     var internalTarget = target;
+
+    //     //     $(fileElement).data('uploader', uploadFile(file, uploadSettings, internalTarget));
+
+    //     // });
+
+
+    // });
     return;
 
 

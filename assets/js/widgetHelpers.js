@@ -93,7 +93,10 @@ $(document).ready(function() {
 });
 
 
-var addAnother = function(target) {
+var addAnother = function(target, needed) {
+	if(!needed) {
+		needed = 1;
+	}
 	$(target).attr("disabled",true);
 	var parentGroup = $(target).parents(".tab-pane").find(".control-group");
 	var widgetTitle = $(parentGroup).attr('id').replace("controlGroup_", '');
@@ -102,9 +105,9 @@ var addAnother = function(target) {
 
 	var self = target;
 	var returnInfo = null;
-	$.get(basePath+"assetManager/getWidget/"+widgetId+"/"+offsetCount, function(data){
+	$.get(basePath+"assetManager/getWidget/"+widgetId+"/"+offsetCount + "/" + needed, function(data){
 
-		window.offsetCount[widgetTitle]++;
+		window.offsetCount[widgetTitle] += needed;
 		returnInfo = $(data);
 
 		$(parentGroup).append(returnInfo);
