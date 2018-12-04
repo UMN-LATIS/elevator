@@ -22,6 +22,10 @@ var uploadFile = function(fileElement, uploadSettings, containerElement) {
     $(containerElement).find(".fileObjectId").trigger('change');
     var localContainer = containerElement;
     var chunkSize = 6*1024*1024;
+    if(!pollingForNewImage) {
+    	checkForNewImages();	
+    }
+    
     if(fastUpload) { // if we're in fast upload mode, use big chunks
         chunkSize = 200*1024*1024;
     }
@@ -217,7 +221,7 @@ var fileObjectPreview = function(targetElement) {
         $("#collectionId").attr("disabled", true);
         $(targetElement).closest('.widgetContents').find(".file").attr("disabled", true);
         var self = targetElement;
-        updateImage(self,imageContainer);
+        // updateImage(self,imageContainer);
         loadSidecars(self);
     }
     else {
@@ -227,6 +231,78 @@ var fileObjectPreview = function(targetElement) {
         $(imageContainer).hide();
     }
 };
+
+var pollingForNewImage = false;
+
+var checkForNewImages = function() {
+	pollingForNewImage = true;
+
+	checkArray = new Array();
+	$(".imagePreview img").each(function(index, el) {
+
+		if($(el).data("fileready") !== true) {
+			var fileObjectId = $(el).closest(".widgetContents").find(".fileObjectId").val();
+			if(fileObjectId) {
+				checkArray.push(fileObjectId);	
+			}
+			
+		}
+		else {
+			container = $(el).closest(".widgetContents").find(".imagePreview");
+			$(container).show();
+		}
+
+	});
+
+	if(checkArray.length > 0) {
+		$.post(basePath + "fileManager/previewImageAvailable/", {checkArray: JSON.stringify(checkArray)}, function(data) {
+
+			decoded = JSON.parse(data);
+			if(!decoded) {
+				return;
+			}
+
+			$(decoded).each(function(index, content) {
+
+				container = $('.fileObjectId').filter(function(index) {
+					return $(this).val() == content.fileId;
+				}).closest(".widgetContents").find(".imagePreview");
+
+				if (content.status == "false") {
+	                // data.redirect contains the string URL to redirect to
+	                $(container).find("img").attr("src", "/assets/images/processing.gif");
+	                $(container).show();
+	            }
+	            else if(content.status == "true") {
+	                $(container).find("img").attr("src", basePath + "fileManager/previewImageByFileId/" + content.fileId + "?" + Math.random());
+	                $(container).find("img").data("fileready", true);
+	                $.get(basePath+"fileManager/extractedData/"+content.fileId,function(data) {
+	                    $(container).closest(".widgetContents").find(".extractedData").val(data);
+	                });
+
+	                $(container).show();
+	            }
+	            else if(content.status == "icon") {
+	                // if it's an icon, we say true but keep polling
+	                if(!$(container).find("img").data("icon")) {
+	                	$(container).find("img").data("icon", true);
+	                	$(container).find("img").attr("src", basePath + "fileManager/previewImageByFileId/" + content.fileId);
+	                	$(container).show();	
+	                }
+	                
+	            }
+			});
+			setTimeout(checkForNewImages, 4000);
+		});
+	}
+	else {
+		pollingForNewImage = false;
+	}
+	
+
+
+	
+}
 
 
 $(document).on("change", ".fileObjectId", function() {
@@ -253,6 +329,7 @@ $(document).on("click", ".processingLogs", function(e) {
 $(document).ready(function(){
     $( "#collectionId" ).trigger( "change" );
     $(".file").trigger("change");
+    checkForNewImages();
     $(".fileObjectId").each(function(index, el) {
         // load previews for all our file objects
         fileObjectPreview(el);
@@ -349,28 +426,7 @@ function startUpload(targetFrame) {
     
     });
 
-    // $.each($(fileElement).prop("files"), function(index, el) {
-    //     var target = null;
-    //     if(index === 0) { //operate on the real one
-    //         target = parentElement;
-    //     }
-    //     else {
-            
-    //     }
-    //     // var file = el;
-    //     // var internalTarget = target;
-    //     // fileObjectId = $(target).find(".fileObjectId").val();
-    //     // jQuery.ajaxSetup({async:true});
-    //     // $.post(basePath+ 'assetManager/getFileContainer', {collectionId: collectionId, filename: file.name, fileObjectId: fileObjectId}, function(data, textStatus, xhr) {
-    //     //     uploadSettings = $.parseJSON(data);
-    //     //     var internalTarget = target;
-
-    //     //     $(fileElement).data('uploader', uploadFile(file, uploadSettings, internalTarget));
-
-    //     // });
-
-
-    // });
+   
     return;
 
 
