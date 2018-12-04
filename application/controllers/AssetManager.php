@@ -335,6 +335,7 @@ class AssetManager extends Admin_Controller {
 	}
 
 
+
 	/**
 	 * Because the uploader goes directly to S3, we need to pre-create a place for the asset to live on our end.  That way
 	 * we can give it an appropriate objectId on S3.
@@ -370,6 +371,13 @@ class AssetManager extends Admin_Controller {
 			}
 
 			$returnArray[] = ["fileObjectId"=>$fileId, "collectionId"=>$collectionId, "bucket"=>$collection->getBucket(), "bucketKey"=>$collection->getS3Key(), "path"=>$fileContainer->path,  "index"=>$index];
+			$this->doctrine->em->detach($fileHandler->asset);
+			$fileHandler = null;
+			$fileContainer = null;
+
+			$this->doctrine->em->clear();
+			gc_collect_cycles();
+
 		}
 
 		// TODO: check that we can actually write to this bucket

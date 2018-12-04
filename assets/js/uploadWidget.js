@@ -401,6 +401,7 @@ function startUpload(targetFrame) {
     jQuery.ajaxSetup({async:true});
     
     var responseArray = [];
+    var sendingArray = [];
     var target = null;
     $.each($(fileElement).prop("files"), function(index, el) {
         if(index === 0) { //operate on the real one
@@ -413,10 +414,11 @@ function startUpload(targetFrame) {
         var file = el;
         var internalTarget = target;
         fileObjectId = $(target).find(".fileObjectId").val();
+        sendingArray[index] = {index: index, collectionId: collectionId, filename: file.name, fileObjectId: fileObjectId, file:file};
         responseArray[index] = {index: index, collectionId: collectionId, filename: file.name, fileObjectId: fileObjectId, target: internalTarget, file:file};
     });
 
-    $.post(basePath+ 'assetManager/getFileContainer', {containers: JSON.stringify(responseArray)}, function(data, textStatus, xhr) {
+    $.post(basePath+ 'assetManager/getFileContainer', {containers: JSON.stringify(sendingArray)}, function(data, textStatus, xhr) {
         uploadSettings = $.parseJSON(data);
 
         $(uploadSettings).each(function(index, item) {
