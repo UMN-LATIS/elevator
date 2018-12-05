@@ -4,7 +4,6 @@
  * @version 1.0.0
  */
 
-
   
 /**
  * A leaflet treering object
@@ -77,7 +76,10 @@ function LTreering (viewer, basePath, options) {
   this.createTools = new ButtonBar(this, [this.createPoint.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurement point');
   this.editTools = new ButtonBar(this, [this.deletePoint.btn, this.cut.btn, this.insertPoint.btn, this.insertZeroGrowth.btn, this.insertBreak.btn], 'edit', 'Edit and delete data points from the series');
   this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'View and download data');
-  this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.calibration.btn], 'settings', 'Change image and calibration settings')
+  if (window.name === 'popout')
+    this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.calibration.btn], 'settings', 'Change image and calibration settings');
+  else
+    this.settings = new ButtonBar(this, [this.imageAdjustment.btn], 'settings', 'Change image settings');
 
   this.tools = [this.viewData, this.calibration, this.createAnnotation, this.deleteAnnotation, this.editAnnotation, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.insertZeroGrowth, this.insertBreak, this.imageAdjustment];
 
@@ -96,7 +98,7 @@ function LTreering (viewer, basePath, options) {
     $('#map').css('cursor', 'default');
 
     // if popout is opened display measuring tools
-    if (window.name == 'popout') {
+    if (window.name === 'popout') {
       this.viewData.btn.addTo(this.viewer);
       this.annotationTools.bar.addTo(this.viewer);
       this.dating.btn.addTo(this.viewer);
@@ -108,9 +110,8 @@ function LTreering (viewer, basePath, options) {
     } else {
       this.popout.btn.addTo(this.viewer);
       this.viewData.btn.addTo(this.viewer);
-      this.imageAdjustment.btn.addTo(this.viewer);
-      this.imageAdjustment.btn.enable();
       this.ioTools.bar.addTo(this.viewer);
+      this.settings.bar.addTo(this.viewer);
     }
 
     //L.control.layers(baseLayer, overlay).addTo(this.viewer);
