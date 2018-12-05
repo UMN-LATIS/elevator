@@ -1111,9 +1111,9 @@ function Calibration(Lt) {
         Math.pow(Math.abs(endPoint.y - startPoint.y), 2));
     var pixelsPerMillimeter = pixel_length / length;
     var retinaFactor = 1;
-    if (L.Browser.retina) {
-      retinaFactor = 2; // this is potentially incorrect for 3x+ devices
-    }
+    // if (L.Browser.retina) {
+    //   retinaFactor = 2; // this is potentially incorrect for 3x+ devices
+    // }
     Lt.meta.ppm = pixelsPerMillimeter / retinaFactor;
     console.log(Lt.meta.ppm);
   }
@@ -1829,9 +1829,9 @@ function ViewData(Lt) {
     });
     length = length / pixelsPerMillimeter;
     var retinaFactor = 1;
-    if (L.Browser.retina) {
-      retinaFactor = 2; // this is potentially incorrect for 3x+ devices
-    }
+    // if (L.Browser.retina) {
+    //   retinaFactor = 2; // this is potentially incorrect for 3x+ devices
+    // }
     return length * retinaFactor;
   }
   
