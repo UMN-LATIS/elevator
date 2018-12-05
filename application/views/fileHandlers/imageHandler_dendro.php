@@ -178,7 +178,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		canSave = true;
 		<?endif?>
 		popoutURL = "<?=stripHTTP(instance_url("asset/getEmbed/" . $fileObject->getObjectId() . "/null/true"));?>";
-		treering = new leafletTreering(map, basePath + "assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		treering = new LTreering(map, basePath + "assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	// if(saveURL != "") {
     	// 	treering.addSaveButton();
