@@ -103,6 +103,6 @@
     });
 
     //map, basePath, {ppm: int, saveURL: string, savePermission: bool, popoutUrl: string, assetName: string, hasLatewood: bool, initialData: json}
-    var treering = new leafletTreering(map, "", {'ppm': layer.options.pixelsPerMillimeter, 'popoutUrl': "index.html", 'assetName': "ABC00X", 'hasLatewood': true, 'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017, 'hour': 13, 'minute': 7}}});
+    var treering = new LTreering(map, "", {'ppm': layer.options.pixelsPerMillimeter, 'popoutUrl': "index.html", 'assetName': "ABC00X", 'hasLatewood': true, 'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017, 'hour': 13, 'minute': 7}}});
     treering.loadInterface();
 </script>
