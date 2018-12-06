@@ -82,10 +82,9 @@ class Filehandler_router {
 
 		$handler = new $handlerType;
 		$handler->loadFromObject($asset);
-		if($asset) {
-			$CI->doctrine->em->detach($asset);	
-		}
-		
+		// if($asset) {
+		// 	$CI->doctrine->em->detach($asset);
+		// }
 		return $handler;
 
 

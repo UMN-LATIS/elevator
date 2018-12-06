@@ -220,9 +220,12 @@ if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
 <?
 
 if($fileHandler) {
+	$this->doctrine->em->detach($fileHandler->asset);
+		
 	unset($fileHandler);
 	$fileHandler = null;
 	$widgetModel->fieldContentsArray[$i]->fileHandler = null;
+
 	gc_collect_cycles();	
 }
 
