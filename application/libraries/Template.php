@@ -64,10 +64,20 @@ class Template {
         }
         foreach($javascriptArray as $javascript) {
             if($minified) {
-                $this->javascript->add("/assets/minifiedjs/" . $javascript . ".min.js");
+                $modDate = "";
+                if(file_exists("/assets/minifiedjs/" . $javascript . ".min.js")) {
+                    $modDate = filemtime("/assets/minifiedjs/" . $javascript . ".min.js");    
+                }
+                
+                $this->javascript->add("/assets/minifiedjs/" . $javascript . ".min.js" . "?" . md5($modDate));
             }
             else {
-                $this->javascript->add("/assets/js/" . $javascript . ".js");
+                $modDate = "";
+                if(file_exists("assets/js/" . $javascript . ".js")) {
+                    $modDate = filemtime("assets/js/" . $javascript . ".js");    
+                }
+                
+                $this->javascript->add("/assets/js/" . $javascript . ".js". "?" . md5($modDate));
             }
 
         }
@@ -283,11 +293,11 @@ class Template {
         }
 
         if (is_array($attributes)) {
-        	$attributeString = "";
+            $attributeString = "";
 
-        	foreach ($attributes as $key => $value) {
-	        	$attributeString .= $key . '="' . $value . '" ';
-        	}
+            foreach ($attributes as $key => $value) {
+                $attributeString .= $key . '="' . $value . '" ';
+            }
 
             return '<link rel="stylesheet" href="' . htmlspecialchars(strip_tags($url)) . '" ' . $attributeString . '>' . "\n\t";
         } else {
