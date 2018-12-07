@@ -26,7 +26,7 @@
 	<div class="col-sm-2 col-xs-4">
 		<div class="relatedThumbToggle">
 			<div class="relatedThumbContainer">
-				<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fieldContent->fileId?>" alt="<?=htmlentities($fieldContent->fileDescription, ENT_COMPAT)?>" srcset="<?=$retina?> 2x" data-hover="<?=$retina?>" data-src="<?=$standard?>">
+				<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fieldContent->fileId?>" alt="<?=htmlentities($fieldContent->fileDescription, ENT_COMPAT)?>" data-srcset="<?=$retina?> 2x" data-hover="<?=$retina?>" data-src="<?=$standard?>">
 			</div>
 			<div class="relatedThumbTitle autoTruncate"><?=htmlentities($fieldContent->fileDescription, ENT_COMPAT)?></div>
 		</div>

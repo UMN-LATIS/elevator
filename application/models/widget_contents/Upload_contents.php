@@ -63,9 +63,8 @@ class Upload_contents extends Widget_contents_base {
 			return $this->fileHandler;
 		}
 		else {
-			$this->fileHandler = $this->filehandler_router->getHandlerForObject($this->fileId);
+			$this->fileHandler = $this->filehandler_router->getHandledObject($this->fileId);
 			if($this->fileHandler) {
-				$this->fileHandler->loadByObjectId($this->fileId);
 				// because we generate fileHandlers seperately from records, we could end up with fileHandlers taht don't point
 				// back to the parent record.  If we happen upon one of these, go ahead and update it.  There's never a reason we want a
 				// orphan filehandler

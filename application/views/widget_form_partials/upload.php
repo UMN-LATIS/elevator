@@ -43,6 +43,10 @@ $fileHandler = NULL;
 $sidecars = array();
 $sidecarView = null;
 
+$fileReady = false;
+$standardURL = null;
+$retinaURL = null;
+
 if($widgetModel->fieldContentsArray) {
 	if($widgetModel->fieldContentsArray[$i]->isPrimary == "on") {
 		$isPrimaryValue = " CHECKED ";
@@ -58,6 +62,26 @@ if($widgetModel->fieldContentsArray) {
 	if($fileHandler) {
 		$sidecarView = $fileHandler->getSidecarView($sidecars, $formFieldName . "[sidecars]");
 		$downloadLink = instance_url("fileManager/getOriginal/". $fileHandler->getObjectId());
+		try {
+
+
+			$fileContainer = $fileHandler->getPreviewThumbnail(false);
+			
+			if(get_class($fileContainer) == "FileContainer") {
+
+				// we got back a pointer to a local file
+				$fileReady = false;
+			}
+			else {
+				$fileReady = true;
+				$standardURL = $fileContainer->getURLForFile();
+				$retinaURL = $fileHandler->getPreviewThumbnail(true)->getURLForFile();
+			}
+		}
+		catch (Exception $e) {
+
+		}
+		
 	}
 
 
@@ -188,12 +212,24 @@ if($widgetModel->drawCount == 1 && $widgetModel->offsetCount == 0) {
 
 		</div>
 		<div class="col-md-3 col-sm-3 imagePreview">
-			<img class="well img-responsive" src="">
+			<img class="well img-responsive lazy" data-src="<?=$standardURL?>" data-srcset="<?=$retinaURL?> 2x" data-fileready="<?=$fileReady?"true":"false"?>" />
 		</div>
 	</div>
 </div>
 
-<?endfor?>
+<?
+
+if($fileHandler) {
+	$this->doctrine->em->detach($fileHandler->asset);
+		
+	unset($fileHandler);
+	$fileHandler = null;
+	$widgetModel->fieldContentsArray[$i]->fileHandler = null;
+
+	gc_collect_cycles();	
+}
+
+endfor?>
 
 <script>
 $( "#collectionId" ).trigger( "change" );

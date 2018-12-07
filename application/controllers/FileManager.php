@@ -120,38 +120,60 @@ class FileManager extends Instance_Controller {
 
 
 	function previewImageAvailable($fileId=null, $retina=false) {
-		if(!$fileId) {
-			return false;
-		}
-		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		if(!$fileHandler) {
-			echo "false";
-			return;
-		}
-		$fileHandler->loadByObjectId($fileId);
+		$checkArray = [];
 
-		try {
-			$fileContainer = $fileHandler->getPreviewThumbnail($retina);
-			$targetURL = $fileContainer->getURLForFile();
-			if(get_class($fileContainer) == "FileContainer") {
+		if(!$fileId) {
+			if($this->input->post("checkArray")) {
+				$checkArray = json_decode($this->input->post("checkArray"));
+
+			}
+			else {
+				return false;	
+			}
+			
+		}
+		else {
+			$checkArray[] = $fileId;
+		}
+
+
+		$returnArray = [];
+		foreach($checkArray as $fileId) {
+			$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+			$status = null;
+			if(!$fileHandler) {
+				$status = "false";
+			}
+			$fileHandler->loadByObjectId($fileId);
+
+			try {
+				$fileContainer = $fileHandler->getPreviewThumbnail($retina);
+				$targetURL = $fileContainer->getURLForFile();
+				if(get_class($fileContainer) == "FileContainer") {
 
 				// we got back a pointer to a local file
-				echo "icon";
+					$status = "icon";
+				}
+				else {
+					$status = "true";
+				}
+
 			}
-			else {
-				echo "true";
+			catch (Exception $e) {
+				if($fileHandler->sourceFile != null) {
+					$status = "icon";
+				}
+				else {
+					$status = "false";
+				}
+
 			}
 
+			$returnArray[] = ["status"=>$status, "fileId"=>$fileId];
 		}
-		catch (Exception $e) {
-			if($fileHandler->sourceFile != null) {
-				echo "icon";
-			}
-			else {
-				echo "false";
-			}
 
-		}
+		echo json_encode($returnArray);
+		
 	}
 
 	function extractedData($fileId) {
