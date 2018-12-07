@@ -14,20 +14,20 @@
             <div class="form-group">
               <label for="inputS3 Key" class="col-sm-2 control-label">S3 Key:</label>
               <div class="col-sm-10">
-                <input type="text" name="s3Key" id="inputS3Key" class="form-control" value="" required="required" pattern="" title="">
+                <input type="text" name="s3Key" id="inputS3Key" class="form-control" value="" required="required" pattern="" title="" autocomplete="off">
               </div>
             </div>
             <div class="form-group">
               <label for="inputS3 Secret" class="col-sm-2 control-label">S3 Secret:</label>
               <div class="col-sm-10">
-                <input type="text" name="s3Secret" id="inputS3Secret" class="form-control" value="" required="required" pattern="" title="">
+                <input type="text" name="s3Secret" id="inputS3Secret" class="form-control" value="" required="required" pattern="" title="" autocomplete="off">
               </div>
             </div>
 
             <div class="form-group">
               <label for="inputBucket Name" class="col-sm-2 control-label">Bucket Name:</label>
               <div class="col-sm-10">
-                <input type="text" name="name" id="inputBucketName" class="form-control" value="" required="required" pattern="" title="">
+                <input type="text" name="name" id="inputBucketName" class="form-control" value="" required="required" pattern="" title="" autocomplete="off">
 
               </div>
 
@@ -36,7 +36,7 @@
             <div class="form-group">
               <label for="inputRegion" class="col-sm-2 control-label">Region:</label>
               <div class="col-sm-10">
-                <input type="text" name="region" id="inputRegion" class="form-control" value="us-east-1" required="required" pattern="" title="">
+                <input type="text" name="region" id="inputRegion" class="form-control" value="us-east-1" required="required" pattern="" title="" autocomplete="off">
               </div>
             </div>
              <div class="form-group">
