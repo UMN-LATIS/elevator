@@ -73,7 +73,7 @@ class AssetManager extends Admin_Controller {
 			$this->logging->logError("no template", $_SERVER);
 			instance_redirect("/errorHandler/error/unknownTemplate");
 		}
-		$this->template->javascript->add("assets/js/widgetHelpers.js");
+		$this->template->loadJavascript(["widgetHelpers"]);
 
 
 		$template = $this->asset_template->getTemplate($templateId);
@@ -145,7 +145,7 @@ class AssetManager extends Admin_Controller {
 
 		$this->load->model("asset_model");
 		$this->asset_model->loadAssetById($objectId);
-		$this->template->javascript->add("assets/js/widgetHelpers.js");
+		$this->template->loadJavascript(["widgetHelpers"]);
 		$assetTemplate = $this->asset_template->getTemplate($this->asset_model->templateId);
 
 
