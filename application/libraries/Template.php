@@ -51,7 +51,7 @@ class Template {
         if (!empty($config)) {
             $this->initialize($config);
         }
-        $start = microtime(true);
+
         if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
             $this->currentHash =substr(file_get_contents('/opt/elevator/.git/refs/heads/develop'),0,7);
         }
