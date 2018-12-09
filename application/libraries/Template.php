@@ -51,9 +51,16 @@ class Template {
         if (!empty($config)) {
             $this->initialize($config);
         }
-
+        $start = microtime(true);
+        if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+            $this->currentHash =substr(file_get_contents('/opt/elevator/.git/refs/heads/develop'),0,7);
+        }
+        else {
+            $this->currentHash =substr(file_get_contents('/opt/elevator/.git/refs/heads/master'),0,7);    
+        }
         log_message('debug', 'Template library initialized');
     }
+
 
 
     // New Functions for Elevator
@@ -64,20 +71,12 @@ class Template {
         }
         foreach($javascriptArray as $javascript) {
             if($minified) {
-                $modDate = "";
-                if(file_exists("/assets/minifiedjs/" . $javascript . ".min.js")) {
-                    $modDate = filemtime("/assets/minifiedjs/" . $javascript . ".min.js");    
-                }
-                
-                $this->javascript->add("/assets/minifiedjs/" . $javascript . ".min.js" . "?" . md5($modDate));
+              
+                $this->javascript->add("/assets/minifiedjs/" . $javascript . ".min.js" . "?" . $this->currentHash);
             }
             else {
-                $modDate = "";
-                if(file_exists("assets/js/" . $javascript . ".js")) {
-                    $modDate = filemtime("assets/js/" . $javascript . ".js");    
-                }
                 
-                $this->javascript->add("/assets/js/" . $javascript . ".js". "?" . md5($modDate));
+                $this->javascript->add("/assets/js/" . $javascript . ".js". "?" . $this->currentHash);
             }
 
         }
