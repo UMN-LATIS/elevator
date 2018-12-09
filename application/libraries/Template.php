@@ -56,7 +56,7 @@ class Template {
             $this->currentHash =substr(file_get_contents('/opt/elevator/.git/refs/heads/develop'),0,7);
         }
         else {
-            $this->currentHash =substr(file_get_contents('/opt/elevator/.git/refs/heads/master'),0,7);    
+            $this->currentHash =substr(file_get_contents('/opt/elevator/.git/refs/heads/deploy'),0,7);    
         }
         log_message('debug', 'Template library initialized');
     }
