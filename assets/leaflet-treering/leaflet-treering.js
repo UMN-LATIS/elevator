@@ -4,6 +4,7 @@
  * @version 1.0.0
  */
 
+// 'use strict';
   
 /**
  * A leaflet treering object
@@ -83,6 +84,17 @@ function LTreering (viewer, basePath, options) {
 
   this.tools = [this.viewData, this.calibration, this.createAnnotation, this.deleteAnnotation, this.editAnnotation, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.insertZeroGrowth, this.insertBreak, this.imageAdjustment];
 
+  this.baseLayer = {
+    'Tree Ring': layer
+  };
+
+  this.overlay = {
+    'Points': this.visualAsset.markerLayer,
+    'H-bar': this.mouseLine.layer,
+    'Lines': this.visualAsset.lineLayer,
+    'Annotations': this.annotationAsset.markerLayer
+  };
+  
   /**
    * Load the interface of the treering viewer
    * @function loadInterface
@@ -114,7 +126,7 @@ function LTreering (viewer, basePath, options) {
       this.settings.bar.addTo(this.viewer);
     }
 
-    //L.control.layers(baseLayer, overlay).addTo(this.viewer);
+    L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
     
         // right and left click controls
     this.viewer.on('contextmenu', () => {
