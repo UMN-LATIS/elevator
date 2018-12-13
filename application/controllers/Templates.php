@@ -20,7 +20,8 @@ class Templates extends Instance_Controller {
 		//TODO Permissions checking
 		$data['templates'] = $this->instance->getTemplates();
 		$this->template->title = 'Template Index';
-
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
     	$this->template->content->view('templates/index', $data);
     	$this->template->publish();
 	}

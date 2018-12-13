@@ -1,6 +1,6 @@
 <div class="row rowContainer">
 	<div class="col-md-9">
-		<table class="table table-striped">
+		<table class="table table-striped" id="templateList">
 			<thead>
 				<th>Template Name</th>
 				<th>Edit</th>
@@ -21,5 +21,31 @@
 			</tbody>
 		</table>
 		<p><a href="<?= instance_url("templates/edit"); ?>">Create New Template</a></p>
+		<script>
+			$(document).ready(function() {
+    $('#templateList').DataTable( {
+    	"paging":   false,
+    	"ordering": true,
+    	"info": false,
+        "order": [[ 0, "asc" ]],
+        "columns":[
+            {
+                "sortable": true
+            },
+            {
+                "sortable": false
+            },
+            {
+                "sortable": false
+            },
+            {
+                "sortable": false
+            },
+            {
+                "sortable": false
+            }
+        ]
+    } );
+} );	</script>
 	</div>
 </div>

@@ -18,7 +18,8 @@ class CollectionManager extends Instance_Controller {
 		//TODO Permissions checking
 		$data['collections'] = $this->instance->getCollections();
 		$this->template->title = 'Collection Index';
-
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 		$this->template->content->view('collectionManager/index', $data);
 		$this->template->publish();
 	}

@@ -2,7 +2,7 @@
 	<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 
 
-		<table class="table table-hover">
+		<table class="table table-hover" id="instanceList">
 			<thead>
 				<th>Instance Name</th>
 				<th>Domain</th>
@@ -29,5 +29,14 @@
 			</tbody>
 		</table>
 		<p><a href="<?= instance_url("instances/edit"); ?>">Create New Instance</a></p>
+		<script>
+			$(document).ready(function() {
+    $('#instanceList').DataTable( {
+    	"paging":   false,
+    	"ordering": true,
+    	"info": false,
+        "order": [[ 0, "asc" ]]
+    } );
+} );	</script>
 	</div>
 </div>

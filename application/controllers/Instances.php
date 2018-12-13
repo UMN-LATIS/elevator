@@ -12,7 +12,8 @@ class Instances extends Instance_Controller {
 		$data['instances'] = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
 
 		$this->template->title = 'Instance Index';
-
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 		$this->template->content->view('instances/index', $data);
 		$this->template->publish();
 

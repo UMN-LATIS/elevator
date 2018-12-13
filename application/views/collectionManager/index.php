@@ -1,9 +1,15 @@
 <div class="row rowContainer">
 	<div class="col-md-9">
-		<table class="table table-striped">
-
+		<table class="table table-striped" id="collectionList">
+<thead>
+						<th>Collection</th>
+						<th>Edit Permissions</th>
+						<th>Edit Collection</th>
+						<th>Share</th>
+						<th>Delete</th>
+					</thead>
 				<tbody>
-
+					
 					<?php foreach ($collections as $collection) : ?>
 					<tr>
 						<td><?= $collection->getTitle(); ?></td>
@@ -18,6 +24,32 @@
 		</table>
 
 		<p><a href="<?= instance_url("collectionManager/edit"); ?>">Create New Collection</a></p>
+		<script>
+			$(document).ready(function() {
+    $('#collectionList').DataTable( {
+    	"paging":   false,
+    	"ordering": true,
+    	"info": false,
+        "order": [[ 0, "asc" ]],
+        "columns":[
+            {
+                "sortable": true
+            },
+            {
+                "sortable": false
+            },
+            {
+                "sortable": false
+            },
+            {
+                "sortable": false
+            },
+            {
+                "sortable": false
+            }
+        ]
+    } );
+} );	</script>
 	</div>
 </div>
 
