@@ -444,7 +444,7 @@ class AssetManager extends Admin_Controller {
 			->andWhere("a.assetId IS NOT NULL")
 			->andWhere("a.deleted = false")
 			->orderBy("a.modifiedAt", "DESC")
-			->setMaxResults(200)
+			->setMaxResults(100)
 			->setFirstResult($offset);
 		$assets = $qb->getQuery()->execute();
 

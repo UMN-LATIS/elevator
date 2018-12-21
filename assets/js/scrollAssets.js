@@ -4,7 +4,7 @@ $(document).ready(function() {
 	$(window).scroll(function(){
     	if ($(document).height() - 50 <= $(window).scrollTop() + $(window).height()) {
     		if(!loading) {
-    			loadResults(offset + 200);	
+    			loadResults(offset + 100);	
     		}
 			
     	}
