@@ -209,8 +209,16 @@
 <script id="marker-template" type="text/x-handlebars-template">
 <div class="row marker-template">
 	<div class="col-md-12">
-	<img class="img-responsive pull-left" src="{{primaryHandlerThumbnail}}">
+	<img class="img-responsive" src="{{primaryHandlerThumbnail}}">
 	<p><a href="{{base_url}}asset/viewAsset/{{objectId}}">{{title}}</a></p>
+	{{#each entries}}
+<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
+			{{#each this.entries}}
+				<li>{{this}}</li>
+			{{/each}}
+		</ul>
+</div>
+{{/each}}
 	</div>
 </div>
 </script>

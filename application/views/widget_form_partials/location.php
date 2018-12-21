@@ -111,7 +111,7 @@ $(document).ready(function() {
 	latitudeElement= $("#<?=$widgetModel->getFieldTitle()?>").find(".latitude");
 	longitudeElement = $("#<?=$widgetModel->getFieldTitle()?>").find(".longitude");
 	
-	revealMap(mapElement,latitudeElement, longitudeElement);
+	revealMap(mapElement[0],latitudeElement, longitudeElement);
 
 });
 </script>
