@@ -218,6 +218,7 @@ var arrowButton = L.easyButton ({
             btn.state('cancel-arrow')
             $(map._container).click(function startArrow(e) {
                 if (!arrowStarted) {
+                    arrowData = jQuery.extend({}, arrowData); // clone the object so this arrow can keep a reference
                     arrowData.latlng = map.mouseEventToLatLng(e)
                     arrow = new L.Arrow(arrowData, arrowOptions) //add arrow head to page
                     arrow.addTo(layerGroup) //add to layerGroup because this is a non-permanent feature
