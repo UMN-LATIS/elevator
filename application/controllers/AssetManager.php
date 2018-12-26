@@ -432,6 +432,8 @@ class AssetManager extends Admin_Controller {
 
 	// List all of the assets touched by the user.  Offset specifies page number essentially.
 	public function userAssets($offset=0) {
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
@@ -441,14 +443,17 @@ class AssetManager extends Admin_Controller {
 			->andWhere("a.assetId IS NOT NULL")
 			->andWhere("a.deleted = false")
 			->orderBy("a.modifiedAt", "DESC")
-			->setMaxResults(50)
+			->setMaxResults(200)
 			->setFirstResult($offset);
 		$assets = $qb->getQuery()->execute();
 
 		$hiddenAssetArray = array();
 		foreach($assets as $entry) {
-			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+
+			$this->asset_model->loadAssetFromRecord($entry, true);
+			$resultCache = $this->asset_model->getSearchResultEntry();
+
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$resultCache['title'], "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 
 		if($offset>0) {

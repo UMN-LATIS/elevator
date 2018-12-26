@@ -74,7 +74,7 @@ class Asset_model extends CI_Model {
 	 * if we've got a full postgres record, we can instantiate an object from that without having to
 	 * go back to the DB.
 	 */
-	public function loadAssetFromRecord($record=null) {
+	public function loadAssetFromRecord($record=null, $noHydrate = false) {
 		if(!$record && !$this->assetObject) {
 			return;
 		}
@@ -82,7 +82,7 @@ class Asset_model extends CI_Model {
 		if($record) {
 			$this->assetObject = $record;	
 		}
-		
+
 
 		$this->templateId = $record->getTemplateId();
 		$this->setGlobalValue("readyForDisplay", $record->getReadyForDisplay());
@@ -92,6 +92,11 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("modified", $record->getModifiedAt());
 		$this->setGlobalValue("modifiedBy", $record->getModifiedBy());
 		$this->setGlobalValue("deleted", $record->getDeleted());
+
+		if($noHydrate) {
+			return;
+		}
+
 		if($this->loadWidgetsFromArray($record->getWidgets())) {
 			return TRUE;
 		}
