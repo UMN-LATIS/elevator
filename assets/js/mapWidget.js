@@ -1,24 +1,95 @@
 
-$(document).on("click",".clearMarker", function() {
-	var mapElement = $(this).find(".mapWidget");
-	mapElement.goMap();
-	if($.goMap.getMarkerCount()>0) {
-		$.goMap.clearMarkers();
+var map = null;
+var markers = null;
+
+function loadMap(targetElement) {
+	if(map) {
+		clearMarkers();
+		map.off();
+		map.remove();
 	}
+	layer1= L.esri.basemapLayer("Topographic", {
+		"detectRetina": true,
+		maxNativeZoom:18,
+		maxZoom:21
+	});
+	layer2= L.esri.basemapLayer("Imagery", 
+		{"detectRetina": true,
+		maxNativeZoom:18,
+		maxZoom:20
+	}
+	);
+
+	var layer3 = L.esri.basemapLayer('ImageryLabels');
+
+
+	map = L.map(targetElement, {
+		layers: [layer1],
+	}).setView([40, -94], 5);
+
+	L.control.layers({"Topo": layer1, "Satellite": layer2}, {"Satellite Labels": layer3}).addTo(map);
+
+	// parsley freaks out and breaks the page if checkboxes don't have namesm but leaflet doesn't assign one for the toggles
+	$(".leaflet-control-layers-overlays").find(".leaflet-control-layers-selector").attr("name","satelliteToggle");
+	
+	map.on('baselayerchange', function(e) {
+	  if(e.name == "Satellite") {
+	    $(".leaflet-control-layers-overlays").find(".leaflet-control-layers-selector").trigger("click");
+	  }
+	  else {
+
+	    if($(".leaflet-control-layers-overlays").find(".leaflet-control-layers-selector").prop("checked") == true) {
+
+	      $(".leaflet-control-layers-overlays").find(".leaflet-control-layers-selector").trigger("click"); 
+	    }
+	   
+	  }
+	});
+
+}
+
+
+
+
+$(document).on("click",".clearMarker", function() {
+	clearMarkers();
 });
 
+function clearMarkers() {
+	if(markers) {
+		markers.clearLayers();
+	}
+}
+
+function createMarker(latitude, longitude, latitudeElement, longitudeElement, zoomToElement) {
+	var newMarker = new L.Marker([latitude, longitude], {draggable: true});
+	markers.addLayer(newMarker);
+	map.addLayer(markers);
+	newMarker.on('dragend', function (e) {
+		latitudeElement.val(e.target.getLatLng().lat);
+		longitudeElement.val(e.target.getLatLng().lng);
+	});
+
+	if(zoomToElement) {
+		centerLeafletMapOnMarker(newMarker);
+	}
+	return newMarker;
+}
+
+
+function centerLeafletMapOnMarker(marker) {
+	var latLngs = [ marker.getLatLng() ];
+	var markerBounds = L.latLngBounds(latLngs);
+	map.fitBounds(markerBounds, {maxZoom: 15});
+}
 
 $(document).on("click",".searchMap", function() {
-
 	var address = $(this).closest(".mapContainer").find(".address").first().val();
 	var mapElement = $(this).closest(".mapContainer").find(".mapWidget");
 	var latitudeElement = $(this).closest(".mapContainer").find('.latitude');
 	var longitudeElement = $(this).closest(".mapContainer").find('.longitude');
 
-	mapElement.goMap();
-	if($.goMap.getMarkerCount()>0) {
-		$.goMap.clearMarkers();
-	}
+	clearMarkers();
 
 	var options = {
 		position: null
@@ -33,30 +104,11 @@ $(document).on("click",".searchMap", function() {
 
 			var latitude = results[0].geometry.location.lat();
 			var longitude = results[0].geometry.location.lng();
-
-			var marker = $.goMap.createMarker({
-				longitude: longitude,
-				latitude: latitude,
-				draggable: true,
-
-			});
-			if(marker) {
-				$.goMap.fitBounds();
-
-				$.goMap.createListener({type:'marker', marker:marker.id}, 'dragend', function() {
-					latitudeElement.val(this.position.lat());
-					longitudeElement.val(this.position.lng());
-				});
-				$.goMap.setMap({
-					longitude: longitude,
-					latitude: latitude
-				});
-				latitudeElement.val(latitude);
-				longitudeElement.val(longitude);
-				$(latitudeElement).trigger("change"); // fire change event so sidebar updates
-				$(longitudeElement).trigger("change"); // fire change event so sidebar updates
-
-			}
+			marker = createMarker(latitude, longitude, latitudeElement, longitudeElement, true);
+			latitudeElement.val(latitude);
+			longitudeElement.val(longitude);
+			$(latitudeElement).trigger("change"); // fire change event so sidebar updates
+			$(longitudeElement).trigger("change"); // fire change event so sidebar updates
 
 		}
 	});
@@ -66,11 +118,7 @@ $(document).on("click",".searchMap", function() {
 
 
 $(document).on("change",".geoField", function() {
-	var mapElement = $(this).find(".mapWidget");
-	mapElement.goMap();
-	if($.goMap.getMarkerCount()>0) {
-		$.goMap.clearMarkers();
-	}
+	clearMarkers();
 
 	var latitudeElement = $(this).closest(".mapContainer").find('.latitude');
 	var longitudeElement = $(this).closest(".mapContainer").find('.longitude');
@@ -79,27 +127,18 @@ $(document).on("change",".geoField", function() {
 		return;
 	}
 
-	var marker = $.goMap.createMarker({
-		latitude: latitudeElement.val(),
-		longitude: longitudeElement.val(),
-		draggable: true
-	});
+	createMarker(latitudeElement.val(), longitudeElement.val(),latitudeElement, longitudeElement, false);
 
-	$.goMap.fitBounds();
-
-	$.goMap.createListener({type:'marker', marker:marker.id}, 'dragend', function() {
-		latitudeElement.val(this.position.lat());
-		longitudeElement.val(this.position.lng());
-	});
 });
 
 $(document).on("hidden.bs.collapse", ".maphost", function(){
-	var mapElement = $(this).find(".mapWidget");
+	
+	clearMarkers();
+	map.off();
+	map.remove();
+
 	var mapButton = $(this).parent().find(".mapToggle");
 	mapButton.html("Reveal Map");
-	mapElement.goMap();
-	$.goMap.clearMarkers();
-	mapElement.removeData();
 
 });
 
@@ -109,58 +148,37 @@ $(document).on("shown.bs.collapse", ".maphost", function (){
 	var mapElement = $(this).find(".mapWidget");
 	var latitudeElement = $(this).parent().find('.latitude');
 	var longitudeElement = $(this).parent().find('.longitude');
-	revealMap(mapElement, latitudeElement, longitudeElement);
+	revealMap(mapElement[0], latitudeElement, longitudeElement);
 
 });
 
 var revealMap = function(parentElement, latitudeElement, longitudeElement) {
 	
-	parentElement.goMap({
-		mapTypeControl:true,
-		maptype: 'ROADMAP',
-		mapTypeControlOptions: {
-			position: 'TOP_RIGHT',
-			style: 'DROPDOWN_MENU'
-		},
-		addMarker: "single"
+	loadMap(parentElement);
 
-	});
 
-	parentElement.on("clickMarker", function(e){
-		var marker = e.marker;
-		latitudeElement.val(marker.position.lat());
-		longitudeElement.val(marker.position.lng());
-		$.goMap.createListener({type:'marker', marker:marker.id}, 'dragend', function() {
-			latitudeElement.val(this.position.lat());
-			longitudeElement.val(this.position.lng());
-		});
+	map.on('click', function(e){
+		if(markers.getLayers().length > 0) {
+			return;
+		}
+		createMarker(e.latlng.lat, e.latlng.lng, latitudeElement, longitudeElement, false);
+		latitudeElement.val(e.latlng.lat);
+		longitudeElement.val(e.latlng.lng);
+
 	});
 
 	var longitude = longitudeElement.val();
 	var latitude = latitudeElement.val();
 
+	if(!markers) {
+		markers = new L.layerGroup();
+	}
+
 	if(longitude!=="") {
-		$.goMap.setMap({
-			latitude: latitude,
-			longitude: longitude
-		});
-		parentElement.goMap();
-		var marker = $.goMap.createMarker({
-			latitude: latitude,
-			longitude: longitude,
-			draggable: true
-		});
-		$.goMap.fitBounds();
-
-		$.goMap.createListener({type:'marker', marker:marker.id}, 'dragend', function() {
-
-			latitudeElement.val(this.position.lat());
-			longitudeElement.val(this.position.lng());
-		});
-
+		createMarker(latitude, longitude, latitudeElement, longitudeElement,true);
 	}
 	else {
-		$.goMap.setMap({address: "Minneapolis, Minnesota"});
+		map.setView([46, -94], 6);
 	}
 
 
