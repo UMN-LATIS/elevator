@@ -1157,4 +1157,33 @@ class Instance
     {
         return $this->allowIndexing;
     }
+    /**
+     * @var boolean
+     */
+    private $showCollectionInSearchResults;
+
+
+    /**
+     * Set showCollectionInSearchResults
+     *
+     * @param boolean $showCollectionInSearchResults
+     *
+     * @return Instance
+     */
+    public function setShowCollectionInSearchResults($showCollectionInSearchResults)
+    {
+        $this->showCollectionInSearchResults = $showCollectionInSearchResults;
+
+        return $this;
+    }
+
+    /**
+     * Get showCollectionInSearchResults
+     *
+     * @return boolean
+     */
+    public function getShowCollectionInSearchResults()
+    {
+        return $this->showCollectionInSearchResults;
+    }
 }

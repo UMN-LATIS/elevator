@@ -16,13 +16,25 @@
 
 
 		{{#each entries}}
-		<div class="previewEntry"> <strong>{{this.label}}:</strong><ul>
+		<div class="previewEntry"> <strong>{{this.label}}:</strong>
+			<ul>
 					{{#each this.entries}}
 						<li>{{{this}}}</li>
 					{{/each}}
 				</ul>
 		</div>
 		{{/each}}
+		{{# if collectionHierarchy}}
+		
+		<div>
+			<strong>Collection:</strong>
+		<ul class="collectionList">
+			{{#each collectionHierarchy }}
+				<li><a href="{{../base_url}}collections/browseCollection/{{this.id}}">{{this.title}}</a></li>
+			{{/each}}
+		</ul>
+		</div>
+		{{/if}}
 	</div>
 	</div>
 </div>
