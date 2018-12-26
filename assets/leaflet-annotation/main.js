@@ -1,5 +1,5 @@
 var layerGroup;
-var loadAnnotation = function() {
+var loadAnnotation = function(sideCar) {
 
     layerGroup = L.layerGroup().addTo(map); //add elements to layergroup that runs on top of map instead of the map itself. This way, we can clear the layer group in one go
 
@@ -283,9 +283,9 @@ map.on('zoomend', function() {
         else {
             layer.options.arrowheadLength = 0.3;   
         }
-
-        map.removeLayer(layer);
-        map.addLayer(layer);
+        
+        layerGroup.removeLayer(layer);
+        layerGroup.addLayer(layer);
     });
 });
 
@@ -561,8 +561,9 @@ var jsonModal = L.easyButton( '<i title="Upload/Download" class="glyphicon glyph
     map.fire('modal', {
 
         content: '<br> \
-        <a id="download_button"><button class="btn btn-primary btn-md btn-block">Download Scenes</button></a> \
-        <label for="json_file" class="btn btn-secondary btn-md btn-block"> Upload Scenes \
+        <a id="download_button"><button class="btn btn-primary btn-md btn-block fileOptionButton">Download Scenes</button></a> \
+        <a id="save_button"><button class="btn btn-info saveToServer btn-md btn-block fileOptionButton">Save Scenes to Server</button></a> \
+        <label for="json_file" class="btn btn-secondary btn-md btn-block fileOptionButton"> Upload Scenes \
         <input type="file" id="json_file" style="display:none;"> \
         </label>',
         closeTitle: 'close',                 // alt title of the close button
@@ -580,6 +581,19 @@ var jsonModal = L.easyButton( '<i title="Upload/Download" class="glyphicon glyph
                 document.getElementById('download_button').setAttribute('href', 'data:' + convertedData)
                 document.getElementById('download_button').setAttribute('download', 'data.json') //data.json is the filetype
             })
+
+            $("#save_button").click(function() {
+                var convertedData = JSON.stringify(mapJson);
+                $.post(saveURL, {sidecarContent: JSON.stringify(convertedData)})
+                    .done((msg) => {
+                        map.closeModal();
+
+                    })
+                    .fail((xhr, status, error) => {
+                        alert('Error: failed to save changes');
+                    });
+            });
+
             //handle upload of json string
             $("#json_file").change(function() {
                 var files = document.getElementById('json_file').files
@@ -593,7 +607,6 @@ var jsonModal = L.easyButton( '<i title="Upload/Download" class="glyphicon glyph
                 //load json from file
                 fr.onload = function(e) {
                     var result = JSON.parse(e.target.result)
-                    var formatted = JSON.stringify(result, null, 2)
                     setJsonData(result)
                 }
 
@@ -809,6 +822,15 @@ $("#clear_current_scene_button").click(function() {
     mapJson.arrows = [];
     mapJson.annotations = [];
     mapJson.shapes = [];
+
+    var sceneInput = document.getElementById("scene_name_input")
+    var sceneName = sceneInput.value
+    sceneName = sceneName.split(" ").join("_")
+    if(sceneName.length > 0) {
+        delete mapJson.scenes[sceneName];    
+    }
+    
+
     setJsonData(mapJson);
 })
 
@@ -840,5 +862,9 @@ $("#add_scene_button").click(function() {
     console.log(mapJson)
     // sceneInput.value = ""
 })
+
+    if(sideCar) {
+        setJsonData(sideCar);
+    }
 
 };
