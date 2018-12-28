@@ -92,6 +92,17 @@
         .leaflet-modal.show .overlay {
             opacity: 0.0
         }
+
+        .fileOptionButton {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        <?if($this->user_model->getAccessLevel("instance",$this->instance) < PERM_ADDASSETS && $this->user_model->getAccessLevel("collection",$fileObject->collection) < PERM_ADDASSETS):?>
+        .saveToServer {
+            display:none;
+        }
+        <?endif?>
     </style>
 <script type="application/javascript">
 
@@ -100,6 +111,18 @@
     var AWS;
     var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
     var layer;
+
+    var saveURL = "";
+    var canSave = false;
+    <?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS || $this->user_model->getAccessLevel("collection",$fileObject->collection) >= PERM_ADDASSETS):?>
+    saveURL = basePath + "assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/svs";
+    canSave = true;
+    <?endif?>
+
+    var sideCar = null;
+    <?if(isset($widgetObject->sidecars) && array_key_exists("svs", $widgetObject->sidecars)):?>
+    sideCar = <?=json_encode($widgetObject->sidecars['svs'])?>;
+    <?endif?>
 
     var loadedCallback = function() {
 
@@ -236,7 +259,8 @@
 
         }
         
-        loadAnnotation();
+        loadAnnotation(sideCar);
+
 
     };
 

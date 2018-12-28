@@ -16,20 +16,6 @@ $(document).ready(function() {
    * @param  {[type]} e [description]
    * @return {[type]}   [description]
    */
-  $("#advancedSearchModal").on("show.bs.modal" ,function(e) {
-    if(!jQuery().goMap) {
-      var doc_write = document.write; // Remember original method;
-      document.write = function(s) {$(s).appendTo('body');};
-      $.mapGetScript("http://maps.google.com/maps/api/js?key=" + googleAPIKey + "&sensor=false").done(function() {
-        setTimeout(function() {
-          document.write = doc_write;
-          $.mapGetScript("/assets/js/jquery.gomap-1.3.2.js", function(){}, true);
-          $.mapGetScript("/assets/js/markerclusterer.js", function(){}, true);
-          $.mapGetScript("/assets/js/mapWidget.js", function(){}, true);
-        }, 300);
-      });
-    }
-  });
   $("#advancedSearchModal").on("shown.bs.modal", function(e) {
     $(".advancedSearchText").val($(".searchText").val());
   });

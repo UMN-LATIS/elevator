@@ -28,6 +28,22 @@ class collection_model extends CI_Model {
 		return $this->collectionCache[$collectionId];
 	}
 
+
+	public function getFullHierarchy($collectionId) {
+
+		$collection = $this->getCollection($collectionId);
+		if(!$collection) {
+			return [];
+		}
+		$output = [$collection];
+		if($collection->getParent()) {
+			$output = array_merge($output, $this->getFullHierarchy($collection->getParent()->getId()));
+		}
+		return $output;
+
+	}
+
+
 	public function getS3ClientForCollection($collectionId) {
 		if(!isset($this->s3collectionCache[$collectionId])) {
 			$collection = $this->getCollection($collectionId);

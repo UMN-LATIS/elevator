@@ -686,6 +686,12 @@ class search_model extends CI_Model {
 		$resultsArray = array();
 
 		$this->asset_model->enableObjectCache();
+
+		if($this->instance->getShowCollectionInSearchResults()) {
+			$showCollection = true;
+			$collectionLinkCache = [];
+		}
+
 		foreach($matchArray["searchResults"] as $match) {
 			$asset = new Asset_model;
 
@@ -715,7 +721,21 @@ class search_model extends CI_Model {
 				else {
 					$storedObject = $asset->getSearchResultEntry();
 				}
+
+				if($showCollection) {
+					$assetCollection = $asset->assetObject->getCollectionId();
+					if(!isset($collectionLinkCache[$assetCollection])) {
+
+						$hierarchy = array_map(function($value) {
+							return ["id"=>$value->getId(), "title"=> $value->getTitle()];
+						}, $this->collection_model->getFullHierarchy($assetCollection));
+						$collectionLinkCache[$assetCollection] = array_reverse($hierarchy);
+					}
+					$storedObject["collectionHierarchy"] = $collectionLinkCache[$assetCollection];
+				}
+
 				$resultsArray[] = $storedObject;
+
 
 			}
 			unset($asset);

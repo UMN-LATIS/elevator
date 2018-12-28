@@ -50,6 +50,9 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
   <?=$this->template->meta; ?>
   <?=$this->template->stylesheet; ?>
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
+<link rel="stylesheet" href="/assets/leaflet/leaflet.css">
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?endif?>
@@ -58,6 +61,8 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
 <script src="/assets/minifiedjs/jquery.min.js"></script>
 </head>
 

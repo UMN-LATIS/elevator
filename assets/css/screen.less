@@ -1086,6 +1086,22 @@ input[type='range'].zoom-range::-webkit-slider-thumb {
 }
 
 
+ul.collectionList {
+    margin-left:0px;
+    padding-left:0px;
+    display:inline;
+    list-style-type:none;
+    li {
+        display: inline;
+        &:after {
+            content: " : ";
+        }
+        &:last-child:after {
+            content: "";
+        }
+    }
+}
+
 /**
  * ! search results
  */
