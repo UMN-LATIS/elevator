@@ -1,3 +1,4 @@
+<?=$this->template->javascript->content()?>
 
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
