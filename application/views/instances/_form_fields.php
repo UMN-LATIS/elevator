@@ -235,6 +235,16 @@
 	</div>
 </div>
 
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="showCollectionInSearchResults" name="showCollectionInSearchResults" value="On" <?=$instance->getShowCollectionInSearchResults()?"checked":null?>>
+			Show Collection In Search Results
+		</label>
+	</div>
+</div>
+
+
 
 
 <div class="form-group">
