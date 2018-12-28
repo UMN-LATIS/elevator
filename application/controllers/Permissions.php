@@ -648,6 +648,9 @@ class Permissions extends Instance_Controller {
 			instance_redirect("permissions/editUser/" . $userId);
 		}
 
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
+
 		/**
 		 * at one point, the thinking was that a local user could only be edited on the instance they were
 		 * created on.  Starting to think that doesn't make sense, so commenting it out.
@@ -672,7 +675,7 @@ class Permissions extends Instance_Controller {
 			->setParameter(":userId", (int)$userId)
 			->andWhere("a.assetId IS NOT NULL")
 			->orderBy("a.modifiedAt", "DESC")
-			->setMaxResults(20);
+			->setMaxResults(100);
 
 		$assets = $qb->getQuery()->execute();
 
