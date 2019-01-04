@@ -10,7 +10,7 @@ class Search extends Instance_Controller {
 		parent::__construct();
 		$this->load->model("asset_model");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers"];
+		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers", "jquery.fullscreen-0.4.1"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->content->view("drawers/drawerModal");
@@ -55,6 +55,7 @@ class Search extends Instance_Controller {
 			}
 		}
 		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
+		$this->template->javascript->add("/assets/js/sly.min.js");
 		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
