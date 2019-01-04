@@ -33,7 +33,7 @@ $(document).ready(function() {
 
 	$('a[href="#timeline"]').on('shown.bs.tab', function() {
 		cachedDates = null;
-		// prepTimeline();
+		prepTimeline();
 	});
 	$('a[href="#map"]').on('shown.bs.tab', function() {
 		prepMap();
@@ -176,9 +176,7 @@ function parseSearch() {
 	searchId = getCurrentSearchId();
 
 	if(searchId && !disableHashChange) {
-		$("#results").empty();
-		$("#listResults").empty();
-		$(".frame ul").empty();
+		resetSearchFrame();
 
 
 
@@ -486,7 +484,7 @@ function prepGallery() {
 			var primaryHandler = $(el).data('primaryhandler');
 			// load the metadata for this record
 			$.get(basePath + "asset/viewAsset/" + $(el).data("objectid") + "/true", function(data) {
-				parsed = $.parseJSON(data);
+				parsed = data;
 				var fileIds = new Array;
 				for (var key in parsed) {
 					if(Array.isArray(parsed[key])) {
@@ -499,6 +497,14 @@ function prepGallery() {
 						}
 						}).filter((elem)=>{ return elem!=null}).filter((elem)=>{ return elem != primaryHandler});
 						fileIds = fileIds.concat(newIds);
+					}
+				}
+				if(parsed.relatedAssetCache) {
+					for (var key in parsed.relatedAssetCache) { 
+						element = parsed.relatedAssetCache[key];
+						if(element.primaryHandler && element.primaryHandler.length > 0) {
+							fileIds.push(element.primaryHandler);
+						}
 					}
 				}
 

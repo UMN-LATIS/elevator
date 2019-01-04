@@ -469,7 +469,7 @@ class Asset_model extends CI_Model {
 	 * this asset (this is what's stored in the DB)
 	 */
 
-	function getAsArray($nestedDepth=0, $useTemplateTitles=false) {
+	function getAsArray($nestedDepth=0, $useTemplateTitles=false, $includeRelatedAssetCache = false) {
 		$outputObject = $this->getWidgetArray($nestedDepth, $useTemplateTitles);
 
 		foreach($this->globalValues as $key=>$value) {
@@ -481,6 +481,13 @@ class Asset_model extends CI_Model {
 			}
 
 		}
+
+		// inline the related asset cache so consumers can draw thumbnails
+		if($includeRelatedAssetCache) {
+			$assetCache = $this->assetObject->getAssetCache();
+			$outputObject['relatedAssetCache'] = $assetCache->getRelatedAssetCache();
+		}
+
 		return $outputObject;
 	}
 

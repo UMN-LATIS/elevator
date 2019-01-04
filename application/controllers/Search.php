@@ -434,6 +434,7 @@ class Search extends Instance_Controller {
 
 		$loadAll = ($loadAll == "true")?true:false;
 
+
 		if($this->input->post("searchQuery")) {
 			$searchArray = json_decode($this->input->post("searchQuery"), true);
 		}
