@@ -80,6 +80,11 @@ class Search extends Instance_Controller {
 		$this->generateEmbed("timeline");
 	}
 
+	public function gallery() {
+		$this->template->javascript->add("/assets/js/sly.min.js");
+		$this->generateEmbed("gallery");
+	}
+
 
 	private function generateEmbed($type) {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);

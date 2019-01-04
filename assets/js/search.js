@@ -130,6 +130,29 @@ $(document).ready(function() {
 
     });
 
+    $(".embedGallery").on("click", function(e) {
+    	e.preventDefault();
+    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/gallery/" + getCurrentSearchId();
+
+    	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
+
+    	embedContent = '<input size=50 class="embedControl" value="' + htmlEntities(iFrameContent) + '"">';
+
+    	bootbox.dialog(
+		{
+			title: "Embed this gallery",
+			message: "Use the HTML below to embed this gallery in another page: <br>" + embedContent,
+			buttons: {
+				success: {
+					label: "OK",
+					className: "btn-primary"
+				}
+			}
+		});
+
+    });
+
+
 });
 
 
