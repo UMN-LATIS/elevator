@@ -137,35 +137,60 @@ function fastImageDimensions($sourceImage) {
 function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	try {
-		$image=new Imagick($sourceImage->getType().":".$sourceImage->getPathToLocalFile());
+	$commandline = "exiftool -n -j " . $sourceImage->getPathToLocalFile();
+	exec($commandline, $results);
+	if(isset($results) && is_array($results) && count($results)> 0) {
+		$extractedRaw = json_decode(implode("\n", $results), true);
+		$extractedRaw = $extractedRaw[0];
 	}
-	catch (Exception $e) {
-		$CI =& get_instance();
-		$CI->logging->logError("Error reading metadata", (string)$e,  $sourceImage->storageKey);
+	else {
+		$CI->logging->logError("Error reading raw metadata", (string)$e,  $sourceImage->storageKey);
 		return false;
 	}
 
-	$metadata["width"] = $image->getImageWidth();
-	$metadata["height"] = $image->getImageHeight();
-	$metadata["exif"] = $image->getImageProperties();
-	$metadata["rotation"] = $image->getImageOrientation();
-
-
-	array_walk_recursive($metadata['exif'],"convert_before_json");
-
-	if(isset($metadata['exif']['exif:GPSLatitude'])) {
-		$egeoLong = explode(",",$metadata['exif']['exif:GPSLongitude']);
-		$egeoLat = explode(",",$metadata['exif']['exif:GPSLatitude']);
-		$egeoLongR = $metadata['exif']['exif:GPSLongitudeRef'];
-		$egeoLatR = $metadata['exif']['exif:GPSLatitudeRef'];
-		$geoLong = toDecimal($egeoLong[0], $egeoLong[1], $egeoLong[2], $egeoLongR);
-		$geoLat = toDecimal($egeoLat[0], $egeoLat[1], $egeoLat[2], $egeoLatR);
-		$metadata["coordinates"] = [floatval($geoLong), floatval($geoLat)]; // lonlat cause that's what we need for elastic
+	$results = null;
+	$commandline = "exiftool -j -g " . $sourceImage->getPathToLocalFile();
+	exec($commandline, $results);
+	if(isset($results) && is_array($results) && count($results)> 0) {
+		$extractedParsed = json_decode(implode("\n", $results), true);
+		$extractedParsed = $extractedParsed[0];
+	}
+	else {
+		$CI->logging->logError("Error reading parsed metadata", (string)$e,  $sourceImage->storageKey);
+		return false;
 	}
 
-	if(isset($metadata['exif']['exif:DateTime'])) {
-		$dateString = $metadata['exif']['exif:DateTime'];
+
+
+	$metadata["width"] = $extractedRaw["ImageWidth"];
+	$metadata["height"] = $extractedRaw["ImageHeight"];
+
+	if(isset($extractedParsed["SourceFile"])) {
+		unset($extractedParsed["SourceFile"]);
+	}
+
+	if(isset($extractedParsed["File"])) {
+		if(isset($extractedParsed["File"]["FileName"])) {
+			unset($extractedParsed["File"]["FileName"]);
+		}
+		if(isset($extractedParsed["File"]["Directory"])) {
+			unset($extractedParsed["File"]["Directory"]);
+		}
+	}
+
+
+	$metadata["exif"] = $extractedParsed;
+	if(isset($extractedRaw["Orientation"])) {
+		$metadata["rotation"] = $extractedRaw["Orientation"];	
+	}
+	
+
+	if(isset($extractedRaw['GPSLatitude'])) {
+		$metadata["coordinates"] = [floatval($extractedRaw["GPSLongitude"]), floatval($extractedRaw["GPSLatitude"])]; // lonlat cause that's what we need for elastic
+	}
+
+	if(isset($extractedRaw['DateTimeOriginal'])) {
+		$dateString = $extractedRaw['DateTimeOriginal'];
 		$metadata["creationDate"] = $dateString;
 	}
 
