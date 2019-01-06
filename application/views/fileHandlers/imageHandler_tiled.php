@@ -30,7 +30,7 @@
 			return;
 		}
 		console.log("entry");
-		if(typeof map !== 'undefined'){
+		if(map !== null){
 			console.log("teardown");
 			map.remove(); // tear down any existing leaflets so we clear handlers.
 		}
