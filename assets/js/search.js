@@ -398,37 +398,19 @@ function populateSearchResults(searchObject) {
 }
 
 
-
-
- var spiderConfig = {
-    keepSpiderfied: true,
-    event: 'mouseover'
-};
-
 function prepMap() {
 
 	if(cachedResults === "") {
 		return;
 	}
-
-	$("#mapPane").removeData();
-
-	$("#mapPane").goMap({
-		mapTypeControl:true,
-		maptype: 'ROADMAP',
-		mapTypeControlOptions: {
-			position: 'TOP_RIGHT',
-			style: 'DROPDOWN_MENU'
-		},
-		addMarker: "single"
-
-	});
-
-	var markerSpiderfier = new OverlappingMarkerSpiderfier($.goMap.map, spiderConfig);
-
-	if($.goMap.getMarkerCount()>0) {
-		$.goMap.clearMarkers();
+	if(markers) {
+		markers.clearLayers();	
 	}
+	
+	if(!map) {
+		loadMap("mapPane");
+	}
+	markers = L.markerClusterGroup({ showCoverageOnHover: false});
 
 	$.each(cachedResults.matches, function(index, value) {
 		if(value.locations) {
@@ -438,58 +420,24 @@ function prepMap() {
 					loc = value3.loc.coordinates;
 					value.base_url = basePath;
 					var html    = MarkerTemplate(value);
-					var allMarkers = $.goMap.getMarkers("markers");
+
 					if(loc[1] === 0 && loc[0] === 0) {
 						return true;
 					}
-					latlng = new google.maps.LatLng(loc[1], loc[0]);
-					finalLatLng = latlng;
-					if (allMarkers.length != 0) {
-						for (i=0; i < allMarkers.length; i++) {
-							var existingMarker = allMarkers[i];
-							var pos = existingMarker.getPosition();
-        					//if a marker already exists in the same position as this marker
 
-        					// if (google.maps.geometry.spherical.computeDistanceBetween(latlng,pos)<1) {
-            	// 				//update the position of the coincident marker by applying a small multipler to its coordinates
-            	// 				var newLat = latlng.lat() + (Math.random() -.5) / 5500;// * (Math.random() * (max - min) + min);
-            	// 				var newLng = latlng.lng() + (Math.random() -.5) / 5500;// * (Math.random() * (max - min) + min);
-            	// 				finalLatLng = new google.maps.LatLng(newLat,newLng);
-            	// 			}
-            			}
-            		}
-            		else {
-            			finalLatLng = latlng;
-            		}
-					var marker = $.goMap.createMarker({
-						longitude: finalLatLng.lng(),
-						latitude: finalLatLng.lat(),
-						html: html
-					});
-					markerSpiderfier.addMarker(marker);
+					localMarker = L.marker([loc[1],loc[0]]);  
+					localMarker.bindPopup(html);
+  					markers.addLayer(localMarker);
+					
 				});
 			});
 		}
 
 	});
 
-	var markers = [];
+	map.addLayer(markers);
+	map.fitBounds(markers.getBounds().pad(0.5)); 
 
-	for (var i in $.goMap.markers) {
-		var temp = $($.goMap.mapId).data($.goMap.markers[i]);
-		markers.push(temp);
-	}
-	var iw = new google.maps.InfoWindow();
-
-    markerSpiderfier.addListener('click', function(marker, e) {
-    });
-
-    markerSpiderfier.addListener('spiderfy', function(markers) {
-    });
-
-	var markerclusterer = new MarkerClusterer($.goMap.map, markers);
-	markerclusterer.setMaxZoom(15);
-	$.goMap.fitBounds();
 }
 
 

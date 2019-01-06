@@ -1,7 +1,7 @@
 <?
 $titleArray = $assetModel->getAssetTitle($collapse=false);
 $assetTitle = reset($titleArray);
-$collection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
+$collectionId = $assetModel->getGlobalValue("collectionId");
 
 ?>
 <script>
@@ -34,11 +34,13 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 		<?if($assetModel->assetTemplate->getShowCollection()):?>
 		<div class="row">
-			<div class="col-md-12 assetWidget">
-				<ul>
-					<strong>Collection:</strong>
+			<div class="col-md-12 ">
+				<strong>Collection:</strong>
+				<ul class="collectionList">
+						<? foreach(array_reverse($this->collection_model->getFullHierarchy($collectionId)) as $collection):?>
 						<li><a href="<?=instance_url("collections/browseCollection/". $collection->getId())?>"><?=$collection->getTitle()?></a>
 						</li>
+						<?endforeach?>
 				</ul>
 			</div>
 		</div>

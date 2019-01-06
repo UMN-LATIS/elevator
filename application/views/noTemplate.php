@@ -37,6 +37,9 @@
 
 <title><?= $this->template->title->default(isset($this->instance)?$this->instance->getName():"Elevator"); ?></title>
 
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
+<link rel="stylesheet" href="/assets/leaflet/leaflet.css">
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?else:?>
@@ -48,6 +51,8 @@
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
 
     <?php
     // This is the main content partial

@@ -30,30 +30,22 @@ $(document).on("ready", function() {
 		var label = $(e.relatedTarget).html();
 
 		$("#mapModalLabel").html(label);
-		$("#mapModalContainer").goMap({
-			mapTypeControl:true,
-			maptype: 'ROADMAP',
-			mapTypeControlOptions: {
-				position: 'TOP_RIGHT',
-				style: 'DROPDOWN_MENU'
-			}
-		});
-
-		if($.goMap.getMarkerCount()>0) {
-			$.goMap.clearMarkers();
+		
+		loadMap("mapModalContainer");
+		if(markers) {
+			markers.clearLayer();
 		}
-		$.goMap.setMap({
-			latitude: latitude,
-			longitude: longitude
-		});
+		
+		map.setView([latitude, longitude], 10);
 
-		$("#mapModalContainer").goMap();
-		var marker = $.goMap.createMarker({
-			latitude: latitude,
-			longitude: longitude,
-			draggable: false
-		});
-		$.goMap.fitBounds();
+		
+		if(!markers) {
+			markers = new L.layerGroup();
+		}
+		localMarker = L.marker([latitude, longitude]);  
+		markers.addLayer(localMarker);
+		map.addLayer(markers);
+
 
 		$("#mapNearby").attr("href", basePath + "search/nearbyAssets/" + latitude + "/" + longitude);
 
