@@ -192,7 +192,7 @@ function setup3dhop() {
         startDistance : 2.0,
         minMaxDist    : [0.2, 15.0],
         minMaxPhi: [-180, 180],
-        minMaxTheta   : [-70.0, 70.0]
+        minMaxTheta   : [-170.0, 170.0]
       }
     }
   });
