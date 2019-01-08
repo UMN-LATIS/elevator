@@ -273,5 +273,19 @@
 
 <p>Switching collections will prevent this asset from being accessed while the migration is taking place. It may also make assets temporarily unavilable.</p>
 
+</script>
+
+<script id="exif-template" type="text/x-handlebars-template">
+
+<ul style="list-style: none">
+	{{#each this}}
+		{{#ifObject this}}
+			<li><strong>{{@key}}</strong></li>
+			{{> exif-template}}
+		{{else}}
+			<li>{{@key}} : {{ this }}
+		{{/ifObject}}
+	{{/each}}
+</ul>
 
 </script>
