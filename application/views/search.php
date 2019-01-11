@@ -204,6 +204,9 @@
 .frameHeader h2 {
 	height: 30px;
 	line-height: 30px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis
 }
 
 /* Scrollbar */
