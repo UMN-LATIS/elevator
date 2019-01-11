@@ -62,6 +62,12 @@
 
 </script>
 
+<script id="gallery-template" type="text/x-handlebars-template">
+<li class="" data-totalassets="{{fileAssets}}" data-title="{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}" data-objectid="{{objectId}}" data-primaryhandler="{{primaryHandlerId}}" data-haschildren="{{hasChildren}}" data-ischild="{{isChild}}">
+	<img class="" style="max-width:100%; max-height:100%" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x">
+</li>
+</script>
+
 <script id="drawer-list-template" type="text/x-handlebars-template">
 {{#if this.excerpt}}
 <div class="row rowPadding listResultContainer searchContainer {{excerptId}}" data-drawerobjectid="{{excerptId}}">

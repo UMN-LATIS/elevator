@@ -59,7 +59,10 @@ class asset extends Instance_Controller {
 		}
 
 		if($returnJson == "true") {
-			echo json_encode($assetModel->getAsArray(null,false));
+			$json = $assetModel->getAsArray(null,false, $includeRelatedAssetCache= true); // include related assets
+			header('Content-type: application/json');
+			echo json_encode($json);
+			return;
 		}
 		else {
 		// for subclipping movies

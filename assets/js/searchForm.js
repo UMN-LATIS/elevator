@@ -57,10 +57,22 @@ $(document).on("change", ".searchDropdown", function() {
 });
 
 
-var performSearchForButtonPress = function(targetForm) {
+function resetSearchFrame() {
     $("#results").empty();
     $("#listResults").empty();
+    $(".frame ul").empty();
     $(".suggest").empty();
+    if(galleryFrame) {
+        galleryFrame.destroy();
+        galleryFrame = null;    
+    }
+    $(".galleryIframe").attr("src","");
+    
+}
+
+var performSearchForButtonPress = function(targetForm) {
+
+    resetSearchFrame();
     searchId = "";
     if(window.location.hash.length > 0) {
         // for now, let's try not persisting search results?

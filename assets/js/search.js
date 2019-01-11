@@ -39,6 +39,7 @@ $(document).ready(function() {
 		prepMap();
 	});
 	$('a[href="#gallery"]').on('shown.bs.tab', function() {
+		prepGallery();
 	});
 	$('a[href="#grid"]').on('shown.bs.tab', function() {
 		$("#results").find("img").trigger("show");
@@ -129,6 +130,29 @@ $(document).ready(function() {
 
     });
 
+    $(".embedGallery").on("click", function(e) {
+    	e.preventDefault();
+    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/gallery/" + getCurrentSearchId();
+
+    	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
+
+    	embedContent = '<input size=50 class="embedControl" value="' + htmlEntities(iFrameContent) + '"">';
+
+    	bootbox.dialog(
+		{
+			title: "Embed this gallery",
+			message: "Use the HTML below to embed this gallery in another page: <br>" + embedContent,
+			buttons: {
+				success: {
+					label: "OK",
+					className: "btn-primary"
+				}
+			}
+		});
+
+    });
+
+
 });
 
 
@@ -152,8 +176,7 @@ function parseSearch() {
 	searchId = getCurrentSearchId();
 
 	if(searchId && !disableHashChange) {
-		$("#results").empty();
-		$("#listResults").empty();
+		resetSearchFrame();
 
 
 
@@ -228,6 +251,11 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 				if($('a[href="#map"]').parent().hasClass("active")) {
 					prepMap();
 				}
+
+				// we want these to use the full stored set, not just the curret batch, so we run them after merging.
+				// if($('a[href="#gallery"]').parent().hasClass("active")) {
+				// 	prepGallery();
+				// }
 
 				if($('a[href="#timeline"]').parent().hasClass("active")) {
 					cachedDates = null;
@@ -356,6 +384,32 @@ function populateSearchResults(searchObject) {
 		$("#listResults").append(listHTML);
 	});
 
+	// todo refactor
+	var source   = $("#gallery-template").html();
+	var template = Handlebars.compile(source);
+	
+	$.each(cachedResults.matches, function(index, value) {
+		value.base_url = basePath;
+		value.searchObject = cachedResults;
+		value.isChild = false;
+		var hasChildren = false;
+		if(value.fileAssets > 1 && value.fileAssets < 20) {
+			hasChildren = true;
+		}
+		value.hasChildren = hasChildren;
+		var html    = template(value);
+		$("#previewFrame .frame ul").append(html);
+		if(hasChildren) {
+			for(i=0; i<value.fileAssets-1; i++) {
+				value.primaryHandlerId = null;
+				value.hasChildren = false;
+				value.isChild = true;
+				var html    = template(value);
+				$("#previewFrame .frame ul").append(html);
+			}
+		}
+	});
+
 	totalResults = searchObject.totalResults;
 	$(".resultsData").html("<p>Total Results: "+ searchObject.totalResults + "</p>");
 
@@ -383,6 +437,11 @@ function populateSearchResults(searchObject) {
 		prepMap();
 	}
 
+	if($('a[href="#gallery"]').parent().hasClass("active")) {
+		prepGallery();
+	}
+
+
 	if($('a[href="#timeline"]').parent().hasClass("active")) {
 		prepTimeline();
 	}
@@ -394,6 +453,119 @@ function populateSearchResults(searchObject) {
 
 	event = new Event("searchUpdated");
   	document.dispatchEvent(event);
+
+}
+
+var galleryFrame = null;
+
+$(document).on("click", ".fullscreen", function() {
+	if($.fullscreen.isNativelySupported()) {
+		$(".frameFullscreenContainer").first().fullscreen({ "toggleClass": "imageFullscreen"});
+	}
+});
+
+function prepGallery() {
+	if(cachedResults === "") {
+		return;
+	}
+
+	if(galleryFrame !== null) {
+		// galleryFrame.reload();
+	}
+	else {
+		var assetsWithChildren = $(".frame ul").find('[data-haschildren="true"]');
+
+		assetsWithChildren.each(function(index, el) {
+			if($(el).data("childrenloaded") == "true") {
+				return;
+			}
+
+			var localEl = el;
+			var primaryHandler = $(el).data('primaryhandler');
+			// load the metadata for this record
+			$.get(basePath + "asset/viewAsset/" + $(el).data("objectid") + "/true", function(data) {
+				parsed = data;
+				var fileIds = new Array;
+				for (var key in parsed) {
+					if(Array.isArray(parsed[key])) {
+						var newIds = parsed[key].map(function(nestedElem) {
+						if(nestedElem.hasOwnProperty('fileId')) {
+							return nestedElem.fileId;
+						}
+						else {
+							return null;
+						}
+						}).filter((elem)=>{ return elem!=null}).filter((elem)=>{ return elem != primaryHandler});
+						fileIds = fileIds.concat(newIds);
+					}
+				}
+				if(parsed.relatedAssetCache) {
+					for (var key in parsed.relatedAssetCache) { 
+						element = parsed.relatedAssetCache[key];
+						if(element.primaryHandler && element.primaryHandler.length > 0) {
+							fileIds.push(element.primaryHandler);
+						}
+					}
+				}
+
+				for(fileId of fileIds) {
+					targetElement = $(".frame ul").find('[data-objectid="' + $(el).data("objectid") + '"]').filter('[data-ischild="true"]').filter('[data-primaryhandler=""]').first();
+					targetElement.attr("data-primaryhandler", fileId);
+					targetElement.children("img").attr("src", basePath+"fileManager/previewImageByFileId/" + fileId);
+					targetElement.children("img").attr("srcset", basePath+"fileManager/previewImageByFileId/" + fileId + "/true 2x");
+				}
+				$(el).data("childrenloaded", "true");
+			});
+			
+		});
+
+
+		sourceFrame = $('#forcecentered');
+
+		var $wrap  = sourceFrame.parent();
+
+		// Call Sly on frame
+		galleryFrame = new Sly($('#forcecentered'), {
+			horizontal: 1,
+			itemNav: 'forceCentered',
+			keyboardNavBy: 'items',
+			smart: 1,
+			activateMiddle: 0,
+			activateOn: 'click',
+			mouseDragging: 1,
+			touchDragging: 1,
+			releaseSwing: 1,
+			startAt: 0,
+			scrollBar: $wrap.find('.scrollbar'),
+			scrollBy: 1,
+			speed: 300,
+			elasticBounds: 1,
+			easing: 'easeOutExpo',
+			dragHandle: 1,
+			dynamicHandle: 1,
+			clickBar: 1,
+
+			// Buttons
+			prev: $wrap.find('.prev'),
+			next: $wrap.find('.next')
+		}).init();
+
+		galleryFrame.on('active', function(event, item) { 
+			loadGalleryElement(item);
+		});
+
+		loadGalleryElement(0);
+	}
+}
+
+function loadGalleryElement(index) {
+	targetItem = galleryFrame.items[index].el;
+	$(".frameHeader").html("<a href='" + basePath + "/asset/viewAsset/" + $(targetItem).data("objectid") + "'><h2>" + $(targetItem).data("title") + "</h2></a>" );
+	$(".galleryIframe").attr("src", basePath + "asset/getEmbed/" + $(targetItem).data("primaryhandler") + "/" + $(targetItem).data("objectid") + "/true");
+}
+
+function loadNestedAssets(objectId) {
+
 
 }
 

@@ -75,8 +75,10 @@ function loadDrawer() {
     			});
             }
             else {
-            	$("#results").sortable( "destroy" );
-            	$("#listResults").sortable( "destroy" );
+            	if($("#results").sortable( "instance" )) {
+            		$("#results").sortable( "destroy" );
+            		$("#listResults").sortable( "destroy" );	
+            	}
             }
             
         }
