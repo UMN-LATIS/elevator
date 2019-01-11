@@ -63,7 +63,7 @@
 </script>
 
 <script id="gallery-template" type="text/x-handlebars-template">
-<li class="" data-totalassets="{{fileAssets}}" data-title="{{#if title.length}} {{{join title}}} {{else}} (no title) {{/if}}" data-objectid="{{objectId}}" data-primaryhandler="{{primaryHandlerId}}" data-haschildren="{{hasChildren}}" data-ischild="{{isChild}}">
+<li class="" data-totalassets="{{fileAssets}}" data-title="{{#if title.length}} {{join title}} {{else}} (no title) {{/if}}" data-objectid="{{objectId}}" data-primaryhandler="{{primaryHandlerId}}" data-haschildren="{{hasChildren}}" data-ischild="{{isChild}}">
 	<img class="" style="max-width:100%; max-height:100%" src="{{primaryHandlerThumbnail}}" srcset="{{primaryHandlerThumbnail2x}} 2x">
 </li>
 </script>
