@@ -136,6 +136,7 @@
 							<button class="btn prev"><i class="glyphicon glyphicon-chevron-left"></i> prev</button>
 							<button class="btn next">next <i class="glyphicon glyphicon-chevron-right"></i></button>
 							<button class="btn fullscreen">fullscreen <i class="glyphicon glyphicon-fullscreen"></i></button>
+							<button class="btn nextPage">load more <i class="glyphicon glyphicon-refresh"></i></button>
 						</div>
 						<div class="resultsData">
 

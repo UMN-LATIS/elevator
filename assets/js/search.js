@@ -470,7 +470,7 @@ function prepGallery() {
 	}
 
 	if(galleryFrame !== null) {
-		// galleryFrame.reload();
+		galleryFrame.reload();
 	}
 	else {
 		var assetsWithChildren = $(".frame ul").find('[data-haschildren="true"]');
