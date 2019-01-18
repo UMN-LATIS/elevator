@@ -175,13 +175,20 @@ $(function ()
 		}
 	});
 	$(document).ready(function(){
-
-		$(".panzoom-element").panzoom({
-		    contain: 'invert',
-		    minScale: 1,
-		    $zoomRange: $(".zoom-range")
+		// attach zoom handler after load, or chrome gets grumpy
+		$(".embedImage").on("load",function() {
+			$(".panzoom-element").panzoom({
+		    	contain: 'invert',
+		    	minScale: 1,
+		    	$zoomRange: $(".zoom-range")
+			});
+		
+		}).each(function(){
+  			if(this.complete) {
+    			$(this).trigger('load');
+  			}
 		});
-
+		
 	});
 
 	function debounce(func, wait, immediate) {
@@ -200,11 +207,7 @@ $(function ()
 	};
 
 	// chrome has an issue in which it won't re-draw an image after scaling, so it's blurry. This forces a redraw.
-	$('.panzoom-element').on('panzoomzoom', debounce( function () {
-	    this.style.display='none';
-	    this.offsetHeight;
-	    this.style.display='';
-	}, 100));
+	
 
 	</script>
 <?endif?>
