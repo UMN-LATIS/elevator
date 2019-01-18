@@ -1,449 +1,213 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?
+$fileObjectId = $fileObject->getObjectId();
+$embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
+$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
 
-class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2");
-	protected $noDerivatives = false;
 
-	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true, "ttr"=>600]],
-						  1=>["taskType"=>"createDerivative", "config"=>["ttr"=>600, ["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
-						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
-						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
-						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
-						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
-							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
-							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
-							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
-							];
 
-	public $sphericalTaskArray = [
-						  1=>["taskType"=>"createDerivative", "config"=>["ttr"=>600, ["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
-						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
-						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
-						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
-						  											    ["width"=>4096, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
-						2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
-							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
-							];
 
-
-
-	public function __construct()
-	{
-		parent::__construct();
-		$this->load->helper("media");
-		//Do your magic here
-	}
-
-	public function allDerivativesForAccessLevel($accessLevel) {
-		$derivative = array();
-
-		if($accessLevel>=$this->getPermission()) {
-			$derivative[] = "screen";
-			if(array_key_exists("tiled", $this->derivatives)) {
-				$derivative[] = "tiled";
-			}
-		}
-
-		if($accessLevel>PERM_NOPERM) {
-			$derivative[] = "thumbnail";
-			$derivative[] = "thumbnail2x";
-			$derivative[] = "tiny";
-			$derivative[] = "tiny2x";
-		}
-
-		$returnArray = array();
-		foreach($derivative as $entry) {
-			if(isset($this->derivatives[$entry])) {
-				$returnArray[$entry] = $this->derivatives[$entry];
-			}
-		}
-		if(count($returnArray)>0) {
-			return $returnArray;
-		}
-		else {
-			throw new Exception("Derivative not found");
-		}
-	}
-
-	public function extractMetadata($args) {
-
-		if(!isset($args['fileObject'])) {
-			$fileObject = $this->sourceFile;
-		}
-		else {
-			$fileObject = $args['fileObject'];
-		}
-
-		$fileObject->metadata = array(); // clear metadata in case we're regenerating.
-
-		$fileStatus = $this->sourceFile->makeLocal();
-
-		if($fileStatus == FILE_GLACIER_RESTORING) {
-			$this->postponeTime = 900;
-			return JOB_POSTPONE;
-		}
-		elseif($fileStatus == FILE_ERROR) {
-			return JOB_FAILED;
-		}
-
-		$this->pheanstalk->touch($this->job);
-
-		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
-			return JOB_FAILED;
-		}
-
-		$dimensions = null;
-		if($dimensions = fastImageDimensions($this->sourceFile)) {
-			$this->sourceFile->metadata["width"] = $dimensions["x"];
-			$this->sourceFile->metadata["height"] = $dimensions["y"];
-		}
-
-
-		$sourceFile = $this->swapLocalForPNG();
-
-
-		$fileObject->metadata = getImageMetadata($sourceFile);
-
-		if($dimensions) {
-			$fileObject->metadata["width"] = $dimensions["x"];
-			$fileObject->metadata["height"] = $dimensions["y"];
-		}
-		else {
-			if(get_class($sourceFile) == "FileContainer") {
-				// we're dealing with a local swap, scale up by 10x
-				$fileObject->metadata["width"] = $fileObject->metadata["width"]  * 10;
-				$fileObject->metadata["height"] = $fileObject->metadata["height"]  * 10;
-			}
-		}
-
-
-		if(!$fileObject->metadata) {
-			if($fileFormat = identifyImage($sourceFile)) {
-				$originalName = $sourceFile->originalFilename;
-				$originalExtension = pathinfo($originalName, PATHINFO_EXTENSION);
-				$originalName = str_replace($originalExtension, $fileFormat, $originalName);
-
-				$sourceFile->originalFilename = $originalName;
-				if(false === ($fileObject->metadata = getImageMetadata($sourceFile))) {
-					return JOB_FAILED;
-				}
-			}
-			else {
-				return JOB_FAILED;
-			}
-		}
-
-		/**
-		 * As these standards evolve this should be refactored
-		 */
-		$uploadWidget = $this->getUploadWidget();
-		if((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["GPano:UsePanoramaViewer"]) && $fileObject->metadata["exif"]["GPano:UsePanoramaViewer"] == "True") || stristr($uploadWidget->fileDescription, "spherical")) {
-			$fileObject->metadata["spherical"] = true;
-			$this->taskArray = $this->sphericalTaskArray; // swap out our task array to get a bigger max size for our derivatives in this case.
-			
-			if(stristr($uploadWidget->fileDescription, "stereo")) {
-				$fileObject->metadata["stereo"] = true;
-			}
-		}
-
-
-		if(!$fileObject->metadata) {
-
-			return JOB_FAILED;
-		}
-
-		$fileObject->metadata["filesize"] = $sourceFile->getFileSize();
-
-
-
-		if($args['continue'] == true) {
-			$this->queueTask(1, ["ttr"=>1200]);
-		}
-
-		return JOB_SUCCESS;
-	}
-
-	public function createDerivative($args) {
-		$success = true;
-
-		$sourceFile = $this->swapLocalForPNG();
-
-
-		foreach($args as $key=>$derivativeSetting) {
-			$this->pheanstalk->touch($this->job);
-			if(!is_numeric($key)) {
-				continue;
-			}
-			$derivativeType = $derivativeSetting['type'];
-			$width = $derivativeSetting['width'];
-			$height = $derivativeSetting['height'];
-
-			$fileStatus = $sourceFile->makeLocal();
-
-			if($fileStatus == FILE_GLACIER_RESTORING) {
-				$this->postponeTime = 900;
-				return JOB_POSTPONE;
-			}
-			elseif($fileStatus == FILE_ERROR) {
-				return JOB_FAILED;
-			}
-
-			$this->pheanstalk->touch($this->job);
-
-			if(!file_exists($sourceFile->getPathToLocalFile())) {
-				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
-				return JOB_FAILED;
-			}
-
-			$localPath = $sourceFile->getPathToLocalFile();
-			$pathparts = pathinfo($localPath);
-
-			$derivativeContainer = new fileContainerS3();
-			$derivativeContainer->derivativeType = $derivativeType;
-			$derivativeContainer->path = $derivativeSetting['path'];
-			$derivativeContainer->setParent($this->sourceFile->getParent());
-			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
-			//TODO: catch errors here
-			echo "Compressing " . $width . " x " . $height . "\n";
-			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height)) {
-				$derivativeContainer->ready = true;
-				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
-				if(!$derivativeContainer->copyToRemoteStorage()) {
-					//TODO: log
-					//TODO: remove derivative
-					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
-					$success=false;
-				}
-				else {
-					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
-						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-						$success=false;
-					}
-				}
-				$this->derivatives[$derivativeType] = $derivativeContainer;
-			}
-			else {
-				$this->logging->processingInfo("createDerivative","imageHandler","Error generating derivative",$this->getObjectId(),$this->job->getId());
-				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
-			}
-		}
-		$this->triggerReindex();
-		if($success) {
-			$this->queueTask(2, ["ttr"=>1800]);
-			return JOB_SUCCESS;
-		}
-		else {
-			return JOB_FAILED;
-		}
-
-	}
-
-	public function tileImage($args) {
-		$uploadWidget = $this->getUploadWidget();
-
-		if(!$uploadWidget->parentWidget->enableTiling) {
-			$this->queueTask(3);
-			return JOB_SUCCESS;
-		}
-
-		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
-
-		if($megapixels < $args["minimumMegapixels"] && !$this->forceTiling()) {
-			$this->queueTask(3);
-			return JOB_SUCCESS;
-		}
-		// don't swap, VIPS can handle SVS
-		$sourceFile = $this->sourceFile;
-
-
-
-		$localPath = $sourceFile->getPathToLocalFile();
-		$pathparts = pathinfo($localPath);
-
-		$derivativeType = "tiled";
-
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = $derivativeType;
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType;
-
-
-		$outputPath = $localPath . "-tiled";
-		//TODO: catch errors here
-		if(!file_exists($outputPath)) {
-			mkdir($outputPath);
-		}
-
-		$outputFile = $outputPath ."/tiledBase";
-
-		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . " " . $outputFile;
-		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
-		$process->run();
-		while($process->isRunning()) {
-			sleep(5);
-			$this->pheanstalk->touch($this->job);
-			echo ".";
-		}
-
-
-		if(!file_exists($outputFile . ".dzi")) {
-			$this->logging->processingInfo("createDerivative","imageHandler","Tiling failed",$this->getObjectId(),$this->job->getId());
-			return JOB_FAILED;
-		}
-
-
-		$dziContents = file_get_contents($outputFile . ".dzi");
-		$dzi = new SimpleXMLElement($dziContents);
-		$dziHeight = (int)$dzi->Size[0]["Height"];
-		$dziWidth = (int)$dzi->Size[0]["Width"];
-		$overlap = (int)$dzi["Overlap"];
-		$tilesize = (int)$dzi["TileSize"];
-		$this->sourceFile->metadata["dziWidth"] = $dziWidth;
-		$this->sourceFile->metadata["dziHeight"] = $dziHeight;
-		$this->sourceFile->metadata["dziOverlap"] = $overlap;
-		$this->sourceFile->metadata["dziTilesize"] = $tilesize;
-
-		$zoomContents = scandir($outputPath . "/tiledBase_files/");
-		$zoomLevels = count($zoomContents) - 2;
-		$this->sourceFile->metadata["dziMaxZoom"] = $zoomLevels;
-
-		echo "\n";
-		$this->pheanstalk->touch($this->job);
-		
-		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled", null, $this->job)) {
-			$this->load->helper('file');
-			delete_files($outputPath, true);
-		}
-
-		$this->pheanstalk->touch($this->job);
-
-		$this->derivatives[$derivativeType] = $derivativeContainer;
-		$this->unlinkLocalSwap();
-
-		$this->queueTask(3);
-		return JOB_SUCCESS;
-
-	}
-
-
-	// public function clarifyTag($args) {
-
-
-	// 	if(strlen($this->instance->getClarifaiId())<5) {
-	// 		$this->queueTask(3);
-	// 		return JOB_SUCCESS;
-	// 	}
-	// 	$this->load->library("Clarifai");
-
-	// 	$clarifai = new Clarifai($this->instance->getClarifaiId(), $this->instance->getClarifaiSecret(), $this->instance->getDomain());
-	// 	if(!$clarifai->collectionExists($this->instance->getDomain())) {
-	// 		$clarifai->addCollection($this->instance->getDomain());
-	// 	}
-
-	// 	if(!isset($this->derivatives["screen"])) {
-	// 		return JOB_FAILED;
-	// 	}
-
-	// 	$targetURL= $this->derivatives["screen"]->getProtectedURLForFile();
-
-	// 	if(!$clarifai->addDocument($targetURL, $this->getObjectId())) {
-	// 		return JOB_POSTPONE;
-	// 	}
-
-	// 	$document = $clarifai->getDocument($this->getObjectId());
-
-	// 	$resultTags = array();
-	// 	foreach($document->document->annotation_sets[0]->annotations as $tagCluster) {
-
-	// 		$resultTags[] = ["tag"=>$tagCluster->tag->cname, "score"=>$tagCluster->score];
-
-	// 	}
-
-	// 	$this->globalMetadata["tags"] = $resultTags;
-
-	// 	$this->queueTask(3);
-	// 	return JOB_SUCCESS;
-
-	// }
-
-	function unlinkLocalSwap() {
-		if($this->sourceFile->getType() == "svs") {
-			$source = $this->sourceFile->getPathToLocalFile();
-			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
-			if(file_exists($dest)) {
-				unlink($dest);
-			}
-		}
-		return true;
-	}
-
-	function forceTiling() {
-		if($this->sourceFile->getType() == "svs") {
-			return TRUE;
- 		}
-
- 		return FALSE;
-
-	}
-
-	function swapLocalForPNG() {
-		if($this->sourceFile->getType() == "svs") {
-			$source = $this->sourceFile->getPathToLocalFile();
-			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
-			if(file_exists($dest)) {
-				return new FileContainer($dest);
-			}
-			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
-			$process->run();
-			while($process->isRunning()) {
-				sleep(5);
-				$this->pheanstalk->touch($this->job);
-				echo ".";
-			}
-
-			return new FileContainer($dest);
-		}
-
-		$megapixels = 0;
-		if(isset($this->sourceFile->metadata) && isset($this->sourceFile->metadata["width"])) {
-			$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
-		}
-		
-		if($megapixels > 100) {
-			$source = $this->sourceFile->getPathToLocalFile();
-			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
-			if(file_exists($dest)) {
-				return new FileContainer($dest);
-			}
-			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
-			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
-			$process->run();
-			while($process->isRunning()) {
-				sleep(5);
-				$this->pheanstalk->touch($this->job);
-				echo ".";
-			}
-
-			return new FileContainer($dest);
-
-
-		}
-
-
-		
-		return $this->sourceFile;
-	}
-
-
-
+$menuArray = [];
+if(count($fileContainers)>0) {
+  $menuArray['embed'] = $embed;
+  $menuArray['embedLink'] = $embedLink;
 }
 
-/* End of file imageHandler.php */
-/* Location: ./application/models/imageHandler.php */
+$fileInfo = [];
+$fileInfo["File Type"] = "Image";
+$fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
+$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
+$fileInfo["Image Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
+
+if($widgetObject) {
+  if($widgetObject->fileDescription) {
+    $fileInfo["Description"] = $widgetObject->fileDescription;
+  }
+  if($widgetObject->getLocationData()) {
+    $fileInfo["Location"] = ["latitude"=>$widgetObject->getLocationData()[1], "longitude"=>$widgetObject->getLocationData()[0]];
+  }
+  if($widgetObject->getDateData()) {
+    $fileInfo["Date"] = $widgetObject->getDateData();
+  }
+
+	
+}
+
+if(isset($fileObject->sourceFile->metadata["exif"])) {
+	$fileInfo["Exif"] = $fileObjectId;
+}
+
+
+
+$menuArray['fileInfo'] = $fileInfo;
+
+$downloadArray = [];
+
+if(isset($fileContainers['screen']) && $fileContainers['screen']->ready) {
+$downloadArray["Download Derivative (jpg)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/screen");
+}
+
+if($allowOriginal) {
+  $downloadArray['Download Original'] = instance_url("fileManager/getOriginal/". $fileObjectId);
+}
+
+$menuArray['download'] = $downloadArray;
+
+
+
+if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !isset($fileObject->sourceFile->metadata["spherical"])) {
+	$menuArray['zoom'] = true;	
+}
+
+
+
+?>
+
+<?if($embedded):?>
+<style>
+/* don't constrain the height of the element when embedded */
+.fullscreenImageContainer {
+	max-height: 100%;
+	height: 100%;
+}
+.fixedHeightContainer {
+	height: 100%;
+	max-height: 100%
+}
+.outerContainerForFirefox {
+	height: 100%;
+}
+</style>
+<?endif?>
+
+<?if(!$embedded):?>
+<div class="row assetViewRow">
+	<div class="col-md-12">
+<?endif?>
+		<? if(!isset($fileContainers) || count($fileContainers) == 1):?>
+		<p class="alert alert-info">No derivatives found.
+			<?if(!$this->user_model->userLoaded):?>
+			<?$this->load->view("errors/loginForPermissions")?>
+			<?endif?>
+		</p>
+
+		<?else:?>
+			<?$uploadWidget = $fileObject->getUploadWidget();?>
+
+			<?if($uploadWidget->parentWidget->enableIframe && isset($uploadWidget->sidecars) && array_key_exists("iframe", $uploadWidget->sidecars)):
+				echo $this->load->view("fileHandlers/imageHandler_iframe", ["fileObject"=>$fileObject], true);
+			elseif($fileObject->sourceFile->getType() == "svs"):
+			?>
+				<?=$this->load->view("fileHandlers/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
+			<?elseif(array_key_exists("tiled", $fileContainers)):?>
+				<?
+				if($uploadWidget->parentWidget->enableDendro) {
+					echo $this->load->view("fileHandlers/imageHandler_dendro", ["fileObject"=>$fileObject], true);
+				}
+				else {
+					echo $this->load->view("fileHandlers/imageHandler_tiled", ["fileObject"=>$fileObject], true);
+				}
+				?>
+
+			<?else:?>
+				<?if(isset($fileObject->sourceFile->metadata["spherical"])):?>
+					<div style="height:500px">
+					 	<iframe frameborder=0 width="100%" height=100% scrolling="no" allowfullscreen src="/assets/vrview/index.html?image=<?=urlencode(stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
+					</div>
+				<?else:?>
+				<?if(array_values($fileContainers)[0]->derivativeType == "thumbnail"):?>
+					<p class="alert alert-info">Displaying thumbnail image.
+						<?if(!$this->user_model->userLoaded):?>
+						<?$this->load->view("errors/loginForPermissions")?>
+						<?if($embedded):?>
+						<?$this->load->view("login/login")?>
+						<?endif?>
+						<?endif?>
+					</p>
+					<?endif?>
+					 <div class="fullscreenImageContainer">
+
+			    			<div class="imageContainer panzoom-element">
+							<?if(count($fileContainers)>0):?>
+									<img class="img-responsive embedImage imageContent" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" alt="<?=($widgetObject && $widgetObject->fileDescription )?htmlspecialchars($widgetObject->fileDescription, ENT_COMPAT):null?>" />
+							<?endif?>
+							</div>
+							<?if($embedded):?>
+								<div class="hoverSlider">
+									<span></span><input type="range" class="zoom-range">
+									<span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>
+								</div>
+							<?endif?>
+					
+					</div>
+
+				<?endif?>
+
+			<?endif?>
+
+	<?endif?>
+<?if(!$embedded):?>
+	</div>
+</div>
+<?endif?>
+
+<?if(!$embedded):?>
+<?=renderFileMenu($menuArray)?>
+
+
+<script>
+
+$(function ()
+{
+	$(".infoPopover").popover({trigger: "focus | click"});
+	$(".infoPopover").tooltip({ placement: 'top'});
+
+});
+</script>
+<?endif?>
+
+<?if(count($fileContainers)>0):?>
+	<script>
+	$(document).on("click", ".canFullscreen", function() {
+		if($.fullscreen.isNativelySupported()) {
+			$(".imageContainer").first().fullscreen({ "toggleClass": "imageFullscreen"});
+		}
+	});
+	$(document).ready(function(){
+		// attach zoom handler after load, or chrome gets grumpy
+		$(".embedImage").on("load",function() {
+			$(".panzoom-element").panzoom({
+		    	contain: 'invert',
+		    	minScale: 1,
+		    	$zoomRange: $(".zoom-range")
+			});
+		
+		}).each(function(){
+  			if(this.complete) {
+    			$(this).trigger('load');
+  			}
+		});
+		
+	});
+
+	function debounce(func, wait, immediate) {
+		var timeout;
+		return function() {
+			var context = this, args = arguments;
+			var later = function() {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+	};
+
+	// chrome has an issue in which it won't re-draw an image after scaling, so it's blurry. This forces a redraw.
+	
+
+	</script>
+<?endif?>
