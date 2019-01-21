@@ -77,7 +77,7 @@ class collection_model extends CI_Model {
 		if($accessLevel < PERM_SEARCH) {
 			$allowedCollections = $user->getAllowedCollections(PERM_SEARCH);
 			if(count($allowedCollections) == 0) {
-				$this->errorhandler_helper->callError("noPermission");
+				return array();
 			}
 			$allParents = $this->instance->getCollectionsWithoutParent();
 
