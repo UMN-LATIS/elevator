@@ -17,7 +17,7 @@
 <script type="text/javascript" src='/assets/leaflet-annotation/L.Tooltip.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/Leaflet.Modal.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet-arrows.js'></script>
-<script type="text/javascript" src='/assets/leaflet-annotation/main.js?31254s5543f4'></script>
+<script type="text/javascript" src='/assets/leaflet-annotation/leaflet-annotate.js'></script>
 
 <style type="text/css">
 
@@ -112,7 +112,7 @@
     var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
     var layer;
 
-    var saveURL = "";
+    var saveURL = null;
     var canSave = false;
     <?if($this->user_model->getAccessLevel("instance",$this->instance) >= PERM_ADDASSETS || $this->user_model->getAccessLevel("collection",$fileObject->collection) >= PERM_ADDASSETS):?>
     saveURL = basePath + "assetManager/setSidecarForFile/<?=$fileObject->getObjectId()?>/svs";
@@ -146,6 +146,16 @@
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 
+        var mapOptions = {width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
+            height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
+            tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
+            maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
+            maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> + 5,
+            overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
+            pixelsPerMillimeter: pixelsPerMillimeter,
+            lineColor: 'blue'
+        };
+
         layer = L.tileLayer.elevator(function(coords, tile, done) {
             var error;
 
@@ -162,16 +172,7 @@
 
             return tile;
 
-        }, {
-            width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
-            height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
-            tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
-            maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
-            maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> + 5,
-            overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
-            pixelsPerMillimeter: pixelsPerMillimeter,
-            lineColor: 'blue'
-        });
+        }, mapOptions);
         layer.addTo(map);
 
         var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
@@ -203,13 +204,8 @@
 
             return tile;
 
-        }, {
-            width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
-            height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
-            tileSize: 254,
-            maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
-            overlap: 1,
-        });
+        }, mapOptions);
+        
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,
             height: 140 * heightScale,
@@ -259,9 +255,11 @@
 
         }
         
-        loadAnnotation(sideCar);
+        leafletAnnotate = new LAnnotate(map, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
 
 
     };
+
+    var leafletAnnotate;
 
 </script>

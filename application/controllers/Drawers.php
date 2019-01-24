@@ -35,8 +35,9 @@ class Drawers extends Instance_Controller {
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?key=". $this->config->item("googleApi") ."&libraries=geometry");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers",  "search", "loadDrawer"];
+		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers",  "search", "loadDrawer", "jquery.fullscreen-0.4.1"];
 		$this->template->loadJavascript($jsLoadArray);
+		$this->template->javascript->add("/assets/js/sly.min.js");
 
 		$this->template->addToDrawer->view("drawers/edit_drawer",["drawerId"=>$drawerId]);
 		$this->template->content->view("drawers/drawerModal");
