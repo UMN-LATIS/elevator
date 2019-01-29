@@ -57,17 +57,28 @@ $(document).on("ready", function() {
 	$(document).on("click", ".exifToggle", function(e) {
 		e.preventDefault();
 		var fileObject = $(e.target).data("fileobject");
-
+		Handlebars.registerHelper('ifObject', function(item, options) {
+  			if(typeof item === "object") {
+    			return options.fn(this);
+  			} else {
+    			return options.inverse(this);
+  			}
+		});
 		$.getJSON(basePath + 'fileManager/getMetadataForObject/' + fileObject, {}, function(json, textStatus) {
 			if(json.exif) {
-				var baseUL = $("<ul />");
-				$.each(json.exif, function(index, el) {
-					baseUL.append("<li>" + index + " : " + el + "</li>");
-				});
+				Handlebars.registerPartial( "exif-template", $( "#exif-template" ).html() );
+				var source   = $("#exif-template").html();
+				var template = Handlebars.compile(source);
+				var baseDiv = $("<div class='exifDisplay' />");
+				// $.each(, function(index, value) {
+					var html    = template(json.exif);
+					baseDiv.append(html);
+				// });
+				
 				bootbox.dialog(
 				{
 					title: "EXIF Data",
-					message: baseUL.html(),
+					message: baseDiv.html(),
 					buttons: {
 						success: {
 							label: "OK",

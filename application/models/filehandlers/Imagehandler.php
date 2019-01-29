@@ -94,29 +94,10 @@ class ImageHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$dimensions = null;
-		if($dimensions = fastImageDimensions($this->sourceFile)) {
-			$this->sourceFile->metadata["width"] = $dimensions["x"];
-			$this->sourceFile->metadata["height"] = $dimensions["y"];
-		}
 
+		$fileObject->metadata = getImageMetadata($this->sourceFile);
 
 		$sourceFile = $this->swapLocalForPNG();
-
-
-		$fileObject->metadata = getImageMetadata($sourceFile);
-
-		if($dimensions) {
-			$fileObject->metadata["width"] = $dimensions["x"];
-			$fileObject->metadata["height"] = $dimensions["y"];
-		}
-		else {
-			if(get_class($sourceFile) == "FileContainer") {
-				// we're dealing with a local swap, scale up by 10x
-				$fileObject->metadata["width"] = $fileObject->metadata["width"]  * 10;
-				$fileObject->metadata["height"] = $fileObject->metadata["height"]  * 10;
-			}
-		}
 
 
 		if(!$fileObject->metadata) {
@@ -139,7 +120,7 @@ class ImageHandler extends FileHandlerBase {
 		 * As these standards evolve this should be refactored
 		 */
 		$uploadWidget = $this->getUploadWidget();
-		if((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["GPano:UsePanoramaViewer"]) && $fileObject->metadata["exif"]["GPano:UsePanoramaViewer"] == "True") || stristr($uploadWidget->fileDescription, "spherical")) {
+		if((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["XMP"]) && isset($fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"]) && $fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"] == true) || stristr($uploadWidget->fileDescription, "spherical")) {
 			$fileObject->metadata["spherical"] = true;
 			$this->taskArray = $this->sphericalTaskArray; // swap out our task array to get a bigger max size for our derivatives in this case.
 			
