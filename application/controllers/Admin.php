@@ -277,13 +277,25 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function resaveAll($startValue, $maxValue) {
+	public function resaveAll($targetIndex=null, $wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null, $lastModifiedDate=null) {
+		
+		if($targetIndex !== "false" && $targetIndex) {
+			$this->config->set_item('elasticIndex', $targetIndex);
+		}
+
+
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
 		->select("a")
 		->where("a.deleted != TRUE")
 		->orWhere("a.deleted IS NULL")
-		->andWhere("a.assetId IS NOT NULL");
+		->andWhere("a.assetId IS NOT NULL")
+		->orderby("a.id", "desc");
+
+		if($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
+			$qb->andWhere("a." . $searchKey ." = ?1");
+			$qb->setParameter(1, $searchValue);
+		}
 
 		if($startValue > 0) {
 			$qb->setFirstResult($startValue);
@@ -291,6 +303,12 @@ class admin extends Admin_Controller {
 		if($maxValue > 0) {
 			$qb->setMaxResults($maxValue);
 		}
+
+		if($lastModifiedDate !== "false" && $lastModifiedDate) {
+			$qb->andWhere("a.modifiedAt > ?1");
+			$qb->setParameter(1, $lastModifiedDate);
+		}
+
 		$result = $qb->getQuery()->iterate();
 
 		$this->load->model("asset_model");
@@ -304,7 +322,7 @@ class admin extends Admin_Controller {
 			$asset->loadAssetFromRecord($entry);
 			echo "Loading: " . $asset->getObjectId() . "\n";
 			echo "Resaving: " . $asset->getObjectId() . "\n";
-			$asset->save(false, false);
+			// $asset->save(false, false);
 			$this->doctrine->em->clear();
 
 
