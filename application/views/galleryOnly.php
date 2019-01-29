@@ -48,7 +48,7 @@ $(document).ready(function() {
 }
 
 .galleryIframe {
-	min-height: 600px;
+	min-height: 200px;
 	height: calc(100% - 50px - 50px - 100px);
 }
 
