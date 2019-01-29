@@ -87,9 +87,13 @@
                 <option value="0">Best Match</option>
                 <option value="lastModified.desc">Modified Date (newest to oldest)</option>
                 <option value="lastModified.asc">Modified Date (oldest to newest)</option>
-                <option value="title.raw">Title</option>
                 <?foreach($searchableWidgets as $title=>$values):?>
-                  <option value="<?=$title?>"><?=$values['label']?></option>
+                  <?if($values['type'] == "date"):?>
+                    <option value="dateCache.startDate.desc"><?=$values['label']?> (newest to oldest)</option>
+                    <option value="dateCache.startDate.asc"><?=$values['label']?> (oldest to newest)</option>
+                  <?else:?>
+                    <option value="<?=$title?>.raw"><?=$values['label']?></option>
+                  <?endif?>
                 <?endforeach?>
               </select>
             </div>

@@ -88,7 +88,7 @@ $(document).ready(function() {
 
     $(".embedMap").on("click", function(e) {
     	e.preventDefault();
-    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/map/" + getCurrentSearchId();
+    	embedPath =  "//" + window.location.hostname + basePath + "search/map/" + getCurrentSearchId();
 
     	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
 
@@ -110,7 +110,7 @@ $(document).ready(function() {
 
     $(".embedTimeline").on("click", function(e) {
     	e.preventDefault();
-    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/timeline/" + getCurrentSearchId();
+    	embedPath = "//" + window.location.hostname + basePath + "search/timeline/" + getCurrentSearchId();
 
     	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
 
@@ -132,7 +132,7 @@ $(document).ready(function() {
 
     $(".embedGallery").on("click", function(e) {
     	e.preventDefault();
-    	embedPath = window.location.protocol + "//" + window.location.hostname + basePath + "search/gallery/" + getCurrentSearchId();
+    	embedPath = "//" + window.location.hostname + basePath + "search/gallery/" + getCurrentSearchId();
 
     	iFrameContent = '<iframe width="640" height="480" src="' +embedPath + '" frameborder="0" allowfullscreen></iframe>';
 
