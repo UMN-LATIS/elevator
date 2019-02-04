@@ -560,7 +560,7 @@ function prepGallery() {
 
 function loadGalleryElement(index) {
 	targetItem = galleryFrame.items[index].el;
-	$(".frameHeader").html("<a href='" + basePath + "/asset/viewAsset/" + $(targetItem).data("objectid") + "'><h2>" + $(targetItem).data("title") + "</h2></a>" );
+	$(".frameHeader").html("<a href='" + basePath + "asset/viewAsset/" + $(targetItem).data("objectid") + "'><h2>" + $(targetItem).data("title") + "</h2></a>" );
 	$(".galleryIframe").attr("src", basePath + "asset/getEmbed/" + $(targetItem).data("primaryhandler") + "/" + $(targetItem).data("objectid") + "/true");
 }
 
