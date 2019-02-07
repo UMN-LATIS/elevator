@@ -928,7 +928,10 @@ class AssetManager extends Admin_Controller {
 							if(strpos($rowEntry, ",")) {
 								$exploded = explode(",", $rowEntry);
 								$widgetContainer->tags = $exploded;
-							}	
+							}
+							else {
+								$widgetContainer->tags = $rowEntry;
+							}
 						}
 						else if(get_class($widget) == "Related_asset") {
 							if(strlen($rowEntry)> 15) {
