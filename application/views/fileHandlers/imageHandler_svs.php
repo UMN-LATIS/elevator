@@ -106,6 +106,10 @@
     </style>
 <script type="application/javascript">
 
+    if(map) {
+        map.remove();
+    }
+
     var map;
     var s3;
     var AWS;
