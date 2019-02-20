@@ -152,7 +152,8 @@ function getImageMetadata($sourceImage) {
 	$commandline = "exiftool -j -g " . $sourceImage->getPathToLocalFile();
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
-		$extractedParsed = json_decode(implode("\n", $results), true);
+		// strip bad unicode character that will make postgres mad
+		$extractedParsed = json_decode(implode("\n",  str_replace("\u0000", "",$results)), true);
 		$extractedParsed = $extractedParsed[0];
 	}
 	else {
