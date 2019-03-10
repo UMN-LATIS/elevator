@@ -244,6 +244,15 @@
 	</div>
 </div>
 
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="showPreviousNextSearchResults" name="showPreviousNextSearchResults" value="On" <?=$instance->getShowPreviousNextSearchResults()?"checked":null?>>
+			Show Previous/Next Search Results when Viewing Asset
+		</label>
+	</div>
+</div>
+
 
 
 

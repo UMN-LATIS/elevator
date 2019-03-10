@@ -66,6 +66,7 @@ class Instances extends Instance_Controller {
 		$instance->setHideVideoAudio($this->input->post('hideVideoAudio')?1:0);
 		$instance->setAllowIndexing($this->input->post('allowIndexing')?1:0);
 		$instance->setShowCollectionInSearchResults($this->input->post('showCollectionInSearchResults')?1:0);
+		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 
