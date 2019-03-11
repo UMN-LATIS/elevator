@@ -1186,4 +1186,33 @@ class Instance
     {
         return $this->showCollectionInSearchResults;
     }
+    /**
+     * @var boolean
+     */
+    private $showPreviousNextSearchResults;
+
+
+    /**
+     * Set showPreviousNextSearchResults
+     *
+     * @param boolean $showPreviousNextSearchResults
+     *
+     * @return Instance
+     */
+    public function setShowPreviousNextSearchResults($showPreviousNextSearchResults)
+    {
+        $this->showPreviousNextSearchResults = $showPreviousNextSearchResults;
+
+        return $this;
+    }
+
+    /**
+     * Get showPreviousNextSearchResults
+     *
+     * @return boolean
+     */
+    public function getShowPreviousNextSearchResults()
+    {
+        return $this->showPreviousNextSearchResults;
+    }
 }

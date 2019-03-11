@@ -195,7 +195,7 @@ function parseSearch() {
 function loadCollectionHeader() {
 	if($("input[name='collection[]']").length == 1 && $("input[name='collection[]']").val() !== "0" && $("#searchText").val() == "") {
 		$.get(basePath + "collections/collectionHeader/" + $("input[name='collection[]']").val(), function(data) {
-			$(".collectonHeader").html(data);
+			$(".collectionHeader").html(data);
 		});
 	}
 

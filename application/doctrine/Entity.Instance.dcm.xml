@@ -77,5 +77,6 @@
           <field name="customHeaderImage" type="blob" nullable='true' />
           <field name="allowIndexing" type="boolean" nullable='true' />
           <field name="showCollectionInSearchResults" type="boolean" nullable='true' />
+          <field name="showPreviousNextSearchResults" type="boolean" nullable='true' />
       </entity>
 </doctrine-mapping>
