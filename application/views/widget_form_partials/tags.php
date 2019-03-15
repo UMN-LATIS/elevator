@@ -75,7 +75,7 @@ $(document).ready(function($) {
 		var self = $("#<?=$textId?>");
 		return function(entry, sync,async) {
 			<?if($autocomplete):?>
-				var templateId = $("#sourceTemplate").val();
+				var templateId = null;
 				var fieldTitle = $(self).closest(".tab-pane").attr("id");
 				$.post( basePath + "search/autocomplete/", {templateId: templateId, fieldTitle:fieldTitle, searchTerm:entry}, function( data ) {
 					try{

@@ -274,25 +274,32 @@ class Asset_model extends CI_Model {
 	 * complain too much.)
 	 * @return [type] [description]
 	 */
-	public function getPrimaryFilehandler($tryCache = true) {
+	public function getPrimaryFilehandler($tryCache = true, &$parentArray = array()) {
 		$fileHandler = NULL;
 
 		if($tryCache && $this->assetObject->getAssetCache() && ($this->useStaleCaches || !$this->assetObject->getAssetCache()->getNeedsRebuild())) {
 			$fileHandler = $this->filehandler_router->getHandledObject($this->assetObject->getAssetCache()->getPrimaryHandlerCache());
 		}
 
+		if(!is_array($parentArray)) { 
+			$parentArray = array();
+		}
+		$parentArray[] = $this->getObjectId();
+
 		if(!$fileHandler) {
 			$fileHandler = null;
 			$foundPrimary = FALSE;
 			if(!$uploadContents = $this->findPrimaryWithinAsset($this, "Upload")) {
 				// no first tier primary, try nested - first see if the primary related has an image.
+				
 				$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
 				foreach($relatedArray as $asset) {
 
 					foreach($asset->fieldContentsArray as $fieldContents) {
-						if(!$asset->getAllowMultiple() || $fieldContents->isPrimary || count($asset->fieldContentsArray)==1) {
+						
+						if((!$asset->getAllowMultiple() || $fieldContents->isPrimary || count($asset->fieldContentsArray)==1) && !in_array($fieldContents->getRelatedObjectId(), $parentArray)) {
 							try {
-								$fileHandler = $fieldContents->getPrimaryFilehandler();
+								$fileHandler = $fieldContents->getPrimaryFilehandler($parentArray);
 							}
 							catch (Exception $e) {
 
