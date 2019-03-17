@@ -683,17 +683,19 @@ class Permissions extends Instance_Controller {
 
 		$hiddenAssetArray = array();
 
+		$userModel = new User_model();
+		$userModel->loadUser($user->getId());
+
 		foreach($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
 			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 		$instanceList = $this->doctrine->em->getRepository("Entity\Instance")->findAll();
 
-		 $apiKey = $this->user_model->getApiKeys()?$this->user_model->getApiKeys()->first():null;
+		 $apiKey = $userModel->getApiKeys()?$userModel->getApiKeys()->first():null;
 		if(!$apiKey) {
-			$apiKey = $this->user_model->generateKeys();
+			$apiKey = $userModel->generateKeys();
 		}
-
 
 		$this->template->loadJavascript(["bootstrap-datepicker","bootstrap-show-password"]);
 		$this->template->loadCSS(["datepicker"]);

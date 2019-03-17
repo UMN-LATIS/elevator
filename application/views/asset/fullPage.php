@@ -8,6 +8,12 @@ $collectionId = $assetModel->getGlobalValue("collectionId");
 var objectId = "<?=$assetModel->getObjectId()?>";
 </script>
 
+<?if( $this->instance->getShowPreviousNextSearchResults()):?>
+<div class="row searchResultsNavBar hide">
+	<div class="col-xs-6 col-sm-2"><a href="#" class="previousResult"><span class="glyphicon glyphicon-chevron-left"></span>Previous Result</a></div>
+	<div class="col-xs-6 col-sm-2 col-sm-offset-8 text-right"><a href="#" class="nextResult">Next Result <span class="glyphicon glyphicon-chevron-right"></span></a></div>
+</div>
+<?endif?>
 <div class="row">
 
 	<div class="col-md-7" id="embedView" data-objectid="<?=$firstAsset?>">

@@ -188,6 +188,24 @@ $(document).on("ready", function() {
 		});
 	});
 
+	if(searchId) {
+		$(".searchResultsNavBar").removeClass("hide");
+		$(".previousResult").on("click", function(e) {
+			e.preventDefault();
+			$.cookie('lastSearch', searchId, {
+				path: "/"
+			});
+			window.location = basePath + "/search/getResult/previous/" + searchId + "/" + objectId;
+		});
+		$(".nextResult").on("click", function (e) {
+			e.preventDefault();
+			$.cookie('lastSearch', searchId, {
+				path: "/"
+			});
+			window.location = basePath + "/search/getResult/next/" + searchId + "/" + objectId;
+		});
+	}
+
 	// if they came in with a hash, let's find and load that asset.
 	if(window.location.hash) {
 		nestedObjectId = window.location.hash.replace("#","");

@@ -625,6 +625,56 @@ class Search extends Instance_Controller {
 
 	}
 
+	public function getResult($direction, $searchId, $objectId) {
+
+		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
+		if(!$searchArchiveEntry) {
+			echo "Invalid URL";
+			return;
+		}
+		$searchArray = $searchArchiveEntry->getSearchData();
+		$this->load->model("search_model");
+		$page=0;
+
+		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, true);
+
+		if(count($matchArray["searchResults"]) == 0) {
+			echo "Invalid Search";
+			return;
+		}
+		$target = null;
+
+		for($i =0; $i<count($matchArray["searchResults"]); $i++) {
+			if($matchArray["searchResults"][$i] == $objectId) {
+				if($direction == "next") {
+					if($i !== (count($matchArray["searchResults"]) -1)) {
+						echo 
+						$target = $matchArray["searchResults"][$i+1];
+					}
+					else {
+						$target = $matchArray["searchResults"][0];
+					}
+				}
+				else if($direction == "previous") {
+					if($i !== 0) {
+						$target = $matchArray["searchResults"][$i-1];
+					}
+					else {
+						$target = $matchArray["searchResults"][count($matchArray["searchResults"])-1];
+					}
+				}
+			}
+		}
+		if($target) {
+			instance_redirect("asset/viewAsset/" . $target);
+		}
+		else {
+			instance_redirect("/search/s/" + $searchId);
+		}
+		
+		
+	}
+
 
 	public function searchList() {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);

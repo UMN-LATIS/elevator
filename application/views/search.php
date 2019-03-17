@@ -1,4 +1,4 @@
-<div class="collectonHeader">
+<div class="collectionHeader">
 </div>
 
 
