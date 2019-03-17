@@ -880,16 +880,17 @@ class AssetManager extends Admin_Controller {
 				else {
 					$rowArray[] = $cell;
 				}
-
+				$firstLoop = true;
 				foreach($rowArray as $rowEntry) {
 					if($cacheArray['mapping'][$key] !== "ignore" && $cacheArray['mapping'][$key] !== "objectId") {
 						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
 						$widgetContainer = $widget->getContentContainer();
 
-						if($isUpdate) {
+						if($isUpdate && $firstLoop) {
 							// for updates, clear existing content
 							$newEntry[$widget->getFieldTitle()] = array();
 						}
+						$firstLoop = false;
 
 						if(get_class($widget) == "Upload" && strlen(trim($rowEntry))>0) {
 							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($rowEntry)];

@@ -409,7 +409,7 @@ function buildAutocomplete() {
 			var self = value;
 			$(value).autocomplete({
 				source: function(request, response) {
-					var templateId = $("#sourceTemplate").val();
+					var templateId = null;
 					var fieldTitle = $(self).closest(".tab-pane").attr("id");
 					var searchTerm = request.term;
 					$.post( basePath + "search/autocomplete/", {templateId: templateId, fieldTitle:fieldTitle, searchTerm:searchTerm}, function( data ) {

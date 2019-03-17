@@ -649,7 +649,7 @@ class Transcoder_Model extends CI_Model {
 				if($isRotated) {
 	        		$process->addCommand('-metadata:s:v', 'rotate=""');
 	        	}
-	        	$process->addCommand("-scodec", "copy");
+	        	$process->addCommand("-scodec", "mov_text");
 				$this->mungeAspect($process);
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
@@ -698,7 +698,7 @@ class Transcoder_Model extends CI_Model {
 	        		$process->addCommand('-metadata:s:v', 'rotate=""');
 	        	}
 				$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:720,setdar=0", true);
-				$process->addCommand("-scodec", "copy");
+				$process->addCommand("-scodec", "mov_text");
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "HD not created","", "", $this->job->getId());
@@ -746,7 +746,7 @@ class Transcoder_Model extends CI_Model {
 	        		$process->addCommand('-metadata:s:v', 'rotate=""');
 	        	}
 				$process->addCommand("-vf", $rotationString . "scale=1920:trunc(ow/dar/2)*2,setdar=0", true);
-				$process->addCommand("-scodec", "copy");
+				$process->addCommand("-scodec", "mov_text");
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "HD1080 not created","", "", $this->job->getId());
@@ -805,7 +805,7 @@ class Transcoder_Model extends CI_Model {
 	        		if($isRotated) {
 	        			$process->addCommand('-metadata:s:v', 'rotate=""');
 	        		}
-	        		$process->addCommand("-scodec", "copy");
+	        		$process->addCommand("-scodec", "mov_text");
 
 
 	        		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-2000k.m3u8", $outputFormat);
@@ -841,7 +841,7 @@ class Transcoder_Model extends CI_Model {
         		if($isRotated) {
         			$process->addCommand('-metadata:s:v', 'rotate=""');
         		}
-        		$process->addCommand("-scodec", "copy");
+        		$process->addCommand("-scodec", "mov_text");
 
         		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8", $outputFormat);
 				if(!$output) {
@@ -873,7 +873,7 @@ class Transcoder_Model extends CI_Model {
         		if($isRotated) {
         			$process->addCommand('-metadata:s:v', 'rotate=""');
         		}
-        		$process->addCommand("-scodec", "copy");
+        		$process->addCommand("-scodec", "mov_text");
 
 
         		$ouptut = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-600k.m3u8", $outputFormat);

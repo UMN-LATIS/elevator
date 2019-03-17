@@ -86,7 +86,7 @@ class Related_asset_contents extends Widget_contents_base {
 		return false;
 	}
 
-	public function getPrimaryFileHandler() {
+	public function getPrimaryFileHandler(&$parentArray = array()) {
 		if(!$this->cachedPrimaryHandler && $assetCache = $this->parentObject->assetObject->getAssetCache()) {
 			if($this->parentObject->useStaleCaches || !$assetCache->getNeedsRebuild()) {
 				$relatedAssetCache = $assetCache->getRelatedAssetCache();
@@ -104,7 +104,17 @@ class Related_asset_contents extends Widget_contents_base {
 			try {
 				$relatedAsset = $this->getRelatedAsset();
 				if($relatedAsset) {
-					$fileHandler = $relatedAsset->getPrimaryFilehandler();
+					if(!is_array($parentArray)) {
+						$parentArray = array();
+					}
+					if(in_array($this->getRelatedObjectId(), $parentArray)) {
+						throw new Exception('Primary File Handler Not Found');
+						return;
+					}
+					
+					$parentArray[] = $this->getRelatedObjectId();
+
+					$fileHandler = $relatedAsset->getPrimaryFilehandler(true, $parentArray);
 				}
 				else {
 					throw new Exception('Primary File Handler Not Found');
