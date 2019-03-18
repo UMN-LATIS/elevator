@@ -314,7 +314,7 @@ class S3_model extends CI_Model {
 		return $this->s3Client->getObjectUrl($this->bucket, $targetKey);
 	}
 
-	public function getProtectedURL($targetKey, $originalName=null, $timeString="+240 minutes") {
+	public function getProtectedURL($targetKey, $originalName=null, $timeString="+240 minutes", $forceMimeType=null) {
 		try {
 			$options = array();
 
@@ -329,6 +329,9 @@ class S3_model extends CI_Model {
 				// if we don't have an explicit filename, force S3 not to serve one.
 				// we do this mostly because Flash doesn't accept files with a content disposition.
 				$options["ResponseContentDisposition"] = '';
+			}
+			if($forceMimeType) {
+				$options['ResponseContentType'] = $forceMimeType;
 			}
 
 			$cmd = $this->s3Client->getCommand('GetObject', $options);
