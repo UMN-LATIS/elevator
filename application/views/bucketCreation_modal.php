@@ -43,7 +43,7 @@
               <div class="col-sm-offset-2 col-sm-10">
                 <div class="checkbox">
                   <label>
-                    <input name="useStandardIA" type="checkbox">Enable Standard IA
+                    <input name="useStandardIA" type="checkbox" CHECKED>Enable Standard IA
                   </label>
                 </div>
               </div>

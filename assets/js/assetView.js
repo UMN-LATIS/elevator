@@ -195,14 +195,14 @@ $(document).on("ready", function() {
 			$.cookie('lastSearch', searchId, {
 				path: "/"
 			});
-			window.location = basePath + "/search/getResult/previous/" + searchId + "/" + objectId;
+			window.location = basePath + "search/getResult/previous/" + searchId + "/" + objectId;
 		});
 		$(".nextResult").on("click", function (e) {
 			e.preventDefault();
 			$.cookie('lastSearch', searchId, {
 				path: "/"
 			});
-			window.location = basePath + "/search/getResult/next/" + searchId + "/" + objectId;
+			window.location = basePath + "search/getResult/next/" + searchId + "/" + objectId;
 		});
 	}
 
