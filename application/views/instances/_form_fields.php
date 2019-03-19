@@ -85,13 +85,13 @@
 	<div class="col-sm-6">
 		<div class="radio">
 			<label>
-				<input type="radio" name="s3StorageType" id="inputS3StorageType" value="<?=AWS_REDUCED?>" <?=($instance->getS3StorageType()== AWS_REDUCED || $instance->getS3StorageType()==null)?"checked=\"checked\"":null?>>
+				<input type="radio" name="s3StorageType" id="inputS3StorageType" value="<?=AWS_REDUCED?>" <?=($instance->getS3StorageType()== AWS_REDUCED )?"checked=\"checked\"":null?>>
 				Reduced Redundancy Storage
 			</label>
 		</div>
 		<div class="radio">
 			<label>
-				<input type="radio" name="s3StorageType" id="inputS3StorageType" value="<?=AWS_STANDARD?>" <?=($instance->getS3StorageType()== AWS_STANDARD)?"checked=\"checked\"":null?>>
+				<input type="radio" name="s3StorageType" id="inputS3StorageType" value="<?=AWS_STANDARD?>" <?=($instance->getS3StorageType()== AWS_STANDARD || $instance->getS3StorageType()==null)?"checked=\"checked\"":null?>>
 				Standard Storage
 			</label>
 		</div>
