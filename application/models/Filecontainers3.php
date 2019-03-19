@@ -202,8 +202,8 @@ class FileContainerS3 extends FileContainer {
 	 * @param  [type] $appendedString [description]
 	 * @return [type]                 [description]
 	 */
-	public function getProtectedURLForFile($appendedString=null, $timeString="+10 minutes") {
-		return $this->parent->s3model->getProtectedURL($this->storageKey . $appendedString, $this->originalFilename, $timeString);
+	public function getProtectedURLForFile($appendedString=null, $timeString="+240 minutes", $forceMimeType = null) {
+		return $this->parent->s3model->getProtectedURL($this->storageKey . $appendedString, $this->originalFilename, $timeString, $forceMimeType);
 	}
 
 	public function getAsArray() {

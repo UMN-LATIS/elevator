@@ -103,7 +103,7 @@ $menuArray['download'] = $downloadArray;
     jwplayer("videoElement").setup({
       image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png"?>",
         <?if(isset($fileContainers['mp3'])):?>
-      file: "<?=isset($fileContainers['mp3'])?stripHTTP($fileContainers['mp3']->getProtectedURLForFile()):null?>",
+      file: "<?=isset($fileContainers['mp3'])?stripHTTP($fileContainers['mp3']->getProtectedURLForFile(null, "+240 minutes", "audio/mp3")):null?>",
       type: "mp3",
         <?endif?>
       width: "100%",
