@@ -81,27 +81,6 @@
 </div>
 
 <div class="form-group">
-	<label class="col-sm-2 control-label">S3 Storage Type</label>
-	<div class="col-sm-6">
-		<div class="radio">
-			<label>
-				<input type="radio" name="s3StorageType" id="inputS3StorageType" value="<?=AWS_REDUCED?>" <?=($instance->getS3StorageType()== AWS_REDUCED || $instance->getS3StorageType()==null)?"checked=\"checked\"":null?>>
-				Reduced Redundancy Storage
-			</label>
-		</div>
-		<div class="radio">
-			<label>
-				<input type="radio" name="s3StorageType" id="inputS3StorageType" value="<?=AWS_STANDARD?>" <?=($instance->getS3StorageType()== AWS_STANDARD)?"checked=\"checked\"":null?>>
-				Standard Storage
-			</label>
-		</div>
-	</div>
-
-
-</div>
-
-
-<div class="form-group">
 	<label for="inputDefaultBucket" class="col-sm-2 control-label">Default Bucket:</label>
 	<div class="col-sm-6">
 		<input type="text" name="defaultBucket" id="inputDefaultBucket" class="form-control s3control" value="<?= $instance->getDefaultBucket(); ?>">

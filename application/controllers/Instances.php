@@ -49,7 +49,7 @@ class Instances extends Instance_Controller {
 		$instance->setOwnerHomepage($this->input->post('ownerHomepage'));
 		$instance->setAmazonS3Key($this->input->post('amazonS3Key'));
 		$instance->setAmazonS3Secret($this->input->post('amazonS3Secret'));
-		$instance->setS3StorageType($this->input->post('s3StorageType'));
+		$instance->setS3StorageType(AWS_STANDARD);
 		$instance->setBucketRegion($this->input->post('bucketRegion'));
 		$instance->setDefaultBucket($this->input->post('defaultBucket'));
 		$instance->setGoogleAnalyticsKey($this->input->post('googleAnalyticsKey'));
