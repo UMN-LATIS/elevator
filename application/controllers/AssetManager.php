@@ -935,8 +935,19 @@ class AssetManager extends Admin_Controller {
 							}
 						}
 						else if(get_class($widget) == "Related_asset") {
-							if(strlen($rowEntry)> 15) {
-								$widgetContainer->targetAssetId = $rowEntry;	
+							$targetId = $rowEntry;
+							$label = null;
+							if(strpos($rowEntry, ",")) {
+								$exploded = preg_split("/,/", $rowEntry, 3);
+								$targetId = $exploded[0];
+								$label = $exploded[1];
+							}
+							
+							if(strlen($targetId)> 15) {
+								$widgetContainer->targetAssetId = $targetId;	
+								if($label) {
+									$widgetContainer->label = $label;
+								}
 							}		
 						}
 						else if(get_class($widget) == "Checkbox") {
