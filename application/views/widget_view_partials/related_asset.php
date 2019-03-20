@@ -1,5 +1,7 @@
 <? /** SOMEONE SHOULD REFACTOR THIS **/ ?>
-
+<?
+$seed = round(microtime(true))// we're using a seed to provide collisions with recursive nested assets.  This is stupid and only a reflection of how old this code is.
+?>
 <div class="panel-group nestedGroup">
 	<p><strong><?=$widgetModel->getLabel()?>:</strong></p>
 <?php
@@ -67,13 +69,13 @@
 				// standard list view
 				elseif($fieldContent->getRelatedObjectId()):?>
 					<?$title = reset($fieldContent->getRelatedObjectTitle()); if($title):?>
-						<div class="panel panel-default relatedAssetContainer relatedListToggle"  data-objectid="<?=$fieldContent->getRelatedObjectId()?>" id="accordion<?=$fieldContent->getRelatedObjectId()?>">
+						<div class="panel panel-default relatedAssetContainer relatedListToggle"  data-objectid="<?=$fieldContent->getRelatedObjectId()?>" id="accordion<?=$fieldContent->getRelatedObjectId()?><?=$seed?>">
 							<div class="panel-heading">
 								<h4 class="panel-title">
 								<?try { $result = $fieldContent->getPrimaryFileHandler(); ?>
 								<img class="pull-left super-tiny-image img-responsive img-rounded loadView" data-fileobjectid="<?=$fileObjectId?>" srcsrc="<?=$retina?> 2x" src="<?=$standard ?>">
 								<? } catch (Exception $e) { /* no file handler, ignore this */ }?>
-								<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedObjectId()?>" data-objectId="<?=$fieldContent->getRelatedObjectId()?>" href="#collapse<?=$fieldContent->getRelatedObjectId()?>">
+								<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedObjectId()?><?=$seed?>" data-objectId="<?=$fieldContent->getRelatedObjectId()?>" href="#collapse<?=$fieldContent->getRelatedObjectId()?><?=$seed?>">
 								<div class="truncatedTitle">
 								<?
 								if(!$title) {
@@ -92,7 +94,7 @@
 
 								</h4>
 							</div>
-							<div id="collapse<?=$fieldContent->getRelatedObjectId()?>" class="panel-collapse collapse">
+							<div id="collapse<?=$fieldContent->getRelatedObjectId()?><?=$seed?>" class="panel-collapse collapse">
 								<div class="panel-body relatedAssetContents">
 
 								</div>
