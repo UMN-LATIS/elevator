@@ -13,15 +13,22 @@
   <?endif?>
 <script src="/assets/minifiedjs/jquery.min.js"></script>
 
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
+<link rel="stylesheet" href="/assets/leaflet/leaflet.css">
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
+</head>
 
-  <script>
-  var basePath = "<?=$this->template->relativePath?>";
-  </script>
+<script>
+var basePath = "<?=$this->template->relativePath?>";
+var googleAPIKey = "<?=$this->config->item("googleApi")?>";
+</script>
 
   <!-- Bootstrap CSS -->
 </head>
