@@ -31,3 +31,13 @@ if($uploadWidget && $uploadWidget->parentWidget->enableIframe):
 	</div>
 </div>
 <?endif?>
+
+
+<?if(isset($sidecarData['svs'])): // todo, abstract this?>
+<div class="form-group">
+	<label for="<?=$formFieldRoot?>_svs" class="col-sm-3 control-label">SVS Data</label>
+	<div class="col-sm-5">
+		<textarea class="form-control" id="<?=$formFieldRoot?>_svs" name="<?=$formFieldRoot?>[svs]" placeholder=""><?=json_encode($sidecarData['svs'])?></textarea>
+	</div>
+</div>
+<?endif?>
