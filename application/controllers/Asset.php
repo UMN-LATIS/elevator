@@ -172,10 +172,12 @@ class asset extends Instance_Controller {
 					if(!$contents->getRelatedAsset()) {
 						$this->errorhandler_helper->callError("unknownAsset", $inline=true);
 						$foundAsset = true;
+						return;
 					}
 					else {
 						$this->load->view("asset/sidebar", ["sidebarAssetModel"=>$contents->getRelatedAsset()]);
 						$foundAsset = true;
+						return;
 					}
 
 				}
