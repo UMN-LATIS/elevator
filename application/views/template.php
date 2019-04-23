@@ -338,7 +338,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
     <?if(isset($this->instance) && $this->instance->getUseCustomHeader()):?>
       <?=file_get_contents("assets/instanceAssets/" . $this->instance->getId() . "_footer.html");?>
       <?endif?>
-      <p>
+      <p class="universityFooter">
         <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage">Powered by Elevator, developed by the <A href="http://www.umn.edu">University of Minnesota</a>
       </p>
     </footer>
