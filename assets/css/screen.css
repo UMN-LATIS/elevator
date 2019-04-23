@@ -142,6 +142,10 @@ select.input-xs {
 .footer {
   margin: 10px;
 }
+.universityFooter {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 .elevatorFooterImage {
   height: 40px;
   margin-top: -10px;

@@ -73,6 +73,7 @@
           <field name="featuredAsset" type="string" nullable='true' />
           <field name="featuredAssetText" type="text" nullable='true' />
           <field name="customHeaderText" type="text" nullable='true' />
+          <field name="customFooterText" type="text" nullable='true' />
           <field name="customHeaderCSS" type="text" nullable='true' />
           <field name="customHeaderImage" type="blob" nullable='true' />
           <field name="allowIndexing" type="boolean" nullable='true' />
