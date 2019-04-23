@@ -151,6 +151,13 @@
 	</div>
 </div>
 
+<div class="form-group">
+	<label for="inputCustomFooterText" class="col-sm-2 control-label">Custom Footer Content</label>
+	<div class="col-sm-6">
+		<textarea name="customFooterText" class="form-control"><?= $instance->getCustomFooterText(); ?></textarea><br/>
+	</div>
+</div>
+
 
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
