@@ -61,7 +61,7 @@ class UWHelper extends AuthHelper
 	}
 
 	public function getUserIdFromRemote() {
-		return $this->shibboleth->getAttributeValue('idNameID');
+		return $this->shibboleth->getAttributeValue('uwnetid');
 	}
 
 	public function updateUserFromRemote($user) {
