@@ -46,6 +46,12 @@ class UWHelper extends AuthHelper
 		if($this->shibboleth->getAttributeValue("isGuest") == "Y") {
 			$user->setUserType("Remote-Guest");
 		}
+		if($this->shibboleth->getAttributeValue("displayName")) {
+			$user->setDisplayName($this->shibboleth->getAttributeValue("displayName"));
+		}
+		if($this->shibboleth->getAttributeValue("email")) {
+			$user->setEmail($this->shibboleth->getAttributeValue("email"));
+		}
 		$user->setInstance($CI->instance);
 		$user->setIsSuperAdmin(false);
 		$user->setFastUpload(false);
