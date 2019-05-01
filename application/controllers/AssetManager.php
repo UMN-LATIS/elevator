@@ -958,17 +958,18 @@ class AssetManager extends Admin_Controller {
 						else if(get_class($widget) == "Multiselect") {
 							// let's split and rematch the entry
 							$splitEntry = explode("/", $rowEntry);
-							$topLevels = getTopLevels($widget->getFieldData());
+							$topLevels = array_values(getTopLevels($widget->getFieldData())); // rekey so we get the headers properly
 							$mappedArray = array();
-							for($i=0; $i<count($splitEntry); $i++) {
-								if(isset($topLevels[$i])) {
+							for($i=0; $i<count($topLevels); $i++) {
+								if(isset($splitEntry[$i])) {
 									$mappedArray[makeSafeForTitle($topLevels[$i])] = trim($splitEntry[$i]);
 								}
 								else {
-									$mappedArray[] = $splitEntry[$i];
+									$mappedArray[makeSafeForTitle($topLevels[$i])] ="";
 								}
 								
 							}
+
 							$widgetContainer->fieldContents = $mappedArray;
 						}
 						else {
