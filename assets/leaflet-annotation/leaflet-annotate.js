@@ -627,7 +627,7 @@ function Annotations(La) {
             this.notationStarted = false
             $(this.leafletAnnotate.viewer._container).off('click')
 
-            if (tis.hannotationMarker != null) {
+            if (this.hannotationMarker != null) {
                 this.leafletAnnotate.layerGroup.removeLayer(this.annotationMarker)
             }
         }

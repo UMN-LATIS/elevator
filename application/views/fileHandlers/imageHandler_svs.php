@@ -147,6 +147,7 @@
             drawControl: true,
             layers: [],
             keyboard: false,
+            detectRetina: false,
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 
@@ -157,7 +158,8 @@
             maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> + 5,
             overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
             pixelsPerMillimeter: pixelsPerMillimeter,
-            lineColor: 'blue'
+            lineColor: 'blue',
+            detectRetina: false
         };
 
         layer = L.tileLayer.elevator(function(coords, tile, done) {
