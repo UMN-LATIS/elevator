@@ -139,7 +139,7 @@
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
 			<input type="checkbox" id="useCustomHeader" name="useCustomHeader" value="On" <?=$instance->getUseCustomHeader()?"checked":null?>>
-			Use Custom Header
+			Use Custom Header and Footer
 		</label>
 	</div>
 </div>
