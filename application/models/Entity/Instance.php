@@ -1215,4 +1215,33 @@ class Instance
     {
         return $this->showPreviousNextSearchResults;
     }
+    /**
+     * @var string
+     */
+    private $customFooterText;
+
+
+    /**
+     * Set customFooterText
+     *
+     * @param string $customFooterText
+     *
+     * @return Instance
+     */
+    public function setCustomFooterText($customFooterText)
+    {
+        $this->customFooterText = $customFooterText;
+
+        return $this;
+    }
+
+    /**
+     * Get customFooterText
+     *
+     * @return string
+     */
+    public function getCustomFooterText()
+    {
+        return $this->customFooterText;
+    }
 }

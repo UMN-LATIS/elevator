@@ -104,6 +104,9 @@ class Instance_Controller extends MY_Controller
             if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".html")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".html", $this->instance->getCustomHeaderText());
             }
+            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . "_footer.html")) {
+                file_put_contents("assets/instanceAssets/" . $this->instance->getId() . "_footer.html", $this->instance->getCustomFooterText());
+            }
         }
 
         if($this->instance->getUseCustomCSS()) {

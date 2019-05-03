@@ -59,6 +59,7 @@ class Instances extends Instance_Controller {
 		// $instance->setIntroText($this->input->post('introText'));
 		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
 		$instance->setCustomHeaderText($this->input->post("customHeaderText"));
+		$instance->setCustomFooterText($this->input->post("customFooterText"));
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);
 		$instance->setUseCustomCSS($this->input->post('useCustomCSS')?1:0);
 		$instance->setCustomHeaderCSS($this->input->post("customHeaderCSS"));
@@ -97,6 +98,9 @@ class Instances extends Instance_Controller {
 		if($instance->getUseCustomHeader()) {
 			if(file_exists("assets/instanceAssets/" . $instance->getId() . ".html")) {
                 unlink("assets/instanceAssets/" . $instance->getId() . ".html");
+			}
+			if(file_exists("assets/instanceAssets/" . $instance->getId() . "_footer.html")) {
+                unlink("assets/instanceAssets/" . $instance->getId() . "_footer.html");
             }
 		}
 

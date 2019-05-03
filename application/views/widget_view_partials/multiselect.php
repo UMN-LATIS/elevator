@@ -1,8 +1,18 @@
 <strong><?=$widgetModel->getLabel()?>:</strong>
 <ul>
 	<?foreach($widgetModel->fieldContentsArray as $fieldContent):?>
-<li><?$content=join(" : ", array_filter($fieldContent->getSortedValues())); echo $widgetModel->getClickToSearch()?"<A href=" .instance_url("/search/querySearch/". rawurlencode($content)) .">".$content."</a>":$content?>
-	</li>
+		
+		<?$firstItem = true; ?>
+				<li>
+		<?foreach(array_filter($fieldContent->getSortedValues()) as $outputValue):?>
+			<? $currentValue = ($firstItem?null:" : ") . $outputValue;?>
+			<? $builtList .= $currentValue; ?>
+	
+			<? echo getClickToSearchLink($widgetModel, $builtList, $currentValue)?>
+
+			<?$firstItem = false;?>
+		<?endforeach?>
+					</li>
 	<?endforeach?>
 </ul>
 
