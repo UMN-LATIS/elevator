@@ -7,7 +7,7 @@
 		$content = $fieldContent->fieldContents;
 	}
 	else {
-		$content = auto_link($fieldContent->fieldContents, 'both', TRUE);
+		$content = autolink_elevator($fieldContent->fieldContents);
 	}?>
 	<li><?=$widgetModel->getClickToSearch()?getClickToSearchLink($widgetModel, $fieldContent->fieldContents):$content;?></li>
 	<?endforeach?>
