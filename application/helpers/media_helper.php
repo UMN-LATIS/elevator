@@ -1,5 +1,9 @@
 <?php
 
+define("imagick_internal_ORIENTATION_BOTTOMRIGHT", 3);
+define("imagick_internal_ORIENTATION_RIGHTTOP", 6);
+define("imagick_internal_ORIENTATION_LEFTBOTTOM", 8);
+
 /**
  * [compressImageAndSave description]
  * @param  [fileContainer] $sourceImage [description]
@@ -18,44 +22,54 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	}
 
 	$CI =& get_instance();
-	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$image=new Imagick();
-	if($sourceImage->getType() == "dcm") {
-		$image->setOption('dcm:rescale', "true");
-	}
-	$image->readImage($sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append);
-	$image->setImageCompression(Imagick::COMPRESSION_JPEG);
-	$image->setImageCompressionQuality($compressionQuality);
-	// $image = $image->flattenImages();
-	$image->setImageBackgroundColor('white');
-	$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
-	$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
-	$image->setImageFormat('jpeg');
+	$inputSwitches = [];
+	$outputSwitches = [];
+
+	if($sourceImage->getType() == "dcm") {
+		$inputSwitches[] = "-define dcm:rescale=true";
+	}
+
+	$outputSwitches[] = "-compress JPEG";
+	$outputSwitches[] = "-quality " . $compressionQuality;
+	$outputSwitches[] = "-background white";
+	$outputSwitches[] = "-alpha remove";
+	$outputSwitches[] = "-flatten";
+	$outputSwitches[] = "-format jpeg";
+
+	
+	// $image = $image->flattenImages();
+
 	if(isset($sourceImage->metadata["rotation"])) {
 		
 		switch($sourceImage->metadata["rotation"]) {
-        case imagick::ORIENTATION_BOTTOMRIGHT:
-            $image->rotateimage(new ImagickPixel('#00000000'), 180); // rotate 180 degrees
-        break;
+        case imagick_internal_ORIENTATION_BOTTOMRIGHT:
+			$outputSwitches[] = "-rotate 180";
+        	break;
 
-        case imagick::ORIENTATION_RIGHTTOP:
-            $image->rotateimage(new ImagickPixel('#00000000'), 90); // rotate 90 degrees CW
-        break;
+		case imagick_internal_ORIENTATION_RIGHTTOP:
+			$outputSwitches[] = "-rotate 90";
+        	break;
 
-        case imagick::ORIENTATION_LEFTBOTTOM:
-            $image->rotateimage(new ImagickPixel('#00000000'), -90); // rotate 90 degrees CCW
-        break;
-    	}
-    	$image->setImageOrientation(0);
+		case imagick_internal_ORIENTATION_LEFTBOTTOM:
+			$outputSwitches[] = "-rotate -90";
+        	break;
+		}
+		$outputSwitches[] = "-orient undefined";
 
 	}
 	if ((isset($sourceImage->metadata["width"]) && isset($sourceImage->metadata["height"])) && ($sourceImage->metadata["width"]<= $width && $sourceImage->metadata["height"] <= $height)) {
 		// don't upscale
     } else {
-    	$image->resizeImage($width,$height,imagick::FILTER_LANCZOS,1,true);
-    }
-	if($image->writeImage($targetImage->getPathToLocalFile())) {
+		$outputSwitches[] = "-resize '" . $width . "x" . $height . "'";
+		$outputSwitches[] = "-filter Lanczos";
+	}
+	$inputName = $sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append;
+	$outputName = $targetImage->getPathToLocalFile();
+	$commandline = $CI->config->item("convert") . " " . implode(" ", $inputSwitches) . " " . escapeshellarg($inputName) . " " . implode(" ", $outputSwitches) . " " . escapeshellarg("jpg:".$outputName);
+
+	exec($commandline, $results);
+	if(file_exists($outputName) && filesize($outputName) > 0) {
 		return true;
 	}
 	else {
@@ -107,12 +121,19 @@ function convert_before_json(&$item, &$key)
 
 function identifyImage($sourceImage) {
 	try {
-		$image=new Imagick($sourceImage->getPathToLocalFile());
+		$commandline = $CI->config->item("identify") . " " . escapeshellarg($sourceImage->getPathToLocalFile());
+		exec($commandLine, $result);
 	}
 	catch(Exception $e) {
 		return false;
 	}
-	return $image->getImageFormat();
+	if($result) {
+		$parsedIdentify = explode(" ", $result[0]);
+		return $parsedIdentify[1];
+	}
+	else {
+		return false;
+	}
 }
 
 function fastImageDimensions($sourceImage) {
@@ -137,7 +158,7 @@ function fastImageDimensions($sourceImage) {
 function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$commandline = "exiftool -n -j " . $sourceImage->getPathToLocalFile();
+	$commandline = "exiftool -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$extractedRaw = json_decode(implode("\n", $results), true);
@@ -149,7 +170,7 @@ function getImageMetadata($sourceImage) {
 	}
 
 	$results = null;
-	$commandline = "exiftool -j -g " . $sourceImage->getPathToLocalFile();
+	$commandline = "exiftool -j -g " . escapeshellarg($sourceImage->getPathToLocalFile());
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		// strip bad unicode character that will make postgres mad
