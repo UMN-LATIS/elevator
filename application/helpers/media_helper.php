@@ -160,8 +160,6 @@ function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	$commandline = "exiftool -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
-	echo $commandline;
-	die;
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$extractedRaw = json_decode(implode("\n", $results), true);
