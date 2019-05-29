@@ -3,7 +3,7 @@
 
 class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2");
+	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic");
 	protected $noDerivatives = false;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true, "ttr"=>600]],

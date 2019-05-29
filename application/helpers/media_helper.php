@@ -24,6 +24,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	$CI =& get_instance();
 
 	$inputSwitches = [];
+	$inputSwitches[] = "-define heic:preserve-orientation=true"; // don't rotate during decode so we can do it ourselves
 	$outputSwitches = [];
 
 	if($sourceImage->getType() == "dcm") {
@@ -159,6 +160,8 @@ function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
 	$commandline = "exiftool -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
+	echo $commandline;
+	die;
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$extractedRaw = json_decode(implode("\n", $results), true);
