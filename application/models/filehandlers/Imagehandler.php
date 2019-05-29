@@ -68,36 +68,45 @@ class ImageHandler extends FileHandlerBase {
 	}
 
 	public function extractMetadata($args) {
-
+		$analyzingDerivative = false;
 		if(!isset($args['fileObject'])) {
 			$fileObject = $this->sourceFile;
 		}
 		else {
 			$fileObject = $args['fileObject'];
+			$analyzingDerivative = true;
 		}
 
 		$fileObject->metadata = array(); // clear metadata in case we're regenerating.
 
-		$fileStatus = $this->sourceFile->makeLocal();
+		if(!$analyzingDerivative) {
+			$fileStatus = $fileObject->makeLocal();
 
-		if($fileStatus == FILE_GLACIER_RESTORING) {
-			$this->postponeTime = 900;
-			return JOB_POSTPONE;
-		}
-		elseif($fileStatus == FILE_ERROR) {
-			return JOB_FAILED;
+			if($fileStatus == FILE_GLACIER_RESTORING) {
+				$this->postponeTime = 900;
+				return JOB_POSTPONE;
+			}
+			elseif($fileStatus == FILE_ERROR) {
+				return JOB_FAILED;
+			}
 		}
 
 		$this->pheanstalk->touch($this->job);
 
-		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
+		if(!file_exists($fileObject->getPathToLocalFile())) {
 			return JOB_FAILED;
 		}
 
 
-		$fileObject->metadata = getImageMetadata($this->sourceFile);
+		$fileObject->metadata = getImageMetadata($fileObject);
 
-		$sourceFile = $this->swapLocalForPNG();
+		if($analyzingDerivative) { 
+			$sourceFile = $fileObject;
+		}
+		else {
+			$sourceFile = $this->swapLocalForPNG();
+		}
+		
 
 
 		if(!$fileObject->metadata) {
