@@ -31,7 +31,7 @@ class UWHelper extends AuthHelper
 			$username = $userOverride;
 		}
 
-		$user = $this->findById($username);
+		$user = $this->findById($username,true);
 
 		if(count($user) == 0) {
 			return false;
