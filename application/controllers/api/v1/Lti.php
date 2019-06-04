@@ -28,6 +28,9 @@ class lti extends Instance_Controller {
 	}
 
     public function ltiPayload() {
+        if(!$this->user_model->userLoaded) {
+          return;
+        }
         $objectId = $this->input->post("object");
         $fileHandler = $this->filehandler_router->getHandlerForObject($objectId);
         if(!$fileHandler) {
