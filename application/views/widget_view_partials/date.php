@@ -3,14 +3,25 @@
 <ul>
 	<?foreach($widgetModel->fieldContentsArray as $fieldContent):?>
 	<?
-	$outputString = $fieldContent->start["text"];
+
+	$labelString = null;
+	if($fieldContent->label) {
+		$labelString = "<span class='date_label'>" . $fieldContent->label."</span>";
+	}
+	$dateString = "<span class='date_value'>" . $fieldContent->start["text"];
 	if($fieldContent->range) {
-		$outputString .= " - " . $fieldContent->end["text"];
+		$dateString .= " - " . $fieldContent->end["text"];
 	}
 
-	if($fieldContent->label) {
-		$outputString .= " (" . $fieldContent->label.")";
+	$dateString .= "</span>";
+
+	if($labelString) {
+		$outputString .= $labelString . " (" . $dateString . ")";
 	}
+	else {
+		$outputString = $dateString;
+	}
+	
 	?>
 	<li><?=$widgetModel->getClickToSearch()?getClickToSearchLink($widgetModel, $outputString):$outputString;?></li>
 	<?endforeach?>
