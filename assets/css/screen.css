@@ -1194,14 +1194,6 @@ ul.collectionList li:last-child:after {
 .fullscreenImageContainer {
   max-height: 550px;
 }
-@-moz-document url-prefix() {
-  .fullscreenImageContainer {
-    height: 550px;
-  }
-  .imageContent {
-    max-height: 100%;
-  }
-}
 .fixedHeightContainer {
   height: 550px;
 }
