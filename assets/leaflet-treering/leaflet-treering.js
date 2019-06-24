@@ -2225,7 +2225,7 @@ function ViewData(Lt) {
     }
     this.dialog.lock();
     this.dialog.open();
-    $('#download-button').click(this.download);
+    $('#download-button').click(() => this.download());
     $('#refresh-button').click(() => {
       this.disable();
       this.enable();
