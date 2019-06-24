@@ -25,7 +25,7 @@ function LTreering (viewer, basePath, options) {
     'savePermission': options.savePermission || false,
     'popoutUrl': options.popoutUrl || null,
     'assetName': options.assetName || 'N/A',
-    'hasLatewood': options.hasLatewood || true,
+    'hasLatewood': options.hasLatewood,
   }
 
   if (options.ppm === 0) {
@@ -1836,7 +1836,7 @@ function ViewData(Lt) {
         Math.pow(Math.abs(newPoint.y - lastPoint.y), 2));
     var pixelsPerMillimeter = 1;
     Lt.viewer.eachLayer((layer) => {
-      if (layer.options.pixelsPerMillimeter > 0) {
+      if (layer.options.pixelsPerMillimeter > 0 || Lt.meta.ppm > 0) {
         pixelsPerMillimeter = Lt.meta.ppm;
       }
     });
