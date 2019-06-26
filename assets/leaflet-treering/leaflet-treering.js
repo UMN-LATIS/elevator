@@ -38,7 +38,8 @@ function LTreering (viewer, basePath, options) {
   this.mouseLine = new MouseLine(this);
   this.visualAsset = new VisualAsset(this);
   this.annotationAsset = new AnnotationAsset(this);
-
+  this.panhandler = new Panhandler(this);
+  
   this.popout = new Popout(this);
   this.undo = new Undo(this);
   this.redo = new Redo(this);
@@ -485,7 +486,7 @@ function Autoscroll (viewer) {
       mousePos = e.containerPoint;    // Container point of the mouse
 
       //left bound of the map
-      if (mousePos.x <= 40 && mousePos.y > 450 && oldMousePos.x > mousePos.x) {
+      if (mousePos.x <= 40 && mousePos.y > 60 && oldMousePos.x > mousePos.x) {
         viewer.panBy([-200, 0]);
       }
       //right bound of the map
@@ -493,7 +494,7 @@ function Autoscroll (viewer) {
         viewer.panBy([200, 0]);
       }
       //upper bound of the map
-      if (mousePos.x > 100 && mousePos.x + 100 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y) {
+      if (mousePos.x > 300 && mousePos.x + 60 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y) {
         viewer.panBy([0, -70]);
       }
       //lower bound of the map
@@ -1819,7 +1820,7 @@ function ViewData(Lt) {
     () => { this.disable() }
   );
   
-  this.dialog = L.control.dialog({'size': [350, 400], 'anchor': [5, 50], 'initOpen': false})
+  this.dialog = L.control.dialog({'size': [350, 400], 'anchor': [50, 0], 'initOpen': false})
     .setContent('<h3>There are no data points to measure</h3>')
     .addTo(Lt.viewer);
   
@@ -2452,7 +2453,7 @@ function ImageAdjustment(Lt) {
 
   this.dialog = L.control.dialog({
     'size': [340, 220],
-    'anchor': [5, 50],
+    'anchor': [50, 5],
     'initOpen': false
   }).setContent(
     '<div><label style="text-align:center;display:block;">Brightness</label> \
@@ -2462,7 +2463,8 @@ function ImageAdjustment(Lt) {
     <label style="text-align:center;display:block;">Saturation</label> \
     <input class="imageSlider" id="saturation-slider" type=range min=0 max=350 value=100></div> \
     <label style="text-align:center;display:block;">Hue Rotation</label> \
-    <input class="imageSlider" id="hue-slider" type=range min=0 max=360 value=0></div>').addTo(Lt.viewer);
+    <input class="imageSlider" id="hue-slider" type=range min=0 max=360 value=0> \
+    <button id="reset-button" style="margin-left:auto; margin-right:auto; margin-top: 5px;display:block;" class="mdc-button mdc-button--unelevated mdc-button-compact">reset</button></div>').addTo(Lt.viewer);
   
   /**
    * Update the image filter to reflect slider values
@@ -2494,6 +2496,13 @@ function ImageAdjustment(Lt) {
     var hueSlider = document.getElementById("hue-slider");
     this.btn.state('active');
     $(".imageSlider").change(() => {
+      this.updateFilters();
+    });
+    $("#reset-button").click(() => {
+      $(brightnessSlider).val(100);
+      $(contrastSlider).val(100);
+      $(saturationSlider).val(100);
+      $(hueSlider).val(0);
       this.updateFilters();
     });
   };
@@ -2688,4 +2697,84 @@ function LoadLocal(Lt) {
     fr.readAsText(files.item(0));
   };
   
+}
+
+function Panhandler(La) {
+  this.panHandler = L.Handler.extend({
+    panAmount: 25,
+    panDirection: 0,
+    isPanning: false,
+
+    addHooks: function () {
+      L.DomEvent.on(window, 'keydown', this._startPanning, this);
+      L.DomEvent.on(window, 'keyup', this._stopPanning, this);
+    },
+
+    removeHooks: function () {
+      L.DomEvent.off(window, 'keydown', this._startPanning, this);
+      L.DomEvent.off(window, 'keyup', this._stopPanning, this);
+    },
+
+    _startPanning: function (e) {
+      if (e.keyCode == '38') {
+        this.panDirection = 'up';
+      } else if (e.keyCode == '40') {
+        this.panDirection = 'down';
+      } else if (e.keyCode == '37') {
+        this.panDirection = 'left';
+      } else if (e.keyCode == '39') {
+        this.panDirection = 'right';
+      } else {
+        this.panDirection = null;
+      }
+
+      if (this.panDirection) {
+        e.preventDefault();
+      }
+
+      if (this.panDirection && !this.isPanning) {
+        this.isPanning = true;
+        requestAnimationFrame(this._doPan.bind(this));
+      }
+      return false;
+    },
+
+    _stopPanning: function (ev) {
+      // Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
+      this.isPanning = false;
+
+    },
+
+    _doPan: function () {
+
+      var panArray = [];
+      switch (this.panDirection) {
+        case "up":
+          panArray = [0, -1 * this.panAmount];
+          break;
+        case "down":
+          panArray = [0, this.panAmount];
+          break;
+        case "left":
+          panArray = [-1 * this.panAmount, 0];
+          break;
+        case "right":
+          panArray = [this.panAmount, 0];
+          break;
+      }
+
+
+      map.panBy(panArray, {
+        animate: true,
+        delay: 0
+      });
+      if (this.isPanning) {
+        requestAnimationFrame(this._doPan.bind(this));
+      }
+
+    }
+  });
+
+  La.viewer.addHandler('pan', this.panHandler);
+  La.viewer.pan.enable();
 }

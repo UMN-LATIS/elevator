@@ -53,8 +53,15 @@ if($widgetObject->parentWidget->dendroFields) {
 .leaflet-top {
 	z-index: 400;
 }
-.leaflet-left .leaflet-control {
-	margin-left: 1px;
+
+
+.leaflet-control {
+	clear: none;
+}
+
+.leaflet-left {
+	margin-left: 5px;
+	margin-top: 3px;
 }
 
 </style>
@@ -99,6 +106,7 @@ if($widgetObject->parentWidget->dendroFields) {
 			zoomControl: false,
 			zoomSnap: 0,
 			detectRetina: false,
+			keyboard: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
 
@@ -110,6 +118,7 @@ if($widgetObject->parentWidget->dendroFields) {
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
 			pixelsPerMillimeter: pixelsPerMillimeter,
 			detectRetina: false,
+			renderer: L.canvas()
 		};
 
 		layer = L.tileLayer.elevator(function(coords, tile, done) {
