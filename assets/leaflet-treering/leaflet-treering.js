@@ -2725,7 +2725,7 @@ function LoadLocal(Lt) {
 
 function Panhandler(La) {
   this.panHandler = L.Handler.extend({
-    panAmount: 70,
+    panAmount: 120,
     panDirection: 0,
     isPanning: false,
 
