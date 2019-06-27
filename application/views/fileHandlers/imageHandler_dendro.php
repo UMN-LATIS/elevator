@@ -33,6 +33,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/style.css">
+<link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/leaflet.magnifyingglass.css">
 
 <script src="/assets/js/aws-s3.js"></script>
 <script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
@@ -45,6 +46,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
 <script src="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
 <script src="/assets/leaflet-treering/leaflet-treering.js"></script>
+<script src="/assets/leaflet-treering/leaflet.magnifyingglass.js"></script>
     
     <script src="/assets/leaflet/Leaflet.elevator.js"></script>
 
@@ -71,6 +73,7 @@ if($widgetObject->parentWidget->dendroFields) {
 
 <script type="application/javascript">
 
+
 	if(map) {
 		map.remove();
 	}
@@ -79,6 +82,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	var s3;
 	var AWS;
 	var layer;
+	var magnifyingGlass;
 	var sideCar = {};
 	var treering;
 	<?if(isset($widgetObject->sidecars) && array_key_exists("dendro", $widgetObject->sidecars)):?>
@@ -139,6 +143,43 @@ if($widgetObject->parentWidget->dendroFields) {
 
 		}, mapOptions);
 		layer.addTo(map);
+		
+		var magnifyLayer = L.tileLayer.elevator(function(coords, tile, done) {
+			var error;
+
+			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+
+			s3.getSignedUrl('getObject', params, function (err, url) {
+				tile.onload = (function(done, error, tile) {
+					return function() {
+						done(error, tile);
+					}
+				})(done, error, tile);
+				tile.src=url;
+			});
+
+			return tile;
+
+		}, mapOptions);
+		
+		magnifyingGlass = L.magnifyingGlass({
+    		layers: [ magnifyLayer ]
+		});
+
+		L.DomEvent.on(window, 'keydown', function(e) {
+			if(e.keyCode == 90 && e.getModifierState("Control")) {
+				if (map.hasLayer(magnifyingGlass)) {
+					map.removeLayer(magnifyingGlass);
+	    		} else {
+					magnifyingGlass.addTo(map);
+	    		}
+			}
+		}, this);
+		  	    
+
+
+
+
 
 		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
 		if(minimapRatio > 4) {
