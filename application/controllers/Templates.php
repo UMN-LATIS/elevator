@@ -265,6 +265,37 @@ class Templates extends Instance_Controller {
 
 	}
 
+	public function forceRecache($templateId=null) {
+		if(!$templateId) {
+			return;
+		}
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL")
+		->orderby("a.id", "desc");
+		$qb->andWhere("a.templateId = ?1");
+		$qb->setParameter(1, $templateId);
+
+		$result = $qb->getQuery()->iterate();
+		foreach($result as $entry) {
+			$newTask = json_encode(["objectId"=>$entry->getAssetId(),"instance"=>$this->instance->getId()]);
+			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+		}
+
+		$this->template->title = 'Reindex';
+
+    	// $this->template->loadCSS(['template']);
+  		$this->template->content->set("Reindexing Initiated");
+    	$this->template->publish();
+
+
+	}
+
 
 	public function reindexTemplate($templateId, $parentArray=array()) {
 		$qb = $this->doctrine->em->createQueryBuilder();

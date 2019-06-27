@@ -607,7 +607,7 @@ class Beltdrive extends CI_Controller {
 			echo "Recaching " . $objectId . "\n";
 
 			if($this->asset_model->loadAssetById($objectId)) {
-				$this->asset_model->buildCache();
+				$this->asset_model->reindex();
 			}
 			
 			$this->pheanstalk->delete($job);
