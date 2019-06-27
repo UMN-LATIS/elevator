@@ -994,7 +994,10 @@ class Asset_model extends CI_Model {
 		//
 		// we build a parent array so we don't recurse
 
-
+		// we might be rebuilding outside an instance, in which case we don't do this.
+		if(!$this->instance) {
+			return;
+		}
 		$results = $this->search_model->find(["searchText"=>$this->getObjectId(), "searchRelated"=>true], false);
 		$parentArray[] = $this->getObjectId();
 
