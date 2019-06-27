@@ -2728,6 +2728,7 @@ function Panhandler(La) {
     panAmount: 120,
     panDirection: 0,
     isPanning: false,
+    slowMotion: false,
 
     addHooks: function () {
       L.DomEvent.on(window, 'keydown', this._startPanning, this);
@@ -2752,6 +2753,13 @@ function Panhandler(La) {
         this.panDirection = null;
       }
 
+      if (e.getModifierState("Shift")) {
+        this.slowMotion = true;
+      }
+      else {
+        this.slowMotion = false;
+      }
+
       if (this.panDirection) {
         e.preventDefault();
       }
@@ -2772,18 +2780,24 @@ function Panhandler(La) {
     _doPan: function () {
 
       var panArray = [];
+
+      var adjustedPanAmount = this.panAmount;
+      if(this.slowMotion) {
+        adjustedPanAmount = 30;
+      }
+
       switch (this.panDirection) {
         case "up":
-          panArray = [0, -1 * this.panAmount];
+          panArray = [0, -1 * adjustedPanAmount];
           break;
         case "down":
-          panArray = [0, this.panAmount];
+          panArray = [0, adjustedPanAmount];
           break;
         case "left":
-          panArray = [-1 * this.panAmount, 0];
+          panArray = [-1 * adjustedPanAmount, 0];
           break;
         case "right":
-          panArray = [this.panAmount, 0];
+          panArray = [adjustedPanAmount, 0];
           break;
       }
 
