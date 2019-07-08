@@ -266,26 +266,8 @@ class Templates extends Instance_Controller {
 	}
 
 	public function forceRecache($templateId=null) {
-		if(!$templateId) {
-			return;
-		}
-		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+		
 
-		$qb = $this->doctrine->em->createQueryBuilder();
-		$qb->from("Entity\Asset", 'a')
-		->select("a")
-		->where("a.deleted != TRUE")
-		->orWhere("a.deleted IS NULL")
-		->andWhere("a.assetId IS NOT NULL")
-		->orderby("a.id", "desc");
-		$qb->andWhere("a.templateId = ?1");
-		$qb->setParameter(1, $templateId);
-
-		$result = $qb->getQuery()->iterate();
-		foreach($result as $entry) {
-			$newTask = json_encode(["objectId"=>$entry->getAssetId(),"instance"=>$this->instance->getId()]);
-			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
-		}
 
 		$this->template->title = 'Reindex';
 
@@ -297,39 +279,11 @@ class Templates extends Instance_Controller {
 	}
 
 
-	public function reindexTemplate($templateId, $parentArray=array()) {
-		$qb = $this->doctrine->em->createQueryBuilder();
-		$q = $qb->update('Entity\AssetCache', 'a')
-        ->set('a.needsRebuild', "true")
-        ->where('a.needsRebuild = false')
-        ->andWhere('a.templateId = ?1')
-        ->setParameter(1, $templateId)
-        ->getQuery();
-		$p = $q->execute();
-
-
-		$manager = $this->doctrine->em->getConnection();
-
-		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
-
-		$foundItems = array();
-		if($results) {
-			$records = $results->fetchAll();
-			if(count($records)>0) {
-				foreach($records as $record) {
-					if($record['template_id'] != null) {
-						if(!in_array($record['template_id'], $parentArray))
-						$foundItems[] = $record['template_id'];
-					}
-				}
-			}
-		}
-
-		$parentArray = array_merge($foundItems, $parentArray);
-
-		foreach($foundItems as $rootTemplate) {
-			$this->reindexTemplate($rootTemplate, $parentArray);
-		}
+	public function reindexTemplate($templateId=null, $parentArray=array()) {
+		
+		$newTask = json_encode(["templateId"=>$templateId,"instance"=>$this->instance->getId()]);
+		$jobId= $pheanstalk->useTube('cacheRebuild')->put($newTask, NULL, 1);
+		
 	}
 
 
