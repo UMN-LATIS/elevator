@@ -542,51 +542,13 @@ class Beltdrive extends CI_Controller {
 		}
 	}
 
+	
 
 	public function populateCacheTube() {
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 
 		while(1) {
-			$currentTime = date('Y-m-d H:i:s',time());
 
-			$this->doctrine->em->getConnection()->executeUpdate("UPDATE asset_cache a SET rebuildTimestamp = '" . $currentTime . "'
-				FROM ( SELECT asset_id FROM asset_cache WHERE needsRebuild = true and rebuildTimestamp IS NULL limit 10000) sub where a.asset_id = sub.asset_id");
-
-
-			$qb2 = $this->doctrine->em->createQueryBuilder();
-			$q2 = $qb2->select("a")
-			->from("Entity\AssetCache", "a")
-	        ->where('a.needsRebuild = true')
-	        ->andWhere('a.rebuildTimestamp = ?1')
-	        ->setParameter(1, $currentTime)
-	        ->getQuery();
-
-			$result = $q2->iterate();
-			$count = 0;
-
-			foreach($result as $entry) {
-				$entry = $entry[0];
-				$this->doctrine->em->clear();
-
-				$newTask = json_encode(["task"=>"recache", "objectId"=>$entry->getAsset()->getAssetId()]);
-				$jobId= $this->pheanstalk->useTube('cacheRebuild')->put($newTask, 10, 2, 200);
-
-				$count++;
-				if($count % 10 == 0) {
-					gc_collect_cycles();
-				}
-
-			}
-			sleep(300);
-		}
-
-	}
-
-	public function rebuildCache() {
-		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
-		$count=0;
-		while(1) {
 			$job = $this->pheanstalk->watch('cacheRebuild')->ignore('default')->reserve();
 			if(!is_object($job)) {
 				usleep(5);
@@ -598,27 +560,87 @@ class Beltdrive extends CI_Controller {
 
 			$job_encoded = json_decode($job->getData(), true);
 
-
-			$objectId = $job_encoded["objectId"];
-			if(!$objectId || !is_string($objectId)) {
-				$this->pheanstalk->delete($job);
-				continue;
-			}
-			echo "Recaching " . $objectId . "\n";
-
-			if($this->asset_model->loadAssetById($objectId)) {
-				$this->asset_model->reindex();
-			}
+			$jobId = $job->getId();
+			$templateId = $job_encoded["templateId"];
+			$instanceId = $job_encoded["instance"];
+			echo "Starting index job for " . $templateId . "\n";
+			$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
 			
+
+			$parentArray = array();
+			$parentArray[] = $templateId;
+			$this->reindexTemplate($templateId, $parentArray);
+			
+			// this array should already be free from duplicates, but just in case
+			$deduped = array_unique($parentArray);
+			
+
+			$count = 0;
+			foreach($deduped as $templateToReindex) {
+				echo "Rebuilding template: " . $templateToReindex . "\n";
+				$qb = $this->doctrine->em->createQueryBuilder();
+				$qb->from("Entity\Asset", 'a')
+					->select("a")
+					->where("a.deleted != TRUE")
+					->orWhere("a.deleted IS NULL")
+					->andWhere("a.assetId IS NOT NULL")
+					->orderby("a.id", "desc");
+				$qb->andWhere("a.templateId = ?1");
+				$qb->setParameter(1, $templateToReindex);
+
+				$result = $qb->getQuery()->iterate();
+
+				foreach($result as $entry) {
+					$entry = $entry[0];
+					$newTask = json_encode(["objectId"=>$entry->getAssetId(),"instance"=>$instanceId]);
+					$jobId= $this->pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+				}
+				$count++;
+				if($count % 100 == 0) {
+					gc_collect_cycles();
+					$this->pheanstalk->touch($jobId);
+				}
+				
+			}
+
 			$this->pheanstalk->delete($job);
 			$this->doctrine->em->clear();
-			$count++;
-			if($count % 10 == 0) {
-				gc_collect_cycles();
-			}
+		}
+
+	}
+
+	public function rebuildCache() {
+		while(1) {
+			sleep(10);
 		}
 	}
 
+
+	public function reindexTemplate($templateId, &$parentArray=array()) {
+		
+		$manager = $this->doctrine->em->getConnection();
+		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
+		$foundItems = array();
+		if($results) {
+			$records = $results->fetchAll();
+			if(count($records)>0) {
+				foreach($records as $record) {
+					if($record['template_id'] != null) {
+						if(!in_array($record['template_id'], $parentArray)) {
+							$foundItems[] = $record['template_id'];
+						}
+					}
+				}
+			}
+		}
+		$parentArray = array_merge($foundItems, $parentArray);
+		foreach($foundItems as $rootTemplate) {
+			$this->reindexTemplate($rootTemplate, $parentArray);
+		}
+	}
+
+
+	
 	public function urlImport() {
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 

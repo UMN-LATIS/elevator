@@ -268,7 +268,10 @@ class Templates extends Instance_Controller {
 	public function forceRecache($templateId=null) {
 		
 
-
+		if($templateId) {
+			$this->reindexTemplate($templateId);
+		}
+		
 		$this->template->title = 'Reindex';
 
     	// $this->template->loadCSS(['template']);
@@ -279,8 +282,8 @@ class Templates extends Instance_Controller {
 	}
 
 
-	public function reindexTemplate($templateId=null, $parentArray=array()) {
-		
+	public function reindexTemplate($templateId=null) {
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 		$newTask = json_encode(["templateId"=>$templateId,"instance"=>$this->instance->getId()]);
 		$jobId= $pheanstalk->useTube('cacheRebuild')->put($newTask, NULL, 1);
 		
