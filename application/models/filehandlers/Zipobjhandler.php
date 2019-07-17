@@ -173,14 +173,12 @@ rnd.resolution_y = int(2000)
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
 
 		// we change dir inside docker so we have to pass in two args
-		$meshlabCommandLine =  $this->config->item("meshlabPath") . "'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . ($foundMTL?(" -s /opt/meshlab.mlx"):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn'";
-		$derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
-
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . ($foundMTL?(" -s /opt/meshlab.mlx"):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn'";
 		exec($meshlabCommandLine . " 2>/dev/null");
 		if(!file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
 			// failed to process with the texture, let's try without.
 			$this->logging->processingInfo("createDerivative","objHandler","Failed to load texture, trying without",$this->getObjectId(),$this->job->getId());
-			$meshlabCommandLine =  $this->config->item("meshlabPath") . "'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
+			$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
 			exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 
 		}
@@ -303,9 +301,7 @@ rnd.resolution_y = int(2000)
 			$derivativeContainer->setParent($this->sourceFile->getParent());
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply_texture' . '.ply';
 
-			putenv("DISPLAY=:1.0");
-
-			$meshlabCommandLine =  $this->config->item("meshlabPath") . " -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om wt vn";
+			$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om wt vn'";
 
 			exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 			if(file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
