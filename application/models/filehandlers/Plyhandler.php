@@ -7,7 +7,6 @@ class PlyHandler extends FileHandlerBase {
 	protected $supportedTypes = array("ply");
 	protected $noDerivatives = false;
 
-	protected $pathToBlenderStage;
 
 
 

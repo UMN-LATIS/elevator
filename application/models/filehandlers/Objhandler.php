@@ -4,7 +4,6 @@ class ObjHandler extends FileHandlerBase {
 	protected $supportedTypes = array("obj", "stl");
 	protected $noDerivatives = false;
 
-	protected $pathToBlenderStage;
 
 	protected $sourceBlenderScript = "import bpy
 
@@ -302,7 +301,6 @@ rnd.resolution_y = int(2000)
 	public function createThumbInternal($sourceFileContainer, $args) {
 
 
-		$this->pathToBlenderStage =realpath(NULL) . "/assets/blender/stage.blend";
 		ini_set('memory_limit', '512M');
 		$success = true;
 
@@ -327,7 +325,7 @@ rnd.resolution_y = int(2000)
 
 		$targetLargeFileShortName = $sourceFileContainer->getPathToLocalFile() . "_output";
 
-		$blenderCommandLine = $this->config->item('blenderBinary') . " -b " . $this->pathToBlenderStage . " -P " . $outputScript . " -o " . $targetLargeFileShortName . " -F JPEG -x 1 -f 1";
+		$blenderCommandLine = $this->config->item('blenderBinary') . " -b /opt/stage.blend -P " . $outputScript . " -o " . $targetLargeFileShortName . " -F JPEG -x 1 -f 1";
 
 		// blender will generate a new output name
 		$targetLargeFile = $targetLargeFileShortName . "0001.jpg";
