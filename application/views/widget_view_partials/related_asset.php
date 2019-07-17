@@ -15,8 +15,8 @@ $seed = round(microtime(true))// we're using a seed to provide collisions with r
 				$fileHandler = $fieldContent->getPrimaryFileHandler();
 				if($fileHandler) {
 
-				$retina = $fileHandler->getPreviewTiny(true)->getURLForFile();
-				$standard = $fileHandler->getPreviewTiny(false)->getURLForFile();
+				$retina = $fileHandler->getPreviewTiny(true)->getURLForFile(true);
+				$standard = $fileHandler->getPreviewTiny(false)->getURLForFile(true);
 			}
 			}
 			catch (Exception $e) {

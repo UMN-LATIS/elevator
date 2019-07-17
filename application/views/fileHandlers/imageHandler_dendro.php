@@ -33,6 +33,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
 <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/style.css">
+<link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/leaflet.magnifyingglass.css">
 
 <script src="/assets/js/aws-s3.js"></script>
 <script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
@@ -45,6 +46,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
 <script src="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
 <script src="/assets/leaflet-treering/leaflet-treering.js"></script>
+<script src="/assets/leaflet-treering/leaflet.magnifyingglass.js"></script>
     
     <script src="/assets/leaflet/Leaflet.elevator.js"></script>
 
@@ -53,8 +55,15 @@ if($widgetObject->parentWidget->dendroFields) {
 .leaflet-top {
 	z-index: 400;
 }
-.leaflet-left .leaflet-control {
-	margin-left: 1px;
+
+
+.leaflet-control {
+	clear: none;
+}
+
+.leaflet-left {
+	margin-left: 5px;
+	margin-top: 3px;
 }
 
 </style>
@@ -64,6 +73,7 @@ if($widgetObject->parentWidget->dendroFields) {
 
 <script type="application/javascript">
 
+
 	if(map) {
 		map.remove();
 	}
@@ -72,6 +82,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	var s3;
 	var AWS;
 	var layer;
+	var magnifyingGlass;
 	var sideCar = {};
 	var treering;
 	<?if(isset($widgetObject->sidecars) && array_key_exists("dendro", $widgetObject->sidecars)):?>
@@ -99,8 +110,20 @@ if($widgetObject->parentWidget->dendroFields) {
 			zoomControl: false,
 			zoomSnap: 0,
 			detectRetina: false,
+			keyboard: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
+
+		var mapOptions = {
+			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
+			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
+			tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
+			maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
+			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
+			pixelsPerMillimeter: pixelsPerMillimeter,
+			detectRetina: false,
+			renderer: L.canvas()
+		};
 
 		layer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
@@ -118,32 +141,10 @@ if($widgetObject->parentWidget->dendroFields) {
 
 			return tile;
 
-		}, {
-			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
-			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
-			tileSize :<?=isset($fileObject->sourceFile->metadata["dziTilesize"])?$fileObject->sourceFile->metadata["dziTilesize"]:255?>,
-			maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
-			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
-			pixelsPerMillimeter: pixelsPerMillimeter,
-			detectRetina: false,
-		});
+		}, mapOptions);
 		layer.addTo(map);
-
-		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
-		if(minimapRatio > 4) {
-			minimapRatio = 1;
-		}
-
-		if(minimapRatio > 1) {
-			heightScale = 1/minimapRatio;
-			widthScale = 1;
-		}
-		else {
-			heightScale = 1;
-			widthScale = minimapRatio;
-		}
 		
-		miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
+		var magnifyLayer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
 
 			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
@@ -159,13 +160,70 @@ if($widgetObject->parentWidget->dendroFields) {
 
 			return tile;
 
-		}, {
-		width: 231782,
-        height: 4042,
-        tileSize: 254,
-        maxZoom: 13,
-        overlap: 1,
+		}, mapOptions);
+		
+		magnifyingGlass = L.magnifyingGlass({
+    		layers: [ magnifyLayer ]
 		});
+
+		L.DomEvent.on(window, 'keydown', function(e) {
+			if(e.keyCode == 90 && e.getModifierState("Control")) {
+				if (map.hasLayer(magnifyingGlass)) {
+					map.removeLayer(magnifyingGlass);
+	    		} else {
+					magnifyingGlass.addTo(map);
+	    		}
+			}
+		}, this);
+		  	    
+
+
+
+
+
+		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
+		if(minimapRatio > 4) {
+			minimapRatio = 1;
+		}
+
+		if(minimapRatio > 1) {
+			heightScale = 1/minimapRatio;
+			widthScale = 1;
+		}
+		else {
+			heightScale = 1;
+			widthScale = minimapRatio;
+		}
+		
+		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
+            var error;
+
+            var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+
+            s3.getSignedUrl('getObject', params, function (err, url) {
+                tile.onload = (function(done, error, tile) {
+                    return function() {
+                        done(error, tile);
+                    }
+                })(done, error, tile);
+                tile.src=url;
+            });
+
+            return tile;
+
+        }, mapOptions);
+        
+        var miniMap = new L.Control.MiniMap(miniLayer, {
+            width: 500,
+            height: 30,
+                        //position: "topright",
+                        toggleDisplay: true,
+                        zoomAnimation: false,
+                        zoomLevelOffset: -3,
+                        zoomLevelFixed: -3
+                    });
+        miniMap.addTo(map);
+
 		
 		var innerYear = "";
 		<?if($innerYear):?>

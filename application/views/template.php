@@ -150,14 +150,14 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           ?>
         </ul>
       </div>
-        <button type="submit" class="btn btn-default searchButton"><span class="glyphicon glyphicon-search"></span></button>
+        <button type="submit" class="btn btn-default searchButton"  aria-label="Perform Search"><span class="glyphicon glyphicon-search"></span></button>
         <div class="btn-group  hidden-md hidden-sm">
-        <button type="button" class="btn btn-default dropdown-toggle advanced-search-toggle" data-toggle="dropdown">
+        <button type="button" class="btn btn-default dropdown-toggle advanced-search-toggle" data-toggle="dropdown" aria-haspopup="true">
           <span class="caret"></span>
           <span class="sr-only">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu " role="menu">
-          <li><a href="<?=instance_url("/search/advancedSearchModal")?>" data-toggle="modal" data-target="#advancedSearchModal">Advanced Search</a></li>
+          <li><a href="<?=instance_url("/search/advancedSearchModal")?>" data-toggle="modal" data-target="#advancedSearchModal"">Advanced Search</a></li>
           <li class="divider"></li>
           <li class="disabled"><a href="#">Recent Searches:</a></li>
           <?if($this->user_model->userLoaded):?>
@@ -181,8 +181,8 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <ul class="nav navbar-nav">
         <?if(isset($this->instance)):?>
         <li>
-        <p class="navbar-btn">
-          <button class="hide btn addToPlugin btn-default"></button>
+        <p class="navbar-btn" aria-hidden="true">
+          <button class="hide btn addToPlugin btn-default" alt="Add to Canvas" aria-hidden="true"><span class="sr-only">Not active</span></button>
           </p>
           </li>
         <?foreach($this->instance->getPages()->filter(function($entry) { return ($entry->getIncludeInHeader() && $entry->getParent()==null);}) as $page):?>
@@ -287,7 +287,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <?if($this->user_model->userLoaded && !$this->user_model->assetOverride):?>
       <ul class="nav navbar-nav navbar-right login-group">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></b></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-label="User Options"><span class="glyphicon glyphicon-user" ></b></a>
           <ul class="dropdown-menu">
             <li><A href="#">Logged in as <?=$this->user_model->getDisplayName()?></a></li>
             <li><a href="<?=instance_url("loginManager/logout/")?>">Logout</a></li>
@@ -298,7 +298,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <?else:?>
         <ul class="nav navbar-nav navbar-right login-group">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"><b class="caret"></b></span><span class="signInLink">Sign In</span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-label="Log In"><span class="glyphicon glyphicon-user"><b class="caret"></b></span><span class="signInLink">Sign In</span></a>
           <ul class="dropdown-menu">
             <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
             <li class="universityAuth"><a class="loginLink" href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>"><?=$this->config->item("remoteLoginLabel")?> User</a></li>
@@ -339,7 +339,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <?=file_get_contents("assets/instanceAssets/" . $this->instance->getId() . "_footer.html");?>
       <?endif?>
       <p class="universityFooter">
-        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage">Powered by Elevator, developed by the <A href="http://www.umn.edu">University of Minnesota</a>
+        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage" alt="Grain Elevagor Icon">Powered by Elevator, developed by the <A href="http://www.umn.edu">University of Minnesota</a>
       </p>
     </footer>
 

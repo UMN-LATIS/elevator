@@ -1,5 +1,5 @@
-/* esri-leaflet - v2.2.3 - Thu Aug 16 2018 13:01:20 GMT-0700 (PDT)
- * Copyright (c) 2018 Environmental Systems Research Institute, Inc.
+/* esri-leaflet - v2.2.4 - Wed Mar 20 2019 16:03:22 GMT-0700 (Pacific Daylight Time)
+ * Copyright (c) 2019 Environmental Systems Research Institute, Inc.
  * Apache-2.0 */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('leaflet')) :
@@ -7,7 +7,7 @@
 	(factory((global.L = global.L || {}, global.L.esri = {}),global.L));
 }(this, (function (exports,leaflet) { 'use strict';
 
-var version = "2.2.3";
+var version = "2.2.4";
 
 var cors = ((window.XMLHttpRequest && 'withCredentials' in new window.XMLHttpRequest()));
 var pointerEvents = document.documentElement.style.pointerEvents === '';
@@ -546,6 +546,22 @@ function arcgisToGeoJSON (arcgis, idAttribute) {
     geojson = convertRingsToGeoJSON(arcgis.rings.slice(0));
   }
 
+  if (
+    typeof arcgis.xmin === 'number' &&
+    typeof arcgis.ymin === 'number' &&
+    typeof arcgis.xmax === 'number' &&
+    typeof arcgis.ymax === 'number'
+  ) {
+    geojson.type = 'Polygon';
+    geojson.coordinates = [[
+      [arcgis.xmax, arcgis.ymax],
+      [arcgis.xmin, arcgis.ymax],
+      [arcgis.xmin, arcgis.ymin],
+      [arcgis.xmax, arcgis.ymin],
+      [arcgis.xmax, arcgis.ymax]
+    ]];
+  }
+
   if (arcgis.geometry || arcgis.attributes) {
     geojson.type = 'Feature';
     geojson.geometry = (arcgis.geometry) ? arcgisToGeoJSON(arcgis.geometry) : null;
@@ -836,16 +852,6 @@ function setEsriAttribution (map) {
       map.attributionControl._container.style.maxWidth = calcAttributionWidth(e.target);
     });
 
-    // remove injected scripts and style tags
-    map.on('unload', function () {
-      hoverAttributionStyle.parentNode.removeChild(hoverAttributionStyle);
-      attributionStyle.parentNode.removeChild(attributionStyle);
-      var nodeList = document.querySelectorAll('.esri-leaflet-jsonp');
-      for (var i = 0; i < nodeList.length; i++) {
-        nodeList.item(i).parentNode.removeChild(nodeList.item(i));
-      }
-    });
-
     map.attributionControl._esriAttributionAdded = true;
   }
 }
@@ -910,34 +916,36 @@ function _setGeometry (geometry) {
 }
 
 function _getAttributionData (url, map) {
-  jsonp(url, {}, leaflet.Util.bind(function (error, attributions) {
-    if (error) { return; }
-    map._esriAttributions = [];
-    for (var c = 0; c < attributions.contributors.length; c++) {
-      var contributor = attributions.contributors[c];
+  if (Support.cors) {
+    request(url, {}, leaflet.Util.bind(function (error, attributions) {
+      if (error) { return; }
+      map._esriAttributions = [];
+      for (var c = 0; c < attributions.contributors.length; c++) {
+        var contributor = attributions.contributors[c];
 
-      for (var i = 0; i < contributor.coverageAreas.length; i++) {
-        var coverageArea = contributor.coverageAreas[i];
-        var southWest = leaflet.latLng(coverageArea.bbox[0], coverageArea.bbox[1]);
-        var northEast = leaflet.latLng(coverageArea.bbox[2], coverageArea.bbox[3]);
-        map._esriAttributions.push({
-          attribution: contributor.attribution,
-          score: coverageArea.score,
-          bounds: leaflet.latLngBounds(southWest, northEast),
-          minZoom: coverageArea.zoomMin,
-          maxZoom: coverageArea.zoomMax
-        });
+        for (var i = 0; i < contributor.coverageAreas.length; i++) {
+          var coverageArea = contributor.coverageAreas[i];
+          var southWest = leaflet.latLng(coverageArea.bbox[0], coverageArea.bbox[1]);
+          var northEast = leaflet.latLng(coverageArea.bbox[2], coverageArea.bbox[3]);
+          map._esriAttributions.push({
+            attribution: contributor.attribution,
+            score: coverageArea.score,
+            bounds: leaflet.latLngBounds(southWest, northEast),
+            minZoom: coverageArea.zoomMin,
+            maxZoom: coverageArea.zoomMax
+          });
+        }
       }
-    }
 
-    map._esriAttributions.sort(function (a, b) {
-      return b.score - a.score;
-    });
+      map._esriAttributions.sort(function (a, b) {
+        return b.score - a.score;
+      });
 
-    // pass the same argument as the map's 'moveend' event
-    var obj = { target: map };
-    _updateMapAttribution(obj);
-  }, this));
+      // pass the same argument as the map's 'moveend' event
+      var obj = { target: map };
+      _updateMapAttribution(obj);
+    }, this));
+  }
 }
 
 function _updateMapAttribution (evt) {
@@ -1992,6 +2000,9 @@ var BasemapLayer = leaflet.TileLayer.extend({
     if (this.options.token && config.urlTemplate.indexOf('token=') === -1) {
       config.urlTemplate += ('?token=' + this.options.token);
     }
+    if (this.options.proxy) {
+      config.urlTemplate = this.options.proxy + '?' + config.urlTemplate;
+    }
 
     // call the initialize method on L.TileLayer to set everything up
     leaflet.TileLayer.prototype.initialize.call(this, config.urlTemplate, tileOptions);
@@ -2006,7 +2017,7 @@ var BasemapLayer = leaflet.TileLayer.extend({
     }
     // some basemaps can supply dynamic attribution
     if (this.options.attributionUrl) {
-      _getAttributionData(this.options.attributionUrl, map);
+      _getAttributionData((this.options.proxy ? this.options.proxy + '?' : '') + this.options.attributionUrl, map);
     }
 
     map.on('moveend', _updateMapAttribution);
@@ -3122,6 +3133,8 @@ var VirtualGrid = leaflet.Layer.extend({
     if (!crs.infinite) {
       // don't load cell if it's out of bounds and not wrapped
       var cellNumBounds = this._cellNumBounds;
+
+      if (!cellNumBounds) return false;
       if (
         (!crs.wrapLng && (coords.x < cellNumBounds.min.x || coords.x > cellNumBounds.max.x)) ||
         (!crs.wrapLat && (coords.y < cellNumBounds.min.y || coords.y > cellNumBounds.max.y))

@@ -6,6 +6,7 @@
 				<th>Edit</th>
 				<th>Sort Order</th>
 				<th>Copy</th>
+				<Th>Reindex</th>
 				<th>Delete</th>
 			</thead>
 			<tbody>
@@ -15,6 +16,7 @@
     			<td><a href="<?= instance_url("templates/edit/{$template->getId()}"); ?>">Edit</a></td>
     			<td><a href="<?= instance_url("templates/sort/{$template->getId()}"); ?>">Sort Order</a></td>
     			<td><a href="<?= instance_url("templates/copy/{$template->getId()}"); ?>">Duplicate</a></td>
+    			<td><a onclick="return confirm('Are you sure you wish to reindex this template and any related templates?')" href="<?= instance_url("templates/forceRecache/{$template->getId()}"); ?>">Reindex</a></td>
     			<td><a onclick="return confirm('Are you sure you wish to delete this template?')" href="<?= instance_url("templates/delete/{$template->getId()}"); ?>">Delete</a></td>
    			</tr>
 			<?php	endforeach; ?>

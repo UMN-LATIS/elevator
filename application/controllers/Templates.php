@@ -265,40 +265,28 @@ class Templates extends Instance_Controller {
 
 	}
 
+	public function forceRecache($templateId=null) {
+		
 
-	public function reindexTemplate($templateId, $parentArray=array()) {
-		$qb = $this->doctrine->em->createQueryBuilder();
-		$q = $qb->update('Entity\AssetCache', 'a')
-        ->set('a.needsRebuild', "true")
-        ->where('a.needsRebuild = false')
-        ->andWhere('a.templateId = ?1')
-        ->setParameter(1, $templateId)
-        ->getQuery();
-		$p = $q->execute();
-
-
-		$manager = $this->doctrine->em->getConnection();
-
-		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
-
-		$foundItems = array();
-		if($results) {
-			$records = $results->fetchAll();
-			if(count($records)>0) {
-				foreach($records as $record) {
-					if($record['template_id'] != null) {
-						if(!in_array($record['template_id'], $parentArray))
-						$foundItems[] = $record['template_id'];
-					}
-				}
-			}
+		if($templateId) {
+			$this->reindexTemplate($templateId);
 		}
+		
+		$this->template->title = 'Reindex';
 
-		$parentArray = array_merge($foundItems, $parentArray);
+    	// $this->template->loadCSS(['template']);
+  		$this->template->content->set("Reindexing Initiated");
+    	$this->template->publish();
 
-		foreach($foundItems as $rootTemplate) {
-			$this->reindexTemplate($rootTemplate, $parentArray);
-		}
+
+	}
+
+
+	public function reindexTemplate($templateId=null) {
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+		$newTask = json_encode(["templateId"=>$templateId,"instance"=>$this->instance->getId()]);
+		$jobId= $pheanstalk->useTube('cacheRebuild')->put($newTask, NULL, 1);
+		
 	}
 
 
