@@ -83,7 +83,7 @@ class PDFHelper {
 	public function ocrText($pdfFile) {
 		$pathparts = pathinfo($pdfFile);
 		$outFile = $pathparts['dirname'] . "/" . $pathparts['filename'] . "_ocr.pdf";
-		$commandLine = $this->CI->config->item('pypdfocr') . " "  . $pdfFile;
+		$commandLine = $this->CI->config->item('pypdfocr') . " "  . $pdfFile . " "  . $outFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
 		$process->run();
 		$iterationCount = 0;
