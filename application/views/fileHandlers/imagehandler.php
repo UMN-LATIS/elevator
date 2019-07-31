@@ -95,7 +95,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 		<?else:?>
 			<?$uploadWidget = $fileObject->getUploadWidget();?>
 
-			<?if($uploadWidget->parentWidget->enableIframe && isset($uploadWidget->sidecars) && array_key_exists("iframe", $uploadWidget->sidecars)):
+			<?if($uploadWidget->parentWidget->enableIframe && isset($uploadWidget->sidecars) && array_key_exists("iframe", $uploadWidget->sidecars)  && strlen($uploadWidget->sidecars["iframe"]) > 0):
 				echo $this->load->view("fileHandlers/imageHandler_iframe", ["fileObject"=>$fileObject], true);
 			elseif($fileObject->sourceFile->getType() == "svs"):
 			?>
