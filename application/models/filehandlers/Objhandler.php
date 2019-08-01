@@ -353,7 +353,7 @@ rnd.resolution_y = int(2000)
 
 
 
-			if(compressImageAndSave(new FileContainer($targetLargeFile), $derivativeContainer,$width, $height)) {
+			if(compressImageAndSave(new FileContainer($targetLargeFile), $derivativeContainer,$width, $height, 80, 6)) {
 				$derivativeContainer->ready = true;
 				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				if(!$derivativeContainer->copyToRemoteStorage()) {
