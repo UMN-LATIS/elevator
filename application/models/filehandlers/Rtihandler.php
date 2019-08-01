@@ -96,7 +96,7 @@ class RTIHandler extends FileHandlerBase {
 		$rtiPath =  $this->config->item("rtiBuild");
 
 		
-		$options = "cd " . $extractedPath . "; /usr/bin/xvfb-run " . $rtiPath . " " . $destinationName;
+		$options = "cd " . $extractedPath . "; " . $rtiPath . " " . $destinationName;
 
 		exec($options);
 		if(file_exists($extractedPath . "/" . "info.xml")) {
