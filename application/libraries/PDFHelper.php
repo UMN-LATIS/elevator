@@ -33,7 +33,7 @@ class PDFHelper {
 
 	public function getPDFMetadata($pdfFile) {
 
-		exec("/usr/bin/pdfinfo " . $pdfFile, $output, $returnVar);
+		exec("/usr/local/bin/pdfinfo " . $pdfFile, $output, $returnVar);
         
 		if($returnVar > 0) {
 			$this->CI->logging->logError("pdf library","Could not get pdf metadata");
