@@ -58,7 +58,7 @@ class PDFHelper {
 
 	public function scrapeText($pdfFile) {
 		$output = $pdfFile . ".txt";
-		$commandLine = "/usr/bin/pdftotext" . " "  . $pdfFile . " " . $output;
+		$commandLine = "/usr/local/bin/pdftotext" . " "  . $pdfFile . " " . $output;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
 		$process->run();
 		while($process->isRunning()) {
