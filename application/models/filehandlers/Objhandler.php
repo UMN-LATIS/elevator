@@ -349,17 +349,11 @@ rnd.resolution_y = int(2000)
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
 
-			$image=new Imagick("JPEG" .":".$targetLargeFile);
-			$image->setImageCompression(Imagick::COMPRESSION_JPEG);
-			$image->setImageCompressionQuality(80);
-			$image->rotateimage(new ImagickPixel('#00000000'), 90);
-			$image->setImageBackgroundColor('white');
-			$image->setImageAlphaChannel(imagick::ALPHACHANNEL_REMOVE);
-			$image = $image->mergeImageLayers(imagick::LAYERMETHOD_FLATTEN);
 
-			$image->resizeImage($width,$height,imagick::FILTER_LANCZOS,1,true);
 
-			if($image->writeImage($derivativeContainer->getPathToLocalFile())) {
+
+
+			if(compressImageAndSave(new FileContainer($targetLargeFile), $derivativeContainer,$width, $height)) {
 				$derivativeContainer->ready = true;
 				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				if(!$derivativeContainer->copyToRemoteStorage()) {
