@@ -207,7 +207,7 @@ class OfficeHandler extends FileHandlerBase {
 		$derivativeContainer->setParent($this->sourceFile->getParent());
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_pdf" . '.pdf';
 
-		$unoconv = Unoconv\Unoconv::create(['timeout'=> 240]);
+		$unoconv = Unoconv\Unoconv::create(['timeout'=> 240, 'unoconv.binaries' => '/usr/local/bin/openoffice']);
 		$unoconv->transcode($this->sourceFile->getPathToLocalFile(), 'pdf', $derivativeContainer->getPathToLocalFile());
 
 		if(!file_exists($derivativeContainer->getPathToLocalFile())) {

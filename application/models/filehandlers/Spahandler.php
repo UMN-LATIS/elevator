@@ -242,7 +242,7 @@ class SPAHandler extends FileHandlerBase {
 
 		file_put_contents($rScriptPath, $rScript);
 
-		exec("R < " . $rScriptPath . " --no-save", $errorText);
+		exec("/usr/local/bin/r-lang < " . $rScriptPath . " --no-save", $errorText);
 		unlink($rScriptPath);
 		if(!file_exists($dest)) {
 			$this->logging->processingInfo("createDerivative","spaHandler",$errorText,$this->getObjectId(),$this->job->getId());
