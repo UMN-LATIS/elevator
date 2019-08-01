@@ -20,7 +20,7 @@ class Transcoder_Model extends CI_Model {
             'temp_directory'              => $this->basePath = $this->config->item("scratchSpace"),
             'ffmpeg'                      => $this->config->item("ffmpegBinary"),
             'ffprobe'                     => $this->config->item("ffprobeBinary"),
-            'yamdi'                       => $this->config->item("yamdiBinary"),
+            'yamdi'                       => 'php',
             'qtfaststart'                 => $this->config->item("qtfaststartBinary"),
             'gif_transcoder'              => 'php',
             'convert'                     => $this->config->item("convertBinary"),
