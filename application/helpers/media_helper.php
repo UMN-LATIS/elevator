@@ -12,7 +12,7 @@ define("imagick_internal_ORIENTATION_LEFTBOTTOM", 8);
  * @param  [type] $height      [description]
  * @return [type]              [description]
  */
-function compressImageAndSave($sourceImage, $targetImage, $width, $height, $compressionQuality=80) {
+function compressImageAndSave($sourceImage, $targetImage, $width, $height, $compressionQuality=80, $forceRotation=null) {
 	//$im->setResolution(300,300); could do this for pdf
 	//
 	$append = "";
@@ -41,9 +41,17 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	
 	// $image = $image->flattenImages();
 
-	if(isset($sourceImage->metadata["rotation"])) {
+	$rotation = null;
+	if($forceRotation) {
+		$rotation = $forceRotation;
+	}
+	else if(isset($sourceImage->metadata["rotation"])) {
+		$rotation = $sourceImage->metadata["rotation"];
+	}
+
+	if($rotation) {
 		
-		switch($sourceImage->metadata["rotation"]) {
+		switch($rotation) {
         case imagick_internal_ORIENTATION_BOTTOMRIGHT:
 			$outputSwitches[] = "-rotate 180";
         	break;
