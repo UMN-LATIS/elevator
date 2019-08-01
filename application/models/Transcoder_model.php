@@ -128,7 +128,7 @@ class Transcoder_Model extends CI_Model {
 			$fileType = strtolower($this->fileHandler->asset->getFileType());
 			if($fileType == "mov" || $fileType == "mp4") {
 				rename($this->fileHandler->sourceFile->getPathToLocalFile(), $this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType);
-				$commandString = "python " . $this->config->item("spatialMedia"). " " . $this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType;
+				$commandString = $this->config->item("spatialMedia"). " " . $this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType;
 				exec($commandString, $output);
 				rename($this->fileHandler->sourceFile->getPathToLocalFile() . "." . $fileType, $this->fileHandler->sourceFile->getPathToLocalFile());
 				foreach($output as $line) {
@@ -510,7 +510,7 @@ class Transcoder_Model extends CI_Model {
 		$fileList = array_diff(scandir($derivativeContainer->getPathToLocalFile() . "-contents/"),array('..', '.', ".DS_Store"));
 
 		foreach($fileList as $file) {
-			exec("mogrify -geometry 100 " . $derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
+			exec($this->config->item("mogrify") . " -geometry 100 " . $derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
 		}
 
 		$dimensions = getimagesize($derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
@@ -520,7 +520,7 @@ class Transcoder_Model extends CI_Model {
 
 		$gridRowCount = ceil(count($fileList) / 4);
 
-		exec("montage " . $derivativeContainer->getPathToLocalFile() . "-contents/output*jpg -tile 4x" . $gridRowCount . " -geometry " . $width."x".$height."+0+0 " . $derivativeContainer->getPathToLocalFile());
+		exec($this->config->item("montage") . " " . $derivativeContainer->getPathToLocalFile() . "-contents/output*jpg -tile 4x" . $gridRowCount . " -geometry " . $width."x".$height."+0+0 " . $derivativeContainer->getPathToLocalFile());
 
 		$derivativeContainer->copyToRemoteStorage(".jpg");
 
@@ -1059,6 +1059,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 		$targetScript = str_replace("{width}", 500, $targetScript);
 		$targetScript = str_replace("{height}", 400, $targetScript);
 		$outputScript = "cat " . $rawData . " | " . $gnuPath . " -e \"" . $targetScript . "\"";
+
 		exec($outputScript);
 		$derivativeContainer->copyToRemoteStorage();
         $derivativeContainer->removeLocalFile();

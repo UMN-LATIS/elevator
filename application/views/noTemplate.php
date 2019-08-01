@@ -40,11 +40,15 @@
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
 <link rel="stylesheet" href="/assets/leaflet/leaflet.css">
+<link rel="stylesheet" href="/assets/css/screen.css">
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
-<?else:?>
-<link rel="stylesheet" href="/assets/css/screen.css">
 <?endif?>
+<style>
+body {
+  background-color: transparent;
+}
+</style>
 <script src="/assets/minifiedjs/jquery.min.js"></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
