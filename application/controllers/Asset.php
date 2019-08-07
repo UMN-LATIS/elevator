@@ -207,8 +207,26 @@ class asset extends Instance_Controller {
 
 	}
 
+	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedded);
+		echo $embed;
+		return;
+	}
+
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
 
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
+		$embed = $fileHandler->getEmbedView($embedAssets);
+		$this->template->set_template("noTemplate");
+		$this->template->loadJavascript(["excerpt", "embedTriggers"]);
+		$this->template->content = $embed;
+		$this->template->title = $assetModel->getAssetTitle(true);
+		$this->template->publish();
+	}
+
+	private function getComputedAsset($fileObjectId, $parentObject) {
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 		if(!$fileHandler) {
 			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
@@ -275,20 +293,8 @@ class asset extends Instance_Controller {
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
-
-		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedded);
-		if($embedded) {
-			$this->template->set_template("noTemplate");
-			$this->template->loadJavascript(["excerpt", "embedTriggers"]);
-			$this->template->content = $embed;
-			$this->template->title = $assetModel->getAssetTitle(true);
-			$this->template->publish();
-		}
-		else {
-			echo $embed;
-		}
+		return [$assetModel, $fileHandler];
 	}
-
 
 	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
 

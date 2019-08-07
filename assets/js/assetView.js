@@ -321,7 +321,7 @@ $(document).on("click", ".loadView", function(e) {
 	// we pass in the page's objectId so that assets inside drawers load properly.
 
 
-	$.get(basePath+"asset/getEmbed/"+fileObjectId + "/" + objectId, function(data){
+	$.get(basePath+"asset/getEmbedWithChrome/"+fileObjectId + "/" + objectId, function(data){
 		$("#embedView").html(data);
 		$("#embedView").data("objectid", fileObjectId);
 

@@ -1,12 +1,5 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
-$drawerArray = array();
-if($this->user_model->userLoaded) {
-  foreach($this->user_model->getDrawers(true) as $drawer) {
-    $drawerArray[] = $drawer;
-  }
-}
-
 
 $mediaArray = array();
 if(isset($fileContainers['streaming'])) {
@@ -64,61 +57,6 @@ else {
 
 }
 
-
-$embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
-
-
-
-
-$menuArray = [];
-if(count($fileContainers)>0) {
-  $menuArray['embed'] = $embed;
-  $menuArray['embedLink'] = $embedLink;
-  if(count($drawerArray)>0) {
-    $menuArray['excerpt'] = true;  
-  }
-}
-
-$fileInfo = [];
-$fileInfo["File Type"] = "Movie";
-$fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-$fileInfo["Video Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
-$fileInfo["Duration"] = gmdate("H:i:s", $fileObject->sourceFile->metadata["duration"]);
-
-if($widgetObject) {
-  if($widgetObject->fileDescription) {
-    $fileInfo["Description"] = $widgetObject->fileDescription;
-  }
-  if($widgetObject->getLocationData()) {
-    $fileInfo["Location"] = ["latitude"=>$widgetObject->getLocationData()[1], "longitude"=>$widgetObject->getLocationData()[0]];
-  }
-  if($widgetObject->getDateData()) {
-    $fileInfo["Date"] = $widgetObject->getDateData();
-  }
-}
-
-$menuArray['fileInfo'] = $fileInfo;
-
-$downloadArray = [];
-if(!$this->instance->getHideVideoAudio() || $allowOriginal) {
-  if(isset($fileContainers['mp4hd']) && $fileContainers['mp4hd']->ready) {
-    $downloadArray["Download HD MP4"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4hd");
-  }
-  if(isset($fileContainers['mp4sd']) && $fileContainers['mp4sd']->ready) {
-    $downloadArray["Download SD MP4"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4sd");
-  }
-}
-if($allowOriginal) {
-  $downloadArray['Download Original'] = instance_url("fileManager/getOriginal/". $fileObjectId);
-}
-
-$menuArray['download'] = $downloadArray;
-
 ?>
 <script src="/assets/jwplayer/jwplayer.js"></script>
 <script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
@@ -129,32 +67,21 @@ $menuArray['download'] = $downloadArray;
   }
 </script>
 
-
-
-<?if(!$embedded):?>
-<div class="row assetViewRow" >
-  <div class="col-md-12 videoColumn">
-<?endif?>
-
 <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
-    <p class="alert alert-info">No derivatives found.
-      <?if(!$this->user_model->userLoaded):?>
-      <?$this->load->view("errors/loginForPermissions")?>
-      <?if($embedded):?>
+  <p class="alert alert-info">No derivatives found.
+  <?if(!$this->user_model->userLoaded):?>
+    <?$this->load->view("errors/loginForPermissions")?>
+    <?if($embedded):?>
       <?$this->load->view("login/login")?>
-      <?endif?>
-      <?endif?>
-    </p>
-
-    <?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
-    <?# this file must be uploaded to s3 for these to work in safari as of 2016 ?>
-    <script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
-    <iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
+    <?endif?>
+  <?endif?>
+  </p>
+<?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
+  <script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
+  <iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
     
-    <?else:?>
-    
+<?else:?>    
     <div id="videoElement">Loading the player...</div>
-
     <script type="text/javascript">
       jwplayer("videoElement").setup({
         ga: { label:"label"},
@@ -208,27 +135,3 @@ $menuArray['download'] = $downloadArray;
 
   </script>
   <?endif?>
-
-<?if(!$embedded):?>
-  </div>
-
-</div>
-<?endif?>
-
-<?if(!$embedded):?>
-
-  <?=renderFileMenu($menuArray)?>
-
-  <?$this->load->view("fileHandlers/excerpt", ["drawerArray"=>$drawerArray])?>
-
-  <script>
-    $(document).ready(function() {
-
-      $(".infoPopover").popover({trigger: "focus | click"});
-      $(".infoPopover").tooltip({ placement: 'top'});
-      $(".excerptTooltip").tooltip({ placement: 'top'});
-    });
-
-  </script>
-
-<?endif?>

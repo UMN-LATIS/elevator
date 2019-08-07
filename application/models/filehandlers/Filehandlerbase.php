@@ -388,7 +388,13 @@ class FileHandlerBase extends CI_Model {
 
 		$uploadWidget = $this->getUploadWidget();
 
-		return $this->load->view("fileHandlers/" . strtolower(get_class($this)), ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+		return $this->load->view("fileHandlers/chrome/" . strtolower(get_class($this)) . "_chrome", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
+	public function getEmbedView($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		$uploadWidget = $this->getUploadWidget();
+		return $this->load->view("fileHandlers/embeds/" . strtolower(get_class($this)) . "", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
 	}
 
 	public function getUploadWidget() {
@@ -413,8 +419,8 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function getSidecarView($sidecars, $formFieldName) {
-		if(file_exists("application/views/fileHandlers/" . strtolower(get_class($this)) . "_sidecars.php")) {
-			return $this->load->view("fileHandlers/" . strtolower(get_class($this)) . "_sidecars.php", ["sidecarData"=>$sidecars, "formFieldRoot"=>$formFieldName, "fileHandler"=>$this], true);
+		if(file_exists("application/views/fileHandlers/sidecars/" . strtolower(get_class($this)) . "_sidecars.php")) {
+			return $this->load->view("fileHandlers/sidecars/" . strtolower(get_class($this)) . "_sidecars.php", ["sidecarData"=>$sidecars, "formFieldRoot"=>$formFieldName, "fileHandler"=>$this], true);
 		}
 		else {
 			return "";
@@ -581,6 +587,12 @@ class FileHandlerBase extends CI_Model {
         return PERM_DERIVATIVES_GROUP_2;
     }
 
+	function getEmedURL() {
+		$embedLink = instance_url("asset/getEmbed/" . $this->getObjectId() . "/null/true");
+		$embedLink = str_replace("http:", "", $embedLink);
+		$embedLink = str_replace("https:", "", $embedLink);
+		return $embedLink;
+	}
 
 	/**
 	 * DELETE EVERYTHING FOR REAL
