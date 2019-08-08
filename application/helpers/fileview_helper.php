@@ -43,7 +43,7 @@ function renderFileMenu($menuArray) {
 	}
 
 	if(isset($menuArray['zoom'])) {
-		$outputText .= '<span></span><input type="range" class="zoom-range">
+		$outputText .= '<span></span><input type="range" class="zoom-range" min=20 value=20>
 			<span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>';
 	}
 	

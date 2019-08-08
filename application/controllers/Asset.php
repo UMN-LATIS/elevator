@@ -66,8 +66,6 @@ class asset extends Instance_Controller {
 		}
 		else {
 		// for subclipping movies
-			$this->template->loadJavascript(["excerpt"]);
-
 
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
@@ -95,7 +93,6 @@ class asset extends Instance_Controller {
 		}
 
 		$embed = $this->loadAssetView($assetModel);
-		$this->template->loadJavascript(["excerpt"]);
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "embed"=>$embed, 'firstAsset'=>null]);
 		$this->template->publish();
 
@@ -132,13 +129,16 @@ class asset extends Instance_Controller {
 
 		$fileHandler->loadByObjectId($excerpt->getExcerptAsset());
 
-		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
+		
 
 		if($embedLink) {
 			$this->template->set_template("noTemplate");
+			$embed = "<iframe class='videoEmbedFrame' src='" . $fileHandler->getEmedURL() . "' width=100% height=100%></iframe>";
+		}
+		else {
+			$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
 		}
 
-		$this->template->loadJavascript(["excerpt"]);
 		$this->template->content->view("asset/excerpt", ["isEmbedded"=>$embedLink, "asset"=>$assetModel, "embed"=>$embed, "startTime"=>$excerpt->getExcerptStart(), "endTime"=>$excerpt->getExcerptEnd(),"excerptId"=>$excerpt->getId(), "label"=>$excerpt->getExcerptLabel()]);
 		$this->template->publish();
 
@@ -220,7 +220,7 @@ class asset extends Instance_Controller {
 		$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
 		$embed = $fileHandler->getEmbedView($embedAssets);
 		$this->template->set_template("noTemplate");
-		$this->template->loadJavascript(["excerpt", "embedTriggers"]);
+		$this->template->loadJavascript(["embedTriggers"]);
 		$this->template->content = $embed;
 		$this->template->title = $assetModel->getAssetTitle(true);
 		$this->template->publish();
@@ -232,7 +232,6 @@ class asset extends Instance_Controller {
 			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
 			if($embedded) {
 				$this->template->set_template("noTemplate");
-				$this->template->loadJavascript(["excerpt"]);
 				$this->template->content = $embed;
 				$this->template->publish();
 			}

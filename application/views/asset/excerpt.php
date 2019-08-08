@@ -1,21 +1,3 @@
-<?
-if($this->user_model->userLoaded) {
-    foreach($this->user_model->getDrawers(true) as $drawer) {
-        $drawerArray[] = $drawer;
-    }
-}
-
-
-$embedLink = instance_url("asset/viewExcerpt/" . $excerptId . "/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
-$frameLink = '<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>';
-
-
-?>
-
-
 
 
 <script>
@@ -26,16 +8,15 @@ var objectId = "<?=$asset->getObjectId()?>";
 
 </script>
 
-<?if(!$isEmbedded):?>
+<?if($isEmbedded):?>
+<?=$embed?>
+<?else:?>
 <div class="row">
 	<div class="col-md-8 col-md-offset-2">
 		<h2><?=$label?><a href="<?=instance_url("asset/viewAsset/".$asset->getObjectId())?>" class="btn btn-primary pull-right">View Asset</a></h2>
-<?endif?>
 		<?=$embed?>
-		<?if(!$isEmbedded):?>
 	</div>
 </div>
-
 <?endif?>
 
 <script>

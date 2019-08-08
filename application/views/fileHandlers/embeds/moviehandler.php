@@ -58,7 +58,9 @@ else {
 }
 
 ?>
+
 <script src="/assets/jwplayer/jwplayer.js"></script>
+<script src="/assets/js/excerpt.js"></script>
 <script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
 <script>
 

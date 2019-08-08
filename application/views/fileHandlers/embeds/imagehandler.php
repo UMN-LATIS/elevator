@@ -1,70 +1,3 @@
-<?
-$fileObjectId = $fileObject->getObjectId();
-$embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
-
-
-
-
-
-
-$menuArray = [];
-if(count($fileContainers)>0) {
-  $menuArray['embed'] = $embed;
-  $menuArray['embedLink'] = $embedLink;
-}
-
-$fileInfo = [];
-$fileInfo["File Type"] = "Image";
-$fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-$fileInfo["Image Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
-
-if($widgetObject) {
-  if($widgetObject->fileDescription) {
-    $fileInfo["Description"] = $widgetObject->fileDescription;
-  }
-  if($widgetObject->getLocationData()) {
-    $fileInfo["Location"] = ["latitude"=>$widgetObject->getLocationData()[1], "longitude"=>$widgetObject->getLocationData()[0]];
-  }
-  if($widgetObject->getDateData()) {
-    $fileInfo["Date"] = $widgetObject->getDateData();
-  }
-
-	
-}
-
-if(isset($fileObject->sourceFile->metadata["exif"])) {
-	$fileInfo["Exif"] = $fileObjectId;
-}
-
-
-
-$menuArray['fileInfo'] = $fileInfo;
-
-$downloadArray = [];
-
-if(isset($fileContainers['screen']) && $fileContainers['screen']->ready) {
-$downloadArray["Download Derivative (jpg)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/screen");
-}
-
-if($allowOriginal) {
-  $downloadArray['Download Original'] = instance_url("fileManager/getOriginal/". $fileObjectId);
-}
-
-$menuArray['download'] = $downloadArray;
-
-
-
-if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !isset($fileObject->sourceFile->metadata["spherical"])) {
-	$menuArray['zoom'] = true;	
-}
-
-
-
-?>
-
-<?if($embedded):?>
 <style>
 /* don't constrain the height of the element when embedded */
 .fullscreenImageContainer {
@@ -79,12 +12,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 	height: 100%;
 }
 </style>
-<?endif?>
 
-<?if(!$embedded):?>
-<div class="row assetViewRow">
-	<div class="col-md-12">
-<?endif?>
 		<? if(!isset($fileContainers) || count($fileContainers) == 1):?>
 		<p class="alert alert-info">No derivatives found.
 			<?if(!$this->user_model->userLoaded):?>
@@ -133,12 +61,10 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 									<img class="img-responsive embedImage imageContent" src="<?=stripHTTP(array_values($fileContainers)[0]->getProtectedURLForFile())?>" alt="<?=($widgetObject && $widgetObject->fileDescription )?htmlspecialchars($widgetObject->fileDescription, ENT_COMPAT):null?>" />
 							<?endif?>
 							</div>
-							<?if($embedded):?>
 								<div class="hoverSlider">
 									<span></span><input type="range" class="zoom-range">
 									<span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>
 								</div>
-							<?endif?>
 					
 					</div>
 
@@ -147,28 +73,24 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 			<?endif?>
 
 	<?endif?>
-<?if(!$embedded):?>
-	</div>
-</div>
-<?endif?>
-
-<?if(!$embedded):?>
-<?=renderFileMenu($menuArray)?>
 
 
-<script>
 
-$(function ()
-{
-	$(".infoPopover").popover({trigger: "focus | click"});
-	$(".infoPopover").tooltip({ placement: 'top'});
 
-});
-</script>
-<?endif?>
+
 
 <?if(count($fileContainers)>0):?>
 	<script>
+
+	function runningFromElevatorHost() {
+		$(".hoverSlider").hide();
+	}
+
+	function zoom(target) {
+		$(".panzoom-element").panzoom("zoom", parseInt(target)/2/10);
+	}
+
+
 	$(document).on("click", ".canFullscreen", function() {
 		if($.fullscreen.isNativelySupported()) {
 			$(".imageContainer").first().fullscreen({ "toggleClass": "imageFullscreen"});
