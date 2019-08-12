@@ -4,6 +4,10 @@
 	max-height: 100%;
 	height: 100%;
 }
+.imageContainer {
+	display: flex;
+	align-items:center;
+}
 .fixedHeightContainer {
 	height: 100%;
 	max-height: 100%
