@@ -276,7 +276,13 @@ class OfficeHandler extends FileHandlerBase {
 	 * Override the parent handler and return the pdf_handler
 	 */
 
-	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
+	public function getEmbedView($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		$uploadWidget = $this->getUploadWidget();
+		return $this->load->view("fileHandlers/embeds/pdfhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+	
+	 public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
 
 		if(!$this->parentObject && $this->parentObjectId) {
 			$this->parentObject = new Asset_model($this->parentObjectId);
@@ -295,7 +301,7 @@ class OfficeHandler extends FileHandlerBase {
 
 		}
 
-		return $this->load->view("fileHandlers/" . "pdfhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+		return $this->load->view("fileHandlers/chrome/" . "pdfhandler_chrome", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
 	}
 
 }

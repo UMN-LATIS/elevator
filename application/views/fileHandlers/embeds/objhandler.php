@@ -1,70 +1,20 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
 
-$drawerArray = array();
-if($this->user_model->userLoaded) {
-    foreach($this->user_model->getDrawers(true) as $drawer) {
-        $drawerArray[] = $drawer;
-    }
-}
-
-
-
-?>
-<?
-
-
-$embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
-
-
-if(count($fileContainers)>0) {
-  $menuArray['embed'] = $embed;
-}
-
-$fileInfo = [];
-$fileInfo["File Type"] = "3D Object";
-$fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-
-
-
-$menuArray['fileInfo'] = $fileInfo;
-
-if(count($fileContainers)>0) {
-  $menuArray['embed'] = $embed;
-  $menuArray['embedLink'] = $embedLink;
-}
 
 $downloadArray = [];
 $targetAsset = null;
 if(isset($fileContainers['nxs']) && $fileContainers['nxs']->ready) {
   $nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
-  $downloadArray["Download Derivative (nxs)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/nxs");
   $targetAsset = stripHTTP($nxsURL) . "#.nxs";
 }
 
 if(isset($fileContainers['ply']) && $fileContainers['ply']->ready) {
-  $downloadArray["Download Derivative (ply)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/ply");
   $plyURL = isset($fileContainers['ply'])?$fileContainers['ply']->getProtectedURLForFile():null;
   if(!$targetAsset) {
     $targetAsset = stripHTTP($plyURL) . "#.ply";
   }
 }
-
-if(isset($fileContainers['stl']) && $fileContainers['stl']->ready) {
-  $downloadArray["Download Derivative (stl)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/stl");
-}
-
-if($allowOriginal) {
-  $downloadArray['Download Original'] = instance_url("fileManager/getOriginal/". $fileObjectId);
-}
-
-$menuArray['download'] = $downloadArray;
-
 
 ?>
 <link type="text/css" rel="stylesheet" href="/assets/3dviewer/stylesheet/3dhop.css"/>
@@ -88,17 +38,14 @@ $menuArray['download'] = $downloadArray;
 <script type="text/javascript" src="/assets/3dviewer/js/nexus.js"></script><!-- need this due to how nexus.js swaps out itself -->
 <?endif?>
 
-<?if(!$embedded):?>
-<div class="row assetViewRow">
-  <div class="col-md-12">
-<?endif?>
+
   <? if(!isset($fileContainers) || count($fileContainers) <=4 ):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
       <?=$this->load->view("errors/loginForPermissions")?>
-      <?if($embedded):?>
-      <?=$this->load->view("login/login")?>
-      <?endif?>
+        <?if($embedded):?>
+          <?=$this->load->view("login/login")?>
+        <?endif?>
       <?endif?>
     </p>
 
@@ -237,13 +184,9 @@ var timer;
 
 var resizeTarget = function() {
   if($('#full').css("visibility")=="visible"){
-    <?if($embedded):?>
       resizeCanvas($('#3dhop').parent().width(),$(window).height());
       $(".threedelementcontainer").height($('#3dhop').height());
-    <?else:?>
-      resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());  
-    <?endif?>
-    
+
     presenter.ui.postDrawEvent();
   }
 }
@@ -255,41 +198,16 @@ $(window).resize(function(event) {
 
 });
 
-var loadedCallback = function() {
+$(document).ready(function() {
   init3dhop();
   setup3dhop();
-   moveMeasurebox(10,10);
-   resizeTarget();
-}
-
-
-
-</script>
-
-
-    <?endif?>
-<?if(!$embedded):?>
-  </div>
-</div>
-<?endif?>
-
-
-
-
-
-<?if(!$embedded):?>
-
-
-<?=renderFileMenu($menuArray)?>
-<script>
-$(function ()
-{
-  $(".infoPopover").popover({trigger: "focus | click"});
-  $(".infoPopover").tooltip({ placement: 'top'});
-
+  moveMeasurebox(10,10);
+  resizeTarget();
 });
+
+
+
+
 </script>
 
 <?endif?>
-
-

@@ -23,7 +23,6 @@ $fileInfo = [];
 $fileInfo["File Type"] = "Movie";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
 $fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-$fileInfo["Video Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
 $fileInfo["Duration"] = gmdate("H:i:s", $fileObject->sourceFile->metadata["duration"]);
 
 if($widgetObject) {
@@ -42,11 +41,11 @@ $menuArray['fileInfo'] = $fileInfo;
 
 $downloadArray = [];
 if(!$this->instance->getHideVideoAudio() || $allowOriginal) {
-  if(isset($fileContainers['mp4hd']) && $fileContainers['mp4hd']->ready) {
-    $downloadArray["Download HD MP4"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4hd");
+  if(isset($fileContainers['mp3']) && $fileContainers['mp3']->ready) {
+    $downloadArray["Download MP3"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp3");
   }
-  if(isset($fileContainers['mp4sd']) && $fileContainers['mp4sd']->ready) {
-    $downloadArray["Download SD MP4"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4sd");
+  if(isset($fileContainers['m4a']) && $fileContainers['m4a']->ready) {
+    $downloadArray["Download M4A"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/m4a");
   }
 }
 if($allowOriginal) {
@@ -56,6 +55,7 @@ if($allowOriginal) {
 $menuArray['download'] = $downloadArray;
 
 ?>
+
 <script>
 
   if(typeof objectId == 'undefined') {

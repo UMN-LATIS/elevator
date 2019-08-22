@@ -3,6 +3,7 @@ $fileObjectId = $fileObject->getObjectId();
 $embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
+$embedHeight = 480;
 
 
 
@@ -60,13 +61,17 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 	$menuArray['zoom'] = true;	
 }
 
+if($fileObject->sourceFile->getType() == "svs") {
+  // SVS files get taller for menu stuff
+  $embedHeight = 600;
+}
+
 
 
 ?>
-
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="480" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="imageEmbedFrame"></iframe>
+        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded Image" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="imageEmbedFrame"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>

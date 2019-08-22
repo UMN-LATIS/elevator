@@ -209,7 +209,7 @@ class asset extends Instance_Controller {
 
 	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
-		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedded);
+		$embed = $this->loadAssetView($assetModel, $fileHandler);
 		echo $embed;
 		return;
 	}
