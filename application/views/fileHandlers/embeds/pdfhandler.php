@@ -14,7 +14,6 @@ else if($allowOriginal) {
 	$targetFile = $fileObject->sourceFile->getProtectedURLForFile();
 }
 
-
 ?>
 
 <?if($targetFile):?>

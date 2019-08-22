@@ -218,7 +218,10 @@ class asset extends Instance_Controller {
 
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
 		$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
-		$embed = $fileHandler->getEmbedView($embedAssets);
+		
+		$includeOriginal = $this->getAllowOriginal($fileHandler);
+
+		$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
 		$this->template->set_template("noTemplate");
 		$this->template->loadJavascript(["embedTriggers"]);
 		$this->template->content = $embed;
@@ -295,27 +298,14 @@ class asset extends Instance_Controller {
 		return [$assetModel, $fileHandler];
 	}
 
-	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
-
+	public function getAllowOriginal($fileHandler) {
 		$requiredAccessLevel = PERM_NOPERM;
-
-		try {
-			if($fileHandler == null) {
-				$fileHandler = $assetModel->getPrimaryFilehandler();
-			}
-			if($fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
-				$requiredAccessLevel = $fileHandler->getPermission();
-			}
-			else {
-				$requiredAccessLevel = PERM_ORIGINALS;
-			}
+		if($fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
+			$requiredAccessLevel = $fileHandler->getPermission();
 		}
-		catch (Exception $e) {
-			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
+		else {
+			$requiredAccessLevel = PERM_ORIGINALS;
 		}
-
-
-
 		// This is hacky and should be refactored - if the user can view the originals, we need to let the view know.
 		if($this->accessLevel>= $requiredAccessLevel) {
 			$includeOriginal=true;
@@ -323,6 +313,25 @@ class asset extends Instance_Controller {
 		else {
 			$includeOriginal=false;
 		}
+		return $includeOriginal;
+	}
+
+	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
+
+	
+
+		try {
+			if($fileHandler == null) {
+				$fileHandler = $assetModel->getPrimaryFilehandler();
+			}
+		}
+		catch (Exception $e) {
+			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
+		}
+
+		$includeOriginal = $this->getAllowOriginal($fileHandler);
+
+		
 
 		if($fileHandler) {
 			try {

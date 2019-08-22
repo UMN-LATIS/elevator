@@ -3,7 +3,7 @@ $fileObjectId = $fileObject->getObjectId();
 $embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
-$embedHeight = 480;
+$embedHeight = "480";
 
 
 
