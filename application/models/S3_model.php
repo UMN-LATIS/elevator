@@ -59,6 +59,29 @@ class S3_model extends CI_Model {
 
 	}
 
+	public function fixACL($sourceFile) {
+		if(strlen($this->bucket) < 5) {
+			echo "Error: bucket unknown\n";
+			throw new Exception('Bucket Error');
+		}
+
+		$command = [
+			'ACL'=>'private',
+			'Bucket' => $this->bucket,
+			'Key' => "original/" . strrev($sourceFile) . "-source"
+			];
+		try {
+			$this->s3Client->putObjectAcl($command);
+		}
+		catch (Aws\S3\Exception\S3Exception $e) {
+			var_dump($command);
+			echo $e->getAwsErrorType() . "\n";
+			echo $e->getAwsErrorCode() . "\n";
+			throw new Exception('Error setting ACL');
+		}
+		
+	}
+
 	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null) {
 		if(!$targetMimeType) {
 			$targetMimeType = mime_content_type($sourceFile);
