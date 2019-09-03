@@ -1078,7 +1078,7 @@
                 "uploads": ""
             },
             headers: {
-                "x-amz-acl": "public-read",
+                "x-amz-acl": "private",
                 "Content-Disposition": "attachment; filename=" + file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
                 "Content-Type": auth.content_type || "application/octet-stream"
             },
