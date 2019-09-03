@@ -665,24 +665,24 @@ class admin extends Admin_Controller {
 	public function fixACL($offset=0)  {
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\FileHandler", 'f')
-		->select("f")
+		->select("f.id", 'f.fileObjectId')
 		->where("f.deleted != TRUE")
 		->orderby("f.id", "desc");
 
 		if($offset > 0) {
 			$qb->setFirstResult($offset);
 		}
+		// $qb->setMaxResults(10000);
 		$result = $qb->getQuery()->iterate();
 		$count = 0;
 		$this->load->model("filehandlerbase");
-		foreach($result as $entry) {
-			$entry = $entry[0];
-			if($entry->getFileObjectId() === NULL) {
+		foreach($result as $key=>$entry) {
+			if($entry[$key]["fileObjectId"] === NULL) {
 				continue;
 			}
 			$asset = new Filehandlerbase();
 			try {
-				$asset->loadFromObject($entry);	
+				$asset->loadByObjectId($entry[$key]["fileObjectId"]);	
 			}
 			catch (Exception $e) {
 				echo "Error loading record\n";
