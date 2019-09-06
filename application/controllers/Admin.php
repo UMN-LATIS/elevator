@@ -13,7 +13,7 @@ class admin extends Admin_Controller {
 		}
 	}
 
-
+ 
 	public function index()
 	{
 
@@ -660,6 +660,47 @@ class admin extends Admin_Controller {
 		var_dump($asset->getObjectId());
 
 
+	}
+
+	public function fixACL($offset=0)  {
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\FileHandler", 'f')
+		->select("f.id", 'f.fileObjectId')
+		->where("f.deleted != TRUE")
+		->orderby("f.id", "desc");
+
+		if($offset > 0) {
+			$qb->setFirstResult($offset);
+		}
+		// $qb->setMaxResults(10000);
+		$result = $qb->getQuery()->iterate();
+		$count = 0;
+		$this->load->model("filehandlerbase");
+		foreach($result as $key=>$entry) {
+			if($entry[$key]["fileObjectId"] === NULL) {
+				continue;
+			}
+			$asset = new Filehandlerbase();
+			try {
+				$asset->loadByObjectId($entry[$key]["fileObjectId"]);	
+			}
+			catch (Exception $e) {
+				echo "Error loading record\n";
+				continue;
+			}
+			try {
+				$asset->s3model->fixACL($asset->getObjectId());
+			}
+			catch (Exception $e) {
+				echo "ERROR: " . $count .": " . $asset->getObjectId() . ", " . $asset->s3model->bucket . "\n";
+			}
+			$this->doctrine->em->clear();
+			if($count % 100 == 0) {
+				gc_collect_cycles();
+			}
+			echo $count .": " . $asset->getObjectId() . ", " . $asset->s3model->bucket . "\n";
+			$count++;
+		}
 	}
 
 
