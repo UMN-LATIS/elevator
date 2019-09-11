@@ -512,3 +512,18 @@ function iframeLoaded(iFrame) {
 
 
 }
+
+
+// Handler for previous/next functionality in editing
+// registered in template.js
+var objectId = null;
+$(document).ready(function() {
+	if ($("#inputObjectId").val().length > 10) {
+		objectId = $("#inputObjectId").val();
+	}
+	loadLastSearch();
+});
+
+function nextResultLink(targetId) {
+	window.location = basePath + "assetManager/editAsset/" + targetId;
+}

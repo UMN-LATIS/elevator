@@ -240,7 +240,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
               <ul class="dropdown-menu">
                 <li><a href="<?=instance_url("/assetManager/addAssetModal")?>" data-toggle="modal" data-target="#addAssetModal">Add Asset</a></li>
                 <?if(isset($assetModel)):?>
-                <li><a href="<?=instance_url("assetManager/editAsset/" . $assetModel->getObjectId())?>">Edit Asset</a></li>
+                <li><a href="<?=instance_url("assetManager/editAsset/" . $assetModel->getObjectId())?>" class="editAssetLink">Edit Asset</a></li>
                 <li><a href="<?=instance_url("assetManager/restoreAsset/" . $assetModel->getObjectId())?>">Restore Asset</a></li>
                  <li class="divider"></li>
                 <li><a href="<?=instance_url("assetManager/deleteAsset/" . $assetModel->getObjectId())?>" onclick="return confirm('Are you sure you wish to delete this asset and all derivatives?')">Delete Asset</a></li>
