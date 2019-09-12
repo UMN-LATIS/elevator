@@ -10,6 +10,9 @@ $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
 
 $(document).on("ready", function() {
 
+	// registered in template.js
+	loadLastSearch();
+
 	// if we don't support fullscreen, hide hte button entirely
 	if(!$.fullscreen.isNativelySupported()) {
 		$("head").append('<style> .canFullscreen { display: none;</style>');
@@ -174,9 +177,6 @@ $(document).on("ready", function() {
 		});
 	});
 
-	var searchId = $.cookie("lastSearch");
-	$.removeCookie("lastSearch",  { path: '/' });
-
 	// hide popovers when you click elsehwere on the page
 	$('body').on('click', function (e) {
 		$('[data-toggle="popover"]').each(function () {
@@ -188,23 +188,14 @@ $(document).on("ready", function() {
 		});
 	});
 
-	if(searchId) {
-		$(".searchResultsNavBar").removeClass("hide");
-		$(".previousResult").on("click", function(e) {
-			e.preventDefault();
-			$.cookie('lastSearch', searchId, {
-				path: "/"
-			});
-			window.location = basePath + "search/getResult/previous/" + searchId + "/" + objectId;
+
+	// reset the last search on edit so we can do forward/next in that case too
+	$(document).on("click", ".editAssetLink", function (e) {
+		$.cookie('lastSearch', searchId, {
+			path: "/"
 		});
-		$(".nextResult").on("click", function (e) {
-			e.preventDefault();
-			$.cookie('lastSearch', searchId, {
-				path: "/"
-			});
-			window.location = basePath + "search/getResult/next/" + searchId + "/" + objectId;
-		});
-	}
+	});
+
 
 	// if they came in with a hash, let's find and load that asset.
 	if(window.location.hash) {
@@ -377,4 +368,9 @@ function loadEmbedViewPointer() {
 		}
 
 		$(targetAsset).trigger("click");
+}
+
+// handle "next" and "previous" while browsing results
+function nextResultLink(targetId) {
+	window.location = basePath + "asset/viewAsset/" + targetId;
 }

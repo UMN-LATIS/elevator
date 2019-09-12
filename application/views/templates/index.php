@@ -45,6 +45,9 @@
             },
             {
                 "sortable": false
+            },
+			{
+                "sortable": false
             }
         ]
     } );
