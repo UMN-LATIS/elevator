@@ -23,6 +23,10 @@ class Collections extends Instance_Controller {
 			instance_redirect("/search");
 		}
 
+		if(!$this->user_model->havePermForCollection(PERM_SEARCH, $collectionId)) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+
 		$searchArray["searchText"] = "";
 		$searchArray["collection"] = [$collectionId];
 		$searchArray["fuzzySearch"] = false;
