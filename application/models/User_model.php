@@ -451,21 +451,8 @@ class User_model extends CI_Model {
 		if(!$permLevel) {
 			return array();
 		}
-		$instanceCollections = $this->instance->getCollections()->toArray();
-		$allowedCollections = array();
-		if($this->user_model && $this->user_model->getAccessLevel("instance",$this->instance) < $permLevel) {
-			foreach($instanceCollections as $collection) {
-				if($this->user_model->getAccessLevel("collection", $collection) >= $permLevel) {
-					$allowedCollections[] = $collection;
-					foreach($collection->getFlattenedChildren() as $child) {
-						$allowedCollections[] = $child;
-					}
-				}
-			}
-		}
-		else if($this->user_model->getAccessLevel("instance",$this->instance) >= $permLevel) {
-			$allowedCollections = $instanceCollections;
-		}
+		
+		$allowedCollections = $this->getAllowedCollections($permLevel);
 
 		foreach($allowedCollections as $collection) {
 			if($collection->getId() == $collectionId) {
