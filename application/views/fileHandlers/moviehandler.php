@@ -190,6 +190,7 @@ $menuArray['download'] = $downloadArray;
         }],
         width: "100%",
         height: "100%",
+        preload: 'none'
       });
 
     // JW player is dumb about default to HD footage so we do it manually if possible
