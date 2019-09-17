@@ -215,7 +215,7 @@ if(typeof objectId == 'undefined') {
         
         jwplayer().on('seek', function(event) {
           haveSeeked=true;
-          if(jwplayer().getState('paused')) {
+          if(jwplayer().getState('paused') == 'paused') {
             seekTime = event.offset;
             needSeek = true;
           }
@@ -240,13 +240,15 @@ if(typeof objectId == 'undefined') {
             registerJWHandlers();
             jwplayer().play();
             if(needSeek) {
+              console.log("seeking to existing location" + seekTime)
               jwplayer().seek(seekTime);
               needSeek = false;
             }
             else {
+              console.log("seeking to new position:" + currentPosition)
               jwplayer().seek(currentPosition);
             }
-            
+            needSeek = false;
             currentPosition = null;
             
             
