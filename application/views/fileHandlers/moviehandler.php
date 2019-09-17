@@ -163,6 +163,8 @@ if(typeof objectId == 'undefined') {
   var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
   var weAreHosed = false;
   var firstPlay = false;
+  var seekTime = null;
+  var needSeek = false;
   function buildPlayer() {
     jwplayer("videoElement").setup({
       ga: { label:"label"},
@@ -213,6 +215,10 @@ if(typeof objectId == 'undefined') {
         
         jwplayer().on('seek', function(event) {
           haveSeeked=true;
+          if(jwplayer().getState('paused')) {
+            seekTime = event.offset;
+            needSeek = true;
+          }
         });
         jwplayer().on('pause', function(event) {
           havePaused=true;
@@ -233,7 +239,13 @@ if(typeof objectId == 'undefined') {
             buildPlayer();
             registerJWHandlers();
             jwplayer().play();
-            jwplayer().seek(currentPosition);
+            if(needSeek) {
+              jwplayer().seek(seekTime);
+              needSeek = false;
+            }
+            else {
+              jwplayer().seek(currentPosition);
+            }
             
             currentPosition = null;
             
