@@ -215,17 +215,14 @@ if(typeof objectId == 'undefined') {
           haveSeeked=true;
         });
         jwplayer().on('pause', function(event) {
-          if(haveSeeked) {
-            havePaused=true;
-          }
-          
+          havePaused=true;
         });
         jwplayer().on('play', function(event) {
-          if(weAreHosed && !firstPlay) {
+          if(!firstPlay) {
             firstPlay = true;
             return;
           }
-          if((haveSeeked && havePaused && isChrome) || weAreHosed) {
+          if((haveSeeked || havePaused) && isChrome) {
             console.log("rebuilding");
             rebuilding = true;
             haveSeeked=false;
