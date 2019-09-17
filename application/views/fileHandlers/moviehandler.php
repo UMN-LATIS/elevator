@@ -160,6 +160,7 @@ $menuArray['download'] = $downloadArray;
       var havePaused = false;
       var currentPosition = null;
       var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
+      var weAreHosed = false;
       function buildPlayer() {
       jwplayer("videoElement").setup({
         ga: { label:"label"},
@@ -218,9 +219,10 @@ $menuArray['download'] = $downloadArray;
         
       });
       jwplayer().on('play', function(event) {
-        if(haveSeeked && havePaused && isChrome) {
+        if((haveSeeked && havePaused && isChrome) || weAreHosed) {
           haveSeeked=false;
           havePaused=false;
+          weAreHosed = true;
           currentPosition= jwplayer().getPosition();
           buildPlayer();
           jwplayer().play();
