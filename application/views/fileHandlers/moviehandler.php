@@ -39,7 +39,7 @@ if(isset($fileContainers['mp4hd1080'])) {
 
 $derivatives = array();
 if($fileObject->sourceFile->metadata["duration"] < 300) {
-
+  
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
@@ -49,7 +49,7 @@ if($fileObject->sourceFile->metadata["duration"] < 300) {
   if(array_key_exists("streaming", $mediaArray)) {
     $derivatives[] = $mediaArray["streaming"];
   }
-
+  
 }
 else {
   if(array_key_exists("mp4sd", $mediaArray)) {
@@ -61,7 +61,7 @@ else {
   if(array_key_exists("streaming", $mediaArray)) {
     $derivatives[] = $mediaArray["streaming"];
   }
-
+  
 }
 
 
@@ -124,49 +124,51 @@ $menuArray['download'] = $downloadArray;
 <script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
 <script>
 
-  if(typeof objectId == 'undefined') {
-    objectId = "<?=$fileObjectId?>";
-  }
+if(typeof objectId == 'undefined') {
+  objectId = "<?=$fileObjectId?>";
+}
 </script>
 
 
 
 <?if(!$embedded):?>
 <div class="row assetViewRow" >
-  <div class="col-md-12 videoColumn">
+<div class="col-md-12 videoColumn">
 <?endif?>
 
 <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
-    <p class="alert alert-info">No derivatives found.
-      <?if(!$this->user_model->userLoaded):?>
-      <?$this->load->view("errors/loginForPermissions")?>
-      <?if($embedded):?>
-      <?$this->load->view("login/login")?>
-      <?endif?>
-      <?endif?>
-    </p>
+<p class="alert alert-info">No derivatives found.
+<?if(!$this->user_model->userLoaded):?>
+<?$this->load->view("errors/loginForPermissions")?>
+<?if($embedded):?>
+<?$this->load->view("login/login")?>
+<?endif?>
+<?endif?>
+</p>
 
-    <?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
-    <?# this file must be uploaded to s3 for these to work in safari as of 2016 ?>
-    <script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
-    <iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
-    
-    <?else:?>
-    
-    <div id="videoElement">Loading the player...</div>
-
-    <script type="text/javascript">
-      var haveSeeked = false;
-      var havePaused = false;
-      var currentPosition = null;
-      var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
-      var weAreHosed = false;
-      function buildPlayer() {
-      jwplayer("videoElement").setup({
-        ga: { label:"label"},
-        playlist: [{
-          image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
-          sources: [
+<?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
+<?# this file must be uploaded to s3 for these to work in safari as of 2016 ?>
+<script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
+<iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
+  
+  <?else:?>
+  
+  <div id="videoElement">Loading the player...</div>
+  
+  <script type="text/javascript">
+  var haveSeeked = false;
+  var havePaused = false;
+  var currentPosition = null;
+  var firstPlay = false;
+  var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
+  var weAreHosed = false;
+  var firstPlay = false;
+  function buildPlayer() {
+    jwplayer("videoElement").setup({
+      ga: { label:"label"},
+      playlist: [{
+        image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
+        sources: [
           <?foreach($derivatives as $entry):?>
           {
             type: "<?=$entry["type"]?>",
@@ -174,8 +176,8 @@ $menuArray['download'] = $downloadArray;
             label: "<?=$entry["label"]?>"
           },
           <?endforeach?>
-          ],
-          tracks: [
+        ],
+        tracks: [
           <?if(isset($fileContainers['vtt'])):?>
           {
             file: "<?=isset($fileContainers['vtt'])?stripHTTP($fileContainers['vtt']->getProtectedURLForFile(".vtt")):null?>",
@@ -198,72 +200,88 @@ $menuArray['download'] = $downloadArray;
         height: "100%",
         preload: 'none'
       });
-      }
-      buildPlayer();
+    }
+    
+    function registerJWHandlers() {
+      jwplayer().onReady(function(event) {
+        jwplayer().onQualityLevels(function(event) {
+          if(event.levels.length > 1 && screen.width > 767) {
+            jwplayer().setCurrentQuality(1);
+          }
+          
+        });
+        
+        jwplayer().on('seek', function(event) {
+          haveSeeked=true;
+        });
+        jwplayer().on('pause', function(event) {
+          if(haveSeeked) {
+            havePaused=true;
+          }
+          
+        });
+        jwplayer().on('play', function(event) {
+          if(weAreHosed && !firstPlay) {
+            firstPlay = true;
+            return;
+          }
+          if((haveSeeked && havePaused && isChrome) || weAreHosed) {
+            console.log("rebuilding");
+            rebuilding = true;
+            haveSeeked=false;
+            havePaused=false;
+            weAreHosed = true;
+            firstPlay = false;
+            currentPosition= jwplayer().getPosition();
+            buildPlayer();
+            registerJWHandlers();
+            jwplayer().play();
+            jwplayer().seek(currentPosition);
+            
+            currentPosition = null;
+            
+            
+            
+          }
+          
+        })
+        
+      });
+      
+    }
+    
+    buildPlayer();
+    registerJWHandlers();
     // JW player is dumb about default to HD footage so we do it manually if possible
-    jwplayer().onReady(function(event) {
-      jwplayer().onQualityLevels(function(event) {
-        if(event.levels.length > 1 && screen.width > 767) {
-          jwplayer().setCurrentQuality(1);
-        }
-
-      });
-
-      jwplayer().on('seek', function(event) {
-        haveSeeked=true;
-      });
-      jwplayer().on('pause', function(event) {
-        if(haveSeeked) {
-          havePaused=true;
-        }
-        
-      });
-      jwplayer().on('play', function(event) {
-        if((haveSeeked && havePaused && isChrome) || weAreHosed) {
-          haveSeeked=false;
-          havePaused=false;
-          weAreHosed = true;
-          currentPosition= jwplayer().getPosition();
-          buildPlayer();
-          jwplayer().play();
-          jwplayer().seek(currentPosition);
-          
-          currentPosition = null;
-          
-          
-        }
-        
-      })
-
-    });
-
+    
+    
     $(".videoColumn").on("remove", function() {
       jwplayer("videoElement").remove();
     });
-
-  </script>
-  <?endif?>
-
-<?if(!$embedded):?>
-  </div>
-
-</div>
-<?endif?>
-
-<?if(!$embedded):?>
-
-  <?=renderFileMenu($menuArray)?>
-
-  <?$this->load->view("fileHandlers/excerpt", ["drawerArray"=>$drawerArray])?>
-
-  <script>
+    
+    </script>
+    <?endif?>
+    
+    <?if(!$embedded):?>
+    </div>
+    
+    </div>
+    <?endif?>
+    
+    <?if(!$embedded):?>
+    
+    <?=renderFileMenu($menuArray)?>
+    
+    <?$this->load->view("fileHandlers/excerpt", ["drawerArray"=>$drawerArray])?>
+    
+    <script>
     $(document).ready(function() {
-
+      
       $(".infoPopover").popover({trigger: "focus | click"});
       $(".infoPopover").tooltip({ placement: 'top'});
       $(".excerptTooltip").tooltip({ placement: 'top'});
     });
-
-  </script>
-
-<?endif?>
+    
+    </script>
+    
+    <?endif?>
