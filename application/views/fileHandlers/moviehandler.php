@@ -156,6 +156,11 @@ $menuArray['download'] = $downloadArray;
     <div id="videoElement">Loading the player...</div>
 
     <script type="text/javascript">
+      var haveSeeked = false;
+      var havePaused = false;
+      var currentPosition = null;
+      var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
+      function buildPlayer() {
       jwplayer("videoElement").setup({
         ga: { label:"label"},
         playlist: [{
@@ -191,7 +196,8 @@ $menuArray['download'] = $downloadArray;
         width: "100%",
         height: "100%",
       });
-
+      }
+      buildPlayer();
     // JW player is dumb about default to HD footage so we do it manually if possible
     jwplayer().onReady(function(event) {
       jwplayer().onQualityLevels(function(event) {
@@ -200,6 +206,32 @@ $menuArray['download'] = $downloadArray;
         }
 
       });
+
+      jwplayer().on('seek', function(event) {
+        haveSeeked=true;
+      });
+      jwplayer().on('pause', function(event) {
+        if(haveSeeked) {
+          havePaused=true;
+        }
+        
+      });
+      jwplayer().on('play', function(event) {
+        if(haveSeeked && havePaused && isChrome) {
+          haveSeeked=false;
+          havePaused=false;
+          currentPosition= jwplayer().getPosition();
+          buildPlayer();
+          jwplayer().play();
+          jwplayer().seek(currentPosition);
+          
+          currentPosition = null;
+          
+          
+        }
+        
+      })
+
     });
 
     $(".videoColumn").on("remove", function() {
