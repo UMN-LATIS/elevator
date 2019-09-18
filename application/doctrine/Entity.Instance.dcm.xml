@@ -9,8 +9,12 @@
               <generator strategy="AUTO" />
           </id>
 
-          <one-to-many field="permissions" target-entity="InstancePermission" mapped-by="instance" />
-          <one-to-many field="groups" target-entity="InstanceGroup" mapped-by="instance" />
+          <one-to-many field="permissions" target-entity="InstancePermission" mapped-by="instance">
+          <cascade><cascade-remove /></cascade>
+          </one-to-many>
+          <one-to-many field="groups" target-entity="InstanceGroup" mapped-by="instance">
+            <cascade><cascade-remove /></cascade>
+          </one-to-many>
           <one-to-many field="handler_permissions" target-entity="InstanceHandlerPermissions" mapped-by="instance" >
             <cascade><cascade-remove /><cascade-persist /></cascade>
           </one-to-many>
