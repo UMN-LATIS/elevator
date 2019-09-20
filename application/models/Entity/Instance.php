@@ -1244,4 +1244,43 @@ class Instance
     {
         return $this->customFooterText;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $recentcollections;
+
+
+    /**
+     * Add recentcollection
+     *
+     * @param \Entity\RecentCollection $recentcollection
+     *
+     * @return Instance
+     */
+    public function addRecentcollection(\Entity\RecentCollection $recentcollection)
+    {
+        $this->recentcollections[] = $recentcollection;
+
+        return $this;
+    }
+
+    /**
+     * Remove recentcollection
+     *
+     * @param \Entity\RecentCollection $recentcollection
+     */
+    public function removeRecentcollection(\Entity\RecentCollection $recentcollection)
+    {
+        $this->recentcollections->removeElement($recentcollection);
+    }
+
+    /**
+     * Get recentcollections
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRecentcollections()
+    {
+        return $this->recentcollections;
+    }
 }
