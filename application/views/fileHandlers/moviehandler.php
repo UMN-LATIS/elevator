@@ -206,12 +206,12 @@ if(typeof objectId == 'undefined') {
     
     function registerJWHandlers() {
       jwplayer().onReady(function(event) {
-        jwplayer().onQualityLevels(function(event) {
-          if(event.levels.length > 1 && screen.width > 767) {
-            jwplayer().setCurrentQuality(1);
-          }
+        // jwplayer().onQualityLevels(function(event) {
+        //   if(event.levels.length > 1 && screen.width > 767) {
+        //     jwplayer().setCurrentQuality(1);
+        //   }
           
-        });
+        // });
         
         jwplayer().on('seek', function(event) {
           haveSeeked=true;
