@@ -201,12 +201,12 @@ $menuArray['download'] = $downloadArray;
       buildPlayer();
     // JW player is dumb about default to HD footage so we do it manually if possible
     jwplayer().onReady(function(event) {
-      jwplayer().onQualityLevels(function(event) {
-        if(event.levels.length > 1 && screen.width > 767) {
-          jwplayer().setCurrentQuality(1);
-        }
+      // jwplayer().onQualityLevels(function(event) {
+      //   if(event.levels.length > 1 && screen.width > 767) {
+      //     jwplayer().setCurrentQuality(1);
+      //   }
 
-      });
+      // });
 
       jwplayer().on('seek', function(event) {
         haveSeeked=true;
