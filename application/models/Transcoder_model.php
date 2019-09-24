@@ -817,21 +817,23 @@ class Transcoder_Model extends CI_Model {
 
 	 				$outputFormat->setH264Preset("veryfast");
 
-	        		$outputFormat->setVideoBitrate("2000k")->setFormat("hls")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+	        		$outputFormat->setFormat("hls")->setAudioBitrate("96k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
 	        		$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:720,setdar=0", true);
+					$process->addCommand("-crf", 23);
 					$process->addCommand("-hls_time", 10);
-					$process->addCommand("-hls_list_size", 999);
+					$process->addCommand("-hls_playlist_type", 'vod');
+					$process->addCommand("-hls_list_size", '10');
+					$process->addCommand("-hls_segment_type", 'fmp4');
+					$process->addCommand("-hls_fmp4_init_filename", '2000k.mp4');
 					$process->addCommand("-pix_fmt", "yuv420p");
 	        		if($isRotated) {
 	        			$process->addCommand('-metadata:s:v', 'rotate=""');
 	        		}
-	        		// strip dvd_sub format captions as they're image based and can't pass to a mp4
-					if(isset($this->fileHandler->sourceFile->metadata["bulkMetadata"]) && strstr($this->fileHandler->sourceFile->metadata["bulkMetadata"], "dvd_subtitle")) {
-						$process->addCommand("-sn");
-					}
-					else {
-						$process->addCommand("-scodec", "mov_text");
-					}
+
+					$process->addCommand("-sn");
+					// else {
+					// 		$process->addCommand("-scodec", "mov_text");
+					// }
 
 
 	        		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-2000k.m3u8", $outputFormat);
@@ -857,69 +859,32 @@ class Transcoder_Model extends CI_Model {
  				else {
  					$outputFormat->setAudioSampleFrequency(44100);
  				}
-
-        		$outputFormat->setVideoBitrate("1200k")->setFormat("hls")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null);
+				$outputFormat->setFormat("hls")->setAudioBitrate("96k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
+				$process->addCommand("-crf", 23);
         		$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:480,setdar=0", true);
 				$process->addCommand("-hls_time", 10);
-				$process->addCommand("-hls_list_size", 999);
+				$process->addCommand("-hls_playlist_type", 'vod');
+				$process->addCommand("-hls_list_size", '10');
+				$process->addCommand("-hls_segment_type", 'fmp4');
+				$process->addCommand("-hls_fmp4_init_filename", '1200k.mp4');
 				$process->addCommand("-pix_fmt", "yuv420p");
 				$this->mungeAspect($process);
         		if($isRotated) {
         			$process->addCommand('-metadata:s:v', 'rotate=""');
         		}
         		// strip dvd_sub format captions as they're image based and can't pass to a mp4
-				if(isset($this->fileHandler->sourceFile->metadata["bulkMetadata"]) && strstr($this->fileHandler->sourceFile->metadata["bulkMetadata"], "dvd_subtitle")) {
-					$process->addCommand("-sn");
-				}
-				else {
-					$process->addCommand("-scodec", "mov_text");
-				}
+				$process->addCommand("-sn");
+				// else {
+				// 	$process->addCommand("-scodec", "mov_text");
+				// }
 
         		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8", $outputFormat);
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
 					return JOB_FAILED;
 				}
-				/**
-				 * 600K 360p
-				 */
-				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
-				$process = $video->getProcess();
-
-        		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
- 				$outputFormat->setAudioCodec('aac')->setAudioChannels(2)->setVideoCodec('h264');
- 				$outputFormat->setH264Preset("veryfast")->setThreads($this->threadCount);
-
- 				if(isset($this->fileHandler->sourceFile->metadata["sampleRate"])) {
- 					$outputFormat->setAudioSampleFrequency((int)$this->fileHandler->sourceFile->metadata["sampleRate"]);
- 				}
- 				else {
- 					$outputFormat->setAudioSampleFrequency(44100);
- 				}
-        		$outputFormat->setVideoBitrate("600k")->setFormat("hls")->setAudioBitrate("64k")->setQualityVsStreamabilityBalanceRatio(null);
-        		$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:360,setdar=0", true);
-				$process->addCommand("-hls_time", 10);
-				$process->addCommand("-hls_list_size", 999);
-				$process->addCommand("-pix_fmt", "yuv420p");
-				$this->mungeAspect($process);
-        		if($isRotated) {
-        			$process->addCommand('-metadata:s:v', 'rotate=""');
-        		}
-        		// strip dvd_sub format captions as they're image based and can't pass to a mp4
-				if(isset($this->fileHandler->sourceFile->metadata["bulkMetadata"]) && strstr($this->fileHandler->sourceFile->metadata["bulkMetadata"], "dvd_subtitle")) {
-					$process->addCommand("-sn");
-				}
-				else {
-					$process->addCommand("-scodec", "mov_text");
-				}
-
-
-        		$ouptut = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-600k.m3u8", $outputFormat);
-				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
-					return JOB_FAILED;
-				}
-
+				
         		/**
         		 * write out stream file
         		 * @var [type]
@@ -927,21 +892,18 @@ class Transcoder_Model extends CI_Model {
         		$fp = fopen($derivativeContainer->getPathToLocalFile() . "/stream/stream.m3u8", "w");
 
         		fwrite($fp, "#EXTM3U\n");
-        		fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1388000,RESOLUTION=".$this->getResolutionForHeight(480) . "\n");
+        		fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1388000,CLOSED-CAPTIONS=NONE,RESOLUTION=".$this->getResolutionForHeight(480) . "\n");
         		fwrite($fp, "stream-1200k.m3u8\n");
         		if($haveHD) {
-        			fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2191000,RESOLUTION=".$this->getResolutionForHeight(720) . "\n");
+        			fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2191000,CLOSED-CAPTIONS=NONE,RESOLUTION=".$this->getResolutionForHeight(720) . "\n");
         			fwrite($fp, "stream-2000k.m3u8\n");
         		}
-        		fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=790000,RESOLUTION=".$this->getResolutionForHeight(360) . "\n");
-        		fwrite($fp, "stream-600k.m3u8\n");
         		fclose($fp);
 
 
         		$this->putAllFilesInFolderToKey($derivativeContainer->getPathToLocalFile() . "/stream/",  "derivative/". $this->fileHandler->getReversedObjectId() . "-streaming");
         		delete_files($derivativeContainer->getPathToLocalFile() . "/stream/", true);
-        		$derivativeContainer->ready = true;
-        		break;
+				$this->fileHandler->save();
         	case "mp3":
         		$derivativeContainer->derivativeType = "mp3";
 				$derivativeContainer->path = "derivative";
@@ -1002,7 +964,7 @@ class Transcoder_Model extends CI_Model {
         		break;
         }
 
-
+		
         return JOB_SUCCESS;
 	}
 

@@ -11,7 +11,7 @@ if($this->user_model->userLoaded) {
 $mediaArray = array();
 if(isset($fileContainers['streaming'])) {
   $entry["type"] = "hls";
-  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile());
+  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile('/stream.m3u8'));
   $entry["label"] = "Streaming";
   $mediaArray["streaming"] = $entry;
 }
@@ -39,28 +39,29 @@ if(isset($fileContainers['mp4hd1080'])) {
 
 $derivatives = array();
 if($fileObject->sourceFile->metadata["duration"] < 300) {
-  
+  if(array_key_exists("streaming", $mediaArray)) {
+    $derivatives[] = $mediaArray["streaming"];
+  }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
   if(array_key_exists("mp4hd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4hd"];
   }
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
-  }
+
   
 }
 else {
+  if(array_key_exists("streaming", $mediaArray)) {
+    $derivatives[] = $mediaArray["streaming"];
+  }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
   if(array_key_exists("mp4hd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4hd"];
   }
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
-  }
+
   
 }
 
