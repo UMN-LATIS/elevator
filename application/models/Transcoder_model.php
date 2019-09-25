@@ -786,6 +786,25 @@ class Transcoder_Model extends CI_Model {
 
         		// THIS SUCKS
 
+				$sdContainer = $this->fileHandler->derivatives["mp4sd"];
+				$hdContainer = null;
+				$fileStatus = $sdContainer->makeLocal();
+					if($fileStatus === FILE_ERROR) {
+						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4sd file", $this->fileHandler->getObjectId(), $this->job->getId());
+						return false;
+					}
+				$this->pheanstalk->touch($this->job);
+				if(isset($this->fileHandler->derivatives["mp4hd"])) {
+					$hdContainer = $this->fileHandler->derivatives["mp4hd"];
+					$fileStatus = $hdContainer->makeLocal();
+					if($fileStatus === FILE_ERROR) {
+						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4hd file", $this->fileHandler->getObjectId(), $this->job->getId());
+						return false;
+					}
+					$this->pheanstalk->touch($this->job);
+				}
+				
+
 				$derivativeContainer->derivativeType = "streaming";
 				$derivativeContainer->path = "derivative";
 				$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "_streaming";
@@ -800,42 +819,21 @@ class Transcoder_Model extends CI_Model {
 				 * 2000K HD
 				 */
 				$haveHD = false;
-				if($this->fileHandler->sourceFile->metadata["height"]>=720) {
+				if($hdContainer) {
 					$haveHD = true;
-					$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
+					$hdPath = $hdContainer->getPathToLocalFile();
+					$video = new \PHPVideoToolkit\Video($hdPath, $this->videoToolkitConfig);
 					$process = $video->getProcess();
 
 	        		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
-	 				$outputFormat->setAudioCodec('aac')->setAudioChannels(2)->setVideoCodec('h264');
 
-	 				if(isset($this->fileHandler->sourceFile->metadata["sampleRate"])) {
-	 					$outputFormat->setAudioSampleFrequency((int)$this->fileHandler->sourceFile->metadata["sampleRate"]);
-	 				}
-	 				else {
-	 					$outputFormat->setAudioSampleFrequency(44100);
-	 				}
-
-	 				$outputFormat->setH264Preset("veryfast");
-
-	        		$outputFormat->setFormat("hls")->setAudioBitrate("96k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
-	        		$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:720,setdar=0", true);
-					$process->addCommand("-crf", 23);
+					$outputFormat->setFormat("hls")->setAudioCodec("copy")->setVideoCodec("copy")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
 					$process->addCommand("-hls_time", 10);
 					$process->addCommand("-hls_playlist_type", 'vod');
 					$process->addCommand("-hls_list_size", '10');
-					$process->addCommand("-hls_segment_type", 'fmp4');
+					$process->addCommand("-hls_segment_type", 'mpegts');
+					$process->addCommand("-hls_flags", 'single_file');
 					$process->addCommand("-hls_fmp4_init_filename", '2000k.mp4');
-					$process->addCommand("-pix_fmt", "yuv420p");
-	        		if($isRotated) {
-	        			$process->addCommand('-metadata:s:v', 'rotate=""');
-	        		}
-
-					$process->addCommand("-sn");
-					// else {
-					// 		$process->addCommand("-scodec", "mov_text");
-					// }
-
-
 	        		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-2000k.m3u8", $outputFormat);
 	        		if(!$output) {
 	        			$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
@@ -846,45 +844,29 @@ class Transcoder_Model extends CI_Model {
 				/**
 				 * 1200K SD
 				 */
-				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
+				$sdPath = $sdContainer->getPathToLocalFile();
+				$video = new \PHPVideoToolkit\Video($sdPath, $this->videoToolkitConfig);
 				$process = $video->getProcess();
 
         		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
- 				$outputFormat->setAudioCodec('aac')->setAudioChannels(2)->setVideoCodec('h264');
- 				$outputFormat->setH264Preset("veryfast")->setThreads($this->threadCount);
-
- 				if(isset($this->fileHandler->sourceFile->metadata["sampleRate"])) {
- 					$outputFormat->setAudioSampleFrequency((int)$this->fileHandler->sourceFile->metadata["sampleRate"]);
- 				}
- 				else {
- 					$outputFormat->setAudioSampleFrequency(44100);
- 				}
-				$outputFormat->setFormat("hls")->setAudioBitrate("96k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
-				$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
-				$process->addCommand("-crf", 23);
-        		$process->addCommand("-vf", $rotationString . "scale=trunc(oh*dar/2)*2:480,setdar=0", true);
+ 				$outputFormat->setFormat("hls")->setAudioCodec("copy")->setVideoCodec("copy")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
 				$process->addCommand("-hls_time", 10);
 				$process->addCommand("-hls_playlist_type", 'vod');
 				$process->addCommand("-hls_list_size", '10');
-				$process->addCommand("-hls_segment_type", 'fmp4');
+				$process->addCommand("-hls_segment_type", 'mpegts');
+				$process->addCommand("-hls_flags", 'single_file');
 				$process->addCommand("-hls_fmp4_init_filename", '1200k.mp4');
-				$process->addCommand("-pix_fmt", "yuv420p");
-				$this->mungeAspect($process);
-        		if($isRotated) {
-        			$process->addCommand('-metadata:s:v', 'rotate=""');
-        		}
-        		// strip dvd_sub format captions as they're image based and can't pass to a mp4
-				$process->addCommand("-sn");
-				// else {
-				// 	$process->addCommand("-scodec", "mov_text");
-				// }
-
+        		
         		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8", $outputFormat);
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
 					return JOB_FAILED;
 				}
 				
+				unlink($sdPath);
+				if($hdContainer) {
+					unlink($hdPath);
+				}
         		/**
         		 * write out stream file
         		 * @var [type]
@@ -903,7 +885,7 @@ class Transcoder_Model extends CI_Model {
 
         		$this->putAllFilesInFolderToKey($derivativeContainer->getPathToLocalFile() . "/stream/",  "derivative/". $this->fileHandler->getReversedObjectId() . "-streaming");
         		delete_files($derivativeContainer->getPathToLocalFile() . "/stream/", true);
-				$this->fileHandler->save();
+				break;
         	case "mp3":
         		$derivativeContainer->derivativeType = "mp3";
 				$derivativeContainer->path = "derivative";

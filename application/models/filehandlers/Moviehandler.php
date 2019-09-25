@@ -155,13 +155,14 @@ class MovieHandler extends FileHandlerBase {
 		}
 		else {
 			//$targetDerivatives = ["thumbnail", "tiny","sd","vtt","sequence","hls"];
-			$targetDerivatives = ["thumbnail", "tiny","sd","vtt","sequence", 'hls']; // disabling HLS for now.
+			$targetDerivatives = ["thumbnail", "tiny","sd","vtt","sequence"]; // disabling HLS for now.
 			if($width >= 1280) {
 				$targetDerivatives[] = "hd";
 			}
 			if(isset($this->sourceFile->metadata["spherical"])) {
 				$targetDerivatives[] = "hd1080";
 			}
+			$targetDerivatives[] = "hls";
 		}
 		$nextDerivative = array_shift($targetDerivatives);
 
