@@ -9,11 +9,11 @@ if($this->user_model->userLoaded) {
 
 
 $mediaArray = array();
-if(isset($fileContainers['streaming'])) {
+if(isset($fileContainers['stream'])) {
   $entry["type"] = "hls";
-  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile('/stream.m3u8'));
+  $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
   $entry["label"] = "Streaming";
-  $mediaArray["streaming"] = $entry;
+  $mediaArray["stream"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
@@ -39,8 +39,8 @@ if(isset($fileContainers['mp4hd1080'])) {
 
 $derivatives = array();
 if($fileObject->sourceFile->metadata["duration"] < 300) {
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
+  if(array_key_exists("stream", $mediaArray)) {
+    $derivatives[] = $mediaArray["stream"];
   }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
@@ -52,8 +52,8 @@ if($fileObject->sourceFile->metadata["duration"] < 300) {
   
 }
 else {
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
+  if(array_key_exists("stream", $mediaArray)) {
+    $derivatives[] = $mediaArray["stream"];
   }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
@@ -121,8 +121,8 @@ if($allowOriginal) {
 $menuArray['download'] = $downloadArray;
 
 ?>
-<script src="/assets/jwplayer/jwplayer.js"></script>
-<script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
+<script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js" async="false"></script>
+
 <script>
 
 if(typeof objectId == 'undefined') {
@@ -230,6 +230,9 @@ if(typeof objectId == 'undefined') {
             return;
           }
           if((haveSeeked || havePaused) && isChrome) {
+            if(jwplayer().getPlaylist().sources[0].label == "Streaming") {
+              return;
+            }
             console.log("rebuilding");
             rebuilding = true;
             haveSeeked=false;
@@ -262,8 +265,20 @@ if(typeof objectId == 'undefined') {
       
     }
     
-    buildPlayer();
-    registerJWHandlers();
+    var checkPlayer = function() {
+      if(typeof jwplayer == 'undefined') {
+        setTimeout(() => {
+          checkPlayer();
+        }, 50);
+      }
+      else {
+        buildPlayer();
+        registerJWHandlers();
+      }
+    }
+
+    checkPlayer();
+    
     // JW player is dumb about default to HD footage so we do it manually if possible
     
     

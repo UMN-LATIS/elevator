@@ -593,6 +593,67 @@ class FileManager extends Instance_Controller {
 	}
 
 
+	function getStream($fileId, $streamType) {
+		
+		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+		$fileHandler->loadByObjectId($fileId);
+		if(!($fileHandler)) {
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
+
+		if(!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
+			$this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
+
+		$requiredAccessLevel = PERM_VIEWDERIVATIVES;
+
+		if($accessLevel < $requiredAccessLevel) {
+			instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		if(!isset($fileHandler->derivatives['stream'])) {
+			$this->errorhandler_helper->callError("noPermission");
+			return;
+		}
+
+
+		$hls = $fileHandler->derivatives['stream'];
+		if(isset($hls->metadata[$streamType])) {
+			$streamData = $hls->metadata[$streamType];
+			$streamDataByLines = explode("\n", $streamData);
+			if($streamType == 'base') {
+				for($i=0; $i<count($streamDataByLines); $i++) {
+					if(substr($streamDataByLines[$i], 0, 6) == "stream") { // if this is a line that starts with a 'stream'
+						$streamDataByLines[$i] = instance_url("/fileManager/getStream/" . $fileId . "/" . str_replace(".m3u8", "", $streamDataByLines[$i]));
+					}
+				}
+			}
+			if($streamType == "stream-1200k" || $streamType == "stream-2000k") {
+				$streamURL = $hls->getProtectedURLForFile("/" . $streamType . ".ts");
+				for($i=0; $i<count($streamDataByLines); $i++) {
+					if(substr($streamDataByLines[$i], 0, 6) == "stream") { 
+						$streamDataByLines[$i] = $streamURL;
+					}
+				}
+			}
+
+
+			$rejoined = join("\n", $streamDataByLines);
+			header('Content-type: application/x-mpegURL');
+			echo $rejoined;
+
+		}
+
+
+
+
+	}
+
 }
 
 /* End of file  */

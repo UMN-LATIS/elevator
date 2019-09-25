@@ -69,8 +69,8 @@ $menuArray['download'] = $downloadArray;
 
 
 ?>
-<script src="/assets/jwplayer/jwplayer.js"></script>
-<script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
+<script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js"></script>
+
 <?if(!$embedded):?>
 <div class="row assetViewRow">
   <div class="col-md-12 audioColumn">
@@ -90,16 +90,11 @@ $menuArray['download'] = $downloadArray;
     <div id="videoElement">Loading the player...</div>
 
     <style>
-    .jwplayer.jw-flag-audio-player .jw-preview {
-      display:block;
-    }
-    /* jw player 7.6 draws video element over audio post.  move it down the dom */
-    .jwplayer .jw-media {
-      z-index: -1;
-    }
+   
     </style>
 
     <script type="text/javascript">
+    function buildPlayer() {
     jwplayer("videoElement").setup({
       image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png"?>",
         <?if(isset($fileContainers['mp3'])):?>
@@ -114,10 +109,24 @@ $menuArray['download'] = $downloadArray;
       <?endif?>
       stretching: "<?=$stretchingSetting?>"
     });
-
+  }
     $(".audioColumn").on("remove", function() {
       jwplayer("videoElement").remove();
     });
+
+
+    var checkPlayer = function() {
+      if(typeof jwplayer == 'undefined') {
+        setTimeout(() => {
+          checkPlayer();
+        }, 50);
+      }
+      else {
+        buildPlayer();
+      }
+    }
+
+    checkPlayer();
 
     </script>
     <?endif?>

@@ -52,7 +52,7 @@ class S3_model extends CI_Model {
 		$this->s3Client = $this->s3_model->s3Client =  Aws\S3\S3Client::factory(array(
 			'credentials'=> ['key'    => $this->key,
 			'secret' =>  $this->secret],
-			"scheme" => "http",
+			"scheme" => "https",
 			"version"=>"2006-03-01",
 			"region" => $instance->getBucketRegion()
 			));

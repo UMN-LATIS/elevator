@@ -805,11 +805,11 @@ class Transcoder_Model extends CI_Model {
 				}
 				
 
-				$derivativeContainer->derivativeType = "streaming";
+				$derivativeContainer->derivativeType = "stream";
 				$derivativeContainer->path = "derivative";
-				$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "_streaming";
+				$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "_stream";
 				$derivativeContainer->setParent($this->fileHandler);
-				$this->fileHandler->derivatives['streaming'] = $derivativeContainer;
+				$this->fileHandler->derivatives['stream'] = $derivativeContainer;
 				if(!file_exists($derivativeContainer->getPathToLocalFile() . "/stream/")) {
 					mkdir($derivativeContainer->getPathToLocalFile() . "/stream/", 0777,true);
 				}
@@ -839,6 +839,7 @@ class Transcoder_Model extends CI_Model {
 	        			$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
 						return JOB_FAILED;
 					}
+					$derivativeContainer->metadata["stream-2000k"] = file_get_contents($derivativeContainer->getPathToLocalFile() . "/stream/stream-2000k.m3u8");
 				}
 
 				/**
@@ -857,11 +858,12 @@ class Transcoder_Model extends CI_Model {
 				$process->addCommand("-hls_flags", 'single_file');
 				$process->addCommand("-hls_fmp4_init_filename", '1200k.mp4');
         		
-        		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8", $outputFormat);
+				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8", $outputFormat);
 				if(!$output) {
 					$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
 					return JOB_FAILED;
 				}
+				$derivativeContainer->metadata["stream-1200k"] = file_get_contents($derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8");
 				
 				unlink($sdPath);
 				if($hdContainer) {
@@ -871,19 +873,23 @@ class Transcoder_Model extends CI_Model {
         		 * write out stream file
         		 * @var [type]
         		 */
-        		$fp = fopen($derivativeContainer->getPathToLocalFile() . "/stream/stream.m3u8", "w");
+				
+				
+				$outputM3U8 = "";
 
-        		fwrite($fp, "#EXTM3U\n");
-        		fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1388000,CLOSED-CAPTIONS=NONE,RESOLUTION=".$this->getResolutionForHeight(480) . "\n");
-        		fwrite($fp, "stream-1200k.m3u8\n");
+				
+        		$outputM3U8 .= "#EXTM3U\n";
+        		$outputM3U8 .="#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1388000,CLOSED-CAPTIONS=NONE,RESOLUTION=".$this->getResolutionForHeight(480) . "\n";
+        		$outputM3U8 .="stream-1200k.m3u8\n";
         		if($haveHD) {
-        			fwrite($fp, "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2191000,CLOSED-CAPTIONS=NONE,RESOLUTION=".$this->getResolutionForHeight(720) . "\n");
-        			fwrite($fp, "stream-2000k.m3u8\n");
+        			$outputM3U8 .= "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2191000,CLOSED-CAPTIONS=NONE,RESOLUTION=".$this->getResolutionForHeight(720) . "\n";
+        			$outputM3U8 .= "stream-2000k.m3u8\n";
         		}
-        		fclose($fp);
+
+				$derivativeContainer->metadata["base"] = $outputM3U8;
 
 
-        		$this->putAllFilesInFolderToKey($derivativeContainer->getPathToLocalFile() . "/stream/",  "derivative/". $this->fileHandler->getReversedObjectId() . "-streaming");
+        		$this->putAllFilesInFolderToKey($derivativeContainer->getPathToLocalFile() . "/stream/",  "derivative/". $this->fileHandler->getReversedObjectId() . "-stream");
         		delete_files($derivativeContainer->getPathToLocalFile() . "/stream/", true);
 				break;
         	case "mp3":

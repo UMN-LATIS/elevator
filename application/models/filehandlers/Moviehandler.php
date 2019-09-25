@@ -56,7 +56,7 @@ class MovieHandler extends FileHandlerBase {
 			$derivative[] = "mp4hd1080";
 			$derivative[] = "mp4hd";
 			$derivative[] = "mp4sd";
-			$derivative[] = "streaming";
+			$derivative[] = "stream";
 			$derivative[] = "imageSequence";
 			$derivative[] = "thumbnail";
 			$derivative[] = "tiny";
