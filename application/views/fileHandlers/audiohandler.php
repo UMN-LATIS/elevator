@@ -107,7 +107,8 @@ $menuArray['download'] = $downloadArray;
       <?else:?>
       height: "480px",
       <?endif?>
-      stretching: "<?=$stretchingSetting?>"
+      stretching: "<?=$stretchingSetting?>",
+      preload: "none"
     });
   }
     $(".audioColumn").on("remove", function() {
