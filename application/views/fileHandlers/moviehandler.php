@@ -147,12 +147,7 @@ if(typeof objectId == 'undefined') {
 <?endif?>
 </p>
 
-<?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
-<?# this file must be uploaded to s3 for these to work in safari as of 2016 ?>
-<script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
-<iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
-  
-  <?else:?>
+<?else:?>
   
   <div id="videoElement">Loading the player...</div>
   
@@ -171,6 +166,7 @@ if(typeof objectId == 'undefined') {
       ga: { label:"label"},
       playlist: [{
         image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
+        <?=(isset($fileObject->sourceFile->metadata["spherical"])?("stereomode:".(isset($fileObject->sourceFile->metadata["stereo"])?"'stereoscopicLeftRight',":"'monoscopic',")):null)?>
         sources: [
           <?foreach($derivatives as $entry):?>
           {
