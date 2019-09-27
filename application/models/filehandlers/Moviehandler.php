@@ -162,7 +162,11 @@ class MovieHandler extends FileHandlerBase {
 			if(isset($this->sourceFile->metadata["spherical"])) {
 				$targetDerivatives[] = "hd1080";
 			}
-			$targetDerivatives[] = "hls";
+
+			if($$this->instance && $this->instance->getEnableHLSStreaming()) {
+				$targetDerivatives[] = "hls";
+			}
+			
 		}
 		$nextDerivative = array_shift($targetDerivatives);
 

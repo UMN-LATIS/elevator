@@ -55,6 +55,37 @@
 	</div>
 </div>
 
+
+<div class="form-group">
+	<label for="inputGoogleAnalyticsKey" class="col-sm-2 control-label">Google Analytics Key:</label>
+	<div class="col-sm-6">
+		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
+	</div>
+</div>
+
+<div class="assetCompleter">
+<div class="form-group">
+	<label for="inputFeaturedAsset" class="col-sm-2 control-label">Feature Asset:</label>
+	<div class="col-sm-6">
+		<input type="text" name="featuredAsset" id="inputFeaturedAsset" class="relatedAssetSelectedItem tryAutocompleteAsset form-control" value="<?= $instance->getFeaturedAsset(); ?>">
+	</div>
+</div>
+<div class="form-group">
+	<div class="col-sm-8 col-sm-offset-2 assetPreview">
+	</div>
+</div>
+</div>
+<div class="form-group">
+	<label for="inputFeaturedAssetText" class="col-sm-2 control-label">Featured Asset Text</label>
+	<div class="col-sm-6">
+		<textarea name="featuredAssetText" class="form-control"><?= $instance->getFeaturedAssetText(); ?></textarea><br/>
+	</div>
+</div>
+
+<fieldset class="fieldsetSection">
+
+<legend>Storage Settings</legend>
+
 <div class="form-group">
 	<div class="col-sm-6 col-sm-offset-2">
 		<!-- Button trigger modal -->
@@ -94,46 +125,11 @@
 	</div>
 </div>
 
-<div class="form-group">
-	<label for="inputGoogleAnalyticsKey" class="col-sm-2 control-label">Google Analytics Key:</label>
-	<div class="col-sm-6">
-		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
-	</div>
-</div>
-<!--
-<div class="form-group">
-	<label for="inputBoxKey" class="col-sm-2 control-label">Box API Key:</label>
-	<div class="col-sm-6">
-		<input type="password" data-toggle="password" name="boxKey" id="inputBoxKey" class="form-control" value="<?= $instance->getBoxKey(); ?>">
-	</div>
-</div>-->
+</fieldset>
 
-<div class="assetCompleter">
-<div class="form-group">
-	<label for="inputFeaturedAsset" class="col-sm-2 control-label">Feature Asset:</label>
-	<div class="col-sm-6">
-		<input type="text" name="featuredAsset" id="inputFeaturedAsset" class="relatedAssetSelectedItem tryAutocompleteAsset form-control" value="<?= $instance->getFeaturedAsset(); ?>">
-	</div>
-</div>
-<div class="form-group">
-	<div class="col-sm-8 col-sm-offset-2 assetPreview">
-	</div>
-</div>
-</div>
-<div class="form-group">
-	<label for="inputFeaturedAssetText" class="col-sm-2 control-label">Featured Asset Text</label>
-	<div class="col-sm-6">
-		<textarea name="featuredAssetText" class="form-control"><?= $instance->getFeaturedAssetText(); ?></textarea><br/>
-	</div>
-</div>
+<fieldset class="fieldsetSection">
 
-<div class="form-group">
-	<label for="inputIntroText" class="col-sm-2 control-label">Intro Text</label>
-	<div class="col-sm-6">
-		Intro Text has moved to the <a href="/instances/customPages">Instance Pages</a> menu ("Home Page" item).
-	</div>
-</div>
-
+<legend>Custom Styling and Display</legend>
 
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
@@ -158,7 +154,7 @@
 	</div>
 </div>
 
-
+<hr>
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
@@ -175,6 +171,24 @@
 		<textarea name="customHeaderCSS" class="form-control"><?= $instance->getCustomHeaderCSS(); ?></textarea><br/>
 	</div>
 </div>
+<hr>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="enableInterstitial" name="enableInterstitial" value="On" <?=$instance->getEnableInterstitial()?"checked":null?>>
+			Show Custom Interstitial When Embedding through API
+		</label>
+	</div>
+</div>
+
+
+<div class="form-group">
+	<label for="inputInterstitialText" class="col-sm-2 control-label">Custom Interstitial Text</label>
+	<div class="col-sm-6">
+		<textarea name="interstitialText" id="inputInterstitialText" class="form-control"><?= $instance->getInterstitialText(); ?></textarea><br/>
+	</div>
+</div>
+<hr>
 
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
@@ -191,9 +205,10 @@
 		<input id="customHeaderImage" type="file" name="customHeaderImage" class="file form-control">
 	</div>
 </div>
+</fieldset>
 
-
-
+<fieldset class="fieldsetSection">
+<legend>Miscellaneous Configuration</legend>
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
@@ -211,6 +226,16 @@
 		</label>
 	</div>
 </div>
+
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="enableHLSStreaming" name="enableHLSStreaming" value="On" <?=$instance->getEnableHLSStreaming()?"checked":null?>>
+			Enable HLS Streaming <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="This allows for smoother video playback, but takes additional storage space."></span>
+		</label>
+	</div>
+</div>
+
 
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
@@ -238,7 +263,7 @@
 		</label>
 	</div>
 </div>
-
+</fieldset>
 
 
 
