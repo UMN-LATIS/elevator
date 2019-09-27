@@ -163,7 +163,7 @@ class MovieHandler extends FileHandlerBase {
 				$targetDerivatives[] = "hd1080";
 			}
 
-			if($$this->instance && $this->instance->getEnableHLSStreaming()) {
+			if($this->instance && $this->instance->getEnableHLSStreaming()) {
 				$targetDerivatives[] = "hls";
 			}
 			
