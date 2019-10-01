@@ -216,17 +216,29 @@ if(typeof objectId == 'undefined') {
             seekTime = event.offset;
             needSeek = true;
           }
+          
         });
         jwplayer().on('pause', function(event) {
           havePaused=true;
         });
         jwplayer().on('play', function(event) {
+          console.log(event);
+          console.log("play");
           if(!firstPlay) {
             firstPlay = true;
             return;
           }
+          else {
+            console.log("on second play");
+          }
+
+          if(event.playReason == "external") {
+            return;
+          }
+
           if((haveSeeked || havePaused) && isChrome) {
-            if(jwplayer().getPlaylist().sources[0].label == "Streaming") {
+            var playlist = jwplayer().getPlaylist();
+            if(playlist[0].label == "Streaming") {
               return;
             }
             console.log("rebuilding");
