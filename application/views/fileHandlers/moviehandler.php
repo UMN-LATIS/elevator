@@ -222,8 +222,6 @@ if(typeof objectId == 'undefined') {
           havePaused=true;
         });
         jwplayer().on('play', function(event) {
-          console.log(event);
-          console.log("play");
           if(!firstPlay) {
             firstPlay = true;
             return;
@@ -238,10 +236,11 @@ if(typeof objectId == 'undefined') {
 
           if((haveSeeked || havePaused) && isChrome) {
             var playlist = jwplayer().getPlaylist();
-            if(playlist[0].label == "Streaming") {
+
+            if(playlist[0].label == "Streaming" || playlist[0].sources[0].label == "Streaming") {
               return;
             }
-            console.log("rebuilding");
+
             rebuilding = true;
             haveSeeked=false;
             havePaused=false;
@@ -250,7 +249,7 @@ if(typeof objectId == 'undefined') {
             currentPosition= jwplayer().getPosition();
             buildPlayer();
             registerJWHandlers();
-            jwplayer().play();
+            // jwplayer().play();
             if(needSeek) {
               console.log("seeking to existing location" + seekTime)
               jwplayer().seek(seekTime);
