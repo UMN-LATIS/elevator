@@ -54,10 +54,6 @@ class Instances extends Instance_Controller {
 		$instance->setBucketRegion($this->input->post('bucketRegion'));
 		$instance->setDefaultBucket($this->input->post('defaultBucket'));
 		$instance->setGoogleAnalyticsKey($this->input->post('googleAnalyticsKey'));
-		// $instance->setClarifaiId($this->input->post('clarifaiId'));
-		// $instance->setClarifaiSecret($this->input->post('clarifaiSecret'));
-		$instance->setBoxKey($this->input->post('boxKey'));
-		// $instance->setIntroText($this->input->post('introText'));
 		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
 		$instance->setCustomHeaderText($this->input->post("customHeaderText"));
 		$instance->setCustomFooterText($this->input->post("customFooterText"));
@@ -67,6 +63,9 @@ class Instances extends Instance_Controller {
 		$instance->setUseCentralAuth($this->input->post('useCentralAuth')?1:0);
 		$instance->setHideVideoAudio($this->input->post('hideVideoAudio')?1:0);
 		$instance->setAllowIndexing($this->input->post('allowIndexing')?1:0);
+		$instance->setEnableHLSStreaming($this->input->post('enableHLSStreaming')?1:0);
+		$instance->setEnableInterstitial($this->input->post('enableInterstitial')?1:0);
+		$instance->setInterstitialText($this->input->post('interstitialText'));
 		$instance->setShowCollectionInSearchResults($this->input->post('showCollectionInSearchResults')?1:0);
 		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));

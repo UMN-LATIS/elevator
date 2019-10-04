@@ -66,9 +66,6 @@
           <field name="bucketRegion" type="string" nullable='true' />
           <field name="amazonS3Secret" type="string" nullable='true' />
           <field name="googleAnalyticsKey" type="string" nullable='true' />
-          <field name="clarifaiId" type="string" nullable='true' />
-          <field name="clarifaiSecret" type="string" nullable='true' />
-          <field name="boxKey" type="string" nullable='true' />
           <field name="introText" type="text" nullable='true' />
           <field name="createdAt" type="datetime" nullable='true' />
           <field name="modifiedAt" type="datetime" nullable='true' />
@@ -86,5 +83,8 @@
           <field name="allowIndexing" type="boolean" nullable='true' />
           <field name="showCollectionInSearchResults" type="boolean" nullable='true' />
           <field name="showPreviousNextSearchResults" type="boolean" nullable='true' />
+          <field name="enableHLSStreaming" type="boolean" nullable='true' />
+          <field name="enableInterstitial" type="boolean" nullable='true' />
+          <field name="interstitialText" type="text" nullable='true' />
       </entity>
 </doctrine-mapping>

@@ -77,6 +77,21 @@ class Home extends Instance_Controller {
 		}
 	}
 
+	/*
+	 * Vend the interstitial text if it's enabled, or return nothing
+	 */
+	public function interstitial() {
+		$returnArray = [];
+		if($this->instance->getEnableInterstitial()) {
+			$returnArray["haveInterstitial"] = true;
+			$returnArray["interstitialText"] = $this->instance->getInterstitialText();
+		}
+		else {
+			$returnArray["haveInterstitial"] = false;
+		}
+		echo json_encode($returnArray);
+	}
+
 }
 
 /* End of file home.php */

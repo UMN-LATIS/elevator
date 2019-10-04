@@ -2,7 +2,7 @@
 require_once 'beanstalk_console/lib/include.php';
 
 class admin extends Admin_Controller {
-
+	
 	public function __construct()
 	{
 		parent::__construct();
@@ -23,6 +23,15 @@ class admin extends Admin_Controller {
 		$this->template->content->view('admin/index');
 		$this->template->publish();
 
+	}
+
+	public function streamFiles($fileId) {
+		require_once(APPPATH.'controllers/Transcoder.php');
+		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+		$fileHandler->loadByObjectId($fileId);
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+		$transcodeCommands = new TranscoderCommands($pheanstalk, 3600);
+		$transcodeCommands->createDerivative($fileHandler->getObjectId(), "HLS");
 	}
 
 	public function userLookup() {
