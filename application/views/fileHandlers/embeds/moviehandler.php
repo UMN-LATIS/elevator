@@ -2,11 +2,11 @@
 $fileObjectId = $fileObject->getObjectId();
 
 $mediaArray = array();
-if(isset($fileContainers['streaming'])) {
+if(isset($fileContainers['stream'])) {
   $entry["type"] = "hls";
-  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile());
+  $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
   $entry["label"] = "Streaming";
-  $mediaArray["streaming"] = $entry;
+  $mediaArray["stream"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
@@ -32,41 +32,40 @@ if(isset($fileContainers['mp4hd1080'])) {
 
 $derivatives = array();
 if($fileObject->sourceFile->metadata["duration"] < 300) {
-
+  if(array_key_exists("stream", $mediaArray)) {
+    $derivatives[] = $mediaArray["stream"];
+  }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
   if(array_key_exists("mp4hd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4hd"];
   }
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
-  }
 
+  
 }
 else {
+  if(array_key_exists("stream", $mediaArray)) {
+    $derivatives[] = $mediaArray["stream"];
+  }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
   if(array_key_exists("mp4hd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4hd"];
   }
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
-  }
 
+  
 }
 
 ?>
+<script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js"></script>
 
-<script src="/assets/jwplayer/jwplayer.js"></script>
-<script src="/assets/js/excerpt.js"></script>
-<script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
 <script>
 
-  if(typeof objectId == 'undefined') {
-    objectId = "<?=$fileObjectId?>";
-  }
+if(typeof objectId == 'undefined') {
+  objectId = "<?=$fileObjectId?>";
+}
 </script>
 
 <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
@@ -85,11 +84,23 @@ else {
 <?else:?>    
     <div id="videoElement">Loading the player...</div>
     <script type="text/javascript">
-      jwplayer("videoElement").setup({
-        ga: { label:"label"},
-        playlist: [{
-          image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
-          sources: [
+
+  var haveSeeked = false;
+  var havePaused = false;
+  var currentPosition = null;
+  var firstPlay = false;
+  var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
+  var weAreHosed = false;
+  var firstPlay = false;
+  var seekTime = null;
+  var needSeek = false;
+  function buildPlayer() {
+    jwplayer("videoElement").setup({
+      ga: { label:"label"},
+      playlist: [{
+        image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
+        <?=(isset($fileObject->sourceFile->metadata["spherical"])?("stereomode:".(isset($fileObject->sourceFile->metadata["stereo"])?"'stereoscopicLeftRight',":"'monoscopic',")):null)?>
+        sources: [
           <?foreach($derivatives as $entry):?>
           {
             type: "<?=$entry["type"]?>",
@@ -97,8 +108,8 @@ else {
             label: "<?=$entry["label"]?>"
           },
           <?endforeach?>
-          ],
-          tracks: [
+        ],
+        tracks: [
           <?if(isset($fileContainers['vtt'])):?>
           {
             file: "<?=isset($fileContainers['vtt'])?stripHTTP($fileContainers['vtt']->getProtectedURLForFile(".vtt")):null?>",
@@ -119,18 +130,87 @@ else {
         }],
         width: "100%",
         height: "100%",
+        preload: 'none'
       });
+    }
+    
+    function registerJWHandlers() {
+      jwplayer().onReady(function(event) {
+        // jwplayer().onQualityLevels(function(event) {
+        //   if(event.levels.length > 1 && screen.width > 767) {
+        //     jwplayer().setCurrentQuality(1);
+        //   }
+          
+        // });
+        
+        jwplayer().on('seek', function(event) {
+          haveSeeked=true;
+          if(jwplayer().getState('paused') == 'paused') {
+            seekTime = event.offset;
+            needSeek = true;
+          }
+          
+        });
+        jwplayer().on('pause', function(event) {
+          havePaused=true;
+        });
+        jwplayer().on('play', function(event) {
+          if(!firstPlay) {
+            firstPlay = true;
+            return;
+          }
+          else {
+            console.log("on second play");
+          }
 
-    // JW player is dumb about default to HD footage so we do it manually if possible
-    jwplayer().onReady(function(event) {
-      jwplayer().onQualityLevels(function(event) {
-        if(event.levels.length > 1 && screen.width > 767) {
-          jwplayer().setCurrentQuality(1);
-        }
+          if(event.playReason == "external") {
+            return;
+          }
 
+          if((haveSeeked || havePaused) && isChrome) {
+            var playlist = jwplayer().getPlaylist();
+
+            if(playlist[0].label == "Streaming" || playlist[0].sources[0].label == "Streaming") {
+              return;
+            }
+
+            rebuilding = true;
+            haveSeeked=false;
+            havePaused=false;
+            weAreHosed = true;
+            firstPlay = false;
+            currentPosition= jwplayer().getPosition();
+            buildPlayer();
+            registerJWHandlers();
+            // jwplayer().play();
+            if(needSeek) {
+              console.log("seeking to existing location" + seekTime)
+              jwplayer().seek(seekTime);
+              needSeek = false;
+            }
+            else {
+              console.log("seeking to new position:" + currentPosition)
+              jwplayer().seek(currentPosition);
+            }
+            needSeek = false;
+            currentPosition = null;
+            
+            
+            
+          }
+          
+        })
+        
       });
-    });
+      
+    }
 
+    buildPlayer();
+    registerJWHandlers();
+
+        // JW player is dumb about default to HD footage so we do it manually if possible
+    
+    
     $(".videoColumn").on("remove", function() {
       jwplayer("videoElement").remove();
     });

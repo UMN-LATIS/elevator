@@ -19,9 +19,6 @@ $(document).ready(function() {
   $("#advancedSearchModal").on("shown.bs.modal", function(e) {
     $(".advancedSearchText").val($(".searchText").val());
   });
-
-
-
 });
 
 
@@ -103,3 +100,46 @@ $(".collectionFilterSelect").on("click", function(e) {
   $("#search_concept").text($(this).text());
 });
 
+
+/**
+ * Management for "searchsearch" functionality on asset page and editing
+ */
+
+ var searchId = null;
+function loadLastSearch() {
+  searchId = $.cookie("lastSearch");
+  $.removeCookie("lastSearch", {
+    path: '/'
+  });
+
+  if (searchId) {
+    $(".searchResultsNavBar").removeClass("hide");
+
+    var getRedirect = function(direction, searchId, objectId) {
+      
+      $.cookie('lastSearch', searchId, {
+        path: "/"
+      });
+
+      $.get(basePath + "search/getResult/" + direction + "/" + searchId + "/" + objectId, function (data) {
+        var parsed = $.parseJSON(data);
+        if (parsed.status == "found") {
+          nextResultLink(parsed.targetId);
+        } else {
+          window.location = basePath + "search/s/" + parsed.search;
+        }
+      });
+    }
+
+    $(".previousResult").on("click", function (e) {
+
+      e.preventDefault();
+      getRedirect("previous", searchId, objectId);
+    });
+    $(".nextResult").on("click", function (e) {
+      e.preventDefault();
+      getRedirect("next", searchId, objectId);
+    });
+  }
+
+}

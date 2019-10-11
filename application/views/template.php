@@ -240,7 +240,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
               <ul class="dropdown-menu">
                 <li><a href="<?=instance_url("/assetManager/addAssetModal")?>" data-toggle="modal" data-target="#addAssetModal">Add Asset</a></li>
                 <?if(isset($assetModel)):?>
-                <li><a href="<?=instance_url("assetManager/editAsset/" . $assetModel->getObjectId())?>">Edit Asset</a></li>
+                <li><a href="<?=instance_url("assetManager/editAsset/" . $assetModel->getObjectId())?>" class="editAssetLink">Edit Asset</a></li>
                 <li><a href="<?=instance_url("assetManager/restoreAsset/" . $assetModel->getObjectId())?>">Restore Asset</a></li>
                  <li class="divider"></li>
                 <li><a href="<?=instance_url("assetManager/deleteAsset/" . $assetModel->getObjectId())?>" onclick="return confirm('Are you sure you wish to delete this asset and all derivatives?')">Delete Asset</a></li>
@@ -388,6 +388,25 @@ window.addEventListener("load",function(){
 });
 
 $(".addToPlugin").on("click", function() {
+  $.get(basePath + "home/interstitial", function(data) {
+    var result = JSON.parse(data);
+    if(typeof result.haveInterstitial !== 'undefined' && result.haveInterstitial == true) {
+      bootbox.confirm(
+				{
+					message: result.interstitialText,
+					callback: finishEmbedTrigger
+				});
+    }
+    else {
+      finishEmbedTrigger();
+    }
+
+  });
+
+  
+});
+
+var finishEmbedTrigger = function() {
   fileObjectId = $("#embedView").data("objectid");
   if(sessionStorage.elevatorCallbackType == "lti") {
     $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId}, function(data, textStatus, xhr) {
@@ -401,8 +420,6 @@ $(".addToPlugin").on("click", function() {
         $("#lti_content").val(data);
         $("#ltiForm").submit();      
     });
-
-
   }
   else if(sessionStorage.elevatorCallbackType == "JS") {
     var currentLocation = window.location.toString();
@@ -410,8 +427,7 @@ $(".addToPlugin").on("click", function() {
     originalWindow.postMessage({"pluginResponse": true, "fileObjectId": fileObjectId, "objectId":objectId, "currentLink": currentLocation}, "*");   
   }
 
-});
-
+}
 
 var testAndShowEmbedButton =function() {
   if(sessionStorage.elevatorPlugin) {

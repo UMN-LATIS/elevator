@@ -34,7 +34,7 @@
 				<?=$this->load->view("fileHandlers/embeds/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
 			<?elseif(array_key_exists("tiled", $fileContainers)):?>
 				<?
-				if($uploadWidget->parentWidget->enableDendro) {
+				if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) {
 					echo $this->load->view("fileHandlers/embeds/imageHandler_dendro", ["fileObject"=>$fileObject], true);
 				}
 				else {

@@ -88,7 +88,7 @@
                 <option value="lastModified.desc">Modified Date (newest to oldest)</option>
                 <option value="lastModified.asc">Modified Date (oldest to newest)</option>
                 <?foreach($searchableWidgets as $title=>$values):?>
-                  <?if($values['type'] == "date"):?>
+                  <?if(isset($values['type']) && $values['type'] == "date"):?>
                     <option value="dateCache.startDate.desc"><?=$values['label']?> (newest to oldest)</option>
                     <option value="dateCache.startDate.asc"><?=$values['label']?> (oldest to newest)</option>
                   <?else:?>

@@ -122,7 +122,7 @@ class Search extends Instance_Controller {
 
 	public function advancedSearchModal() {
 
-		$this->template->javascript->set("");
+		$this->template->javascript->set(null);
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?key=". $this->config->item("googleApi") ."&sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers"];
@@ -648,7 +648,6 @@ class Search extends Instance_Controller {
 			if($matchArray["searchResults"][$i] == $objectId) {
 				if($direction == "next") {
 					if($i !== (count($matchArray["searchResults"]) -1)) {
-						echo 
 						$target = $matchArray["searchResults"][$i+1];
 					}
 					else {
@@ -666,10 +665,10 @@ class Search extends Instance_Controller {
 			}
 		}
 		if($target) {
-			instance_redirect("asset/viewAsset/" . $target);
+			echo json_encode(["status"=>"found", "targetId"=>$target]);
 		}
 		else {
-			instance_redirect("/search/s/" + $searchId);
+			echo json_encode(["status"=>"notfound", "search"=>$searchId]);
 		}
 		
 		

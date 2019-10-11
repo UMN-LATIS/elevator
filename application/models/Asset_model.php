@@ -500,6 +500,7 @@ class Asset_model extends CI_Model {
 
 	/**
 	 * very similar to getAsText, but doesn't guarantee pure text - some entries may be arrays
+	 * this is what gets stored in elasticsearch
 	 */
 	function getSearchEntry($nestedDepth=false) {
 		$outputObject = array();
@@ -667,7 +668,7 @@ class Asset_model extends CI_Model {
 		$locationAssets = $this->getAllWithinAsset("Location", $this, 1);
 		$locationArray = array();
 		foreach($locationAssets as $location) {
-			if($location->getDisplay()) {
+			if($location->getDisplay() && $location->getSearchable()) {
 				$locationArray[] = ["label"=>$location->getLabel(), "entries"=>$location->getAsArray(false)];
 			}
 		}
@@ -676,7 +677,7 @@ class Asset_model extends CI_Model {
 		$dateAssets = $this->getAllWithinAsset("Date",$this, 1);
 		$dateArray = array();
 		foreach($dateAssets as $dateAsset) {
-			if($dateAsset->getDisplay()) {
+			if($dateAsset->getDisplay() && $dateAsset->getSearchable()) {
 				$dateArray[] = ["label"=>$dateAsset->getLabel(), "dateAsset"=>$dateAsset->getAsArray(false)];
 			}
 		}

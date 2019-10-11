@@ -52,7 +52,7 @@ class collection_model extends CI_Model {
     		'credentials'=> ['key'    => $collection->getS3Key(),
     		'secret' =>  $collection->getS3Secret()
     		],
-    		"scheme" => "http",
+    		"scheme" => "https",
     		"region" => $collection->getBucketRegion(),
     		"version"=> "2006-03-01"
 		));
