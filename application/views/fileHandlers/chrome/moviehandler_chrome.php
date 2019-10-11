@@ -9,6 +9,7 @@ if($this->user_model->userLoaded) {
 
 $embed = htmlentities('<iframe width="560" height="480" src="' . $fileObject->getEmedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
+$ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
 
 $menuArray = [];
 if(count($fileContainers)>0) {
@@ -65,7 +66,7 @@ $menuArray['download'] = $downloadArray;
 
 <div class="row assetViewRow" >
   <div class="col-md-12 videoColumn">
-    <iframe width="100%" height="480" title="Embedd video" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="videoEmbedFrame"></iframe>
+    <iframe width="100%" height="480" data-ratio="<?=$ratio?>" title="Embedd video" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
   </div>
 </div>
 
@@ -80,6 +81,7 @@ $(document).ready(function() {
     $(".infoPopover").popover({trigger: "focus | click"});
     $(".infoPopover").tooltip({ placement: 'top'});
     $(".excerptTooltip").tooltip({ placement: 'top'});
+    resizeElement();
 });
 
 

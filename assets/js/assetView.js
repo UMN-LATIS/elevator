@@ -352,6 +352,15 @@ $(document).on("click", ".loadView", function(e) {
 	});
 });
 
+var resizeElement = function() {
+
+	var ratio = $(".embedAsset").data("ratio");
+	$(".embedAsset").height($(".embedAsset").width() / ratio);
+}
+
+$(window).resize(resizeElement);
+
+
 function loadEmbedViewPointer() {
 
 	targetObjectId = $("#embedView").data("objectid");

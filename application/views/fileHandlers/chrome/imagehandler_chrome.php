@@ -1,7 +1,9 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
+
+$ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
 $embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
+$embed = htmlentities('<iframe width="560" height="480"  src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
 $embedHeight = 480;
 
@@ -71,7 +73,7 @@ if($fileObject->sourceFile->getType() == "svs") {
 ?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded Image" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="imageEmbedFrame"></iframe>
+        <iframe width="100%" height="<?=$embedHeight?>" style="max-height:min(<?=$fileObject->sourceFile->metadata["height"]?>px, 70vh)" data-ratio="<?=$ratio?>" title="Embedded Image" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="imageEmbedFrame embedAsset"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>
@@ -94,7 +96,7 @@ $(function ()
 $(".imageEmbedFrame").on("load", function(event) {
 
     event.target.contentWindow.runningFromElevatorHost();
-
+    resizeElement();
 });
 
 $(".zoom-range").on("input", function(e) {

@@ -1159,6 +1159,9 @@ ul.collectionList li:last-child:after {
   padding-bottom: 0px;
   margin-top: 0px;
 }
+.embedAsset {
+  max-height: 70vh;
+}
 .excerpt {
   background-color: #d8dfe2;
   -webkit-border-top-right-radius: 0;
@@ -1176,9 +1179,6 @@ ul.collectionList li:last-child:after {
   -moz-background-clip: padding-box;
   -webkit-background-clip: padding-box;
   background-clip: padding-box;
-}
-.videoColumn {
-  height: 480px;
 }
 .imageContainer {
   height: 100%;
