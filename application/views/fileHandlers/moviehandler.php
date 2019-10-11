@@ -9,11 +9,11 @@ if($this->user_model->userLoaded) {
 
 
 $mediaArray = array();
-if(isset($fileContainers['streaming'])) {
+if(isset($fileContainers['stream'])) {
   $entry["type"] = "hls";
-  $entry["file"] = stripHTTP($fileContainers['streaming']->getProtectedURLForFile());
+  $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
   $entry["label"] = "Streaming";
-  $mediaArray["streaming"] = $entry;
+  $mediaArray["stream"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
@@ -39,28 +39,29 @@ if(isset($fileContainers['mp4hd1080'])) {
 
 $derivatives = array();
 if($fileObject->sourceFile->metadata["duration"] < 300) {
-  
+  if(array_key_exists("stream", $mediaArray)) {
+    $derivatives[] = $mediaArray["stream"];
+  }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
   if(array_key_exists("mp4hd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4hd"];
   }
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
-  }
+
   
 }
 else {
+  if(array_key_exists("stream", $mediaArray)) {
+    $derivatives[] = $mediaArray["stream"];
+  }
   if(array_key_exists("mp4sd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4sd"];
   }
   if(array_key_exists("mp4hd", $mediaArray)) {
     $derivatives[] = $mediaArray["mp4hd"];
   }
-  if(array_key_exists("streaming", $mediaArray)) {
-    $derivatives[] = $mediaArray["streaming"];
-  }
+
   
 }
 
@@ -120,8 +121,8 @@ if($allowOriginal) {
 $menuArray['download'] = $downloadArray;
 
 ?>
-<script src="/assets/jwplayer/jwplayer.js"></script>
-<script type="text/javascript">jwplayer.key="<?=$this->config->item("jwplayer")?>";</script>
+<script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js" async="false"></script>
+
 <script>
 
 if(typeof objectId == 'undefined') {
@@ -146,12 +147,7 @@ if(typeof objectId == 'undefined') {
 <?endif?>
 </p>
 
-<?elseif(isset($fileObject->sourceFile->metadata["spherical"])):?>
-<?# this file must be uploaded to s3 for these to work in safari as of 2016 ?>
-<script src="http://s3.amazonaws.com/elevator-assets/vrview/build/device-motion-sender.min.js"></script>
-<iframe class="vrview" frameborder=0 width="100%" height=480px scrolling="no" allowfullscreen src="http://s3.amazonaws.com/elevator-assets/vrview/index.html?video=<?=urlencode(striphttp($fileContainers['mp4hd1080']->getProtectedURLForFile()))?>&is_stereo=<?=isset($fileObject->sourceFile->metadata["stereo"])?"true":"false"?>"></iframe>
-  
-  <?else:?>
+<?else:?>
   
   <div id="videoElement">Loading the player...</div>
   
@@ -170,6 +166,7 @@ if(typeof objectId == 'undefined') {
       ga: { label:"label"},
       playlist: [{
         image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
+        <?=(isset($fileObject->sourceFile->metadata["spherical"])?("stereomode:".(isset($fileObject->sourceFile->metadata["stereo"])?"'stereoscopicLeftRight',":"'monoscopic',")):null)?>
         sources: [
           <?foreach($derivatives as $entry):?>
           {
@@ -219,6 +216,7 @@ if(typeof objectId == 'undefined') {
             seekTime = event.offset;
             needSeek = true;
           }
+          
         });
         jwplayer().on('pause', function(event) {
           havePaused=true;
@@ -228,8 +226,21 @@ if(typeof objectId == 'undefined') {
             firstPlay = true;
             return;
           }
+          else {
+            console.log("on second play");
+          }
+
+          if(event.playReason == "external") {
+            return;
+          }
+
           if((haveSeeked || havePaused) && isChrome) {
-            console.log("rebuilding");
+            var playlist = jwplayer().getPlaylist();
+
+            if(playlist[0].label == "Streaming" || playlist[0].sources[0].label == "Streaming") {
+              return;
+            }
+
             rebuilding = true;
             haveSeeked=false;
             havePaused=false;
@@ -238,7 +249,7 @@ if(typeof objectId == 'undefined') {
             currentPosition= jwplayer().getPosition();
             buildPlayer();
             registerJWHandlers();
-            jwplayer().play();
+            // jwplayer().play();
             if(needSeek) {
               console.log("seeking to existing location" + seekTime)
               jwplayer().seek(seekTime);
@@ -261,8 +272,20 @@ if(typeof objectId == 'undefined') {
       
     }
     
-    buildPlayer();
-    registerJWHandlers();
+    var checkPlayer = function() {
+      if(typeof jwplayer == 'undefined') {
+        setTimeout(() => {
+          checkPlayer();
+        }, 50);
+      }
+      else {
+        buildPlayer();
+        registerJWHandlers();
+      }
+    }
+
+    checkPlayer();
+    
     // JW player is dumb about default to HD footage so we do it manually if possible
     
     

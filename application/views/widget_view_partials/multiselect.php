@@ -1,6 +1,6 @@
 <strong><?=$widgetModel->getLabel()?>:</strong>
 <ul>
-	<?foreach($widgetModel->fieldContentsArray as $fieldContent):?>
+	<? $builtList = ""; foreach($widgetModel->fieldContentsArray as $fieldContent):?>
 		
 		<?$firstItem = true; ?>
 				<li>

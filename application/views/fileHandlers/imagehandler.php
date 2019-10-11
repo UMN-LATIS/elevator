@@ -102,7 +102,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 				<?=$this->load->view("fileHandlers/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
 			<?elseif(array_key_exists("tiled", $fileContainers)):?>
 				<?
-				if($uploadWidget->parentWidget->enableDendro) {
+				if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) {
 					echo $this->load->view("fileHandlers/imageHandler_dendro", ["fileObject"=>$fileObject], true);
 				}
 				else {

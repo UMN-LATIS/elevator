@@ -1244,4 +1244,130 @@ class Instance
     {
         return $this->customFooterText;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $recentcollections;
+
+
+    /**
+     * Add recentcollection
+     *
+     * @param \Entity\RecentCollection $recentcollection
+     *
+     * @return Instance
+     */
+    public function addRecentcollection(\Entity\RecentCollection $recentcollection)
+    {
+        $this->recentcollections[] = $recentcollection;
+
+        return $this;
+    }
+
+    /**
+     * Remove recentcollection
+     *
+     * @param \Entity\RecentCollection $recentcollection
+     */
+    public function removeRecentcollection(\Entity\RecentCollection $recentcollection)
+    {
+        $this->recentcollections->removeElement($recentcollection);
+    }
+
+    /**
+     * Get recentcollections
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRecentcollections()
+    {
+        return $this->recentcollections;
+    }
+    /**
+     * @var boolean
+     */
+    private $enableHLSStreaming;
+
+    /**
+     * @var boolean
+     */
+    private $enableInterstitial;
+
+    /**
+     * @var string
+     */
+    private $interstitialText;
+
+
+    /**
+     * Set enableHLSStreaming
+     *
+     * @param boolean $enableHLSStreaming
+     *
+     * @return Instance
+     */
+    public function setEnableHLSStreaming($enableHLSStreaming)
+    {
+        $this->enableHLSStreaming = $enableHLSStreaming;
+
+        return $this;
+    }
+
+    /**
+     * Get enableHLSStreaming
+     *
+     * @return boolean
+     */
+    public function getEnableHLSStreaming()
+    {
+        return $this->enableHLSStreaming;
+    }
+
+    /**
+     * Set enableInterstitial
+     *
+     * @param boolean $enableInterstitial
+     *
+     * @return Instance
+     */
+    public function setEnableInterstitial($enableInterstitial)
+    {
+        $this->enableInterstitial = $enableInterstitial;
+
+        return $this;
+    }
+
+    /**
+     * Get enableInterstitial
+     *
+     * @return boolean
+     */
+    public function getEnableInterstitial()
+    {
+        return $this->enableInterstitial;
+    }
+
+    /**
+     * Set interstitialText
+     *
+     * @param string $interstitialText
+     *
+     * @return Instance
+     */
+    public function setInterstitialText($interstitialText)
+    {
+        $this->interstitialText = $interstitialText;
+
+        return $this;
+    }
+
+    /**
+     * Get interstitialText
+     *
+     * @return string
+     */
+    public function getInterstitialText()
+    {
+        return $this->interstitialText;
+    }
 }

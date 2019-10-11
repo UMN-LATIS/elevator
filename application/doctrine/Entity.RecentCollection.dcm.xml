@@ -9,7 +9,7 @@
               <generator strategy="AUTO" />
           </id>
 
-          <many-to-one field="user" target-entity="User" inversed-by="recent_collections" />l
+          <many-to-one field="user" target-entity="User" inversed-by="recent_collections" />
           <many-to-one field="collection" target-entity="Collection"/>
           <many-to-one field="instance" target-entity="Instance"/>
           <field name="createdAt" type="datetime" nullable='true' />

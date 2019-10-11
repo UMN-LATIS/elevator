@@ -56,7 +56,7 @@ class MovieHandler extends FileHandlerBase {
 			$derivative[] = "mp4hd1080";
 			$derivative[] = "mp4hd";
 			$derivative[] = "mp4sd";
-			$derivative[] = "streaming";
+			$derivative[] = "stream";
 			$derivative[] = "imageSequence";
 			$derivative[] = "thumbnail";
 			$derivative[] = "tiny";
@@ -162,6 +162,11 @@ class MovieHandler extends FileHandlerBase {
 			if(isset($this->sourceFile->metadata["spherical"])) {
 				$targetDerivatives[] = "hd1080";
 			}
+
+			if($this->instance && $this->instance->getEnableHLSStreaming()) {
+				$targetDerivatives[] = "hls";
+			}
+			
 		}
 		$nextDerivative = array_shift($targetDerivatives);
 

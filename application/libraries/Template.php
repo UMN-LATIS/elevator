@@ -318,10 +318,13 @@ class Template {
             return $return;
         }
 
+        if(strlen($url) < 1) {
+            return '';
+        }
         if (!stristr($url, 'http://') && !stristr($url, 'https://') && substr($url, 0, 2) != '//') {
             $url = $this->_ci->config->item('base_url') . $url;
         }
-
+        
         return '<script src="' . htmlspecialchars(strip_tags($url)) . '"></script>' . "\n\t";
     }
 

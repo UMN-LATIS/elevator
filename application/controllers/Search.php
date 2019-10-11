@@ -122,7 +122,7 @@ class Search extends Instance_Controller {
 
 	public function advancedSearchModal() {
 
-		$this->template->javascript->set("");
+		$this->template->javascript->set(null);
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?key=". $this->config->item("googleApi") ."&sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers"];

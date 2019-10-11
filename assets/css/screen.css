@@ -1366,6 +1366,16 @@ ul.collectionList li:last-child:after {
   /* "overflow" value must be different from "visible" */
   text-overflow: ellipsis;
 }
+.fieldsetSection {
+  border: 1px solid lightgray;
+  padding: 0 1.4em 1.4em 1.4em;
+  margin: 0 0 1.5em 0;
+}
+.fieldsetSection legend {
+  width: inherit;
+  padding: 0 10px;
+  border-bottom: none;
+}
 /**
  * ! Collection List
  */
