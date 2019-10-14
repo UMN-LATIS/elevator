@@ -48,7 +48,17 @@ class asset extends Instance_Controller {
 			$fileHandler = $assetModel->getPrimaryFilehandler();
 
 			if($fileHandler->parentObjectId != $objectId) {
-				$targetObject = $fileHandler->parentObjectId;
+				// So in this case, the file handler has a parent that isn't our object.
+				// it might be a related asset which appears on our page, but in the case of multiple levels
+				// of depth, we might not actually know what this asset is.  let's check to see if we have record of this object
+				$json = json_encode($assetModel->getAsArray(null,false, false)); 
+				if(!strstr($json, $fileHandler->parentObjectId)) {
+					$targetObject = $fileHandler->getObjectId();
+				}
+				else {
+					$targetObject = $fileHandler->parentObjectId;
+				}
+				
 			}
 			else {
 				$targetObject = $fileHandler->getObjectId();
