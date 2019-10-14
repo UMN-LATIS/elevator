@@ -875,7 +875,7 @@ class AssetManager extends Admin_Controller {
 				
 				$rowArray = array();
 				if(strlen($cacheArray['delimiter'][$key]) > 0 && strpos($cell, $cacheArray['delimiter'][$key])) {
-					$rowArray = explode($cacheArray['delimiter'][$key], $cell);
+					$rowArray = array_filter(explode($cacheArray['delimiter'][$key], $cell));
 				}
 				else {
 					$rowArray[] = $cell;
