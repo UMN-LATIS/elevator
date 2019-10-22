@@ -49,7 +49,8 @@ class collection_model extends CI_Model {
 			$collection = $this->getCollection($collectionId);
 
 			$s3Client =  Aws\S3\S3Client::factory(array(
-    		'credentials'=> ['key'    => $collection->getS3Key(),
+			'credentials'=> ['key'    => $collection->getS3Key(),
+			"use_path_style_endpoint" => true,
     		'secret' =>  $collection->getS3Secret()
     		],
     		"scheme" => "https",

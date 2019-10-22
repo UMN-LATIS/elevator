@@ -54,6 +54,7 @@ class S3_model extends CI_Model {
 			'secret' =>  $this->secret],
 			"scheme" => "https",
 			"version"=>"2006-03-01",
+			"use_path_style_endpoint" => true,
 			"region" => $instance->getBucketRegion()
 			));
 
