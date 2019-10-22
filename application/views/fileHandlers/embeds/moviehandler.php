@@ -3,10 +3,10 @@ $fileObjectId = $fileObject->getObjectId();
 
 $mediaArray = array();
 if(isset($fileContainers['stream'])) {
-  $entry["type"] = "hls";
-  $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
-  $entry["label"] = "Streaming";
-  $mediaArray["stream"] = $entry;
+  // $entry["type"] = "hls";
+  // $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
+  // $entry["label"] = "Streaming";
+  // $mediaArray["stream"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
@@ -88,6 +88,14 @@ if(typeof objectId == 'undefined') {
   var currentPosition = null;
   var firstPlay = false;
   var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
+  var chromeVersion = false;
+  if(isChrome) {
+    var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+    var version = parseInt(raw[2], 10);
+    if(!isNaN(version)) {
+      chromeVersion = version;
+    }
+  }
   var weAreHosed = false;
   var firstPlay = false;
   var seekTime = null;
@@ -164,8 +172,8 @@ if(typeof objectId == 'undefined') {
           if(event.playReason == "external") {
             return;
           }
-
-          if((haveSeeked || havePaused) && isChrome) {
+          console.log(chromeVersion);
+          if((haveSeeked || havePaused) && isChrome && chromeVersion < 78) {
             var playlist = jwplayer().getPlaylist();
 
             if(playlist[0].label == "Streaming" || playlist[0].sources[0].label == "Streaming") {
