@@ -50,9 +50,9 @@ class collection_model extends CI_Model {
 
 			$s3Client =  Aws\S3\S3Client::factory(array(
 			'credentials'=> ['key'    => $collection->getS3Key(),
-			"use_path_style_endpoint" => true,
     		'secret' =>  $collection->getS3Secret()
-    		],
+			],
+			"use_path_style_endpoint" => true,
     		"scheme" => "https",
     		"region" => $collection->getBucketRegion(),
     		"version"=> "2006-03-01"
