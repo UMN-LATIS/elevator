@@ -10,10 +10,10 @@ if($this->user_model->userLoaded) {
 
 $mediaArray = array();
 if(isset($fileContainers['stream'])) {
-  // $entry["type"] = "hls";
-  // $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
-  // $entry["label"] = "Streaming";
-  // $mediaArray["stream"] = $entry;
+  $entry["type"] = "hls";
+  $entry["file"] = stripHTTP(instance_url("/fileManager/getStream/" . $fileObjectId . "/base"));
+  $entry["label"] = "Streaming";
+  $mediaArray["stream"] = $entry;
 }
 
 if(isset($fileContainers['mp4sd'])) {
