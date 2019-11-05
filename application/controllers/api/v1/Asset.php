@@ -86,6 +86,58 @@ class asset extends API_Controller {
 
 	}
 
+	public function restoreFile($assetId)
+	{
+		$this->load->model("asset_model");
+		$isExcerpt = false;
+		if(stristr($assetId, "excerpt")) {
+			$assetId = str_replace("excerpt", "", $assetId);
+			$this->load->model("asset_model");
+			$excerpt = $this->doctrine->em->getRepository("Entity\DrawerItem")->find($assetId);
+			$assetModel = new Asset_model;
+			if(!$assetModel->loadAssetById($excerpt->getAsset())) {
+				$this->logging->logError("getEmbed", "could not load asset for fileHandler" . $fileHandler->getObjectId());
+				return;
+			}
+			$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
+			$fileHandler->loadByObjectId($excerpt->getExcerptAsset());
+			$isExcerpt = true;
+
+		}
+		else {
+			if($fileHandler = $this->filehandler_router->getHandlerForObject($assetId)) {
+				$fileHandler->loadByObjectId($assetId);	
+			}
+			else {
+				echo json_encode([]);
+				return;	
+			}
+			
+
+		}
+
+		$accessLevel = PERM_NOPERM;
+		if($fileHandler->parentObjectId) {
+			$this->asset_model->loadAssetById($fileHandler->parentObjectId);
+			$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
+		}
+
+	
+		$original = false;
+		if($accessLevel >= PERM_ORIGINALS) {
+			$original = $fileHandler->sourceFile->restoreFromArchive();
+		}
+
+		if($original) {
+			
+		}
+
+		echo json_encode([
+			"restoring"=>$original
+			]);
+
+	}
+
 	public function assetLookup($assetId) {
 
 		$isExcerpt = false;
