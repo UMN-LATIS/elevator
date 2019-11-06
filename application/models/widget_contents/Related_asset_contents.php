@@ -151,7 +151,9 @@ class Related_asset_contents extends Widget_contents_base {
 			return implode(" ", $assetText);
 		}
 		else {
-			$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
+			if($this->getRelatedAsset()) {
+				$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
+			}
 		}
 
 		return $assetText;
@@ -182,7 +184,9 @@ class Related_asset_contents extends Widget_contents_base {
 			return implode(" ", $assetText);
 		}
 		else {
-			$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
+			if($this->getRelatedAsset()) {
+				$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
+			}
 		}
 
 		return $assetText;
