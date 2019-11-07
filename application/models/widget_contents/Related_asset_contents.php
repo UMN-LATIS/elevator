@@ -151,6 +151,7 @@ class Related_asset_contents extends Widget_contents_base {
 			return implode(" ", $assetText);
 		}
 		else {
+			$assetText = null;
 			if($this->getRelatedAsset()) {
 				$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
 			}
@@ -168,7 +169,7 @@ class Related_asset_contents extends Widget_contents_base {
 		// TODO: check this.  nestDAta is used for two things - drawing things with nesting on the display page,
 		// as well as making sure the search engine "deep indexes" content.
 		if(($nestedObjectDepth>0 || $this->nestData == true) && !($nestedObjectDepth<0)) {
-
+			$assetText = [];
 			// decrement to prevent recusion.
 			// TODO: refactor this to use the getSearchEntry on the related asset itself. Just filter the non-asset elements.
 			foreach($this->getRelatedAsset()->assetObjects as $object) {
@@ -184,6 +185,7 @@ class Related_asset_contents extends Widget_contents_base {
 			return implode(" ", $assetText);
 		}
 		else {
+			$assetText = null;
 			if($this->getRelatedAsset()) {
 				$assetText = $this->getRelatedAsset()->getAssetTitle($nestedObjectDepth-1);
 			}
