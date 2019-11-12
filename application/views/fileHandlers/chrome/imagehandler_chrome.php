@@ -1,7 +1,14 @@
 <?
+
 $fileObjectId = $fileObject->getObjectId();
 
-$ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+if(isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) { 
+  $ratio = 0;
+}
+else {
+  $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+}
+
 $embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
 $embed = htmlentities('<iframe width="560" height="480"  src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
