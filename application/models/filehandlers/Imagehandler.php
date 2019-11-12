@@ -376,7 +376,11 @@ class ImageHandler extends FileHandlerBase {
 	function forceTiling() {
 		if($this->sourceFile->getType() == "svs") {
 			return TRUE;
- 		}
+		 }
+		 $uploadWidget = $this->getUploadWidget();
+		 if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) {
+			 return TRUE;
+		 }
 
  		return FALSE;
 
