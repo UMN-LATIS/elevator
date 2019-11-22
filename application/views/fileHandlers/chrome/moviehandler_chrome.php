@@ -10,6 +10,10 @@ if($this->user_model->userLoaded) {
 $embed = htmlentities('<iframe width="560" height="480" src="' . $fileObject->getEmedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
 $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+if(isset($fileObject->sourceFile->metadata["rotation"]) && (abs($fileObject->sourceFile->metadata["rotation"]) == 90 || abs($fileObject->sourceFile->metadata["rotation"]) == 270)) {
+  // rotated sources will have flipped ratios
+  $ratio = 1 / $ratio;
+}
 
 $menuArray = [];
 if(count($fileContainers)>0) {

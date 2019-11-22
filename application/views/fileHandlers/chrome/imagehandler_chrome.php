@@ -7,6 +7,11 @@ if(isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidg
 }
 else {
   $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+  if(isset($fileObject->sourceFile->metadata["rotation"]) && ($fileObject->sourceFile->metadata["rotation"] == 6 || $fileObject->sourceFile->metadata["rotation"] == 8)) {
+    // rotated sources will have flipped ratios
+    $ratio = 1 / $ratio;
+  }
+  
 }
 
 $embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));

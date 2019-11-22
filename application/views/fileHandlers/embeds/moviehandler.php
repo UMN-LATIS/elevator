@@ -111,7 +111,8 @@ if(typeof objectId == 'undefined') {
           {
             type: "<?=$entry["type"]?>",
             file: "<?=$entry["file"]?>",
-            label: "<?=$entry["label"]?>"
+            label: "<?=$entry["label"]?>",
+            "default": "<?=$entry["label"]=="HD"?"true":"false"?>"
           },
           <?endforeach?>
         ],
