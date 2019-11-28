@@ -3,16 +3,7 @@ $fileObjectId = $fileObject->getObjectId();
 $signedUrls = $fileObject->getSignedURLs("boxView", true);
 
 ?>
-<?
 
-$embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
-
-
-?>
 <link type="text/css" rel="stylesheet" href="/assets/minifiedcss/crocodoc.viewer.min.css"/>
 <link type="text/css" rel="stylesheet" href="/assets/minifiedcss/fullscreen.min.css"/>
 <script type="text/javascript" src="/assets/minifiedjs/crocodoc.viewer.min.js"></script>
@@ -20,10 +11,6 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 
 
 
-<?if(!$embedded):?>
-<div class="row assetViewRow">
-  <div class="col-md-12">
-<?else:?>
 
 <style>
 .boxContainer {
@@ -31,7 +18,6 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 }
 </style>
 
-<?endif?>
   <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
@@ -195,50 +181,7 @@ Crocodoc.addDataProvider('mutate-urls', function(scope) {
 
 </script>
     <?endif?>
-<?if(!$embedded):?>
-  </div>
-</div>
-<?endif?>
 
 
 
-
-
-<?if(!$embedded):?>
-
-
-<div class="row infoRow ">
-  <div class="col-md-12">
-    <span class="glyphicon glyphicon-info-sign infoPopover" data-placement="bottom" data-toggle="popover" title="File Info" data-html=true data-content='<ul class="list-group">
-      <li class="list-group-item"><strong>File Type: </strong> Document</li>
-      <li class="list-group-item assetDetails"><strong>Original Name: </strong><?=htmlentities($fileObject->sourceFile->originalFilename, ENT_QUOTES)?></li>
-      <li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
-    </ul>'></span>
-      <span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content='
-          <ul>
-            <?if(isset($fileContainers['pdf'])):?>
-            <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/pdf")?>">Download PDF</a></li>
-          <?endif?>
-      <?if($allowOriginal):?>
-      <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">Download Original</a></li>
-      <?endif?>
-      </ul>'></span>
-    <span class="glyphicon glyphicon-share infoPopover" data-placement="bottom" data-toggle="popover" title="Share" data-html="true" data-content='<ul class="list-group">
-        <?if($allowOriginal):?>
-            <li class="list-group-item assetDetails"><strong>Embed: </strong><input class="form-control embedControl" value="<?=htmlspecialchars($embed, ENT_QUOTES)?>"></li>
-          <?endif?>
-    </ul>'></span>
-  </div>
-</div>
-
-<script>
-$(function ()
-{
-  $(".infoPopover").popover({trigger: "focus | click"});
-  $(".infoPopover").tooltip({ placement: 'top'});
-
-});
-</script>
-
-<?endif?>
 

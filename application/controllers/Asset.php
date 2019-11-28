@@ -217,7 +217,13 @@ class asset extends Instance_Controller {
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
 
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
-		$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
+		
+		try {
+			$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
+		}
+		catch (exception $e) {
+
+		}
 		
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
 
