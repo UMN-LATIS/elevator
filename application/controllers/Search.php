@@ -59,7 +59,7 @@ class Search extends Instance_Controller {
 		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
-		$this->template->content->view("search", ["searchableWidgets"=>$widgetArray]);
+		$this->template->content->view("search/search", ["searchableWidgets"=>$widgetArray]);
 		$this->template->publish();
 	}
 
@@ -115,7 +115,7 @@ class Search extends Instance_Controller {
 		$this->template->set_template("noTemplate");
 		$this->template->loadJavascript($jsLoadArray);
 
-		$this->template->content->view($type . "Only");
+		$this->template->content->view("search/" . $type . "Only");
 		$this->template->publish();
 
 	}
@@ -142,7 +142,7 @@ class Search extends Instance_Controller {
 			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
 		}
 
-		$this->load->view("advanced_modal", ["collections"=>$this->instance->getCollections(),"allowedCollections"=>$allowedCollections, "searchableWidgets"=>$widgetArray]);
+		$this->load->view("modals/advanced_modal", ["collections"=>$this->instance->getCollections(),"allowedCollections"=>$allowedCollections, "searchableWidgets"=>$widgetArray]);
 
 
 	}

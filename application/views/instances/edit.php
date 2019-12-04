@@ -8,4 +8,4 @@
 </div>
 
 
-<?$this->load->view("bucketCreation_modal");?>
+<?$this->load->view("modals/bucketCreation_modal");?>
