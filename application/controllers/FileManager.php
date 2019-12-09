@@ -641,17 +641,10 @@ class FileManager extends Instance_Controller {
 					}
 				}
 			}
-
-
 			$rejoined = join("\n", $streamDataByLines);
 			header('Content-type: application/x-mpegURL');
 			echo $rejoined;
-
 		}
-
-
-
-
 	}
 
 }
