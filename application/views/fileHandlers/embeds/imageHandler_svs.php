@@ -47,24 +47,16 @@
 
 <? $token = $fileObject->getSecurityToken("tiled")?>
 
-<?if($embedded):?>
 <style>
-/* don't constrain the height of the element when embedded */
-.fullscreenImageContainer {
-    max-height: 100%;
-    height: 100%;
-}
-.fixedHeightContainer {
+
+.fixedHeightContainerSVS {
     height: calc(100% - 120px);
     max-height: 100%
 }
-.outerContainerForFirefox {
-    height: 100%;
-}
-</style>
-<?endif?>
 
-<div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
+</style>
+
+<div class="fixedHeightContainerSVS"><div style="height:100%; width:100%" id="map"></div></div>
 <div class="panel panel-default">
         <div class="panel-body">
             <div class="input-group">
