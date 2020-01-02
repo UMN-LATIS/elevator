@@ -22,6 +22,6 @@
 	}
 	
 	?>
-	<li><?=$widgetModel->getClickToSearch()?getClickToSearchLink($widgetModel, $outputString):$outputString;?></li>
+	<li><?=$widgetModel->getClickToSearch()?getClickToSearchLink($widgetModel, $dateString, $outputString):$outputString;?></li>
 	<?endforeach?>
 </ul>
