@@ -296,7 +296,6 @@ class Asset_model extends CI_Model {
 				foreach($relatedArray as $asset) {
 					$primaries = array_column($asset->fieldContentsArray, "isPrimary");
 					$noPrimaries = !in_array(true, $primaries);
-					$this->logging->logError("primaries", json_encode($primaries));
 
 					foreach($asset->fieldContentsArray as $fieldContents) {
 						
