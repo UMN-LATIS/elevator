@@ -131,7 +131,7 @@ class StThomasHelper extends AuthHelper
 	}
 
 	public function templateView() {
-		return $this->CI->load->view("authHelpers/autoRedirect", null, true);
+		// return $this->CI->load->view("authHelpers/autoRedirect", null, true);
 	}
 
 }
