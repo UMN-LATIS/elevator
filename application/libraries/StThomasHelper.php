@@ -61,7 +61,7 @@ class StThomasHelper extends AuthHelper
 	public function getUserIdFromRemote() {
 		$email = $this->shibboleth->getAttributeValue('email');
 		
-		return array_pop(explode("@", $email));
+		return array_shift(explode("@", $email));
 	}
 
 	public function updateUserFromRemote($user) {
@@ -132,6 +132,13 @@ class StThomasHelper extends AuthHelper
 
 	public function templateView() {
 		// return $this->CI->load->view("authHelpers/autoRedirect", null, true);
+	}
+
+	public function remoteLogout() {
+		
+		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
+			$this->shibboleth->redirectToLogout(["return"=>instance_redirect("/")]);
+		}
 	}
 
 }
