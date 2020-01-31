@@ -1,12 +1,5 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
-$drawerArray = array();
-if($this->user_model->userLoaded) {
-  foreach($this->user_model->getDrawers(true) as $drawer) {
-    $drawerArray[] = $drawer;
-  }
-}
-
 
 $mediaArray = array();
 if(isset($fileContainers['stream'])) {
@@ -65,63 +58,9 @@ else {
   
 }
 
-
-$embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
-
-
-
-
-$menuArray = [];
-if(count($fileContainers)>0) {
-  $menuArray['embed'] = $embed;
-  $menuArray['embedLink'] = $embedLink;
-  if(count($drawerArray)>0) {
-    $menuArray['excerpt'] = true;  
-  }
-}
-
-$fileInfo = [];
-$fileInfo["File Type"] = "Movie";
-$fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-$fileInfo["Video Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
-$fileInfo["Duration"] = gmdate("H:i:s", $fileObject->sourceFile->metadata["duration"]);
-
-if($widgetObject) {
-  if($widgetObject->fileDescription) {
-    $fileInfo["Description"] = $widgetObject->fileDescription;
-  }
-  if($widgetObject->getLocationData()) {
-    $fileInfo["Location"] = ["latitude"=>$widgetObject->getLocationData()[1], "longitude"=>$widgetObject->getLocationData()[0]];
-  }
-  if($widgetObject->getDateData()) {
-    $fileInfo["Date"] = $widgetObject->getDateData();
-  }
-}
-
-$menuArray['fileInfo'] = $fileInfo;
-
-$downloadArray = [];
-if(!$this->instance->getHideVideoAudio() || $allowOriginal) {
-  if(isset($fileContainers['mp4hd']) && $fileContainers['mp4hd']->ready) {
-    $downloadArray["Download HD MP4"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4hd");
-  }
-  if(isset($fileContainers['mp4sd']) && $fileContainers['mp4sd']->ready) {
-    $downloadArray["Download SD MP4"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/mp4sd");
-  }
-}
-if($allowOriginal) {
-  $downloadArray['Download Original'] = instance_url("fileManager/getOriginal/". $fileObjectId);
-}
-
-$menuArray['download'] = $downloadArray;
-
 ?>
-<script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js" async="false"></script>
+<? // https://github.com/jwplayer/jwplayer can build from ?>
+<script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js"></script>
 
 <script>
 
@@ -130,33 +69,33 @@ if(typeof objectId == 'undefined') {
 }
 </script>
 
-
-
-<?if(!$embedded):?>
-<div class="row assetViewRow" >
-<div class="col-md-12 videoColumn">
-<?endif?>
-
 <? if(!isset($fileContainers) || count($fileContainers) == 1):?>
-<p class="alert alert-info">No derivatives found.
-<?if(!$this->user_model->userLoaded):?>
-<?$this->load->view("errors/loginForPermissions")?>
-<?if($embedded):?>
-<?$this->load->view("login/login")?>
-<?endif?>
-<?endif?>
-</p>
+  <p class="alert alert-info">No derivatives found.
+  <?if(!$this->user_model->userLoaded):?>
+    <?$this->load->view("errors/loginForPermissions")?>
+    <?if($embedded):?>
+      <?$this->load->view("login/login")?>
+    <?endif?>
+  <?endif?>
+  </p>
+  
+<?else:?>    
+    <div id="videoElement">Loading the player...</div>
+    <script type="text/javascript">
 
-<?else:?>
-  
-  <div id="videoElement">Loading the player...</div>
-  
-  <script type="text/javascript">
   var haveSeeked = false;
   var havePaused = false;
   var currentPosition = null;
   var firstPlay = false;
   var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor); 
+  var chromeVersion = false;
+  if(isChrome) {
+    var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+    var version = parseInt(raw[2], 10);
+    if(!isNaN(version)) {
+      chromeVersion = version;
+    }
+  }
   var weAreHosed = false;
   var firstPlay = false;
   var seekTime = null;
@@ -172,7 +111,8 @@ if(typeof objectId == 'undefined') {
           {
             type: "<?=$entry["type"]?>",
             file: "<?=$entry["file"]?>",
-            label: "<?=$entry["label"]?>"
+            label: "<?=$entry["label"]?>",
+            "default": "<?=$entry["label"]=="HD"?"true":"false"?>"
           },
           <?endforeach?>
         ],
@@ -233,8 +173,8 @@ if(typeof objectId == 'undefined') {
           if(event.playReason == "external") {
             return;
           }
-
-          if((haveSeeked || havePaused) && isChrome) {
+          console.log(chromeVersion);
+          if((haveSeeked || havePaused) && isChrome && chromeVersion < 78) {
             var playlist = jwplayer().getPlaylist();
 
             if(playlist[0].label == "Streaming" || playlist[0].sources[0].label == "Streaming") {
@@ -271,51 +211,16 @@ if(typeof objectId == 'undefined') {
       });
       
     }
-    
-    var checkPlayer = function() {
-      if(typeof jwplayer == 'undefined') {
-        setTimeout(() => {
-          checkPlayer();
-        }, 50);
-      }
-      else {
-        buildPlayer();
-        registerJWHandlers();
-      }
-    }
 
-    checkPlayer();
-    
-    // JW player is dumb about default to HD footage so we do it manually if possible
+    buildPlayer();
+    registerJWHandlers();
+
+        // JW player is dumb about default to HD footage so we do it manually if possible
     
     
     $(".videoColumn").on("remove", function() {
       jwplayer("videoElement").remove();
     });
-    
-    </script>
-    <?endif?>
-    
-    <?if(!$embedded):?>
-    </div>
-    
-    </div>
-    <?endif?>
-    
-    <?if(!$embedded):?>
-    
-    <?=renderFileMenu($menuArray)?>
-    
-    <?$this->load->view("fileHandlers/excerpt", ["drawerArray"=>$drawerArray])?>
-    
-    <script>
-    $(document).ready(function() {
-      
-      $(".infoPopover").popover({trigger: "focus | click"});
-      $(".infoPopover").tooltip({ placement: 'top'});
-      $(".excerptTooltip").tooltip({ placement: 'top'});
-    });
-    
-    </script>
-    
-    <?endif?>
+
+  </script>
+  <?endif?>

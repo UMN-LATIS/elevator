@@ -1,24 +1,9 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
-$embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
+$embedLink = stripHTTP(instance_url("asset/getEmbed/" . $fileObjectId . "/null/true"));
 $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
-$targetFile = null;
-if(isset($fileContainers['shrunk_pdf'])) {
-	$targetFile = $fileContainers['shrunk_pdf']->getProtectedURLForFile();
-}
-else if(isset($fileContainers['ocr_pdf'])) {
-	$targetFile = $fileContainers['ocr_pdf']->getProtectedURLForFile();
-}
-else if(isset($fileContainers['pdf'])) {
-	$targetFile = $fileContainers['pdf']->getProtectedURLForFile();
-}
-else if($allowOriginal) {
-	$targetFile = $fileObject->sourceFile->getProtectedURLForFile();
-}
+$embedHeight = 480;
 
 $menuArray = [];
 if(count($fileContainers)>0) {
@@ -55,34 +40,22 @@ $menuArray['download'] = $downloadArray;
 
 
 
-?>
 
-<?if(!$embedded):?>
+?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-<?endif?>
-<?if($targetFile):?>
-	<iframe class="vrview" frameborder=0 width="100%" height=<?=$embedded?"100%":"480px"?> scrolling="no" allowfullscreen src="/assets/pdf/web/viewer.html?file=<?=urlencode(striphttp($targetFile))?>#zoom=page-fit&page=0"></iframe>
-<?else:?>
-	<img src="<?=isset($fileContainers['thumbnail2x'])?stripHTTP($fileContainers['thumbnail2x']->getProtectedURLForFile()):"/assets/icons/512px/pdf.png"?>" class="img-responsive embedImage" style="width: 50%; margin-left:auto; margin-right:auto"/>
-<?endif?>
-
-<?if(!$embedded):?>
-	</div>
+        <iframe width="100%" height="480" data-ratio="1.3333" title="Embedded PDF" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="pdfEmbedFrame embedAsset"></iframe>
+    </div>
 </div>
-<?endif?>
-
-<?if(!$embedded):?>
-
 <?=renderFileMenu($menuArray)?>
 
-
 <script>
+
 $(function ()
 {
 	$(".infoPopover").popover({trigger: "focus | click"});
 	$(".infoPopover").tooltip({ placement: 'top'});
-
+  resizeElement();
 });
+
 </script>
-<?endif?>
