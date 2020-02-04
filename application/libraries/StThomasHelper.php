@@ -168,7 +168,7 @@ class StThomasHelper extends AuthHelper
 	public function remoteLogout() {
 		
 		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
-			$this->shibboleth->redirectToLogout(["return"=>instance_redirect("/")]);
+			$this->shibboleth->redirectToLogout(["return"=>instance_url("/")]);
 		}
 	}
 
