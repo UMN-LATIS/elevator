@@ -10,12 +10,12 @@
 // define("UNIT_TYPE", "Unit");
 // define("STATUS_TYPE", "StudentStatus");
 // define("EMPLOYEE_TYPE", "EmployeeType");
-
+define("GROUP_MEMBER", "AD Group");
 
 require_once("AuthHelper.php");
 class StThomasHelper extends AuthHelper
 {
-	// public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], DEPT_COURSE_TYPE=>["name"=>DEPT_COURSE_TYPE, "label"=>DEPT_COURSE_TYPE, "helpText"=>"Use % for wildcard, like DEPT.NUMBER% to include all sections."], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"], EMPLOYEE_TYPE=>["name"=>EMPLOYEE_TYPE, "label"=>"Employee Type"]];
+	public $authTypes = [GROUP_MEMBER=>["name"=>GROUP_MEMBER, "label"=>GROUP_MEMBER]];
 
 	public function __construct()
 	{
@@ -43,11 +43,9 @@ class StThomasHelper extends AuthHelper
 		$user->setHasExpiry(false);
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
-		if($this->shibboleth->getAttributeValue("isGuest") == "Y") {
-			$user->setUserType("Remote-Guest");
-		}
-		if($this->shibboleth->getAttributeValue("displayName")) {
-			$user->setDisplayName($this->shibboleth->getAttributeValue("displayName"));
+
+		if($this->shibboleth->getAttributeValue("surName")) {
+			$user->setDisplayName($this->shibboleth->getAttributeValue("givenName") . " " . $this->shibboleth->getAttributeValue("surName"));
 		}
 		if($this->shibboleth->getAttributeValue("email")) {
 			$user->setEmail($this->shibboleth->getAttributeValue("email"));
@@ -61,7 +59,9 @@ class StThomasHelper extends AuthHelper
 	}
 
 	public function getUserIdFromRemote() {
-		return $this->shibboleth->getAttributeValue('uwnetid');
+		$email = $this->shibboleth->getAttributeValue('email');
+		
+		return array_shift(explode("@", $email));
 	}
 
 	public function updateUserFromRemote($user) {
@@ -78,21 +78,21 @@ class StThomasHelper extends AuthHelper
 
 	public function populateUserData($user) {
 		$userData = array();
-		$coursesTaught = array();
-		$courses = array();
-		$deptCourses = array();
-		$jobCodes = array();
-		$units = array();
-		$studentStatus = array();
-		$deptCoursesTaught = array();
-		$employeeType = array();
+
 		
-		if ($this->shibboleth->hasSession()) {
-		
+		if ($this->shibboleth->hasSession() && $this->shibboleth->getAttributeValue("groups")) {
+			$groups = explode(";", $this->shibboleth->getAttributeValue("groups"));
+
+			foreach($groups as $group) {
+				$hintMembership[$group] = $group;
+				$groupMembership[$group] = $group;
+			}
+
+			$userData[GROUP_MEMBER] = ["values"=>$groupMembership, "hints"=>$hintMembership];
+
 			
 		}
-
-
+	
 		return $userData;
 
 	}
@@ -132,6 +132,44 @@ class StThomasHelper extends AuthHelper
 
 	public function templateView() {
 		// return $this->CI->load->view("authHelpers/autoRedirect", null, true);
+	}
+
+	public function autocompleteUsername($partialUsername) {
+		$CI =& get_instance();
+		$result = $CI->doctrine->em->getRepository("Entity\User")->createQueryBuilder('u')
+				->where('u.displayName LIKE :name')
+				->setParameter('name', '%'.$partialUsername.'%')
+				->getQuery()
+				->getResult();
+
+		//TODO: limit number of users
+		//TODO: only search local uesrs
+		$userMatches = $CI->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$partialUsername]);
+		$outputArray = array();
+		foreach($userMatches as $user) {
+			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
+			$outputArray[$user->getId()] = $tempArray;
+		}
+		$i=0;
+		foreach($result as $user) {
+			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
+			if(!array_key_exists($user->getId(), $outputArray)) {
+				$outputArray[$user->getId()] = $tempArray;
+			}
+			$i++;
+			if($i>10) {
+				break;
+			}
+		}
+		return $outputArray;
+	}
+
+
+	public function remoteLogout() {
+		
+		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
+			$this->shibboleth->redirectToLogout(["return"=>instance_url("/")]);
+		}
 	}
 
 }

@@ -8,7 +8,7 @@
 //require_once("fileHandlerBase.php");
 class OfficeHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("doc","docx","ppt","pptx", "xls", "xlsx");
+	protected $supportedTypes = array("doc","docx","ppt","pptx", "xls", "xlsx", "pptm");
 	protected $noDerivatives = true;
 	// public $icon = "pdf.png";
 	private $allowedSize = 30000000;

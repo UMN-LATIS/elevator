@@ -71,7 +71,7 @@ function submitFormProtected(ignoreWarnings, supressAlertAndBlock) {
 
 	if(!$("#entryForm").parsley('isValid')) {
 		bootbox.dialog({
-			message: "You have errors or missing/invalid values in your asset.  Your asset cannot be saved until this issues are corrected.",
+			message: "You have errors or missing/invalid values in your asset.  Your asset cannot be saved until these issues are corrected.",
 			title: "Invalid Entry",
 			backdrop: true,
 			buttons: {
