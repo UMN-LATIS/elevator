@@ -167,7 +167,7 @@ function fastImageDimensions($sourceImage) {
 function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$commandline = "exiftool -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
+	$commandline = "exiftool -api largefilesupport=1 -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$extractedRaw = json_decode(implode("\n", $results), true);
@@ -179,7 +179,7 @@ function getImageMetadata($sourceImage) {
 	}
 
 	$results = null;
-	$commandline = "exiftool -j -g " . escapeshellarg($sourceImage->getPathToLocalFile());
+	$commandline = "exiftool -api largefilesupport=1 -j -g " . escapeshellarg($sourceImage->getPathToLocalFile());
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		// strip bad unicode character that will make postgres mad
