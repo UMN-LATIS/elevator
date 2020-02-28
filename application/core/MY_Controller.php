@@ -8,7 +8,7 @@ class MY_Controller extends CI_Controller {
 		
 		parent::__construct();
 
-		if($this->config->item('css_override') && strlen($this->config->item('css_override')) > 3) {
+		if($this->config->item('css_override') && $this->config->item('css_override') !== "FALSE") {
 			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
 		}
 		else {
