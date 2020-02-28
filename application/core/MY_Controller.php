@@ -7,7 +7,15 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 		
 		parent::__construct();
-		$cssLoadArray = ["bootstrap", "screen"];
+
+		if($this->config->item('css_override') && strlen($this->config->item('css_override')) > 3) {
+			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
+		}
+		else {
+			$cssLoadArray = ["bootstrap", "screen"];
+		}
+
+		
 		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "jquery.lazy", "sugar", "mousetrap", "bootbox"];
 
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {

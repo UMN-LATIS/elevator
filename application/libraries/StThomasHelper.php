@@ -61,7 +61,11 @@ class StThomasHelper extends AuthHelper
 	public function getUserIdFromRemote() {
 		$email = $this->shibboleth->getAttributeValue('email');
 		
+<<<<<<< HEAD
 		return array_pop(explode("@", $email));
+=======
+		return array_shift(explode("@", $email));
+>>>>>>> hotfix/instanceDefaults
 	}
 
 	public function updateUserFromRemote($user) {
@@ -132,6 +136,44 @@ class StThomasHelper extends AuthHelper
 
 	public function templateView() {
 		// return $this->CI->load->view("authHelpers/autoRedirect", null, true);
+	}
+
+	public function autocompleteUsername($partialUsername) {
+		$CI =& get_instance();
+		$result = $CI->doctrine->em->getRepository("Entity\User")->createQueryBuilder('u')
+				->where('u.displayName LIKE :name')
+				->setParameter('name', '%'.$partialUsername.'%')
+				->getQuery()
+				->getResult();
+
+		//TODO: limit number of users
+		//TODO: only search local uesrs
+		$userMatches = $CI->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$partialUsername]);
+		$outputArray = array();
+		foreach($userMatches as $user) {
+			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
+			$outputArray[$user->getId()] = $tempArray;
+		}
+		$i=0;
+		foreach($result as $user) {
+			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
+			if(!array_key_exists($user->getId(), $outputArray)) {
+				$outputArray[$user->getId()] = $tempArray;
+			}
+			$i++;
+			if($i>10) {
+				break;
+			}
+		}
+		return $outputArray;
+	}
+
+
+	public function remoteLogout() {
+		
+		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
+			$this->shibboleth->redirectToLogout(["return"=>instance_url("/")]);
+		}
 	}
 
 }
