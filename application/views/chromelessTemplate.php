@@ -8,8 +8,6 @@
   <?=$this->template->stylesheet; ?>
   <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
   <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
-    <?else:?>
-    <link rel="stylesheet" href="/assets/css/screen.css">
   <?endif?>
 <script src="/assets/minifiedjs/jquery.min.js"></script>
 
