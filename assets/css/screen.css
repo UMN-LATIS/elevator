@@ -54,7 +54,7 @@ select.input-xs {
   width: 530px;
 }
 .searchButton {
-  background-color: #8348ad;
+  background-color: #ffba00;
   color: white;
   padding-top: 5px;
 }
@@ -81,11 +81,11 @@ select.input-xs {
   background-color: #eff2f3;
 }
 .navbar-right .glyphicon-user {
-  color: #8348ad;
+  color: #ffba00;
 }
 .navbar-right .signInLink {
   padding-left: 5px;
-  color: #8348ad;
+  color: #ffba00;
 }
 .navbar-collapse {
   max-height: 600px;
@@ -992,7 +992,7 @@ input[type='range'].zoom-range::-webkit-slider-thumb {
   overflow: auto;
   padding-left: 10px;
   padding-right: 10px;
-  color: #510c76;
+  color: #660013;
 }
 .listResultContainer {
   margin: 10px;
