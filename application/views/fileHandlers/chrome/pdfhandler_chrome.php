@@ -44,7 +44,7 @@ $menuArray['download'] = $downloadArray;
 ?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="480" data-ratio="1.3333" title="Embedded PDF" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="pdfEmbedFrame embedAsset"></iframe>
+        <iframe width="100%" height="480" data-ratio="0.75" title="Embedded PDF" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="pdfEmbedFrame embedAsset"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>

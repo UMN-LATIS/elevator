@@ -200,7 +200,11 @@ var registerHandlers = function() {
 var resizeElement = function() {
 	var ratio = $(".embedAsset").data("ratio");
 	if(!isNaN(ratio)) {
-		$(".embedAsset").height($(".embedAsset").width() / ratio);
+		targetHeight = $(".embedAsset").width() / ratio;
+		if(targetHeight > $(window).height() * 0.8) {
+			targetHeight = $(window).height() * 0.8;
+		}
+		$(".embedAsset").height(targetHeight);
 	}
 };
 

@@ -69,7 +69,7 @@ $menuArray['download'] = $downloadArray;
 </script>
 
 <div class="row assetViewRow" >
-  <div class="col-md-12 videoColumn">
+  <div class="col-md-12">
     <iframe width="100%" height="480" data-ratio="<?=$ratio?>" title="Embedd video" src="<?=$fileObject->getEmedURL()?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
   </div>
 </div>
