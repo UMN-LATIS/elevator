@@ -22,7 +22,7 @@ class AssetManager extends Admin_Controller {
 	public function addAssetModal() {
 		if(isset($this->instance) && $this->user_model->userLoaded) {
 			if($this->user_model->getIsSuperAdmin() || $this->user_model->getAccessLevel("instance",$this->instance)>=PERM_ADDASSETS || $this->user_model->getMaxCollectionPermission() >= PERM_ADDASSETS) {
-				$this->load->view("addAsset_modal");
+				$this->load->view("modals/addAsset_modal");
 			}
 		}
 	}

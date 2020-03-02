@@ -1,25 +1,20 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
 
-$drawerArray = array();
-if($this->user_model->userLoaded) {
-    foreach($this->user_model->getDrawers(true) as $drawer) {
-        $drawerArray[] = $drawer;
-    }
+
+$downloadArray = [];
+$targetAsset = null;
+if(isset($fileContainers['nxs']) && $fileContainers['nxs']->ready) {
+  $nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
+  $targetAsset = stripHTTP($nxsURL) . "#.nxs";
 }
 
-$nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
-
-?>
-<?
-
-
-$embedLink = instance_url("asset/getEmbed/" . $fileObjectId . "/null/true");
-$embedLink = str_replace("http:", "", $embedLink);
-$embedLink = str_replace("https:", "", $embedLink);
-
-$embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
-
+if(isset($fileContainers['ply']) && $fileContainers['ply']->ready) {
+  $plyURL = isset($fileContainers['ply'])?$fileContainers['ply']->getProtectedURLForFile():null;
+  if(!$targetAsset) {
+    $targetAsset = stripHTTP($plyURL) . "#.ply";
+  }
+}
 
 ?>
 <link type="text/css" rel="stylesheet" href="/assets/3dviewer/stylesheet/3dhop.css"/>
@@ -44,14 +39,13 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
 <?endif?>
 
 
-<?if(!$embedded):?>
-<div class="row assetViewRow">
-  <div class="col-md-12">
-<?endif?>
   <? if(!isset($fileContainers) || count($fileContainers) <=4 ):?>
     <p class="alert alert-info">No derivatives found.
       <?if(!$this->user_model->userLoaded):?>
       <?=$this->load->view("errors/loginForPermissions")?>
+        <?if($embedded):?>
+          <?=$this->load->view("login/login")?>
+        <?endif?>
       <?endif?>
     </p>
 
@@ -75,9 +69,8 @@ $embed = htmlentities('<iframe width="560" height="480" src="' . $embedLink . '"
   <div id="measurebox" style="background-color:rgba(125,125,125,0.5);color:#f8f8f8;">Measured length:<br/>
   <span id="measure-output" onmousedown="event.stopPropagation()">0.0</span>
  </div>
- <canvas id="draw-canvas" style="background-image: url(/assets/3dviewer/skins/light/background.png)"/>
+ <canvas id="draw-canvas" style=""/>
 </div>
- <canvas id="draw-canvas"/>
 
  <div id="loadIndicator">
     Loading...
@@ -131,7 +124,7 @@ function setup3dhop() {
 
   presenter.setScene({
     meshes: {
-      "targetAsset" : { url: "<?=stripHTTP($nxsURL)?>#.nxs" },
+      "targetAsset" : { url: "<?=$targetAsset?>" },
       "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
     },
     modelInstances : {
@@ -191,7 +184,9 @@ var timer;
 
 var resizeTarget = function() {
   if($('#full').css("visibility")=="visible"){
-    resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());
+      resizeCanvas($('#3dhop').parent().width(),$(window).height());
+      $(".threedelementcontainer").height($('#3dhop').height());
+
     presenter.ui.postDrawEvent();
   }
 }
@@ -203,66 +198,16 @@ $(window).resize(function(event) {
 
 });
 
-var loadedCallback = function() {
+$(document).ready(function() {
   init3dhop();
   setup3dhop();
-   moveMeasurebox(10,10);
-}
-
-
-
-</script>
-
-
-    <?endif?>
-<?if(!$embedded):?>
-  </div>
-</div>
-<?endif?>
-
-
-
-
-
-<?if(!$embedded):?>
-
-
-<div class="row infoRow ">
-  <div class="col-md-12">
-    <span class="glyphicon glyphicon-info-sign infoPopover" data-placement="bottom" data-toggle="popover" title="File Info" data-html=true data-content='<ul class="list-group">
-      <li class="list-group-item"><strong>File Type: </strong> OBJ</li>
-      <li class="list-group-item assetDetails"><strong>Original Name: </strong><?=$fileObject->sourceFile->originalFilename?></li>
-      <li class="list-group-item assetDetails"><strong>File Size: </strong><?=byte_format($fileObject->sourceFile->metadata["filesize"])?></li>
-    </ul>'></span>
-      <span class="glyphicon glyphicon-download infoPopover" data-placement="bottom" data-toggle="popover" title="Download" data-html="true" data-content='
-          <ul>
-          <?if(isset($fileContainers['nxs'])):?>
-            <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/nxs")?>">Download Derivative (nxs)</a></li>
-          <?endif?>
-          <?if(isset($fileContainers['stl'])):?>
-            <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getDerivativeById/". $fileObjectId . "/stl")?>">Download Derivative (stl)</a></li>
-          <?endif?>
-      <?if($allowOriginal):?>
-      <li class="list-group-item assetDetails"><a href="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">Download Original</a></li>
-      <?endif?>
-      </ul>'></span>
-    <span class="glyphicon glyphicon-share infoPopover" data-placement="bottom" data-toggle="popover" title="Share" data-html="true" data-content='<ul class="list-group">
-        <?if($allowOriginal):?>
-            <li class="list-group-item assetDetails"><strong>Embed: </strong><input class="form-control embedControl" value="<?=htmlspecialchars($embed, ENT_QUOTES)?>"></li>
-          <?endif?>
-    </ul>'></span>
-  </div>
-</div>
-
-<script>
-$(function ()
-{
-  $(".infoPopover").popover({trigger: "focus | click"});
-  $(".infoPopover").tooltip({ placement: 'top'});
-
+  moveMeasurebox(10,10);
+  resizeTarget();
 });
+
+
+
+
 </script>
 
 <?endif?>
-
-

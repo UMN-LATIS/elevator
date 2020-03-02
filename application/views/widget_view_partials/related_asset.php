@@ -57,8 +57,8 @@ $seed = round(microtime(true))// we're using a seed to provide collisions with r
 					<?if($fieldContent->getReadyForDisplay()):?>
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
-							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
-								<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fileObjectId?>" srcset="<?=$retina?> 2x" data-hover="<?=$retina?>" data-src="<?=$standard?>">
+							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>" >
+								<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fileObjectId?>" role="button" srcset="<?=$retina?> 2x" data-hover="<?=$retina?>" data-src="<?=$standard?>">
 							</div>
 							<div class="relatedThumbTitle autoTruncate"><?$assetTitle = $fieldContent->getRelatedObjectTitle();echo array_shift($assetTitle)?></div>
 						</div>
