@@ -23,7 +23,14 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 		<div class="row">
 			<div class="col-md-12">
-				<h3><?=$assetModel->getAssetTitleWidget()->getClickToSearch()?getClickToSearchLink($assetModel->getAssetTitleWidget(), $assetTitle):$assetTitle;?></h3>
+				<h3><?
+				if(!$assetModel->getAssetTitleWidget()) {
+					echo "No Title";
+				}
+				else {
+					echo $assetModel->getAssetTitleWidget()->getClickToSearch()?getClickToSearchLink($assetModel->getAssetTitleWidget(), $assetTitle):$assetTitle;
+				}
+				?></h3>
 			</div>
 		</div>
 
