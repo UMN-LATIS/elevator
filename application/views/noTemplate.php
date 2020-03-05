@@ -1,4 +1,17 @@
-  <script>
+<!doctype html>
+<html lang="en" style="width: 100%; height: 100%">
+  <head>
+    <title><?= $this->template->title->default(isset($this->instance)?$this->instance->getName():"Elevator"); ?></title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    
+  </head>
+  <body style="width: 100%; height: 100%">
+<script>
   var basePath = "<?=$this->template->relativePath?>";
 
   if(window.name == 'loginRedirectWindow') {
@@ -35,12 +48,12 @@
 <?=$this->template->meta; ?>
 <?=$this->template->stylesheet; ?>
 
-<title><?= $this->template->title->default(isset($this->instance)?$this->instance->getName():"Elevator"); ?></title>
+
 
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
 <link rel="stylesheet" href="/assets/leaflet/leaflet.css">
-<link rel="stylesheet" href="/assets/css/screen.css">
+
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?endif?>
@@ -69,3 +82,5 @@ $(document).ready(function() {
    lazyInstance = $('.lazy').Lazy({ chainable: false });
 });
 </script>
+</body>
+</html>
