@@ -201,8 +201,8 @@ var resizeElement = function() {
 	var ratio = $(".embedAsset").data("ratio");
 	if(!isNaN(ratio)) {
 		targetHeight = $(".embedAsset").width() / ratio;
-		if(targetHeight > $(window).height() * 0.8) {
-			targetHeight = $(window).height() * 0.8;
+		if(targetHeight > $(window).height() * 0.7) {
+			targetHeight = $(window).height() * 0.7;
 		}
 		$(".embedAsset").height(targetHeight);
 	}
