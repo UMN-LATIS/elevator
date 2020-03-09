@@ -405,6 +405,9 @@ class Transcoder_Model extends CI_Model {
 
 		$process = $video->getProcess();
 		$process->setProcessTimelimit(60);
+		
+		// adding this change to deal with a "Too many packets buffered for output stream" error
+		$process->addCommand("-max_muxing_queue_size", 1024);
 		$process->addCommand("-vf", $rotationString . "scale=75:trunc(ow/dar/2)*2", true);
 
  		$output = $video->extractFrame($time)->save($derivativeContainer->getPathToLocalFile(), $outputformat, \PHPVideoToolkit\Video::OVERWRITE_EXISTING);
