@@ -22,7 +22,9 @@
 	var AWS;
 	var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
 
-	var loadedCallback = function() {
+	
+	
+	var actualLoad = function() {
 
 		if(typeof AWS === 'undefined') {
 			console.log("pausing for aws");
@@ -156,11 +158,13 @@
 			});
 
 		measureControl.addTo(map);
-
+			
 		}
 		
-
+		
 
 	};
+
+	var loadedCallback = setTimeout(actualLoad, 300);
 
 </script>
