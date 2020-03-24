@@ -93,6 +93,9 @@ class User_model extends CI_Model {
 				if(array_key_exists($object->getId(),$this->drawerPermissions)) {
 					return $this->drawerPermissions[$object->getId()];
 				}
+				if($this->isInstanceAdmin() && $object->getInstance() == $this->instance) {
+					return 60;
+				}
 				break;
 			case "asset":
 				$assetDrawers = $object->getDrawers($includeExcerpts);
