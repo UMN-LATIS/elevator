@@ -24,7 +24,7 @@ function inIframe () {
 }
 
 function popitup() {
-  newwindow=window.open("https://" + window.location.hostname + "/autoclose.html",'name','height=200,width=150');
+  newwindow=window.open("https://" + window.location.hostname + "/autoclose.php",'name','height=200,width=150');
 
   setTimeout(function() { location.reload();}, 1200);
   return false;

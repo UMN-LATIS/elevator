@@ -32,7 +32,14 @@ class API_Controller extends MY_Controller {
 				$authUser = $_SERVER['HTTP_AUTHORIZATION_USER'];
 			}
 			else {
-				$authUser = false;
+				$apiKey = $this->doctrine->em->getRepository("Entity\ApiKey")->findOneBy(["apiKey"=>$authKey]);
+				if($apiKey) {
+					$authUser = $apiKey->getOwner()->getId();
+				}
+				else {
+					$authUser = false;
+				}
+				
 			}
 
 		}
