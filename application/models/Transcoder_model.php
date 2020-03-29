@@ -349,7 +349,7 @@ class Transcoder_Model extends CI_Model {
 	}
 
 
-		public function createTiny($args) {
+	public function createTiny($args) {
 		if(!$this->checkLocalAndCopy()) {
 			return JOB_POSTPONE;
 		}
@@ -405,6 +405,9 @@ class Transcoder_Model extends CI_Model {
 
 		$process = $video->getProcess();
 		$process->setProcessTimelimit(60);
+		
+		// adding this change to deal with a "Too many packets buffered for output stream" error
+		$process->addCommand("-max_muxing_queue_size", 1024);
 		$process->addCommand("-vf", $rotationString . "scale=75:trunc(ow/dar/2)*2", true);
 
  		$output = $video->extractFrame($time)->save($derivativeContainer->getPathToLocalFile(), $outputformat, \PHPVideoToolkit\Video::OVERWRITE_EXISTING);
@@ -641,6 +644,8 @@ class Transcoder_Model extends CI_Model {
 
  				$outputFormat->setH264Preset("veryfast");
         		$outputFormat->setFormat("mp4")->setAudioBitrate("96k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				// adding this change to deal with a "Too many packets buffered for output stream" error
+				$process->addCommand("-max_muxing_queue_size", 1024);
 				$process->addCommand("-movflags", "faststart");
 				$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
 				$process->addCommand("-crf", 23);
@@ -695,7 +700,9 @@ class Transcoder_Model extends CI_Model {
  				}
 
  				$outputFormat->setH264Preset("veryfast");
-	       		$outputFormat->setFormat("mp4")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				   $outputFormat->setFormat("mp4")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				// adding this change to deal with a "Too many packets buffered for output stream" error
+				$process->addCommand("-max_muxing_queue_size", 1024);
         		$process->addCommand("-movflags", "faststart");
         		$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
 				$process->addCommand("-crf", 23);
@@ -749,7 +756,9 @@ class Transcoder_Model extends CI_Model {
  				}
 
  				$outputFormat->setH264Preset("veryfast");
-	       		$outputFormat->setFormat("mp4")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				   $outputFormat->setFormat("mp4")->setAudioBitrate("128k")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				// adding this change to deal with a "Too many packets buffered for output stream" error
+				$process->addCommand("-max_muxing_queue_size", 1024);
         		$process->addCommand("-movflags", "faststart");
         		$process->addCommand("-video_track_timescale", "90000"); // is this a good idea? make sure we don't end up with unreasonable timescales.
 				$process->addCommand("-crf", 23);
@@ -828,6 +837,8 @@ class Transcoder_Model extends CI_Model {
 	        		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
 
 					$outputFormat->setFormat("hls")->setAudioCodec("copy")->setVideoCodec("copy")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+					// adding this change to deal with a "Too many packets buffered for output stream" error
+					$process->addCommand("-max_muxing_queue_size", 1024);
 					$process->addCommand("-hls_time", 10);
 					$process->addCommand("-hls_playlist_type", 'vod');
 					$process->addCommand("-hls_list_size", '10');
@@ -850,7 +861,9 @@ class Transcoder_Model extends CI_Model {
 				$process = $video->getProcess();
 
         		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
- 				$outputFormat->setFormat("hls")->setAudioCodec("copy")->setVideoCodec("copy")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				 $outputFormat->setFormat("hls")->setAudioCodec("copy")->setVideoCodec("copy")->setQualityVsStreamabilityBalanceRatio(null)->setThreads($this->threadCount);
+				 // adding this change to deal with a "Too many packets buffered for output stream" error
+				$process->addCommand("-max_muxing_queue_size", 1024);
 				$process->addCommand("-hls_time", 10);
 				$process->addCommand("-hls_playlist_type", 'vod');
 				$process->addCommand("-hls_list_size", '10');
