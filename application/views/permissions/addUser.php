@@ -145,7 +145,7 @@ $(document).on("ready", function() {
 		<div class="form-group" id="expiresGroup">
 			<label for="inputExpires" class="col-sm-2 control-label">Expires:</label>
 			<div class="col-sm-5">
-				<input type="date" name="expires" id="inputExpires" class="form-control" value="<?=($user->getExpires())?$user->getExpires()->format("m/d/Y"):null?>">
+				<input type="text" name="expires" id="inputExpires" class="form-control" value="<?=($user->getExpires())?$user->getExpires()->format("m/d/Y"):null?>">
 			</div>
 		</div>
 		<?endif?>
