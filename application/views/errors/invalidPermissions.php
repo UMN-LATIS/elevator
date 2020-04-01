@@ -1,5 +1,5 @@
 
-<div class="panel panel-info">
+<div class="panel panel-info permissionWarningBox">
 	<div class="panel-heading">
 		<h3 class="panel-title">Invalid Permissions</h3>
 	</div>
