@@ -218,6 +218,9 @@ class Asset_model extends CI_Model {
 		$widgetArray = $this->getAllWithinAsset($type,$asset,1);
 		if(count($widgetArray)>0) {
 			foreach($widgetArray as $widget) {
+				if(!$widget->getDisplay()) {
+					continue;
+				}
 				foreach($widget->fieldContentsArray as $fieldContents) {
 					return $fieldContents;
 				}
@@ -238,6 +241,9 @@ class Asset_model extends CI_Model {
 		$widgetArray = $this->getAllWithinAsset($type,$asset,0);
 		if(count($widgetArray)>0) {
 			foreach($widgetArray as $widget) {
+				if(!$widget->getDisplay()) {
+					continue;
+				}
 				foreach($widget->fieldContentsArray as $fieldContents) {
 					if((!$widget->getAllowMultiple() || count($widget->fieldContentsArray)==1) || $fieldContents->isPrimary) {
 						return $fieldContents;
@@ -246,17 +252,6 @@ class Asset_model extends CI_Model {
 			}
 		}
 
-		// $widgetArray = $this->getAllWithinAsset($type,$asset,1);
-
-		// if(count($widgetArray)>0) {
-		// 	foreach($widgetArray as $widget) {
-		// 		foreach($widget->fieldContentsArray as $fieldContents) {
-		// 			if((!$widget->getAllowMultiple() || count($widget->fieldContentsArray)==1) || $fieldContents->isPrimary) {
-		// 				return $fieldContents;
-		// 			}
-		// 		}
-		// 	}
-		// }
 
 
 
@@ -291,7 +286,7 @@ class Asset_model extends CI_Model {
 			$foundPrimary = FALSE;
 			if(!$uploadContents = $this->findPrimaryWithinAsset($this, "Upload")) {
 				// no first tier primary, try nested - first see if the primary related has an image.
-				
+
 				$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
 				foreach($relatedArray as $asset) {
 					$primaries = array_column($asset->fieldContentsArray, "isPrimary");
@@ -330,7 +325,7 @@ class Asset_model extends CI_Model {
 					$fileHandler = $uploadContents->getFileHandler();
 				}
 			}
-
+			
 			if(!$fileHandler) {
 				throw new Exception("no file handler attached");
 				return null;

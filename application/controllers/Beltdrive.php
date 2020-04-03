@@ -244,7 +244,13 @@ class Beltdrive extends CI_Controller {
 						foreach($upload->fieldContentsArray as $content) {
 
 							$handler = $content->getFileHandler();
-							$bestDerivative = $handler->highestQualityDerivativeForAccessLevel(PERM_ORIGINALSWITHOUTDERIVATIVES);
+							try {
+								$bestDerivative = $handler->highestQualityDerivativeForAccessLevel(PERM_ORIGINALSWITHOUTDERIVATIVES);
+							}
+							catch (Exception $e) {
+								continue;
+							}
+							
 							$derivativeArray[] = $bestDerivative;
 							if($bestDerivative->isLocal() !== FILE_LOCAL) {
 								$allDerivativesLocal = false;
