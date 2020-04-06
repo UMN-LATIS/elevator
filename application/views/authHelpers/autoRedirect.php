@@ -58,7 +58,7 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
           var re = new RegExp(botPattern, 'i');
           if (!re.test(navigator.userAgent)) {
 
-          document.cookie = "_check_is_passive=" + window.location + ";path=/";
+          document.cookie = "_check_is_passive=" + window.location + ";path=/; SameSite=None; Secure";
           // Redirect to Shibboleth handler
           window.location.href = "https://" + window.location.hostname + "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?redirect=" + encodeURIComponent(window.location));
 
