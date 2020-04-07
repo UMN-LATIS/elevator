@@ -1,3 +1,14 @@
+<script>
+$(document).ready(function() {
+	if(!document.cookie) {
+        window.onload = function(e) {
+            document.body.innerHTML = "To load this resource, please click the button below.  If you continue to encounter this issue, your web browser may be blocking cookies.  <input type=button value='Load Resource' onClick='makeRequestWithUserGesture();'>";
+        }
+    }
+});
+
+</script>
+
 <div class="row loginBox">
 	<div class="col-md-9">
 
