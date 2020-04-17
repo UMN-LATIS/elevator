@@ -254,14 +254,14 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="<?=instance_url("instances/edit/" . $this->instance->getId())?>">Instance Settings</a></li>
-                <li><a href="<?=instance_url("permissions/edit/instance/" . $this->instance->getId())?>">Instance Permissions</a></li>
-                <li><a href="<?=instance_url("instances/customPages/")?>">Instance Pages</a></li>
-                <li><a href="<?=instance_url("reports/")?>">Reports</a></li>
-                <li><a href="<?=instance_url("templates/")?>">Edit Templates</a></li>
-                <li><a href="<?=instance_url("collectionManager")?>">Edit Collections</a></li>
-                <li><a href="<?=instance_url("assetManager/importFromCSV")?>">Import from CSV</a></li>
-                <li><a class="exportCSV" href="<?=instance_url("assetManager/exportCSV")?>">Export to CSV</a></li>
+                <li id="menu_instanceSettings"><a href="<?=instance_url("instances/edit/" . $this->instance->getId())?>">Instance Settings</a></li>
+                <li id="menu_instancePermissions"><a href="<?=instance_url("permissions/edit/instance/" . $this->instance->getId())?>">Instance Permissions</a></li>
+                <li id="menu_instancePages"><a href="<?=instance_url("instances/customPages/")?>">Instance Pages</a></li>
+                <li id="menu_reports"><a href="<?=instance_url("reports/")?>">Reports</a></li>
+                <li id="menu_editTemplates"><a href="<?=instance_url("templates/")?>">Edit Templates</a></li>
+                <li id="menu_editCollections"><a href="<?=instance_url("collectionManager")?>">Edit Collections</a></li>
+                <li id="menu_importFromCSV"><a href="<?=instance_url("assetManager/importFromCSV")?>">Import from CSV</a></li>
+                <li id="menu_exportToCSV"><a class="exportCSV" href="<?=instance_url("assetManager/exportCSV")?>">Export to CSV</a></li>
                 <?if($this->user_model->getIsSuperAdmin()):?>
                  <li class="divider"></li>
                 <li><a href="<?=instance_url("admin")?>">Elevator Admin</a></li>
