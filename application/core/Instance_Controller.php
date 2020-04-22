@@ -29,6 +29,17 @@ class Instance_Controller extends MY_Controller
         $this->writeOutAssets();
 
         
+        if($this->input->get('apiHandoff', TRUE)) {
+			$signedString = $this->input->get('apiHandoff');
+			$authKey = $this->input->get('authKey');
+			$timestamp = $this->input->get('timestamp');
+            $targetObject = $this->input->get('targetObject');
+
+            $this->instance->queryHandoff = ["apiHandoff"=>$signedString, "authKey"=>$authKey, "timestamp"=>$timestamp, "targetObject"=>$targetObject];
+
+
+        }
+
         $this->template->relativePath = $this->getRelativePath();
         $this->config->set_item("instance_relative", $this->getRelativePath());
         $this->config->set_item("instance_absolute", $this->getAbsolutePath());
