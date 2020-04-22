@@ -55,7 +55,7 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 			<input type="hidden" name="groupId" id="inputGroupId" class="form-control" value="<?= $groupId; ?>">
 			<div class="form-group" id="groupTypeGroup">
 				<label for="inputGroupType" class="col-sm-2 control-label">Group Type:</label>
-				<div class="col-sm-5">
+				<div class="col-sm-7">
 					<select name="groupType" id="inputGroupType" class="form-control">
 						<option value="">-- Select Group Type --</option>
 						<option value="All" <?=$disableGlobal?> <?=($groupObject->getGroupType()=="All")?"SELECTED":NULL?>>All Users</option>
@@ -71,7 +71,7 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 
 			<div class="form-group" id="groupLabelGroup">
 				<label for="inputGroupLabel" class="col-sm-2 control-label">Group Label:</label>
-				<div class="col-sm-5">
+				<div class="col-sm-7">
 					<input type="text" name="groupLabel" id="inputGroupLabel" class="form-control" value="<?=$groupObject->getGroupLabel()?>" >
 				</div>
 			</div>
@@ -109,12 +109,12 @@ if($permissionType == DRAWER_PERMISSION && !($this->user_model->getAccessLevel("
 <script id="group-value" type="text/x-handlebars-template">
 <div class="form-group groupValueGroup">
 	<label for="inputGroupValue" class="col-sm-2 control-label">Group Value:</label>
-	<div class="col-sm-3">
+	<div class="col-sm-7">
 		<input type="text" name="groupValue[]"  class="inputGroupValue form-control" value="{{groupValue}}">
 		<span class="help-block">{{groupName}}</span>
 	</div>
 
-	<div class="col-sm-offset-2col-sm-3">
+	<div class="col-sm-3">
 		<button type="button" class="btn btn-default removeValueButton">Remove</button>
 	</div>
 	<p class="help-block" id="helpText"></p>
