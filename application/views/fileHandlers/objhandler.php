@@ -187,12 +187,12 @@ function setup3dhop() {
     },
     spots : spotObjects,
     trackball: {
-      type : TurntablePanTrackball,
+      type : SphereTrackball,
       trackOptions : {
         startDistance : 2.0,
         minMaxDist    : [0.2, 15.0],
-        minMaxPhi: [-180, 180],
-        minMaxTheta   : [-170.0, 170.0]
+        // minMaxPhi: [-180, 180],
+        // minMaxTheta   : [-170.0, 170.0]
       }
     }
   });
