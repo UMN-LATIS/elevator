@@ -1,7 +1,7 @@
 /*
 3DHOP - 3D Heritage Online Presenter
-Copyright (c) 2014-2016, Marco Callieri - Visual Computing Lab, ISTI - CNR
-All rights reserved.    
+Copyright (c) 2014-2018, Visual Computing Lab, ISTI - CNR
+All rights reserved.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,25 +42,31 @@ TurntablePanTrackball.prototype = {
 			minMaxPanX    : [-1.0, 1.0],
 			minMaxPanY    : [-1.0, 1.0],
 			minMaxPanZ    : [-1.0, 1.0],
+			pathStates      : [ ],	// path points array
+			animationLocked : false,// if true disable trackball interactions during animation
+			animationTime   : null	// when single position navigation, each to point navigation is # seconds (if null, automatically computed)
 		}, options);
-		
-		
+
 		this._action = SGL_TRACKBALL_NO_ACTION;
 		this._new_action = true;
-
 		this._matrix = SglMat4.identity();
+
+		// path
+		this._pathStates = opt.pathStates;
+		this._animationLocked = opt.animationLocked;
+		this._pathPosNum = 0;
 
 		// trackball center
 		this._center = opt.startCenter;
-		
+
 		// starting/default parameters
-		this._startPhi = sglDegToRad(opt.startPhi);   	//phi (horizontal rotation)
+		this._startPhi = sglDegToRad(opt.startPhi);		//phi (horizontal rotation)
 		this._startTheta = sglDegToRad(opt.startTheta);	//theta (vertical rotation)
-		this._startPanX = opt.startPanX;   		    	//panX
-		this._startPanY = opt.startPanY;   		    	//panY
-		this._startPanZ = opt.startPanZ;   		    	//panZ
-		this._startDistance = opt.startDistance;   		//distance
-		
+		this._startPanX = opt.startPanX;				//panX
+		this._startPanY = opt.startPanY;				//panY
+		this._startPanZ = opt.startPanZ;				//panZ
+		this._startDistance = opt.startDistance;		//distance
+
 		// current parameters
 		this._phi = this._startPhi;
 		this._theta = this._startTheta;
@@ -68,11 +74,28 @@ TurntablePanTrackball.prototype = {
 		this._panY = this._startPanY;
 		this._panZ = this._startPanZ;
 		this._distance = this._startDistance;
-		
+
+		// target paramenters
+		this._targetPhi = this._startPhi;
+		this._targetTheta = this._startTheta;
+		this._targetPanX = this._startPanX;
+		this._targetPanY = this._startPanY;
+		this._targetPanZ = this._startPanZ;
+		this._targetDistance = this._startDistance;
+
 		//animation data
 		this._isAnimating = false;
-		
+		this._speedPhi = 0.0;
+		this._speedTheta = 0.0;
+		this._speedPanX = 0.0;
+		this._speedPanY = 0.0;
+		this._speedPanZ = 0.0;
+		this._speedDistance = 0.0;
+		this._isAutoWalking = false;
+		this._animationTime = opt.animationTime;
+
 		// limits
+		this._minMaxDist  = opt.minMaxDist;
 		if((opt.minMaxPhi[0] == -180)&&(opt.minMaxPhi[1] == 180))
 			this._limitPhi = false;
 		else
@@ -86,38 +109,36 @@ TurntablePanTrackball.prototype = {
 		this._minMaxPanX  = opt.minMaxPanX;
 		this._minMaxPanY  = opt.minMaxPanY;
 		this._minMaxPanZ  = opt.minMaxPanZ;
-		this._minMaxDist  = opt.minMaxDist;
-		
+
 		this._start = [0.0, 0.0];
 		this.reset();
 	},
 
-    clamp: function(value, low, high) {
-      if(value < low) return low;
-      if(value > high) return high;
-      return value;
-    },
+	_clamp : function(value, low, high) {
+		if(value < low) return low;
+		if(value > high) return high;
+		return value;
+	},
 
-    _computeMatrix: function() {
-      var m = SglMat4.identity();
+	_computeMatrix: function() {
+		var m = SglMat4.identity();
 
-	  // centering
-	  m = SglMat4.mul(m, SglMat4.translation([-this._center[0], -this._center[1], -this._center[2]]));
+		// centering
+		m = SglMat4.mul(m, SglMat4.translation([-this._center[0], -this._center[1], -this._center[2]]));
+		// zoom
+		m = SglMat4.mul(m, SglMat4.translation([0.0, 0.0, -this._distance]));
+		// rotation
+		m = SglMat4.mul(m, SglMat4.rotationAngleAxis(this._theta, [1.0, 0.0, 0.0]));
+		// tilt
+		m = SglMat4.mul(m, SglMat4.rotationAngleAxis(this._phi, [0.0, -1.0, 0.0]));
+		// panning
+		m = SglMat4.mul(m, SglMat4.translation([-this._panX, -this._panY, -this._panZ]));
 
-	  // zoom
-	  m = SglMat4.mul(m, SglMat4.translation([0.0, 0.0, -this._distance]));
+		this._matrix = m;
 
-  	  // rotation
-      m = SglMat4.mul(m, SglMat4.rotationAngleAxis(this._theta, [1.0, 0.0, 0.0]));
-  
-	  // tilt
-      m = SglMat4.mul(m, SglMat4.rotationAngleAxis(this._phi, [0.0, -1.0, 0.0]));
-
-	  // panning
-	  m = SglMat4.mul(m, SglMat4.translation([-this._panX, -this._panY, -this._panZ]));
-
-      this._matrix = m;
-    },
+		if(typeof onTrackballUpdate != "undefined")
+			onTrackballUpdate(this.getState());							  
+	},
 
 	getState : function () {
 		return [sglRadToDeg(this._phi), sglRadToDeg(this._theta), this._panX, this._panY, this._panZ, this._distance];
@@ -125,7 +146,7 @@ TurntablePanTrackball.prototype = {
 
 	setState : function (newstate) {
 		// stop animation
-		this._isAnimating = false;
+		this._isAnimating = this._isAutoWalking = false;
 
 		this._phi      = sglDegToRad(newstate[0]);
 		this._theta    = sglDegToRad(newstate[1]);
@@ -136,94 +157,118 @@ TurntablePanTrackball.prototype = {
 
 		//check limits
 		if(this._limitPhi)
-			this._phi = this.clamp(this._phi, this._minMaxPhi[0], this._minMaxPhi[1]);
-		this._theta = this.clamp(this._theta, this._minMaxTheta[0], this._minMaxTheta[1]);
-		this._distance = this.clamp(this._distance, this._minMaxDist[0], this._minMaxDist[1]);
-		this._panX = this.clamp(this._panX, this._minMaxPanX[0], this._minMaxPanX[1]);
-		this._panY = this.clamp(this._panY, this._minMaxPanY[0], this._minMaxPanY[1]);
-		this._panZ = this.clamp(this._panZ, this._minMaxPanZ[0], this._minMaxPanZ[1]);
+			this._phi = this._clamp(this._phi, this._minMaxPhi[0], this._minMaxPhi[1]);
+		this._theta = this._clamp(this._theta, this._minMaxTheta[0], this._minMaxTheta[1]);
+		this._distance = this._clamp(this._distance, this._minMaxDist[0], this._minMaxDist[1]);
+		this._panX = this._clamp(this._panX, this._minMaxPanX[0], this._minMaxPanX[1]);
+		this._panY = this._clamp(this._panY, this._minMaxPanY[0], this._minMaxPanY[1]);
+		this._panZ = this._clamp(this._panZ, this._minMaxPanZ[0], this._minMaxPanZ[1]);
 
 		this._computeMatrix();
-	},	
-	
-	animateToState : function (newstate) {
+	},
+
+	animateToState : function (newstate, newtime) {
 		// stop animation
 		this._isAnimating = false;
-		
-		this._targetPhi      = sglDegToRad(newstate[0]);
-		this._targetTheta    = sglDegToRad(newstate[1]);
-		this._targetPanX     = newstate[2];
-		this._targetPanY     = newstate[3];
-		this._targetPanZ     = newstate[4];
-		this._targetDistance = newstate[5];
 
-		//check limits
-		if(this._limitPhi)
-			this._targetPhi = this.clamp(this._targetPhi, this._minMaxPhi[0], this._minMaxPhi[1]);
-		this._targetPhi = this._targetPhi %	(2*Math.PI);
-		this._targetTheta = this.clamp(this._targetTheta, this._minMaxTheta[0], this._minMaxTheta[1]);
-		this._targetPanX = this.clamp(this._targetPanX, this._minMaxPanX[0], this._minMaxPanX[1]);
-		this._targetPanY = this.clamp(this._targetPanY, this._minMaxPanY[0], this._minMaxPanY[1]);
-		this._targetPanZ = this.clamp(this._targetPanZ, this._minMaxPanZ[0], this._minMaxPanZ[1]);
-		this._targetDistance = this.clamp(this._targetDistance, this._minMaxDist[0], this._minMaxDist[1]);
+		if(newstate)
+		{
+			// stop autoWalking
+			this._isAutoWalking = false;
 
-		// setting base velocities 
-		this._speedPhi = Math.PI;
-		this._speedTheta = Math.PI;
-		this._speedPanX = 1.0;
-		this._speedPanY = 1.0;
-		this._speedPanZ = 1.0;
-		this._speedDistance = 2.0;
+			// setting targets
+			this._targetPhi      = sglDegToRad(newstate[0]);
+			this._targetTheta    = sglDegToRad(newstate[1]);
+			this._targetPanX     = newstate[2];
+			this._targetPanY     = newstate[3];
+			this._targetPanZ     = newstate[4];
+			this._targetDistance = newstate[5];
 
-		//if phi unconstrained rotation, it is necessary to find a good rotation direction
-		if(!this._limitPhi){ 
-			// normalize (-2pi 2pi) current phi angle, to prevent endless unwinding
-			this._phi = this._phi % (2*Math.PI);
+			//check limits
+			if(this._limitPhi)
+				this._targetPhi = this._clamp(this._targetPhi, this._minMaxPhi[0], this._minMaxPhi[1]);
+			this._targetPhi = this._targetPhi % (2*Math.PI);
+			this._targetTheta = this._clamp(this._targetTheta, this._minMaxTheta[0], this._minMaxTheta[1]);
+			this._targetPanX = this._clamp(this._targetPanX, this._minMaxPanX[0], this._minMaxPanX[1]);
+			this._targetPanY = this._clamp(this._targetPanY, this._minMaxPanY[0], this._minMaxPanY[1]);
+			this._targetPanZ = this._clamp(this._targetPanZ, this._minMaxPanZ[0], this._minMaxPanZ[1]);
+			this._targetDistance = this._clamp(this._targetDistance, this._minMaxDist[0], this._minMaxDist[1]);
 
-			// determine minimal, normalized target phi angle, to prevent endless unwinding
-			var clampedangle = this._targetPhi;
-			clampedangle = clampedangle % (2*Math.PI);
-			
-			if(Math.abs(clampedangle - this._phi) < Math.PI) { // standard rotation
-				if(clampedangle > this._phi){
-					this.speedphi = Math.PI;
+			// setting base velocities
+			this._speedPhi = Math.PI;
+			this._speedTheta = Math.PI;
+			this._speedPanX = 1.0;
+			this._speedPanY = 1.0;
+			this._speedPanZ = 1.0;
+			this._speedDistance = 2.0;
+
+			//if phi unconstrained rotation, it is necessary to find a good rotation direction
+			if(!this._limitPhi){
+				// normalize (-2pi 2pi) current phi angle, to prevent endless unwinding
+				this._phi = this._phi % (2*Math.PI);
+
+				// determine minimal, normalized target phi angle, to prevent endless unwinding
+				var clampedangle = this._targetPhi;
+				clampedangle = clampedangle % (2*Math.PI);
+
+				if(Math.abs(clampedangle - this._phi) < Math.PI) { // standard rotation
+					if(clampedangle > this._phi){
+						this.speedphi = Math.PI;
+					}
+					else{
+						this.speedphi = -Math.PI;
+					}
 				}
 				else{
-					this.speedphi = -Math.PI;
+					if(clampedangle > this._phi){
+						clampedangle = (clampedangle - 2*Math.PI)
+						this.speedphi = -Math.PI;
+					}
+					else{
+						clampedangle = (clampedangle + 2*Math.PI)
+						this.speedphi = Math.PI;
+					}
 				}
-			}
-			else{
-				if(clampedangle > this._phi){
-					clampedangle = (clampedangle - 2*Math.PI)
-					this.speedphi = -Math.PI;
-				}
-				else{
-					clampedangle = (clampedangle + 2*Math.PI)
-					this.speedphi = Math.PI;
-				}
+
+				this._targetPhi = clampedangle;
 			}
 
-			this._targetPhi = clampedangle;
+			// find max animation time to set a time limit and then synchronize all movements
+			var timePhi      = Math.abs((this._targetPhi - this._phi) / this._speedPhi);
+			var timeTheta    = Math.abs((this._targetTheta - this._theta) / this._speedTheta);
+			var timeDistance = Math.abs((this._targetDistance - this._distance) / this._speedDistance);
+			var timePanX     = Math.abs((this._targetPanX - this._panX) / this._speedPanX);
+			var timePanY     = Math.abs((this._targetPanY - this._panY) / this._speedPanY);
+			var timePanZ     = Math.abs((this._targetPanZ - this._panZ) / this._speedPanZ);
+
+			var maxtime = Math.max( timePhi, Math.max( timeTheta, Math.max( timeDistance, Math.max( timePanX, Math.max( timePanY, timePanZ )))));
+			var animationtime = this._clamp(maxtime, 0.5, 2.0);
+
+			if(newtime) animationtime = newtime;
+			else if (this._animationTime) animationtime = this._animationTime;
+
+			this._speedPhi      *= timePhi / animationtime;
+			this._speedTheta    *= timeTheta / animationtime;
+			this._speedDistance *= timeDistance / animationtime;
+			this._speedPanX     *= timePanX / animationtime;
+			this._speedPanY     *= timePanY / animationtime;
+			this._speedPanZ     *= timePanZ / animationtime;
 		}
-
-		// find max animation time to set a time limit and then synchronize all movements
-		var timePhi      = Math.abs((this._targetPhi - this._phi) / this._speedPhi);
-		var timeTheta    = Math.abs((this._targetTheta - this._theta) / this._speedTheta);
-		var timeDistance = Math.abs((this._targetDistance - this._distance) / this._speedDistance);
-		var timePanX     = Math.abs((this._targetPanX - this._panX) / this._speedPanX);
-		var timePanY     = Math.abs((this._targetPanY - this._panY) / this._speedPanY);
-		var timePanZ     = Math.abs((this._targetPanZ - this._panZ) / this._speedPanZ); 
-
-		var maxtime = Math.max( timePhi, Math.max( timeTheta, Math.max( timeDistance, Math.max( timePanX, Math.max( timePanY, timePanZ )))));
-
-		maxtime = this.clamp(maxtime, 0.5, 2.0);
-
-		this._speedPhi      *= timePhi / maxtime;
-		this._speedTheta    *= timeTheta / maxtime;
-		this._speedDistance *= timeDistance / maxtime;
-		this._speedPanX     *= timePanX / maxtime;
-		this._speedPanY     *= timePanY / maxtime;
-		this._speedPanZ     *= timePanZ / maxtime;
+		else
+		{
+			if(this._pathPosNum == this._pathStates.length){
+				this._isAutoWalking = false;
+				this._pathPosNum = 0;
+			}
+			else {
+				var state = this._pathStates[this._pathPosNum][0];
+				var time = this._animationTime;
+				if(!Array.isArray(state)) state = this._pathStates[this._pathPosNum];
+				else if (this._pathStates[this._pathPosNum][1]) time = this._pathStates[this._pathPosNum][1];
+				if(!this._isAutoWalking) this.animateToState(state, time);
+				this._isAutoWalking = true;
+			}
+		}
 
 		// start animation
 		this._isAnimating = true;
@@ -231,15 +276,15 @@ TurntablePanTrackball.prototype = {
 
 	recenter : function (newpoint) {
 		// stop animation
-		this._isAnimating = false;
-		
+		this._isAnimating = this._isAutoWalking = false;
+
 		var newpanX = (newpoint[0]-presenter.sceneCenter[0]) * presenter.sceneRadiusInv;
 		var newpanY = (newpoint[1]-presenter.sceneCenter[1]) * presenter.sceneRadiusInv;
 		var newpanZ = (newpoint[2]-presenter.sceneCenter[2]) * presenter.sceneRadiusInv;
-		
-		this.animateToState([sglRadToDeg(this._phi), sglRadToDeg(this._theta), newpanX, newpanY, newpanZ, (this._distance * 0.8)]);
-	},	
-	
+
+		this.animateToState([sglRadToDeg(this._phi), sglRadToDeg(this._theta), newpanX, newpanY, newpanZ, (this._distance * 0.6)]);
+	},
+
 	tick : function (dt) {
 		if(!this._isAnimating) return false;
 
@@ -257,69 +302,74 @@ TurntablePanTrackball.prototype = {
 		var diffPanY     = this._targetPanY - this._panY;
 		var diffPanZ     = this._targetPanZ - this._panZ;
 
-		if (diffPhi > deltaPhi) 
+		if (diffPhi > deltaPhi)
 			this._phi += deltaPhi;
-		else if (diffPhi < -deltaPhi) 
+		else if (diffPhi < -deltaPhi)
 			this._phi -= deltaPhi;
-		else 
+		else
 			this._phi = this._targetPhi;
 
-		if (diffTheta > deltaTheta) 
+		if (diffTheta > deltaTheta)
 			this._theta += deltaTheta;
-		else if (diffTheta < -deltaTheta) 
+		else if (diffTheta < -deltaTheta)
 			this._theta -= deltaTheta;
-		else 
+		else
 			this._theta = this._targetTheta;
 
-		if (diffDistance > deltaDistance) 
+		if (diffDistance > deltaDistance)
 			this._distance += deltaDistance;
-		else if (diffDistance < -deltaDistance) 
+		else if (diffDistance < -deltaDistance)
 			this._distance -= deltaDistance;
-		else 
+		else
 			this._distance = this._targetDistance;
 
-		if (diffPanX > deltaPanX) 
+		if (diffPanX > deltaPanX)
 			this._panX += deltaPanX;
-		else if (diffPanX < -deltaPanX) 
+		else if (diffPanX < -deltaPanX)
 			this._panX -= deltaPanX;
-		else 
-			this._panX	= this._targetPanX;	
+		else
+			this._panX = this._targetPanX;
 
-		if (diffPanY > deltaPanY) 
+		if (diffPanY > deltaPanY)
 			this._panY += deltaPanY;
-		else if (diffPanY < -deltaPanY) 
+		else if (diffPanY < -deltaPanY)
 			this._panY -= deltaPanY;
-		else 
-			this._panY	= this._targetPanY;
+		else
+			this._panY = this._targetPanY;
 
-		if (diffPanZ > deltaPanZ) 
+		if (diffPanZ > deltaPanZ)
 			this._panZ += deltaPanZ;
-		else if (diffPanZ < -deltaPanZ) 
+		else if (diffPanZ < -deltaPanZ)
 			this._panZ -= deltaPanZ;
-		else 
-			this._panZ	= this._targetPanZ;
-			
-		if(this._phi == this._targetPhi) 
+		else
+			this._panZ = this._targetPanZ;
+
+		if(this._phi == this._targetPhi)
 			if(this._theta == this._targetTheta)
 				if(this._distance == this._targetDistance)
 					if(this._panX == this._targetPanX)
 						if(this._panY == this._targetPanY)
-							if(this._panZ == this._targetPanZ)
-								this._isAnimating = false;
+							if(this._panZ == this._targetPanZ){
+								this._isAnimating = false; 
+								if(this._isAutoWalking) { this._pathPosNum++; this._isAutoWalking = false; this.animateToState(); }
+							}
 
 		this._computeMatrix();
 		return true;
 	},
 
-	get action()  { return this._action; },
+	set action(a) { if(this._action != a) { this._new_action = true; this._action = a; } },
 
-	set action(a) { if(this._action != a) this._new_action = true; this._action = a; },
+	get action() { return this._action; },
 
-	get matrix() { return this._matrix; },
+	get matrix() { this._computeMatrix(); return this._matrix; },
+
+	get distance() { return this._distance; },
 
 	reset : function () {
 		this._matrix = SglMat4.identity();
-		this._action = SGL_TRACKBALL_NO_ACTION
+		this._action = SGL_TRACKBALL_NO_ACTION;
+		this._new_action = true;
 
 		this._phi = this._startPhi;
 		this._theta = this._startTheta;
@@ -328,45 +378,50 @@ TurntablePanTrackball.prototype = {
 		this._panY = this._startPanY;
 		this._panZ = this._startPanZ;
 
+		this._pathPosNum = 0;
+
+		this._isAutoWalking = false;
 		this._isAnimating = false;
+
+		this._computeMatrix();
 	},
 
 	track : function(m, x, y, z) {
-        if(this._new_action) {
-            this._start[0] = x;
-		    this._start[1] = y;
-            this._new_action = false;
-        }
+		if(this._animationLocked && this._isAnimating) this._action = SGL_TRACKBALL_NO_ACTION;
+		if(this._new_action) {
+			this._start[0] = x;
+			this._start[1] = y;
+			this._new_action = false;
+		}
 
-        var dx = this._start[0] - x; 
-        var dy = this._start[1] - y;
-        this._start[0] = x;
-        this._start[1] = y;
-        
+		var dx = this._start[0] - x;
+		var dy = this._start[1] - y;
+		this._start[0] = x;
+		this._start[1] = y;
+
 		switch (this._action) {
 			case SGL_TRACKBALL_ROTATE:
-				this._isAnimating = false; //stopping animation
+				this._isAnimating = this._isAutoWalking = false; //stopping animation
 				this.rotate(m, dx, dy);
 			break;
 
 			case SGL_TRACKBALL_PAN:
-				this._isAnimating = false; //stopping animation
+				this._isAnimating = this._isAutoWalking = false; //stopping animation
 				this.pan(m, dx, dy);
 			break;
 
 			case SGL_TRACKBALL_SCALE:
-				this._isAnimating = false; //stopping animation
+				this._isAnimating = this._isAutoWalking = false; //stopping animation
 				this.scale(m, z);
 			break;
 
 			default:
 			break;
 		}
-        return this._computeMatrix();
+		return this._computeMatrix();
 	},
 
 	pan: function(m, dx, dy) {
-
 		//determining current X, Y and Z axis
 		var Xvec = [1.0, 0.0, 0.0, 1.0];
 		var Yvec = [0.0, 1.0, 0.0, 1.0];
@@ -378,32 +433,33 @@ TurntablePanTrackball.prototype = {
 		Yvec = SglMat4.mul4(SglMat4.rotationAngleAxis(this._theta, [1.0, 0.0, 0.0]), Yvec);
 		Zvec = SglMat4.mul4(SglMat4.rotationAngleAxis(this._theta, [1.0, 0.0, 0.0]), Zvec);
 
-		this._panX += (dx * Xvec[0]) + (dy * Xvec[1]);
-		this._panY += (dx * Yvec[0]) + (dy * Yvec[1]);
-		this._panZ += (dx * Zvec[0]) + (dy * Zvec[1]);
+		var panSpeed = Math.max(Math.min(1.5, this._distance),0.05);
+		this._panX += ((dx * Xvec[0]) + (dy * Xvec[1])) * panSpeed;
+		this._panY += ((dx * Yvec[0]) + (dy * Yvec[1])) * panSpeed;
+		this._panZ += ((dx * Zvec[0]) + (dy * Zvec[1])) * panSpeed;
 
 		//clamping
-		this._panX = this.clamp(this._panX, this._minMaxPanX[0], this._minMaxPanX[1]);
-		this._panY = this.clamp(this._panY, this._minMaxPanY[0], this._minMaxPanY[1]);
-		this._panZ = this.clamp(this._panZ, this._minMaxPanZ[0], this._minMaxPanZ[1]);
-    },
+		this._panX = this._clamp(this._panX, this._minMaxPanX[0], this._minMaxPanX[1]);
+		this._panY = this._clamp(this._panY, this._minMaxPanY[0], this._minMaxPanY[1]);
+		this._panZ = this._clamp(this._panZ, this._minMaxPanZ[0], this._minMaxPanZ[1]);
+	},
 
-    rotate: function(m, dx, dy) {
+	rotate: function(m, dx, dy) {
 		this._phi += dx;
 		if(this._limitPhi)
-			this._phi = this.clamp(this._phi, this._minMaxPhi[0], this._minMaxPhi[1]);
+			this._phi = this._clamp(this._phi, this._minMaxPhi[0], this._minMaxPhi[1]);
 
 		// avoid eternal accumulation of rotation, just for the sake of cleanliness
 		if (this._phi > 10.0) this._phi = this._phi - 10.0;
 		if (this._phi < -10.0) this._phi = this._phi + 10.0;
 
-		this._theta += dy; 
-		this._theta = this.clamp(this._theta, this._minMaxTheta[0], this._minMaxTheta[1]);
-    },
+		this._theta += dy;
+		this._theta = this._clamp(this._theta, this._minMaxTheta[0], this._minMaxTheta[1]);
+	},
 
 	scale : function(m, s) {
 		this._distance *= s;
-		this._distance = this.clamp(this._distance, this._minMaxDist[0], this._minMaxDist[1]);
+		this._distance = this._clamp(this._distance, this._minMaxDist[0], this._minMaxDist[1]);
 	}
 };
 /***********************************************************************/
