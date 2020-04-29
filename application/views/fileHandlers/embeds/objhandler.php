@@ -58,6 +58,8 @@ if(isset($fileContainers['ply']) && $fileContainers['ply']->ready) {
   <img id="zoomout"    title="Zoom Out"              src="/assets/3dviewer/skins/dark/zoomout.png"/><br/>
   <img id="light_on"   title="Disable Light Control" src="/assets/3dviewer/skins/dark/light_on.png" style="position:absolute; visibility:hidden;"/>
   <img id="light"      title="Enable Light Control"  src="/assets/3dviewer/skins/dark/light.png"/><br/>
+  <img id="lighting_off" title="Enable Lighting"      src="/assets/3dviewer/skins/dark/lighting_off.png" style="position:absolute; visibility:hidden;"/>
+  <img id="lighting"     title="Disable Lighting"     src="/assets/3dviewer/skins/dark/lighting.png"     /><br/>
    <img id="measure_on" title="Disable Measure Tool"  src="/assets/3dviewer/skins/dark/measure_on.png"
                                                           style="position:absolute; visibility:hidden;"/>
   <img id="measure"    title="Enable Measure Tool"   src="/assets/3dviewer/skins/dark/measure.png"/><br/>
@@ -125,7 +127,7 @@ function setup3dhop() {
   presenter.setScene({
     meshes: {
       "targetAsset" : { url: "<?=$targetAsset?>" },
-      "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
+      // "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
     },
     modelInstances : {
       "targetAsset" : {
@@ -134,12 +136,12 @@ function setup3dhop() {
     },
     spots : spotObjects,
     trackball: {
-      type : TurntablePanTrackball,
+      type : SphereTrackball,
       trackOptions : {
         startDistance : 2.0,
         minMaxDist    : [0.2, 15.0],
-        minMaxPhi: [-180, 180],
-        minMaxTheta   : [-170.0, 170.0]
+        // minMaxPhi: [-180, 180],
+        // minMaxTheta   : [-170.0, 170.0]
       }
     }
   });
@@ -160,6 +162,7 @@ function actionsToolbar(action) {
   else if(action=='zoomin') presenter.zoomIn();
   else if(action=='zoomout') presenter.zoomOut();
   else if(action=='light' || action=='light_on') { presenter.enableLightTrackball(!presenter.isLightTrackballEnabled()); lightSwitch(); }
+  else if(action=='lighting' || action=='lighting_off') { presenter.enableSceneLighting(!presenter.isSceneLightingEnabled()); lightingSwitch(); }
   else if(action=='measure' || action=='measure_on') { presenter.enableMeasurementTool(!presenter.isMeasurementToolEnabled()); measurementSwitch(); }
   else if(action=='hotspot'|| action=='hotspot_on') { presenter.toggleSpotVisibility(HOP_ALL, true); presenter.enableOnHover(!presenter.isOnHoverEnabled()); hotspotSwitch(); }
   else if(action=='full'  || action=='full_on') fullscreenSwitch();
