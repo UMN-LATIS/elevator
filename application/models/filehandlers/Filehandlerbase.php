@@ -587,8 +587,23 @@ class FileHandlerBase extends CI_Model {
         return PERM_DERIVATIVES_GROUP_2;
     }
 
-	function getEmedURL() {
-		$embedLink = instance_url("asset/getEmbed/" . $this->getObjectId() . "/null/true");
+	function getEmedURL($signURL = false) {
+		$append = "";
+		if($signURL && $this->user_model && $this->user_model->userLoaded) {
+			$apiKey = $this->user_model->getApiKey();
+			if(!$apiKey) {
+				$apiKey = $this->user_model->generateKeys();
+			}
+
+			if($apiKey) {
+				$authKey = $apiKey->getApiKey();
+				$timestamp = time();
+				$targetObject = $this->parentObjectId;
+				$signedString = sha1($timestamp . $targetObject.  $apiKey->getApiSecret());	
+				$append = "?" . http_build_query(["apiHandoff"=>$signedString, "authKey"=>$authKey, "timestamp"=>$timestamp, "targetObject"=>$targetObject]);
+			}
+		}
+		$embedLink = instance_url("asset/getEmbed/" . $this->getObjectId() . "/null/true" . $append);
 		$embedLink = str_replace("http:", "", $embedLink);
 		$embedLink = str_replace("https:", "", $embedLink);
 		return $embedLink;
