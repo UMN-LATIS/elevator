@@ -4,7 +4,7 @@
 function instance_url($target) {
 	$CI =& get_instance();
 	$queryString = null;
-	if($CI->instance && $CI->instance->queryHandoff) {
+	if($CI->instance && isset($CI->instance->queryHandoff)) {
 		$queryString = "?" . http_build_query($CI->instance->queryHandoff);
 	}
 	if(!$CI->config->item("instance_absolute")) {
@@ -25,6 +25,10 @@ function instance_redirect($target) {
 	$CI =& get_instance();
 	if(substr($target, 0,1) == "/") {
 		$target = substr($target, 1);
+	}
+	$queryString = null;
+	if($CI->instance && isset($CI->instance->queryHandoff)) {
+		$queryString = "?" . http_build_query($CI->instance->queryHandoff);
 	}
 
 	redirect($CI->config->item("instance_absolute") . $target . $queryString);

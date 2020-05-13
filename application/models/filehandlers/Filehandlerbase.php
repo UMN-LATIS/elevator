@@ -590,7 +590,7 @@ class FileHandlerBase extends CI_Model {
 	function getEmedURL($signURL = false) {
 		$append = "";
 		if($signURL && $this->user_model && $this->user_model->userLoaded) {
-			$apiKey = $this->user_model->getApiKey();
+			$apiKey = $this->user_model->getApiKeys()->first();
 			if(!$apiKey) {
 				$apiKey = $this->user_model->generateKeys();
 			}
