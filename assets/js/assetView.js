@@ -263,12 +263,15 @@ var loadView = function (e) {
 		lazyInstance.update();
 
 		if (needLoadNestedView) {
-			$.get(basePath + "asset/viewAssetMetadataOnly/" + objectId + "/" + parentObject, function (data) {
-				$("#embedView").append(data);
-				lazyElements = $("#embedView").find(".lazy");
-				lazyInstance.addItems(lazyElements);
-				lazyInstance.update();
-			});
+			setTimeout(function() {
+				$.get(basePath + "asset/viewAssetMetadataOnly/" + objectId + "/" + parentObject, function (data) {
+					$("#embedView").append(data);
+					lazyElements = $("#embedView").find(".lazy");
+					lazyInstance.addItems(lazyElements);
+					lazyInstance.update();
+				});
+			}, 100);
+			
 		}
 		lazyInstance.update();
 
