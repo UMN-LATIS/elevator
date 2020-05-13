@@ -2,7 +2,7 @@
 
 $fileObjectId = $fileObject->getObjectId();
 
-if(isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) { 
+if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) || $fileObject->sourceFile->getType() == "svs") { 
   $ratio = 0;
 }
 else {
