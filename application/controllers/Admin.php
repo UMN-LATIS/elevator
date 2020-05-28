@@ -227,24 +227,33 @@ class admin extends Admin_Controller {
 	}
 
 	public function regenerateFilesOfType($handlerClass, $inCollection = null) {
+		$collections = [495,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,595,596,597,598,599,600,601,602,603,604,605,606,607,614,615,620,621,624,625,630,633,635,636,637,638,639,643,644,645,652,653,657,658,660,661,662,665,667,704,705,715,755,756,757,770,771];
+		foreach($collections as $inCollection) {
+			echo "starting " . $inCollection . "\n";
+			$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass, "deleted"=>false, "collectionId"=>$inCollection]);
+			foreach($handlers as $handler) {
+				$collection = $this->collection_model->getCollection($handler->getCollectionId());
+				if(!$collection) {
+					echo "Bad Item: " . $handler->getFileObjectId() . "\n";
+					continue;
+				}
+				if($inCollection != $collection->getId()) {
+					continue;
+				}
 
-		$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass, "deleted"=>false]);
-		foreach($handlers as $handler) {
-			$collection = $this->collection_model->getCollection($handler->getCollectionId());
-			if(!$collection) {
-				echo "Bad Item: " . $handler->getFileObjectId() . "\n";
-				continue;
+				$instance = $collection->getInstances();
+				$this->instance = $instance[0];
+				echo "Regenerating " . $handler->getFileObjectId() . "\n";
+				$fileHandler = $this->filehandler_router->getHandledObject($handler->getFileObjectId());
+				if($fileHandler->sourceFile->getType() == "svs") {
+					echo "skipping\n";
+					continue;
+				}
+				$fileHandler->regenerate = true;
+				$fileHandler->save();
 			}
-			if($inCollection != $collection->getId()) {
-				continue;
-			}
-			$instance = $collection->getInstances();
-			$this->instance = $instance[0];
-			echo "Regenerating " . $handler->getFileObjectId() . "\n";
-			$fileHandler = $this->filehandler_router->getHandledObject($handler->getFileObjectId());
-			$fileHandler->regenerate = true;
-			$fileHandler->save();
 		}
+		
 		echo "done.\n";
 
 	}
