@@ -263,6 +263,7 @@ var loadView = function (e) {
 		lazyInstance.update();
 
 		if (needLoadNestedView) {
+			// delay loading the asest by 50ms to avoid session concurrency issue with the server
 			setTimeout(function() {
 				$.get(basePath + "asset/viewAssetMetadataOnly/" + objectId + "/" + parentObject, function (data) {
 					$("#embedView").append(data);
