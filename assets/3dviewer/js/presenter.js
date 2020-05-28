@@ -2719,6 +2719,7 @@ onMouseMove: function (x, y, e) {
 onMouseOut : function (x, y, e) {
 	var evt = document.createEvent("MouseEvents");
 	evt.initEvent("mouseup", true, true);
+	e.target.dispatchEvent(evt);
 	if(this._onHover) this._pickingRefresh(-1,-1);
 	this._clickable = false;
 },
