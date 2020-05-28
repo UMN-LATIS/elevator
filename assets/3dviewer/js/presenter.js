@@ -2710,13 +2710,15 @@ onDrag : function (button, x, y, e) {
 	if(diff) ui.postDrawEvent();
 },
 
-onMouseMove : function (x, y, e) {
+onMouseMove: function (x, y, e) {
 	if(e.target.id!=this.ui.gl.canvas.id) return;
 	if(this._onHover)
 		if (!this.ui.isDragging(0) && !this.ui.isDragging(1) && !this.ui.isDragging(2)) this._pickingRefresh(x, y);
 },
 
 onMouseOut : function (x, y, e) {
+	var evt = document.createEvent("MouseEvents");
+	evt.initEvent("mouseup", true, true);
 	if(this._onHover) this._pickingRefresh(-1,-1);
 	this._clickable = false;
 },
