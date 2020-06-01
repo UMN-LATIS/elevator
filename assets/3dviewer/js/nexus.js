@@ -1,20 +1,25 @@
 /*
 Nexus
-Copyright (c) 2012-2018, Visual Computing Lab, ISTI - CNR
+Copyright (c) 2012-2020, Visual Computing Lab, ISTI - CNR
 All rights reserved.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 */
 
 Nexus = function() {
@@ -39,8 +44,10 @@ for(i = 0; i < scripts.length; i++) {
 		}
 	}
 }
+
 var meco = null;
 function loadMeco() {
+
 	meco = new Worker(path.replace('nexus.js', 'meco.js'));
 
 	meco.onerror = function(e) { console.log(e); }
@@ -53,33 +60,37 @@ function loadMeco() {
 			normals  : sig.normals   ? 1 : 0,
 			indices  : sig.indices   ? 1 : 0
 		};
-		meco.postMessage({ 
+		meco.postMessage({
 			signature:signature,
-			node:{ nface: node.nface, nvert: node.nvert, buffer:node.buffer, request:this.count}, 
+			node:{ nface: node.nface, nvert: node.nvert, buffer:node.buffer, request:this.count},
 			patches:patches
 		});
+		node.buffer = null;
 		this.requests[this.count++] = node;
 	};
 	meco.onmessage = function(e) {
 		var node = this.requests[e.data.request];
+		delete this.requests[e.data.request];
 		node.buffer = e.data.buffer;
 		readyNode(node);
 	};
 }
 
 var corto = null;
-
 function loadCorto() {
-	corto = new Worker(path.replace('nexus.js', 'corto.js'));
+
+	corto = new Worker(path.replace('nexus.js', 'corto.em.js'));
 	corto.requests = {};
 	corto.count = 0;
 	corto.postRequest = function(node) {
-		corto.postMessage({ buffer: node.buffer, request:this.count, rgba_colors: true, short_normals: true });
+		corto.postMessage({ buffer: node.buffer, request:this.count, rgba_colors: true, short_index: true, short_normals: true});
+		node.buffer = null;
 		this.requests[this.count++] = node;
 	}
 	corto.onmessage = function(e) {
-		var node = this.requests[e.data.request];
-		node.buffer = e.data.buffer;
+		var request = e.data.request;
+		var node = this.requests[request];
+		delete this.requests[request];
 		node.model = e.data.model;
 		readyNode(node);
 	};
@@ -208,7 +219,7 @@ PriorityQueue.prototype = {
 		var data = this.data[n];
 		var error = this.error[n];
 		while (n > 0) {
-			var pN = ((n+1)>>1) -1; 
+			var pN = ((n+1)>>1) -1;
 			var pError = this.error[pN];
 			if(pError > error)
 				break;
@@ -255,20 +266,20 @@ PriorityQueue.prototype = {
 /* HEADER AND PARSING */
 
 var padding = 256;
-var Debug = { 
+var Debug = {
+	verbose : false,  //debug messages
 	nodes   : false,  //color each node
-	culling : false,  //visibility culling disabled
 	draw    : false,  //final rendering call disabled
-	extract : false,  //no extraction
-	request : false,  //no network requests
-	worker  : false   //no web workers
+	extract : false,  //extraction disabled
+//	culling : false,  //visibility culling disabled
+//	request : false,  //network requests disabled
+//	worker  : false   //web workers disabled
 };
 
 
 var glP = WebGLRenderingContext.prototype;
 var attrGlMap = [glP.NONE, glP.BYTE, glP.UNSIGNED_BYTE, glP.SHORT, glP.UNSIGNED_SHORT, glP.INT, glP.UNSIGNED_INT, glP.FLOAT, glP.DOUBLE];
 var attrSizeMap = [0, 1, 1, 2, 2, 4, 4, 4, 8];
-
 
 var targetError   = 2.0;
 var targetFps     = 15;
@@ -295,15 +306,15 @@ Mesh.prototype = {
 			0,
 			88,
 			function() {
-//				console.log("Loading header for " + mesh.url);
+				if(Debug.verbose) console.log("Loading header for " + mesh.url);
 				var view = new DataView(this.response);
 				view.offset = 0;
 				mesh.reqAttempt++;
 				var header = mesh.importHeader(view);
-				if(!header) { 
-					console.log("Empty header!");
+				if(!header) {
+					if(Debug.verbose) console.log("Empty header!");
 					if(mesh.reqAttempt < maxReqAttempt) mesh.open(mesh.url + '?' + Math.random()); // BLINK ENGINE CACHE BUG PATCH
-					return null;
+					return;
 				}
 				mesh.reqAttempt = 0;
 				for(i in header)
@@ -351,7 +362,7 @@ Mesh.prototype = {
 		mesh.httpRequest(
 			88,
 			end,
-			function() { mesh.handleIndex(this.response); },
+			function() { if(Debug.verbose) console.log("Loading index for " + mesh.url); mesh.handleIndex(this.response); },
 			function() { console.log("Index request error!");},
 			function() { console.log("Index request abort!");}
 		);
@@ -404,8 +415,8 @@ Mesh.prototype = {
 
 		t.vsize = 12 + (t.vertex.normal?6:0) + (t.vertex.color?4:0) + (t.vertex.texCoord?8:0);
 		t.fsize = 6;
-		//problem: I have no idea how much space a texture is needed in GPU. 10x factor assumed.
 
+		//problem: I have no idea how much space a texture is needed in GPU. 10x factor assumed.
 		var tmptexsize = new Uint32Array(n-1);
 		var tmptexcount = new Uint32Array(n-1);
 		for(var i = 0; i < n-1; i++) {
@@ -451,7 +462,7 @@ Mesh.prototype = {
 
 	importVertex: function(view) {	//enum POSITION, NORMAL, COLOR, TEXCOORD, DATA0
 		var e = this.importElement(view);
-		var color = e[2]; 
+		var color = e[2];
 		if(color) {
 			color.type = 2; //unsigned byte
 			color.glType = attrGlMap[2];
@@ -489,20 +500,20 @@ Mesh.prototype = {
 		h.nodesCount = getUint32(view);
 		h.patchesCount = getUint32(view);
 		h.texturesCount = getUint32(view);
-		h.sphere = { 
+		h.sphere = {
 			center: [getFloat32(view), getFloat32(view), getFloat32(view)],
 			radius: getFloat32(view)
 		};
 		return h;
 	}
-}; 
+};
 
 Instance = function(gl) {
 	this.gl = gl;
 	this.onLoad = function() {};
-	this.onUpdate = function() {};
+	this.onUpdate = null;
 	this.drawBudget = drawBudget;
-	this.attributes = { 'position':0, 'normal':1, 'color':2, 'uv':3 };
+	this.attributes = { 'position':0, 'normal':1, 'color':2, 'uv':3, 'size':4 };
 }
 
 Instance.prototype = {
@@ -561,9 +572,9 @@ Instance.prototype = {
 		matInv(t.modelViewProj, t.modelViewProjInv);
 
 		matInv(t.modelView, t.modelViewInv);
-		t.viewpoint[0] = t.modelViewInv[12]; 
+		t.viewpoint[0] = t.modelViewInv[12];
 		t.viewpoint[1] = t.modelViewInv[13];
-		t.viewpoint[2] = t.modelViewInv[14]; 
+		t.viewpoint[2] = t.modelViewInv[14];
 		t.viewpoint[3] = 1.0;
 
 
@@ -588,12 +599,12 @@ Instance.prototype = {
 		var r0 = (mi[0]  + mi[12 ])/r3;
 		var r1 = (mi[1]  + mi[13 ])/r3;
 		var r2 = (mi[2]  + mi[14 ])/r3;
- 
+
 		var l3 = -mi[3] + mi[15];
 		var l0 = (-mi[0]  + mi[12 ])/l3 - r0;
 		var l1 = (-mi[1]  + mi[13 ])/l3 - r1;
 		var l2 = (-mi[2]  + mi[14 ])/l3 - r2;
-		
+
 		var side = Math.sqrt(l0*l0 + l1*l1 + l2*l2);
 
 		//center of the scene is M'*(0, 0, 0, 1)
@@ -602,15 +613,21 @@ Instance.prototype = {
 		var c2 = mi[14]/mi[15] - t.viewpoint[2];
 		var dist = Math.sqrt(c0*c0 + c1*c1 + c2*c2);
 
-		t.resolution = (2*side/dist)/ t.viewport[2];
+		var resolution = (2*side/dist)/ t.viewport[2];
+		t.currentResolution == resolution ? t.sameResolution = true : t.sameResolution = false;
+		t.currentResolution = resolution;
 	},
 
 	traversal : function () {
 		var t = this;
+
 		if(Debug.extract == true)
 			return;
 
 		if(!t.isReady) return;
+
+		if(t.sameResolution)
+			if(!t.visitQueue.size && !t.nblocked) return;
 
 		var n = t.mesh.nodesCount;
 		t.visited  = new Uint8Array(n);
@@ -621,14 +638,13 @@ Instance.prototype = {
 		for(var i = 0; i < t.mesh.nroots; i++)
 			t.insertNode(i);
 
-		var candidatesCount = 0;
 		t.targetError = t.context.currentError;
 		t.currentError = 1e20;
 		t.drawSize = 0;
+		t.nblocked = 0;
 
-		var nblocked = 0;
 		var requested = 0;
-		while(t.visitQueue.size && nblocked < maxBlocked) {
+		while(t.visitQueue.size && t.nblocked < maxBlocked) {
 			var error = t.visitQueue.error[0];
 			var node = t.visitQueue.pop();
 			if ((requested < maxPending) && (t.mesh.status[node] == 0)) {
@@ -637,8 +653,8 @@ Instance.prototype = {
 			}
 
 			var blocked = t.blocked[node] || !t.expandNode(node, error);
-			if (blocked) 
-				nblocked++;
+			if (blocked)
+				t.nblocked++;
 			else {
 				t.selected[node] = 1;
 				t.currentError = error;
@@ -694,10 +710,10 @@ Instance.prototype = {
 		var sp = t.mesh.nspheres;
 		var off = node*5;
 		if(t.isVisible(sp[off], sp[off+1], sp[off+2], sp[off+3])) //expanded radius
-			t.drawSize += t.mesh.nvertices[node]*0.8; 
+			t.drawSize += t.mesh.nvertices[node]*0.8;
 			//we are adding half of the new faces. (but we are using the vertices so *2)
 
-		return true; 
+		return true;
 	},
 
 	nodeError : function (n, tight) {
@@ -719,9 +735,9 @@ Instance.prototype = {
 			dist = 0.1;
 
 		//resolution is how long is a pixel at distance 1.
-		var error = t.mesh.nerrors[n]/(t.resolution*dist); //in pixels
+		var error = t.mesh.nerrors[n]/(t.currentResolution*dist); //in pixels
 
-		if (!t.isVisible(cx, cy. cz, spheres[off+4]))
+		if (!t.isVisible(cx, cy, cz, spheres[off+4]))
 			error /= 1000.0;
 		return error;
 	},
@@ -742,20 +758,9 @@ Instance.prototype = {
 		var attr = t.attributes;
 
 		var vertexEnabled = gl.getVertexAttrib(attr.position, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
-		var normalEnabled = gl.getVertexAttrib(attr.normal, gl.VERTEX_ATTRIB_ARRAY_ENABLED);
-		var colorEnabled = attr.color >= 0? gl.getVertexAttrib(attr.color, gl.VERTEX_ATTRIB_ARRAY_ENABLED): false;
-		var uvEnabled = attr.uv >= 0? gl.getVertexAttrib(attr.uv, gl.VERTEX_ATTRIB_ARRAY_ENABLED): false;
-
-		gl.enableVertexAttribArray(attr.position);
-		if(m.vertex.texCoord && attr.uv >= 0) gl.enableVertexAttribArray(attr.uv);
-		if(m.vertex.normal && attr.normal >= 0) gl.enableVertexAttribArray(attr.normal);
-		if(m.vertex.color && attr.color >= 0) gl.enableVertexAttribArray(attr.color);
-		gl.vertexAttrib4fv(2, [0.8, 0.8, 0.8, 1.0]);
-
-		if(Debug.nodes) {
-			gl.disableVertexAttribArray(2);
-			gl.disableVertexAttribArray(3);
-		}
+		var normalEnabled = attr.normal >= 0? gl.getVertexAttrib(attr.normal, gl.VERTEX_ATTRIB_ARRAY_ENABLED): false;
+		var colorEnabled  = attr.color  >= 0? gl.getVertexAttrib(attr.color,  gl.VERTEX_ATTRIB_ARRAY_ENABLED): false;
+		var uvEnabled     = attr.uv     >= 0? gl.getVertexAttrib(attr.uv,     gl.VERTEX_ATTRIB_ARRAY_ENABLED): false;
 
 		var rendered = 0;
 		var last_texture = -1;
@@ -775,7 +780,7 @@ Instance.prototype = {
 			}
 
 
-			var sp = t.mesh.nspheres;
+			var sp = m.nspheres;
 			var off = n*5;
 			if(!t.isVisible(sp[off], sp[off+1], sp[off+2], sp[off+4])) //tight radius
 				continue;
@@ -784,29 +789,39 @@ Instance.prototype = {
 			if(t.mode != "POINT")
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.ibo[n]);
 
-			var nv = m.nvertices[n];
-
 			gl.vertexAttribPointer(attr.position, 3, gl.FLOAT, false, 12, 0);
-			var offset = nv*12;
-			if(m.vertex.texCoord && attr.uv >= 0)
-				gl.vertexAttribPointer(attr.uv, 2, gl.FLOAT, false, 8, offset), offset += nv*8;
-			if(m.vertex.normal && attr.normal >= 0)
-				gl.vertexAttribPointer(attr.normal, 3, gl.SHORT, true, 6, offset), offset += nv*6;
-			if(m.vertex.color && attr.color >= 0)
-				gl.vertexAttribPointer(attr.color, 4, gl.UNSIGNED_BYTE, true, 4, offset);
+			gl.enableVertexAttribArray(attr.position);
 
-			if (Debug.nodes) {
+			var nv = m.nvertices[n];
+			var offset = nv*12;
+
+			if(m.vertex.texCoord && attr.uv >= 0){
+				gl.vertexAttribPointer(attr.uv, 2, gl.FLOAT, false, 8, offset), offset += nv*8;
+				gl.enableVertexAttribArray(attr.uv);
+			}
+			if(m.vertex.color && attr.color >= 0){
+				gl.vertexAttribPointer(attr.color, 4, gl.UNSIGNED_BYTE, true, 4, offset), offset += nv*4;
+				gl.enableVertexAttribArray(attr.color);
+			}
+			if(m.vertex.normal && attr.normal >= 0){
+				gl.vertexAttribPointer(attr.normal, 3, gl.SHORT, true, 6, offset);
+				gl.enableVertexAttribArray(attr.normal);
+			}
+
+			if(Debug.nodes) {
+				gl.disableVertexAttribArray(2);
+				gl.disableVertexAttribArray(3);
+
 				var error = t.nodeError(n, true);
-				var palette = { 
-					1: [1, 1, 1, 1],
-					2: [0.5, 1, 1, 1],
-					4: [0, 1, 1, 1],
-					8: [0, 1, 0.5, 1],
-					12: [0, 1, 0, 1],
-					16: [0, 1, 0, 1],
-					20: [1, 1, 0, 1],
-					30: [1, 0.5, 0, 1],
-					1e20: [1, 0, 0, 1] };
+				var palette = {
+					1:    [1, 1, 1, 1], //white
+					2:    [1, 0, 1, 1], //magenta
+					4:    [0, 1, 1, 1], //cyan
+					8:    [1, 1, 0, 1], //yellow
+					16:   [0, 0, 1, 1], //blue
+					32:   [0, 1, 0, 1], //green
+					64:   [1, 0, 0, 1]  //red
+				};
 
 				for(i in palette)
 					if(i > error) {
@@ -819,15 +834,21 @@ Instance.prototype = {
 			if (Debug.draw) continue;
 
 			if(t.mode == "POINT") {
-				var pointsize = Math.ceil(0.30*t.currentError);
-				if(pointsize > 2) pointsize = 2;
-				gl.vertexAttrib1fv(4, [pointsize]);
-
+				var pointsize = t.pointsize;
 				var error = t.nodeError(n);
-				var fraction = (error/t.currentError - 1);
-				if(fraction > 1) fraction = 1;
+				if(!pointsize)
+					var pointsize = Math.ceil(1.2* Math.min(error, 5));
 
-				var count = fraction * nv;
+				if(typeof attr.size == 'object') { //threejs pointcloud rendering
+					gl.uniform1f(attr.size, t.pointsize);
+					gl.uniform1f(attr.scale, t.pointscale);
+				} else
+					gl.vertexAttrib1fv(attr.size, [pointsize]);
+
+//				var fraction = (error/t.currentError - 1);
+//				if(fraction > 1) fraction = 1;
+
+				var count = nv;
 				if(count != 0) {
 					if(m.vertex.texCoord) {
 						var texid = m.patches[m.nfirstpatch[n]*3+2];
@@ -850,11 +871,11 @@ Instance.prototype = {
 			for (var p = m.nfirstpatch[n]; p < m.nfirstpatch[n+1]; ++p) {
 				var child = m.patches[p*3];
 
-				if(!t.selected[child]) { 
+				if(!t.selected[child]) {
 					end = m.patches[p*3+1];
-					if(p < last) //if textures we do not join. TODO: should actually check for same texture of last one. 
+					if(p < last) //if textures we do not join. TODO: should actually check for same texture of last one.
 						continue;
-				} 
+				}
 				if(end > offset) {
 					if(m.vertex.texCoord) {
 						var texid = m.patches[p*3+2];
@@ -870,9 +891,10 @@ Instance.prototype = {
 				}
 				offset = m.patches[p*3+1];
 			}
-		} 
+		}
 
 		t.context.rendered += rendered;
+
 		if(!vertexEnabled) gl.disableVertexAttribArray(attr.position);
 		if(!normalEnabled && attr.normal >= 0) gl.disableVertexAttribArray(attr.normal);
 		if(!colorEnabled && attr.color >= 0) gl.disableVertexAttribArray(attr.color);
@@ -896,11 +918,11 @@ var contexts = [];
 function getContext(gl) {
 	var c = null;
 	if(!gl.isTexture) throw "Something wrong";
-	contexts.forEach(function(g) { 
+	contexts.forEach(function(g) {
 		if(g.gl == gl) c = g;
 	});
 	if(c) return c;
-	c = { gl:gl, meshes:[], frame:0, cacheSize:0, candidates:[], pending:0, 
+	c = { gl:gl, meshes:[], frame:0, cacheSize:0, candidates:[], pending:0,
 		targetFps: targetFps, targetError: targetError, currentError: targetError };
 	contexts.push(c);
 	return c;
@@ -919,11 +941,12 @@ function beginFrame(gl, fps) { //each context has a separate frame count.
 			c.currentError *= 1.05;
 		if(r < 0.9)
 			c.currentError *= 0.95;
-	
+
 		if(c.currentError < c.targetError)
 			c.currentError = c.targetError;
 		if(c.currentError > 10) c.currentError = 10;
-	}
+	} else
+		c.currentError = c.targetError;
 //	console.log("current", c.currentError, "fps", fps, "targetFps", c.targetFps, "rendered", c.rendered);
 	c.rendered = 0;
 }
@@ -937,11 +960,10 @@ function removeNode(context, node) {
 	var m = node.mesh;
 	if(m.status[n] == 0) return;
 
-//	console.log("Removing " + m.url + " node: " + n);
+	if(Debug.verbose) console.log("Removing " + m.url + " node: " + n);
 	m.status[n] = 0;
 
 	if (m.georeq.readyState != 4) m.georeq.abort();
-	if (m.texreq.readyState != 4) m.texreq.abort();
 
 	context.cacheSize -= m.nsize[n];
 	context.gl.deleteBuffer(m.vbo[n]);
@@ -949,6 +971,7 @@ function removeNode(context, node) {
 	m.vbo[n] = m.ibo[n] = null;
 
 	if(!m.vertex.texCoord) return;
+	if (m.texreq && m.texreq.readyState != 4) m.texreq.abort();
 	var tex = m.patches[m.nfirstpatch[n]*3+2]; //TODO assuming one texture per node
 	m.texref[tex]--;
 
@@ -987,11 +1010,11 @@ function requestNodeGeometry(context, node) {
 		m.noffsets[n+1],
 		function() { loadNodeGeometry(this, context, node); },
 		function() {
-//			console.log("Geometry request error!"); 
+			if(Debug.verbose) console.log("Geometry request error!");
 			recoverNode(context, node, 0);
 		},
 		function() {
-//			console.log("Geometry request abort!"); 
+			if(Debug.verbose) console.log("Geometry request abort!");
 			removeNode(context, node);
 		},
 		'arraybuffer'
@@ -1010,16 +1033,17 @@ function requestNodeTexture(context, node) {
 		return;
 
 	m.status[n]++; //pending
+
 	m.texreq = m.httpRequest(
 		m.textures[tex],
 		m.textures[tex+1],
 		function() { loadNodeTexture(this, context, node, tex); },
-		function() { 
-//			console.log("Texture request error!");
+		function() {
+			if(Debug.verbose) console.log("Texture request error!");
 			recoverNode(context, node, 1);
 		},
-		function() { 
-//			console.log("Texture request abort!");
+		function() {
+			if(Debug.verbose) console.log("Texture request abort!");
 			removeNode(context, node);
 		},
 		'blob'
@@ -1034,21 +1058,21 @@ function recoverNode(context, node, id) {
 	m.status[n]--;
 
 	if(node.reqAttempt > maxReqAttempt) {
-//		console.log("Max request limit for " + m.url + " node: " + n);
+		if(Debug.verbose) console.log("Max request limit for " + m.url + " node: " + n);
 		removeNode(context, node);
 		return;
 	}
 
 	node.reqAttempt++;
 
-	switch (id){ 
+	switch (id){
 		case 0:
-			requestNodeGeometry(context, node); 
-			console.log("Recovering geometry for " + m.url + " node: " + n);
+			requestNodeGeometry(context, node);
+			if(Debug.verbose) console.log("Recovering geometry for " + m.url + " node: " + n);
 			break;
 		case 1:
-			requestNodeTexture(context, node); 
-			console.log("Recovering texture for " + m.url + " node: " + n);
+			requestNodeTexture(context, node);
+			if(Debug.verbose) console.log("Recovering texture for " + m.url + " node: " + n);
 			break;
 	}
 }
@@ -1088,8 +1112,8 @@ function loadNodeTexture(request, context, node, texid) {
 	img.src = urlCreator.createObjectURL(blob);
 
 	var gl = context.gl;
-	img.onload = function() { 
-		urlCreator.revokeObjectURL(img.src); 
+	img.onload = function() {
+		urlCreator.revokeObjectURL(img.src);
 
 		var flip = gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -1100,6 +1124,7 @@ function loadNodeTexture(request, context, node, texid) {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
 
 		m.status[n]--;
@@ -1108,7 +1133,7 @@ function loadNodeTexture(request, context, node, texid) {
 			m.status[n]--; //ready
 			node.reqAttempt = 0;
 			node.context.pending--;
-			node.instance.onUpdate();
+			node.instance.onUpdate && node.instance.onUpdate();
 			updateCache(gl);
 		}
 	}
@@ -1148,40 +1173,61 @@ function readyNode(node) {
 	var indices;
 
 	if(!m.corto) {
-		vertices = new Uint8Array(node.buffer, 0, nv*m.vsize);
-		//dangerous alignment 16 bits if we had 1b attribute
 		indices  = new Uint8Array(node.buffer, nv*m.vsize,  nf*m.fsize);
-		if(nf == 0) {
-			var off = nv*12;
-			var v = new Float32Array(node.buffer, 0, nv*3);
+		vertices = new Uint8Array(nv*m.vsize);
+		var view = new Uint8Array(node.buffer, 0, nv*m.vsize);
+		var v = view.subarray(0, nv*12);
+		vertices.set(v);
+		var off = nv*12;
+		if(m.vertex.texCoord) {
+			var uv = view.subarray(off, off + nv*8);
+			vertices.set(uv, off);
+			off += nv*8;
+		}
+		if(m.vertex.normal && m.vertex.color) {
+			var no = view.subarray(off, off + nv*6);
+			var co = view.subarray(off + nv*6, off + nv*6 + nv*4);
+			vertices.set(co, off);
+			vertices.set(no, off + nv*4);
+		}
+		else {
 			if(m.vertex.normal) {
-				var no = new Int16Array(node.buffer, off, nv*3); off += nv*6;
+				var no = view.subarray(off, off + nv*6);
+				vertices.set(no, off);
 			}
 			if(m.vertex.color) {
-				var co = new Uint8Array(node.buffer, off, nv*4);
+				var co = view.subarray(off, off + nv*4);
+				vertices.set(co, off);
 			}
-			scramble(nv, v, no, co);
 		}
 	} else {
 		indices = node.model.index;
 		vertices = new ArrayBuffer(nv*m.vsize);
 		var v = new Float32Array(vertices, 0, nv*3);
-		v.set(model.position, 0, nv*3);
+		v.set(model.position);
 		var off = nv*12;
 		if(model.uv) {
 			var uv = new Float32Array(vertices, off, nv*2);
-			uv.set(model.uv); off += nv*8;
-		}
-		if(model.normal) {
-			var no = new Int16Array(vertices, off, nv*3);
-			no.set(model.normal); off += nv*6; 
+			uv.set(model.uv);
+			off += nv*8;
 		}
 		if(model.color) {
 			var co = new Uint8Array(vertices, off, nv*4);
-			co.set(model.color); off += nv*4;  
+			co.set(model.color);
+			off += nv*4;
 		}
-		if(nf == 0)
-			scramble(nv, v, no, co);
+		if(model.normal) {
+			var no = new Int16Array(vertices, off, nv*3);
+			no.set(model.normal);
+		}
+	}
+
+	if(nf == 0)
+		scramble(nv, v, no, co);
+
+	if(n == 1) {
+		m.basev = new Float32Array(vertices, 0, nv*3);
+		m.basei = new Uint16Array(indices, 0, nf*3);
 	}
 
 	var gl = node.context.gl;
@@ -1198,9 +1244,14 @@ function readyNode(node) {
 		m.status[n]--; //ready
 		node.reqAttempt = 0;
 		node.context.pending--;
-		node.instance.onUpdate();
+		node.instance.onUpdate && node.instance.onUpdate();
 		updateCache(gl);
 	}
+}
+
+function flush(context, mesh) {
+	for(var i = 0; i < mesh.nodesCount; i++)
+		removeNode(context, {mesh:mesh, id: i });
 }
 
 function updateCache(gl) {
@@ -1219,7 +1270,7 @@ function updateCache(gl) {
 		context.meshes.forEach(function(m) {
 			var n = m.nodesCount;
 			for(i = 0; i < n; i++)
-				if(!worst || (m.status[i] == 1 && m.errors[i] < worst.error))
+				if(m.status[i] == 1 && (!worst ||  m.errors[i] < worst.error))
 					worst = {error: m.errors[i], frame: m.frames[i], mesh:m, id:i};
 		});
 
@@ -1251,7 +1302,7 @@ function setMaxCacheSize(gl, size) {
 }
 
 return { Mesh: Mesh, Renderer: Instance, Renderable: Instance, Instance:Instance,
-	Debug: Debug, contexts: contexts, beginFrame:beginFrame, endFrame:endFrame, 
+	Debug: Debug, contexts: contexts, beginFrame:beginFrame, endFrame:endFrame, updateCache: updateCache, flush: flush,
 	setTargetError:setTargetError, setTargetFps:setTargetFps, setMaxCacheSize:setMaxCacheSize };
 
 }();

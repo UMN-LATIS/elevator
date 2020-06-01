@@ -1,7 +1,7 @@
 /*
 3DHOP - 3D Heritage Online Presenter
-Copyright (c) 2014-2018, Visual Computing Lab, ISTI - CNR
-All rights reserved.    
+Copyright (c) 2014-2020, Visual Computing Lab, ISTI - CNR
+All rights reserved.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -105,21 +105,31 @@ function init3dhop() {
 	}
 
 	$(window).on('resize', function () {
-		if (!presenter._resizable) return;
+//		if (!presenter._resizable) return;
 
 		var width, height;
-		width = Math.max(document.documentElement.clientWidth, window.innerWidth);
-		(isIOS()) ? (height = document.documentElement.clientHeight) : (height = window.innerHeight); //IOS DEVICES CHECK
+
+		if(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement ) {
+			width = Math.max(document.documentElement.clientWidth, window.innerWidth);
+			height = window.innerHeight;
+		}
+		else {
+			width = $('#3dhop').parent().width();
+			height = $('#3dhop').parent().height();
+		}
 
 		resizeCanvas(width,height);
 
 		presenter.ui.postDrawEvent();
 	});
 
-	$(window).on('load mouseup touchend pointerup dragend', function() { //focus handler
-		var x = window.scrollX, y = window.scrollY;
-		$('#draw-canvas').focus();
-		window.scrollTo(x, y);
+	$('.close').mouseenter( function() {
+		$('.close').css("display", "none");
+		$('.close_on').css("display", "inline");
+	});
+	$('.close_on').mouseleave( function() {
+		$('.close_on').css("display", "none");
+		$('.close').css("display", "inline");
 	});
 
 	resizeCanvas($('#3dhop').parent().width(),$('#3dhop').parent().height());
@@ -130,7 +140,8 @@ function init3dhop() {
 }
 
 function set3dhlg() {
-  $('#tdhlg').html("Powered by 3DHOP</br>&nbsp;C.N.R. &nbsp;&ndash;&nbsp; I.S.T.I.");
+  $('#tdhlg').css({right:2, bottom:2});
+  $('#tdhlg').html("Powered by 3DHOP</br>CNR &nbsp;&ndash;&nbsp; ISTI");
   $('#tdhlg').mouseover(function() {
 	 $('#tdhlg').animate({ 
 		height: "25px"
@@ -252,6 +263,20 @@ function cameraSwitch(on) {
   else{
     $('#orthographic').css("visibility", "hidden");
     $('#perspective').css("visibility", "visible");
+  }
+}
+
+
+function helpSwitch(on) {
+  if(on === undefined) on = $('#help').css("visibility")=="visible";
+
+  if(on) {
+	$('#help').css("visibility", "hidden");
+	$('#help_on').css("visibility", "visible");
+  }
+  else {
+	$('#help_on').css("visibility", "hidden");
+	$('#help').css("visibility", "visible");
   }
 }
 
@@ -440,8 +465,8 @@ function enterFullscreen() {
 
   presenter._nativeWidth  = presenter.ui.width;
   presenter._nativeHeight = presenter.ui.height;
-  presenter._nativeResizable = presenter._resizable;
-  presenter._resizable = true;
+//  presenter._nativeResizable = presenter._resizable;
+//  presenter._resizable = true;
 
   var viewer = $('#3dhop')[0];
   if (viewer.msRequestFullscreen) viewer.msRequestFullscreen();
@@ -458,13 +483,19 @@ function exitFullscreen() {
   if (isIOS()) return; //IOS DEVICES CHECK
 
   resizeCanvas(presenter._nativeWidth,presenter._nativeHeight)
-  presenter._resizable = presenter._nativeResizable;
+//  presenter._resizable = presenter._nativeResizable;
 
   if (document.msExitFullscreen) document.msExitFullscreen();
   else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
   else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
 
   presenter.ui.postDrawEvent(); 
+}
+
+function showPanel(id) {
+    $('#cover').css("display", "table");
+    $('.panel').css("display", "none");
+    $('#'+id).css("display", "table");
 }
 
 /*DEPRECATED*/
@@ -523,14 +554,14 @@ function resizeCanvas(w,h) {
   $('#3dhop').css('width', w);
   $('#3dhop').css('height', h);
 
-  if (!presenter) return;
+//  if (!presenter) return;
 
-  var width, height;
-  width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-  (isIOS()) ? (height = document.documentElement.clientHeight) : (height = window.innerHeight); //IOS DEVICES CHECK
+//  var width, height;
+//  width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+//  (isIOS()) ? (height = document.documentElement.clientHeight) : (height = window.innerHeight); //IOS DEVICES CHECK
 
-  if (width != w || height != h) presenter._resizable = false;
-  else presenter._resizable = true;
+//  if (width != w || height != h) presenter._resizable = false;
+//  else presenter._resizable = true;
 }
 
 function anchorPanels() {
