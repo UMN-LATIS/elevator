@@ -10,6 +10,7 @@ class Related_asset_contents extends Widget_contents_base {
 	public $relatedObjectId = null;
 	public $relatedObjectTitle = null;
 	public $cachedPrimaryHandler = null;
+	public $readyForDisplay = false;
 
 	public function __construct()
 		{

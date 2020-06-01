@@ -161,13 +161,13 @@ class Asset_template extends CI_Model {
 		
 
 		if($this->displayInline) {
-			$pageHTML .= $this->load->view("templateFormHeaderInline", $data, TRUE);
+			$pageHTML .= $this->load->view("assetManager/templateFormHeaderInline", $data, TRUE);
 		}
 		else {
-			$pageHTML .= $this->load->view("templateFormHeader", $data, TRUE);
+			$pageHTML .= $this->load->view("assetManager/templateFormHeader", $data, TRUE);
 		}
 		$pageHTML .= $widgetHTML;
-		$pageHTML .= $this->load->view("templateFormFooter", "", TRUE);
+		$pageHTML .= $this->load->view("assetManager/templateFormFooter", "", TRUE);
 		return $pageHTML;
 	}
 

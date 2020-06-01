@@ -31,7 +31,7 @@ class Drawers extends Instance_Controller {
 		$this->user_model->addRecentDrawer($this->doctrine->em->find('Entity\Drawer', $drawerId));
 
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
-		$this->template->content->view("search", ["drawerMode"=>true, "orderBy"=>$drawer->getSortBy()]);
+		$this->template->content->view("search/search", ["drawerMode"=>true, "orderBy"=>$drawer->getSortBy()]);
 
 		$this->template->javascript->add("//maps.google.com/maps/api/js?key=". $this->config->item("googleApi") ."&libraries=geometry");
 

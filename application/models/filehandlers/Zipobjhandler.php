@@ -411,6 +411,12 @@ rnd.resolution_y = int(2000)
 	 * Override the parent handler and return the obj_handler
 	 */
 
+	public function getEmbedView($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		$uploadWidget = $this->getUploadWidget();
+		return $this->load->view("fileHandlers/embeds/objhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
 	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
 
 		if(!$this->parentObject && $this->parentObjectId) {
@@ -430,7 +436,7 @@ rnd.resolution_y = int(2000)
 
 		}
 
-		return $this->load->view("fileHandlers/" . "objhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+		return $this->load->view("fileHandlers/chrome/" . "objhandler_chrome", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
 	}
 
 }

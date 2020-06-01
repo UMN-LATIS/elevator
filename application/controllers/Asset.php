@@ -76,8 +76,6 @@ class asset extends Instance_Controller {
 		}
 		else {
 		// for subclipping movies
-			$this->template->loadJavascript(["excerpt"]);
-
 
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
@@ -105,7 +103,6 @@ class asset extends Instance_Controller {
 		}
 
 		$embed = $this->loadAssetView($assetModel);
-		$this->template->loadJavascript(["excerpt"]);
 		$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "embed"=>$embed, 'firstAsset'=>null]);
 		$this->template->publish();
 
@@ -142,13 +139,16 @@ class asset extends Instance_Controller {
 
 		$fileHandler->loadByObjectId($excerpt->getExcerptAsset());
 
-		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
+		
 
 		if($embedLink) {
 			$this->template->set_template("noTemplate");
+			$embed = "<iframe class='videoEmbedFrame' src='" . $fileHandler->getEmedURL() . "' width=100% height=100%></iframe>";
+		}
+		else {
+			$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
 		}
 
-		$this->template->loadJavascript(["excerpt"]);
 		$this->template->content->view("asset/excerpt", ["isEmbedded"=>$embedLink, "asset"=>$assetModel, "embed"=>$embed, "startTime"=>$excerpt->getExcerptStart(), "endTime"=>$excerpt->getExcerptEnd(),"excerptId"=>$excerpt->getId(), "label"=>$excerpt->getExcerptLabel()]);
 		$this->template->publish();
 
@@ -217,14 +217,40 @@ class asset extends Instance_Controller {
 
 	}
 
+	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		$embed = $this->loadAssetView($assetModel, $fileHandler);
+		echo $embed;
+		return;
+	}
+
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
 
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		
+		try {
+			$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
+		}
+		catch (exception $e) {
+
+		}
+		
+		$includeOriginal = $this->getAllowOriginal($fileHandler);
+
+		$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
+		$this->template->set_template("noTemplate");
+		$this->template->loadJavascript(["embedTriggers"]);
+		$this->template->content = $embed;
+		$this->template->title = $assetModel->getAssetTitle(true);
+		$this->template->publish();
+	}
+
+	private function getComputedAsset($fileObjectId, $parentObject) {
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 		if(!$fileHandler) {
 			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
 			if($embedded) {
 				$this->template->set_template("noTemplate");
-				$this->template->loadJavascript(["excerpt"]);
 				$this->template->content = $embed;
 				$this->template->publish();
 			}
@@ -285,42 +311,17 @@ class asset extends Instance_Controller {
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
-
-		$embed = $this->loadAssetView($assetModel, $fileHandler, $embedded);
-		if($embedded) {
-			$this->template->set_template("noTemplate");
-			$this->template->loadJavascript(["excerpt", "embedTriggers"]);
-			$this->template->content = $embed;
-			$this->template->title = $assetModel->getAssetTitle(true);
-			$this->template->publish();
-		}
-		else {
-			echo $embed;
-		}
+		return [$assetModel, $fileHandler];
 	}
 
-
-	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
-
+	public function getAllowOriginal($fileHandler) {
 		$requiredAccessLevel = PERM_NOPERM;
-
-		try {
-			if($fileHandler == null) {
-				$fileHandler = $assetModel->getPrimaryFilehandler();
-			}
-			if($fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
-				$requiredAccessLevel = $fileHandler->getPermission();
-			}
-			else {
-				$requiredAccessLevel = PERM_ORIGINALS;
-			}
+		if($fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
+			$requiredAccessLevel = $fileHandler->getPermission();
 		}
-		catch (Exception $e) {
-			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
+		else {
+			$requiredAccessLevel = PERM_ORIGINALS;
 		}
-
-
-
 		// This is hacky and should be refactored - if the user can view the originals, we need to let the view know.
 		if($this->accessLevel>= $requiredAccessLevel) {
 			$includeOriginal=true;
@@ -328,6 +329,25 @@ class asset extends Instance_Controller {
 		else {
 			$includeOriginal=false;
 		}
+		return $includeOriginal;
+	}
+
+	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
+
+	
+
+		try {
+			if($fileHandler == null) {
+				$fileHandler = $assetModel->getPrimaryFilehandler();
+			}
+		}
+		catch (Exception $e) {
+			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
+		}
+
+		$includeOriginal = $this->getAllowOriginal($fileHandler);
+
+		
 
 		if($fileHandler) {
 			try {

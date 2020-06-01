@@ -32,6 +32,15 @@ $(window).bind('beforeunload', function(){
 	}
 });
 
+$(document).ready(function () {
+	$(document).on("change", ".mainWidgetEntry", function (e) {
+		showHaveEntries();
+		markSaveDirty();
+	});
+
+});
+
+
 /**
  * Add checkmarks to sidebar if there's content in their
  */
@@ -84,14 +93,12 @@ var showHaveEntries = function() {
 
 };
 
-$(document).ready(function() {
-	$(document).on("change", ".mainWidgetEntry", function(e) {
-		showHaveEntries();
-		markSaveDirty();
-	});
-
+/**
+ * Add an additional element
+ */
+$(document).on("click", ".addAnother", function (e) {
+	addAnother(this);
 });
-
 
 var addAnother = function(target, needed) {
 	if(!needed) {
@@ -128,13 +135,6 @@ var addAnother = function(target, needed) {
 	return returnInfo; // only returns if this is sync
 };
 
-
-/**
- * Add an additional element
- */
-$(document).on("click", ".addAnother",function(e) { addAnother(this); });
-
-
 // we disable tincyMCE while dragging, otherwise it fails after the drag.
 // 
 var buildSortable = function() {
@@ -166,8 +166,6 @@ function testUnsetIframes() {
 		if($(this).attr("src").indexOf("editAsset") === -1) {
 			fail = true;
 		}
-		
-
 	});
 	if(fail) {
 		bootbox.dialog({
@@ -186,8 +184,6 @@ $(document).on("click", ".moveUp", function() {
 		var current = $(this).closest(".widgetContentsContainer");
 		current.prevAll(".widgetContentsContainer:first").before(current);
 	}
-		
-
 });
 
 $(document).on("click", ".moveDown", function() {
@@ -195,8 +191,6 @@ $(document).on("click", ".moveDown", function() {
 		var current = $(this).closest(".widgetContentsContainer");
 		current.nextAll(".widgetContentsContainer:first").after(current);	
 	}
-	
-
 });
 
 function updateNames($list) {

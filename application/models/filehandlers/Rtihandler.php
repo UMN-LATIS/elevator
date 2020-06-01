@@ -97,8 +97,8 @@ class RTIHandler extends FileHandlerBase {
 
 		
 		$options = "cd " . $extractedPath . "; " . $rtiPath . " " . $destinationName;
-
 		exec($options);
+
 		if(file_exists($extractedPath . "/" . "info.xml")) {
 			$fileContents = file_get_contents($extractedPath . "/" . "info.xml");
 			$info = new SimpleXMLElement($fileContents);
@@ -153,7 +153,7 @@ class RTIHandler extends FileHandlerBase {
 				$targetDerivativeURL = $tiled->getProtectedURLForFile("/1_3.jpg");
 			}
 		}
-
+		
 
 		
 		$targetDerivativeFile = $tiled->getPathToLocalFile();

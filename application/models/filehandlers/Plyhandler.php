@@ -150,6 +150,22 @@ class PlyHandler extends FileHandlerBase {
 	}
 
 
+	/**
+	 * Overriding so we can use the OBJ handler
+	 */
+	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		$uploadWidget = $this->getUploadWidget();
+
+		return $this->load->view("fileHandlers/chrome/objhandler_chrome", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
+	public function getEmbedView($fileContainerArray, $includeOriginal=false, $embedded=false) {
+
+		$uploadWidget = $this->getUploadWidget();
+		return $this->load->view("fileHandlers/embeds/objhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
 
 }
 

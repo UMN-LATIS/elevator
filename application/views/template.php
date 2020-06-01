@@ -24,7 +24,7 @@ function inIframe () {
 }
 
 function popitup() {
-  newwindow=window.open("https://" + window.location.hostname + "/autoclose.html",'name','height=200,width=150');
+  newwindow=window.open("https://" + window.location.hostname + "/autoclose.php",'name','height=200,width=150');
 
   setTimeout(function() { location.reload();}, 1200);
   return false;
@@ -301,7 +301,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-label="Log In"><span class="glyphicon glyphicon-user"><b class="caret"></b></span><span class="signInLink">Sign In</span></a>
           <ul class="dropdown-menu">
             <?if(isset($this->instance) && $this->instance->getUseCentralAuth()):?>
-            <li class="universityAuth"><a class="loginLink" href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>"><?=$this->config->item("remoteLoginLabel")?> User</a></li>
+            <li class="universityAuth"><a class="loginLink centralAuthLink" href="<?=instance_url("loginManager/remoteLogin/?redirect=".current_url())?>"><?=$this->config->item("remoteLoginLabel")?> User</a></li>
             <?endif?>
             <li><a class="loginLink" href="<?=instance_url("loginManager/localLogin/?redirect=".current_url())?>"><?=$this->config->item("guestLoginLabel")?> User</a></li>
             <script>
@@ -309,8 +309,13 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
               $('.loginLink').each(function(index, el) {
                 $(el).attr('href', $(el).attr('href') + window.location.hash.replace("#","%23"));  
               });
-              
             }
+            $(document).on("click", ".centralAuthLink", function(e) {
+              if(!document.cookie) {
+                  e.preventDefault();
+                  document.body.innerHTML = "To login to this page, please click the button below.  If you continue to encounter this issue, your web browser may be blocking cookies.  <input type=button value='Reload with Cookies' onClick='makeRequestWithUserGesture();'>";
+              }
+            });
             </script>
           </ul>
         </li>
