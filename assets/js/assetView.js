@@ -197,12 +197,15 @@ var registerHandlers = function() {
  */
 
 
-var resizeElement = function() {
+var resizeElement = function(maxHeight) {
 	var ratio = $(".embedAsset").data("ratio");
+	if (!maxHeight) {
+		maxHeight = 0.7;
+	}
 	if(!isNaN(ratio)) {
 		targetHeight = $(".embedAsset").width() / ratio;
-		if(targetHeight > $(window).height() * 0.7) {
-			targetHeight = $(window).height() * 0.7;
+		if (targetHeight > $(window).height() * maxHeight) {
+			targetHeight = $(window).height() * maxHeight;
 		}
 		$(".embedAsset").height(targetHeight);
 	}
@@ -439,3 +442,29 @@ var loadMoreLikeThis = function (e) {
 		}
 	});
 };
+
+
+
+// Lightbox code
+
+$(document).on("click", ".triggerLightbox", function() {
+	$(".embedAsset").addClass("lightboxAsset");
+	
+	$(".lightboxContainer").css("display","block");
+	resizeElement("0.9");
+});
+
+$(document).on("click", ".lightboxCloseButton", function() { triggerClose() });
+$(document).on("click", ".lightboxContainer", function () {
+	triggerClose();
+});
+$(document).on('keydown', function (event) {
+		if (event.key == "Escape") { 
+			triggerClose();
+		}
+});
+var triggerClose = function() {
+
+	$(".lightboxContainer").css("display", "none");
+	$(".embedAsset").removeClass("lightboxAsset");
+}

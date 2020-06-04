@@ -42,6 +42,8 @@ function renderFileMenu($menuArray) {
 		$outputText .= ' <span data-toggle="collapse" data-target="#excerptGroup" class="glyphicon glyphicon-time excerptTooltip" data-toggle="tooltip" title="Create Excerpt"></span>';
 	}
 
+	$outputText .= ' <span class="glyphicon glyphicon-flash triggerLightbox" title="Open in Lightbox"></span>';
+
 	if(isset($menuArray['zoom'])) {
 		$outputText .= '<span></span><input type="range" class="zoom-range" min=20 value=20>
 			<span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>';
