@@ -202,7 +202,10 @@ var resizeElement = function(maxHeight) {
 	if (!maxHeight) {
 		maxHeight = 0.7;
 	}
-	if(!isNaN(ratio)) {
+	if(isNaN(ratio)) {
+		ratio = 1;
+	}
+	if(ratio) {
 		targetHeight = $(".embedAsset").width() / ratio;
 		if (targetHeight > $(window).height() * maxHeight) {
 			targetHeight = $(window).height() * maxHeight;
@@ -467,4 +470,5 @@ var triggerClose = function() {
 
 	$(".lightboxContainer").css("display", "none");
 	$(".embedAsset").removeClass("lightboxAsset");
+	resizeElement("0.7");
 }

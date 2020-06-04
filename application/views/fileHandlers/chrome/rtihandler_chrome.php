@@ -44,7 +44,7 @@ $menuArray['download'] = $downloadArray;
 ?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded RTI Image" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class=""></iframe>
+        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded RTI Image" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class="embedAsset"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>
