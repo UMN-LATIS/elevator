@@ -432,6 +432,9 @@ class AssetManager extends Admin_Controller {
 
 	// List all of the assets touched by the user.  Offset specifies page number essentially.
 	public function userAssets($offset=0) {
+		if(!isset($this->instance) || !$this->user_model->userLoaded) { 
+			instance_redirect("errorHandler/error/noPermission");
+		}
 		$this->template->javascript->add("assets/datatables/datatables.min.js");
 		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 
