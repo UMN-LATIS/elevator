@@ -378,7 +378,7 @@ class ImageHandler extends FileHandlerBase {
 			return TRUE;
 		 }
 		 $uploadWidget = $this->getUploadWidget();
-		 if((isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) || isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation) {
+		 if((isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation) || (isset($uploadWidget->parentWidget->forceTiling) && $uploadWidget->parentWidget->forceTiling)) {
 			 return TRUE;
 		 }
 
