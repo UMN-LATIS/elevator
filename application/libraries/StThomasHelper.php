@@ -61,11 +61,7 @@ class StThomasHelper extends AuthHelper
 	public function getUserIdFromRemote() {
 		$email = $this->shibboleth->getAttributeValue('email');
 		
-<<<<<<< HEAD
-		return array_pop(explode("@", $email));
-=======
 		return array_shift(explode("@", $email));
->>>>>>> hotfix/instanceDefaults
 	}
 
 	public function updateUserFromRemote($user) {
