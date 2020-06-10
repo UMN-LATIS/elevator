@@ -3,7 +3,7 @@
 $fileObjectId = $fileObject->getObjectId();
 
 if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) || $fileObject->sourceFile->getType() == "svs") { 
-  $ratio = 0;
+  $ratio = 1;
 }
 else {
   $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
