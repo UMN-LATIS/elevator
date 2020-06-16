@@ -52,7 +52,7 @@
 		</div>
 		<div class="hoverSlider">
 			<span></span><input type="range" class="zoom-range">
-			<span class="canFullscreen glyphicon glyphicon-resize-full" data-toggle="tooltip" title="Fullscreen"></span>
+			<span class="canFullscreen glyphicon glyphicon-fullscreen" data-toggle="tooltip" title="Fullscreen"></span>
 		</div>
 
 	</div>
