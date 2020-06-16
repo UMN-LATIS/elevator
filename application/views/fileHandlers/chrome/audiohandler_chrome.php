@@ -78,7 +78,7 @@ $menuArray['download'] = $downloadArray;
 $(document).ready(function() {
 
     $(".infoPopover").popover({trigger: "focus | click"});
-    $(".infoPopover").tooltip({ placement: 'top'});
+    $(".infoTooltip").tooltip({ placement: 'top'});
     $(".excerptTooltip").tooltip({ placement: 'top'});
 });
 
