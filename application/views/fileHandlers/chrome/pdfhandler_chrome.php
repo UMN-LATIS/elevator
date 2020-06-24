@@ -54,7 +54,7 @@ $menuArray['download'] = $downloadArray;
 $(function ()
 {
 	$(".infoPopover").popover({trigger: "focus | click"});
-	$(".infoPopover").tooltip({ placement: 'top'});
+	$(".infoTooltip").tooltip({ placement: 'top'});
   resizeElement();
 });
 

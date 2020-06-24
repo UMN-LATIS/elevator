@@ -64,8 +64,8 @@ $menuArray['download'] = $downloadArray;
 </script>
 
 <div class="row assetViewRow" >
-  <div class="col-md-12 videoColumn">
-    <iframe width="100%" height="480" title="Embedd video" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class="videoEmbedFrame"></iframe>
+  <div class="col-md-12">
+    <iframe width="100%" height="480" title="Embedd video" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
   </div>
 </div>
 
@@ -78,7 +78,7 @@ $menuArray['download'] = $downloadArray;
 $(document).ready(function() {
 
     $(".infoPopover").popover({trigger: "focus | click"});
-    $(".infoPopover").tooltip({ placement: 'top'});
+    $(".infoTooltip").tooltip({ placement: 'top'});
     $(".excerptTooltip").tooltip({ placement: 'top'});
 });
 

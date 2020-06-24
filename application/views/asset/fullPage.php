@@ -8,6 +8,11 @@ $collectionId = $assetModel->getGlobalValue("collectionId");
 var objectId = "<?=$assetModel->getObjectId()?>";
 </script>
 
+<div class="lightboxContainer">
+	<div class="lightboxCloseButton">X</div>
+
+</div>
+
 <?if( $this->instance->getShowPreviousNextSearchResults()):?>
 <div class="row searchResultsNavBar hide">
 	<div class="col-xs-6 col-sm-2"><a href="#" class="previousResult"><span class="glyphicon glyphicon-chevron-left"></span>Previous Result</a></div>
