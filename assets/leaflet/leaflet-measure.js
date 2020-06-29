@@ -7125,9 +7125,9 @@ L.Control.Measure = L.Control.extend({
 
     function formatMeasure (val, unit, decPoint, thousandsSep) {
       var retinaFactor = 1;
-      if (L.Browser.retina) {
-        retinaFactor = 2; // this is potentially incorrect for 3x+ devices
-      }
+      // if (L.Browser.retina) {
+      //   retinaFactor = 2; // this is potentially incorrect for 3x+ devices
+      // }
       return unit && unit.factor && unit.display ?
         humanize.numberFormat(val * unit.factor * retinaFactor, unit.decimals || 0, decPoint || i18n.__('decPoint'), thousandsSep || i18n.__('thousandsSep')) + ' ' + i18n.__([unit.display]) || unit.display :
         humanize.numberFormat(val, 0, decPoint || i18n.__('decPoint'), thousandsSep || i18n.__('thousandsSep'));
