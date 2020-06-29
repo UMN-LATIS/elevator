@@ -46,6 +46,7 @@
 		map = new L.map('mapElement', {
 			fullscreenControl: true,
 			zoomSnap: 0,
+			detectRetina: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
 
@@ -119,7 +120,8 @@
 						toggleDisplay: true,
 						zoomAnimation: false,
 						zoomLevelOffset: -3,
-						zoomLevelFixed: -3
+						zoomLevelFixed: -3,
+						detectRetina: false
 					});
 		miniMap.addTo(map);
 
