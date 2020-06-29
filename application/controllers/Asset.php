@@ -39,6 +39,9 @@ class asset extends Instance_Controller {
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
+		if($this->config->item('restrict_hidden_assets') == "TRUE" && $this->accessLevel < PERM_ADDASSETS && $assetModel->getGlobalValue("readyForDisplay") == false) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
 
 
 		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
