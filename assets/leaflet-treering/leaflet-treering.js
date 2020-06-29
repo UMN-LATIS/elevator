@@ -2476,7 +2476,7 @@ function ImageAdjustment(Lt) {
   );
 
   this.dialog = L.control.dialog({
-    'size': [340, 240],
+    'size': [340, 280],
     'anchor': [50, 5],
     'initOpen': false
   }).setContent(
@@ -2488,6 +2488,7 @@ function ImageAdjustment(Lt) {
     <input class="imageSlider" id="saturation-slider" type=range min=0 max=350 value=100></div> \
     <label style="text-align:center;display:block;">Hue Rotation</label> \
     <input class="imageSlider" id="hue-slider" type=range min=0 max=360 value=0> \
+     <div class = "checkbox" style = "text-align:center; margin-left:auto; margin-right:auto; margin-top: 5px;display:block;"> <label> <input type = "checkbox" id = "invert-checkbox" > Invert </label></div> \
     <button id="reset-button" style="margin-left:auto; margin-right:auto; margin-top: 5px;display:block;" class="mdc-button mdc-button--unelevated mdc-button-compact">reset</button></div>').addTo(Lt.viewer);
   
   /**
@@ -2499,12 +2500,14 @@ function ImageAdjustment(Lt) {
     var contrastSlider = document.getElementById("contrast-slider");
     var saturationSlider = document.getElementById("saturation-slider");
     var hueSlider = document.getElementById("hue-slider");
-     
+    var invert = $("#invert-checkbox").prop('checked')?1:0;
     document.getElementsByClassName("leaflet-pane")[0].style.filter = 
       "contrast(" + contrastSlider.value + "%) " +
       "brightness(" + brightnessSlider.value + "%) " +
       "saturate(" + saturationSlider.value + "%) " +
+      "invert(" + invert + ")" + 
       "hue-rotate(" + hueSlider.value + "deg)";
+      
   };
   
   /**
@@ -2522,7 +2525,17 @@ function ImageAdjustment(Lt) {
     $(".imageSlider").change(() => {
       this.updateFilters();
     });
+    $("#invert-checkbox").change(() => {
+      this.updateFilters();
+    });
     $("#reset-button").click(() => {
+      $(brightnessSlider).val(100);
+      $(contrastSlider).val(100);
+      $(saturationSlider).val(100);
+      $(hueSlider).val(0);
+      this.updateFilters();
+    });
+    $("#invert-button").click(() => {
       $(brightnessSlider).val(100);
       $(contrastSlider).val(100);
       $(saturationSlider).val(100);
