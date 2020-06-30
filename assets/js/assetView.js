@@ -359,7 +359,7 @@ var loadMapModal = function (e) {
 
 	loadMap("mapModalContainer");
 	if (markers) {
-		markers.clearLayer();
+		markers.clearLayers();
 	}
 
 	map.setView([latitude, longitude], 10);
