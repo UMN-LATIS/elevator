@@ -3,7 +3,7 @@
 
 class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic", "jfif", "jp2");
+	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic", "jfif", "jp2", 'ndpi');
 	protected $noDerivatives = false;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true, "ttr"=>600]],
@@ -363,7 +363,7 @@ class ImageHandler extends FileHandlerBase {
 	// }
 
 	function unlinkLocalSwap() {
-		if($this->sourceFile->getType() == "svs") {
+		if(isWholeSlideImage($this->sourceFile)) {
 			$source = $this->sourceFile->getPathToLocalFile();
 			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
 			if(file_exists($dest)) {
@@ -374,7 +374,7 @@ class ImageHandler extends FileHandlerBase {
 	}
 
 	function forceTiling() {
-		if($this->sourceFile->getType() == "svs") {
+		if(isWholeSlideImage($this->sourceFile)) {
 			return TRUE;
 		 }
 		 $uploadWidget = $this->getUploadWidget();
@@ -387,7 +387,7 @@ class ImageHandler extends FileHandlerBase {
 	}
 
 	function swapLocalForPNG() {
-		if($this->sourceFile->getType() == "svs") {
+		if(isWholeSlideImage($this->sourceFile)) {
 			$source = $this->sourceFile->getPathToLocalFile();
 			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
 			if(file_exists($dest)) {

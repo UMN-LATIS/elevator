@@ -29,7 +29,7 @@
 
 			<?if($uploadWidget->parentWidget->enableIframe && isset($uploadWidget->sidecars) && array_key_exists("iframe", $uploadWidget->sidecars)  && strlen($uploadWidget->sidecars["iframe"]) > 0):
 				echo $this->load->view("fileHandlers/imageHandler_iframe", ["fileObject"=>$fileObject], true);
-			elseif($fileObject->sourceFile->getType() == "svs" || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation)):
+			elseif(isWholeSlideImage($fileObject->sourceFile) || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation)):
 			?>
 				<?=$this->load->view("fileHandlers/embeds/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
 			<?elseif(array_key_exists("tiled", $fileContainers)):?>

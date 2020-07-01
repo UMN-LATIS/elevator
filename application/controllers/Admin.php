@@ -245,7 +245,7 @@ class admin extends Admin_Controller {
 				$this->instance = $instance[0];
 				echo "Regenerating " . $handler->getFileObjectId() . "\n";
 				$fileHandler = $this->filehandler_router->getHandledObject($handler->getFileObjectId());
-				if($fileHandler->sourceFile->getType() == "svs") {
+				if(isWholeSlideImage($fileHandler->sourceFile)) {
 					echo "skipping\n";
 					continue;
 				}

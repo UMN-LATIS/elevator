@@ -2,7 +2,7 @@
 
 $fileObjectId = $fileObject->getObjectId();
 
-if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) || $fileObject->sourceFile->getType() == "svs") { 
+if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) || isWholeSlideImage($fileObject->sourceFile)) { 
   $ratio = 1;
 }
 else {
@@ -75,7 +75,7 @@ if(count($fileContainers)>0 && !array_key_exists("tiled", $fileContainers) && !i
 	$menuArray['zoom'] = true;	
 }
 
-if($fileObject->sourceFile->getType() == "svs") {
+if(isWholeSlideImage($fileObject->sourceFile)) {
   // SVS files get taller for menu stuff
   $embedHeight = 600;
 }
