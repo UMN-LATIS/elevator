@@ -50,7 +50,7 @@
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
 <link rel="stylesheet" href="/assets/leaflet/leaflet.css">
-
+<link rel="stylesheet" href="/assets/leaflet/L.Control.Locate.min.css">
 <?if(isset($this->instance) && $this->instance->getUseCustomCSS()):?>
 <link rel="stylesheet" href="/assets/instanceAssets/<?=$this->instance->getId()?>.css">
 <?endif?>
@@ -67,7 +67,7 @@ body {
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
-
+<script type="text/javascript" src='/assets/leaflet/L.Control.Locate.min.js'></script>
     <?php
     // This is the main content partial
     echo $this->template->content;

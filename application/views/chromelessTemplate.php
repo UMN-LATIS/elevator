@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
 <link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
 <link rel="stylesheet" href="/assets/leaflet/leaflet.css">
+<link rel="stylesheet" href="/assets/leaflet/L.Control.Locate.min.css">
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
@@ -21,6 +22,7 @@
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
+<script type="text/javascript" src='/assets/leaflet/L.Control.Locate.min.js'></script>
 </head>
 
 <script>
