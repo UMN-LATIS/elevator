@@ -29,6 +29,13 @@ function loadMap(targetElement) {
 
 	L.control.layers({"Topo": layer1, "Satellite": layer2}, {"Satellite Labels": layer3}).addTo(map);
 
+	if (L.control.locate) {
+		L.control.locate({
+			icon: 'glyphicon glyphicon-map-marker'
+		}).addTo(map);
+
+	}
+	
 	// parsley freaks out and breaks the page if checkboxes don't have namesm but leaflet doesn't assign one for the toggles
 	$(".leaflet-control-layers-overlays").find(".leaflet-control-layers-selector").attr("name","satelliteToggle");
 	
