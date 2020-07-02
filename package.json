@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "dev": "npm run development",
+    "docs:build": "cd docs; vuepress build"
+  },
   "devDependencies": {
     "del": "^2.1.0",
     "git-guppy": "^1.0.1",
@@ -25,6 +29,7 @@
   },
   "dependencies": {
     "gulp": "^3.9.1",
-    "natives": "^1.1.6"
+    "natives": "^1.1.6",
+    "vuepress": "^1.5.2"
   }
 }
