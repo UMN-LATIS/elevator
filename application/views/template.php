@@ -279,9 +279,9 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
   <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="http://www.elevatorapp.net">General Help and Info</span></a></li>
+                <li><a href="http://www.elevatorapp.net" target="_blank">General Help and Info</span></a></li>
                 <?if($this->instance->getOwnerHomepage()):?>
-                <li id="contact-us"><a href="<?=$this->instance->getOwnerHomepage()?>">Contact Us</span></a></li>
+                <li id="contact-us"><a href="<?=$this->instance->getOwnerHomepage()?>" target="_blank">Contact Us</span></a></li>
                 <?endif?>
                 </ul>
                 </li>
