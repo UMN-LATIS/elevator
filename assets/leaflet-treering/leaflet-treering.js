@@ -28,12 +28,17 @@ function LTreering (viewer, basePath, options) {
     'hasLatewood': options.hasLatewood,
   }
 
-  if (options.ppm === 0) {
+  this.data = new MeasurementData(options.initialData);
+  this.aData = new AnnotationData(options.initialData.annotations);
+  if (options.initialData.ppm) {
+    this.meta.ppm = options.initialData.ppm;
+  }
+
+  if (options.ppm === 0 && !options.initialData.ppm) {
     alert('Please set up PPM in asset metadata. PPM will default to 468.');
   }
 
-  this.data = new MeasurementData(options.initialData);
-  this.aData = new AnnotationData(options.initialData.annotations);
+
   this.autoscroll = new Autoscroll(this.viewer);
   this.mouseLine = new MouseLine(this);
   this.visualAsset = new VisualAsset(this);
@@ -73,12 +78,13 @@ function LTreering (viewer, basePath, options) {
     ioBtns.push(this.saveCloud.btn);
   }
 
+
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
   this.annotationTools = new ButtonBar(this, [this.createAnnotation.btn, this.deleteAnnotation.btn, this.editAnnotation.btn], 'comment', 'Manage annotations');
   this.createTools = new ButtonBar(this, [this.createPoint.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurement point');
   this.editTools = new ButtonBar(this, [this.deletePoint.btn, this.cut.btn, this.insertPoint.btn, this.insertZeroGrowth.btn, this.insertBreak.btn], 'edit', 'Edit and delete data points from the series');
   this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'View and download data');
-  if (window.name === 'popout')
+  if (window.name.includes('popout'))
     this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.calibration.btn], 'settings', 'Change image and calibration settings');
   else
     this.settings = new ButtonBar(this, [this.imageAdjustment.btn], 'settings', 'Change image settings');
@@ -111,7 +117,7 @@ function LTreering (viewer, basePath, options) {
     $('#map').css('cursor', 'default');
 
     // if popout is opened display measuring tools
-    if (window.name === 'popout') {
+    if (window.name.includes('popout')) {
       this.viewData.btn.addTo(this.viewer);
       this.annotationTools.bar.addTo(this.viewer);
       this.dating.btn.addTo(this.viewer);
@@ -482,6 +488,11 @@ function Autoscroll (viewer) {
     var mousePos = 0;                 // An initial mouse position
 
     viewer.on('mousemove', (e) => {
+      var modifierState = event.getModifierState("Shift");
+      // Don't autopan if shift is held
+      if(modifierState) {
+        return;
+      }
       var oldMousePos = mousePos;     // Save the old mouse position
       mousePos = e.containerPoint;    // Container point of the mouse
 
@@ -494,7 +505,7 @@ function Autoscroll (viewer) {
         viewer.panBy([200, 0]);
       }
       //upper bound of the map
-      if (mousePos.x > 300 && mousePos.x + 60 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y) {
+      if (mousePos.x > 390 && mousePos.x + 60 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y) {
         viewer.panBy([0, -70]);
       }
       //lower bound of the map
@@ -690,7 +701,7 @@ function VisualAsset (Lt) {
     var leafLatLng = L.latLng(latLng);
 
     var draggable = false;
-    if (window.name === 'popout') {
+    if (window.name.includes('popout')) {
       draggable = true;
     }
 
@@ -1005,7 +1016,7 @@ function ButtonBar(Lt, btns, icon, toolTip) {
  */
 function Popout(Lt) {
   this.btn = new Button('launch', 'Open a popout window', () => {
-    window.open(Lt.meta.popoutUrl, 'popout',
+    window.open(Lt.meta.popoutUrl, 'popout' + Math.round(Math.random()*10000),
                 'location=yes,height=600,width=800,scrollbars=yes,status=yes');
   });
 }
@@ -1129,6 +1140,7 @@ function Calibration(Lt) {
     //   retinaFactor = 2; // this is potentially incorrect for 3x+ devices
     // }
     Lt.meta.ppm = pixelsPerMillimeter / retinaFactor;
+    Lt.meta.ppmCalibration = true;
     console.log(Lt.meta.ppm);
   }
   
@@ -1277,7 +1289,7 @@ function Dating(Lt) {
 }
 
 /**
- * Create measurement points
+ * \eate measurement points
  * @constructor
  * @param {Ltreering} Lt - Leaflet treering object
  */
@@ -1532,7 +1544,7 @@ function Cut(Lt) {
   this.point = -1;
   this.btn = new Button(
     'content_cut',
-    'Cut a portion of the series',
+    'Delete from selected point to beginning or end of series',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
@@ -1978,7 +1990,10 @@ function ViewData(Lt) {
               break_point = true;
           } else {
             if (e.year % 10 == 0) {
-              sum_string = sum_string.concat('\r\n' +
+              if(sum_string.length > 0) {
+                sum_string = sum_string.concat('\n');
+              }
+              sum_string = sum_string.concat(
                   toEightCharString(Lt.meta.assetName) +
                   toFourCharString(e.year));
             }
@@ -1986,7 +2001,7 @@ function ViewData(Lt) {
               sum_string = sum_string.concat('    -1');
               y++;
               if (y % 10 == 0) {
-                sum_string = sum_string.concat('\r\n' +
+                sum_string = sum_string.concat('\n' +
                     toFourCharString(e.year));
               }
             }
@@ -2010,6 +2025,13 @@ function ViewData(Lt) {
             y++;
           }
         });
+
+        // if we ended at the end of a decade, we need to add a new line
+        if (y % 10 == 0) {
+          sum_string = sum_string.concat('\n' +
+          toEightCharString(Lt.meta.assetName) +
+          toFourCharString(y));
+        }
         sum_string = sum_string.concat(' -9999');
 
         y = Lt.data.points[1].year;
@@ -2034,11 +2056,11 @@ function ViewData(Lt) {
           } else {
             if (e.year % 10 == 0) {
               if (e.earlywood) {
-                ew_string = ew_string.concat('\r\n' +
+                ew_string = ew_string.concat('\n' +
                     toEightCharString(Lt.meta.assetName) +
                     toFourCharString(e.year));
               } else {
-                lw_string = lw_string.concat('\r\n' +
+                lw_string = lw_string.concat('\n' +
                     toEightCharString(Lt.meta.assetName) +
                     toFourCharString(e.year));
               }
@@ -2048,10 +2070,10 @@ function ViewData(Lt) {
               lw_string = lw_string.concat('    -1');
               y++;
               if (y % 10 == 0) {
-                ew_string = ew_string.concat('\r\n' +
+                ew_string = ew_string.concat('\n' +
                     toEightCharString(Lt.meta.assetName) +
                     toFourCharString(e.year));
-                lw_string = lw_string.concat('\r\n' +
+                lw_string = lw_string.concat('\n' +
                     toEightCharString(Lt.meta.assetName) +
                     toFourCharString(e.year));
               }
@@ -2081,6 +2103,15 @@ function ViewData(Lt) {
             }
           }
         });
+
+        if (y % 10 == 0) {
+          ew_string = ew_string.concat('\n' +
+            toEightCharString(Lt.meta.assetName) +
+            toFourCharString(y));
+          lw_string = lw_string.concat('\n' +
+            toEightCharString(Lt.meta.assetName) +
+            toFourCharString(y));
+        }
         ew_string = ew_string.concat(' -9999');
         lw_string = lw_string.concat(' -9999');
 
@@ -2106,7 +2137,10 @@ function ViewData(Lt) {
         sum_points.map((e, i, a) => {
           if (!e.start) {
             if (e.year % 10 == 0) {
-              sum_string = sum_string.concat('\r\n' +
+              if(sum_string.length > 0) {
+                sum_string = sum_string.concat('\n');
+              }
+              sum_string = sum_string.concat(
                   toEightCharString(Lt.meta.assetName) +
                   toFourCharString(e.year));
             }
@@ -2114,7 +2148,7 @@ function ViewData(Lt) {
               sum_string = sum_string.concat('    -1');
               y++;
               if (y % 10 == 0) {
-                sum_string = sum_string.concat('\r\n' +
+                sum_string = sum_string.concat('\n' +
                     toFourCharString(e.year));
               }
             }
@@ -2136,6 +2170,12 @@ function ViewData(Lt) {
             last_latLng = e.latLng;
           }
         });
+
+        if (y % 10 == 0) {
+          sum_string = sum_string.concat('\n' +
+            toEightCharString(Lt.meta.assetName) +
+            toFourCharString(y));
+        }
         sum_string = sum_string.concat(' -9999');
 
         var zip = new JSZip();
@@ -2577,6 +2617,12 @@ function SaveLocal(Lt) {
     var dataJSON = {'SaveDate': Lt.data.saveDate, 'year': Lt.data.year,
       'earlywood': Lt.data.earlywood, 'index': Lt.data.index,
       'points': Lt.data.points, 'annotations': Lt.aData.annotations};
+    
+    // don't serialize our default value
+    if(Lt.meta.ppm != 468 || Lt.meta.ppmCalibration) {
+      dataJSON.ppm = Lt.meta.ppm;
+    }
+
     var file = new File([JSON.stringify(dataJSON)],
         (Lt.meta.assetName + '.json'), {type: 'text/plain;charset=utf-8'});
     saveAs(file);
@@ -2602,6 +2648,7 @@ function SaveCloud(Lt) {
    * @function updateDate
    */
   SaveCloud.prototype.updateDate = function() {
+    this.date = new Date();
     var day = this.date.getDate();
     var month = this.date.getMonth() + 1;
     var year = this.date.getFullYear();
@@ -2653,12 +2700,16 @@ function SaveCloud(Lt) {
   SaveCloud.prototype.action = function() {
     if (Lt.meta.savePermission && Lt.meta.saveURL != "") {
       Lt.data.clean();
+      this.updateDate();
       var dataJSON = {'saveDate': Lt.data.saveDate, 'year': Lt.data.year,
         'earlywood': Lt.data.earlywood, 'index': Lt.data.index,
         'points': Lt.data.points, 'annotations': Lt.aData.annotations};
+      // don't serialize our default value
+      if (Lt.meta.ppm != 468 || Lt.meta.ppmCalibration) {
+        dataJSON.ppm = Lt.meta.ppm;
+      }
       $.post(Lt.meta.saveURL, {sidecarContent: JSON.stringify(dataJSON)})
           .done((msg) => {
-            this.updateDate();
             this.displayDate();
           })
           .fail((xhr, status, error) => {
@@ -2728,6 +2779,12 @@ function LoadLocal(Lt) {
 
       Lt.data = new MeasurementData(newDataJSON);
       Lt.aData = new AnnotationData(newDataJSON.annotations);
+      
+      // if the JSON has PPM data, use that instead of loaded data.
+      if(newDataJSON.ppm) {
+        Lt.meta.ppm = newDataJSON.ppm;
+      }
+      
       Lt.loadData();
     };
 
