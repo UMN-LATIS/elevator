@@ -186,6 +186,17 @@ function LTreering (viewer, basePath, options) {
     this.ioTools.collapse();
     this.settings.collapse();
   };
+  
+  // we need the max native zoom, which is set on the tile layer and not the map. getMaxZoom will return a synthetic value which is no good for measurement
+  LTreering.prototype.getMaxNativeZoom = function () {
+      var maxNativeZoom = null;
+      this.viewer.eachLayer(function (l) {
+        if (l.options.maxNativeZoom) {
+          maxNativeZoom = l.options.maxNativeZoom;
+        }
+      });
+      return maxNativeZoom;
+  };
 }
 
 /*******************************************************************************/
@@ -1130,8 +1141,8 @@ function Calibration(Lt) {
   );
   
   Calibration.prototype.calculatePPM = function(p1, p2, length) {
-    var startPoint = Lt.viewer.project(p1, Lt.viewer.getMaxZoom());
-    var endPoint = Lt.viewer.project(p2, Lt.viewer.getMaxZoom());
+    var startPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
+    var endPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
     var pixel_length = Math.sqrt(Math.pow(Math.abs(startPoint.x - endPoint.x), 2) +
         Math.pow(Math.abs(endPoint.y - startPoint.y), 2));
     var pixelsPerMillimeter = pixel_length / length;
@@ -1855,8 +1866,8 @@ function ViewData(Lt) {
    * @param p2 leaflet point - second point
    */
   ViewData.prototype.distance = function(p1, p2) {
-    var lastPoint = Lt.viewer.project(p1, Lt.viewer.getMaxZoom());
-    var newPoint = Lt.viewer.project(p2, Lt.viewer.getMaxZoom());
+    var lastPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
+    var newPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
     var length = Math.sqrt(Math.pow(Math.abs(lastPoint.x - newPoint.x), 2) +
         Math.pow(Math.abs(newPoint.y - lastPoint.y), 2));
     var pixelsPerMillimeter = 1;
