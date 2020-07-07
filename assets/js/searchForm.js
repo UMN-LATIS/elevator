@@ -5,7 +5,7 @@ var listTemplate = "#list-template";
 
 
 $(document).on("click", ".addAnotherSpecific", function() {
-
+    $(".searchCombine").removeClass("hide");
     var specificSearch = $(this).closest('.specificSearch');
     var newSpecificSearch = $(specificSearch).clone(false);
     newSpecificSearch.find("input[type='text']").val("");
