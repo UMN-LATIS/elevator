@@ -2067,11 +2067,17 @@ function ViewData(Lt) {
           } else {
             if (e.year % 10 == 0) {
               if (e.earlywood) {
-                ew_string = ew_string.concat('\n' +
+                if (ew_string.length() >0) {
+                  ew_string = ew_string.concat('\n');
+                }
+                ew_string = ew_string.concat(
                     toEightCharString(Lt.meta.assetName) +
                     toFourCharString(e.year));
               } else {
-                lw_string = lw_string.concat('\n' +
+                if (lw_string.length() >0) {
+                  lw_string = lw_string.concat('\n');
+                }
+                lw_string = lw_string.concat(
                     toEightCharString(Lt.meta.assetName) +
                     toFourCharString(e.year));
               }
