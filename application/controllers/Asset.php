@@ -222,6 +222,9 @@ class asset extends Instance_Controller {
 
 	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		if($parentObject) {
+			$fileHandler->parentObjectId = $parentObject;
+		}
 		$embed = $this->loadAssetView($assetModel, $fileHandler);
 		echo $embed;
 		return;
@@ -277,7 +280,7 @@ class asset extends Instance_Controller {
 		// This is a brute force sort of thing.
 		// Note, this could fail is they somehow have less access to a parent than to a child.
 		$this->accessLevel = PERM_NOPERM;
-		if($parentObject && $parentObject != "null") {
+		if($parentObject && $parentObject != "null" && $parentObject != $fileHandler->parentObjectId) {
 			$tempAsset = new Asset_model;
 			$tempAsset->loadAssetById($parentObject);
 

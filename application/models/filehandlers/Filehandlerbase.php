@@ -603,7 +603,7 @@ class FileHandlerBase extends CI_Model {
 				$append = "?" . http_build_query(["apiHandoff"=>$signedString, "authKey"=>$authKey, "timestamp"=>$timestamp, "targetObject"=>$targetObject]);
 			}
 		}
-		$embedLink = instance_url("asset/getEmbed/" . $this->getObjectId() . "/null/true" . $append);
+		$embedLink = instance_url("asset/getEmbed/" . $this->getObjectId() . "/" . $this->parentObjectId. "/true" . $append);
 		$embedLink = str_replace("http:", "", $embedLink);
 		$embedLink = str_replace("https:", "", $embedLink);
 		return $embedLink;
