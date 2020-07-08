@@ -7,7 +7,7 @@ if($this->user_model->userLoaded) {
   }
 }
 
-$embed = htmlentities('<iframe width="560" height="480" src="' . $fileObject->getEmedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
+$embed = htmlentities('<iframe width="560" height="480" src="' . $fileObject->getEmbedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
 $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
 if(isset($fileObject->sourceFile->metadata["rotation"]) && (abs($fileObject->sourceFile->metadata["rotation"]) == 90 || abs($fileObject->sourceFile->metadata["rotation"]) == 270)) {
@@ -18,7 +18,7 @@ if(isset($fileObject->sourceFile->metadata["rotation"]) && (abs($fileObject->sou
 $menuArray = [];
 if(count($fileContainers)>0) {
   $menuArray['embed'] = $embed;
-  $menuArray['embedLink'] = $fileObject->getEmedURL();
+  $menuArray['embedLink'] = $fileObject->getEmbedURL();
   if(count($drawerArray)>0) {
     $menuArray['excerpt'] = true;  
   }
@@ -70,7 +70,7 @@ $menuArray['download'] = $downloadArray;
 
 <div class="row assetViewRow" >
   <div class="col-md-12">
-    <iframe width="100%" height="480" data-ratio="<?=$ratio?>" title="Embedd video" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
+    <iframe width="100%" height="480" data-ratio="<?=$ratio?>" title="Embedd video" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
   </div>
 </div>
 

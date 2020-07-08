@@ -587,7 +587,7 @@ class FileHandlerBase extends CI_Model {
         return PERM_DERIVATIVES_GROUP_2;
     }
 
-	function getEmedURL($signURL = false) {
+	function getEmbedURL($signURL = false) {
 		$append = "";
 		if($signURL && $this->user_model && $this->user_model->userLoaded) {
 			$apiKey = $this->user_model->getApiKeys()->first();

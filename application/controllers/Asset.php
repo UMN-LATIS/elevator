@@ -146,7 +146,7 @@ class asset extends Instance_Controller {
 
 		if($embedLink) {
 			$this->template->set_template("noTemplate");
-			$embed = "<iframe class='videoEmbedFrame' src='" . $fileHandler->getEmedURL() . "' width=100% height=100%></iframe>";
+			$embed = "<iframe class='videoEmbedFrame' src='" . $fileHandler->getEmbedURL() . "' width=100% height=100%></iframe>";
 		}
 		else {
 			$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);

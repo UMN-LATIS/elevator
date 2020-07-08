@@ -72,7 +72,7 @@ if($fileObject->sourceFile->getType() == "svs") {
 ?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded Spectroscopy Chart" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class="imageEmbedFrame embedAsset"></iframe>
+        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded Spectroscopy Chart" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen class="imageEmbedFrame embedAsset"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>

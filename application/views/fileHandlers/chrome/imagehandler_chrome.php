@@ -85,7 +85,7 @@ if(isWholeSlideImage($fileObject->sourceFile)) {
 ?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="<?=$embedHeight?>" style="max-height:min(<?=$fileObject->sourceFile->metadata["height"]?>px, 70vh)" data-ratio="<?=$ratio?>" title="Embedded Image" src="<?=$fileObject->getEmedURL(true)?>" frameborder="0" allowfullscreen class="imageEmbedFrame embedAsset"></iframe>
+        <iframe width="100%" height="<?=$embedHeight?>" style="max-height:min(<?=$fileObject->sourceFile->metadata["height"]?>px, 70vh)" data-ratio="<?=$ratio?>" title="Embedded Image" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen class="imageEmbedFrame embedAsset"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>
