@@ -2152,7 +2152,14 @@ function ViewData(Lt) {
               toFourCharString(sum_points[1].year));
         }
         sum_points.map((e, i, a) => {
-          if (!e.start) {
+          if(e.start) {
+              last_latLng = e.latLng;
+            } 
+            else if (e.break) {
+              break_length =
+                Math.round(this.distance(last_latLng, e.latLng) * 1000);
+              break_point = true;
+            } else {
             if (e.year % 10 == 0) {
               if(sum_string.length > 0) {
                 sum_string = sum_string.concat('\n');
@@ -2171,6 +2178,10 @@ function ViewData(Lt) {
             }
 
             length = Math.round(this.distance(last_latLng, e.latLng) * 1000);
+            if (break_point) {
+              length += break_length;
+              break_point = false;
+            }
             if (length == 9999) {
               length = 9998;
             }
@@ -2183,9 +2194,7 @@ function ViewData(Lt) {
             sum_string = sum_string.concat(length_string);
             last_latLng = e.latLng;
             y++;
-          } else {
-            last_latLng = e.latLng;
-          }
+          } 
         });
 
         if (y % 10 == 0) {
