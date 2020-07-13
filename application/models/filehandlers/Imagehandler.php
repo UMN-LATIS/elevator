@@ -272,7 +272,12 @@ class ImageHandler extends FileHandlerBase {
 
 		$outputFile = $outputPath ."/tiledBase";
 
-		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . " " . $outputFile;
+		$rotationAppend = "";
+		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
+			$rotationAppend = "[autorotate]";
+		}
+		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . $rotationAppend . " " . $outputFile;
+		echo $extractString . "\n";
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 		$process->run();
 		while($process->isRunning()) {
