@@ -64,7 +64,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 			$outputSwitches[] = "-rotate -90";
         	break;
 		}
-		$outputSwitches[] = "-orient undefined";
+		$outputSwitches[] = "-orient undefined -strip";
 
 	}
 	if ((isset($sourceImage->metadata["width"]) && isset($sourceImage->metadata["height"])) && ($sourceImage->metadata["width"]<= $width && $sourceImage->metadata["height"] <= $height)) {
@@ -76,7 +76,6 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	$inputName = $sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append;
 	$outputName = $targetImage->getPathToLocalFile();
 	$commandline = $CI->config->item("convert") . " " . implode(" ", $inputSwitches) . " " . escapeshellarg($inputName) . " " . implode(" ", $outputSwitches) . " " . escapeshellarg("jpg:".$outputName);
-
 	exec($commandline, $results);
 	if(file_exists($outputName) && filesize($outputName) > 0) {
 		return true;
