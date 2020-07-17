@@ -415,8 +415,12 @@ $(".addToPlugin").on("click", function() {
 
 var finishEmbedTrigger = function() {
   fileObjectId = $("#embedView").data("objectid");
+  excerptId = null;
+  if($("#embedView").data("excerpt")) {
+    excerptId = $("#embedView").data("excerpt");
+  }
   if(sessionStorage.elevatorCallbackType == "lti") {
-    $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId}, function(data, textStatus, xhr) {
+    $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId, excerptId: excerptId}, function(data, textStatus, xhr) {
         returnForm = '<form id="ltiForm" action="' + sessionStorage.returnURL + '" method="post" encType="application/x-www-form-urlencoded"> \
                   <input type="hidden" name="lti_message_type" value="ContentItemSelection" /> \
                   <input type="hidden" name="lti_version" value="LTI-1p0" /> \

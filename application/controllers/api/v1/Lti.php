@@ -51,7 +51,14 @@ class lti extends Instance_Controller {
 
         $targetQuery = ["apiHandoff"=>$signedString, "authKey"=>$apiKey->getApiKey(), "timestamp"=>$timestamp, "targetObject"=>$fileHandler->parentObjectId];
 
-        $embedLink = instance_url("/asset/getEmbed/" . $objectId.  "/null/true?" . http_build_query($targetQuery));
+        $excerptId = $this->input->post("excerptId");
+        if($excerptId) {
+          $embedLink = instance_url("/asset/viewExcerpt/" . $excerptId.  "/true?" . http_build_query($targetQuery));
+        }
+        else {
+          $embedLink = instance_url("/asset/getEmbed/" . $objectId.  "/null/true?" . http_build_query($targetQuery));
+        }
+        
         $string = ('{
         "@context": "http://purl.imsglobal.org/ctx/lti/v1/ContentItem",
         "@graph": [
