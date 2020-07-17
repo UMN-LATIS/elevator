@@ -115,6 +115,8 @@ function LTreering (viewer, basePath, options) {
 
     $('#map').css('cursor', 'default');
 
+    L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
+
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
       this.viewData.btn.addTo(this.viewer);
@@ -130,11 +132,11 @@ function LTreering (viewer, basePath, options) {
       this.viewData.btn.addTo(this.viewer);
       this.ioTools.bar.addTo(this.viewer);
       this.settings.bar.addTo(this.viewer);
+      //defaults overlay 'points' option to disabled
+      map.removeLayer(this.visualAsset.markerLayer);
     }
 
-    L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-
-        // right and left click controls
+    // right and left click controls
     this.viewer.on('contextmenu', () => {
       if (!this.createPoint.active && this.data.points[0] !== undefined &&
           this.createTools.btn._currentState.stateName === 'expand') {
