@@ -18,7 +18,7 @@ var objectId = "<?=$asset->getObjectId()?>";
 <?=$embed?>
 <?else:?>
 <div class="row">
-	<div class="col-md-8 col-md-offset-2" id="embedView">
+	<div class="col-md-8 col-md-offset-2" id="embedView" data-excerpt="<?=$excerptId?>" data-objectid="<?=$fileObjectId?>">
 		<h2><?=$label?><a href="<?=instance_url("asset/viewAsset/".$asset->getObjectId())?>" class="btn btn-primary pull-right">View Asset</a></h2>
 		<?=$embed?>
 	</div>
