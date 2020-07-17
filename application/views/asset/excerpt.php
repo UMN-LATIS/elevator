@@ -1,4 +1,10 @@
+<?
+$embedLink = instance_url("asset/viewExcerpt/" . $excerptId . "/true");
+$embedLink = str_replace("http:", "", $embedLink);
+$embedLink = str_replace("https:", "", $embedLink);
 
+$frameLink = '<iframe width="560" height="480" src="' . $embedLink . '" frameborder="0" allowfullscreen></iframe>';
+?>
 
 <script>
 var startTimeValue = <?=$startTime?>;
@@ -12,7 +18,7 @@ var objectId = "<?=$asset->getObjectId()?>";
 <?=$embed?>
 <?else:?>
 <div class="row">
-	<div class="col-md-8 col-md-offset-2">
+	<div class="col-md-8 col-md-offset-2" id="embedView" data-excerpt="<?=$excerptId?>" data-objectid="<?=$fileObjectId?>">
 		<h2><?=$label?><a href="<?=instance_url("asset/viewAsset/".$asset->getObjectId())?>" class="btn btn-primary pull-right">View Asset</a></h2>
 		<?=$embed?>
 	</div>
