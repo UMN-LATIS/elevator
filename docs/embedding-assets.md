@@ -1,5 +1,7 @@
 # Embedding Elevator Assets
 
+We offer a number of plugins to integrate Elevator into other CMS and LMS tools. When using this embed functionality, the plugins automatically manage permissions to ensure that viewers of your LMS course or CMS site have access to the embedded items. 
+
 ## Wordpress
 
 The Elevator WordPress plugin allows you to easily embed assets from Elevator within your WordPress posts and pages.

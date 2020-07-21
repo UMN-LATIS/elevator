@@ -1,5 +1,7 @@
 # Working with Drawers
 
+Drawers are user-defined groups of assets. Given appropriate permissions, users of your instance can create drawers, add assets to those drawers, and share them with other users. Drawers can also store video excerpts - clips of longer videos which can be linked to directly. 
+
 ## Creating Drawers
 
 To create a drawer, begin by browsing to an asset you’d like to store in a drawer.  Then select “Drawers” and “Add to Drawer”
