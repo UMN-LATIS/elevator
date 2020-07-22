@@ -57,8 +57,8 @@ $seed = round(microtime(true))// we're using a seed to provide collisions with r
 					<?if($fieldContent->getReadyForDisplay()):?>
 					<div class="col-sm-2 col-xs-4">
 						<div class="relatedThumbToggle">
-							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>" >
-								<img class="relatedThumbContainerImage loadView lazy" data-fileobjectid="<?=$fileObjectId?>" role="button" srcset="<?=$retina?> 2x" data-hover="<?=$retina?>" data-src="<?=$standard?>">
+							<div class="relatedThumbContainer" data-objectid="<?=$fieldContent->getRelatedObjectId()?>">
+								<img class="relatedThumbContainerImage loadView lazy <?=$widgetModel->ignoreForDigitalAsset?'ignoreForDigitalAsset':null?>" data-fileobjectid="<?=$fileObjectId?>" role="button" srcset="<?=$retina?> 2x" data-hover="<?=$retina?>" data-src="<?=$standard?>">
 							</div>
 							<div class="relatedThumbTitle autoTruncate"><?$assetTitle = $fieldContent->getRelatedObjectTitle();echo array_shift($assetTitle)?></div>
 						</div>
@@ -73,7 +73,7 @@ $seed = round(microtime(true))// we're using a seed to provide collisions with r
 							<div class="panel-heading">
 								<h4 class="panel-title">
 								<?try { $result = $fieldContent->getPrimaryFileHandler(); ?>
-								<img class="pull-left super-tiny-image img-responsive img-rounded loadView" data-fileobjectid="<?=$fileObjectId?>" srcsrc="<?=$retina?> 2x" src="<?=$standard ?>">
+								<img class="pull-left super-tiny-image img-responsive img-rounded loadView <?=$widgetModel->ignoreForDigitalAsset?'ignoreForDigitalAsset':null?>" data-fileobjectid="<?=$fileObjectId?>" srcsrc="<?=$retina?> 2x" src="<?=$standard ?>">
 								<? } catch (Exception $e) { /* no file handler, ignore this */ }?>
 								<a class="titleToggle" data-toggle="collapse" data-parent="#accordion<?=$fieldContent->getRelatedObjectId()?><?=$seed?>" data-objectId="<?=$fieldContent->getRelatedObjectId()?>" href="#collapse<?=$fieldContent->getRelatedObjectId()?><?=$seed?>">
 								<div class="truncatedTitle">

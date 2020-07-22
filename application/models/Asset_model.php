@@ -291,7 +291,10 @@ class Asset_model extends CI_Model {
 				foreach($relatedArray as $asset) {
 					$primaries = array_column($asset->fieldContentsArray, "isPrimary");
 					$noPrimaries = !in_array(true, $primaries);
-
+					// if this related asset has the ignoreForDigitalAsset flag marked as true, we don't even consider it.
+					if(isset($asset->ignoreForDigitalAsset) && $asset->ignoreForDigitalAsset == true) {
+						continue;
+					}
 					foreach($asset->fieldContentsArray as $fieldContents) {
 						
 						if((!$asset->getAllowMultiple() || ($fieldContents->isPrimary || $noPrimaries) || count($asset->fieldContentsArray)==1) && !in_array($fieldContents->getRelatedObjectId(), $parentArray)) {
