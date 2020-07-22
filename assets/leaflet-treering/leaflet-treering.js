@@ -34,8 +34,10 @@ function LTreering (viewer, basePath, options) {
     this.meta.ppm = options.initialData.ppm;
   }
 
-  if (options.ppm === 0 && !options.initialData.ppm) {
-    alert('Please set up PPM in asset metadata. PPM will default to 468.');
+  //error alerts in 'measuring' mode aka popout window
+  //will not alert in 'browsing' mode aka DE browser window
+  if (window.name.includes('popout') && options.ppm === 0 && !options.initialData.ppm) {
+    alert('Calibration needed: set ppm in asset metadata or use calibration tool.');
   }
 
   this.autoscroll = new Autoscroll(this.viewer);
@@ -80,9 +82,9 @@ function LTreering (viewer, basePath, options) {
 
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
   this.annotationTools = new ButtonBar(this, [this.createAnnotation.btn, this.deleteAnnotation.btn, this.editAnnotation.btn], 'comment', 'Manage annotations');
-  this.createTools = new ButtonBar(this, [this.createPoint.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurement point');
-  this.editTools = new ButtonBar(this, [this.deletePoint.btn, this.cut.btn, this.insertPoint.btn, this.insertZeroGrowth.btn, this.insertBreak.btn], 'edit', 'Edit and delete data points from the series');
-  this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'View and download data');
+  this.createTools = new ButtonBar(this, [this.createPoint.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurements');
+  this.editTools = new ButtonBar(this, [this.deletePoint.btn, this.cut.btn, this.insertPoint.btn, this.insertZeroGrowth.btn, this.insertBreak.btn], 'edit', 'Edit measurements');
+  this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'Manage JSON data');
   if (window.name.includes('popout'))
     this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.calibration.btn], 'settings', 'Change image and calibration settings');
   else
@@ -116,6 +118,7 @@ function LTreering (viewer, basePath, options) {
     $('#map').css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
+    map.removeLayer(this.annotationAsset.markerLayer);
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
@@ -558,10 +561,16 @@ function MarkerIcon(color, imagePath) {
                     'size': [32, 48] },
     'dark_blue' : { 'path': imagePath + 'images/dark_blue_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'white'     : { 'path': imagePath + 'images/white_tick_icon.png',
+    'white_s'   : { 'path': imagePath + 'images/white_tick_icon.png',
+                    'size': [32, 48] },
+    'white_b'   : { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
     'red'       : { 'path': imagePath + 'images/red_dot_icon.png',
-                    'size': [12, 12] }
+                    'size': [12, 12] },
+    'light_red'  : { 'path': imagePath + 'images/cb_light_red_tick_icon.png',
+                    'size': [32, 48] },
+    'pale_red' : { 'path': imagePath + 'images/cb_pale_red_tick_icon.png',
+                    'size': [32, 48] },
   };
 
   return L.icon({
@@ -647,6 +656,7 @@ function MouseLine (Lt) {
             (mousePoint.y - point.y) * Math.cos(Math.PI / 2 * 3);
         var bottomLeftPoint = Lt.viewer.layerPointToLatLng([newX, newY]);
 
+        //color for h-bar
         var color;
         if (Lt.data.earlywood || !Lt.meta.hasLatewood) {
           color = '#00BCD4';
@@ -722,33 +732,51 @@ function VisualAsset (Lt) {
     //check if index is the start point
     if (pts[i].start) {
       marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('white', Lt.basePath),
+        icon: new MarkerIcon('white_s', Lt.basePath),
         draggable: draggable,
         title: 'Start Point',
         riseOnHover: true
       });
     } else if (pts[i].break) { //check if point is a break
       marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('white', Lt.basePath),
+        icon: new MarkerIcon('white_b', Lt.basePath),
         draggable: draggable,
         title: 'Break Point',
         riseOnHover: true
       });
     } else if (Lt.meta.hasLatewood || Lt.data.earlywood) { //check if point is earlywood
       if (pts[i].earlywood) {
-        marker = L.marker(leafLatLng, {
-          icon: new MarkerIcon('light_blue', Lt.basePath),
-          draggable: draggable,
-          title: 'Year ' + pts[i].year + ', earlywood',
-          riseOnHover: true
-        });
+        if (pts[i].year % 10 == 0) {
+          marker = L.marker(leafLatLng, {
+            icon: new MarkerIcon('pale_red', Lt.basePath),
+            draggable: draggable,
+            title: 'Year ' + pts[i].year + ', latewood',
+            riseOnHover: true
+          });
+        } else {
+            marker = L.marker(leafLatLng, {
+              icon: new MarkerIcon('light_blue', Lt.basePath),
+              draggable: draggable,
+              title: 'Year ' + pts[i].year + ', latewood',
+              riseOnHover: true
+            });
+        }
       } else { //otherwise it's latewood
-        marker = L.marker(leafLatLng, {
-          icon: new MarkerIcon('dark_blue', Lt.basePath),
-          draggable: draggable,
-          title: 'Year ' + pts[i].year + ', latewood',
-          riseOnHover: true
-        });
+          if (pts[i].year % 10 == 0) {
+            marker = L.marker(leafLatLng, {
+              icon: new MarkerIcon('light_red', Lt.basePath),
+              draggable: draggable,
+              title: 'Year ' + pts[i].year + ', latewood',
+              riseOnHover: true
+            });
+          } else {
+              marker = L.marker(leafLatLng, {
+                icon: new MarkerIcon('dark_blue', Lt.basePath),
+                draggable: draggable,
+                title: 'Year ' + pts[i].year + ', latewood',
+                riseOnHover: true
+              });
+          }
       }
     } else {
       marker = L.marker(leafLatLng, {
@@ -835,6 +863,14 @@ function VisualAsset (Lt) {
       } else {
         var color = '#00838f';
       }
+
+      //mark decades with red line
+      if ((pts[i].earlywood || !Lt.meta.hasLatewood) && pts[i].year % 10 == 0) {
+        var color = '#FC9272';
+      } else if ((!pts[i].earlywood || Lt.meta.hasLatewood) && pts[i].year % 10 == 0) {
+        var color = '#EF3B2C';
+      }
+
       this.lines[i] =
           L.polyline([pts[i - 1].latLng, leafLatLng],
           {color: color, opacity: '.75', weight: '3'});
@@ -1028,7 +1064,7 @@ function ButtonBar(Lt, btns, icon, toolTip) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function Popout(Lt) {
-  this.btn = new Button('launch', 'Open a popout window', () => {
+  this.btn = new Button('launch', 'Popout to annotate & measure', () => {
     window.open(Lt.meta.popoutUrl, 'popout' + Math.round(Math.random()*10000),
                 'location=yes,height=600,width=800,scrollbars=yes,status=yes');
   });
@@ -1642,7 +1678,9 @@ function InsertPoint(Lt) {
         Lt.visualAsset.reload();
       }
 
-      this.disable();
+      //Uncommenting line below will disable tool after one use
+      //Currently it will stay enabled until user manually disables tool
+      //this.disable();
     });
   };
 
@@ -1852,7 +1890,7 @@ function InsertBreak(Lt) {
 function ViewData(Lt) {
   this.btn = new Button(
     'view_list',
-    'View and download data',
+    'Calibrated measurement data',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
@@ -2632,7 +2670,7 @@ function ImageAdjustment(Lt) {
 function SaveLocal(Lt) {
   this.btn = new Button(
     'save',
-    'Save a local copy of measurements and annotations',
+    'Save a local copy',
     () => { this.action() }
   );
 
@@ -2772,7 +2810,7 @@ function SaveCloud(Lt) {
 function LoadLocal(Lt) {
   this.btn = new Button(
     'file_upload',
-    'Load a local file with measurements and annotations',
+    'Load a local copy',
     () => { this.input() }
   );
 
