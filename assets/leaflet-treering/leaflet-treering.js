@@ -118,7 +118,6 @@ function LTreering (viewer, basePath, options) {
     $('#map').css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-    map.removeLayer(this.annotationAsset.markerLayer);
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
@@ -729,8 +728,7 @@ function VisualAsset (Lt) {
 
     var marker;
 
-    //check if index is the start point
-    if (pts[i].start) {
+    if (pts[i].start) { //check if index is the start point
       marker = L.marker(leafLatLng, {
         icon: new MarkerIcon('white_s', Lt.basePath),
         draggable: draggable,
@@ -744,52 +742,60 @@ function VisualAsset (Lt) {
         title: 'Break Point',
         riseOnHover: true
       });
-    } else if (Lt.meta.hasLatewood || Lt.data.earlywood) { //check if point is earlywood
-      if (pts[i].earlywood) {
-        if (pts[i].year % 10 == 0) {
-          marker = L.marker(leafLatLng, {
-            icon: new MarkerIcon('pale_red', Lt.basePath),
-            draggable: draggable,
-            title: 'Year ' + pts[i].year + ', latewood',
-            riseOnHover: true
-          });
-        } else {
-            marker = L.marker(leafLatLng, {
-              icon: new MarkerIcon('light_blue', Lt.basePath),
-              draggable: draggable,
-              title: 'Year ' + pts[i].year + ', latewood',
-              riseOnHover: true
-            });
-        }
-      } else { //otherwise it's latewood
+    } else if (Lt.meta.hasLatewood) { //check if point hasLatewood
+        if (pts[i].earlywood) { //check if point is earlywood
           if (pts[i].year % 10 == 0) {
             marker = L.marker(leafLatLng, {
-              icon: new MarkerIcon('light_red', Lt.basePath),
+              icon: new MarkerIcon('pale_red', Lt.basePath),
               draggable: draggable,
-              title: 'Year ' + pts[i].year + ', latewood',
+              title: 'Year ' + pts[i].year + ', earlywood',
               riseOnHover: true
             });
           } else {
               marker = L.marker(leafLatLng, {
-                icon: new MarkerIcon('dark_blue', Lt.basePath),
+                icon: new MarkerIcon('light_blue', Lt.basePath),
+                draggable: draggable,
+                title: 'Year ' + pts[i].year + ', earlywood',
+                riseOnHover: true
+              });
+          }
+        } else { //otherwise it's latewood
+            if (pts[i].year % 10 == 0) {
+              marker = L.marker(leafLatLng, {
+                icon: new MarkerIcon('light_red', Lt.basePath),
                 draggable: draggable,
                 title: 'Year ' + pts[i].year + ', latewood',
                 riseOnHover: true
               });
-          }
-      }
+            } else {
+                marker = L.marker(leafLatLng, {
+                  icon: new MarkerIcon('dark_blue', Lt.basePath),
+                  draggable: draggable,
+                  title: 'Year ' + pts[i].year + ', latewood',
+                  riseOnHover: true
+                });
+            }
+        }
     } else {
-      marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('light_blue', Lt.basePath),
-        draggable: draggable,
-        title: 'Year ' + pts[i].year,
-        riseOnHover: true
-      });
-    }
+      if (pts[i].year % 10 == 0) {
+        marker = L.marker(leafLatLng, {
+          icon: new MarkerIcon('light_red', Lt.basePath),
+          draggable: draggable,
+          title: 'Year ' + pts[i].year,
+          riseOnHover: true
+        })
+      } else {
+        marker = L.marker(leafLatLng, {
+          icon: new MarkerIcon('light_blue', Lt.basePath),
+          draggable: draggable,
+          title: 'Year ' + pts[i].year,
+          riseOnHover: true
+        })
+      }
+    };
 
     this.markers[i] = marker;   //add created marker to marker_list
 
-    //annotation line color changes: red = #ff0000
     //tell marker what to do when being dragged
     this.markers[i].on('drag', (e) => {
       if (!pts[i].start) {
@@ -857,23 +863,29 @@ function VisualAsset (Lt) {
 
     //drawing the line if the previous point exists
     if (pts[i - 1] != undefined && !pts[i].start) {
+      var opacity = '.5';
+      var weight = '3';
       if (pts[i].earlywood || !Lt.meta.hasLatewood ||
           (!pts[i - 1].earlywood && pts[i].break)) {
-        var color = '#00BCD4';
+        var color = '#17b0d4'; // original = #00BCD4 : actual = #5dbcd
       } else {
-        var color = '#00838f';
-      }
+        var color = '#026d75'; // original = #00838f : actual = #14848c
+      };
 
       //mark decades with red line
-      if ((pts[i].earlywood || !Lt.meta.hasLatewood) && pts[i].year % 10 == 0) {
-        var color = '#FC9272';
-      } else if ((!pts[i].earlywood || Lt.meta.hasLatewood) && pts[i].year % 10 == 0) {
-        var color = '#EF3B2C';
+      if (pts[i].year % 10 == 0){
+        var opacity = '.6';
+        var weight = '5';
+        if (Lt.meta.hasLatewood && pts[i].earlywood) {
+          var color = '#e06f4c' // actual = #FC9272
+        } else {
+          var color = '#db2314' // actual = #EF3B2C
+        }
       }
 
       this.lines[i] =
           L.polyline([pts[i - 1].latLng, leafLatLng],
-          {color: color, opacity: '.75', weight: '3'});
+          {color: color, opacity: opacity, weight: weight});
       this.lineLayer.addLayer(this.lines[i]);
     }
 
@@ -919,11 +931,24 @@ function AnnotationAsset(Lt) {
       return;
     }
 
-    var circle = L.circle(ref.latLng, {radius: .0001, color: 'red',
-      weight: '6'});
+    var draggable = false;
+    if (window.name.includes('popout')) {
+      draggable = true;
+    }
+
+    var circle = L.marker(ref.latLng, {
+      icon: new MarkerIcon('red', Lt.basePath),
+      draggable: draggable,
+      riseOnHover: true
+    });
+
     circle.bindPopup(ref.text, {closeButton: false});
     this.markers[i] = circle;
     this.markers[i].clicked = false;
+
+    this.markers[i].on('dragend', (e) => {
+      ants[i].latLng = e.target._latlng;
+    });
 
     $(this.markers[i]).click(e => {
       if (Lt.editAnnotation.active) {
