@@ -214,7 +214,7 @@ function MeasurementData (dataObject) {
   this.index = dataObject.index || 0;
   this.year = dataObject.year || 0;
   this.earlywood = dataObject.earlywood || true;
-  this.points = dataObject.points || {};
+  this.points = dataObject.points || [];
   this.annotations = dataObject.annotations || {};
 
  /**
@@ -348,49 +348,132 @@ function MeasurementData (dataObject) {
    * @function insertPoint
    */
   MeasurementData.prototype.insertPoint = function(latLng, hasLatewood) {
-    var i = 0;
-    while (this.points[i] != undefined &&
-        this.points[i].latLng.lng < latLng.lng) {
-      i++;
-    }
+    var disList = [];
+
+    /**
+    * calculate the distance between 2 points
+    * @function distanceCalc
+    * @param {first point.latLng} pointA
+    * @param {second point.latLng} pointB
+    */
+    function distanceCalc (pointA, pointB) {
+      return Math.sqrt(Math.pow((pointB.lng - pointA.lng), 2) +
+                       Math.pow((pointB.lat - pointA.lat), 2));
+    };
+
+    // finds point with smallest abs. distance
+    for (i = 0; i <= this.points.length; i++) {
+      var distance = Number.MAX_SAFE_INTEGER;
+      if (this.points[i] && this.points[i].latLng) {
+         var currentPoint = this.points[i].latLng;
+         distance = distanceCalc(currentPoint, latLng);
+      disList.push(distance);
+      }
+    };
+
+    var minDistance = Math.min(...disList);
+    i = disList.indexOf(minDistance)
+
     if (this.points[i] == null) {
-      alert('New point must be within existing points.' +
-          'Use the create toolbar to add new points to the series.');
+      alert('New point must be within existing points. Use the create toolbar to add new points to the series.');
       return;
     }
 
+    // define 4 points: points[i], points[i - 1], points[i + 1], & inserted point
+    var pt_i = this.points[i].latLng;
+
+    if (this.points[i - 1]) {
+      var pt_i_minus = this.points[i - 1].latLng;
+    } else {
+      var pt_i_minus = L.latLng(-2 * (pt_i.lat), -2 * (pt_i.lng));
+    };
+
+    if (this.points[i + 1]) {
+      var pt_i_plus = this.points[i + 1].latLng;
+    } else {
+      var pt_i_plus = L.latLng(2 * (pt_i.lat), 2 * (pt_i.lng));
+    };
+
+    var pt_insert = latLng;
+
+    // distance: point[i] to point[i + 1]
+    var dis_i_to_plus = distanceCalc(pt_i, pt_i_plus);
+    // distance: point[i} to point[i - 1]
+    var dis_i_to_minus = distanceCalc(pt_i, pt_i_minus);
+    // distance: point[i] to inserted point
+    var dis_i_to_insert= distanceCalc(pt_i, pt_insert);
+    // distance: point[i + 1] to inserted point
+    var dis_plus_to_insert = distanceCalc(pt_i_plus, pt_insert);
+    // distance: point[i - 1] to inserted point
+    var dis_minus_to_insert = distanceCalc(pt_i_minus, pt_insert);
+
+    /* Law of cosines:
+       * c = distance between inserted point and points[i + 1] or points[i - 1]
+       * b = distance between points[i] and points[i + 1] or points[i - 1]
+       * a = distance between inserted points and points[i]
+       Purpose is to find angle C for triangles formed:
+       * Triangle [i + 1] = points[i], points[i + 1], inserted point
+       * Triangle [i - 1] = points[i], points[i - 1], inserted point
+       Based off diagram from: https://www2.clarku.edu/faculty/djoyce/trig/formulas.html#:~:text=The%20law%20of%20cosines%20generalizes,cosine%20of%20the%20opposite%20angle.
+    */
+    // numerator and denominator for calculating angle C using Law of cosines (rearranged original equation)
+    var numeratorPlus = (dis_plus_to_insert ** 2) - ((dis_i_to_insert ** 2) + (dis_i_to_plus ** 2));
+    var denominatorPlus = -2 * dis_i_to_insert * dis_i_to_plus;
+    var numeratorMinus = (dis_minus_to_insert ** 2) - ((dis_i_to_insert ** 2) + (dis_i_to_minus ** 2));
+    var denominatorMinus = -2 * dis_i_to_insert * dis_i_to_minus;
+    var anglePlus = Math.acos(numeratorPlus/denominatorPlus);
+    var angleMinus = Math.acos(numeratorMinus/denominatorMinus);
+
+    // smaller angle determines connecting lines
+    if (anglePlus < angleMinus) {
+      i++;
+    };
+
     var new_points = this.points;
-    var second_points = Object.values(this.points).splice(i, this.index - 1);
+    var second_points = this.points.slice().splice(i, this.index - 1);
     var k = i;
-    var year_adjusted = this.points[i].year;
+    var year_adjusted;
     var earlywood_adjusted = true;
 
-    if (this.points[i - 1].earlywood && hasLatewood) {
-      year_adjusted = this.points[i - 1].year;
-      earlywood_adjusted = false;
-    } else if (this.points[i - 1].start) {
-      year_adjusted = this.points[i + 1].year;
+    if (this.points[i - 1]) {
+      if (this.points[i - 1].earlywood && hasLatewood) {
+        year_adjusted = this.points[i - 1].year;
+        earlywood_adjusted = false;
+      } else if (this.points[i - 1].start) {
+        year_adjusted = this.points[i + 1].year;
+          if (this.points[i - 2] && this.points[i - 2].earlywood && hasLatewood) {
+            earlywood_adjusted = false;
+          };
+      } else {
+        year_adjusted = this.points[i - 1].year + 1;
+      };
     } else {
-      year_adjusted = this.points[i - 1].year + 1;
-    }
+      alert('Please insert new point closer to connecting line.')
+    };
+
+    if (year_adjusted === undefined) {
+      return;
+    };
+
     new_points[k] = {'start': false, 'skip': false, 'break': false,
       'year': year_adjusted, 'earlywood': earlywood_adjusted,
       'latLng': latLng};
 
     var tempK = k;
 
-    //visualAsset.newLatLng(new_points, k, latLng);
     k++;
 
     second_points.map(e => {
+      if(!e) {
+       return;
+      }
       if (!e.start && !e.break) {
         if (hasLatewood) {
           e.earlywood = !e.earlywood;
           if (e.earlywood) {
             e.year++;
           }
-        }
-        else {
+        } else {
           e.year++;
         }
       }
@@ -402,10 +485,10 @@ function MeasurementData (dataObject) {
     this.index = k;
     if (hasLatewood) {
       this.earlywood = !this.earlywood;
-    }
+    };
     if (!this.points[this.index - 1].earlywood || !hasLatewood) {
       this.year++;
-    }
+    };
 
     return tempK;
   };
@@ -560,9 +643,9 @@ function MarkerIcon(color, imagePath) {
                     'size': [32, 48] },
     'dark_blue' : { 'path': imagePath + 'images/dark_blue_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'white_s'   : { 'path': imagePath + 'images/white_tick_icon.png',
+    'white_start'   : { 'path': imagePath + 'images/white_tick_icon.png',
                     'size': [32, 48] },
-    'white_b'   : { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
+    'white_break'   : { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
     'red'       : { 'path': imagePath + 'images/red_dot_icon.png',
                     'size': [12, 12] },
@@ -678,6 +761,24 @@ function MouseLine (Lt) {
 }
 
 /**
+  * Method to reduce MarkerIcon usage
+  * @function getMarker
+  * @param {Leaflet latlng} iconLatLng
+  * @param {Marker icon} color
+  * @param {Icon imagepath} iconImagePath
+  * @param {Drag ability} iconDrag
+  * @param {Marker title} title
+  */
+function getMarker(iconLatLng, color, iconImagePath, iconDrag, title) {
+  return L.marker(iconLatLng, {
+        icon: new MarkerIcon(color, iconImagePath),
+        draggable: iconDrag,
+        title: title,
+        riseOnHover: true
+      })
+  };
+
+/**
  * Visual assets on the map such as markers and lines
  * @constructor
  * @param {LTreering} Lt - a refrence to the leaflet treering object
@@ -729,68 +830,28 @@ function VisualAsset (Lt) {
     var marker;
 
     if (pts[i].start) { //check if index is the start point
-      marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('white_s', Lt.basePath),
-        draggable: draggable,
-        title: 'Start Point',
-        riseOnHover: true
-      });
+      marker = getMarker(leafLatLng, 'white_start', Lt.basePath, draggable, 'Start');
     } else if (pts[i].break) { //check if point is a break
-      marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('white_b', Lt.basePath),
-        draggable: draggable,
-        title: 'Break Point',
-        riseOnHover: true
-      });
+      marker = getMarker(leafLatLng, 'white_break', Lt.basePath, draggable, 'Break');
     } else if (Lt.meta.hasLatewood) { //check if point hasLatewood
         if (pts[i].earlywood) { //check if point is earlywood
           if (pts[i].year % 10 == 0) {
-            marker = L.marker(leafLatLng, {
-              icon: new MarkerIcon('pale_red', Lt.basePath),
-              draggable: draggable,
-              title: 'Year ' + pts[i].year + ', earlywood',
-              riseOnHover: true
-            });
+            marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
           } else {
-              marker = L.marker(leafLatLng, {
-                icon: new MarkerIcon('light_blue', Lt.basePath),
-                draggable: draggable,
-                title: 'Year ' + pts[i].year + ', earlywood',
-                riseOnHover: true
-              });
+            marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
           }
         } else { //otherwise it's latewood
             if (pts[i].year % 10 == 0) {
-              marker = L.marker(leafLatLng, {
-                icon: new MarkerIcon('light_red', Lt.basePath),
-                draggable: draggable,
-                title: 'Year ' + pts[i].year + ', latewood',
-                riseOnHover: true
-              });
+              marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
             } else {
-                marker = L.marker(leafLatLng, {
-                  icon: new MarkerIcon('dark_blue', Lt.basePath),
-                  draggable: draggable,
-                  title: 'Year ' + pts[i].year + ', latewood',
-                  riseOnHover: true
-                });
+              marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
             }
         }
     } else {
       if (pts[i].year % 10 == 0) {
-        marker = L.marker(leafLatLng, {
-          icon: new MarkerIcon('light_red', Lt.basePath),
-          draggable: draggable,
-          title: 'Year ' + pts[i].year,
-          riseOnHover: true
-        })
+        marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year)
       } else {
-        marker = L.marker(leafLatLng, {
-          icon: new MarkerIcon('light_blue', Lt.basePath),
-          draggable: draggable,
-          title: 'Year ' + pts[i].year,
-          riseOnHover: true
-        })
+        marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year)
       }
     };
 
@@ -1328,7 +1389,7 @@ function Dating(Lt) {
             var shift = new_year - Lt.data.points[i].year;
 
             Object.values(Lt.data.points).map((e, i) => {
-              if (Lt.data.points[i].year != undefined) {
+              if (Lt.data.points[i] && Lt.data.points[i].year != undefined) {
                 Lt.data.points[i].year += shift;
               }
             });
@@ -1724,6 +1785,13 @@ function InsertPoint(Lt) {
    * @function disable
    */
   InsertPoint.prototype.disable = function() {
+    $(document).keyup(e => {
+          var key = e.which || e.keyCode;
+          if (key === 27) { // 27 = esc
+            this.disable();
+          }
+        });
+
     $(Lt.viewer._container).off('click');
     this.btn.state('inactive');
     this.active = false;
