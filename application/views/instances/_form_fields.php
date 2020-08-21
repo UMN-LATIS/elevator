@@ -25,6 +25,10 @@
 
 		});
 
+	$(".revealButton").click(function(e) {
+		e.preventDefault();
+		$(".secretToggle").removeClass("hide");
+	})
 		$(".s3control").trigger('change');
 	});
 
@@ -59,7 +63,7 @@
 <div class="form-group">
 	<label for="inputGoogleAnalyticsKey" class="col-sm-2 control-label">Google Analytics Key:</label>
 	<div class="col-sm-6">
-		<input type="password" data-toggle="password" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
+		<input type="text" name="googleAnalyticsKey" id="inputGoogleAnalyticsKey" class="form-control" value="<?= $instance->getGoogleAnalyticsKey(); ?>">
 	</div>
 </div>
 
@@ -106,9 +110,12 @@
 
 <div class="form-group">
 	<label for="inputAmazonS3Secret" class="col-sm-2 control-label">Amazon S3 Secret:</label>
-	<div class="col-sm-6">
-		<input type="password" data-toggle="password" name="amazonS3Secret" id="inputAmazonS3Secret" class="form-control" value="<?= $instance->getAmazonS3Secret(); ?>">
+	<div class="col-sm-6 secretToggle hide">
+		<input type="text" name="amazonS3Secret" id="inputAmazonS3Secret" class="form-control" value="<?= $instance->getAmazonS3Secret(); ?>">
 	</div>
+	<div class="col-sm-2">
+					<button class="btn btn-primary btn-sm revealButton">Reveal</button>
+						</div>
 </div>
 
 <div class="form-group">
