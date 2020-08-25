@@ -16,6 +16,9 @@
 .leaflet-container {
 	background: #d8dfe2;
 }
+.leaflet-control {
+	clear: none;
+}
 
 .material-icons.md-18{
 	padding-top: 5px;
@@ -61,4 +64,18 @@ table{
 textarea{
 	resize: none;
 	border: none;
+}
+
+.preferences-button {
+	font-size: 16px;
+	text-align: center;
+	background-color: #6200ee;
+	color: white;
+	border: none;
+	padding: 10px, 24px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top: 3px;
+	display: inline;
+	float: left;
 }

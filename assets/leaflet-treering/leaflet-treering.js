@@ -5,7 +5,7 @@
  */
 
 // 'use strict';
-  
+
 /**
  * A leaflet treering object
  * @constructor
@@ -25,26 +25,33 @@ function LTreering (viewer, basePath, options) {
     'savePermission': options.savePermission || false,
     'popoutUrl': options.popoutUrl || null,
     'assetName': options.assetName || 'N/A',
-    'hasLatewood': options.hasLatewood,
   }
 
-  this.data = new MeasurementData(options.initialData);
+  this.preferences = { // catch for if forwardDirection or subAnnual are undefined/null on line ~2830
+    'forwardDirection': options.initialData.forwardDirection,
+    'subAnnual': options.initialData.subAnnual
+  }
+
+  this.measurementOptions = new MeasurementOptions(this);
+
+  this.data = new MeasurementData(options.initialData, this);
   this.aData = new AnnotationData(options.initialData.annotations);
   if (options.initialData.ppm) {
     this.meta.ppm = options.initialData.ppm;
   }
 
-  if (options.ppm === 0 && !options.initialData.ppm) {
-    alert('Please set up PPM in asset metadata. PPM will default to 468.');
+  //error alerts in 'measuring' mode aka popout window
+  //will not alert in 'browsing' mode aka DE browser window
+  if (window.name.includes('popout') && options.ppm === 0 && !options.initialData.ppm) {
+    alert('Calibration needed: set ppm in asset metadata or use calibration tool.');
   }
-
 
   this.autoscroll = new Autoscroll(this.viewer);
   this.mouseLine = new MouseLine(this);
   this.visualAsset = new VisualAsset(this);
   this.annotationAsset = new AnnotationAsset(this);
   this.panhandler = new Panhandler(this);
-  
+
   this.popout = new Popout(this);
   this.undo = new Undo(this);
   this.redo = new Redo(this);
@@ -81,15 +88,16 @@ function LTreering (viewer, basePath, options) {
 
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
   this.annotationTools = new ButtonBar(this, [this.createAnnotation.btn, this.deleteAnnotation.btn, this.editAnnotation.btn], 'comment', 'Manage annotations');
-  this.createTools = new ButtonBar(this, [this.createPoint.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurement point');
-  this.editTools = new ButtonBar(this, [this.deletePoint.btn, this.cut.btn, this.insertPoint.btn, this.insertZeroGrowth.btn, this.insertBreak.btn], 'edit', 'Edit and delete data points from the series');
-  this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'View and download data');
+  this.createTools = new ButtonBar(this, [this.createPoint.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurements');
+  // add this.insertBreak.btn below once fixed
+  this.editTools = new ButtonBar(this, [this.deletePoint.btn, this.cut.btn, this.insertPoint.btn, this.insertZeroGrowth.btn], 'edit', 'Edit measurements');
+  this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'Manage JSON data');
   if (window.name.includes('popout'))
-    this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.calibration.btn], 'settings', 'Change image and calibration settings');
+    this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.measurementOptions.btn, this.calibration.btn], 'settings', 'Change image, measurement, and calibration settings');
   else
-    this.settings = new ButtonBar(this, [this.imageAdjustment.btn], 'settings', 'Change image settings');
+    this.settings = new ButtonBar(this, [this.imageAdjustment.btn, this.measurementOptions.btn], 'settings', 'Change image and measurement settings');
 
-  this.tools = [this.viewData, this.calibration, this.createAnnotation, this.deleteAnnotation, this.editAnnotation, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.insertZeroGrowth, this.insertBreak, this.imageAdjustment];
+  this.tools = [this.viewData, this.calibration, this.createAnnotation, this.deleteAnnotation, this.editAnnotation, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.insertZeroGrowth, this.insertBreak, this.imageAdjustment, this.measurementOptions];
 
   this.baseLayer = {
     'Tree Ring': layer
@@ -101,7 +109,7 @@ function LTreering (viewer, basePath, options) {
     'Lines': this.visualAsset.lineLayer,
     'Annotations': this.annotationAsset.markerLayer
   };
-  
+
   /**
    * Load the interface of the treering viewer
    * @function loadInterface
@@ -115,6 +123,8 @@ function LTreering (viewer, basePath, options) {
     });
 
     $('#map').css('cursor', 'default');
+
+    L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
@@ -131,11 +141,11 @@ function LTreering (viewer, basePath, options) {
       this.viewData.btn.addTo(this.viewer);
       this.ioTools.bar.addTo(this.viewer);
       this.settings.bar.addTo(this.viewer);
+      //defaults overlay 'points' option to disabled
+      map.removeLayer(this.visualAsset.markerLayer);
     }
 
-    L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-    
-        // right and left click controls
+    // right and left click controls
     this.viewer.on('contextmenu', () => {
       if (!this.createPoint.active && this.data.points[0] !== undefined &&
           this.createTools.btn._currentState.stateName === 'expand') {
@@ -148,7 +158,7 @@ function LTreering (viewer, basePath, options) {
         this.disableTools();
       }
     });
-    
+
     if ( this.meta.savePermission ) {
       // initialize cloud save
       this.saveCloud.initialize();
@@ -163,9 +173,10 @@ function LTreering (viewer, basePath, options) {
    * @function loadData
    */
   LTreering.prototype.loadData = function() {
+    this.measurementOptions.preferencesInfo();
     this.visualAsset.reload();
     this.annotationAsset.reload();
-    if ( this.meta.savePermission ) {
+        if ( this.meta.savePermission ) {
       // load the save information in buttom left corner
       this.saveCloud.displayDate();
     }
@@ -178,7 +189,7 @@ function LTreering (viewer, basePath, options) {
   LTreering.prototype.disableTools = function() {
     this.tools.forEach(e => { e.disable() });
   };
-  
+
   LTreering.prototype.collapseTools = function() {
     this.annotationTools.collapse();
     this.createTools.collapse();
@@ -186,7 +197,7 @@ function LTreering (viewer, basePath, options) {
     this.ioTools.collapse();
     this.settings.collapse();
   };
-  
+
   // we need the max native zoom, which is set on the tile layer and not the map. getMaxZoom will return a synthetic value which is no good for measurement
   LTreering.prototype.getMaxNativeZoom = function () {
       var maxNativeZoom = null;
@@ -200,66 +211,89 @@ function LTreering (viewer, basePath, options) {
 }
 
 /*******************************************************************************/
-  
+
 /**
  * A measurement data object
  * @constructor
- * @param {object} dataObject -
+ * @param {object} dataObject
+ * @param {object} LTreeRing - Lt
  */
-function MeasurementData (dataObject) {
+function MeasurementData (dataObject, Lt) {
+  var measurementOptions = Lt.measurementOptions
   this.saveDate = dataObject.saveDate || dataObject.SaveDate || {};
   this.index = dataObject.index || 0;
   this.year = dataObject.year || 0;
   this.earlywood = dataObject.earlywood || true;
-  this.points = dataObject.points || {};
+  this.points = dataObject.points || [];
   this.annotations = dataObject.annotations || {};
-  
+
+  const forwardInTime = 'forward';
+  const backwardInTime = 'backward';
+
+  function directionCheck () {
+    const forwardString = 'forward';
+    const backwardString = 'backward';
+    if (measurementOptions.forwardDirection) { // check if years counting up
+      return forwardString;
+    } else { // otherwise years counting down
+      return backwardString;
+    };
+  }
+
  /**
   * Add a new point into the measurement data
   * @function newPoint
   */
-  MeasurementData.prototype.newPoint = function(start, latLng, hasLatewood) {
+  MeasurementData.prototype.newPoint = function(start, latLng) {
+    let direction = directionCheck();
+
     if (start) {
       this.points[this.index] = {'start': true, 'skip': false, 'break': false, 'latLng': latLng};
     } else {
       this.points[this.index] = {'start': false, 'skip': false, 'break': false, 'year': this.year, 'earlywood': this.earlywood, 'latLng': latLng};
-      if (hasLatewood) {
+      if (measurementOptions.subAnnual) { // check if points alternate ew & lw
         if (this.earlywood) {
           this.earlywood = false;
         } else {
           this.earlywood = true;
-          this.year++;
+          if (direction == forwardInTime) {
+            this.year++;
+          } else if (direction == backwardInTime) {
+            this.year--;
+          };
         }
       } else {
-        this.year++;
-      }
-    }
+        if (direction == forwardInTime) {
+          this.year++;
+        } else if (direction == backwardInTime) {
+          this.year--;
+        };
+      };
+    };
     this.index++;
   };
-  
+
   /**
    * delete a point from the measurement data
    * @function deletePoint
    */
-  MeasurementData.prototype.deletePoint = function(i, hasLatewood) {
+  MeasurementData.prototype.deletePoint = function(i) {
+    let direction = directionCheck();
+
     var second_points;
-    var shift;
     if (this.points[i].start) {
       if (this.points[i - 1] != undefined && this.points[i - 1].break) {
         i--;
-        second_points = Object.values(this.points).splice(i + 2, this.index - 1);
-        shift = this.points[i + 2].year - this.points[i - 1].year - 1;
+        second_points = this.points.slice().splice(i + 2, this.index - 1);
         second_points.map(e => {
-          e.year -= shift;
           this.points[i] = e;
           i++;
         });
-        this.year -= shift;
         this.index -= 2;
         delete this.points[this.index];
         delete this.points[this.index + 1];
       } else {
-        second_points = Object.values(this.points).splice(i + 1, this.index - 1);
+        second_points = this.points.slice().splice(i + 1, this.index - 1);
         second_points.map(e => {
           if (!i) {
             this.points[i] = {'start': true, 'skip': false, 'break': false,
@@ -273,30 +307,35 @@ function MeasurementData (dataObject) {
         delete this.points[this.index];
       }
     } else if (this.points[i].break) {
-      second_points = Object.values(this.points).splice(i + 2, this.index - 1);
-      shift = this.points[i + 2].year - this.points[i - 1].year - 1;
+      second_points = this.points.slice().splice(i + 2, this.index - 1);
       second_points.map(e => {
-        e.year -= shift;
         this.points[i] = e;
         i++;
       });
-      this.year -= shift;
       this.index -= 2;
       delete this.points[this.index];
       delete this.points[this.index + 1];
     } else {
       var new_points = this.points;
       var k = i;
-      second_points = Object.values(this.points).splice(i + 1, this.index - 1);
+      second_points = this.points.slice().splice(i + 1, this.index - 1);
       second_points.map(e => {
-        if (!e.start && !e.break) {
-          if (hasLatewood) {
+        if (e && !e.start && !e.break) {
+          if (measurementOptions.subAnnual) {
             e.earlywood = !e.earlywood;
             if (!e.earlywood) {
-              e.year--;
-            }
+              if (direction == forwardInTime) {
+                e.year--;
+              } else if (direction == backwardInTime) {
+                e.year++;
+              };
+            };
           } else {
-            e.year--;
+            if (direction == forwardInTime) {
+              e.year--;
+            } else if (direction == backwardInTime) {
+              e.year++;
+            };
           }
         }
         new_points[k] = e;
@@ -312,14 +351,14 @@ function MeasurementData (dataObject) {
       }
     }
   };
-  
+
   /**
    * remove a range of points from the measurement data
    * @function cut
    */
   MeasurementData.prototype.cut = function(i, j) {
     if (i > j) {
-      var trimmed_points = Object.values(this.points).splice(i, this.index - 1);
+      var trimmed_points = this.points.slice().splice(i, this.index - 1);
       var k = 0;
       this.points = {};
       trimmed_points.map(e => {
@@ -333,119 +372,236 @@ function MeasurementData (dataObject) {
       });
       this.index = k;
     } else if (i < j) {
-      this.points = Object.values(this.points).splice(0, i);
+      this.points = this.points.slice().splice(0, i);
       this.index = i;
     } else {
       alert('You cannot select the same point');
     }
   };
-  
+
   /**
    * insert a point in the middle of the measurement data
    * @function insertPoint
    */
-  MeasurementData.prototype.insertPoint = function(latLng, hasLatewood) {
-    var i = 0;
-    while (this.points[i] != undefined &&
-        this.points[i].latLng.lng < latLng.lng) {
-      i++;
-    }
+  MeasurementData.prototype.insertPoint = function(latLng) {
+    let direction = directionCheck();
+    var disList = [];
+
+    /**
+    * calculate the distance between 2 points
+    * @function distanceCalc
+    * @param {first point.latLng} pointA
+    * @param {second point.latLng} pointB
+    */
+    function distanceCalc (pointA, pointB) {
+      return Math.sqrt(Math.pow((pointB.lng - pointA.lng), 2) +
+                       Math.pow((pointB.lat - pointA.lat), 2));
+    };
+
+    // finds point with smallest abs. distance
+    for (i = 0; i <= this.points.length; i++) {
+      var distance = Number.MAX_SAFE_INTEGER;
+      if (this.points[i] && this.points[i].latLng) {
+         var currentPoint = this.points[i].latLng;
+         distance = distanceCalc(currentPoint, latLng);
+      disList.push(distance);
+      }
+    };
+
+    var minDistance = Math.min(...disList);
+    i = disList.indexOf(minDistance)
+
     if (this.points[i] == null) {
-      alert('New point must be within existing points.' +
-          'Use the create toolbar to add new points to the series.');
+      alert('New point must be within existing points. Use the create toolbar to add new points to the series.');
       return;
     }
 
+    // define 4 points: points[i], points[i - 1], points[i + 1], & inserted point
+    var pt_i = this.points[i].latLng;
+
+    if (this.points[i - 1]) {
+      var pt_i_minus = this.points[i - 1].latLng;
+    } else {
+      var pt_i_minus = L.latLng(-2 * (pt_i.lat), -2 * (pt_i.lng));
+    };
+
+    if (this.points[i + 1]) {
+      var pt_i_plus = this.points[i + 1].latLng;
+    } else {
+      var pt_i_plus = L.latLng(2 * (pt_i.lat), 2 * (pt_i.lng));
+    };
+
+    var pt_insert = latLng;
+
+    // distance: point[i] to point[i + 1]
+    var dis_i_to_plus = distanceCalc(pt_i, pt_i_plus);
+    // distance: point[i} to point[i - 1]
+    var dis_i_to_minus = distanceCalc(pt_i, pt_i_minus);
+    // distance: point[i] to inserted point
+    var dis_i_to_insert= distanceCalc(pt_i, pt_insert);
+    // distance: point[i + 1] to inserted point
+    var dis_plus_to_insert = distanceCalc(pt_i_plus, pt_insert);
+    // distance: point[i - 1] to inserted point
+    var dis_minus_to_insert = distanceCalc(pt_i_minus, pt_insert);
+
+    /* Law of cosines:
+       * c = distance between inserted point and points[i + 1] or points[i - 1]
+       * b = distance between points[i] and points[i + 1] or points[i - 1]
+       * a = distance between inserted points and points[i]
+       Purpose is to find angle C for triangles formed:
+       * Triangle [i + 1] = points[i], points[i + 1], inserted point
+       * Triangle [i - 1] = points[i], points[i - 1], inserted point
+       Based off diagram from: https://www2.clarku.edu/faculty/djoyce/trig/formulas.html#:~:text=The%20law%20of%20cosines%20generalizes,cosine%20of%20the%20opposite%20angle.
+    */
+    // numerator and denominator for calculating angle C using Law of cosines (rearranged original equation)
+    var numeratorPlus = (dis_plus_to_insert ** 2) - ((dis_i_to_insert ** 2) + (dis_i_to_plus ** 2));
+    var denominatorPlus = -2 * dis_i_to_insert * dis_i_to_plus;
+    var numeratorMinus = (dis_minus_to_insert ** 2) - ((dis_i_to_insert ** 2) + (dis_i_to_minus ** 2));
+    var denominatorMinus = -2 * dis_i_to_insert * dis_i_to_minus;
+    var anglePlus = Math.acos(numeratorPlus/denominatorPlus);
+    var angleMinus = Math.acos(numeratorMinus/denominatorMinus);
+
+    // smaller angle determines connecting lines
+    if (anglePlus < angleMinus) {
+      i++;
+    };
+
     var new_points = this.points;
-    var second_points = Object.values(this.points).splice(i, this.index - 1);
+    var second_points = this.points.slice().splice(i, this.index - 1);
     var k = i;
-    var year_adjusted = this.points[i].year;
+    var year_adjusted;
     var earlywood_adjusted = true;
 
-    if (this.points[i - 1].earlywood && hasLatewood) {
-      year_adjusted = this.points[i - 1].year;
-      earlywood_adjusted = false;
-    } else if (this.points[i - 1].start) {
-      year_adjusted = this.points[i + 1].year;
+    if (this.points[i - 1]) {
+      if (this.points[i - 1].earlywood && measurementOptions.subAnnual) { // case 1: subAnnual enabled & previous point ew
+        earlywood_adjusted = false;
+        if (direction == forwardInTime) {
+          year_adjusted = this.points[i - 1].year;
+        } else if (direction == backwardInTime) {
+          year_adjusted = this.points[i].year;
+        };
+
+      } else if (this.points[i - 1].start || this.points[i].start) { // case 2: previous or closest point is start
+          year_adjusted = this.points[i].year;
+          if ((this.points[i - 2] && this.points[i - 2].earlywood && measurementOptions.subAnnual) || direction == backwardInTime) {
+            earlywood_adjusted = false;
+          };
+
+      } else { // case 3: subAnnual disabled or previous point lw
+        if (direction == forwardInTime) {
+          year_adjusted = this.points[i - 1].year + 1;
+        } else if (direction == backwardInTime) {
+          year_adjusted = this.points[i].year;
+        };
+      };
     } else {
-      year_adjusted = this.points[i - 1].year + 1;
-    }
+      alert('Please insert new point closer to connecting line.')
+    };
+
+    if (year_adjusted === undefined) {
+      return;
+    };
+
     new_points[k] = {'start': false, 'skip': false, 'break': false,
       'year': year_adjusted, 'earlywood': earlywood_adjusted,
       'latLng': latLng};
 
     var tempK = k;
-    
-    //visualAsset.newLatLng(new_points, k, latLng);
+
     k++;
 
     second_points.map(e => {
+      if(!e) {
+       return;
+      }
       if (!e.start && !e.break) {
-        if (hasLatewood) {
+        if (measurementOptions.subAnnual) { // case 1: subAnnual enabled
           e.earlywood = !e.earlywood;
           if (e.earlywood) {
+            if (direction == forwardInTime) {
+              e.year++;
+            } else if (direction == backwardInTime) {
+              e.year--;
+            };
+          };
+
+        } else { // case 2: subAnnual disabled
+          if (direction == forwardInTime) {
             e.year++;
-          }
-        }
-        else {
-          e.year++;
-        }
-      }
+          } else if (direction == backwardInTime) {
+            e.year--;
+          };
+        };
+      };
       new_points[k] = e;
       k++;
     });
 
     this.points = new_points;
     this.index = k;
-    if (hasLatewood) {
+    if (measurementOptions.subAnnual) {
       this.earlywood = !this.earlywood;
-    }
-    if (!this.points[this.index - 1].earlywood || !hasLatewood) {
+    };
+    if (!this.points[this.index - 1].earlywood || !measurementOptions.subAnnual) {
       this.year++;
-    }
-    
+    };
+
     return tempK;
   };
-  
+
   /**
    * insert a zero growth year in the middle of the measurement data
    * @function insertZeroGrowth
    */
-  MeasurementData.prototype.insertZeroGrowth = function(i, latLng, hasLatewood) {
+  MeasurementData.prototype.insertZeroGrowth = function(i, latLng) {
+    let direction = directionCheck();
     var new_points = this.points;
-    var second_points = Object.values(this.points).splice(i + 1, this.index - 1);
+    var second_points = this.points.slice().splice(i + 1, this.index - 1);
     var k = i + 1;
 
-    var year_adjusted = this.points[i].year + 1;
+    if (direction == forwardInTime) {
+      var year_adjusted = this.points[i].year + 1;
+    } else if (direction == backwardInTime) {
+      var year_adjusted = this.points[i].year - 1;
+    }
 
     new_points[k] = {'start': false, 'skip': false, 'break': false,
       'year': year_adjusted, 'earlywood': true, 'latLng': latLng};
-    
+
     k++;
 
-    if (hasLatewood) {
+    if (measurementOptions.subAnnual) {
       new_points[k] = {'start': false, 'skip': false, 'break': false,
         'year': year_adjusted, 'earlywood': false, 'latLng': latLng};
       k++;
     }
-    
+
     var tempK = k-1;
 
     second_points.map(e => {
-      if (!e.start && !e.break) {
-        e.year++;
-      }
+      if (e && !e.start && !e.break) {
+        if (direction == forwardInTime) {
+          e.year++;
+        } else if (direction == backwardInTime) {
+          e.year--;
+        };
+      };
       new_points[k] = e;
       k++;
     });
 
     this.points = new_points;
     this.index = k;
-    this.year++;
-    
+
+    if (direction == forwardInTime) {
+      this.year++;
+    } else if (direction == backwardInTime) {
+      this.year--;
+    };
+
     return tempK;
   };
-  
+
   /**
    * remove any entries in the data
    * @function clean
@@ -457,7 +613,7 @@ function MeasurementData (dataObject) {
       }
     }
   };
-  
+
   /**
    * getter for all data
    * @function data
@@ -477,7 +633,7 @@ function AnnotationData (annotations) {
     this.annotations = {};
     this.index = 0;
   }
-  
+
   AnnotationData.prototype.deleteAnnotation = function(i) {
     delete this.annotations[i];
   }
@@ -550,17 +706,23 @@ function Autoscroll (viewer) {
  * @param {string} color - a color string
  * @param {string} LtBasePath - the base path of the asset
  */
-function MarkerIcon(color, LtBasePath) {
+function MarkerIcon(color, imagePath) {
 
   var colors = {
-    'light_blue': { 'path': '/assets/leaflet-treering/images/light_blue_tick_icon.png',
+    'light_blue': { 'path': imagePath + 'images/light_blue_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'dark_blue' : { 'path': '/assets/leaflet-treering/images/dark_blue_tick_icon.png',
+    'dark_blue' : { 'path': imagePath + 'images/dark_blue_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'white'     : { 'path': '/assets/leaflet-treering/images/white_tick_icon.png',
+    'white_start'   : { 'path': imagePath + 'images/white_tick_icon.png',
                     'size': [32, 48] },
-    'red'       : { 'path': '/assets/leaflet-treering/images/red_dot_icon.png',
-                    'size': [12, 12] }
+    'white_break'   : { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
+                    'size': [32, 48] },
+    'red'       : { 'path': imagePath + 'images/red_dot_icon.png',
+                    'size': [12, 12] },
+    'light_red'  : { 'path': imagePath + 'images/cb_light_red_tick_icon.png',
+                    'size': [32, 48] },
+    'pale_red' : { 'path': imagePath + 'images/cb_pale_red_tick_icon.png',
+                    'size': [32, 48] },
   };
 
   return L.icon({
@@ -568,7 +730,7 @@ function MarkerIcon(color, LtBasePath) {
     iconSize: colors[color].size
   });
 }
-  
+
 /**
  * The mouse line created between a click location and the cursor
  * @constructor
@@ -577,7 +739,7 @@ function MarkerIcon(color, LtBasePath) {
 function MouseLine (Lt) {
   this.layer = L.layerGroup().addTo(Lt.viewer);
   this.active = false;
-   
+
   /**
    * Enable the mouseline
    * @function enable
@@ -585,7 +747,7 @@ function MouseLine (Lt) {
   MouseLine.prototype.enable = function() {
     this.active = true;
   }
-  
+
   /**
    * Disable the mouseline
    * @function disable
@@ -595,15 +757,20 @@ function MouseLine (Lt) {
     $(Lt.viewer._container).off('mousemove');
     this.layer.clearLayers();
   }
-  
+
   /**
    * A method to create a new line from a given latLng
    * @function from
-   * @param {Leatlet LatLng Object} latLng - the latLng coordinate on the viewer 
+   * @param {Leatlet LatLng Object} latLng - the latLng coordinate on the viewer
    *   to create a line from
    */
   MouseLine.prototype.from = function(latLng) {
     var newX, newY;
+
+    function newCoordCalc (pointA, coefficientB, pointB, pointC, coefficientTrig) {
+      return pointA + ((coefficientB * (pointB - pointC)) * Math.sin(coefficientTrig * Math.PI / 2));
+    };
+
     $(Lt.viewer._container).mousemove(e => {
       if (this.active) {
         this.layer.clearLayers();
@@ -611,43 +778,27 @@ function MouseLine (Lt) {
         var mouseLatLng = Lt.viewer.mouseEventToLatLng(e);
         var point = Lt.viewer.latLngToLayerPoint(latLng);
 
-        /* Getting the four points for the h bars,
-      this is doing 90 degree rotations on mouse point */
-        newX = mousePoint.x +
-            (point.x - mousePoint.x) * Math.cos(Math.PI / 2) -
-            (point.y - mousePoint.y) * Math.sin(Math.PI / 2);
-        newY = mousePoint.y +
-            (point.x - mousePoint.x) * Math.sin(Math.PI / 2) +
-            (point.y - mousePoint.y) * Math.cos(Math.PI / 2);
+        /* Getting the four points for the h bars, this is doing 90 degree rotations on mouse point */
+        newX = newCoordCalc(mousePoint.x, -1, point.y, mousePoint.y, 1);
+        newY = newCoordCalc(mousePoint.y, 1, point.x, mousePoint.x, 1);
         var topRightPoint = Lt.viewer.layerPointToLatLng([newX, newY]);
 
-        newX = mousePoint.x +
-            (point.x - mousePoint.x) * Math.cos(Math.PI / 2 * 3) -
-            (point.y - mousePoint.y) * Math.sin(Math.PI / 2 * 3);
-        newY = mousePoint.y +
-            (point.x - mousePoint.x) * Math.sin(Math.PI / 2 * 3) +
-            (point.y - mousePoint.y) * Math.cos(Math.PI / 2 * 3);
+        newX = newCoordCalc(mousePoint.x, -1, point.y, mousePoint.y, 3);
+        newY = newCoordCalc(mousePoint.y, 1, point.x, mousePoint.x, 3);
         var bottomRightPoint = Lt.viewer.layerPointToLatLng([newX, newY]);
 
         //doing rotations 90 degree rotations on latlng
-        newX = point.x +
-            (mousePoint.x - point.x) * Math.cos(Math.PI / 2) -
-            (mousePoint.y - point.y) * Math.sin(Math.PI / 2);
-        newY = point.y +
-            (mousePoint.x - point.x) * Math.sin(Math.PI / 2) +
-            (mousePoint.y - point.y) * Math.cos(Math.PI / 2);
+        newX = newCoordCalc(point.x, -1, mousePoint.y, point.y, 1);
+        newY = newCoordCalc(point.y, 1, mousePoint.x, point.x, 1);
         var topLeftPoint = Lt.viewer.layerPointToLatLng([newX, newY]);
 
-        newX = point.x +
-            (mousePoint.x - point.x) * Math.cos(Math.PI / 2 * 3) -
-            (mousePoint.y - point.y) * Math.sin(Math.PI / 2 * 3);
-        newY = point.y +
-            (mousePoint.x - point.x) * Math.sin(Math.PI / 2 * 3) +
-            (mousePoint.y - point.y) * Math.cos(Math.PI / 2 * 3);
+        newX = point.x - (mousePoint.y - point.y) * Math.sin(Math.PI / 2 * 3);
+        newY = point.y + (mousePoint.x - point.x) * Math.sin(Math.PI / 2 * 3);
         var bottomLeftPoint = Lt.viewer.layerPointToLatLng([newX, newY]);
 
+        //color for h-bar
         var color;
-        if (Lt.data.earlywood || !Lt.meta.hasLatewood) {
+        if (Lt.data.earlywood || !Lt.measurementOptions.subAnnual) {
           color = '#00BCD4';
         } else {
           color = '#00838f';
@@ -668,6 +819,24 @@ function MouseLine (Lt) {
 }
 
 /**
+  * Method to reduce MarkerIcon usage
+  * @function getMarker
+  * @param {Leaflet latlng} iconLatLng
+  * @param {Marker icon} color
+  * @param {Icon imagepath} iconImagePath
+  * @param {Drag ability} iconDrag
+  * @param {Marker title} title
+  */
+function getMarker(iconLatLng, color, iconImagePath, iconDrag, title) {
+  return L.marker(iconLatLng, {
+        icon: new MarkerIcon(color, iconImagePath),
+        draggable: iconDrag,
+        title: title,
+        riseOnHover: true
+      })
+  };
+
+/**
  * Visual assets on the map such as markers and lines
  * @constructor
  * @param {LTreering} Lt - a refrence to the leaflet treering object
@@ -678,7 +847,7 @@ function VisualAsset (Lt) {
   this.markerLayer = L.layerGroup().addTo(Lt.viewer);
   this.lineLayer = L.layerGroup().addTo(Lt.viewer);
   this.previousLatLng = undefined;
-  
+
   /**
    * Reload all visual assets on the viewer
    * @function reload
@@ -700,11 +869,11 @@ function VisualAsset (Lt) {
       });
     }
   }
-  
+
   /**
    * A method used to create new markers and lines on the viewer
    * @function newLatLng
-   * @param {Array} points - 
+   * @param {Array} points -
    * @param {int} i - index of points
    * @param {Leaflet LatLng Object} latLng -
    */
@@ -718,45 +887,48 @@ function VisualAsset (Lt) {
 
     var marker;
 
-    //check if index is the start point
-    if (pts[i].start) {
-      marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('white', Lt.basePath),
-        draggable: draggable,
-        title: 'Start Point',
-        riseOnHover: true
-      });
+    if (pts[i].start) { //check if index is the start point
+      marker = getMarker(leafLatLng, 'white_start', Lt.basePath, draggable, 'Start');
     } else if (pts[i].break) { //check if point is a break
-      marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('white', Lt.basePath),
-        draggable: draggable,
-        title: 'Break Point',
-        riseOnHover: true
-      });
-    } else if (Lt.meta.hasLatewood) { //check if point is earlywood
-      if (pts[i].earlywood) {
-        marker = L.marker(leafLatLng, {
-          icon: new MarkerIcon('light_blue', Lt.basePath),
-          draggable: draggable,
-          title: 'Year ' + pts[i].year + ', earlywood',
-          riseOnHover: true
-        });
-      } else { //otherwise it's latewood
-        marker = L.marker(leafLatLng, {
-          icon: new MarkerIcon('dark_blue', Lt.basePath),
-          draggable: draggable,
-          title: 'Year ' + pts[i].year + ', latewood',
-          riseOnHover: true
-        });
-      }
+      marker = getMarker(leafLatLng, 'white_break', Lt.basePath, draggable, 'Break');
+    } else if (Lt.measurementOptions.subAnnual) { //check if point subAnnual
+        if (pts[i].earlywood) { //check if point is earlywood
+          if (pts[i].year % 10 == 0) {
+            // which marker asset is used depends on measurement direction
+            if (Lt.measurementOptions.forwardDirection) { // check if years counting up
+              marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+            } else { // otherwise years counting down & marker assets need to be flipped
+              marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+            };
+          } else {
+            if (Lt.measurementOptions.forwardDirection) {
+              marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+            } else {
+              marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+            }
+          }
+        } else { //otherwise it's latewood
+            if (pts[i].year % 10 == 0) {
+              if (Lt.measurementOptions.forwardDirection) { // check if years counting up
+                marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+              } else { // otherwise years counting down
+                marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+              };
+            } else {
+              if (Lt.measurementOptions.forwardDirection) {
+                marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+              } else {
+                marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+              }
+            }
+        }
     } else {
-      marker = L.marker(leafLatLng, {
-        icon: new MarkerIcon('light_blue', Lt.basePath),
-        draggable: draggable,
-        title: 'Year ' + pts[i].year,
-        riseOnHover: true
-      });
-    }
+      if (pts[i].year % 10 == 0) {
+        marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year)
+      } else {
+        marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year)
+      }
+    };
 
     this.markers[i] = marker;   //add created marker to marker_list
 
@@ -801,7 +973,7 @@ function VisualAsset (Lt) {
       if (Lt.deletePoint.active) {
         Lt.deletePoint.action(i);
       }
-      
+
       if (Lt.cut.active) {
         if (Lt.cut.point != -1) {
           Lt.cut.action(i);
@@ -810,9 +982,13 @@ function VisualAsset (Lt) {
         }
       }
       if (Lt.insertZeroGrowth.active) {
-        if ((pts[i].earlywood && Lt.meta.hasLatewood) || pts[i].start ||
+        if ((pts[i].earlywood && Lt.measurementOptions.subAnnual) || pts[i].start ||
             pts[i].break) {
-          alert('Missing year can only be placed at the end of a year!');
+              if (Lt.measurementOptions.forwardDirection) {
+                alert('Missing year can only be placed at the end of a year!');
+              } else { // if years counting down, points are flipped
+                alert('Missing year can only be placed at the beginning of a year!');
+              }
         } else {
           Lt.insertZeroGrowth.action(i);
         }
@@ -827,28 +1003,49 @@ function VisualAsset (Lt) {
 
     //drawing the line if the previous point exists
     if (pts[i - 1] != undefined && !pts[i].start) {
-      if (pts[i].earlywood || !Lt.meta.hasLatewood || 
+      var opacity = '.5';
+      var weight = '3';
+      if (pts[i].earlywood || !Lt.measurementOptions.subAnnual ||
           (!pts[i - 1].earlywood && pts[i].break)) {
-        var color = '#00BCD4';
+        var color = '#17b0d4'; // original = #00BCD4 : actual = #5dbcd
       } else {
-        var color = '#00838f';
-      }
+        var color = '#026d75'; // original = #00838f : actual = #14848c
+      };
+
+      var comparisonPt = null;
+      if (Lt.measurementOptions.forwardDirection) { // years counting up
+        comparisonPt = pts[i].year
+      } else { // years counting down
+        comparisonPt = pts[i - 1].year;
+      };
+
+      //mark decades with red line
+      if (comparisonPt % 10 == 0) {
+        var opacity = '.6';
+        var weight = '5';
+        if (Lt.measurementOptions.subAnnual && pts[i].earlywood) {
+          var color = '#e06f4c' // actual pale_red = #FC9272
+        } else {
+          var color = '#db2314' // actual light_red = #EF3B2C
+        };
+      };
+
       this.lines[i] =
           L.polyline([pts[i - 1].latLng, leafLatLng],
-          {color: color, opacity: '.75', weight: '3'});
+          {color: color, opacity: opacity, weight: weight});
       this.lineLayer.addLayer(this.lines[i]);
     }
 
     this.previousLatLng = leafLatLng;
     //add the marker to the marker layer
-    this.markerLayer.addLayer(this.markers[i]);   
+    this.markerLayer.addLayer(this.markers[i]);
   };
 }
 
 function AnnotationAsset(Lt) {
   this.markers = new Array();
   this.markerLayer = L.layerGroup().addTo(Lt.viewer);
-  
+
   AnnotationAsset.prototype.reload = function() {
     this.markerLayer.clearLayers();
     this.markers = new Array();
@@ -864,28 +1061,41 @@ function AnnotationAsset(Lt) {
       });
     }
   };
-  
+
   AnnotationAsset.prototype.popupMouseover = function(e) {
     this.openPopup();
   };
-  
+
   AnnotationAsset.prototype.popupMouseout = function(e) {
     this.closePopup();
   };
-  
+
   AnnotationAsset.prototype.newAnnotation = function(ants, i) {
     var ref = ants[i];
-    
+
     if (ref.text == '') {
       Lt.aData.deleteAnnotation(i);
       return;
     }
 
-    var circle = L.circle(ref.latLng, {radius: .0001, color: 'red',
-      weight: '6'});
+    var draggable = false;
+    if (window.name.includes('popout')) {
+      draggable = true;
+    }
+
+    var circle = L.marker(ref.latLng, {
+      icon: new MarkerIcon('red', Lt.basePath),
+      draggable: draggable,
+      riseOnHover: true
+    });
+
     circle.bindPopup(ref.text, {closeButton: false});
     this.markers[i] = circle;
     this.markers[i].clicked = false;
+
+    this.markers[i].on('dragend', (e) => {
+      ants[i].latLng = e.target._latlng;
+    });
 
     $(this.markers[i]).click(e => {
       if (Lt.editAnnotation.active) {
@@ -900,7 +1110,7 @@ function AnnotationAsset(Lt) {
 
     this.markerLayer.addLayer(this.markers[i]);
   };
-  
+
   AnnotationAsset.prototype.editAnnotation = function(i) {
     let marker = this.markers[i];
 
@@ -931,7 +1141,7 @@ function AnnotationAsset(Lt) {
       }
     });
   };
-} 
+}
 
 /*****************************************************************************/
 
@@ -994,9 +1204,9 @@ function ButtonBar(Lt, btns, icon, toolTip) {
         }
       }]
   });
-  
+
   this.bar = L.easyBar([this.btn].concat(this.btns));
-  
+
   /**
    * Expand the menu bar
    * @function expand
@@ -1005,7 +1215,7 @@ function ButtonBar(Lt, btns, icon, toolTip) {
     this.btn.state('expand');
     this.btns.forEach(e => { e.enable() });
   }
-  
+
   /**
    * Collapse the menu bar
    * @function collapse
@@ -1014,7 +1224,7 @@ function ButtonBar(Lt, btns, icon, toolTip) {
     this.btn.state('collapse');
     this.btns.forEach(e => { e.disable() });
   }
-  
+
   this.collapse();
 }
 
@@ -1026,7 +1236,7 @@ function ButtonBar(Lt, btns, icon, toolTip) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function Popout(Lt) {
-  this.btn = new Button('launch', 'Open a popout window', () => {
+  this.btn = new Button('launch', 'Popout to annotate & measure', () => {
     window.open(Lt.meta.popoutUrl, 'popout' + Math.round(Math.random()*10000),
                 'location=yes,height=600,width=800,scrollbars=yes,status=yes');
   });
@@ -1041,7 +1251,7 @@ function Undo(Lt) {
   this.stack = new Array();
   this.btn = new Button('undo', 'Undo', () => { this.pop() });
   this.btn.disable();
-  
+
   /**
    * Push the current state into stack to retrieve in the case of an undo event
    * @function push
@@ -1054,7 +1264,7 @@ function Undo(Lt) {
     this.stack.push({'year': Lt.data.year, 'earlywood': Lt.data.earlywood,
       'index': Lt.data.index, 'points': restore_points });
   };
-  
+
   /**
    * Pop the last state from the stack, update the data, and push to the redo stack
    * @function pop
@@ -1094,7 +1304,7 @@ function Undo(Lt) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function Redo(Lt) {
-  this.stack = new Array(); 
+  this.stack = new Array();
   this.btn = new Button('redo', 'Redo', () => { this.pop()});
   this.btn.disable();
 
@@ -1134,12 +1344,12 @@ function Calibration(Lt) {
               '<input type="number" style="border:none; width:50px;"' +
               'value="10" id="length"></input> mm')
   this.btn = new Button(
-    'space_bar', 
-    'Calibrate the ppm using a known measurement on the image', 
+    'space_bar',
+    'Calibrate the ppm using a known measurement on the image',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   Calibration.prototype.calculatePPM = function(p1, p2, length) {
     var startPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
     var endPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
@@ -1154,12 +1364,12 @@ function Calibration(Lt) {
     Lt.meta.ppmCalibration = true;
     console.log(Lt.meta.ppm);
   }
-  
+
   Calibration.prototype.enable = function() {
     this.btn.state('active');
     Lt.mouseLine.enable();
-    
-    
+
+
     document.getElementById('map').style.cursor = 'pointer';
 
     $(document).keyup(e => {
@@ -1173,14 +1383,14 @@ function Calibration(Lt) {
     var latLng_2 = null;
     $(Lt.viewer._container).click(e => {
       document.getElementById('map').style.cursor = 'pointer';
-      
-      
+
+
       if (latLng_1 === null) {
         latLng_1 = Lt.viewer.mouseEventToLatLng(e);
         Lt.mouseLine.from(latLng_1);
       } else if (latLng_2 === null) {
         latLng_2 = Lt.viewer.mouseEventToLatLng(e);
-        
+
         this.popup.setLatLng(latLng_2).openOn(Lt.viewer);
         Lt.mouseLine.disable();
 
@@ -1201,7 +1411,7 @@ function Calibration(Lt) {
       }
     });
   };
-  
+
   Calibration.prototype.disable = function() {
     $(document).off('keyup');
     // turn off the mouse clicks from previous function
@@ -1222,12 +1432,12 @@ function Calibration(Lt) {
 function Dating(Lt) {
   this.active = false;
   this.btn = new Button(
-    'access_time', 
+    'access_time',
     'Set the year of any point and adjust all other points',
     () => { Lt.disableTools(); Lt.collapseTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   /**
    * Open a text container for user to input date
    * @function action
@@ -1265,7 +1475,7 @@ function Dating(Lt) {
             var shift = new_year - Lt.data.points[i].year;
 
             Object.values(Lt.data.points).map((e, i) => {
-              if (Lt.data.points[i].year != undefined) {
+              if (Lt.data.points[i] && Lt.data.points[i].year != undefined) {
                 Lt.data.points[i].year += shift;
               }
             });
@@ -1277,7 +1487,7 @@ function Dating(Lt) {
       });
     }
   };
-  
+
   /**
    * Enable dating
    * @function enable
@@ -1313,7 +1523,7 @@ function CreatePoint(Lt) {
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   L.DomEvent.on(window, 'keydown', (e) => {
      if (e.keyCode == 77 && e.getModifierState("Control")) {
        if (!this.active) {
@@ -1332,6 +1542,13 @@ function CreatePoint(Lt) {
    */
   CreatePoint.prototype.enable = function() {
     this.btn.state('active');
+
+    if (Lt.data.points.length == 0 && Lt.measurementOptions.userSelectedPref == false) {
+      this.disable();
+      Lt.measurementOptions.enable();
+      return;
+    };
+
     Lt.mouseLine.enable();
 
     document.getElementById('map').style.cursor = 'pointer';
@@ -1366,10 +1583,10 @@ function CreatePoint(Lt) {
             popup.remove(Lt.viewer);
           }
         });
-        Lt.data.newPoint(this.startPoint, latLng, Lt.meta.hasLatewood);
+        Lt.data.newPoint(this.startPoint, latLng);
         this.startPoint = false;
       } else {
-        Lt.data.newPoint(this.startPoint, latLng, Lt.meta.hasLatewood);
+        Lt.data.newPoint(this.startPoint, latLng);
       }
 
       //call newLatLng with current index and new latlng
@@ -1381,7 +1598,7 @@ function CreatePoint(Lt) {
       this.active = true;   //activate dataPoint after one point is made
     });
   };
-  
+
   /**
    * Disable creating new points
    * @function disable
@@ -1407,7 +1624,7 @@ function CreateZeroGrowth(Lt) {
   this.btn = new Button('exposure_zero', 'Add a zero growth year', () => {
     this.add()
   });
-  
+
   /**
    * Use previous point to add point in the same location to mimic zero growth
    * @function add
@@ -1418,21 +1635,33 @@ function CreateZeroGrowth(Lt) {
 
       Lt.undo.push();
 
+      if (Lt.data.points[Lt.data.index - 1].earlywood && Lt.measurementOptions.subAnnual) {
+        var firstEWCheck = false;
+        var secondEWCheck = true;
+      } else {
+        var firstEWCheck = true;
+        var secondEWCheck = false;
+      };
+
       Lt.data.points[Lt.data.index] = {'start': false, 'skip': false, 'break': false,
-        'year': Lt.data.year, 'earlywood': true, 'latLng': latLng};
+        'year': Lt.data.year, 'earlywood': firstEWCheck, 'latLng': latLng};
       Lt.visualAsset.newLatLng(Lt.data.points, Lt.data.index, latLng);
       Lt.data.index++;
-      if (Lt.meta.hasLatewood) {
+      if (Lt.measurementOptions.subAnnual) {
         Lt.data.points[Lt.data.index] = {'start': false, 'skip': false, 'break': false,
-          'year': Lt.data.year, 'earlywood': false, 'latLng': latLng};
+          'year': Lt.data.year, 'earlywood': secondEWCheck, 'latLng': latLng};
         Lt.visualAsset.newLatLng(Lt.data.points, Lt.data.index, latLng);
         Lt.data.index++;
       }
-      Lt.data.year++;
+      if (Lt.measurementOptions.forwardDirection) {
+        Lt.data.year++;
+      } else {
+        Lt.data.year--;
+      }
     } else {
       alert('First year cannot be missing!');
     }
-  };      
+  };
 }
 
 /**
@@ -1451,7 +1680,7 @@ function CreateBreak(Lt) {
     },
     () => { this.disable }
   );
-  
+
   /**
    * Enable adding a break point from the last point
    * @function enable
@@ -1482,7 +1711,7 @@ function CreateBreak(Lt) {
       Lt.createPoint.enable();
     });
   };
-  
+
   /**
    * Disable adding breaks
    * @function disable
@@ -1493,7 +1722,7 @@ function CreateBreak(Lt) {
     Lt.viewer.dragging.enable();
     Lt.mouseLine.disable();
   };
-      
+
 }
 
 /**
@@ -1509,7 +1738,7 @@ function DeletePoint(Lt) {
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   /**
    * Delete a point
    * @function action
@@ -1517,12 +1746,12 @@ function DeletePoint(Lt) {
    */
   DeletePoint.prototype.action = function(i) {
     Lt.undo.push();
-    
-    Lt.data.deletePoint(i, Lt.meta.hasLatewood);
+
+    Lt.data.deletePoint(i);
 
     Lt.visualAsset.reload();
   };
-  
+
   /**
    * Enable deleting points on click
    * @function enable
@@ -1532,7 +1761,7 @@ function DeletePoint(Lt) {
     this.active = true;
     document.getElementById('map').style.cursor = 'pointer';
   };
-  
+
   /**
    * Disable deleting points on click
    * @function disable
@@ -1559,7 +1788,7 @@ function Cut(Lt) {
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   /**
    * Defined the point to cut from
    * @function fromPoint
@@ -1568,7 +1797,7 @@ function Cut(Lt) {
   Cut.prototype.fromPoint = function(i) {
     this.point = i;
   };
-  
+
   /**
    * Remove all points from the side of point i
    * @funciton action
@@ -1576,7 +1805,7 @@ function Cut(Lt) {
    */
   Cut.prototype.action = function(i) {
     Lt.undo.push();
-    
+
     Lt.data.cut(this.point, i);
 
     Lt.visualAsset.reload();
@@ -1593,7 +1822,7 @@ function Cut(Lt) {
     document.getElementById('map').style.cursor = 'pointer';
     this.point = -1;
   };
-  
+
   /**
    * Disable cutting
    * @function disable
@@ -1605,7 +1834,7 @@ function Cut(Lt) {
     document.getElementById('map').style.cursor = 'default';
     this.point = -1;
   };
-            
+
 }
 
 /**
@@ -1621,7 +1850,7 @@ function InsertPoint(Lt) {
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   /**
    * Insert a point on click event
    * @function action
@@ -1633,17 +1862,19 @@ function InsertPoint(Lt) {
       var latLng = Lt.viewer.mouseEventToLatLng(e);
 
       Lt.undo.push();
-      
-      var k = Lt.data.insertPoint(latLng, Lt.meta.hasLatewood);
+
+      var k = Lt.data.insertPoint(latLng);
       if (k != null) {
         Lt.visualAsset.newLatLng(Lt.data.points, k, latLng);
         Lt.visualAsset.reload();
       }
-      
-      this.disable();
+
+      //Uncommenting line below will disable tool after one use
+      //Currently it will stay enabled until user manually disables tool
+      //this.disable();
     });
   };
-  
+
   /**
    * Enable inserting points
    * @function enable
@@ -1653,19 +1884,26 @@ function InsertPoint(Lt) {
     this.action();
     this.active = true;
   };
-  
+
   /**
    * Disable inserting points
    * @function disable
    */
   InsertPoint.prototype.disable = function() {
+    $(document).keyup(e => {
+          var key = e.which || e.keyCode;
+          if (key === 27) { // 27 = esc
+            this.disable();
+          }
+        });
+
     $(Lt.viewer._container).off('click');
     this.btn.state('inactive');
     this.active = false;
     document.getElementById('map').style.cursor = 'default';
   };
 }
-  
+
 /**
  * Insert a zero growth measurement in the middle of a chronology
  * @constructor
@@ -1679,7 +1917,7 @@ function InsertZeroGrowth(Lt) {
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   /**
    * Insert a zero growth year after point i
    * @function action
@@ -1689,17 +1927,17 @@ function InsertZeroGrowth(Lt) {
     var latLng = Lt.data.points[i].latLng;
 
     Lt.undo.push();
-    
-    var k = Lt.data.insertZeroGrowth(i, latLng, Lt.meta.hasLatewood);
+
+    var k = Lt.data.insertZeroGrowth(i, latLng);
     if (k !== null) {
-      if (Lt.meta.hasLatewood) Lt.visualAsset.newLatLng(Lt.data.points, k-1, latLng);
+      if (Lt.measurementOptions.subAnnual) Lt.visualAsset.newLatLng(Lt.data.points, k-1, latLng);
       Lt.visualAsset.newLatLng(Lt.data.points, k, latLng);
       Lt.visualAsset.reload();
     }
-    
+
     this.disable();
   };
-  
+
   /**
    * Enable adding a zero growth year
    * @function enable
@@ -1709,7 +1947,7 @@ function InsertZeroGrowth(Lt) {
     this.active = true;
     document.getElementById('map').style.cursor = 'pointer';
   };
-  
+
   /**
    * Disable adding a zero growth year
    * @function disable
@@ -1738,7 +1976,7 @@ function InsertBreak(Lt) {
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
+
   /**
    * Insert a break after point i
    * @function action
@@ -1817,7 +2055,7 @@ function InsertBreak(Lt) {
       }
     });
   };
-  
+
   /**
    * Enable inserting a break point
    * @function enable
@@ -1827,7 +2065,7 @@ function InsertBreak(Lt) {
     this.active = true;
     document.getElementById('map').style.cursor = 'pointer';
   };
-  
+
   /**
    * Disable inserting a break point
    * @function disable
@@ -1850,15 +2088,15 @@ function InsertBreak(Lt) {
 function ViewData(Lt) {
   this.btn = new Button(
     'view_list',
-    'View and download data',
+    'Calibrated measurement data',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
-  
-  this.dialog = L.control.dialog({'size': [350, 400], 'anchor': [50, 0], 'initOpen': false})
+
+  this.dialog = L.control.dialog({'size': [360, 400], 'anchor': [50, 0], 'initOpen': false})
     .setContent('<h3>There are no data points to measure</h3>')
     .addTo(Lt.viewer);
-  
+
   /**
    * Calculate distance from p1 to p2
    * @function distance
@@ -1883,13 +2121,13 @@ function ViewData(Lt) {
     // }
     return length * retinaFactor;
   }
-  
+
   /**
    * Format and download data in Dan's archaic format
    * @function download
    */
   ViewData.prototype.download = function() {
-    
+
     var toFourCharString = function(n) {
       var string = n.toString();
 
@@ -1961,16 +2199,16 @@ function ViewData(Lt) {
       }
       return string;
     };
-    
+
     if (Lt.data.points != undefined && Lt.data.points[1] != undefined) {
-      
+
       var sum_points;
       var sum_string = '';
       var last_latLng;
       var break_length;
       var length_string;
-      
-      if (Lt.meta.hasLatewood) {
+
+      if (Lt.measurementOptions.subAnnual) {
 
         var sum_string = '';
         var ew_string = '';
@@ -1996,7 +2234,7 @@ function ViewData(Lt) {
           if (e.start) {
             last_latLng = e.latLng;
           } else if (e.break) {
-            break_length = 
+            break_length =
               Math.round(this.distance(last_latLng, e.latLng) * 1000);
               break_point = true;
           } else {
@@ -2061,7 +2299,7 @@ function ViewData(Lt) {
           if (e.start) {
             last_latLng = e.latLng;
           } else if (e.break) {
-            break_length = 
+            break_length =
               Math.round(this.distance(last_latLng, e.latLng) * 1000);
             break_point = true;
           } else {
@@ -2154,7 +2392,7 @@ function ViewData(Lt) {
         sum_points.map((e, i, a) => {
           if(e.start) {
               last_latLng = e.latLng;
-            } 
+            }
             else if (e.break) {
               break_length =
                 Math.round(this.distance(last_latLng, e.latLng) * 1000);
@@ -2194,7 +2432,7 @@ function ViewData(Lt) {
             sum_string = sum_string.concat(length_string);
             last_latLng = e.latLng;
             y++;
-          } 
+          }
         });
 
         if (y % 10 == 0) {
@@ -2216,25 +2454,23 @@ function ViewData(Lt) {
       alert('There is no data to download');
     }
   };
-  
+
   /**
    * Open the data viewer box
    * @function enable
    */
   ViewData.prototype.enable = function() {
     this.btn.state('active');
-    var string;
+    var stringSetup; // buttons & table headers
+    var stringContent = ''; // years and lengths
     if (Lt.data.points[0] != undefined) {
       var y = Lt.data.points[1].year;
-      string = '<div><button id="download-button"' +
-          'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
-          '>download</button><button id="refresh-button"' +
-          'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
-          '>refresh</button><button id="delete-button"' +
-          'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
-          '>delete all</button></div><table><tr>' +
-          '<th style="width: 45%;">Year</th>' +
-          '<th style="width: 70%;">Length</th></tr>';
+      stringSetup = '<div><button id="download-button"' +
+          'class="mdc-button mdc-button--unelevated mdc-button-compact">download</button><button id="refresh-button"' +
+          'class="mdc-button mdc-button--unelevated mdc-button-compact">refresh</button><button id="delete-button"' +
+          'class="mdc-button mdc-button--unelevated mdc-button-compact">delete all</button></div>' +
+          '<table><tr><th style="width: 45%;">Year</th>' +
+                     '<th style="width: 70%;">Length</th></tr>';
 
       var break_point = false;
       var last_latLng;
@@ -2243,7 +2479,7 @@ function ViewData(Lt) {
       var length;
       Lt.data.clean();
       Object.values(Lt.data.points).map((e, i, a) => {
-        
+
         if (e.start) {
           last_latLng = e.latLng;
         } else if (e.break) {
@@ -2252,7 +2488,7 @@ function ViewData(Lt) {
           break_point = true;
         } else {
           while (e.year > y) {
-            string = string.concat('<tr><td>' + y +
+            stringContent = stringContent.concat('<tr><td>' + y +
                 '-</td><td>N/A</td></tr>');
             y++;
           }
@@ -2265,7 +2501,7 @@ function ViewData(Lt) {
           if (length == 9.999) {
             length = 9.998;
           }
-          if (Lt.meta.hasLatewood) {
+          if (Lt.measurementOptions.subAnnual) {
             var wood;
             var row_color;
             if (e.earlywood) {
@@ -2275,23 +2511,28 @@ function ViewData(Lt) {
               wood = 'L';
               row_color = '#00838f';
               y++;
-            }
-            string =
-                string.concat('<tr style="color:' + row_color + ';">');
-            string = string.concat('<td>' + e.year + wood + '</td><td>'+
-                length + ' mm</td></tr>');
+            };
+            if (Lt.measurementOptions.forwardDirection) { // check if years counting up
+              stringContent = stringContent.concat('<tr style="color:' + row_color + ';">');
+              stringContent = stringContent.concat('<td>' + e.year + wood + '</td><td>'+ length + ' mm</td></tr>');
+            } else { // otherwise years counting down
+              stringContent = '<tr style="color:' + row_color + ';">' + '<td>' + e.year + wood + '</td><td>'+ length + ' mm</td></tr>' + stringContent
+            };
           } else {
             y++;
-            string = string.concat('<tr style="color: #00d2e6;">');
-            string = string.concat('<td>' + e.year + '</td><td>' +
-                length + ' mm</td></tr>');
+            if (Lt.measurementOptions.forwardDirection) { // check if years counting up
+              stringContent = stringContent.concat('<tr style="color: #00d2e6;">');
+              stringContent = stringContent.concat('<td>' + e.year + '</td><td>'+ length + ' mm</td></tr>');
+            } else { // otherwise years counting down
+              stringContent = '<tr style="color: #00d2e6;">' + '<td>' + e.year + '</td><td>'+ length + ' mm</td></tr>' + stringContent
+            };
           }
           last_latLng = e.latLng;
         }
       });
-      this.dialog.setContent(string + '</table>');
+      this.dialog.setContent(stringSetup + stringContent + '</table>');
     } else {
-      string = '<div><button id="download-button"' +
+      stringSetup = '<div><button id="download-button"' +
           'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
           'disabled>download</button>' +
           '<button id="refresh-button"' +
@@ -2300,7 +2541,7 @@ function ViewData(Lt) {
           'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
           '>delete all</button></div>' +
           '<h3>There are no data points to measure</h3>';
-      this.dialog.setContent(string);
+      this.dialog.setContent(stringSetup);
     }
     this.dialog.lock();
     this.dialog.open();
@@ -2323,9 +2564,13 @@ function ViewData(Lt) {
       $('#confirm-delete').click(() => {
         Lt.undo.push();
 
-        Lt.data.points = {};
+        Lt.data.points = [];
         Lt.data.year = 0;
-        Lt.data.earlywood = true;
+        if (Lt.measurementOptions.forwardDirection || Lt.measurementOptions.subAnnual == false) { // if years counting up or annual increments, need ew first
+          Lt.data.earlywood = true;
+        } else if (Lt.measurementOptions.forwardDirection == false){ // if year counting down, need lw first
+          Lt.data.earlywood = false;
+        };
         Lt.data.index = 0;
 
         Lt.visualAsset.reload();
@@ -2338,7 +2583,7 @@ function ViewData(Lt) {
       });
     });
   },
-  
+
   /**
    * close the data viewer box
    * @function disable
@@ -2405,7 +2650,7 @@ function CreateAnnotation(Lt) {
       this.input.openPopup();
 
       document.getElementsByClassName('comment_input')[0].select();
-      
+
       $(document).keypress(e => {
         var key = e.which || e.keyCode;
         if (key === 13) {
@@ -2425,7 +2670,7 @@ function CreateAnnotation(Lt) {
       });
     });
   };
-  
+
   /**
    * Disable creating annotations on click
    * @function enable
@@ -2440,7 +2685,7 @@ function CreateAnnotation(Lt) {
     this.input.remove();
     this.active = false;
   };
-  
+
 }
 
 /**
@@ -2456,7 +2701,7 @@ function DeleteAnnotation(Lt) {
     () => { this.disable() }
   );
   this.active = false;
-  
+
     /**
    * Delete a point
    * @function action
@@ -2464,12 +2709,12 @@ function DeleteAnnotation(Lt) {
    */
   DeleteAnnotation.prototype.action = function(i) {
     Lt.undo.push();
-    
+
     Lt.aData.deleteAnnotation(i);
 
     Lt.annotationAsset.reload();
   };
-  
+
   /**
    * Enable deleting annotations on click
    * @function enable
@@ -2479,7 +2724,7 @@ function DeleteAnnotation(Lt) {
     this.active = true;
     document.getElementById('map').style.cursor = 'pointer';
   };
-  
+
   /**
    * Disable deleting annotations on click
    * @function disable
@@ -2505,7 +2750,7 @@ function EditAnnotation(Lt) {
     () => { this.disable() }
   );
   this.active = false;
-  
+
   /**
    * Enable editing annotations on click
    * @function enable
@@ -2515,7 +2760,7 @@ function EditAnnotation(Lt) {
     this.active = true;
     document.getElementById('map').style.cursor = 'pointer';
   };
-  
+
   /**
    * Disable editing annotations on click
    * @function disable
@@ -2556,7 +2801,7 @@ function ImageAdjustment(Lt) {
     <input class="imageSlider" id="hue-slider" type=range min=0 max=360 value=0> \
      <div class = "checkbox" style = "text-align:center; margin-left:auto; margin-right:auto; margin-top: 5px;display:block;"> <label> <input type = "checkbox" id = "invert-checkbox" > Invert </label></div> \
     <button id="reset-button" style="margin-left:auto; margin-right:auto; margin-top: 5px;display:block;" class="mdc-button mdc-button--unelevated mdc-button-compact">reset</button></div>').addTo(Lt.viewer);
-  
+
   /**
    * Update the image filter to reflect slider values
    * @function updateFilters
@@ -2567,15 +2812,15 @@ function ImageAdjustment(Lt) {
     var saturationSlider = document.getElementById("saturation-slider");
     var hueSlider = document.getElementById("hue-slider");
     var invert = $("#invert-checkbox").prop('checked')?1:0;
-    document.getElementsByClassName("leaflet-pane")[0].style.filter = 
+    document.getElementsByClassName("leaflet-pane")[0].style.filter =
       "contrast(" + contrastSlider.value + "%) " +
       "brightness(" + brightnessSlider.value + "%) " +
       "saturate(" + saturationSlider.value + "%) " +
-      "invert(" + invert + ")" + 
+      "invert(" + invert + ")" +
       "hue-rotate(" + hueSlider.value + "deg)";
-      
+
   };
-  
+
   /**
    * Open the filter sliders dialog
    * @function enable
@@ -2609,7 +2854,7 @@ function ImageAdjustment(Lt) {
       this.updateFilters();
     });
   };
-  
+
   /**
    * Close the filter sliders dialog
    * @function disable
@@ -2619,7 +2864,177 @@ function ImageAdjustment(Lt) {
     this.dialog.close();
     this.btn.state('inactive');
   };
-  
+
+}
+
+/**
+* Change measurement options (set subAnnual, previously hasLatewood, and direction)
+* @constructor
+* @param {Ltreeing} Lt - Leaflet treering object
+*/
+function MeasurementOptions(Lt) {
+  this.userSelectedPref = false;
+  this.btn = new Button(
+    'timeline',
+    'Change measurement direction and annual/sub-annual mode',
+    () => { Lt.disableTools(); this.enable() },
+    () => { this.disable() }
+  );
+
+  /**
+  * Data from Lt.preferences
+  * @function preferencesInfo
+  */
+  MeasurementOptions.prototype.preferencesInfo = function () {
+    if (Lt.preferences.forwardDirection == false) { // direction object
+      this.forwardDirection = false;
+    } else {
+      this.forwardDirection = true;
+    }
+
+    var pts = Lt.data.points;
+    let ewFalse = pts.filter(pt => pt && pt.earlywood == false);
+    if (ewFalse.length > 0) {
+      this.hasLatewood = true;
+    } else {
+      this.hasLatewood = false;
+    };
+
+    if (Lt.preferences.subAnnual == undefined) {
+      this.subAnnual = this.hasLatewood;
+    } else {
+      this.subAnnual = Lt.preferences.subAnnual;
+    };
+  };
+
+  /**
+  * Creates dialog box with preferences
+  * @function displayDialog
+  */
+MeasurementOptions.prototype.displayDialog = function () {
+  return L.control.dialog({
+     'size': [510, 420],
+     'anchor': [50, 5],
+     'initOpen': false
+   }).setContent(
+     '<div><h4 style="text-align:left">Select Preferences for Time-Series Measurement:</h4></div> \
+     <hr style="height:2px;border-width:0;color:gray;background-color:gray"> \
+      <div><h4>Measurement Direction:</h4></div> \
+      <div><input type="radio" name="direction" id="forward_radio"> Measure forward in time (e.g., 1257 &rArr; 1258 &rArr; 1259 ... 2020)</input> \
+       <br><input type="radio" name="direction" id="backward_radio"> Measure backward in time (e.g., 2020 &rArr; 2019 &rArr; 2018 ... 1257)</input></div> \
+     <br> \
+      <div><h4>Measurement Interval:</h4></div> \
+      <div><input type="radio" name="increment" id="annual_radio"> One increment per year (e.g., total-ring width)</input> \
+       <br><input type="radio" name="increment" id="subannual_radio"> Two increments per year (e.g., earlywood- & latewood-ring width)</input></div> \
+     <hr style="height:2px;border-width:0;color:gray;background-color:gray"> \
+      <div><p style="text-align:right;font-size:20px">&#9831; &#9831; &#9831;  &#9831; &#9831; &#9831; &#9831; &#9831; &#9831; &#9831;<button type="button" id="confirm-button" class="preferences-button"> Save & close </button></p></div> \
+      <div><p style="text-align:left;font-size:12px">Please note: Once measurements are initiated, these preferences are set. To modify, delete all existing points for this asset and initiate a new set of measurements.</p></div>').addTo(Lt.viewer);
+  };
+
+  /**
+  * Based on initial data, selects buttons/dialog text
+  * @function selectedBtns
+  */
+  MeasurementOptions.prototype.selectedBtns = function () {
+    if (this.forwardDirection == true) {
+      document.getElementById("forward_radio").checked = true;
+    } else {
+      document.getElementById("backward_radio").checked = true;
+    };
+
+    if (this.subAnnual == true) {
+      document.getElementById("subannual_radio").checked = true;
+    } else {
+      document.getElementById("annual_radio").checked = true;
+    };
+  };
+
+  /**
+  * Changes direction & increment object to be saved
+  * @function prefBtnListener
+  */
+  MeasurementOptions.prototype.prefBtnListener = function () {
+    document.getElementById("forward_radio").addEventListener('change', (event) => {
+      if (event.target.checked == true) {
+        this.forwardDirection = true;
+        Lt.data.earlywood = true;
+      };
+    });
+
+    document.getElementById("backward_radio").addEventListener('change', (event) => {
+      if (event.target.checked == true) {
+        this.forwardDirection = false;
+        Lt.data.earlywood = false;
+      };
+    });
+
+    document.getElementById("annual_radio").addEventListener('change', (event) => {
+      if (event.target.checked == true) {
+        this.subAnnual = false;
+      };
+    });
+
+    document.getElementById("subannual_radio").addEventListener('change', (event) => {
+      if (event.target.checked == true) {
+        this.subAnnual = true
+      };
+    });
+  };
+
+  /**
+  * Open measurement options dialog
+  * @function enable
+  */
+  MeasurementOptions.prototype.enable = function() {
+    if (!this.dialog) {
+      this.dialog = this.displayDialog();
+    };
+
+    this.selectedBtns();
+
+    var forwardRadio = document.getElementById("forward_radio");
+    var backwardRadio = document.getElementById("backward_radio");
+    var annualRadio = document.getElementById("annual_radio");
+    var subAnnualRadio = document.getElementById("subannual_radio");
+    if ((Lt.data.points.length === 0 || !Lt.data.points[0]) && window.name.includes('popout')) {
+      forwardRadio.disabled = false;
+      backwardRadio.disabled = false;
+      annualRadio.disabled = false;
+      subAnnualRadio.disabled = false;
+      this.prefBtnListener();
+    } else { // lets users see preferences without being able to change them mid-measurement
+      forwardRadio.disabled = true;
+      backwardRadio.disabled = true;
+      annualRadio.disabled = true;
+      subAnnualRadio.disabled = true;
+    };
+
+    this.dialog.lock();
+    this.dialog.open();
+    this.btn.state('active');
+
+    $("#confirm-button").click(() => {
+      if (this.userSelectedPref == false) {
+        this.userSelectedPref = true;
+        Lt.createPoint.enable();
+      };
+      this.disable();
+    });
+  };
+
+  /**
+  * Close measurement options dialog
+  * @function disable
+  */
+  MeasurementOptions.prototype.disable = function() {
+    if (this.dialog) {
+      this.dialog.unlock();
+      this.dialog.close();
+    };
+
+    this.btn.state('inactive');
+  };
+
 }
 
 /**
@@ -2630,10 +3045,10 @@ function ImageAdjustment(Lt) {
 function SaveLocal(Lt) {
   this.btn = new Button(
     'save',
-    'Save a local copy of measurements and annotations',
+    'Save a local copy',
     () => { this.action() }
   );
-  
+
   /**
    * Save a local copy of the measurement data
    * @function action
@@ -2641,9 +3056,11 @@ function SaveLocal(Lt) {
   SaveLocal.prototype.action = function() {
     Lt.data.clean();
     var dataJSON = {'SaveDate': Lt.data.saveDate, 'year': Lt.data.year,
+      'forwardDirection': Lt.measurementOptions.forwardDirection,
+      'subAnnual': Lt.measurementOptions.subAnnual,
       'earlywood': Lt.data.earlywood, 'index': Lt.data.index,
       'points': Lt.data.points, 'annotations': Lt.aData.annotations};
-    
+
     // don't serialize our default value
     if(Lt.meta.ppm != 468 || Lt.meta.ppmCalibration) {
       dataJSON.ppm = Lt.meta.ppm;
@@ -2668,9 +3085,9 @@ function SaveCloud(Lt) {
   );
 
   this.date = new Date(),
-    
+
   /**
-   * Update the save date
+   * Update the save date & meta data
    * @function updateDate
    */
   SaveCloud.prototype.updateDate = function() {
@@ -2683,12 +3100,23 @@ function SaveCloud(Lt) {
     Lt.data.saveDate = {'day': day, 'month': month, 'year': year, 'hour': hour,
       'minute': minute};
   };
-  
+
   /**
    * Display the save date in the bottom left corner
    * @function displayDate
    */
   SaveCloud.prototype.displayDate = function() {
+    if (Lt.measurementOptions.subAnnual) { // if 2 increments per year
+      var increment = 'sub-annual increments &nbsp;|&nbsp; ';
+    } else { // otherwise 1 increment per year
+      var increment  = 'annual increments &nbsp;|&nbsp; ';
+    };
+    if (Lt.measurementOptions.forwardDirection) { // if years counting up
+      var direction = 'Measuring forward, ';
+    } else { // otherwise years counting down
+      var direction = 'Measuring backward, '
+    };
+
     var date = Lt.data.saveDate;
     console.log(date);
     if (date.day != undefined && date.hour != undefined) {
@@ -2704,21 +3132,19 @@ function SaveCloud(Lt) {
       if (date.minute < 10) {
         minute_string = '0' + date.minute;
       }
+
       document.getElementById('leaflet-save-time-tag').innerHTML =
-          'Saved to cloud at ' + date.hour + ':' + minute_string +
-          am_pm + ' on ' + date.month + '/' + date.day + '/' +
-          date.year;
+          direction + increment + 'Saved to cloud ' + date.year + '/' + date.month + '/' + date.day + ' ' + date.hour + ':' + minute_string + am_pm;
     } else if (date.day != undefined) {
       document.getElementById('leaflet-save-time-tag').innerHTML =
-          'Saved to cloud on ' + date.month + '/' + date.day + '/' +
-          date.year;
+          direction + increment +  'Saved to cloud ' + date.year + '/' + date.month + '/' + date.day;
     } else {
       document.getElementById('leaflet-save-time-tag').innerHTML =
-          'No data saved to cloud';
+          direction + increment + 'No data saved to cloud';
     }
     Lt.data.saveDate;
   };
-  
+
   /**
    * Save the measurement data to the cloud
    * @function action
@@ -2728,6 +3154,8 @@ function SaveCloud(Lt) {
       Lt.data.clean();
       this.updateDate();
       var dataJSON = {'saveDate': Lt.data.saveDate, 'year': Lt.data.year,
+        'forwardDirection': Lt.measurementOptions.forwardDirection,
+        'subAnnual': Lt.measurementOptions.subAnnual,
         'earlywood': Lt.data.earlywood, 'index': Lt.data.index,
         'points': Lt.data.points, 'annotations': Lt.aData.annotations};
       // don't serialize our default value
@@ -2746,7 +3174,7 @@ function SaveCloud(Lt) {
         'Authentication Error: save to cloud permission not granted');
     }
   };
-  
+
   /**
    * Initialize the display date
    * @function initialize
@@ -2759,7 +3187,7 @@ function SaveCloud(Lt) {
     document.getElementsByClassName('leaflet-bottom leaflet-left')[0]
         .appendChild(saveTimeDiv);
   };
-  
+
 }
 
 /**
@@ -2770,10 +3198,10 @@ function SaveCloud(Lt) {
 function LoadLocal(Lt) {
   this.btn = new Button(
     'file_upload',
-    'Load a local file with measurements and annotations',
+    'Load a local copy',
     () => { this.input() }
   );
-  
+
   /**
    * Create an input div on the ui and click it
    * @function input
@@ -2803,20 +3231,25 @@ function LoadLocal(Lt) {
     fr.onload = function(e) {
       let newDataJSON = JSON.parse(e.target.result);
 
-      Lt.data = new MeasurementData(newDataJSON);
+      Lt.preferences = {
+        'forwardDirection': newDataJSON.forwardDirection,
+        'subAnnual': newDataJSON.subAnnual,
+      };
+
+      Lt.data = new MeasurementData(newDataJSON, Lt);
       Lt.aData = new AnnotationData(newDataJSON.annotations);
-      
+
       // if the JSON has PPM data, use that instead of loaded data.
       if(newDataJSON.ppm) {
         Lt.meta.ppm = newDataJSON.ppm;
       }
-      
+
       Lt.loadData();
     };
 
     fr.readAsText(files.item(0));
   };
-  
+
 }
 
 function Panhandler(La) {

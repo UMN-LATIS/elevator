@@ -62,7 +62,9 @@ module.exports = {
                     "/file-groups",
                     "/importing-and-exporting"
                 ]
-            }
+            },
+            ['/faq', 'Frequently Asked Questions']
+            
             
     ],
 
