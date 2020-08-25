@@ -28,7 +28,6 @@ class FileManager extends Instance_Controller {
 		catch (Exception $e) {
 			$fileHandler = null;
 		}
-
 		if(!$fileHandler) {
 			// no file handler for this asset
 			redirect("/assets/icons/512px/_blank.png", 307);

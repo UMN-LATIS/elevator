@@ -10,6 +10,7 @@ class Related_asset extends Widget_base {
 	var $defaultTemplate = 0;
 	var $matchAgainst = array();
 	var $displayInline = false;
+	var $ignoreForDigitalAsset = false;
 
 	public function __construct()
 	{
@@ -36,6 +37,7 @@ class Related_asset extends Widget_base {
 			$fieldEntry->defaultTemplate = $this->defaultTemplate;
 			$fieldEntry->displayInline = $this->displayInline;
 			$fieldEntry->matchAgainst = $this->matchAgainst;
+			$fieldEntry->ignoreForDigitalAsset = $this->ignoreForDigitalAsset;
 		}
 
 		return parent::getAsArray($nestedDepth);
