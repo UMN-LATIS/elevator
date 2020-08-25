@@ -181,6 +181,9 @@ class Asset_model extends CI_Model {
 		if($recursionDepth >0) {
 			$relatedAssets = $this->getAllWithinAsset("Related_asset", $this, 0);
 			foreach($relatedAssets as $relatedAsset) {
+				if($type == "Upload" && isset($relatedAsset->ignoreForDigitalAsset) && $relatedAsset->ignoreForDigitalAsset == true) {
+						continue;
+					}
 				foreach($relatedAsset->fieldContentsArray as $entry) {
 					$widgetArray = array_merge($widgetArray, $this->getAllWithinAsset($type, $entry->getRelatedAsset(), $recursionDepth-1));
 
@@ -221,7 +224,9 @@ class Asset_model extends CI_Model {
 				if(!$widget->getDisplay()) {
 					continue;
 				}
+
 				foreach($widget->fieldContentsArray as $fieldContents) {
+					
 					return $fieldContents;
 				}
 			}
@@ -291,7 +296,11 @@ class Asset_model extends CI_Model {
 				foreach($relatedArray as $asset) {
 					$primaries = array_column($asset->fieldContentsArray, "isPrimary");
 					$noPrimaries = !in_array(true, $primaries);
-
+					// if this related asset has the ignoreForDigitalAsset flag marked as true, we don't even consider it.
+					if(isset($asset->ignoreForDigitalAsset) && $asset->ignoreForDigitalAsset == true) {
+						continue;
+					}
+					
 					foreach($asset->fieldContentsArray as $fieldContents) {
 						
 						if((!$asset->getAllowMultiple() || ($fieldContents->isPrimary || $noPrimaries) || count($asset->fieldContentsArray)==1) && !in_array($fieldContents->getRelatedObjectId(), $parentArray)) {
@@ -315,6 +324,7 @@ class Asset_model extends CI_Model {
 
 				if(!$fileHandler) {
 					$contents = $this->getFirstWithinAsset($this, "Upload");
+
 					if($contents) {
 						$fileHandler = $contents->getFileHandler();
 					}

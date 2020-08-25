@@ -110,8 +110,14 @@ function loadEmbedViewPointer() {
 	if(targetAsset.length > 1) {
 		targetAsset = targetAsset.first();
 	}
+	if ($(targetAsset).hasClass('ignoreForDigitalAsset')) {
 
-	$(targetAsset).trigger("click");
+	}
+	else {
+		$(targetAsset).trigger("click");
+	}
+
+
 }
 
 
