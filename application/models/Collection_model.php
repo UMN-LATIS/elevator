@@ -47,16 +47,20 @@ class collection_model extends CI_Model {
 	public function getS3ClientForCollection($collectionId) {
 		if(!isset($this->s3collectionCache[$collectionId])) {
 			$collection = $this->getCollection($collectionId);
-
-			$s3Client =  Aws\S3\S3Client::factory(array(
-			'credentials'=> ['key'    => $collection->getS3Key(),
-    		'secret' =>  $collection->getS3Secret()
-			],
-    		"scheme" => "https",
-    		"region" => $collection->getBucketRegion(),
-    		"version"=> "2006-03-01"
-		));
-
+			try {
+				$s3Client =  Aws\S3\S3Client::factory(array(
+				'credentials'=> ['key'    => $collection->getS3Key(),
+				'secret' =>  $collection->getS3Secret()
+				],
+				"scheme" => "https",
+				"region" => $collection->getBucketRegion(),
+				"version"=> "2006-03-01"
+			));
+			}
+			catch (Exception $e) {
+				$this->logging->logError("s3 client", $e);
+				return false;
+			}
 			$this->s3collectionCache[$collectionId] = $s3Client;
 		}
 
