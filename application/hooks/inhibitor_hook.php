@@ -155,6 +155,8 @@ class InhibitorHook {
 		$CI =& get_instance();
 		if(!isset($CI->doctrine)) {
 			error_log($errstr);
+			error_log($errfile);
+			error_log($errline);
 			return;
 		}
 		//reset doctrine in case we've lost the DB
