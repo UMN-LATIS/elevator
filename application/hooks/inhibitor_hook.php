@@ -153,7 +153,10 @@ class InhibitorHook {
 		$errorText1 = $e->getTraceAsString();
 
 		$CI =& get_instance();
-
+		if(!isset($CI->doctrine)) {
+			error_log($errstr);
+			return;
+		}
 		//reset doctrine in case we've lost the DB
 		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 		$CI->doctrine->reset();
