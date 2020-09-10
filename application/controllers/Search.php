@@ -635,6 +635,7 @@ class Search extends Instance_Controller {
 		$searchArray = $searchArchiveEntry->getSearchData();
 		$this->load->model("search_model");
 		$page=0;
+		$showHidden = false;
 
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, true);
 
