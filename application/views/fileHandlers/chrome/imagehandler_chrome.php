@@ -7,10 +7,18 @@ if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWid
 }
 else {
   $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+
+  // if this is a crazy wide image, just make it square.
+  if($ratio > 20) {
+    $ratio = 1;
+  }
+  
+
   if(isset($fileObject->sourceFile->metadata["rotation"]) && ($fileObject->sourceFile->metadata["rotation"] == 6 || $fileObject->sourceFile->metadata["rotation"] == 8)) {
     // rotated sources will have flipped ratios
     $ratio = 1 / $ratio;
   }
+
   
 }
 
