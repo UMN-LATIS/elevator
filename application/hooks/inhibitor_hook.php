@@ -103,7 +103,8 @@ class InhibitorHook {
 		$log->setMessage(substr($errorText, 0, 2000));
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
-			$log->setInstance($CI->doctrine->em->merge($CI->instance));
+			$instance = $CI->doctrine->em->find('Entity\Instance', $CI->instance->getId());
+			$log->setInstance($instance);
 		}
 		if(isset($CI->user)) {
 			$log->setUserId($CI->user->getId());
@@ -168,7 +169,8 @@ class InhibitorHook {
 		$log->setMessage(substr($errorText, 0, 1000) . "\n" .  $errorText1);
 		$log->setCreatedAt(new \DateTime("now"));
 		if(isset($CI->instance)) {
-			$log->setInstance($CI->doctrine->em->merge($CI->instance));
+			$instance = $CI->doctrine->em->find('Entity\Instance', $CI->instance->getId());
+			$log->setInstance($instance);
 		}
 		if(isset($CI->user)) {
 			$log->setUserId($CI->user->getId());

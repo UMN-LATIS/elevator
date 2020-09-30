@@ -221,6 +221,7 @@ class asset extends Instance_Controller {
 	}
 
 	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
+		
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
 		if($parentObject) {
 			$fileHandler->parentObjectId = $parentObject;
@@ -242,8 +243,13 @@ class asset extends Instance_Controller {
 		}
 		
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
-
-		$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
+		if($embedAssets) {
+			$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
+		}
+		else {
+			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
+		}
+		
 		$this->template->set_template("noTemplate");
 		$this->template->loadJavascript(["embedTriggers"]);
 		$this->template->content = $embed;
@@ -267,6 +273,7 @@ class asset extends Instance_Controller {
 		}
 
 		$fileHandler->loadByObjectId($fileObjectId);
+		
 		$assetModel = new Asset_model();
 		if(!$assetModel->loadAssetById($fileHandler->parentObjectId)) {
 			$this->logging->logError("getEmbed", "could not load asset for fileHandler" . $fileHandler->getObjectId());

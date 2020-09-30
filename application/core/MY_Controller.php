@@ -56,17 +56,17 @@ class MY_Controller extends CI_Controller {
 			if($this->config->item('enableCaching')) {
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
-				 	$user_model = unserialize($storedObject);
+					 $user_model = $storedObject;
 				 	if(!$user_model) {
 				 		$this->user_model->loadUser($userId);
 				 	}
 				 	else {
-				 		$this->user_model = $user_model;
+						 $this->user_model = $user_model;
 				 	}
 				}
 				else {
 					$this->user_model->loadUser($userId);
-					$this->doctrineCache->save($userId, serialize($this->user_model), 3600);
+					$this->doctrineCache->save($userId, ($this->user_model), 3600);
 				}
 			}
 			else {
@@ -78,7 +78,7 @@ class MY_Controller extends CI_Controller {
 				$userId = session_id();
 				$this->doctrineCache->setNamespace('userGuestCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
-				 	$user_model = unserialize($storedObject);
+				 	$user_model = $storedObject;
 				 	if(!$user_model) {
 				 		$this->user_model->resolvePermissions();
 				 	}
@@ -89,7 +89,7 @@ class MY_Controller extends CI_Controller {
 				else {
 					$this->user_model->resolvePermissions();
 					$userId = session_id();
-					$this->doctrineCache->save($userId, serialize($this->user_model), 3600);
+					$this->doctrineCache->save($userId, ($this->user_model), 3600);
 				}
 			}
 			else {

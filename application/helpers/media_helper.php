@@ -192,8 +192,8 @@ function getImageMetadata($sourceImage) {
 
 
 
-	$metadata["width"] = $extractedRaw["ImageWidth"];
-	$metadata["height"] = $extractedRaw["ImageHeight"];
+	$metadata["width"] = $extractedRaw["ImageWidth"] ?: 0;
+	$metadata["height"] = $extractedRaw["ImageHeight"] ?: 0;
 
 	if(isset($extractedParsed["SourceFile"])) {
 		unset($extractedParsed["SourceFile"]);

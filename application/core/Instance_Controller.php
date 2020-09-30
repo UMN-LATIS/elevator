@@ -16,7 +16,6 @@ class Instance_Controller extends MY_Controller
             show_error('Elevator is Temporarily Unavailable.');
         }
 
-
         if(php_sapi_name() == 'cli') {
             $this->config->set_item("instance_name", "defaultinstance");
             return;
@@ -110,7 +109,9 @@ class Instance_Controller extends MY_Controller
     }
 
     function writeOutAssets() {
-
+        if(!$this->instance) {
+            return;
+        }
         if($this->instance->getUseCustomHeader()) {
             if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".html")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".html", $this->instance->getCustomHeaderText());
