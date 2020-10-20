@@ -2,7 +2,7 @@
 
 $fileObjectId = $fileObject->getObjectId();
 
-if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) || isWholeSlideImage($fileObject->sourceFile)) { 
+if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWidget->enableDendro) || isWholeSlideImage($fileObject->sourceFile) || (isset($widgetObject->parentWidget->enableAnnotation) && $widgetObject->parentWidget->enableAnnotation)) { 
   $ratio = 1;
 }
 else {
