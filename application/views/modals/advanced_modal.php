@@ -70,9 +70,7 @@
       <div class="form-group">
         <label for="searchField" class="col-sm-2 control-label">File Type:</label>
         <div class="col-sm-4">
-          <input type="hidden" name="specificSearchField[]" value="fileTypesCache" autocomplete="off"
-            class="form-control advancedOption" value="">
-          <select name="specificSearchText[]" autocomplete="off" class="form-control advancedOption" value="">
+          <select name="fileTypesSearch" autocomplete="off" class="form-control advancedOption" value="">
             <option value="">All</option>
             <option value="image">Image</option>
             <option value="movie">Video</option>
@@ -86,7 +84,6 @@
             <option value="zipmeddicom">DICOM</option>
             <option value="zipscorm">SCORM</option>
           </select>
-          <input type="hidden" name="specificSearchFuzzy[]" value="0" />
 
         </div>
       </div>
