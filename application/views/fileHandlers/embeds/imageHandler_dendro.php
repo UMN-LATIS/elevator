@@ -182,48 +182,48 @@ if($widgetObject->parentWidget->dendroFields) {
 
 
 
-		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
-		if(minimapRatio > 4) {
-			minimapRatio = 1;
-		}
+		// var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
+		// if(minimapRatio > 4) {
+		// 	minimapRatio = 1;
+		// }
 
-		if(minimapRatio > 1) {
-			heightScale = 1/minimapRatio;
-			widthScale = 1;
-		}
-		else {
-			heightScale = 1;
-			widthScale = minimapRatio;
-		}
+		// if(minimapRatio > 1) {
+		// 	heightScale = 1/minimapRatio;
+		// 	widthScale = 1;
+		// }
+		// else {
+		// 	heightScale = 1;
+		// 	widthScale = minimapRatio;
+		// }
 		
-		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
-            var error;
+		// var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
+        //     var error;
 
-            var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //     var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
 
-            s3.getSignedUrl('getObject', params, function (err, url) {
-                tile.onload = (function(done, error, tile) {
-                    return function() {
-                        done(error, tile);
-                    }
-                })(done, error, tile);
-                tile.src=url;
-            });
+        //     s3.getSignedUrl('getObject', params, function (err, url) {
+        //         tile.onload = (function(done, error, tile) {
+        //             return function() {
+        //                 done(error, tile);
+        //             }
+        //         })(done, error, tile);
+        //         tile.src=url;
+        //     });
 
-            return tile;
+        //     return tile;
 
-        }, mapOptions);
+        // }, mapOptions);
         
-        var miniMap = new L.Control.MiniMap(miniLayer, {
-            width: 500,
-            height: 30,
-                        //position: "topright",
-                        toggleDisplay: true,
-                        zoomAnimation: false,
-                        zoomLevelOffset: -3,
-                        zoomLevelFixed: -3
-                    });
-        miniMap.addTo(map);
+        // var miniMap = new L.Control.MiniMap(miniLayer, {
+        //     width: 500,
+        //     height: 30,
+        //                 //position: "topright",
+        //                 toggleDisplay: true,
+        //                 zoomAnimation: false,
+        //                 zoomLevelOffset: -3,
+        //                 zoomLevelFixed: -3
+        //             });
+        // miniMap.addTo(map);
 
 		
 		var innerYear = "";
