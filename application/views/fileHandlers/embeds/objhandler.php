@@ -127,7 +127,7 @@ function setup3dhop() {
   presenter.setScene({
     meshes: {
       "targetAsset" : { url: "<?=$targetAsset?>" },
-      // "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
+      "Sphere" : { url: "/assets/3dviewer/models/singleres/sphere.ply" },
     },
     modelInstances : {
       "targetAsset" : {
