@@ -548,7 +548,7 @@ class FileManager extends Instance_Controller {
 	}
 
 
-	function getSidecar($fileId, $sidecarLabel) {
+	function getSidecar($fileId, $sidecarLabel="captions") {
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		$fileHandler->loadByObjectId($fileId);
@@ -582,8 +582,8 @@ class FileManager extends Instance_Controller {
 
 				if($uploadHandlerContent->fileId == $fileId) {
 
-					if(isset($uploadHandlerContent->sidecars) && array_key_exists("captions", $uploadHandlerContent->sidecars)) {
-						echo $uploadHandlerContent->sidecars['captions'];
+					if(isset($uploadHandlerContent->sidecars) && array_key_exists($sidecarLabel, $uploadHandlerContent->sidecars)) {
+						echo $uploadHandlerContent->sidecars[$sidecarLabel];
 						return;
 					}
 				}
