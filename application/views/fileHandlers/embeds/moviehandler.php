@@ -58,6 +58,52 @@ else {
   
 }
 
+
+
+$playlist = [];
+
+$playlist["image"] = null;
+
+if(isset($fileContainers['imageSequence'])) {
+  $playlist["image"] = stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2"));
+}
+if(isset($fileObject->sourceFile->metadata["spherical"])) {
+  $playlist["stereomode"] = isset($fileObject->sourceFile->metadata["stereo"])?"stereoscopicLeftRight":"monoscopic";
+}
+$playlist["sources"] = [];
+foreach($derivatives as $entry) {
+  $playlist["sources"][] = [
+    "type"=>$entry["type"], 
+    "file"=>$entry["file"], 
+    "label"=>$entry["label"],
+    "default"=>($entry["label"]=="HD")?"true":"false"
+  ];
+}
+
+$playlist["tracks"] = [];
+if(isset($fileContainers['vtt'])) {
+  $playlist["tracks"][] = [
+    "file" => isset($fileContainers['vtt'])?stripHTTP($fileContainers['vtt']->getProtectedURLForFile(".vtt")):null,
+    "kind" => "thumbnails"
+  ];
+}
+
+if(isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject->sidecars) && strlen($widgetObject->sidecars['captions'])>5) {
+  $playlist["tracks"][] = [
+    "file" => stripHTTP(instance_url("fileManager/getSidecar/" . $fileObjectId . "/captions")),
+    "label" => "English",
+    "kind" => "captions"
+  ];
+}
+
+if(isset($widgetObject->sidecars) && array_key_exists("chapters", $widgetObject->sidecars) && strlen($widgetObject->sidecars['chapters'])>5) {
+  $playlist["tracks"][] = [
+    "file" => stripHTTP(instance_url("fileManager/getSidecar/" . $fileObjectId . "/chapters")),
+    "kind" => "chapters"
+  ];
+}
+
+
 ?>
 <? // https://github.com/jwplayer/jwplayer can build from ?>
 <script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js"></script>
@@ -104,41 +150,10 @@ if(typeof objectId == 'undefined') {
   function buildPlayer() {
     jwplayer("videoElement").setup({
       ga: { label:"label"},
-      playlist: [{
-        image: '<?=isset($fileContainers['imageSequence'])?stripHTTP($fileContainers['imageSequence']->getProtectedURLForFile("/2")):null?>',
-        <?=(isset($fileObject->sourceFile->metadata["spherical"])?("stereomode:".(isset($fileObject->sourceFile->metadata["stereo"])?"'stereoscopicLeftRight',":"'monoscopic',")):null)?>
-        sources: [
-          <?foreach($derivatives as $entry):?>
-          {
-            type: "<?=$entry["type"]?>",
-            file: "<?=$entry["file"]?>",
-            label: "<?=$entry["label"]?>",
-            "default": "<?=$entry["label"]=="HD"?"true":"false"?>"
-          },
-          <?endforeach?>
-        ],
-        tracks: [
-          <?if(isset($fileContainers['vtt'])):?>
-          {
-            file: "<?=isset($fileContainers['vtt'])?stripHTTP($fileContainers['vtt']->getProtectedURLForFile(".vtt")):null?>",
-            kind: "thumbnails"
-          }
-          <?endif?>
-          <?if(isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject->sidecars) && strlen($widgetObject->sidecars['captions'])>5):?>
-          <?if(isset($fileContainers['vtt'])):?>
-          ,
-          <?endif?>
-          {
-            file: "<?=stripHTTP(instance_url("fileManager/getSidecar/" . $fileObjectId . "/captions"))?>",
-            label: "English",
-            kind: "captions"
-          }
-          <?endif?>
-          ]
-        }],
-        width: "100%",
-        height: "100%",
-        preload: 'none'
+      playlist: <?=json_encode($playlist) ?>,
+      width: "100%",
+      height: "100%",
+      preload: 'none'
       });
     }
     
