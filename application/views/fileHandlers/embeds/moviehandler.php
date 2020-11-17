@@ -239,4 +239,12 @@ if(typeof objectId == 'undefined') {
     });
 
   </script>
+
+<style>
+.jw-cue {
+  background-color: yellow !important;
+  height: 15px !important;
+}
+</style>
+
   <?endif?>
