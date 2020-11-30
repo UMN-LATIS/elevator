@@ -700,7 +700,7 @@ class Instance
         //
 
         $result = $this->collections->filter(function($collection) {
-            return (count($collection->getParent()) === 0 || !$this->collections->contains($collection->getParent()));
+          return (!$collection->getParent() || !$this->collections->contains($collection->getParent()));
         });
 
         return array_values($result->toArray());

@@ -32,6 +32,7 @@ class Instances extends Instance_Controller {
 				instance_redirect("/errorHandler/error/noPermission");
 				return;
 			}
+			$page = null;
 		}
 		else {
 			if(!$this->user_model->getIsSuperAdmin()) {

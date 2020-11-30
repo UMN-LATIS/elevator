@@ -116,7 +116,7 @@ if(typeof objectId == 'undefined') {
 }
 </script>
 
-<? if(!isset($fileContainers) || count($fileContainers) == 1):?>
+<? if(!isset($fileContainers) || count($derivatives) == 0):?>
   <p class="alert alert-info">No derivatives found.
   <?if(!$this->user_model->userLoaded):?>
     <?$this->load->view("errors/loginForPermissions")?>

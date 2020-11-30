@@ -161,6 +161,9 @@ class FileContainerS3 extends FileContainer {
 
 	public function getFileSize() {
 		$objectInfo = $this->parent->s3model->objectInfo($this->storageKey);
+		if(!$objectInfo) {
+			return false;
+		}
 		return($objectInfo["ContentLength"]);
 	}
 

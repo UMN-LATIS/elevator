@@ -726,7 +726,7 @@ class Permissions extends Instance_Controller {
 
 		$user = $this->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$umndid, "userType"=>"Remote"]);
 		if($user && count($user) >0){
-			return $user{0}->getId();
+			return $user[0]->getId();
 		}
 
 		$authHelper = $this->user_model->getAuthHelper();
