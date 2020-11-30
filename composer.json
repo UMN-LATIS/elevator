@@ -20,7 +20,7 @@
   "require": {
     "markwilson/verbal-expressions-php": "dev-master",
     "doctrine/common": "2.13.*",
-    "doctrine/dbal": "2.10.*",
+    "doctrine/dbal": "2.12.*",
     "doctrine/orm": "2.7.*",
     "doctrine/data-fixtures": "1.*",
     "pda/pheanstalk": "dev-master",
