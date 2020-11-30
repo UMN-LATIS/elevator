@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "83bdbe2059c2cf960b54cc17c8fdc50f",
+    "content-hash": "560324dcefc3ccd4f5837a06f7abb7cd",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -2213,26 +2213,30 @@
         },
         {
             "name": "pda/pheanstalk",
-            "version": "dev-master",
+            "version": "v3.1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pheanstalk/pheanstalk.git",
-                "reference": "6165573aad525d39b3ac8ae916214cb483a61263"
+                "url": "https://github.com/pda/pheanstalk.git",
+                "reference": "430e77c551479aad0c6ada0450ee844cf656a18b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/6165573aad525d39b3ac8ae916214cb483a61263",
-                "reference": "6165573aad525d39b3ac8ae916214cb483a61263",
+                "url": "https://api.github.com/repos/pda/pheanstalk/zipball/430e77c551479aad0c6ada0450ee844cf656a18b",
+                "reference": "430e77c551479aad0c6ada0450ee844cf656a18b",
                 "shasum": ""
             },
             "require": {
-                "ext-mbstring": "*",
-                "php": ">=7.1.0"
+                "php": ">=5.3.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^7"
+                "phpunit/phpunit": "~4.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Pheanstalk\\": "src/"
@@ -2248,19 +2252,14 @@
                     "email": "paul@annesley.cc",
                     "homepage": "http://paul.annesley.cc/",
                     "role": "Developer"
-                },
-                {
-                    "name": "Sam Mousa",
-                    "email": "sam@mousa.nl",
-                    "role": "Maintainer"
                 }
             ],
             "description": "PHP client for beanstalkd queue",
-            "homepage": "https://github.com/pheanstalk/pheanstalk",
+            "homepage": "https://github.com/pda/pheanstalk",
             "keywords": [
                 "beanstalkd"
             ],
-            "time": "2020-09-22T07:17:48+00:00"
+            "time": "2015-08-07T21:42:41+00:00"
         },
         {
             "name": "php-unoconv/php-unoconv",
@@ -3351,7 +3350,6 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "markwilson/verbal-expressions-php": 20,
-        "pda/pheanstalk": 20,
         "smalot/pdfparser": 20,
         "buggedcom/phpvideotoolkit": 20,
         "tedivm/stash": 20,
