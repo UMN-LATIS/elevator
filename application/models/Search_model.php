@@ -410,6 +410,11 @@ class search_model extends CI_Model {
 
 		}
 
+		if(isset($searchArray["fileTypesSearch"]) && strlen($searchArray["fileTypesSearch"]) > 0) {
+			$filter[]['terms']['fileTypesCache'] = [$searchArray['fileTypesSearch']];
+		}
+		
+
 		$fuzzySearch = false;
 		if (isset($searchArray["fuzzySearch"]) && $searchArray['fuzzySearch']==true) {
 			$fuzzySearch = true;

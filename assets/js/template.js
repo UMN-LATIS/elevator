@@ -107,10 +107,17 @@ $(".collectionFilterSelect").on("click", function(e) {
 
 var searchId = null;
 function loadLastSearch() {
-  searchId = $.cookie("lastSearch");
-  $.removeCookie("lastSearch", {
+  try {
+    searchId = $.cookie("lastSearch");
+    $.removeCookie("lastSearch", {
     path: '/'
   });
+  }
+  catch(err) {
+  
+  }
+  
+  
   
   if (searchId) {
     $(".searchResultsNavBar").removeClass("hide");

@@ -474,7 +474,9 @@ class Search extends Instance_Controller {
 			$searchArray['templateId'] = $this->input->post("templateId");
 		}
 
-
+		if($this->input->post("fileTypesSearch")) {
+			$searchArray["fileTypesSearch"] = $this->input->post("fileTypesSearch");
+		}
 
 
 		/**

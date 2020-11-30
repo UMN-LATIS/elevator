@@ -900,8 +900,16 @@ class AssetManager extends Admin_Controller {
 							continue;
 						}
 						else if(get_class($widget) == "Date") {
-							if(strpos($rowEntry, "-")) { 
-								$exploded = explode("-", $rowEntry);
+							if(strpos($rowEntry, ",")) {
+								$dateExploded = $exploded = preg_split("/,/", $rowEntry, 2);
+								$widgetContainer->label = $dateExploded[1];
+								$dateString = $dateExploded[0];
+							}
+							else {
+								$dateString = $rowEntry;
+							}
+							if(strpos($dateString, "-")) { 
+								$exploded = explode("-", $dateString);
 								if($this->parseTime($exploded[0])) {
 									$widgetContainer->start = ["text"=>trim($exploded[0]), "numeric"=>$this->parseTime($exploded[0])];
 								}
@@ -910,8 +918,8 @@ class AssetManager extends Admin_Controller {
 								}
 							}
 							else {
-								if($this->parseTime($rowEntry)) {
-									$widgetContainer->start = ["text"=>trim($rowEntry), "numeric"=>$this->parseTime($rowEntry)];
+								if($this->parseTime($dateString)) {
+									$widgetContainer->start = ["text"=>trim($dateString), "numeric"=>$this->parseTime($dateString)];
 									$widgetContainer->end = ["text"=>"", "numeric"=>""];
 								}	
 							}

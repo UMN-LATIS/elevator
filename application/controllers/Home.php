@@ -68,7 +68,7 @@ class Home extends Instance_Controller {
 	public function debug($dump) {
 		echo "<pre>";
 		if($dump=="shib") {
-			$shib = ["eduPersonAffiliation","eppn","isGuest","uid","umnDID","umnJobSummary","umnRegSummary"];
+			$shib = ["eduPersonAffiliation","eppn","isGuest","uid","umnDID","umnJobSummary","umnRegSummary", "eduCourseMember"];
 			foreach($_SERVER as $key=>$value) {
 				if(in_array($key, $shib)) {
 					echo $key . ": " . $value . "\n";
