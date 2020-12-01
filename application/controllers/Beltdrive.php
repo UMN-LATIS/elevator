@@ -686,7 +686,7 @@ class Beltdrive extends CI_Controller {
 				}
 				$parsedURL = parse_url($importEntry['url'], PHP_URL_PATH);
 				$urlFile = basename($parsedURL);
-				$description = isset($importEntry["description"])?:null;
+				$description = isset($importEntry["description"])?$importEntry["description"]:null;
 				$fileContainer = new fileContainerS3();
 				$fileContainer->originalFilename = $urlFile;
 
