@@ -907,7 +907,7 @@ class AssetManager extends Admin_Controller {
 							else {
 								$url = $rowEntry;
 							}
-							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($rowEntry), "description"=>$description];
+							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($url), "description"=>$description];
 							continue;
 						}
 						else if(get_class($widget) == "Date") {
