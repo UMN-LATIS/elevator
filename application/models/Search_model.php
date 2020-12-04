@@ -102,7 +102,7 @@ class search_model extends CI_Model {
 
 			foreach($locations as $location) {
 				foreach($location->fieldContentsArray as $locationContent) {
-					if($locationContent->hasContents() && abs(floatval($locationContent->longitude) /90) <= 1 && abs(floatval($locationContent->latitude) / 180) <= 1) {
+					if($locationContent->hasContents() && abs(floatval($locationContent->longitude) /180) <= 1 && abs(floatval($locationContent->latitude) / 90) <= 1) {
 						$locationArray[] = [floatval($locationContent->longitude), floatval($locationContent->latitude)];
 					}
 				}
