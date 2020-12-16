@@ -61,6 +61,15 @@
 			'glyphicon-chevron-up');
 	});
 </script>
+
+
+<?if(isset($collectionText)):?>
+<div class="container collectionDescription">
+	<?=$collectionText?>
+</div>
+
+<?endif?>
+
 <div class="row rowContainer collectionList">
 	<div class="col-md-4">
 		<ul>

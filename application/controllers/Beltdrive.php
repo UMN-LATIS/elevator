@@ -686,6 +686,7 @@ class Beltdrive extends CI_Controller {
 				}
 				$parsedURL = parse_url($importEntry['url'], PHP_URL_PATH);
 				$urlFile = basename($parsedURL);
+				$description = isset($importEntry["description"])?$importEntry["description"]:null;
 				$fileContainer = new fileContainerS3();
 				$fileContainer->originalFilename = $urlFile;
 
@@ -761,7 +762,7 @@ class Beltdrive extends CI_Controller {
 				echo $localPath . "\n";
 				if(file_exists($localPath)) {
 					if($fileContainer->copyToRemoteStorage()) {
-						$assetArray[$importEntry['field']][] = ["fileId"=>$fileId, "regenerate"=>"On"];							
+						$assetArray[$importEntry['field']][] = ["fileId"=>$fileId, "regenerate"=>"On", "fileDescription"=>$description];							
 						unlink($localPath);
 					}
 					else {

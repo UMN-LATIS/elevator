@@ -59,7 +59,7 @@ $(document).on("ready", function() {
 		}
 
 	}
-	else if(searchId && $(".rightColumn").find(".loadView").length>1) {
+	else if(searchId && $(".rightColumn").find(".uploadContent").length == 0 && $(".rightColumn").find(".loadView").length>1) {
 		// we have multiple subviews, let's ask the search engine if there's one we should highlight
 		$.post(basePath + "search/getHighlight", {searchId: searchId, objectId: objectId}, function(data, textStatus, xhr) {
 			var json = $.parseJSON(data);

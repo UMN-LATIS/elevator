@@ -896,7 +896,18 @@ class AssetManager extends Admin_Controller {
 						$firstLoop = false;
 
 						if(get_class($widget) == "Upload" && strlen(trim($rowEntry))>0) {
-							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($rowEntry)];
+							$description = null;
+							if(strpos($rowEntry, ",")) {
+								$fileUploadExploded = $exploded = preg_split("/,/", $rowEntry, 2);
+								$url = $fileUploadExploded[0];
+								if($fileUploadExploded[1]) {
+									$description = $fileUploadExploded[1];
+								}
+							}
+							else {
+								$url = $rowEntry;
+							}
+							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($url), "description"=>$description];
 							continue;
 						}
 						else if(get_class($widget) == "Date") {

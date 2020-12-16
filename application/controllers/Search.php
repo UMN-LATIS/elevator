@@ -289,6 +289,12 @@ class Search extends Instance_Controller {
 
 	public function listCollections() {
 
+		$pages = $this->doctrine->em->getRepository("Entity\InstancePage")->findBy(["instance"=>$this->instance, "title"=>"Collection Page"]);
+		$collectionText = null;
+		if($pages) {
+			$firstPage = current($pages);
+			$collectionText = $firstPage->getBody();
+		}
 
 		$jsLoadArray[] = "templateSearch";
 		$this->template->loadJavascript($jsLoadArray);
@@ -299,7 +305,7 @@ class Search extends Instance_Controller {
 		$collections = array_values($collections);  // rekey array
 		
 		$this->template->loadJavascript(["templateSearch"]);
-		$this->template->content->view("listCollections", ["collections"=>$collections]);
+		$this->template->content->view("listCollections", ["collections"=>$collections, "collectionText"=>$collectionText]);
 		$this->template->publish();
 
 	}
