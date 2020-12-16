@@ -18,6 +18,6 @@ Most parts of the Elevator interface are selectable and tweak-able with CSS and 
 
 If you're one of our partner institutions, we can have your instances use an alternative base CSS set. We can supply a starting set based on our Bootstrap 3 foundation. 
 
-## Can I customize the "all collections" screen
+## Can I customize the "all collections" screen?
 
 If you create an Instance Page titled "Collection Page", that content will automatically be drawn at the top of the "all collections" browsing page. 
