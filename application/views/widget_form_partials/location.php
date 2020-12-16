@@ -107,9 +107,9 @@
 <script>
 
 $(document).ready(function() {
-	mapElement = $("#<?=$widgetModel->getFieldTitle()?>").find(".mapWidget");
-	latitudeElement= $("#<?=$widgetModel->getFieldTitle()?>").find(".latitude");
-	longitudeElement = $("#<?=$widgetModel->getFieldTitle()?>").find(".longitude");
+	mapElement = $("#<?=$formFieldMapId?>").find(".mapWidget");
+	latitudeElement= $("#<?=$latitudeId?>");
+	longitudeElement = $("#<?=$longitudeId?>");
 	
 	revealMap(mapElement[0],latitudeElement, longitudeElement);
 

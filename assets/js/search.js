@@ -571,18 +571,18 @@ function loadNestedAssets(objectId) {
 
 
 function prepMap() {
-
+	
 	if(cachedResults === "") {
 		return;
 	}
-	if(markers) {
-		markers.clearLayers();	
+	if(markers["mapPane"]) {
+		markers["mapPane"].clearLayers();	
 	}
 	
-	if(!map) {
+	if(!map["mapPane"]) {
 		loadMap("mapPane");
 	}
-	markers = L.markerClusterGroup({ showCoverageOnHover: false});
+	markers["mapPane"] = L.markerClusterGroup({ showCoverageOnHover: false});
 
 	$.each(cachedResults.matches, function(index, value) {
 		if(value.locations) {
@@ -599,7 +599,7 @@ function prepMap() {
 
 					localMarker = L.marker([loc[1],loc[0]]);  
 					localMarker.bindPopup(html);
-  					markers.addLayer(localMarker);
+  					markers["mapPane"].addLayer(localMarker);
 					
 				});
 			});
@@ -607,8 +607,8 @@ function prepMap() {
 
 	});
 
-	map.addLayer(markers);
-	map.fitBounds(markers.getBounds().pad(0.5)); 
+	map["mapPane"].addLayer(markers["mapPane"]);
+	map["mapPane"].fitBounds(markers["mapPane"].getBounds().pad(0.5)); 
 
 }
 

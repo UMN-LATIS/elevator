@@ -364,19 +364,23 @@ var loadMapModal = function (e) {
 	$("#mapModalLabel").html(label);
 
 	loadMap("mapModalContainer");
-	if (markers) {
-		markers.clearLayers();
+	
+	if (markers["mapModalContainer"]) {
+		markers["mapModalContainer"].clearLayers();
+	}
+	else {
+		markers["mapModalContainer"] = new L.layerGroup();
 	}
 
-	map.setView([latitude, longitude], 10);
+	map["mapModalContainer"].setView([latitude, longitude], 10);
 
 
 	if (!markers) {
-		markers = new L.layerGroup();
+		markers["mapModalContainer"] = new L.layerGroup();
 	}
 	localMarker = L.marker([latitude, longitude]);
-	markers.addLayer(localMarker);
-	map.addLayer(markers);
+	markers["mapModalContainer"].addLayer(localMarker);
+	map["mapModalContainer"].addLayer(markers["mapModalContainer"]);
 
 
 	$("#mapNearby").attr("href", basePath + "search/nearbyAssets/" + latitude + "/" + longitude);
