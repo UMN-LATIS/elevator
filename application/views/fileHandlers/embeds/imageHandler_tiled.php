@@ -111,6 +111,7 @@
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
 			tileSize: 254,
 			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
+			maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
 			overlap: 1,
 		});
 		var miniMap = new L.Control.MiniMap(miniLayer, {
