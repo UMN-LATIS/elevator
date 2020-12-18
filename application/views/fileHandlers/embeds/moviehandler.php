@@ -339,7 +339,6 @@ jwplayer().on('ready', function() {
       
     }
 
-    
 
     if(chapters) {
       parser.oncue = function(cue) {
@@ -537,7 +536,7 @@ function resetSearch() {
 }
 
 .searchbox input {
-	background: #fff url("assets/search.png") no-repeat top left;
+	background: #fff url("/assets/jwplayer/search.png") no-repeat top left;
 	border-radius: 3px;
 	border: none;
 	color: #000;
