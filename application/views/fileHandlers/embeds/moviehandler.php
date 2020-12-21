@@ -500,6 +500,22 @@ if(interactiveTranscript) {
     cycle = -1;
     transcript.scrollTop = 0;
   }
+
+  function loadCaptions() {
+
+    var h = "<p>";
+    var section = 0;
+    cues.forEach((caption, i) => {
+      if (section < chapterCues.length && caption.startTime > chapterCues[section].startTime) {
+        h += "</p><h4>"+chapterCues[section].text+"</h4><p>";
+        section++;
+      }
+      h += `<span id="caption${i}">${caption.text}</span>`;
+    });
+    transcript.innerHTML = h + "</p>";
+  };
+
+
         
 }
       
