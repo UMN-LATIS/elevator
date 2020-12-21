@@ -161,7 +161,8 @@ if(typeof objectId == 'undefined') {
   <?endif?>
     <script type="text/javascript">
 
-  var transcriptOffset = "<?=($interactiveTranscript?240:0) ?>px";
+  var interactiveTranscript = <?=$interactiveTranscript?>;
+  var transcriptOffset = interactiveTranscript?"240px":"0px";
   var haveSeeked = false;
   var havePaused = false;
   var currentPosition = null;
@@ -273,6 +274,8 @@ if(typeof objectId == 'undefined') {
 
 
 
+
+
 var chapters = [];
 var captions = [];
 var caption = -1;
@@ -293,8 +296,12 @@ var parser = new WebVTT.Parser(window, WebVTT.StringDecoder()),
     cues = [],
     chapterCues = [],
     regions = [];
-jwplayer().on('ready', function() {
 
+  
+jwplayer().on('ready', function() {
+  if(!interactiveTranscript) {
+    return;
+  }
   var promises = [];
   if(captionPath) {
     promises.push(new Promise((resolve) => fetch(captionPath).then(r => r.text()).then(t => resolve(t))));
