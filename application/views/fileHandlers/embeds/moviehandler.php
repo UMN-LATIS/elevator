@@ -161,7 +161,7 @@ if(typeof objectId == 'undefined') {
   <?endif?>
     <script type="text/javascript">
 
-  var interactiveTranscript = <?=$interactiveTranscript?>;
+  var interactiveTranscript = <?=$interactiveTranscript?"true":"false"?>;
   var transcriptOffset = interactiveTranscript?"240px":"0px";
   var haveSeeked = false;
   var havePaused = false;
