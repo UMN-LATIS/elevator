@@ -4,6 +4,7 @@ $fileObjectId = $fileObject->getObjectId();
 $interactiveTranscript = false;
 
 if(isset($widgetObject->parentWidget->interactiveTranscript) && $widgetObject->parentWidget->interactiveTranscript = true) {
+
   $interactiveTranscript = true;
 }
 
@@ -106,6 +107,9 @@ if(isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject-
     "kind" => "captions"
   ];
 }
+else {
+  $interactiveTranscript = false;
+}
 
 $chapterPath=  null;
 if(isset($widgetObject->sidecars) && array_key_exists("chapters", $widgetObject->sidecars) && strlen($widgetObject->sidecars['chapters'])>5) {
@@ -157,6 +161,7 @@ if(typeof objectId == 'undefined') {
   <?endif?>
     <script type="text/javascript">
 
+  var transcriptOffset = "<?=($interactiveTranscript?240:0) ?>px";
   var haveSeeked = false;
   var havePaused = false;
   var currentPosition = null;
@@ -179,7 +184,7 @@ if(typeof objectId == 'undefined') {
       ga: { label:"label"},
       playlist: <?=json_encode($playlist) ?>,
       width: "100%",
-      height: "calc(100vh - 240px)",
+      height: `calc(100vh - ${transcriptOffset})`,
       preload: 'none'
       });
     }
@@ -584,12 +589,12 @@ function resetSearch() {
 }
 
 .transcript span.current {
-	background: #00f096;
-	color: #fff;
+	background: #caedff;
+	color: #000;
 }
 
 .transcript span:hover {
-	color: #00f096;
+	background-color: #98d8f4;
 }
 
 .transcript span.current:hover {

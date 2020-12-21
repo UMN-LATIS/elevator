@@ -9,7 +9,7 @@ if($this->user_model->userLoaded) {
 
 $displayHeight = 480;
 $adjustmentFactor = 0;
-if($widgetObject->parentWidget->interactiveTranscript) {
+if($widgetObject->parentWidget->interactiveTranscript && isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject->sidecars) && strlen($widgetObject->sidecars['captions'])>5) {
   $adjustmentFactor = 240;
   $displayHeight = $displayHeight + $adjustmentFactor;
 }
