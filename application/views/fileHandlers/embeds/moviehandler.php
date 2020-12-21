@@ -297,223 +297,212 @@ var parser = new WebVTT.Parser(window, WebVTT.StringDecoder()),
     chapterCues = [],
     regions = [];
 
+
+
+if(interactiveTranscript) {
   
-jwplayer().on('ready', function() {
-  if(!interactiveTranscript) {
-    return;
-  }
-  var promises = [];
-  if(captionPath) {
-    promises.push(new Promise((resolve) => fetch(captionPath).then(r => r.text()).then(t => resolve(t))));
-  }
-  if(chapterPath) {
-    promises.push(new Promise((resolve) => fetch(chapterPath).then(r => r.text()).then(t => resolve(t))));
-  }
-  Promise.all(promises)
-  // .then(textData => textData.map(t => t.split('\n\n').splice(1).map(s => parse(s))))
-  .then(parsedData => {
-    captions = null;
-    chapters = null;
-    if(captionPath && parsedData[0]) {
-      captions = parsedData[0];
-    }
-    if(chapterPath && !captionPath) {
-      chapters = parsedData[0];
-    }
-    else if(chapterPath && captionPath) {
-      chapters = parsedData[1];
-    }
-
-    var captionFormat = null;
-    if(captions) {
-
-      captionFormat = (captions.substring(0, 6).toUpperCase() == "WEBVTT")?"webvtt":"srt";
-    }
-    if(chapters) {
-      chapterFormat = (chapters.substring(0, 6).toUpperCase() == "WEBVTT")?"webvtt":"srt";
-    }
+  
+  jwplayer().on('ready', function() {
     
-    if(captions) {
-      if(captionFormat == "webvtt") {
-        parser.oncue = function(cue) {
-          cues.push(cue);
-        };
-        parser.onregion = function(region) {
-          regions.push(region);
-        }
-        parser.parse(captions);
-        parser.flush();
+    var promises = [];
+    if(captionPath) {
+      promises.push(new Promise((resolve) => fetch(captionPath).then(r => r.text()).then(t => resolve(t))));
+    }
+    if(chapterPath) {
+      promises.push(new Promise((resolve) => fetch(chapterPath).then(r => r.text()).then(t => resolve(t))));
+    }
+    Promise.all(promises)
+    // .then(textData => textData.map(t => t.split('\n\n').splice(1).map(s => parse(s))))
+    .then(parsedData => {
+      captions = null;
+      chapters = null;
+      if(captionPath && parsedData[0]) {
+        captions = parsedData[0];
       }
-      else {
-        cues = parseSRT(captions);
-
+      if(chapterPath && !captionPath) {
+        chapters = parsedData[0];
+      }
+      else if(chapterPath && captionPath) {
+        chapters = parsedData[1];
       }
       
-    }
-
-
-    if(chapters) {
+      var captionFormat = null;
+      if(captions) {
+        
+        captionFormat = (captions.substring(0, 6).toUpperCase() == "WEBVTT")?"webvtt":"srt";
+      }
+      if(chapters) {
+        chapterFormat = (chapters.substring(0, 6).toUpperCase() == "WEBVTT")?"webvtt":"srt";
+      }
+      
+      if(captions) {
+        if(captionFormat == "webvtt") {
+          parser.oncue = function(cue) {
+            cues.push(cue);
+          };
+          parser.onregion = function(region) {
+            regions.push(region);
+          }
+          parser.parse(captions);
+          parser.flush();
+        }
+        else {
+          cues = parseSRT(captions);
+          
+        }
+        
+      }
+      
+      
+      if(chapters) {
+        parser.oncue = function(cue) {
+          chapterCues.push(cue);
+        };
+        parser.onregion = function(region) {
+          chapterCues.push(region);
+        }
+        parser.parse(chapters);
+        parser.flush();
+      }
+      
+      
       parser.oncue = function(cue) {
-        chapterCues.push(cue);
+        cues.push(cue);
       };
       parser.onregion = function(region) {
-        chapterCues.push(region);
+        regions.push(region);
       }
-      parser.parse(chapters);
+      parser.parse(captions);
       parser.flush();
-    }
-    
-
-  parser.oncue = function(cue) {
-      cues.push(cue);
-    };
-    parser.onregion = function(region) {
-      regions.push(region);
-    }
-    parser.parse(captions);
-    parser.flush();
-
-
-    loadCaptions();
+      
+      
+      loadCaptions();
+    });
   });
-});
-
-function loadCaptions() {
-
-  var h = "<p>";
-  var section = 0;
-  cues.forEach((caption, i) => {
-    if (section < chapterCues.length && caption.startTime > chapterCues[section].startTime) {
-      h += "</p><h4>"+chapterCues[section].text+"</h4><p>";
-      section++;
-    }
-    h += `<span id="caption${i}">${caption.text}</span>`;
-  });
-  transcript.innerHTML = h + "</p>";
-};
-
-
-
-// Highlight current caption and chapter
-jwplayer().on('time', function(e) {
-  var p = e.position;
-  for(let j = 0; j<cues.length; j++) {
-    if(cues[j].startTime < p && cues[j].endTime > p) {
-      if(j != caption) {
-        var c = document.getElementById(`caption${j}`);
-        if(caption > -1) {
-          document.getElementById(`caption${caption}`).className = "";
-        }
-        c.className = "current";
-        if(query == "") {
-          transcript.scrollTop = c.offsetTop - transcript.offsetTop - 40;
-        }
-        caption = j;
-      }
-      break;
-    }
-  }
-});
-
-// Hook up interactivity
-transcript.addEventListener('click', function(e) {
-  if (e.target.id.indexOf('caption') === 0) {
-    let i = Number(e.target.id.replace('caption', ''));
-
-    jwplayer().seek(cues[i].startTime);
-  }
-});
-
-
-
-/**
- * Search elements below here
- */
-
-search.addEventListener('focus', () => setTimeout(() => search.select(), 100));
-
-search.addEventListener('keydown', function(e) {
-  switch (e.key) {
-    case 'Escape':
-    case 'Esc':
-      resetSearch();
-      break;
-
-    case 'Enter':
-      let q = this.value.toLowerCase();
-      if (q.length) {
-        if (q === query) {
-          let thisCycle;
-          if (e.shiftKey) {
-            thisCycle = cycle <= 0 ? (matches.length - 1) : (cycle - 1);
-          } else {
-            thisCycle = (cycle >= matches.length - 1) ? 0 : (cycle + 1);
+  
+  
+  // Highlight current caption and chapter
+  jwplayer().on('time', function(e) {
+    var p = e.position;
+    for(let j = 0; j<cues.length; j++) {
+      if(cues[j].startTime < p && cues[j].endTime > p) {
+        if(j != caption) {
+          var c = document.getElementById(`caption${j}`);
+          if(caption > -1) {
+            document.getElementById(`caption${caption}`).className = "";
           }
-          console.log(thisCycle);
-          cycleSearch(thisCycle);
+          c.className = "current";
+          if(query == "") {
+            transcript.scrollTop = c.offsetTop - transcript.offsetTop - 40;
+          }
+          caption = j;
+        }
+        break;
+      }
+    }
+  });
+  
+  // Hook up interactivity
+  
+  transcript.addEventListener('click', function(e) {
+    if (e.target.id.indexOf('caption') === 0) {
+      let i = Number(e.target.id.replace('caption', ''));
+      
+      jwplayer().seek(cues[i].startTime);
+    }
+  });
+  
+  
+  
+  /**
+  * Search elements below here
+  */
+  
+  search.addEventListener('focus', () => setTimeout(() => search.select(), 100));
+  
+  search.addEventListener('keydown', function(e) {
+    switch (e.key) {
+      case 'Escape':
+      case 'Esc':
+        resetSearch();
+        break;    
+      case 'Enter':
+        let q = this.value.toLowerCase();
+        if (q.length) {
+          if (q === query) {
+            let thisCycle;
+            if (e.shiftKey) {
+              thisCycle = cycle <= 0 ? (matches.length - 1) : (cycle - 1);
+            } else {
+              thisCycle = (cycle >= matches.length - 1) ? 0 : (cycle + 1);
+            }
+            console.log(thisCycle);
+            cycleSearch(thisCycle);
+            return;
+          }
+          resetSearch();
+          searchTranscript(q);
           return;
         }
         resetSearch();
-        searchTranscript(q);
-        return;
-      }
-      resetSearch();
-      break;
-
-    default:
-      // none
-  }
-});
-
-const sanitizeRegex = q => {
-  return q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
-
-// Execute search
-function searchTranscript(q) {
-  matches = [];
-  query = q;
-  cues.forEach(({ text }, loc) => {
-    let matchSpot = text.toLowerCase().indexOf(q);
-    if (matchSpot > -1) {
-      const replacer = sanitizeRegex(q);
-      document.getElementById(`caption${loc}`).innerHTML = text.replace(new RegExp(`(${replacer})`, 'gi'), `<em>$1</em>`, );
-      matches.push(loc);
+        break;
+        
+      default:
+        // none
     }
   });
-  if(matches.length) {
-    cycleSearch(0);
-  } else {
-    resetSearch();
-  }
-};
-function cycleSearch(i) {
-  if (cycle > -1) {
-    let o = document.getElementById(`caption${matches[cycle]}`);
-    o.querySelector('em').classList.remove('current');
-  }
-  console.log(matches[i]);
-  const c = document.getElementById(`caption${~~matches[i]}`);
-  c.querySelector('em').classList.add('current');
-  match.textContent = `${i + 1} of ${matches.length}`;
-  transcript.scrollTop = c.offsetTop - transcript.offsetTop - 40;
-  cycle = i;
-};
-
-function resetSearch() {
-  if (matches.length) {
-    cues.forEach((caption, i) => {
-      document.getElementById(`caption${~~i}`).textContent = caption.text;
+        
+  const sanitizeRegex = q => {
+    return q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+        
+  // Execute search
+  function searchTranscript(q) {
+    matches = [];
+    query = q;
+    cues.forEach(({ text }, loc) => {
+      let matchSpot = text.toLowerCase().indexOf(q);
+      if (matchSpot > -1) {
+        const replacer = sanitizeRegex(q);
+        document.getElementById(`caption${loc}`).innerHTML = text.replace(new RegExp(`(${replacer})`, 'gi'), `<em>$1</em>`, );
+        matches.push(loc);
+      }
     });
+    if(matches.length) {
+      cycleSearch(0);
+    } else {
+      resetSearch();
+    }
   }
-
-  query = "";
-  matches = [];
-  match.textContent = "0 of 0";
-  cycle = -1;
-  transcript.scrollTop = 0;
-};
-
+  function cycleSearch(i) {
+    if (cycle > -1) {
+      let o = document.getElementById(`caption${matches[cycle]}`);
+      o.querySelector('em').classList.remove('current');
+    }
+    console.log(matches[i]);
+    const c = document.getElementById(`caption${~~matches[i]}`);
+    c.querySelector('em').classList.add('current');
+    match.textContent = `${i + 1} of ${matches.length}`;
+    transcript.scrollTop = c.offsetTop - transcript.offsetTop - 40;
+    cycle = i;
+  }
+  
+  function resetSearch() {
+    if (matches.length) {
+      cues.forEach((caption, i) => {
+        document.getElementById(`caption${~~i}`).textContent = caption.text;
+      });
+    }
+    
+    query = "";
+    matches = [];
+    match.textContent = "0 of 0";
+    cycle = -1;
+    transcript.scrollTop = 0;
+  }
+        
+}
+      
 
   </script>
 
