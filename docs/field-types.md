@@ -99,7 +99,9 @@ A file-attachment field.  This allows users to upload a file their computer.  JS
     "enableTiling":true, 
     "enableDendro": false, 
     "enableIframe":false, 
-    "enableAnnotation":false
+    "enableAnnotation":false,
+    "forceTiling": false,
+    "interactiveTranscript": false
 }
 ```
 
@@ -121,6 +123,11 @@ When enabled, this allows you to enter a URL for an asset, instead of attaching 
 ### enableAnnotation
 This enables markup tools that allow viewer to annotate images. Users with "curation" level privileges can also save those annotations to the server. 
 
+### forceTiling
+Normally, Elevator only generates tiles for images greater than 30 megapixels, or when a feature that requires tiles (like annotation) is enabled. This option allows you to force tiling for all image assets.
+
+### interactiveTranscript
+When this is enabled, video assets with attached captions will have an interactive transcript displayed below the movie. This allows users to search and navigate based on the caption text. If you also add chapter markers to the file, these will be used to add formatting to the transcript sections. 
 
 ### Sidecar Data
-Some file formats (movies, 3d objects) will present an additional field when being uploaded.  In this case of movies, this is where you can add SRT subtitles.  For 3d Objects, a custom JSON attachment can describe points of interest.  This format will be documented in a separate application.
+Some file formats (movies, 3d objects) will present an additional field when being uploaded.  In this case of movies, this is where you can add SRT or WebVTT subtitles, or WebVTT chapter markers.  For 3d Objects, a custom JSON attachment can describe points of interest.  
