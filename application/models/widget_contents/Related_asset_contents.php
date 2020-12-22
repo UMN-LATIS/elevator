@@ -173,12 +173,13 @@ class Related_asset_contents extends Widget_contents_base {
 			$assetText = [];
 			// decrement to prevent recusion.
 			// TODO: refactor this to use the getSearchEntry on the related asset itself. Just filter the non-asset elements.
-			foreach($this->getRelatedAsset()->assetObjects as $object) {
-				if($object->getSearchable() && $object->hasContents()) {
-					$assetText[] = $this->nestedImplode(" ", $object->getSearchEntry($nestedObjectDepth-1));
-				}
-			}
+
 			if($this->getRelatedAsset()) {
+				foreach($this->getRelatedAsset()->assetObjects as $object) {
+					if($object->getSearchable() && $object->hasContents()) {
+						$assetText[] = $this->nestedImplode(" ", $object->getSearchEntry($nestedObjectDepth-1));
+					}
+				}
 				$assetText["objectId"] = $this->getRelatedAsset()->getObjectId();
 			}
 
