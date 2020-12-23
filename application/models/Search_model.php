@@ -62,7 +62,7 @@ class search_model extends CI_Model {
 		}
 		$this->asset_model->enableObjectCache();
 
-		/** HACK
+		/* HACK
 		* for now, make sure we have a mapping each time we add a record
 		*/
 		// $params['index'] = $this->config->item('elasticIndex');

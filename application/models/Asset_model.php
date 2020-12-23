@@ -182,8 +182,15 @@ class Asset_model extends CI_Model {
 			$relatedAssets = $this->getAllWithinAsset("Related_asset", $this, 0);
 			foreach($relatedAssets as $relatedAsset) {
 				if($type == "Upload" && isset($relatedAsset->ignoreForDigitalAsset) && $relatedAsset->ignoreForDigitalAsset == true) {
-						continue;
-					}
+					continue;
+				}
+				if($type == "Location" && isset($relatedAsset->ignoreForLocationSearch) && $relatedAsset->ignoreForLocationSearch == true) {
+					continue;
+				}
+				if($type == "Date" && isset($relatedAsset->ignoreForDateSearch) && $relatedAsset->ignoreForDateSearch == true) {
+					continue;
+				}
+
 				foreach($relatedAsset->fieldContentsArray as $entry) {
 					$widgetArray = array_merge($widgetArray, $this->getAllWithinAsset($type, $entry->getRelatedAsset(), $recursionDepth-1));
 
