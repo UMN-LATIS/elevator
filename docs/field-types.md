@@ -57,7 +57,10 @@ This field allows you to link or embed other assets within one asset.  For examp
     "thumbnailView":false, 
     "defaultTemplate": 0,
     "matchAgainst": [0], 
-    "displayInline": false
+    "displayInline": false,
+    "ignoreForDigitalAsset": false,
+    "ignoreForLocationSearch": false,
+    "ignoreForDateSearch": false
 }
 ```
 
@@ -88,6 +91,21 @@ Controls whether this template draws directly inside another template, or is ope
 ### matchAgainst
 
 An array listing the other templates that this field should be matched against when doing autocomplete.
+
+### ignoreForDigitalAsset
+
+Sometimes, your parent record may have no upload field of its own. By default, Elevator will automatically load the digital asset from a related record in that case. Setting this value to true will disable this. It will also prevent the related asset from being used to populate a thumbnail.
+
+### ignoreForLocationSearch
+
+Normally, the location of a related record will impact the map location of the parent. Setting this value to true will prevent the related record from impacting the parent's location.
+
+### ignoreForDateSearch
+
+Normally, the location of a related record will impact the timeline location of the parent. Setting this value to true will prevent the related record from impacting the parent's timeline location.
+
+
+
 
 ## Upload
 A file-attachment field.  This allows users to upload a file their computer.  JSON controls whether dates and locations should automatically be extracted from uploaded files.
