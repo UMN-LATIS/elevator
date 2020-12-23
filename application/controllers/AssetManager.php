@@ -647,10 +647,10 @@ class AssetManager extends Admin_Controller {
 							foreach($object->fieldContentsArray as $entry) {
 								$outputObjects[] = $entry->fieldContents;
 							}
-							$outputRow[] = join($outputObjects, "|");
+							$outputRow[] = implode("|", $outputObjects);
 						}
 						else {
-							$outputRow[] = join("|",$object->getAsText(0));	
+							$outputRow[] = implode("|",$object->getAsText(0));	
 						}
 						
 						if(get_class($object) == "Upload") {
@@ -664,8 +664,8 @@ class AssetManager extends Admin_Controller {
 								}
 								
 							}
-							$outputRow[] = join($outputURLs, "|");
-							$outputRow[] = join($outputDerivatives, "|");
+							$outputRow[] = implode("|", $outputURLs);
+							$outputRow[] = implode("|", $outputDerivatives);
 						}
 						if(get_class($object) == "Related_asset") {
 							$outputObjects = array();
@@ -673,7 +673,7 @@ class AssetManager extends Admin_Controller {
 								$objectId = $entry->getRelatedObjectId();
 								$outputObjects[] = $objectId;
 							}
-							$outputRow[] = join($outputObjects, "|");
+							$outputRow[] = implode("|", $outputObjects);
 						}
 						if(get_class($widgets) == "Location") {
 							$outputLatitude = array();
@@ -686,10 +686,10 @@ class AssetManager extends Admin_Controller {
 								$outputLabel[] = $entry->locationLabel;
 								$outputAddress[] = $entry->address;
 							}
-							$outputRow[] = join($outputLatitude, "|");
-							$outputRow[] = join($outputLongitude, "|");
-							$outputRow[] = join($outputLabel, "|");
-							$outputRow[] = join($outputAddress, "|");
+							$outputRow[] = implode("|", $outputLatitude);
+							$outputRow[] = implode("|", $outputLongitude);
+							$outputRow[] = implode("|", $outputLabel);
+							$outputRow[] = implode("|", $outputAddress);
 						}
 					}
 					else {
