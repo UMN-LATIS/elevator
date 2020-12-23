@@ -601,6 +601,7 @@ class AssetManager extends Admin_Controller {
 			$widgetArray = array();
 			$widgetArray[] = "objectId";
 			$widgetArray[] = "collection";
+			$widgetArray[] = "objectURL";
 			foreach($assetTemplate->widgetArray as $widgets) {
 				$widgetArray[] = $widgets->getLabel();
 				if(get_class($widgets) == "Upload") {
@@ -634,6 +635,7 @@ class AssetManager extends Admin_Controller {
 				$outputRow[] = $assetModel->getObjectId();
 				$collection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
 				$outputRow[] = $collection->getTitle();
+				$outputRow[] = instance_url("assets/viewAsset/" . $assetModel->getObjectId());
 				foreach($assetTemplate->widgetArray as $key => $widgets) {
 					if(isset($assetModel->assetObjects[$key])) {
 						$object = $assetModel->assetObjects[$key];
