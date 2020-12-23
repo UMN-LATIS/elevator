@@ -136,15 +136,15 @@ class UMNHelper extends AuthHelper
 						$role = $explodedString[0];
 					}
 					$courseString = explode("/", $course);
-					$courseId = $courseString[8];
+					$courseId = intval($courseString[8]);
 					$deptCourse = $courseString[6];
 					if($role == "Instructor") {
 						
 						$courseName = $courseString[6];
-						$coursesTaught[$courseId + 0] = $courseName;
+						$coursesTaught[$courseId] = $courseName;
 						$deptCoursesTaught[$courseName] = $courseName;
 					}
-					$courses[] = $courseId + 0;
+					$courses[] = $courseId;
 					$deptCourses[] = $deptCourse;
 				}
 			}
@@ -154,7 +154,7 @@ class UMNHelper extends AuthHelper
 				foreach($jobCodeSummary as $jobCode) {
 					$jobCodeArray = explode(":", $jobCode);
 					if(isset($jobCodeArray[2])) {
-						$jobCodes[] = $jobCodeArray[2] + 0;
+						$jobCodes[] = intval($jobCodeArray[2]);
 					}
 					if(isset($jobCodeArray[10])) {
 						$units[] = $jobCodeArray[10];

@@ -22,7 +22,9 @@ Drawers follow the same permissions setup as the rest of Elevator, with the exce
 
 Begin by browsing to your drawer.  Select “Drawers” and then “All Drawers” and click on the drawer you’d like to edit.  Then select the drawer dropdown again and select the Drawer Permissions option.
 
-Click the Create a new group button partway down the page. Select a Group Type from the dropdown list. To add a course, select Course. Your current courses are listed in the dropdown; select the course you want to assign to this Drawer, and then click the Save button.
+Click the Create a new group button partway down the page. Select a Group Type from the dropdown list. To add a course, select Course. Your current courses are listed in the dropdown; select the course you want to assign to this Drawer, and then click the Save button. See the screencast below for a walkthrough.
+
+<iframe width="100%" height="480" src="https://www.youtube.com/embed/sJqRTntThMY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Video Excerpts
 

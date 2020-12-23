@@ -156,7 +156,7 @@ class Asset_template extends CI_Model {
 		}
 		else {
 			$data['lastModifiedBy'] = "";
-			$data['lastModifiedBAt'] = "";
+			$data['lastModifiedAt'] = "";
 		}
 		
 

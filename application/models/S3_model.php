@@ -226,7 +226,7 @@ class S3_model extends CI_Model {
 			return $result;
 		}
 		catch(Exception $e) {
-			$this->logging->logError("objectInfo", $e, $targetKey);
+			$this->logging->logError("objectInfo", $e->getMessage(), $targetKey);
 			return false;
 		}
 
