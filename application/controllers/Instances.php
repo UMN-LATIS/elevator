@@ -32,6 +32,7 @@ class Instances extends Instance_Controller {
 				instance_redirect("/errorHandler/error/noPermission");
 				return;
 			}
+			$page = null;
 		}
 		else {
 			if(!$this->user_model->getIsSuperAdmin()) {
@@ -309,7 +310,7 @@ class Instances extends Instance_Controller {
 					catch (\Aws\S3\Exception\S3Exception $e) {
 						if($e->getStatusCode() == "403") {
 							if($loopedOnce) {
-								echo json_encode(["Error"=>"Can't find a bucket name"]);
+								echo json_encode(["error"=>"Can't find a bucket name"]);
 								return;
 							}
 							$s3InstanceName = $bucketName . "_01";
@@ -324,7 +325,7 @@ class Instances extends Instance_Controller {
 				}
 			}
 			catch (Exception $e) {
-				echo $e;
+				echo json_encode(["error"=>$e]);
 				return;
 			}
 
@@ -470,7 +471,7 @@ class Instances extends Instance_Controller {
 					'UserName' => $newUser
 					]);
 				if($result) {
-					echo json_encode(["Error"=>"User Exists"]);
+					echo json_encode(["error"=>"User Exists"]);
 					return;
 				}
 			}
@@ -551,7 +552,7 @@ class Instances extends Instance_Controller {
 
 			}
 			catch (Exception $e) {
-				echo $e;
+				echo json_encode(["error"=>$e]);
 			}
 		}
 		else {

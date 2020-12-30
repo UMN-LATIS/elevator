@@ -7,13 +7,21 @@ if($this->user_model->userLoaded) {
   }
 }
 
-$embed = htmlentities('<iframe width="560" height="480" src="' . $fileObject->getEmbedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
+$displayHeight = 480;
+$adjustmentFactor = 0;
+if($widgetObject->parentWidget->interactiveTranscript && isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject->sidecars) && strlen($widgetObject->sidecars['captions'])>5) {
+  $adjustmentFactor = 350; // this is bigger than the size we use in the embed, to tweak the ratio that we use during embed.
+  $displayHeight = $displayHeight + $adjustmentFactor;
+}
 
-$ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+$embed = htmlentities('<iframe width="560" height="' . $displayHeight . '" src="' . $fileObject->getEmbedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
+
+$ratio = $fileObject->sourceFile->metadata["width"] / ($fileObject->sourceFile->metadata["height"] + $adjustmentFactor);
 if(isset($fileObject->sourceFile->metadata["rotation"]) && (abs($fileObject->sourceFile->metadata["rotation"]) == 90 || abs($fileObject->sourceFile->metadata["rotation"]) == 270)) {
   // rotated sources will have flipped ratios
   $ratio = 1 / $ratio;
 }
+
 
 $menuArray = [];
 if(count($fileContainers)>0) {
@@ -61,6 +69,7 @@ if($allowOriginal) {
 $menuArray['download'] = $downloadArray;
 
 ?>
+
 <script>
 
   if(typeof objectId == 'undefined') {
@@ -70,7 +79,7 @@ $menuArray['download'] = $downloadArray;
 
 <div class="row assetViewRow" >
   <div class="col-md-12">
-    <iframe width="100%" height="480" data-ratio="<?=$ratio?>" title="Embedd video" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
+    <iframe width="100%" height="<?=$displayHeight?>" data-ratio="<?=$ratio?>" title="Embedd video" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen class="videoEmbedFrame embedAsset"></iframe>
   </div>
 </div>
 

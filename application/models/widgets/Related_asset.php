@@ -11,6 +11,8 @@ class Related_asset extends Widget_base {
 	var $matchAgainst = array();
 	var $displayInline = false;
 	var $ignoreForDigitalAsset = false;
+	var $ignoreForLocationSearch = false;
+	var $ignoreForDateSearch = false;
 
 	public function __construct()
 	{
@@ -38,6 +40,8 @@ class Related_asset extends Widget_base {
 			$fieldEntry->displayInline = $this->displayInline;
 			$fieldEntry->matchAgainst = $this->matchAgainst;
 			$fieldEntry->ignoreForDigitalAsset = $this->ignoreForDigitalAsset;
+			$fieldEntry->ignoreForLocationSearch = $this->ignoreForLocationSearch;
+			$fieldEntry->ignoreForDateSearch = $this->ignoreForDateSearch;
 		}
 
 		return parent::getAsArray($nestedDepth);

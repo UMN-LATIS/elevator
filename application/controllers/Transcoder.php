@@ -13,6 +13,7 @@ class Transcoder extends CI_Controller {
 	public $serverId = null;
 	public $instance = null;
 
+	
 	function getMacLinux() {
 		exec('netstat -ie', $result);
 		if(is_array($result)) {
@@ -21,9 +22,9 @@ class Transcoder extends CI_Controller {
 				if($key > 0) {
 					$tmp = str_replace(" ", "", substr($line, 0, 10));
 					if($tmp <> "") {
-						$macpos = strpos($line, "HWaddr");
+						$macpos = strpos($line, "ether");
 						if($macpos !== false) {
-							$iface[] = array('iface' => $tmp, 'mac' => strtolower(substr($line, $macpos+7, 17)));
+							$iface[] = array('iface' => $tmp, 'mac' => strtolower(substr($line, $macpos+6, 17)));
 						}
 					}
 				}

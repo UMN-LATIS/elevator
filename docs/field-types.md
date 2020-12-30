@@ -57,7 +57,10 @@ This field allows you to link or embed other assets within one asset.  For examp
     "thumbnailView":false, 
     "defaultTemplate": 0,
     "matchAgainst": [0], 
-    "displayInline": false
+    "displayInline": false,
+    "ignoreForDigitalAsset": false,
+    "ignoreForLocationSearch": false,
+    "ignoreForDateSearch": false
 }
 ```
 
@@ -89,6 +92,21 @@ Controls whether this template draws directly inside another template, or is ope
 
 An array listing the other templates that this field should be matched against when doing autocomplete.
 
+### ignoreForDigitalAsset
+
+Sometimes, your parent record may have no upload field of its own. By default, Elevator will automatically load the digital asset from a related record in that case. Setting this value to true will disable this. It will also prevent the related asset from being used to populate a thumbnail.
+
+### ignoreForLocationSearch
+
+Normally, the location of a related record will impact the map location of the parent. Setting this value to true will prevent the related record from impacting the parent's location.
+
+### ignoreForDateSearch
+
+Normally, the location of a related record will impact the timeline location of the parent. Setting this value to true will prevent the related record from impacting the parent's timeline location.
+
+
+
+
 ## Upload
 A file-attachment field.  This allows users to upload a file their computer.  JSON controls whether dates and locations should automatically be extracted from uploaded files.
 
@@ -99,7 +117,9 @@ A file-attachment field.  This allows users to upload a file their computer.  JS
     "enableTiling":true, 
     "enableDendro": false, 
     "enableIframe":false, 
-    "enableAnnotation":false
+    "enableAnnotation":false,
+    "forceTiling": false,
+    "interactiveTranscript": false
 }
 ```
 
@@ -121,6 +141,11 @@ When enabled, this allows you to enter a URL for an asset, instead of attaching 
 ### enableAnnotation
 This enables markup tools that allow viewer to annotate images. Users with "curation" level privileges can also save those annotations to the server. 
 
+### forceTiling
+Normally, Elevator only generates tiles for images greater than 30 megapixels, or when a feature that requires tiles (like annotation) is enabled. This option allows you to force tiling for all image assets.
+
+### interactiveTranscript
+When this is enabled, video assets with attached captions will have an interactive transcript displayed below the movie. This allows users to search and navigate based on the caption text. If you also add chapter markers to the file, these will be used to add formatting to the transcript sections. 
 
 ### Sidecar Data
-Some file formats (movies, 3d objects) will present an additional field when being uploaded.  In this case of movies, this is where you can add SRT subtitles.  For 3d Objects, a custom JSON attachment can describe points of interest.  This format will be documented in a separate application.
+Some file formats (movies, 3d objects) will present an additional field when being uploaded.  In this case of movies, this is where you can add SRT or WebVTT subtitles, or WebVTT chapter markers.  For 3d Objects, a custom JSON attachment can describe points of interest.  

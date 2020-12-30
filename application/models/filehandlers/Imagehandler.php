@@ -199,7 +199,6 @@ class ImageHandler extends FileHandlerBase {
 			echo "Compressing " . $width . " x " . $height . "\n";
 			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height)) {
 				$derivativeContainer->ready = true;
-				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
 					//TODO: remove derivative
@@ -214,6 +213,7 @@ class ImageHandler extends FileHandlerBase {
 						$success=false;
 					}
 				}
+				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
