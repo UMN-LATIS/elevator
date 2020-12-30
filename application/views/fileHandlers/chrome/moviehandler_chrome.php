@@ -10,7 +10,7 @@ if($this->user_model->userLoaded) {
 $displayHeight = 480;
 $adjustmentFactor = 0;
 if($widgetObject->parentWidget->interactiveTranscript && isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject->sidecars) && strlen($widgetObject->sidecars['captions'])>5) {
-  $adjustmentFactor = 240;
+  $adjustmentFactor = 350; // this is bigger than the size we use in the embed, to tweak the ratio that we use during embed.
   $displayHeight = $displayHeight + $adjustmentFactor;
 }
 
@@ -21,6 +21,7 @@ if(isset($fileObject->sourceFile->metadata["rotation"]) && (abs($fileObject->sou
   // rotated sources will have flipped ratios
   $ratio = 1 / $ratio;
 }
+
 
 $menuArray = [];
 if(count($fileContainers)>0) {
@@ -68,6 +69,7 @@ if($allowOriginal) {
 $menuArray['download'] = $downloadArray;
 
 ?>
+
 <script>
 
   if(typeof objectId == 'undefined') {

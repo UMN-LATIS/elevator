@@ -365,16 +365,7 @@ if(interactiveTranscript) {
         parser.flush();
       }
       
-      
-      parser.oncue = function(cue) {
-        cues.push(cue);
-      };
-      parser.onregion = function(region) {
-        regions.push(region);
-      }
-      parser.parse(captions);
-      parser.flush();
-      
+
       
       loadCaptions();
     });
@@ -505,6 +496,7 @@ if(interactiveTranscript) {
 
     var h = "<p>";
     var section = 0;
+
     cues.forEach((caption, i) => {
       if (section < chapterCues.length && caption.startTime > chapterCues[section].startTime) {
         h += "</p><h4>"+chapterCues[section].text+"</h4><p>";
