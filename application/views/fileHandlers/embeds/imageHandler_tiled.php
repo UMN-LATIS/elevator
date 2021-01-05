@@ -32,10 +32,6 @@
 			return;
 		}
 		console.log("entry");
-		if(map !== null){
-			console.log("teardown");
-			map.remove(); // tear down any existing leaflets so we clear handlers.
-		}
 		
 		AWS.config = new AWS.Config();
 		AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
