@@ -98,11 +98,11 @@
     </style>
 <script type="application/javascript">
 
-    if(map) {
-        map.remove();
+    if(imageMap) {
+        imageMap.remove();
     }
 
-    var map;
+    var imageMap;
     var s3;
     var AWS;
     var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
@@ -133,7 +133,7 @@
 
         AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
         s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
-        map = L.map('map', {
+        imageMap = L.map('imageMap', {
             fullscreenControl: true,
             zoomSnap: 0,
             drawControl: true,
@@ -171,7 +171,7 @@
             return tile;
 
         }, mapOptions);
-        layer.addTo(map);
+        layer.addTo(imageMap);
 
         var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
         if(minimapRatio > 4 || minimapRatio < 1) {
@@ -213,7 +213,7 @@
                         zoomLevelOffset: -3,
                         zoomLevelFixed: -3
                     });
-        miniMap.addTo(map);
+        miniMap.addTo(imageMap);
 
         if(pixelsPerMillimeter > 10) {
 
@@ -249,11 +249,11 @@
               secondaryAreaUnit: 'sqm'
             });
 
-        measureControl.addTo(map);
+        measureControl.addTo(imageMap);
 
         }
         
-        leafletAnnotate = new LAnnotate(map, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
+        leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
 
 
     };

@@ -69,16 +69,16 @@ if($widgetObject->parentWidget->dendroFields) {
 </style>
 
 <? $token = $fileObject->getSecurityToken("tiled")?>
-<div class="fixedHeightContainer"><div style="height:100%; width:100%" id="map"></div></div>
+<div class="fixedHeightContainer"><div style="height:100%; width:100%" id="imageMap"></div></div>
 
 <script type="application/javascript">
 
 
-	if(map) {
-		map.remove();
+	if(imageMap) {
+		imageMap.remove();
 	}
 
-	var map;
+	var imageMap;
 	var s3;
 	var AWS;
 	var layer;
@@ -104,7 +104,7 @@ if($widgetObject->parentWidget->dendroFields) {
 
 		AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
-		map = L.map('map', {
+		imageMap = L.map('imageMap', {
 			fullscreenControl: true,
 			trackResize: true,
 			zoomControl: false,
@@ -143,7 +143,7 @@ if($widgetObject->parentWidget->dendroFields) {
 			return tile;
 
 		}, mapOptions);
-		layer.addTo(map);
+		layer.addTo(imageMap);
 		
 		var magnifyLayer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
@@ -169,10 +169,10 @@ if($widgetObject->parentWidget->dendroFields) {
 
 		L.DomEvent.on(window, 'keydown', function(e) {
 			if(e.keyCode == 90 && e.getModifierState("Control")) {
-				if (map.hasLayer(magnifyingGlass)) {
-					map.removeLayer(magnifyingGlass);
+				if (imageMap.hasLayer(magnifyingGlass)) {
+					imageMap.removeLayer(magnifyingGlass);
 	    		} else {
-					magnifyingGlass.addTo(map);
+					magnifyingGlass.addTo(imageMap);
 	    		}
 			}
 		}, this);
@@ -241,7 +241,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		canSave = true;
 		<?endif?>
 		popoutURL = "<?=stripHTTP(instance_url("asset/getEmbed/" . $fileObject->getObjectId() . "/null/true"));?>";
-		treering = new LTreering(map, basePath + "assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		treering = new LTreering(imageMap, basePath + "assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	// if(saveURL != "") {
     	// 	treering.addSaveButton();

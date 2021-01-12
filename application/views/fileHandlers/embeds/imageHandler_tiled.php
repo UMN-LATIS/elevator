@@ -17,7 +17,7 @@
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="mapElement"></div></div>
 
 <script type="application/javascript">
-
+	var imageMap;
 	var s3;
 	var AWS;
 	var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
@@ -39,7 +39,7 @@
 		AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
 		s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
 
-		map = new L.map('mapElement', {
+		imageMap = new L.map('mapElement', {
 			fullscreenControl: true,
 			zoomSnap: 0,
 			detectRetina: false,
@@ -71,7 +71,7 @@
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
 			pixelsPerMillimeter: pixelsPerMillimeter
 		});
-		layer.addTo(map);
+		layer.addTo(imageMap);
 
 		var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
 		if(minimapRatio > 4) {
@@ -120,7 +120,7 @@
 						zoomLevelFixed: -3,
 						detectRetina: false
 					});
-		miniMap.addTo(map);
+		miniMap.addTo(imageMap);
 
 		if(pixelsPerMillimeter > 10) {
 
@@ -156,7 +156,7 @@
 	          secondaryAreaUnit: 'sqm'
 			});
 
-		measureControl.addTo(map);
+		measureControl.addTo(imageMap);
 			
 		}
 		
