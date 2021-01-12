@@ -56,7 +56,7 @@
 
 </style>
 
-<div class="fixedHeightContainerSVS"><div style="height:100%; width:100%" id="map"></div></div>
+<div class="fixedHeightContainerSVS"><div style="height:100%; width:100%" id="imageMap"></div></div>
 <div class="panel panel-default">
         <div class="panel-body">
             <div class="input-group">

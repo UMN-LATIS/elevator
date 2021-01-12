@@ -121,11 +121,12 @@ function LTreering(viewer, basePath, options) {
     this.viewer.on('resize', () => {
       this.autoscroll.reset();
     });
-
-    $('#map').css('cursor', 'default');
+    var map = this.viewer;
+    $(map.getContainer()).css('cursor', 'default');
+    // $("#imageMap").css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-
+    
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
       this.viewData.btn.addTo(this.viewer);
@@ -846,7 +847,7 @@ function MouseLine(Lt) {
    */
   MouseLine.prototype.disable = function () {
     this.active = false;
-    $(Lt.viewer._container).off('mousemove');
+    $(Lt.viewer.getContainer()).off('mousemove');
     this.layer.clearLayers();
   }
 
@@ -864,7 +865,7 @@ function MouseLine(Lt) {
       return pointA + (scalerCoefficient * (pointB - pointC));
     };
 
-    $(Lt.viewer._container).mousemove(e => {
+    $(Lt.viewer.getContainer()).mousemove(e => {
       if (this.active) {
         this.layer.clearLayers();
         var mousePoint = Lt.viewer.mouseEventToLayerPoint(e);
@@ -1325,7 +1326,7 @@ function AnnotationAsset(Lt) {
  */
 function ScaleBarCanvas(Lt) {
   var scaleBarDiv = document.createElement('div');
-  var nativeWindowWidth = document.getElementById("map").clientWidth;
+  var nativeWindowWidth = Lt.viewer.getContainer().clientWidth;
 
   scaleBarDiv.innerHTML =
     '<div id="scale-bar-div"> \
@@ -1810,7 +1811,7 @@ function Calibration(Lt) {
     Lt.mouseLine.enable();
 
 
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
 
     $(document).keyup(e => {
       var key = e.which || e.keyCode;
@@ -1821,8 +1822,8 @@ function Calibration(Lt) {
 
     var latLng_1 = null;
     var latLng_2 = null;
-    $(Lt.viewer._container).click(e => {
-      document.getElementById('map').style.cursor = 'pointer';
+    $(Lt.viewer.getContainer()).click(e => {
+      Lt.viewer.getContainer().style.cursor = 'pointer';
 
 
       if (latLng_1 === null) {
@@ -1855,11 +1856,11 @@ function Calibration(Lt) {
   Calibration.prototype.disable = function () {
     $(document).off('keyup');
     // turn off the mouse clicks from previous function
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
     Lt.mouseLine.disable();
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
     this.popup.remove(Lt.viewer);
   };
 }
@@ -1901,7 +1902,7 @@ function Dating(Lt) {
 
       document.getElementById('year_input').select();
 
-      $(Lt.viewer._container).click(e => {
+      $(Lt.viewer.getContainer()).click(e => {
         popup.remove(Lt.viewer);
         this.disable();
       });
@@ -1953,7 +1954,7 @@ function Dating(Lt) {
     Lt.metaDataText.updateText(); // updates once user hits enter
 
     this.btn.state('inactive');
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     $(document).off('keypress');
     this.active = false;
   };
@@ -2006,7 +2007,7 @@ function CreatePoint(Lt) {
 
     Lt.mouseLine.enable();
 
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
 
     $(document).keyup(e => {
       var key = e.which || e.keyCode;
@@ -2015,8 +2016,8 @@ function CreatePoint(Lt) {
       }
     });
 
-    $(Lt.viewer._container).click(e => {
-      document.getElementById('map').style.cursor = 'pointer';
+    $(Lt.viewer.getContainer()).click(e => {
+      Lt.viewer.getContainer().style.cursor = 'pointer';
 
       var latLng = Lt.viewer.mouseEventToLatLng(e);
 
@@ -2066,11 +2067,11 @@ function CreatePoint(Lt) {
   CreatePoint.prototype.disable = function () {
     $(document).off('keyup');
     // turn off the mouse clicks from previous function
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
     Lt.mouseLine.disable();
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
     this.startPoint = true;
   };
 }
@@ -2181,10 +2182,10 @@ function CreateBreak(Lt) {
 
     Lt.mouseLine.enable();
 
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
 
-    $(Lt.viewer._container).click(e => {
-      document.getElementById('map').style.cursor = 'pointer';
+    $(Lt.viewer.getContainer()).click(e => {
+      Lt.viewer.getContainer().style.cursor = 'pointer';
 
       var latLng = Lt.viewer.mouseEventToLatLng(e);
 
@@ -2212,7 +2213,7 @@ function CreateBreak(Lt) {
    * @function disable
    */
   CreateBreak.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     Lt.viewer.dragging.enable();
     Lt.mouseLine.disable();
@@ -2259,7 +2260,7 @@ function DeletePoint(Lt) {
   DeletePoint.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
   };
 
   /**
@@ -2267,10 +2268,10 @@ function DeletePoint(Lt) {
    * @function disable
    */
   DeletePoint.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
   };
 }
 
@@ -2324,7 +2325,7 @@ function Cut(Lt) {
   Cut.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
     this.point = -1;
   };
 
@@ -2333,10 +2334,10 @@ function Cut(Lt) {
    * @function disable
    */
   Cut.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
     this.point = -1;
   };
 
@@ -2366,9 +2367,9 @@ function InsertPoint(Lt) {
    * @function action
    */
   InsertPoint.prototype.action = function () {
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
 
-    $(Lt.viewer._container).click(e => {
+    $(Lt.viewer.getContainer()).click(e => {
       var latLng = Lt.viewer.mouseEventToLatLng(e);
 
       Lt.undo.push();
@@ -2407,10 +2408,10 @@ function InsertPoint(Lt) {
       }
     });
 
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
   };
 }
 
@@ -2460,7 +2461,7 @@ function InsertZeroGrowth(Lt) {
   InsertZeroGrowth.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
   };
 
   /**
@@ -2468,9 +2469,9 @@ function InsertZeroGrowth(Lt) {
    * @function disable
    */
   InsertZeroGrowth.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
     this.active = false;
     Lt.viewer.dragging.enable();
     Lt.mouseLine.disable();
@@ -2512,7 +2513,7 @@ function InsertBreak(Lt) {
     Lt.mouseLine.enable();
     Lt.mouseLine.from(Lt.data.points[i].latLng);
 
-    $(Lt.viewer._container).click(e => {
+    $(Lt.viewer.getContainer()).click(e => {
       var latLng = Lt.viewer.mouseEventToLatLng(e);
       Lt.viewer.dragging.disable();
 
@@ -2568,7 +2569,7 @@ function InsertBreak(Lt) {
             });
             Lt.data.year += shift;
 
-            $(Lt.viewer._container).off('click');
+            $(Lt.viewer.getContainer()).off('click');
 
             Lt.undo.push();
 
@@ -2593,7 +2594,7 @@ function InsertBreak(Lt) {
   InsertBreak.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
   };
 
   /**
@@ -2601,10 +2602,10 @@ function InsertBreak(Lt) {
    * @function disable
    */
   InsertBreak.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
     Lt.viewer.dragging.enable();
     Lt.mouseLine.disable();
   };
@@ -3099,7 +3100,7 @@ function ViewData(Lt) {
       var stringContent = ''; // years and lengths
 
       //closes data view if mouse clicks anywhere outside the data viewer box
-      $(Lt.viewer._container).click(e => {
+      $(Lt.viewer.getContainer()).click(e => {
         this.disable();
       });
 
@@ -3338,7 +3339,7 @@ function ViewData(Lt) {
    * @function disable
    */
   ViewData.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     $('#confirm-delete').off('click');
     $('#cancel-delete').off('click');
@@ -3399,11 +3400,11 @@ function CreateAnnotation(Lt) {
   CreateAnnotation.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
 
     Lt.viewer.doubleClickZoom.disable();
-    $(Lt.viewer._container).click(e => {
-      $(Lt.viewer._container).click(e => {
+    $(Lt.viewer.getContainer()).click(e => {
+      $(Lt.viewer.getContainer()).click(e => {
         this.disable();
         this.enable();
       });
@@ -3444,10 +3445,10 @@ function CreateAnnotation(Lt) {
   CreateAnnotation.prototype.disable = function () {
     this.btn.state('inactive');
     Lt.viewer.doubleClickZoom.enable();
-    $(Lt.viewer._container).off('dblclick');
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('dblclick');
+    $(Lt.viewer.getContainer()).off('click');
     $(document).off('keypress');
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
     this.input.remove();
     this.active = false;
   };
@@ -3493,7 +3494,7 @@ function DeleteAnnotation(Lt) {
   DeleteAnnotation.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
   };
 
   /**
@@ -3501,10 +3502,10 @@ function DeleteAnnotation(Lt) {
    * @function disable
    */
   DeleteAnnotation.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
   };
 }
 
@@ -3534,7 +3535,7 @@ function EditAnnotation(Lt) {
   EditAnnotation.prototype.enable = function () {
     this.btn.state('active');
     this.active = true;
-    document.getElementById('map').style.cursor = 'pointer';
+    Lt.viewer.getContainer().style.cursor = 'pointer';
   };
 
   /**
@@ -3542,10 +3543,10 @@ function EditAnnotation(Lt) {
    * @function disable
    */
   EditAnnotation.prototype.disable = function () {
-    $(Lt.viewer._container).off('click');
+    $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
     this.active = false;
-    document.getElementById('map').style.cursor = 'default';
+    Lt.viewer.getContainer().style.cursor = 'default';
   };
 }
 
@@ -3615,7 +3616,7 @@ function ImageAdjustment(Lt) {
     var hueSlider = document.getElementById("hue-slider");
 
     //Close view if user clicks anywhere outside of slider window
-    $(Lt.viewer._container).click(e => {
+    $(Lt.viewer.getContainer()).click(e => {
       this.disable();
     });
 

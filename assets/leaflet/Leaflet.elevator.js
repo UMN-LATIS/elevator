@@ -22,7 +22,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		if(!options.maxZoom) {
 			this.options.maxZoom = null;
 		}
-		this._computeImageAndGridSize()
+		
 		this.on('tileload', this._adjustNonSquareTile)
 	},
 	createTile: function(coords, done) {
@@ -50,6 +50,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 	},
 
 _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaflet.Zoomify
+	var map = this._map;
 	var options = this.options,
 	tileSize = options.tileSize || 256
 
@@ -125,7 +126,9 @@ onAdd: function (map) {
 	this.adjustAttribution()
 	map.options.maxBoundsViscosity = 0.8
 	L.TileLayer.prototype.onAdd.call(this, map);
+	this._computeImageAndGridSize();
 	this.fitImage()
+	
 	map.on('resize', self._mapResized.bind(self))
 },
 
