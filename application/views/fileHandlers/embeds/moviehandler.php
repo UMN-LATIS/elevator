@@ -3,7 +3,7 @@ $fileObjectId = $fileObject->getObjectId();
 
 $interactiveTranscript = false;
 
-if(isset($widgetObject->parentWidget->interactiveTranscript) && $widgetObject->parentWidget->interactiveTranscript = true) {
+if(isset($widgetObject->parentWidget->interactiveTranscript) && $widgetObject->parentWidget->interactiveTranscript == true) {
 
   $interactiveTranscript = true;
 }
