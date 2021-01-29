@@ -457,7 +457,7 @@ class Search extends Instance_Controller {
 		if($accessLevel < PERM_SEARCH) {
 			if($this->user_model) {
 				$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
-				if(count($allowedCollections>0)) {
+				if(count($allowedCollections)>0) {
 					$allowedCollectionsIds = array_map(function($n) { return $n->getId(); }, $allowedCollections);
 				}
 				else {
