@@ -619,6 +619,7 @@ class AssetManager extends Admin_Controller {
 				}
 			}
 			$widgetArray[] = "last modified by";
+			$widgetArray[] = "last modified date";
 
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
@@ -712,6 +713,7 @@ class AssetManager extends Admin_Controller {
 
 				}
 				$outputRow[] = $assetModel->getLastModifiedName();
+				$outputRow[] = $assetModel->getGlobalValue("modified")->format('Y-m-d H:i:s');
 
 				unset($assetModel);
 				$this->doctrine->em->clear();
