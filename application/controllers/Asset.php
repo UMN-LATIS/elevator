@@ -121,6 +121,7 @@ class asset extends Instance_Controller {
 			return;
 		}
 
+		$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
 
 		// we check that they have access to the drawer or the specific asset (for API Calls)
 		// if they have access to the drawer for this asset, and then let them view it.
@@ -128,12 +129,26 @@ class asset extends Instance_Controller {
 		$this->accessLevel = $this->user_model->getAccessLevel("drawer", $excerpt->getDrawer());
 		$this->assetAccessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 		if($this->accessLevel < PERM_VIEWDERIVATIVES && $this->assetAccessLevel < PERM_VIEWDERIVATIVES) {
-			$this->errorhandler_helper->callError("noPermission");
+
+			// let's check if the excerpt file's parent is different. This can happen with nested views
+			if($fileHandler->parentObjectId !== $excerpt->getAsset()) {
+				$assetModel = new Asset_model;
+				$assetModel->loadAssetById($fileHandler->parentObjectId);
+				$this->assetAccessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+				if($this->accessLevel < PERM_VIEWDERIVATIVES && $this->assetAccessLevel < PERM_VIEWDERIVATIVES) {
+					$this->errorhandler_helper->callError("noPermission");
+				}
+				
+			}
+			else {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+			
 		}
 
 		$this->accessLevel = max($this->accessLevel, $this->assetAccessLevel);
 
-		$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
+		
 
 		if(!$fileHandler) {
 			instance_redirect("errorHandler/error/badExcerpt");
