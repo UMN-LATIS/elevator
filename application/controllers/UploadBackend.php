@@ -18,7 +18,7 @@ class uploadBackend extends Instance_Controller {
     public $AWS_ACCESS_KEY;
     public $DEBUG = true;
     public $ENGINE;
-    public $CHUNK_SIZE = 1048576;  // 6MB
+    public $CHUNK_SIZE = 6*1024*1024;  // 6MB
 
     public function __construct() {
         parent::__construct();
@@ -118,7 +118,7 @@ class uploadBackend extends Instance_Controller {
             $filename = $_GET['filename'];
             $filesize = (int)$_GET['filesize'];
             $last_modified = $_GET['last_modified'];
-
+            $this->logging->logError("payload", $_GET);
             $outputData = [
                     "date" => $nowUtc->format("Y-m-d\TH:i:s"),
                     "signature" => $key,

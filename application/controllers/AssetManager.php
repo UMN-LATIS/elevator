@@ -355,6 +355,7 @@ class AssetManager extends Admin_Controller {
 			$fileContainer->path = "original";
 
 			if(!$fileObjectId) {
+				$this->logging->logError("no file object");
 				$fileContainer->ready = false;
 
 			// this handler type may get overwritten later - for example, once we identify the contents of a zip
@@ -366,11 +367,15 @@ class AssetManager extends Admin_Controller {
 
 			}
 			else {
+				$this->logging->logError("had a file object");
 				$fileId = $fileObjectId;
 			}
 
 			$returnArray[] = ["fileObjectId"=>$fileId, "collectionId"=>$collectionId, "bucket"=>$collection->getBucket(), "bucketKey"=>$collection->getS3Key(), "path"=>$fileContainer->path,  "index"=>$index];
-			$this->doctrine->em->detach($fileHandler->asset);
+			if(isset($fileHandler)) {
+				$this->doctrine->em->detach($fileHandler->asset);
+			}
+			
 			$fileHandler = null;
 			$fileContainer = null;
 
@@ -619,6 +624,7 @@ class AssetManager extends Admin_Controller {
 				}
 			}
 			$widgetArray[] = "last modified by";
+			$widgetArray[] = "last modified date";
 
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
@@ -712,6 +718,7 @@ class AssetManager extends Admin_Controller {
 
 				}
 				$outputRow[] = $assetModel->getLastModifiedName();
+				$outputRow[] = $assetModel->getGlobalValue("modified")->format('Y-m-d H:i:s');
 
 				unset($assetModel);
 				$this->doctrine->em->clear();

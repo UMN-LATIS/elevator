@@ -261,7 +261,7 @@
             // but the chance for a false positive is basically zero
             // some browsers don't report the last modified date, so we default
             // to a blank date
-            u.file.lastModifiedDate = u.file.lastModifiedDate || new Date(0);
+            u.file.lastModifiedDate = u.file.lastModified || Math.round(Date.now() / 1000);
 
             if(u.file.size > u.settings.max_size) {
                 alert(
@@ -308,7 +308,7 @@
                 key: u.settings.key,
                 mime_type: u.settings.content_type,
                 collectionId: u.settings.collectionId,
-                last_modified: file.lastModifiedDate.valueOf()
+                last_modified: file.lastModifiedDate
             };
             if(force) {
                 args.force = true;
@@ -603,7 +603,7 @@
 
                 // the watcher interval; it cancels the xhr if it times out
                 u._intervals[chunk] = setInterval(function() {
-                    if(last_progress_time && (new Date() - last_progress_time) > 15000) { // 15s
+                    if(last_progress_time && (new Date() - last_progress_time) > 45000) { // 15s
                         log("Chunk Failed; retry");
                         clearInterval(u._intervals[chunk]);
                         if(u.get_state() == "processing") {
@@ -710,7 +710,7 @@
                     filesize: u.file.size,
                     mime_type: u.settings.content_type,
                     collectionId: u.settings.collectionId,
-                    last_modified: u.file.lastModifiedDate.valueOf()
+                    last_modified: u.file.lastModifiedDate
                 }
             });
         };
