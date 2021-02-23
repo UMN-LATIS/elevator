@@ -335,6 +335,9 @@ class S3_model extends CI_Model {
 	}
 
 	public function getObjectURL($targetKey) {
+		if(!$this->s3Client) {
+			throw new Exception('Missing object error');		
+		}
 		return $this->s3Client->getObjectUrl($this->bucket, $targetKey);
 	}
 

@@ -64,7 +64,7 @@
 
 
 <?if(isset($collectionText)):?>
-<div class="container collectionDescription">
+<div class="collectionDescription">
 	<?=$collectionText?>
 </div>
 
