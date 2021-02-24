@@ -285,7 +285,12 @@ $(function() {
 						<div class="form-group">
 							<label for="inputStatus" class="col-sm-2 control-label">Status:</label>
 							<div class="col-sm-6">
-								<p class="form-control-static"><?=$asset->getGlobalValue("deleted")?"Deleted":"Active"?></p>
+								<p class="form-control-static"><?=$asset->getGlobalValue("deleted")?"Deleted":"Active"?>
+								<?if($asset->getGlobalValue("deleted")):?>
+								(<?=$deletedBy?> - <?=$deletedAt?>)
+								<?endif?>
+								</p>
+								
 							</div>
 						</div>
 						<?endif?>

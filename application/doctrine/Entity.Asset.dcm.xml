@@ -14,6 +14,7 @@
     <field name="readyForDisplay" type="boolean"  nullable='false' />
     <field name="modifiedBy" type="integer" />
     <field name="createdBy" type="integer" />
+    <field name="deletedBy" type="integer" nullable='true'/>
     <field name="availableAfter" type="datetime" nullable='true'/>
     <field name="modifiedAt" type="datetime">
       <options>

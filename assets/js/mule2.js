@@ -330,7 +330,6 @@
                     u.chunks = json.chunks;
                     u.settings.key = json.key || u.settings.key;
                     u.settings.backup_key = u.settings.key;
-
                     if(!u.upload_id) {
                         console.log(json);
                         AmazonXHR.init(json, u.settings.key, file, function(e) {
@@ -603,7 +602,7 @@
 
                 // the watcher interval; it cancels the xhr if it times out
                 u._intervals[chunk] = setInterval(function() {
-                    if(last_progress_time && (new Date() - last_progress_time) > 45000) { // 15s
+                    if(last_progress_time && (new Date() - last_progress_time) > 120000) { // 15s
                         log("Chunk Failed; retry");
                         clearInterval(u._intervals[chunk]);
                         if(u.get_state() == "processing") {

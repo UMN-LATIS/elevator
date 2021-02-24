@@ -139,7 +139,6 @@ class asset extends API_Controller {
 	}
 
 	public function assetLookup($assetId) {
-
 		$isExcerpt = false;
 		$assetModel = null;
 		$this->load->model("asset_model");

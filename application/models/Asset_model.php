@@ -12,7 +12,7 @@ class Asset_model extends CI_Model {
 	/**
 	 * These are the values that are valid for all items, regardless of metadata schema.  In a relational database, these would be columns.
 	 */
-	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null, "deleted"=>false];
+	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null, "deleted"=>false, "deletedBy"=>"", "deletedAt"=>""];
 
 	public $assetTemplate = null;
 	public $assetObjects = array();
@@ -91,7 +91,9 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("availableAfter", $record->getAvailableAfter());
 		$this->setGlobalValue("modified", $record->getModifiedAt());
 		$this->setGlobalValue("modifiedBy", $record->getModifiedBy());
+		$this->setGlobalValue("deletedBy", $record->getDeletedBy());
 		$this->setGlobalValue("deleted", $record->getDeleted());
+		$this->setGlobalValue("deletedAt", $record->getDeletedAt());
 
 		if($noHydrate) {
 			return;
@@ -1057,6 +1059,18 @@ class Asset_model extends CI_Model {
 		return $lastModifiedBy;
 	}
 
+
+	public function getDeletedName() {
+		$deletedBy = "Unknown";
+		if($this->getGlobalValue("deletedBy") !== 0) {
+			$deletedId = $this->getGlobalValue("deletedBy");
+			$user = $this->doctrine->em->find('Entity\User', $deletedId);
+			$deletedBy = $user->getDisplayName();
+		}
+		return $deletedBy;
+	}
+
+
 	/**
 	 * Re-sort the widget array by one of the two sort values we store
 	 * @param  [type] $sortType [description]
@@ -1094,6 +1108,9 @@ class Asset_model extends CI_Model {
 
         $oldAssetObject->setDeleted(true);
         $oldAssetObject->setDeletedAt(new DateTime);
+		if($this->user_model && isset($this->user_model->user)) {
+			$oldAssetObject->setDeletedBy($this->user_model->getId());
+		}
         $this->doctrine->em->persist($oldAssetObject);
         $this->doctrine->em->flush();
 	}

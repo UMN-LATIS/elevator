@@ -590,4 +590,33 @@ class Asset
     {
         return $this->assetCache;
     }
+    /**
+     * @var int|null
+     */
+    private $deletedBy;
+
+
+    /**
+     * Set deletedBy.
+     *
+     * @param int|null $deletedBy
+     *
+     * @return Asset
+     */
+    public function setDeletedBy($deletedBy = null)
+    {
+        $this->deletedBy = $deletedBy;
+
+        return $this;
+    }
+
+    /**
+     * Get deletedBy.
+     *
+     * @return int|null
+     */
+    public function getDeletedBy()
+    {
+        return $this->deletedBy;
+    }
 }

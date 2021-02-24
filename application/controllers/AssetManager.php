@@ -223,6 +223,7 @@ class AssetManager extends Admin_Controller {
 		$restoreObject->setAssetId($currentParent->getAssetId());
 		$restoreObject->setRevisionSource(null);
 		$restoreObject->setDeleted(false);
+		$restoreObject->setDeletedBy(null);
 		if($currentParent) {
 			$currentParent->setAssetId(null);
 			$currentParent->setRevisionSource($restoreObject);
