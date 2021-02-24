@@ -149,18 +149,19 @@ class Asset_template extends CI_Model {
 
 		$pageHTML = "";
 
+		$data['deletedBy'] = "";
+		$data['deletedAt'] = "";
+		$data['lastModifiedBy'] = "";
+		$data['lastModifiedAt'] = "";
 		if($asset) {
 			$data['lastModifiedBy'] = $asset->getLastModifiedName();	
 			$data['lastModifiedAt'] = $asset->getGlobalValue("modified")->format('Y-m-d H:i:s');	
-			$data['deletedBy'] = $asset->getDeletedName();	
-			$data['deletedAt'] = $asset->getGlobalValue("deletedAt")->format('Y-m-d H:i:s');	
+			if($asset->getGlobalValue("deleted")) {
+				$data['deletedBy'] = $asset->getDeletedName();	
+				$data['deletedAt'] = $asset->getGlobalValue("deletedAt")->format('Y-m-d H:i:s');	
+			}
 		}
-		else {
-			$data['lastModifiedBy'] = "";
-			$data['lastModifiedAt'] = "";
-			$data['deletedBy'] = "";
-			$data['deletedAt'] = "";
-		}
+
 		
 
 		if($this->displayInline) {

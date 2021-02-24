@@ -1062,7 +1062,7 @@ class Asset_model extends CI_Model {
 
 	public function getDeletedName() {
 		$deletedBy = "Unknown";
-		if($this->getGlobalValue("deletedBy") !== 0) {
+		if($this->getGlobalValue("deletedBy") && $this->getGlobalValue("deletedBy") !== 0) {
 			$deletedId = $this->getGlobalValue("deletedBy");
 			$user = $this->doctrine->em->find('Entity\User', $deletedId);
 			$deletedBy = $user->getDisplayName();
