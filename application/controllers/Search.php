@@ -137,6 +137,9 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		uasort($widgetArray, function($a, $b) {
+			return strcmp($a["label"], $b["label"]);
+		});
 		$allowedCollections = array();
 		if($this->user_model) {
 			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);
