@@ -34,12 +34,19 @@
 		Show Collection when viewing asset
 	</label>
 </div>
+<div class="checkbox">
+	<label>
+		<input type="checkbox" value="On" id="showTemplate" name="showTemplate" <?=$template->getShowTemplate()?"checked":null?>>
+		Show Template when viewing asset
+	</label>
+</div>
 <div class="color">
 	<label>
 		<input value="<?=$template->getTemplateColor()?$template->getTemplateColor():0?>" name="templateColor">
 		Template color (0-8)
 	</label>
 </div>
+
 
 
 <!-- this gets filled with the widgets from handlebars -->

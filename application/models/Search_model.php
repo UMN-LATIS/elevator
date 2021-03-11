@@ -730,6 +730,11 @@ class search_model extends CI_Model {
 			$showCollection = true;
 			$collectionLinkCache = [];
 		}
+		
+		if($this->instance->getShowTemplateInSearchResults()) {
+			$showTemplate = true;
+			$templateCache = [];
+		}
 
 		foreach($matchArray["searchResults"] as $match) {
 			$asset = new Asset_model;
@@ -772,6 +777,18 @@ class search_model extends CI_Model {
 					}
 					$storedObject["collectionHierarchy"] = $collectionLinkCache[$assetCollection];
 				}
+				
+				if($showTemplate) {
+					$assetTemplateId = $asset->assetObject->getTemplateId();
+					if(!isset($templateCache[$assetTemplateId])) {
+						$template = new Asset_template($assetTemplateId);
+						$templateCache[$assetTemplateId] = $template->name;
+					}
+
+					$storedObject["template"]["name"] = $templateCache[$assetTemplateId];
+					$storedObject["template"]["id"] = $assetTemplateId;
+				}
+				
 
 				$resultsArray[] = $storedObject;
 

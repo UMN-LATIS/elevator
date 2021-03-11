@@ -265,6 +265,14 @@
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
+			<input type="checkbox" id="showTemplateInSearchResults" name="showTemplateInSearchResults" value="On" <?=$instance->getShowTemplateInSearchResults()?"checked":null?>>
+			Show Template In Search Results
+		</label>
+	</div>
+</div>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
 			<input type="checkbox" id="showPreviousNextSearchResults" name="showPreviousNextSearchResults" value="On" <?=$instance->getShowPreviousNextSearchResults()?"checked":null?>>
 			Show Previous/Next Search Results when Viewing Asset
 		</label>

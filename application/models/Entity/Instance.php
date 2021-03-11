@@ -1370,4 +1370,33 @@ class Instance
     {
         return $this->interstitialText;
     }
+    /**
+     * @var bool|null
+     */
+    private $showTemplateInSearchResults = '0';
+
+
+    /**
+     * Set showTemplateInSearchResults.
+     *
+     * @param bool|null $showTemplateInSearchResults
+     *
+     * @return Instance
+     */
+    public function setShowTemplateInSearchResults($showTemplateInSearchResults = null)
+    {
+        $this->showTemplateInSearchResults = $showTemplateInSearchResults;
+
+        return $this;
+    }
+
+    /**
+     * Get showTemplateInSearchResults.
+     *
+     * @return bool|null
+     */
+    public function getShowTemplateInSearchResults()
+    {
+        return $this->showTemplateInSearchResults;
+    }
 }

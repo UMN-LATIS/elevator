@@ -232,10 +232,17 @@ class Search extends Instance_Controller {
 			instance_redirect("/search");
 		}
 
-		$searchArray["searchText"] = "";
-		$searchArray["specificSearchField"] = [$fieldName];
-		$searchArray["specificSearchText"] = [rawurldecode($searchString)];
-		$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
+		if($fieldName == "template") {
+			$searchArray["searchText"] = "";
+			$searchArray["templateId"] = [$searchString];
+		}
+		else {
+			$searchArray["searchText"] = "";
+			$searchArray["specificSearchField"] = [$fieldName];
+			$searchArray["specificSearchText"] = [rawurldecode($searchString)];
+			$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
+		}
+
 		$searchArchive = new Entity\SearchEntry;
 		$searchArchive->setUser($this->user_model->user);
 		$searchArchive->setInstance($this->instance);

@@ -68,6 +68,7 @@ class Instances extends Instance_Controller {
 		$instance->setEnableInterstitial($this->input->post('enableInterstitial')?1:0);
 		$instance->setInterstitialText($this->input->post('interstitialText'));
 		$instance->setShowCollectionInSearchResults($this->input->post('showCollectionInSearchResults')?1:0);
+		$instance->setShowTemplateInSearchResults($this->input->post('showTemplateInSearchResults')?1:0);
 		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));

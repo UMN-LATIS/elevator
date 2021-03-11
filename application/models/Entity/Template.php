@@ -362,4 +362,62 @@ class Template
     {
         return $this->showCollection;
     }
+    /**
+     * @var bool
+     */
+    private $showTemplate = '0';
+
+    /**
+     * @var bool
+     */
+    private $showTemplateInBrowse = '0';
+
+
+    /**
+     * Set showTemplate.
+     *
+     * @param bool $showTemplate
+     *
+     * @return Template
+     */
+    public function setShowTemplate($showTemplate)
+    {
+        $this->showTemplate = $showTemplate;
+
+        return $this;
+    }
+
+    /**
+     * Get showTemplate.
+     *
+     * @return bool
+     */
+    public function getShowTemplate()
+    {
+        return $this->showTemplate;
+    }
+
+    /**
+     * Set showTemplateInBrowse.
+     *
+     * @param bool $showTemplateInBrowse
+     *
+     * @return Template
+     */
+    public function setShowTemplateInBrowse($showTemplateInBrowse)
+    {
+        $this->showTemplateInBrowse = $showTemplateInBrowse;
+
+        return $this;
+    }
+
+    /**
+     * Get showTemplateInBrowse.
+     *
+     * @return bool
+     */
+    public function getShowTemplateInBrowse()
+    {
+        return $this->showTemplateInBrowse;
+    }
 }

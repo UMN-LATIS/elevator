@@ -52,13 +52,24 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 		<?if($assetModel->assetTemplate->getShowCollection()):?>
 		<div class="row">
-			<div class="col-md-12 ">
+			<div class="col-md-12 assetWidget">
 				<strong>Collection:</strong>
 				<ul class="collectionList">
 						<? foreach(array_reverse($this->collection_model->getFullHierarchy($collectionId)) as $collection):?>
 						<li><a href="<?=instance_url("collections/browseCollection/". $collection->getId())?>"><?=$collection->getTitle()?></a>
 						</li>
 						<?endforeach?>
+				</ul>
+			</div>
+		</div>
+		<?endif?>
+		<?if($assetModel->assetTemplate->getShowTemplate()):?>
+		<div class="row">
+			<div class="col-md-12 assetWidget">
+				<strong>Template:</strong>
+				<ul class="collectionList">
+					<li><a href="<?=instance_url("search/scopedQuerySearch/template/" . $assetModel->assetTemplate->getId())?>"><?=$assetModel->assetTemplate->getName()?></a>
+					</li>
 				</ul>
 			</div>
 		</div>

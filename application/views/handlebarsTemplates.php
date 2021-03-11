@@ -35,6 +35,15 @@
 		</ul>
 		</div>
 		{{/if}}
+		{{# if template}}
+		
+		<div>
+			<strong>Template:</strong>
+		<ul class="collectionList">
+			<li><a href="{{../base_url}}search/scopedQuerySearch/template/{{template.id}}">{{{template.name}}}</a></li>
+		</ul>
+		</div>
+		{{/if}}
 	</div>
 	</div>
 </div>
