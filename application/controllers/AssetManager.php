@@ -977,7 +977,7 @@ class AssetManager extends Admin_Controller {
 							}		
 						}
 						else if(get_class($widget) == "Checkbox") {
-							if(strlen($rowEntry)>0 && $rowEntry != "0" && $rowEntry != "off" && strtolower($rowEntry) != "false") {
+							if(strlen($rowEntry)>0 && $rowEntry != "0" && strtolower($rowEntry) != "off" && strtolower($rowEntry) != "false") {
 								$widgetContainer->fieldContents = "on";	
 							}
 						}
