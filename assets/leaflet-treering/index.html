@@ -1,108 +1,68 @@
-<!DOCTYPE htmml>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="initial-scale=1">
-	<title>Tree Rings</title>
+<html>
+  <head>
+    <style>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
-    <link rel="stylesheet" href="node_modules/font-awesome-4.7.0/css/font-awesome.css">
+      body { background-color: #D9D9D9; }
 
-    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
+      #title { text-align: center;
+               background-color: #AEDF95;
+               font-size: 60px;
+               margin-top: 20px; }
 
-    <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
-    <link rel="stylesheet" href="node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
-    <link rel="stylesheet" href="node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
-    <link rel="stylesheet" href="node_modules/leaflet-easybutton/src/easy-button.css" />
-    <link rel="stylesheet" href="node_modules/leaflet-dialog/Leaflet.Dialog.css">
+      #bottom { text-align: center;
+                background-color: #AEDF95;
+                font-size: 60px; }
 
-    <link rel="stylesheet" href="style.css">
+      iframe { width: 90%;
+               height: 160%;
+               margin-bottom: 16px; }
 
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="node_modules/jszip/dist/jszip.min.js"></script>
-    <script src="node_modules/file-saver/FileSaver.min.js"></script>
+      #links { text-align: center;
+               font-size: 30px;
+               margin-bottom: 5px; }
 
-    <script src="node_modules/leaflet/dist/leaflet.js"></script>
-    <script src="node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
-    <script src="node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
-    <script src="node_modules/leaflet-easybutton/src/easy-button.js"></script>
-    <script src="node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
-    
-    <script src="Leaflet.elevator.js"></script>
-</head>
+      #fixed-tree-symbol { position: sticky; }
 
-<body>
-    <div id="map_container"><div id="map"></div></div>    
-</body>
+      #tree-symbol { text-align: center;
+                     font-size: 300px;}
+
+      table { width: 100%;
+              margin-left: auto;
+              margin-right: auto; }
+
+      td { text-align: center;
+           width: 50%; }
+
+    </style>
+  </head>
+  <body>
+
+    <p id="title"> Leaflet Tree-Ring Test Site </p>
+
+    <table>
+      <tr>
+        <td>
+          <p id="links"> No Measurements </p>
+          <iframe src="index_noPoints.html"> </iframe>
+        </td>
+        <td>
+          <P id="links"> Sub-Annual Forward Measurements </p>
+          <iframe id="iframe-right" src="index_hasPoints_hasLatewood.html"> </iframe>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <P id="links"> Annual Backward Measurements </p>
+          <iframe src="index_backwards_annual.html"> </iframe>
+        </td>
+        <td>
+          <P id="links"> Sub-Annual Backward Measurements </p>
+          <iframe id="iframe-right" src="index_backwards_subAnnual.html"> </iframe>
+        </td>
+      </tr>
+    </table>
+
+    <p id="bottom">&nbsp;</p>
+
+  </body>
 </html>
-<script type="application/javascript" src="leaflet-treering.js"></script>
-
-<script>
-    var src;
-    var map = L.map('map', {
-        zoomSnap: 0,
-        crs: L.CRS.Simple,
-        drawControl: true,
-        layers: [],
-        doubleClickZoom: false,
-        zoomControl: false,
-        trackResize: true
-    }).setView([0, 0], 0);
-
-    var layer = L.tileLayer.elevator(function(coords, tile, done) {
-        var error;
-        var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        tile.onload = (function(done, error, tile) {
-            return function() {
-                done(error, tile);
-            }
-        })(done, error, tile);
-        tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
-        //tile.src = params.Key;
-        src = tile.src;
-        return tile.src;
-    },
-    {
-        width: 231782,
-        height: 4042,
-        //width: 200521,
-        //height: 4196,
-        tileSize :254,
-        maxZoom: 13 - 1,
-        overlap: 1,
-        pixelsPerMillimeter: 480, //(NEW)
-        lineColor: 'blue'
-    }).addTo(map);
-
-    //minimap
-    var miniLayer = new L.tileLayer.elevator(function(coords, tile, done) {
-        var error;
-        var params = {Bucket: 'elevator-assets', Key: "testasset5/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        tile.onload = (function(done, error, tile) {
-            return function() {
-                done(error, tile)
-            }
-        })(done, error, tile);
-        tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
-        //tile.src = params.Key;
-        src = tile.src;
-        return tile.src;
-    },
-    {
-        width: 231782,
-        height: 4042,
-        //width: 200521,
-        //height: 4196,
-        tileSize: 254,
-        maxZoom: 13,
-        overlap: 1,
-    });
-
-    //map, basePath, {ppm: int, saveURL: string, savePermission: bool, popoutUrl: string, assetName: string, hasLatewood: bool, initialData: json}
-    var treering = new LTreering(map, "", {'ppm': layer.options.pixelsPerMillimeter, 'popoutUrl': "index.html", 'assetName': "ABC00X", 'hasLatewood': true, 'initialData': {'saveDate': {'day': 3, 'month': 10, 'year': 2017, 'hour': 13, 'minute': 7}}});
-    treering.loadInterface();
-</script>

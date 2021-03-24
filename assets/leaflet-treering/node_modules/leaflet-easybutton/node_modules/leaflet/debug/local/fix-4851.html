@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <link rel="stylesheet" href="../../dist/leaflet.css" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="../css/screen.css" />
+
+  <script type="text/javascript" src="../../build/deps.js"></script>
+  <script src="../leaflet-include.js"></script>
+</head>
+<body>
+  <div id='map'></div>
+
+
+
+  <script>
+    // Remember to include either the Leaflet 0.7.3 or the Leaflet 1.0.0-beta1 library
+    var myCenter = new L.LatLng(55.5673097006514,37.60336569448);
+    var map = new L.Map('map', {center: myCenter, zoom: 8});
+
+    var zones = [[[[55.5673097006514,37.60336569448],[55.5641864068225,37.60553569448],[55.5640345034819,37.6056064655545],[55.5633399760533,37.600998443059],[55.5663202930837,37.5989309721867]]]];
+    
+    var zoneLayer = L.layerGroup();
+    map.addLayer(zoneLayer);
+    
+    map.on('moveend', function(){
+          zoneLayer.clearLayers();
+          zones.forEach(function(zone){
+            var polygon = L.polygon(zone, {color:'black', weight:1});
+            zoneLayer.addLayer(polygon);
+          })
+    }.bind(this))
+    
+    
+    
+  </script>
+</body>
+</html>

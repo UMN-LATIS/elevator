@@ -1,0 +1,191 @@
+<!DOCTYPE htmml>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=1">
+	<title>Tree Rings</title>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+	<link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css">
+
+	<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
+
+	<link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
+	<link rel="stylesheet" href="node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
+	<link rel="stylesheet" href="node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
+	<link rel="stylesheet" href="node_modules/leaflet-easybutton/src/easy-button.css" />
+	<link rel="stylesheet" href="node_modules/leaflet-dialog/Leaflet.Dialog.css">
+
+	<link rel="stylesheet" href="style.css">
+
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>
+	<script src="node_modules/jszip/dist/jszip.min.js"></script>
+	<script src="node_modules/file-saver/FileSaver.min.js"></script>
+
+	<script src="node_modules/leaflet/dist/leaflet.js"></script>
+	<script src="node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
+	<script src="node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
+	<script src="node_modules/leaflet-easybutton/src/easy-button.js"></script>
+	<script src="node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
+    <script src="Leaflet.TileLayer.GL.js"></script>
+
+	<script src="Leaflet.elevator.js"></script>
+</head>
+
+<body>
+    <div id="map_container"><div id="imageMap"></div></div>
+</body>
+</html>
+<script type="application/javascript" src="leaflet-treering.js"></script>
+<script type="text/javascript" src="leaflet-treering.js"></script>
+
+<script>
+    var src;
+    var map = L.map('imageMap', {
+        fullscreenControl: true,
+        zoomSnap: 0,
+        crs: L.CRS.Simple,
+        drawControl: true,
+        layers: [],
+        doubleClickZoom: false,
+        zoomControl: false,
+        trackResize: true
+    }).setView([0, 0], 0);
+
+		// Zoom to annotation URL
+		var getURL = window.location.href;
+		var parsedURL = new URL(getURL);
+		var urlParams = new URLSearchParams(parsedURL.search);
+		var latData = urlParams.get("lat");
+		var lngData = urlParams.get("lng");
+		if (latData && lngData) {
+				map.setView([latData, lngData], 16); //  max zoom level is 18
+		};
+
+        var baseLayer = L.tileLayer.elevator(function(coords, tile, done) {
+        var error;
+        var params = {Bucket: 'elevator-assets', Key: "testasset7/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        tile.onload = (function(done, error, tile) {
+            return function() {
+                done(error, tile);
+            }
+        })(done, error, tile);
+        tile.crossOrigin = "";
+        tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
+        //tile.src = params.Key;
+        src = tile.src;
+        return tile.src;
+    },
+    {
+				width: 161686,
+        height: 3922,
+				//testasset5
+        //width: 231782,
+        //height: 4042,
+
+        //width: 200521,
+        //height: 4196,
+        tileSize :254,
+        maxNativeZoom: 18,
+        maxZoom: 18,
+        overlap: 1,
+        detectRetina: false,
+        pixelsPerMillimeter: 480, //(NEW)
+        lineColor: 'blue'
+    }).addTo(map);
+
+    var fragmentShader2 = `
+
+uniform float u_kernel[9];
+uniform float u_flipY;
+uniform float u_kernelWeight;
+// all based on https://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html
+vec3 texSample(const float x, const float y, in vec2 fragCoord)
+{
+	vec2 uv = fragCoord;
+    uv = (uv + vec2((x)/256.0 , (y)/256.0 ));
+    // this also fixed the seam by clamping one pixel from the bottom, but it's super hacky
+    // if(uv.y > 0.996) {
+    //     uv.y = 0.99;
+    // }
+	return texture2D(uTexture0, uv).xyz;
+}                
+
+
+vec3 embossFilter(in vec2 fragCoord, float strength){
+	vec3 f =
+	texSample(-1.,-1., fragCoord) *  u_kernel[0] +                     
+	texSample( 0.,-1., fragCoord) *  u_kernel[1] +                    
+	texSample( 1.,-1., fragCoord) *  u_kernel[2] +                      
+	texSample(-1., 0., fragCoord) *  u_kernel[3] +                    
+	texSample( 0., 0., fragCoord) *  u_kernel[4] +                     
+	texSample( 1., 0., fragCoord) *  u_kernel[5] +                      
+	texSample(-1., 1., fragCoord) *  u_kernel[6] +                     
+	texSample( 0., 1., fragCoord) *  u_kernel[7] +                     
+	texSample( 1., 1., fragCoord) *  u_kernel[8]
+	;                                              
+	return mix(texSample( 0., 0., fragCoord), f , strength); 
+}    
+
+void main(void){
+    // gl_Position = vec4(clipSpace * vec2(1, u_flipY), 0, 1);
+
+    vec4 targetTexture = texture2D(uTexture0, vec2(vTextureCoords.x, vTextureCoords.y));
+    // gl_FragColor = targetTexture;
+    vec3 result = embossFilter(vec2(vTextureCoords.x, vTextureCoords.y), uSharpenStrength);
+
+    gl_FragColor = vec4((result / u_kernelWeight).rgb,targetTexture.a);
+}
+`;
+    var layer = L.tileLayer.gl({
+        uniforms: {
+            uSharpenStrength: 0
+        },
+            crs: L.CRS.Simple,
+            noWrap: true,
+            infinite: false,
+            tileSize: 256,
+            detectRetina: false,
+			fragmentShader: fragmentShader2,
+			tileLayers: [baseLayer],
+		}).addTo(map);
+
+
+    /*var miniLayer = new L.tileLayer.elevator(function(coords, tile, done) {
+        var error;
+        var params = {Bucket: 'elevator-assets', Key: "testasset7/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+        tile.onload = (function(done, error, tile) {
+            return function() {
+                done(error, tile)
+            }
+        })(done, error, tile);
+        tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
+        //tile.src = params.Key;
+        src = tile.src;
+        return tile.src;
+    },
+    {
+				width: 161686,
+				height: 3922,
+				//testasset5
+				//width: 231782,
+				//height: 4042,
+
+        //width: 200521,
+        //height: 4196,
+        tileSize: 254,
+        maxZoom: 14,
+        overlap: 1,
+    });*/
+
+    //map, basepath, {ppm: int, saveURL: string, savePermission: bool, popoutUrl: string, assetName: string, hasLatewood: bool, initialData: json}
+		//basepath is the local image folder location (i.e. replace "" with "file:///C:/Users/.../leaflet-treering")
+		var treering = new LTreering(map, "", {'savePermission': true, 'saveURL': '/test', 'ppm':
+    468, 'popoutUrl': "index_backwards_annual.html", 'assetName': "BWAnn", 'hasLatewood': true,
+    'initialData': {"SaveDate":{},"year":1923,"forwardDirection":false,"subAnnual":false,"earlywood":true,"index":106,"points":[{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.0061821428596489526,"lng":0.5919810659996124}},{"start":false,"skip":false,"break":false,"year":2018,"earlywood":false,"latLng":{"lat":-0.006362046487839795,"lng":0.5881867349323147}},{"start":false,"skip":false,"break":false,"year":2017,"earlywood":false,"latLng":{"lat":-0.006492885490160408,"lng":0.5845723074932077}},{"start":false,"skip":false,"break":false,"year":2016,"earlywood":false,"latLng":{"lat":-0.006787273245381787,"lng":0.5812359129340321}},{"start":false,"skip":false,"break":false,"year":2015,"earlywood":false,"latLng":{"lat":-0.006983531748862706,"lng":0.5779649378760168}},{"start":false,"skip":false,"break":false,"year":2014,"earlywood":false,"latLng":{"lat":-0.0071961451276337015,"lng":0.5748575115709023}},{"start":false,"skip":false,"break":false,"year":2013,"earlywood":false,"latLng":{"lat":-0.0074251133816947736,"lng":0.5716356011387571}},{"start":false,"skip":false,"break":false,"year":2012,"earlywood":false,"latLng":{"lat":-0.007719501136916152,"lng":0.5681683675772609}},{"start":false,"skip":false,"break":false,"year":2011,"earlywood":false,"latLng":{"lat":-0.007883049889816918,"lng":0.5648973925192455}},{"start":false,"skip":false,"break":false,"year":2010,"earlywood":false,"latLng":{"lat":-0.008062953518007761,"lng":0.5623787417245738}},{"start":false,"skip":false,"break":false,"year":2009,"earlywood":false,"latLng":{"lat":-0.00825921202148868,"lng":0.5595002836735203}},{"start":false,"skip":false,"break":false,"year":2008,"earlywood":false,"latLng":{"lat":-0.008471825400259677,"lng":0.5557223074815126}},{"start":false,"skip":false,"break":false,"year":2007,"earlywood":false,"latLng":{"lat":-0.008700793654320749,"lng":0.5521405897929859}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.0058386904785573445,"lng":0.5514700399060927}},{"start":false,"skip":false,"break":false,"year":2006,"earlywood":false,"latLng":{"lat":-0.0060513038573283395,"lng":0.5470869333283521}},{"start":false,"skip":false,"break":false,"year":2005,"earlywood":false,"latLng":{"lat":-0.006345691612549719,"lng":0.5433580217622147}},{"start":false,"skip":false,"break":false,"year":2004,"earlywood":false,"latLng":{"lat":-0.006492885490160408,"lng":0.5395309809443368}},{"start":false,"skip":false,"break":false,"year":2003,"earlywood":false,"latLng":{"lat":-0.006787273245381787,"lng":0.5358347791287794}},{"start":false,"skip":false,"break":false,"year":2002,"earlywood":false,"latLng":{"lat":-0.0070816610006031655,"lng":0.5317133505556801}},{"start":false,"skip":false,"break":false,"year":2001,"earlywood":false,"latLng":{"lat":-0.007408758506404697,"lng":0.5282134072436038}},{"start":false,"skip":false,"break":false,"year":2000,"earlywood":false,"latLng":{"lat":-0.007703146261626076,"lng":0.523781236039993}},{"start":false,"skip":false,"break":false,"year":1999,"earlywood":false,"latLng":{"lat":-0.008062953518007761,"lng":0.519071031956451}},{"start":false,"skip":false,"break":false,"year":1998,"earlywood":false,"latLng":{"lat":-0.008390051023809292,"lng":0.5158981861501761}},{"start":false,"skip":false,"break":false,"year":1997,"earlywood":false,"latLng":{"lat":-0.008668083903740595,"lng":0.5130033732238325}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.005560657598626042,"lng":0.5127089854686111}},{"start":false,"skip":false,"break":false,"year":1996,"earlywood":false,"latLng":{"lat":-0.005756916102106961,"lng":0.508832880024863}},{"start":false,"skip":false,"break":false,"year":1995,"earlywood":false,"latLng":{"lat":-0.006018594106748187,"lng":0.5053983562139469}},{"start":false,"skip":false,"break":false,"year":1994,"earlywood":false,"latLng":{"lat":-0.006443820864290178,"lng":0.5010643142620766}},{"start":false,"skip":false,"break":false,"year":1993,"earlywood":false,"latLng":{"lat":-0.006787273245381787,"lng":0.49794053308167197}},{"start":false,"skip":false,"break":false,"year":1992,"earlywood":false,"latLng":{"lat":-0.007130725626473395,"lng":0.495176559157649}},{"start":false,"skip":false,"break":false,"year":1991,"earlywood":false,"latLng":{"lat":-0.007474178007565004,"lng":0.4916929707208627}},{"start":false,"skip":false,"break":false,"year":1990,"earlywood":false,"latLng":{"lat":-0.0077685657627863825,"lng":0.48904348092387034}},{"start":false,"skip":false,"break":false,"year":1989,"earlywood":false,"latLng":{"lat":-0.007964824266267302,"lng":0.4864757655033283}},{"start":false,"skip":false,"break":false,"year":1988,"earlywood":false,"latLng":{"lat":-0.00840640589909937,"lng":0.4829758221912519}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.005249914968114586,"lng":0.4829104026900916}},{"start":false,"skip":false,"break":false,"year":1987,"earlywood":false,"latLng":{"lat":-0.005560657598626042,"lng":0.47911607162279385}},{"start":false,"skip":false,"break":false,"year":1986,"earlywood":false,"latLng":{"lat":-0.005969529480877957,"lng":0.47548528930839684}},{"start":false,"skip":false,"break":false,"year":1985,"earlywood":false,"latLng":{"lat":-0.006312981861969566,"lng":0.47229608862683187}},{"start":false,"skip":false,"break":false,"year":1984,"earlywood":false,"latLng":{"lat":-0.006607369617190944,"lng":0.4689924038182364}},{"start":false,"skip":false,"break":false,"year":1983,"earlywood":false,"latLng":{"lat":-0.006918112247702399,"lng":0.4656396543837707}},{"start":false,"skip":false,"break":false,"year":1982,"earlywood":false,"latLng":{"lat":-0.007277919504084084,"lng":0.46227055007401496}},{"start":false,"skip":false,"break":false,"year":1981,"earlywood":false,"latLng":{"lat":-0.007719501136916152,"lng":0.4584598641314271}},{"start":false,"skip":false,"break":false,"year":1980,"earlywood":false,"latLng":{"lat":-0.007981179141557378,"lng":0.45474730744057973}},{"start":false,"skip":false,"break":false,"year":1979,"earlywood":false,"latLng":{"lat":-0.00835734127322914,"lng":0.4513291385049537}},{"start":false,"skip":false,"break":false,"year":1978,"earlywood":false,"latLng":{"lat":-0.008782568030771131,"lng":0.44851609995506053}},{"start":false,"skip":false,"break":false,"year":1977,"earlywood":false,"latLng":{"lat":-0.009142375287152817,"lng":0.44549044802639637}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.004857397961152749,"lng":0.44390402512325894}},{"start":false,"skip":false,"break":false,"year":1976,"earlywood":false,"latLng":{"lat":-0.00528262471869474,"lng":0.44094379269575507}},{"start":false,"skip":false,"break":false,"year":1975,"earlywood":false,"latLng":{"lat":-0.005527947848045889,"lng":0.4376237530118695}},{"start":false,"skip":false,"break":false,"year":1974,"earlywood":false,"latLng":{"lat":-0.005871400229137498,"lng":0.4344999718314649}},{"start":false,"skip":false,"break":false,"year":1973,"earlywood":false,"latLng":{"lat":-0.00619849773493903,"lng":0.43144161015222054}},{"start":false,"skip":false,"break":false,"year":1972,"earlywood":false,"latLng":{"lat":-0.006378401363129871,"lng":0.4287921203552281}},{"start":false,"skip":false,"break":false,"year":1971,"earlywood":false,"latLng":{"lat":-0.00672185374422148,"lng":0.42573375867598384}},{"start":false,"skip":false,"break":false,"year":1970,"earlywood":false,"latLng":{"lat":-0.007032596374732935,"lng":0.4222665251144876}},{"start":false,"skip":false,"break":false,"year":1969,"earlywood":false,"latLng":{"lat":-0.0073106292546642375,"lng":0.4188320013035715}},{"start":false,"skip":false,"break":false,"year":1968,"earlywood":false,"latLng":{"lat":-0.00753959750872531,"lng":0.41578999449961723}},{"start":false,"skip":false,"break":false,"year":1967,"earlywood":false,"latLng":{"lat":-0.0077685657627863825,"lng":0.4126335035686325}},{"start":false,"skip":false,"break":false,"year":1966,"earlywood":false,"latLng":{"lat":-0.007997534016847455,"lng":0.4085611396214034}},{"start":false,"skip":false,"break":false,"year":1965,"earlywood":false,"latLng":{"lat":-0.008177437645038296,"lng":0.4047177439282354}},{"start":false,"skip":false,"break":false,"year":1964,"earlywood":false,"latLng":{"lat":-0.008291921772068833,"lng":0.40118509086557885}},{"start":false,"skip":false,"break":false,"year":1963,"earlywood":false,"latLng":{"lat":-0.008439115649679522,"lng":0.3976524378029223}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.004334041951870297,"lng":0.397799631680533}},{"start":false,"skip":false,"break":false,"year":1962,"earlywood":false,"latLng":{"lat":-0.004497590704771064,"lng":0.39474127000128867}},{"start":false,"skip":false,"break":false,"year":1961,"earlywood":false,"latLng":{"lat":-0.004791978459992442,"lng":0.3914212303174031}},{"start":false,"skip":false,"break":false,"year":1960,"earlywood":false,"latLng":{"lat":-0.005217205217534434,"lng":0.3889679990238916}},{"start":false,"skip":false,"break":false,"year":1959,"earlywood":false,"latLng":{"lat":-0.005642431975076425,"lng":0.38630215435160914}},{"start":false,"skip":false,"break":false,"year":1958,"earlywood":false,"latLng":{"lat":-0.006038779777317929,"lng":0.3827732017693516}},{"start":false,"skip":false,"break":false,"year":1957,"earlywood":false,"latLng":{"lat":-0.006330039252108183,"lng":0.37988002431976836}},{"start":false,"skip":false,"break":false,"year":1956,"earlywood":false,"latLng":{"lat":-0.006796054411772589,"lng":0.3772586890466561}},{"start":false,"skip":false,"break":false,"year":1955,"earlywood":false,"latLng":{"lat":-0.007009644693285442,"lng":0.3753946284079985}},{"start":false,"skip":false,"break":false,"year":1954,"earlywood":false,"latLng":{"lat":-0.007262069571436995,"lng":0.37294804881976035}},{"start":false,"skip":false,"break":false,"year":1953,"earlywood":false,"latLng":{"lat":-0.007436825256311148,"lng":0.3703461308449674}},{"start":false,"skip":false,"break":false,"year":1952,"earlywood":false,"latLng":{"lat":-0.007844588521017503,"lng":0.3672976150088294}},{"start":false,"skip":false,"break":false,"year":1951,"earlywood":false,"latLng":{"lat":-0.008213517189085157,"lng":0.3640355088911786}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.004213553735299005,"lng":0.3616277638995791}},{"start":false,"skip":false,"break":false,"year":1950,"earlywood":false,"latLng":{"lat":-0.004660151596644061,"lng":0.35955011297940864}},{"start":false,"skip":false,"break":false,"year":1949,"earlywood":false,"latLng":{"lat":-0.005203835949585869,"lng":0.35722003718108664}},{"start":false,"skip":false,"break":false,"year":1948,"earlywood":false,"latLng":{"lat":-0.005689268407569625,"lng":0.35498704787436136}},{"start":false,"skip":false,"break":false,"year":1947,"earlywood":false,"latLng":{"lat":-0.006174700865553381,"lng":0.35304531804242634}},{"start":false,"skip":false,"break":false,"year":1946,"earlywood":false,"latLng":{"lat":-0.006640716025217787,"lng":0.3505599038575495}},{"start":false,"skip":false,"break":false,"year":1945,"earlywood":false,"latLng":{"lat":-0.0071261484832015436,"lng":0.3474725534247728}},{"start":false,"skip":false,"break":false,"year":1944,"earlywood":false,"latLng":{"lat":-0.007708667432782051,"lng":0.34485121815166053}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.004038798050424853,"lng":0.34257939424829653}},{"start":false,"skip":false,"break":false,"year":1943,"earlywood":false,"latLng":{"lat":-0.004679568894963412,"lng":0.33875418647938454}},{"start":false,"skip":false,"break":false,"year":1942,"earlywood":false,"latLng":{"lat":-0.005165001352947168,"lng":0.33593867822307877}},{"start":false,"skip":false,"break":false,"year":1941,"earlywood":false,"latLng":{"lat":-0.005436843529418071,"lng":0.33376394081131155}},{"start":false,"skip":false,"break":false,"year":1940,"earlywood":false,"latLng":{"lat":-0.005805772197485726,"lng":0.3314726996096282}},{"start":false,"skip":false,"break":false,"year":1939,"earlywood":false,"latLng":{"lat":-0.0061941181638727316,"lng":0.32939504868945774}},{"start":false,"skip":false,"break":false,"year":1938,"earlywood":false,"latLng":{"lat":-0.006504794936982335,"lng":0.32774457833231296}},{"start":false,"skip":false,"break":false,"year":1937,"earlywood":false,"latLng":{"lat":-0.006834889008411289,"lng":0.3254921717272683}},{"start":false,"skip":false,"break":false,"year":1936,"earlywood":false,"latLng":{"lat":-0.007300904168075696,"lng":0.32238540399617227}},{"start":false,"skip":false,"break":false,"year":1935,"earlywood":false,"latLng":{"lat":-0.00766983283614335,"lng":0.3201912492860857}},{"start":false,"skip":false,"break":false,"year":1934,"earlywood":false,"latLng":{"lat":-0.008019344205891656,"lng":0.3179776772776798}},{"start":false,"skip":false,"break":false,"year":1933,"earlywood":false,"latLng":{"lat":-0.008257319627309469,"lng":0.31611425027013584}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.004404958570981567,"lng":0.3150239072514967}},{"start":false,"skip":false,"break":false,"year":1932,"earlywood":true,"latLng":{"lat":-0.004751805702554919,"lng":0.3133763833765233}},{"start":false,"skip":false,"break":true,"latLng":{"lat":-0.00509865283412827,"lng":0.31164214771865656}},{"start":true,"skip":false,"break":false,"latLng":{"lat":-0.005410815252544287,"lng":0.30912750601474975}},{"start":false,"skip":false,"break":false,"year":1931,"earlywood":true,"latLng":{"lat":-0.005653608244645634,"lng":0.3076707480621417}},{"start":false,"skip":false,"break":false,"year":1930,"earlywood":true,"latLng":{"lat":-0.005861716523589644,"lng":0.3061272783266403}},{"start":false,"skip":false,"break":false,"year":1929,"earlywood":true,"latLng":{"lat":-0.006087167159112323,"lng":0.3045144391648242}},{"start":false,"skip":false,"break":false,"year":1928,"earlywood":true,"latLng":{"lat":-0.006295275438056334,"lng":0.3032137624214241}},{"start":false,"skip":false,"break":false,"year":1927,"earlywood":true,"latLng":{"lat":-0.0065380684301576805,"lng":0.3013581302675067}},{"start":false,"skip":false,"break":false,"year":1926,"earlywood":true,"latLng":{"lat":-0.006659464926208353,"lng":0.30017885002015726}},{"start":false,"skip":false,"break":false,"year":1925,"earlywood":true,"latLng":{"lat":-0.006815546135416362,"lng":0.2978549742386158}},{"start":false,"skip":false,"break":false,"year":1924,"earlywood":true,"latLng":{"lat":-0.006954284988045702,"lng":0.2963115045031144}}],"annotations":{}}});
+treering.loadInterface();
+</script>

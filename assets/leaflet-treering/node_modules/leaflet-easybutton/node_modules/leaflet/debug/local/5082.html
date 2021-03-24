@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet debug page</title>
+
+	<link rel="stylesheet" href="../../dist/leaflet.css" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="../css/screen.css" />
+
+	<script type="text/javascript" src="../../build/deps.js"></script>
+	<script src="../leaflet-include.js"></script>
+</head>
+<body>
+
+	<div id="map"></div>
+	<button id="populate">Populate with 10 markers</button>
+
+	<script type="text/javascript">
+
+var map = new L.Map('map', 
+  {
+    renderer: L.canvas(),
+    center: new L.LatLng(0, 0),
+    zoom: 16
+  });
+
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+
+var exampleJSON = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1,1],
+          [0,-0.5],
+          [1,1],
+          [-1,1]
+        ]]
+      },
+      "type": "Feature",
+      "properties": {
+        "color": "green"
+      },
+      "id": "greenLine"
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-1,-1],
+          [0,0.5],
+          [1,-1],
+          [-1,-1]
+        ]]
+      },
+      "type": "Feature",
+      "properties": {
+        "color": "red"
+      },
+      "id": "redLine"
+    }
+  ]
+};
+
+var geoJsonLayer = L.geoJson(exampleJSON, {
+  style: function(feature) {
+    return {
+      color: feature.properties.color,
+      weight: 7
+    };
+  },
+  onEachFeature: function(feature, layer) {
+    layer.on("mouseover", function() {
+      layer.setStyle({color: 'blue'});
+    });
+    layer.on("mouseout", function(e) {
+      layer.setStyle({color: feature.properties.color});
+    });
+    layer.on("click", function() {
+    	console.log('click');
+    });
+  }
+}).addTo(map);
+map.fitBounds(geoJsonLayer.getBounds());
+	</script>
+</body>
+</html>

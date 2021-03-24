@@ -1,30 +1,27 @@
-#map_container {
+#map_container{
 	position: relative;
 	margin-left: 0px;
 	height: 100%;
 }
-
 ::-webkit-scrollbar {
 	-webkit-appearance: none;
 	width: 7px;
-}
+  }
 
-::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
 	border-radius: 4px;
 	background-color: rgba(0, 0, 0, .5);
 	box-shadow: 0 0 1px rgba(255, 255, 255, .5);
-}
-
-.button-set {
-	float: left;
-	position: sticky;
-}
-
-#imageMap {
+  }
+  .button-set{
+	  float: left;
+	  position: sticky;
+  }
+#imageMap{
 	height: 100%;
 }
 
-.leaflet-bar button {
+.leaflet-bar button{
 	padding: 0;
 	padding-left: 1px;
 }
@@ -37,51 +34,52 @@
 	clear: none;
 }
 
-.material-icons.md-18 {
+.material-icons.md-18{
 	padding-top: 5px;
 	font-size: 1.7em;
 
 }
-
-.mdc-button {
+.mdc-button{
 	margin-right: 10px;
 	margin-bottom: 10px;
 	height: 35px;
 	font-size: 12px;
 }
-
-.material-icons.md-18-data-view {
-	padding-right: 10px;
-	position: relative;
-	justify-content: center;
+.material-icons.md-18-data-view{
+	position: absolute;
+	margin: auto;
+	padding-top: 4px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 	font-size: 1.5em;
 }
-
-.icon-button {
-	background-color: #6200ee;
-	height: 30px;
-	width: 30px;
-	color: white;
-	justify-content: center;
-	position: sticky;
-	left: 10px;
-	margin-right: 20px;
-	margin-bottom: 11px;
-	border-color: #A06DEB;
-	vertical-align: middle;
-	text-align: center;
+.icon-button{
+background-color:  #6200ee;
+height: 30px;
+width: 30px;
+color: white;
+justify-content: center;
+position: sticky;
+left: 10px;
+margin-right: 20px;
+margin-bottom: 11px;
+border-color: #A06DEB;
+vertical-align: middle;
+text-align: center;
 }
 
-.text-button {
+.text-button{
 	background-size: 100% 100%;
-	background-color: #6200ee;
+	background-color:  #6200ee;
 	border-color: #A06DEB;
 	color: white;
 	height: 30px;
 	width: 30px;
 	font-size: 10px;
 	margin: 0 auto;
-	padding: 0;
+    padding: 0;
 	justify-content: center;
 	margin-right: 20px;
 	margin-bottom: 11px;
@@ -92,22 +90,20 @@
 	position: sticky;
 }
 
-.text-button.disabled {
+.text-button.disabled{
 	background-color: lightgray;
 	border-color: gray;
 }
-
-.icon-button.disabled {
+.icon-button.disabled{
 	background-color: lightgray;
 	border-color: gray;
 }
-
-.icon-button.delete {
-	background-color: red;
-	border-color: palevioletred;
+.icon-button.delete{
+background-color: red;
+border-color: palevioletred;
 }
 
-table {
+table{
 	font-family: courier;
 	font-size: 12px;
 }
@@ -118,16 +114,16 @@ th {
 	top: 0;
 	z-index: 2;
 	background-color: white;
-}
+  }
 
-#imageMap .easy-button-button {
+#imageMap .easy-button-button{
 	transition-duration: .3s;
 	position: relative;
 	border-radius: 4px;
 	border: solid 0px transparent;
 }
 
-#imageMap .easy-button-container {
+#imageMap .easy-button-container{
 	background-color: white;
 }
 
@@ -140,14 +136,9 @@ th {
 	margin-left: 10px;
 }
 
-#leaflet-save-time-tag {
+#leaflet-save-time-tag{
 	font-size: 12px;
 	margin: 4px;
-}
-
-textarea {
-	resize: none;
-	border: none;
 }
 
 .preferences-button {
@@ -157,14 +148,14 @@ textarea {
 	color: white;
 	border: none;
 	padding: 20px, 24px;
-	margin-left: auto;
-	margin-right: auto;
+	margin-left:auto;
+	margin-right:auto;
 	margin-top: 3px;
 	display: inline;
 	float: left;
 }
 
-.center {
+.center{
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -179,4 +170,238 @@ textarea {
 	padding-top: 5px;
 	padding-bottom: 5px;
 	margin-bottom: 0px;
+}
+
+/* annotations */
+.tab {
+	position: relative;
+	width: 100%;
+	display: inline-block;
+}
+
+.tab button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 1% 3%;
+	transition: 0.3s;
+	font-size: 16px;
+	font-weight: bold;
+	background-color: #e8e8e8;
+	color: #636363;
+	width:50%;
+}
+
+.tab button:hover {
+	background-color: #ddd;
+}
+
+.tab button.active {
+	background-color: #ccc;
+}
+
+#summary-btn {
+	border-top-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+}
+
+#edit-summary-btn {
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+	float: right;
+}
+
+.tabContent {
+	display: none;
+	padding: 6px 11px;
+	border: none;
+	border-top: none;
+	font-size: 12px;
+	margin-top: 0;
+	width: 100%;
+}
+
+#exit-btn {
+	float: right;
+}
+
+textarea {
+	width: 100%;
+	height: 20%;
+	resize: none;
+	border: 2px solid #ddd;
+	border-radius: 6px;
+	margin-bottom: 2%;
+}
+
+.editTextDiv {
+	margin: 0;
+}
+
+#text-title {
+	margin-bottom: 0;
+	font-weight: bold;
+}
+
+.text-content {
+	font-size: 12px;
+	word-wrap: break-word;
+}
+
+.annotation-title {
+	margin-bottom: 0;
+	margin-right: 0;
+	font-weight: bold;
+	display: inline;
+}
+
+.summaryAttributesDiv li {
+	font-size: 12px;
+}
+
+.summaryLinkDiv {
+	margin-top: 10px;
+}
+
+.editAttributesDiv {
+	margin-top: 10px;
+}
+
+.editAttributesDiv p {
+	font-size: 12px;
+	margin: 0 0 0 10px;
+	display: inline;
+}
+
+.editAttributesDiv input {
+	margin: 0 0 0 20px;
+}
+
+.editAttributesDiv label {
+	font-weight: normal;
+	font-size: 12px;
+	margin-left: 2px;
+}
+
+.attribute-label {
+	margin-bottom: 0;
+	font-size: 12px;
+}
+
+.attribute-textbox {
+	height: 24px;
+	width: 90%;
+	margin-bottom: 2%;
+	margin-top: 0;
+}
+
+.attribute-option {
+	width: 42%;
+	margin-right: 6%;
+	display: inline-block;
+}
+
+.annotation-btn {
+	float: right;
+	border: none;
+	width: auto;
+	height: auto;
+	text-align: center;
+	margin: 0;
+	padding: 0 0;
+	background-color: white;
+}
+
+.attribute-btn {
+	margin-top: 4px;
+	margin-left: 4px;
+	font-size: 12px;
+}
+
+#attributes-hr {
+	height: 2px;
+	margin: 1px 0;
+	background-color: #ccc;
+}
+
+#attributes-warning {
+	font-size: 12px;
+	font-weight: bold;
+	margin: 0;
+	color: #ccc;
+}
+
+#save-exit-options {
+	float: left;
+}
+
+.annotation-link-btn {
+	float: right;
+	border: none;
+	border-radius: 6px;
+	background-color: white;
+	width: 26px;
+	height: 22px;
+	text-align: center;
+}
+
+#save-options {
+	width: auto;
+}
+
+.editAssociatedYearDiv {
+	margin-top: 10px;
+}
+
+.editAssociatedYearDiv input {
+	width: 30%;
+	float: right;
+}
+
+/* annotation colors */
+
+.color-btn {
+	border-radius: 12px;
+	border-width: 0;
+	margin: 6px 8%;
+	text-align: center;
+	display: inline-block;
+	height: 18px;
+	width: 18px;
+}
+
+.\#ff1c22 { /* red */
+	height: 20px;
+	width: 20px;
+	background-color: #ff1c22;
+	border-radius: 50%;
+	display: inline-block;
+	margin-left: 0;
+}
+
+.\#17b341 { /* green */
+	height: 20px;
+	width: 20px;
+	background-color: #32c964;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.\#1395d1 { /* blue */
+	height: 20px;
+	width: 20px;
+	background-color: #2aa5de;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.\#db029f { /* purple */
+	height: 20px;
+	width: 20px;
+	background-color: #db029f;
+	border-radius: 50%;
+	display: inline-block;
+	margin-right: 0;
 }

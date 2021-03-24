@@ -1,0 +1,164 @@
+<!DOCTYPE htmml>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=1">
+	<title>Tree Rings</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css">
+
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
+
+    <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
+    <link rel="stylesheet" href="node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
+    <link rel="stylesheet" href="node_modules/leaflet-easybutton/src/easy-button.css" />
+    <link rel="stylesheet" href="node_modules/leaflet-dialog/Leaflet.Dialog.css">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/jszip/dist/jszip.min.js"></script>
+    <script src="node_modules/file-saver/FileSaver.min.js"></script>
+
+    <script src="node_modules/leaflet/dist/leaflet.js"></script>
+    <script src="node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
+    <script src="node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
+    <script src="node_modules/leaflet-easybutton/src/easy-button.js"></script>
+    <script src="node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
+		<script src="Leaflet.TileLayer.GL.js"></script>
+
+    <script src="Leaflet.elevator.js"></script>
+</head>
+
+<body>
+    <div id="map_container"><div id="imageMap"></div></div>
+</body>
+</html>
+<script type="application/javascript" src="leaflet-treering.js"></script>
+
+<script>
+var src;
+var map = L.map('imageMap', {
+		fullscreenControl: true,
+		zoomSnap: 0,
+		crs: L.CRS.Simple,
+		drawControl: true,
+		layers: [],
+		doubleClickZoom: false,
+		zoomControl: false,
+		trackResize: true
+}).setView([0, 0], 0);
+
+// Zoom to annotation URL
+var getURL = window.location.href;
+var parsedURL = new URL(getURL);
+var urlParams = new URLSearchParams(parsedURL.search);
+var latData = urlParams.get("lat");
+var lngData = urlParams.get("lng");
+if (latData && lngData) {
+		map.setView([latData, lngData], 16); //  max zoom level is 18
+};
+
+var baseLayer = L.tileLayer.elevator(function(coords, tile, done) {
+		var error;
+		var params = {Bucket: 'elevator-assets', Key: "testasset7/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+		//var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
+		tile.onload = (function(done, error, tile) {
+				return function() {
+						done(error, tile);
+				}
+		})(done, error, tile);
+		tile.crossOrigin = "";
+		tile.src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
+		//tile.src = params.Key;
+		src = tile.src;
+		return tile.src;
+},
+{
+		width: 161686,
+		height: 3922,
+		//testasset5
+		//width: 231782,
+		//height: 4042,
+
+		//width: 200521,
+		//height: 4196,
+		tileSize :254,
+		maxNativeZoom: 18,
+		maxZoom: 18,
+		overlap: 1,
+		detectRetina: false,
+		pixelsPerMillimeter: 480, //(NEW)
+		lineColor: 'blue'
+}).addTo(map);
+
+
+
+var fragmentShader2 = `
+
+uniform float u_kernel[9];
+uniform float u_flipY;
+uniform float u_kernelWeight;
+// all based on https://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html
+vec3 texSample(const float x, const float y, in vec2 fragCoord)
+{
+vec2 uv = fragCoord;
+uv = (uv + vec2((x-1.)/256.0 , (y-1.)/256.0 ));
+// this also fixed the seam by clamping one pixel from the bottom, but it's super hacky
+// if(uv.y > 0.996) {
+//     uv.y = 0.99;
+// }
+return texture2D(uTexture0, uv).xyz;
+}
+
+
+vec3 embossFilter(in vec2 fragCoord, float strength){
+vec3 f =
+texSample(-1.,-1., fragCoord) *  u_kernel[0] +
+texSample( 0.,-1., fragCoord) *  u_kernel[1] +
+texSample( 1.,-1., fragCoord) *  u_kernel[2] +
+texSample(-1., 0., fragCoord) *  u_kernel[3] +
+texSample( 0., 0., fragCoord) *  u_kernel[4] +
+texSample( 1., 0., fragCoord) *  u_kernel[5] +
+texSample(-1., 1., fragCoord) *  u_kernel[6] +
+texSample( 0., 1., fragCoord) *  u_kernel[7] +
+texSample( 1., 1., fragCoord) *  u_kernel[8]
+;
+return mix(texSample( 0., 0., fragCoord), f , strength);
+}
+
+void main(void){
+// gl_Position = vec4(clipSpace * vec2(1, u_flipY), 0, 1);
+
+vec4 targetTexture = texture2D(uTexture0, vec2(vTextureCoords.x, vTextureCoords.y));
+// gl_FragColor = targetTexture;
+vec3 result = embossFilter(vec2(vTextureCoords.x, vTextureCoords.y), uSharpenStrength);
+
+gl_FragColor = vec4((result / u_kernelWeight).rgb,targetTexture.a);
+}
+`;
+
+var layer = L.tileLayer.gl({
+		uniforms: {
+				uSharpenStrength: 0
+		},
+				crs: L.CRS.Simple,
+				noWrap: true,
+				infinite: false,
+				tileSize: 256,
+				detectRetina: false,
+	fragmentShader: fragmentShader2,
+	tileLayers: [baseLayer],
+}).addTo(map);
+
+    //map, basepath, {ppm: int, saveURL: string, savePermission: bool, popoutUrl: string, assetName: string, hasLatewood: bool, initialData: json}
+		//basepath is the local image folder location (i.e. replace "" with "file:///C:/Users/.../leaflet-treering")
+		var treering = new LTreering(map, "", {'savePermission': true, 'saveURL': '/test', 'ppm':
+    468, 'popoutUrl': "index_noPoints.html", 'assetName': "noPts", 'hasLatewood': true, 'attributesObject': {},
+    'initialData': {}});
+treering.loadInterface();
+</script>
