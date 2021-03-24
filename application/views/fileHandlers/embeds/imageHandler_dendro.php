@@ -23,32 +23,40 @@ if($widgetObject->parentWidget->dendroFields) {
 
 ?>
 
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/font-awesome/css/font-awesome.css">
 
-<link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.css">
-<link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/node_modules/font-awesome-4.7.0/css/font-awesome.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
-<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
-<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
-<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
-<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.css">
-<link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/style.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
+
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
+	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/leaflet.magnifyingglass.css">
 
-<script src="/assets/js/aws-s3.js"></script>
-<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
-<script src="/assets/leaflet-treering/node_modules/file-saver/FileSaver.js"></script>
+	<link rel="stylesheet" href="/assets/leaflet-treering/style.css">
 
+	<!-- <script src="/assets/leaflet-treering/node_modules/jquery/dist/jquery.min.js"></script> -->
+	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
+	<script src="/assets/leaflet-treering/node_modules/file-saver/FileSaver.min.js"></script>
 
-<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
-<script src="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
-<script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
-<script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
-<script src="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
-<script src="/assets/leaflet-treering/leaflet-treering.js"></script>
+	<script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script>
+	<script src="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
+	<script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
+	<script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
+	<script src="/assets/leaflet-treering/node_modules/leaflet-dialog/Leaflet.Dialog.js"></script>
+    <script src="/assets/leaflet-treering/Leaflet.TileLayer.GL.js"></script>
+
+<script src="/assets/leaflet/Leaflet.elevator.js"></script>
 <script src="/assets/leaflet-treering/leaflet.magnifyingglass.js"></script>
+<script type="application/javascript" src="/assets/leaflet-treering/leaflet-treering.js"></script>
+
+<script src="/assets/js/aws-s3.js"></script>
+
     
-    <script src="/assets/leaflet/Leaflet.elevator.js"></script>
 
 <style type="text/css">
 
@@ -91,6 +99,8 @@ if($widgetObject->parentWidget->dendroFields) {
 
 	var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
 	var miniLayer;
+	var baseLayer;
+	var layer;
 	var loadedCallback = function() {
 
 		if(typeof AWS === 'undefined') {
@@ -126,25 +136,74 @@ if($widgetObject->parentWidget->dendroFields) {
 			renderer: L.canvas()
 		};
 
-		layer = L.tileLayer.elevator(function(coords, tile, done) {
-			var error;
-
+		baseLayer = L.tileLayer.elevator(function(coords) {
 			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
 
-			s3.getSignedUrl('getObject', params, function (err, url) {
-				tile.onload = (function(done, error, tile) {
-					return function() {
-						done(error, tile);
-					}
-				})(done, error, tile);
-				tile.src=url;
-			});
-
-			return tile;
+			var url = s3.getSignedUrl('getObject', params);
+			return url;
 
 		}, mapOptions);
-		layer.addTo(imageMap);
+		baseLayer.addTo(imageMap);
 		
+
+var fragmentShader2 = `
+
+uniform float u_kernel[9];
+uniform float u_flipY;
+uniform float u_kernelWeight;
+// all based on https://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html
+vec3 texSample(const float x, const float y, in vec2 fragCoord)
+{
+	vec2 uv = fragCoord;
+    uv = (uv + vec2((x)/256.0 , (y)/256.0 ));
+    // this also fixed the seam by clamping one pixel from the bottom, but it's super hacky
+    // if(uv.y > 0.996) {
+    //     uv.y = 0.99;
+    // }
+	return texture2D(uTexture0, uv).xyz;
+}
+
+
+vec3 embossFilter(in vec2 fragCoord, float strength){
+	vec3 f =
+	texSample(-1.,-1., fragCoord) *  u_kernel[0] +
+	texSample( 0.,-1., fragCoord) *  u_kernel[1] +
+	texSample( 1.,-1., fragCoord) *  u_kernel[2] +
+	texSample(-1., 0., fragCoord) *  u_kernel[3] +
+	texSample( 0., 0., fragCoord) *  u_kernel[4] +
+	texSample( 1., 0., fragCoord) *  u_kernel[5] +
+	texSample(-1., 1., fragCoord) *  u_kernel[6] +
+	texSample( 0., 1., fragCoord) *  u_kernel[7] +
+	texSample( 1., 1., fragCoord) *  u_kernel[8]
+	;
+	return mix(texSample( 0., 0., fragCoord), f , strength);
+}
+
+void main(void){
+    // gl_Position = vec4(clipSpace * vec2(1, u_flipY), 0, 1);
+
+    vec4 targetTexture = texture2D(uTexture0, vec2(vTextureCoords.x, vTextureCoords.y));
+    // gl_FragColor = targetTexture;
+    vec3 result = embossFilter(vec2(vTextureCoords.x, vTextureCoords.y), uSharpenStrength);
+
+    gl_FragColor = vec4((result / u_kernelWeight).rgb,targetTexture.a);
+}
+`;
+
+ layer = L.tileLayer.gl({
+        uniforms: {
+            uSharpenStrength: 0
+        },
+            crs: L.CRS.Simple,
+            noWrap: true,
+            infinite: false,
+            tileSize: 256,
+            detectRetina: false,
+			fragmentShader: fragmentShader2,
+			tileLayers: [baseLayer],
+		}).addTo(imageMap);
+
+
 		var magnifyLayer = L.tileLayer.elevator(function(coords, tile, done) {
 			var error;
 

@@ -26,14 +26,9 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		this.on('tileload', this._adjustNonSquareTile)
 	},
 
-	// todo decide how to handle this and make sure to backport it
-	 getTileUrl: function(coords){
-        var error;
-        var params = {Bucket: 'elevator-assets', Key: "testasset7/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        //var params = {Bucket: 'elevator-assets', Key: "pmc14b_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-        var src = "https://s3.amazonaws.com/" + params.Bucket + "/" + params.Key;
-        //tile.src = params.Key;
-        return src;
+	getTileUrl: function(coords){
+		var url = this._loadFunction(coords);
+        return url;
 	},
 	
 
@@ -41,7 +36,13 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		var error;
 		var tile = L.DomUtil.create('img', 'elevatorTile');
 		coords.z = coords.z  + this.options.zoomOffset;
-		this._loadFunction(coords, tile, done);
+		var url = this._loadFunction(coords);
+		tile.onload = (function(done, error, tile) {
+			return function() {
+				done(error, tile);
+			}
+		})(done, error, tile);
+		tile.src=url;
 		return tile;
 	},
 

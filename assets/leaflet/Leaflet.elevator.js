@@ -25,11 +25,24 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		
 		this.on('tileload', this._adjustNonSquareTile)
 	},
+	
+	getTileUrl: function(coords){
+		var url = this._loadFunction(coords);
+        return url;
+	},
+	
+
 	createTile: function(coords, done) {
 		var error;
 		var tile = L.DomUtil.create('img', 'elevatorTile');
 		coords.z = coords.z  + this.options.zoomOffset;
-		this._loadFunction(coords, tile, done);
+		var url = this._loadFunction(coords);
+		tile.onload = (function(done, error, tile) {
+			return function() {
+				done(error, tile);
+			}
+		})(done, error, tile);
+		tile.src=url;
 		return tile;
 	},
 

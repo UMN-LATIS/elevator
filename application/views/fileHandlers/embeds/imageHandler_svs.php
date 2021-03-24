@@ -155,21 +155,9 @@
         };
 
         layer = L.tileLayer.elevator(function(coords, tile, done) {
-            var error;
-
             var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-
-            s3.getSignedUrl('getObject', params, function (err, url) {
-                tile.onload = (function(done, error, tile) {
-                    return function() {
-                        done(error, tile);
-                    }
-                })(done, error, tile);
-                tile.src=url;
-            });
-
-            return tile;
-
+			var url = s3.getSignedUrl('getObject', params)
+			return url;
         }, mapOptions);
         layer.addTo(imageMap);
 
@@ -187,21 +175,9 @@
             widthScale = minimapRatio;
         }
         var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
-            var error;
-
             var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-
-            s3.getSignedUrl('getObject', params, function (err, url) {
-                tile.onload = (function(done, error, tile) {
-                    return function() {
-                        done(error, tile);
-                    }
-                })(done, error, tile);
-                tile.src=url;
-            });
-
-            return tile;
-
+			var url = s3.getSignedUrl('getObject', params)
+			return url;
         }, mapOptions);
         
         var miniMap = new L.Control.MiniMap(miniLayer, {
