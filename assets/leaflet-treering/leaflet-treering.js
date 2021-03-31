@@ -385,27 +385,35 @@ function MeasurementData (dataObject, Lt) {
    * @function cut
    */
   MeasurementData.prototype.cut = function(i, j) {
+    function removeNulls (e) {
+      if (e != null) {
+        return e
+      };
+    };
+
     if (i > j) {
-      this.points.splice(j,i-j);
-      var trimmed_points= this.points;
-      var k = 0;
-      this.points = {};
-      trimmed_points.map(e => {
-        if (!k) {
-          this.points[k] = {'start': true, 'skip': false, 'break': false,
-            'latLng': e.latLng};
-        } else {
-          this.points[k] = e;
-        }
-        k++;
-      });
-      this.index = k;
-      this.points = trimmed_points;
+      this.points.splice(j,i-j+1);
     } else if (i < j) {
-      this.points.splice(i,j-i);
+      this.points.splice(i,j-i+1);
     } else {
       alert('You cannot select the same point');
-    }
+    };
+
+    var trimmed_points = this.points.filter(removeNulls); // remove null points
+    var k = 0;
+    this.points = {};
+    trimmed_points.map(e => {
+      if (!k) {
+        this.points[k] = {'start': true, 'skip': false, 'break': false,
+          'latLng': e.latLng};
+      } else {
+        this.points[k] = e;
+      }
+      k++;
+    });
+    this.index = k;
+    this.points = trimmed_points;
+
     //Correct years to delete gap in timeline
     year = this.points[1].year;
     second = false;
@@ -431,7 +439,24 @@ function MeasurementData (dataObject, Lt) {
         }
       }
     });
-    console.log(this.points);
+
+    if(Lt.measurementOptions.subAnnual)
+    {
+      if(Lt.measurementOptions.forwardDirection && !this.points[this.points.length-1].earlywood)
+      {
+        this.year = this.points[this.points.length-1].year+1;
+        this.earlywood = true;
+      }
+      else if(!Lt.measurementOptions.forwardDirection && this.points[this.points.length-1].earlywood)
+      {
+        this.year = this.points[this.points.length-1].year-1;
+      }
+    }
+    else
+    {
+      this.year = Lt.measurementOptions.forwardDirection? this.points[this.points.length-1].year+1: this.points[this.points.length-1].year-1;
+    }
+    
     Lt.metaDataText.updateText(); // updates after points are cut
     Lt.annotationAsset.reloadAssociatedYears();
   };
@@ -2545,7 +2570,7 @@ function Popout(Lt) {
  */
 function Undo(Lt) {
   this.stack = new Array();
-  this.btn = new Button('undo', 'Undo', () => { this.pop() });
+  this.btn = new Button('undo', 'Undo', () => { this.pop(); Lt.metaDataText.updateText() });
   this.btn.disable();
 
   /**
@@ -2567,6 +2592,7 @@ function Undo(Lt) {
    */
   Undo.prototype.pop = function() {
     if (this.stack.length > 0) {
+      console.log(Lt.data.points[Lt.data.index - 1]);
       if (Lt.data.points[Lt.data.index - 1].start) {
         Lt.createPoint.disable();
       } else {
@@ -2601,7 +2627,7 @@ function Undo(Lt) {
  */
 function Redo(Lt) {
   this.stack = new Array();
-  this.btn = new Button('redo', 'Redo', () => { this.pop()});
+  this.btn = new Button('redo', 'Redo', () => { this.pop(); Lt.metaDataText.updateText();});
   this.btn.disable();
 
   /**
@@ -3255,9 +3281,9 @@ function ConvertToStartPoint(Lt) {
     var previousPoints = points.slice(0, i);
     var followingPoints = points.slice(i);
 
-    if (Lt.measurementOptions.forwardDirection) { // if measureing forward in time
+    if (Lt.measurementOptions.forwardDirection) { // if measuring forward in time
       var yearChange = 1;
-    } else { // if measureing backward in time
+    } else { // if measuring backward in time
       var yearChange = -1;
     };
 
@@ -3277,7 +3303,7 @@ function ConvertToStartPoint(Lt) {
         };
       };
     });
-
+    Lt.data.year = Lt.measurementOptions.forwardDirection? points[points.length-1].year+1: points[points.length-1].year-1;
     Lt.visualAsset.reload();
     Lt.metaDataText.updateText();
     Lt.annotationAsset.reloadAssociatedYears();
