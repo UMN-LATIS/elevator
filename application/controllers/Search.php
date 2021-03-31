@@ -54,6 +54,11 @@ class Search extends Instance_Controller {
 				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId(), "type"=>$widget->getFieldType()->getName()];	
 			}
 		}
+
+		uasort($widgetArray, function($a, $b) {
+			return strcmp($a["label"], $b["label"]);
+		});
+
 		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
 		$this->template->javascript->add("/assets/js/sly.min.js");
 		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
@@ -137,6 +142,9 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		uasort($widgetArray, function($a, $b) {
+			return strcmp($a["label"], $b["label"]);
+		});
 		$allowedCollections = array();
 		if($this->user_model) {
 			$allowedCollections = $this->user_model->getAllowedCollections(PERM_SEARCH);

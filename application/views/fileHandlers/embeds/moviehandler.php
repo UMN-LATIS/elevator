@@ -443,7 +443,7 @@ if(interactiveTranscript) {
     }
   });
         
-  const sanitizeRegex = q => {
+  var sanitizeRegex = q => {
     return q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   };
         
@@ -451,7 +451,7 @@ if(interactiveTranscript) {
   function searchTranscript(q) {
     matches = [];
     query = q;
-    cues.forEach(({ text }, loc) => {
+    cues.forEach(({ text }, loc) => {v
       let matchSpot = text.toLowerCase().indexOf(q);
       if (matchSpot > -1) {
         const replacer = sanitizeRegex(q);
