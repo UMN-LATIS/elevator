@@ -356,7 +356,6 @@ class AssetManager extends Admin_Controller {
 			$fileContainer->path = "original";
 
 			if(!$fileObjectId) {
-				$this->logging->logError("no file object");
 				$fileContainer->ready = false;
 
 			// this handler type may get overwritten later - for example, once we identify the contents of a zip
@@ -368,7 +367,6 @@ class AssetManager extends Admin_Controller {
 
 			}
 			else {
-				$this->logging->logError("had a file object");
 				$fileId = $fileObjectId;
 			}
 

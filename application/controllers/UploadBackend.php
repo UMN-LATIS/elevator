@@ -118,7 +118,6 @@ class uploadBackend extends Instance_Controller {
             $filename = $_GET['filename'];
             $filesize = (int)$_GET['filesize'];
             $last_modified = $_GET['last_modified'];
-            $this->logging->logError("payload", $_GET);
             $outputData = [
                     "date" => $nowUtc->format("Y-m-d\TH:i:s"),
                     "signature" => $key,
