@@ -255,7 +255,7 @@ class Asset_model extends CI_Model {
 		$widgetArray = $this->getAllWithinAsset($type,$asset,0);
 		if(count($widgetArray)>0) {
 			foreach($widgetArray as $widget) {
-				if(!$widget->getDisplay()) {
+				if(!$widget->getDisplay() || $widget->ignoreForDigitalAsset) {
 					continue;
 				}
 				foreach($widget->fieldContentsArray as $fieldContents) {
