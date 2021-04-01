@@ -45,7 +45,13 @@ $(document).on("change", ".searchDropdown", function() {
             $(targetGroup).html('<select name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent">');
             selectElement = $(targetGroup).find("select");
             $.each(results.values, function(index, val) {
-                $(selectElement).append($('<option>', {value: val}).text(val));
+                if(typeof index == "string") {
+                    $(selectElement).append($('<option>', {value: index}).text(val));
+                }
+                else {
+                    $(selectElement).append($('<option>', {value: val}).text(val));
+                }
+                
             });
 
         }

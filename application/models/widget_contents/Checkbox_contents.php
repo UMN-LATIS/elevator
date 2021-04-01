@@ -25,6 +25,10 @@ class Checkbox_contents extends Widget_contents_base {
 		return true;
 	}
 
+	public function getSearchEntry($serializeNestedObjects=false) {
+		return $this->fieldContents == true ? "1":"0";
+	}
+
 }
 
 /* End of file widget_contents.php */

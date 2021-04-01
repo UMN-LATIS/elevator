@@ -503,6 +503,10 @@ class search_model extends CI_Model {
 				else if(substr($entry["text"],0,1) == '"' && substr($entry["text"], -1,1) == '"') {
 					$searchParams['body']['query']['bool']['should'][$i]['match_phrase'] = [$entry["field"]=>strtolower($entry["text"])];
 				}
+				else if($entry["text"] == "boolean_true" || $entry["text"] =="boolean_false") {
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = ($entry["text"] == "boolean_true")?1:0;
+					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
+				}
 				else {
 					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $entry["text"];
 					$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = [$entry["field"]];
@@ -575,7 +579,7 @@ class search_model extends CI_Model {
 
     	$searchParams['body']['stored_fields'] = "_id";
 
-    	// $this->logging->logError("params", $searchParams);
+    	$this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
     	// $this->logging->logError("queryParams", $queryResponse);
 

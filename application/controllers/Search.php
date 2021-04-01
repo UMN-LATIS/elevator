@@ -176,6 +176,10 @@ class Search extends Instance_Controller {
 			$returnInfo['type'] = "select";
 			$returnInfo['values'] = $widget->parsedFieldData["selectGroup"];
 		}
+		else if(get_class($widget) == "Checkbox") {
+			$returnInfo['type'] = "select";
+			$returnInfo['values'] = ["boolean_false"=>"Off", "boolean_true"=>"On"];
+		}
 		else {
 			$returnInfo['type'] = "text";
 		}
