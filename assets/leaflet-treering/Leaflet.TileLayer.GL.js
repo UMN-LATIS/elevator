@@ -194,6 +194,7 @@ L.TileLayer.GL = L.GridLayer.extend({
 		this.options.bounds = this._tileLayers[0].options.bounds;
 		this.options.maxNativeZoom = this._tileLayers[0].options.maxNativeZoom;
         this.options.maxZoom =this._tileLayers[0].options.maxZoom;
+		this.options.minZoom = this._tileLayers[0].options.minZoom;
 
 		this._loadGLProgram();
 
