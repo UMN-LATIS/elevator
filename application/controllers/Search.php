@@ -178,7 +178,7 @@ class Search extends Instance_Controller {
 		}
 		else if(get_class($widget) == "Checkbox") {
 			$returnInfo['type'] = "select";
-			$returnInfo['values'] = ["boolean_false"=>"Off", "boolean_true"=>"On"];
+			$returnInfo['values'] = ["boolean_false"=>"Unchecked", "boolean_true"=>"Checked"];
 		}
 		else {
 			$returnInfo['type'] = "text";
