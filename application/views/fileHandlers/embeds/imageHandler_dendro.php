@@ -101,6 +101,14 @@ if($widgetObject->parentWidget->dendroFields) {
 	var miniLayer;
 	var baseLayer;
 	var layer;
+
+	var getURL = window.location.href;
+	var parsedURL = new URL(getURL);
+	var urlParams = new URLSearchParams(parsedURL.search);
+	var latData = urlParams.get("lat");
+	var lngData = urlParams.get("lng");
+	
+	
 	var loadedCallback = function() {
 
 		if(typeof AWS === 'undefined') {
@@ -134,6 +142,10 @@ if($widgetObject->parentWidget->dendroFields) {
 			pixelsPerMillimeter: pixelsPerMillimeter,
 			detectRetina: false,
 			renderer: L.canvas()
+		};
+
+		if (latData && lngData) {
+			imageMap.setView([latData, lngData], 16); //  max zoom level is 18
 		};
 
 		baseLayer = L.tileLayer.elevator(function(coords) {
