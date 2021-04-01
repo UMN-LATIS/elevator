@@ -4825,6 +4825,7 @@ function LoadLocal(Lt) {
 }
 
 function Panhandler(La) {
+  var map = La.viewer;
   this.panHandler = L.Handler.extend({
     panAmount: 120,
     panDirection: 0,
