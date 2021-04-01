@@ -65,7 +65,7 @@ class Filehandler_router {
 	public function getHandledObject($objectId) {
 		$CI =& get_instance();
 		try {
-			$asset = $CI->doctrine->em->getRepository('Entity\FileHandler')->findOneBy(["fileObjectId"=>$objectId]);
+			$asset = $CI->doctrine->em->getRepository('Entity\FileHandler')->findOneBy(["fileObjectId"=>$objectId, "deleted"=>false]);
 		}
 		catch (Exception $e) {
 			return false;
