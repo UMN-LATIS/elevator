@@ -59,7 +59,6 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 <?endif?>
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/L.Control.Locate.min.js'></script>

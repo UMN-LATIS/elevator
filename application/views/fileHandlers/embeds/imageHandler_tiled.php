@@ -2,6 +2,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet.fullscreen.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/Control.MiniMap.min.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet-measure.css">
+<script src="/assets/leaflet/Leaflet.elevator.js"></script>
 <script src="/assets/js/aws-s3.js"></script>
 
 <style type="text/css">
