@@ -259,7 +259,7 @@ function Panhandler(La) {
                 }
 
 
-                map.panBy(panArray, {animate: true, delay: 0});
+                imageMap.panBy(panArray, {animate: true, delay: 0});
                 if(this.isPanning) {
                   requestAnimationFrame(this._doPan.bind(this));    
                 }
@@ -501,7 +501,7 @@ function LocationModal(La) {
           var xField = document.getElementById("x-field")
           var yField = document.getElementById("y-field")
           var zoomField = document.getElementById("zoom-field")
-          var currentLatLng = map.getCenter()
+          var currentLatLng = imageMap.getCenter()
           xField.value = Math.floor(currentLatLng.lng * 1000)
           yField.value = Math.floor(currentLatLng.lat * 1000)
           zoomField.value = Math.floor(this.leafletAnnotate.viewer.getZoom())
