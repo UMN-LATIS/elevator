@@ -8,6 +8,7 @@ class Upload extends Widget_base {
 	public $enableTiling = false;
 	public $enableIframe = false;
 	public $interactiveTranscript = false;
+	public $ignoreForDigitalAsset = false;
 	
 	public function __construct()
 	{
