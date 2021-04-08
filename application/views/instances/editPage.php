@@ -48,6 +48,7 @@ $(document).ready(function() {
 	tinymce.init({
 	    selector: "textarea",
 	    menubar : false,
+		browser_spellcheck: true,
 	    relative_urls : false,
 	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | image link ",
 	    plugins: ["link", "code", "image"],
