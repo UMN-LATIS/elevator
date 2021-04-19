@@ -303,7 +303,7 @@
             // initialize the file upload
             u.settings.on_select.call(u, file);
             var args = {
-                filename: file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
+                filename: file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '').replace(/\s\s+/g, ' '),
                 filesize: file.size,
                 key: u.settings.key,
                 mime_type: u.settings.content_type,
@@ -705,7 +705,7 @@
                     chunk: chunk,
                     key: key,
                     upload_id: upload_id,
-                    filename: u.file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
+                    filename: u.file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '').replace(/\s\s+/g, ' '),
                     filesize: u.file.size,
                     mime_type: u.settings.content_type,
                     collectionId: u.settings.collectionId,
@@ -1078,7 +1078,7 @@
             },
             headers: {
                 "x-amz-acl": "private",
-                "Content-Disposition": "attachment; filename=" + file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, ''),
+                "Content-Disposition": "attachment; filename=" + file.name.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '').replace(/\s\s+/g, ' '),
                 "Content-Type": auth.content_type || "application/octet-stream"
             },
             payload: "",
