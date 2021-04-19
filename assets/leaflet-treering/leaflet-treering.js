@@ -18,6 +18,17 @@ function LTreering (viewer, basePath, options) {
   this.viewer = viewer;
   this.basePath = basePath;
 
+  var getURL = window.location.href;
+  var parsedURL = new URL(getURL);
+  var urlParams = new URLSearchParams(parsedURL.search);
+  var latData = urlParams.get("lat");
+  var lngData = urlParams.get("lng");
+  if (latData && lngData) {
+    setTimeout(function() {
+      viewer.setView([latData, lngData], 16); //  max zoom level is 18
+    }, 500);
+  }
+
   //options
   this.meta = {
     'ppm': options.ppm || 468,
@@ -92,6 +103,7 @@ function LTreering (viewer, basePath, options) {
     ioBtns.push(this.saveCloud.btn);
   }
 
+  this.keyboardShortCutDialog = new KeyboardShortCutDialog(this);
 
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
   this.annotationTools = new ButtonBar(this, [this.annotationAsset.createBtn, this.annotationAsset.deleteBtn], 'comment', 'Manage annotations');
@@ -99,7 +111,7 @@ function LTreering (viewer, basePath, options) {
   // add this.insertBreak.btn below once fixed
   this.editTools = new ButtonBar(this, [this.dating.btn, this.insertPoint.btn, this.convertToStartPoint.btn, this.deletePoint.btn, this.insertZeroGrowth.btn, this.cut.btn], 'edit', 'Edit existing measurements');
   this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'Save or upload a record of measurements, annotations, etc.');
-  this.settings = new ButtonBar(this, [this.measurementOptions.btn, this.calibration.btn], 'settings', 'Measurement preferences & distance calibration');
+  this.settings = new ButtonBar(this, [this.measurementOptions.btn, this.calibration.btn, this.keyboardShortCutDialog.btn], 'settings', 'Measurement preferences & distance calibration');
 
   this.tools = [this.viewData, this.calibration, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustment, this.measurementOptions];
 
@@ -456,7 +468,7 @@ function MeasurementData (dataObject, Lt) {
     {
       this.year = Lt.measurementOptions.forwardDirection? this.points[this.points.length-1].year+1: this.points[this.points.length-1].year-1;
     }
-    
+
     Lt.metaDataText.updateText(); // updates after points are cut
     Lt.annotationAsset.reloadAssociatedYears();
   };
@@ -525,7 +537,7 @@ function MeasurementData (dataObject, Lt) {
 
     k++;
 
-    second_points.map((e, i) => {
+    second_points.map(e => {
       if(!e) {
        return;
       }
@@ -1171,8 +1183,10 @@ function AnnotationAsset(Lt) {
 
   // crtl-a to activate createBtn
   L.DomEvent.on(window, 'keydown', (e) => {
-    if (e.keyCode == 65 && e.getModifierState("Control")) {
+    if (e.keyCode == 65 && e.getModifierState("Control") && window.name.includes('popout')) { // 65 refers to 'a'
       if(!this.active) {
+        e.preventDefault();
+        e.stopPropagation();
         Lt.disableTools();
         this.enable(this.createBtn);
       }
@@ -3018,7 +3032,7 @@ function CreateZeroGrowth(Lt) {
 function CreateBreak(Lt) {
   this.btn = new Button(
     'broken_image',
-    'Create a within-year break in measurement path\n(Avoid measuring physical specimin gaps & cracks!)',
+    'Create a within-year break in measurement path\n(Avoid measuring physical specimen gaps & cracks!)',
     () => {
       Lt.disableTools();
       this.enable();
@@ -3130,7 +3144,7 @@ function Cut(Lt) {
   this.point = -1;
   this.btn = new Button(
     'content_cut',
-    'Delete measurement path from a selected point to the beginning or end of series',
+    'Delete all points between two selected points',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
@@ -3192,10 +3206,23 @@ function InsertPoint(Lt) {
   this.active = false;
   this.btn = new Button(
     'add_circle_outline',
-    'Insert a point between two other points',
+    'Insert a point between two other points (Ctrl-i)',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
+
+  L.DomEvent.on(window, 'keydown', (e) => {
+     if (e.keyCode == 73 && !(e.getModifierState("Shift")) && e.getModifierState("Control")) { // 73 refers to 'i'
+       if (!this.active && window.name.includes('popout')) {
+         e.preventDefault();
+         e.stopPropagation();
+         Lt.disableTools();
+         this.enable();
+       } else {
+         this.disable();
+       }
+     }
+  }, this);
 
   /**
    * Insert a point on click event
@@ -4233,7 +4260,7 @@ function ViewData(Lt) {
 function ImageAdjustment(Lt) {
   this.btn = new Button(
     'brightness_6',
-    'Adjust image brightness, contrast & color',
+    'Adjust image appearance settings',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
@@ -4586,9 +4613,18 @@ function SaveLocal(Lt) {
 function SaveCloud(Lt) {
   this.btn = new Button(
     'cloud_upload',
-    'Save the current measurements, annotations, etc.\nto the cloud-hosted .json file',
+    'Save the current measurements, annotations, etc.\nto the cloud-hosted .json file (Ctrl-s)',
     () => { this.action() }
   );
+
+  L.DomEvent.on(window, 'keydown', (e) => {
+    console.log('pushed')
+     if (e.keyCode == 83 && e.getModifierState("Control") && window.name.includes('popout')) { // 83 refers to 's'
+       e.preventDefault();
+       e.stopPropagation();
+       this.action();
+     };
+  });
 
   this.date = new Date(),
 
@@ -4674,9 +4710,8 @@ function SaveCloud(Lt) {
             alert('Error: failed to save changes');
           });
     } else {
-      alert(
-        'Authentication Error: save to cloud permission not granted');
-    }
+      alert('Authentication Error: save to cloud permission not granted');
+    };
   };
 };
 
@@ -4964,6 +4999,108 @@ function Panhandler(La) {
             saveAs(blob, (Lt.meta.assetName + '_tab.zip'));
           });
         }
+
+/**
+ * Opens dialog box with all keyboard shortcuts
+ * @function
+ */
+function KeyboardShortCutDialog (Lt) {
+  this.btn = new Button (
+    'keyboard',
+    'Display keyboard shortcuts',
+    () => { this.action() },
+  );
+
+  KeyboardShortCutDialog.prototype.action = function () {
+    if (this.dialog) {
+      this.dialog.close();
+    };
+
+    let anchor = this.anchor || [1, 350];
+
+    this.dialog = L.control.dialog ({
+      'size': [310, 290],
+      'anchor': anchor,
+      'initOpen': true
+    }).addTo(Lt.viewer);
+
+    // remember annotation location each times its moved
+    $(this.dialog._map).on('dialog:moveend', () => { this.anchor = this.dialog.options.anchor } );
+
+    const shortcutGuide = [
+      {
+       'key': 'Ctrl-z',
+       'use': 'Toggle magnification loupe on/off',
+      },
+      {
+       'key': 'Ctrl-m',
+       'use': 'Toggle measurement tool on/off',
+      },
+      {
+       'key': 'Ctrl-i',
+       'use': 'Toggle insert point tool on/off',
+      },
+      {
+       'key': 'Ctrl-a',
+       'use': 'Create new annotation',
+      },
+      {
+       'key': 'Ctrl-s',
+       'use': 'Save changes to cloud (if permitted)',
+      },
+      {
+       'key': 'Shift',
+       'use': 'Disable cursor panning near edge',
+      },
+      {
+       'key': 'Arrows',
+       'use': 'Pan up/down/left/right',
+      },
+      {
+       'key': 'Shift-arrows',
+       'use': 'Pan slowly up/down/left/right',
+      },
+      {
+       'key': 'Right click or Ctrl-click',
+       'use': 'End measurement path OR resume measuring from last point',
+      },
+    ];
+
+    // reset dialog box
+    if (document.getElementById('keyboardShortcutDiv') != null) {
+      document.getElementById('keyboardShortcutDiv').remove();
+      this.dialog.setContent('');
+    };
+
+    this.dialog.setContent('<div id="keyboardShortcutDiv"></div>');
+
+    let mainDiv = document.getElementById('keyboardShortcutDiv');
+
+    var title = document.createElement('h4');
+    title.innerHTML = 'Keyboard Shortcuts';
+    mainDiv.appendChild(title);
+
+    for (shortcut of shortcutGuide) {
+      let subDiv = document.createElement('div');
+
+      let key = document.createElement('p');
+      key.innerHTML = shortcut.key;
+      subDiv.appendChild(key);
+
+      let description = document.createElement('span');
+      description.innerHTML = shortcut.use;
+      subDiv.appendChild(description);
+
+      mainDiv.appendChild(subDiv);
+    };
+
+    this.dialog.hideResize();
+    this.dialog.open();
+
+  };
+};
+
+
 /**
  * Hosts all global helper functions
  * @function

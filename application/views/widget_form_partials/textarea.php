@@ -75,6 +75,7 @@ $(document).ready(function() {
 	    // editor_selector: "textAreaWidget",
 	    selector: "textarea#<?=$textId?>",
 	    menubar: false,
+		browser_spellcheck: true,
 	    plugins: "code link",
 	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link code",
 	    setup: function(editor) {

@@ -10,14 +10,14 @@
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet.draw.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js?cachebust=99999'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/easy-button.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/L.Tooltip.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/Leaflet.Modal.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet-arrows.js'></script>
-<script type="text/javascript" src='/assets/leaflet-annotation/leaflet-annotate.js'></script>
+<script type="text/javascript" src='/assets/leaflet-annotation/leaflet-annotate.js?cachebust=99999'></script>
 
 <style type="text/css">
 

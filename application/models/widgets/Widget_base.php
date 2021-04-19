@@ -5,6 +5,7 @@ class Widget_base extends CI_Model {
 	private $fieldId;
 	private $widgetObject;
 	public $parentObjectId;
+	public $ignoreForDigitalAsset = false;
 
 	/**
 	 * Asset ivars

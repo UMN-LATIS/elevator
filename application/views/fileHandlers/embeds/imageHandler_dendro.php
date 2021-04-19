@@ -229,7 +229,11 @@ void main(void){
 		});
 
 		L.DomEvent.on(window, 'keydown', function(e) {
-			if(e.keyCode == 90 && e.getModifierState("Control")) {
+			
+			if(e.keyCode == 76 && e.getModifierState("Control")) {
+				e.preventDefault();
+				e.stopPropagation();
+			
 				if (imageMap.hasLayer(magnifyingGlass)) {
 					imageMap.removeLayer(magnifyingGlass);
 	    		} else {
