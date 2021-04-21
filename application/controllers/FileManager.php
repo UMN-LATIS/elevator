@@ -139,34 +139,37 @@ class FileManager extends Instance_Controller {
 		$returnArray = [];
 		foreach($checkArray as $fileId) {
 			$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-			$status = null;
-			if(!$fileHandler) {
-				$status = "false";
+			$status = "false";
+			
+			if($fileHandler) {
+				$fileHandler->loadByObjectId($fileId);
+
+				try {
+					$fileContainer = $fileHandler->getPreviewThumbnail($retina);
+					$targetURL = $fileContainer->getURLForFile();
+					if(get_class($fileContainer) == "FileContainer") {
+
+					// we got back a pointer to a local file
+						$status = "icon";
+					}
+					else {
+						$status = "true";
+					}
+
+				}
+				catch (Exception $e) {
+					if($fileHandler->sourceFile != null) {
+						$status = "icon";
+					}
+					else {
+						$status = "false";
+					}
+
+				}
+
+
 			}
-			$fileHandler->loadByObjectId($fileId);
-
-			try {
-				$fileContainer = $fileHandler->getPreviewThumbnail($retina);
-				$targetURL = $fileContainer->getURLForFile();
-				if(get_class($fileContainer) == "FileContainer") {
-
-				// we got back a pointer to a local file
-					$status = "icon";
-				}
-				else {
-					$status = "true";
-				}
-
-			}
-			catch (Exception $e) {
-				if($fileHandler->sourceFile != null) {
-					$status = "icon";
-				}
-				else {
-					$status = "false";
-				}
-
-			}
+			
 
 			$returnArray[] = ["status"=>$status, "fileId"=>$fileId];
 		}

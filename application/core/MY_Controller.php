@@ -7,7 +7,8 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 		
 		parent::__construct();
-
+		// Sentry\init(['dsn' => 'https://ef43672571f549729de4fe4971ce1b43@o576477.ingest.sentry.io/5730265' ]);
+			
 		if($this->config->item('css_override') && $this->config->item('css_override') !== "FALSE") {
 			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
 		}

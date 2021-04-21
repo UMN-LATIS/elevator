@@ -51,8 +51,8 @@ class InhibitorHook {
 	 */
 	public function handle_fatal_errors()
 	{
+		\Sentry\captureLastError();
 		if (($error = error_get_last())) {
-
 			$buffer = ob_get_contents();
 			if($buffer) {
 				ob_clean();
@@ -85,6 +85,7 @@ class InhibitorHook {
 	 */
 	public function handle_exceptions($exception)
 	{
+		\Sentry\captureLastError();
 		$CI =& get_instance();
 		// $CI->doctrine->em->resetManager();
 		if(is_array($exception)) {
@@ -93,7 +94,6 @@ class InhibitorHook {
 		else {
 			$errorText = $exception;
 		}
-
 
 		//reset doctrine in case we've lost the DB
 		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -117,6 +117,17 @@ class InhibitorHook {
 		if( (php_sapi_name() === 'cli')) {
 			echo "Error, dying.\n";
 		}
+		$message = "\nError Type: ".get_class($exception)."\n";
+		$message .= "Error Message: ".$exception->getMessage()."\n";
+		$message .= "In File: ".$exception->getFile()."\n";
+		$message .= "At Line: ".$exception->getLine()."\n";
+		$message .= "Platform: " . PHP_VERSION . " (" . PHP_OS . ")\n";
+
+		$message .= "\nBACKTRACE\n";
+		$message .= $exception->getTraceAsString();
+		$message .= "\nEND\n";
+
+		$this->_forward_error($message);
 	}
 
 	/**
@@ -142,6 +153,7 @@ class InhibitorHook {
 			return;
 
 		}
+		\Sentry\captureLastError();
 		$data = array(
             'errno' => $errno,
             'errtype' => $this->_friendly_error_type($errno) ? $this->_friendly_error_type($errno) : $errno,
@@ -186,6 +198,8 @@ class InhibitorHook {
 		if( (php_sapi_name() === 'cli')) {
 			echo "Error, continuing.\n";
 		}
+		
+		
 		// echo "<p>Error Logged</p>";
 		// $CI =& get_instance();
 		// $CI->load->database();

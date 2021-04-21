@@ -29,10 +29,10 @@ class asset extends Instance_Controller {
 
 	function viewAsset($objectId=null, $returnJson=false) {
 		$assetModel = new Asset_model;
+		throw new Exception("My first Sentry error!");
 		if(!$objectId) {
 			show_404();
-		}
-
+		}noSuchFunction();
 		$assetModel->loadAssetById($objectId);
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
