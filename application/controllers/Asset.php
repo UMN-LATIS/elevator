@@ -258,7 +258,7 @@ class asset extends Instance_Controller {
 		}
 		
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
-		if($embedAssets) {
+		if(isset($embedAssets)) {
 			$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
 		}
 		else {
