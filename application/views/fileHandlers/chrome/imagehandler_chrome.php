@@ -6,7 +6,13 @@ if((isset($widgetObject->parentWidget->enableDendro) && $widgetObject->parentWid
   $ratio = 1;
 }
 else {
-  $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+  if(!isset($fileObject->sourceFile->metadata["width"]) || !isset($fileObject->sourceFile->metadata["height"])) {
+    $ratio = 1;
+  }
+  else {
+    $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+  }
+  
 
   // if this is a crazy wide image, just make it square.
   if($ratio > 20) {
@@ -40,8 +46,8 @@ if(count($fileContainers)>0) {
 $fileInfo = [];
 $fileInfo["File Type"] = "Image";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-$fileInfo["Image Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
+$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"] ?? 0;
+$fileInfo["Image Size"] = ($fileObject->sourceFile->metadata["width"] ?? 0) . "x" . ($fileObject->sourceFile->metadata["height"] ?? 0);
 
 if($widgetObject) {
   if($widgetObject->fileDescription) {
