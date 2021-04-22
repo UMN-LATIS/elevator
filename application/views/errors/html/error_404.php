@@ -1,64 +1,83 @@
-<?php
-defined('BASEPATH') OR exit('No direct script access allowed');
-?><!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8">
-<title>404 Page Not Found</title>
-<style type="text/css">
 
-::selection { background-color: #E13300; color: white; }
-::-moz-selection { background-color: #E13300; color: white; }
+  <title>404 Not Found</title>
+  <meta charset="utf-8">
 
-body {
-	background-color: #fff;
-	margin: 40px;
-	font: 13px/20px normal Helvetica, Arial, sans-serif;
-	color: #4F5155;
-}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-a {
-	color: #003399;
-	background-color: transparent;
-	font-weight: normal;
-}
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.css">
+<link rel="stylesheet" href="/assets/leaflet/MarkerCluster.Default.css">
+<link rel="stylesheet" href="/assets/leaflet/leaflet.css">
+<link rel="stylesheet" href="/assets/leaflet/L.Control.Locate.min.css">
+<link rel="stylesheet" href="/assets/minifiedcss/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/minifiedcss/screen.min.css">
 
-h1 {
-	color: #444;
-	background-color: transparent;
-	border-bottom: 1px solid #D0D0D0;
-	font-size: 19px;
-	font-weight: normal;
-	margin: 0 0 14px 0;
-	padding: 14px 15px 10px 15px;
-}
-
-code {
-	font-family: Consolas, Monaco, Courier New, Courier, monospace;
-	font-size: 12px;
-	background-color: #f9f9f9;
-	border: 1px solid #D0D0D0;
-	color: #002166;
-	display: block;
-	margin: 14px 0 14px 0;
-	padding: 12px 10px 12px 10px;
-}
-
-#container {
-	margin: 10px;
-	border: 1px solid #D0D0D0;
-	box-shadow: 0 0 8px #D0D0D0;
-}
-
-p {
-	margin: 12px 15px 12px 15px;
-}
-</style>
+<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/L.Control.Locate.min.js'></script>
+<script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
+<script src="/assets/minifiedjs/jquery.min.js"></script>
 </head>
+
+
+
 <body>
-	<div id="container">
+
+
+
+ <nav class="navbar navbar-default" role="navigation">
+    <!-- Brand and toggle get grouped for better mobile display -->
+
+
+
+        <div class="navbar-header">
+
+      <a class="navbar-brand">
+        <div class="headerLogoText">Elevator</div>
+        
+      </a>
+    </div>
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+      <ul class="nav navbar-nav">
+        
+
+
+                <li><a href="http://umn-latis.github.io/elevator/" target="_blank">Help</span></a></li>
+             
+      </ul>
+   
+
+    </div><!-- /.navbar-collapse -->
+
+
+  </nav>
+
+
+
+  <div class="container mainContent jumbotron">
+
 		<h1><?php echo $heading; ?></h1>
 		<?php echo $message; ?>
-	</div>
+
+</div>
+    <footer class="footer">
+
+      <p class="universityFooter">
+        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage" alt="Grain Elevagor Icon">Powered by Elevator, developed by the <A href="http://www.umn.edu">University of Minnesota</a>
+      </p>
+    </footer>
+
+
+
 </body>
 </html>
+
+
+
