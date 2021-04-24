@@ -92,9 +92,9 @@ gulp.task("allCSSFilesIndividually", function() {
 });
 
 
-gulp.task('default', ['3dhop', 'webRTI', 'basicFiles', 'basicFiles', 'assetMaster', 'searchMaster', 'allJSFilesIndividually','allCSSFilesIndividually']);
+gulp.task('default', gulp.series('3dhop', 'webRTI', 'basicFiles', 'basicFiles', 'assetMaster', 'searchMaster', 'allJSFilesIndividually','allCSSFilesIndividually'));
 
 
 
-gulp.task('pre-commit', ['default']);
+gulp.task('pre-commit', gulp.series('default'));
 
