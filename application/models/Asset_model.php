@@ -757,6 +757,10 @@ class Asset_model extends CI_Model {
 
 
 	public function getSearchResultEntry() {
+		if(!$this->assetObject) {
+			return false;
+		}
+		
 		if($assetCache = $this->assetObject->getAssetCache()) {
 			if(!$assetCache->getNeedsRebuild()) {
 				return $assetCache->getSearchResultCache();
