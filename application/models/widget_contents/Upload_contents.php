@@ -69,7 +69,7 @@ class Upload_contents extends Widget_contents_base {
 				// back to the parent record.  If we happen upon one of these, go ahead and update it.  There's never a reason we want a
 				// orphan filehandler
 				if($this->fileHandler->parentObjectId == NULL || ($this->parentObjectId !== null && $this->fileHandler->parentObjectId != $this->parentObjectId)) {
-					$this->logging->logError("updating missing filehandler", $this->fileId);
+					// $this->logging->logError("updating missing filehandler", $this->fileId);
 					$this->fileHandler->parentObjectId = $this->parentObjectId;
 					$this->fileHandler->save();
 				}
