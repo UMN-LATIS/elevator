@@ -48,7 +48,7 @@ class collection_model extends CI_Model {
 		if(!isset($this->s3collectionCache[$collectionId])) {
 			$collection = $this->getCollection($collectionId);
 
-			if(!$collection->getS3Key() || $collection->getS3Secret() || !$collection->getBucketRegion()) {
+			if(!$collection->getS3Key() || !$collection->getS3Secret() || !$collection->getBucketRegion()) {
 				return false;
 			}
 			
