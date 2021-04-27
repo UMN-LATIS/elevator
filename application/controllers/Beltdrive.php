@@ -537,6 +537,9 @@ class Beltdrive extends CI_Controller {
 		foreach ($iterator as $fileInfo) {
     		if (time() - $fileInfo->getCTime() >= 12*60*60) {
         		if(is_file($fileInfo->getRealPath())) {
+					if($fileInfo->getRealPath() == "/scratch/swap") {
+						continue;
+					}
         			unlink($fileInfo->getRealPath());
         		}
         		else {
