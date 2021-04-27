@@ -32,12 +32,12 @@ class InhibitorHook {
 	{
 
 
-		// register_shutdown_function(array($this, 'handle_fatal_errors'));
+		register_shutdown_function(array($this, 'handle_fatal_errors'));
 
 	}
 	public function runtime_error_catcher() {
 		// set_error_handler(array($this, 'handle_errors'));
-		// set_exception_handler(array($this, 'handle_exceptions'));
+		set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
 	/**
@@ -86,37 +86,7 @@ class InhibitorHook {
 	public function handle_exceptions($exception)
 	{
 		\Sentry\captureLastError();
-		$CI =& get_instance();
-		// $CI->doctrine->em->resetManager();
-		if(is_array($exception)) {
-			$errorText = join("\n", $data);
-		}
-		else {
-			$errorText = $exception;
-		}
 
-		//reset doctrine in case we've lost the DB
-		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
-		$CI->doctrine->reset();
-
-		$log = new Entity\Log();
-		$log->setMessage(substr($errorText, 0, 2000));
-		$log->setCreatedAt(new \DateTime("now"));
-		if(isset($CI->instance)) {
-			$instance = $CI->doctrine->em->find('Entity\Instance', $CI->instance->getId());
-			$log->setInstance($instance);
-		}
-		if(isset($CI->user)) {
-			$log->setUserId($CI->user->getId());
-		}
-		if(isset($CI->collection)) {
-			$log->setCollection($CI->collection->getId());
-		}
-		$CI->doctrine->em->persist($log);
-		$CI->doctrine->em->flush();
-		if( (php_sapi_name() === 'cli')) {
-			echo "Error, dying.\n";
-		}
 		$message = "\nError Type: ".get_class($exception)."\n";
 		$message .= "Error Message: ".$exception->getMessage()."\n";
 		$message .= "In File: ".$exception->getFile()."\n";
