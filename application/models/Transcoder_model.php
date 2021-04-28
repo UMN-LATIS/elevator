@@ -73,8 +73,8 @@ class Transcoder_Model extends CI_Model {
 			$targetMetadata["width"] = $metadata["video"]["width"];
 			$targetMetadata["height"] = $metadata["video"]["height"];
 			$targetMetadata["videoCodec"] = $metadata["video"]["codec_name"] ?: null;
-			$targetMetadata["displayAspect"] = $metadata["video"]["display_aspect_ratio"]?:null;
-			$targetMetadata["pixelAspect"] = $metadata["video"]["sample_aspect_ratio"]?:null;
+			$targetMetadata["displayAspect"] = $metadata["video"]["display_aspect_ratio"] ?? null;
+			$targetMetadata["pixelAspect"] = $metadata["video"]["sample_aspect_ratio"] ?? null;
 			if(isset($metadata["video"]["tags"]["rotate"])) {
 				$targetMetadata["rotation"] = $metadata["video"]["tags"]["rotate"];
 			}

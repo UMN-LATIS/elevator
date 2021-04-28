@@ -33,7 +33,11 @@ class asset extends Instance_Controller {
 			show_404();
 		}
 
-		$assetModel->loadAssetById($objectId);
+		
+		if(!$assetModel->loadAssetById($objectId)) {
+			show_404();
+			
+		}
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
 		if($this->accessLevel == PERM_NOPERM) {
@@ -258,7 +262,7 @@ class asset extends Instance_Controller {
 		}
 		
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
-		if($embedAssets) {
+		if(isset($embedAssets)) {
 			$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
 		}
 		else {

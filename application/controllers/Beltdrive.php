@@ -34,6 +34,12 @@ class Beltdrive extends CI_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+
+		\Sentry\init([
+			'dsn' => $this->config->item('sentry_dsn'),
+			'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
+			'server_name' => $this->config->item('authHelper')
+		]);
 		$this->serverId = $this->getMacLinux();
 		$this->doctrine->extendTimeout();
 

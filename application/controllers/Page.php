@@ -13,6 +13,9 @@ class Page extends Instance_Controller {
 			instance_redirect("/");
 		}
 		$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+		if(!$page) {
+			show_404();
+		}
 		$this->template->title = $page->getTitle();
 		$this->template->content->view("staticPage", ["content"=>$page->getBody()]);
 		$this->template->publish();

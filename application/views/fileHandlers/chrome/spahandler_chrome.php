@@ -19,7 +19,7 @@ $fileInfo = [];
 $fileInfo["File Type"] = "Image";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
 $fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
-$fileInfo["Image Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
+$fileInfo["Image Size"] = ($fileObject->sourceFile->metadata["width"]??"unknown") . " x " . ($fileObject->sourceFile->metadata["height"]??"unknown");
 
 if($widgetObject) {
   if($widgetObject->fileDescription) {
