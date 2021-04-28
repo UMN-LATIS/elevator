@@ -30,7 +30,7 @@ class Logging extends CI_Model {
 	{
 		\Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($message, $task): void {
   			$scope->setExtra('error.message', $message);
-  			$scope->setExtra('error.message', $task);
+  			$scope->setExtra('error.task', $task);
 			$scope->setExtra('error.type', "manual");
 		});
 		
