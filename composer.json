@@ -34,6 +34,7 @@
     "google/apiclient": "dev-disableCache",
     "php-unoconv/php-unoconv": "^0.3.0",
     "doctrine/persistence": "1.*",
-    "aws/aws-sdk-php": "^3.151"
+    "aws/aws-sdk-php": "^3.151",
+    "sentry/sdk": "^3.1"
   }
 }

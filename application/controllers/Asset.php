@@ -33,7 +33,11 @@ class asset extends Instance_Controller {
 			show_404();
 		}
 
-		$assetModel->loadAssetById($objectId);
+		
+		if(!$assetModel->loadAssetById($objectId)) {
+			show_404();
+			
+		}
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
 		if($this->accessLevel == PERM_NOPERM) {
@@ -248,8 +252,10 @@ class asset extends Instance_Controller {
 
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
 
-		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
-		
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject, $embedded);
+		if(!$fileHandler) {
+			return;
+		}
 		try {
 			$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
 		}
@@ -258,7 +264,7 @@ class asset extends Instance_Controller {
 		}
 		
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
-		if($embedAssets) {
+		if(isset($embedAssets)) {
 			$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
 		}
 		else {
@@ -272,7 +278,7 @@ class asset extends Instance_Controller {
 		$this->template->publish();
 	}
 
-	private function getComputedAsset($fileObjectId, $parentObject) {
+	private function getComputedAsset($fileObjectId, $parentObject, $embedded = false) {
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 		if(!$fileHandler) {
 			$embed = $this->load->view("fileHandlers/filenotfound", null, true);

@@ -31,13 +31,12 @@ class InhibitorHook {
 	public function fatal_error_catcher()
 	{
 
+
 		register_shutdown_function(array($this, 'handle_fatal_errors'));
 
 	}
 	public function runtime_error_catcher() {
-
-
-		set_error_handler(array($this, 'handle_errors'));
+		// set_error_handler(array($this, 'handle_errors'));
 		set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
@@ -51,8 +50,9 @@ class InhibitorHook {
 	 */
 	public function handle_fatal_errors()
 	{
+		
 		if (($error = error_get_last())) {
-
+			\Sentry\captureLastError();
 			$buffer = ob_get_contents();
 			if($buffer) {
 				ob_clean();
@@ -85,38 +85,19 @@ class InhibitorHook {
 	 */
 	public function handle_exceptions($exception)
 	{
-		$CI =& get_instance();
-		// $CI->doctrine->em->resetManager();
-		if(is_array($exception)) {
-			$errorText = join("\n", $data);
-		}
-		else {
-			$errorText = $exception;
-		}
+		\Sentry\captureLastError();
 
+		$message = "\nError Type: ".get_class($exception)."\n";
+		$message .= "Error Message: ".$exception->getMessage()."\n";
+		$message .= "In File: ".$exception->getFile()."\n";
+		$message .= "At Line: ".$exception->getLine()."\n";
+		$message .= "Platform: " . PHP_VERSION . " (" . PHP_OS . ")\n";
 
-		//reset doctrine in case we've lost the DB
-		// TODO: doctrine 2.5 should let us move to pingable and avoid this?
-		$CI->doctrine->reset();
+		$message .= "\nBACKTRACE\n";
+		$message .= $exception->getTraceAsString();
+		$message .= "\nEND\n";
 
-		$log = new Entity\Log();
-		$log->setMessage(substr($errorText, 0, 2000));
-		$log->setCreatedAt(new \DateTime("now"));
-		if(isset($CI->instance)) {
-			$instance = $CI->doctrine->em->find('Entity\Instance', $CI->instance->getId());
-			$log->setInstance($instance);
-		}
-		if(isset($CI->user)) {
-			$log->setUserId($CI->user->getId());
-		}
-		if(isset($CI->collection)) {
-			$log->setCollection($CI->collection->getId());
-		}
-		$CI->doctrine->em->persist($log);
-		$CI->doctrine->em->flush();
-		if( (php_sapi_name() === 'cli')) {
-			echo "Error, dying.\n";
-		}
+		$this->_forward_error($message);
 	}
 
 	/**
@@ -142,6 +123,7 @@ class InhibitorHook {
 			return;
 
 		}
+		\Sentry\captureLastError();
 		$data = array(
             'errno' => $errno,
             'errtype' => $this->_friendly_error_type($errno) ? $this->_friendly_error_type($errno) : $errno,
@@ -186,6 +168,8 @@ class InhibitorHook {
 		if( (php_sapi_name() === 'cli')) {
 			echo "Error, continuing.\n";
 		}
+		
+		
 		// echo "<p>Error Logged</p>";
 		// $CI =& get_instance();
 		// $CI->load->database();

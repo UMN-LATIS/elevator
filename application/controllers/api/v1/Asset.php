@@ -196,10 +196,12 @@ class asset extends API_Controller {
 		
 		$fileHandler = $this->filehandler_router->getHandlerForObject($objectId);
 		if(!$fileHandler) {
+			return "";
 		}
 
 		$fileHandler->loadByObjectId($objectId);
 		if(!$fileHandler->parentObjectId) {
+			return "";
 		}
 		
 		$timestamp = time();

@@ -39,6 +39,12 @@ class Transcoder extends CI_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+
+		\Sentry\init([
+			'dsn' => $this->config->item('sentry_dsn'),
+			'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
+			'server_name' => $this->config->item('authHelper')
+		]);
 		$this->pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 		$this->serverId = $this->getMacLinux();
 		$this->config->set_item("enableCaching", false);

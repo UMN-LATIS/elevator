@@ -15,7 +15,7 @@ if(count($fileContainers)>0) {
 $fileInfo = [];
 $fileInfo["File Type"] = "Image";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
+$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"] ?? 0;
 
 
 $menuArray['fileInfo'] = $fileInfo;

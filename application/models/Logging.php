@@ -28,7 +28,19 @@ class Logging extends CI_Model {
 
 	public function logError($task=null,$message=null, $asset=null, $collection=null)
 	{
-
+		\Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($message, $task): void {
+  			$scope->setExtra('error.message', $message);
+  			$scope->setExtra('error.task', $task);
+			$scope->setExtra('error.type', "manual");
+		});
+		
+		if(is_a($message, "Exception")) {
+			\Sentry\captureException($message);
+		}
+		else {
+			// \Sentry\captureMessage($task);
+		}
+		
 		if(is_array($message) || is_object($message)) {
 			$message = json_encode($message);
 		}

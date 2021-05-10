@@ -177,51 +177,12 @@ function loadSidecars(fileIdElement) {
 }
 
 
-function updateImage(fileIdElement, container) {
-    fileId = $(fileIdElement).val();
-    $.ajax({
-            type: "GET",
-            fileId: fileId,
-            fileIdElement: fileIdElement,
-            container: container,
-            url: basePath + "fileManager/previewImageAvailable/" + fileId,
-            success: function(data, textStatus) {
-                if (data == "false") {
-                    // data.redirect contains the string URL to redirect to
-                    $(container).find("img").attr("src", "/assets/images/processing.gif");
-                    $(container).show();
-                    setTimeout(function() {
-                        updateImage(fileIdElement, container);
-                    }, 2000);
-                }
-                else if(data == "true") {
-                    $(container).find("img").attr("src", basePath + "fileManager/previewImageByFileId/" + this.fileId + "?" + Math.random());
-
-                    $.get(basePath+"fileManager/extractedData/"+this.fileId,function(data) {
-                        $(container).closest(".widgetContents").find(".extractedData").val(data);
-                    });
-
-                    $(container).show();
-                }
-                else if(data == "icon") {
-                    // if it's an icon, we say true but keep polling
-                    $(container).find("img").attr("src", basePath + "fileManager/previewImageByFileId/" + this.fileId);
-                    $(container).show();
-                    setTimeout(function() {
-                        updateImage(fileIdElement, container);
-                    }, 5000);
-                }
-            }
-        });
-}
-
 var fileObjectPreview = function(targetElement) {
     var imageContainer = $(targetElement).closest(".widgetContents").find(".imagePreview");
     if($(targetElement).val().length>0) {
         $("#collectionId").attr("disabled", true);
         $(targetElement).closest('.widgetContents').find(".file").attr("disabled", true);
         var self = targetElement;
-        // updateImage(self,imageContainer);
         loadSidecars(self);
     }
     else {
