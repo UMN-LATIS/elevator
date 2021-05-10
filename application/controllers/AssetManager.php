@@ -738,7 +738,13 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function parseTime($timeString) {
-		if(strlen($timeString) <= 4) {
+		// anything less than 2 chars is probably just noise
+		if(strlen($timeString) < 4) {
+			return false;
+		}
+
+		// if we've got just a four digit year, we do our best to guess a date.
+		if(strlen($timeString) == 4) {
 			$timeString = $timeString . "-01-01";
 		}
 		
