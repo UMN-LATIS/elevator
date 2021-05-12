@@ -1069,7 +1069,7 @@ ul.collectionList li {
   display: inline;
 }
 ul.collectionList li:after {
-  content: " : ";
+  content: " > " !important;
 }
 ul.collectionList li:last-child:after {
   content: "";
