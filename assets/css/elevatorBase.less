@@ -1036,7 +1036,7 @@ ul.collectionList {
     list-style-type:none;
     li {
         display: inline;
-        &:after {
+        &:not(:last-child):after {
             content: " > " !important;
         }
         &:last-child:after {

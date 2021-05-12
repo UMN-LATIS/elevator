@@ -1068,7 +1068,7 @@ ul.collectionList {
 ul.collectionList li {
   display: inline;
 }
-ul.collectionList li:after {
+ul.collectionList li:not(:last-child):after {
   content: " > " !important;
 }
 ul.collectionList li:last-child:after {
