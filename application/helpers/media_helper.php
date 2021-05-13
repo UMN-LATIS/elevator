@@ -73,7 +73,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		$outputSwitches[] = "-resize '" . $width . "x" . $height . "'";
 		$outputSwitches[] = "-filter Lanczos";
 	}
-	$inputName = $sourceImage->getType().":".$sourceImage->getPathToLocalFile().$append;
+	$inputName = mungeImageType($sourceImage).":".$sourceImage->getPathToLocalFile().$append;
 	$outputName = $targetImage->getPathToLocalFile();
 	$commandline = $CI->config->item("convert") . " " . implode(" ", $inputSwitches) . " " . escapeshellarg($inputName) . " " . implode(" ", $outputSwitches) . " " . escapeshellarg("jpg:".$outputName);
 	exec($commandline, $results);
@@ -144,10 +144,11 @@ function identifyImage($sourceImage) {
 	}
 }
 
+
 function fastImageDimensions($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$commandline = "identify " . $sourceImage->getType().":".$sourceImage->getPathToLocalFile();
+	$commandline = "identify " . mungeImageType($sourceImage).":".$sourceImage->getPathToLocalFile();
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$split = explode(" ", $results[0]);
@@ -232,4 +233,12 @@ function isWholeSlideImage($sourceFile) {
 		return true;
 	}
 	return false;
+}
+
+function mungeImageType($sourceFile) {
+	$type = $sourceFile->getType();
+	if($type == "jpf") {
+		return "jp2";
+	}
+	return $type;
 }

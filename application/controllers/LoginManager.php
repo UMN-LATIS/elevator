@@ -6,6 +6,7 @@ class LoginManager extends Instance_Controller {
 	public function __construct()
 	{
 		parent::__construct();
+		$this->template->loadJavascript(["bootstrap-show-password"]);
 
 	}
 

@@ -11,7 +11,7 @@ class Home extends Instance_Controller {
 
 	public function index()
 	{
-
+		$this->template->loadJavascript(["bootstrap-show-password"]);
 
 		if($this->user_model) {
 			$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);

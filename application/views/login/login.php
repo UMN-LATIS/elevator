@@ -70,7 +70,7 @@ $(document).ready(function() {
 				<div class="form-group">
 					<label for="inputPassword" class="col-sm-2 control-label">Password:</label>
 					<div class="col-sm-6">
-						<input type="password" name="password" id="inputPassword" class="form-control" required="required" title="">
+						<input type="password" name="password" id="inputPassword" class="form-control" required="required" title="" data-toggle="password">
 					</div>
 				</div>
 				<?if(!isset($redirectURL) || $redirectURL == null) { $redirectURL = current_url(); }?>
