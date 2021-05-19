@@ -46,7 +46,8 @@ class Asset_template extends CI_Model {
 
 
 		$widgetQuery = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["template"=>$templateId]);
-
+		
+		$widgetArray = array();
 		foreach($widgetQuery as $widget) {
 			$widgetArray[$widget->getFieldTitle()] = $this->widget_router->getWidget($widget);
 		}
@@ -103,8 +104,7 @@ class Asset_template extends CI_Model {
    		elseif($sortType == "viewOrder") {
    			uasort($this->widgetArray, function($a, $b) {
     				return $a->getViewOrder() > $b->getViewOrder() ? 1 : -1;
-    		});
-   		}
+    		}); }
 
 
 	}
