@@ -61,7 +61,7 @@ class LoginManager extends Instance_Controller {
 	public function logout()
 	{
 		$this->session->sess_destroy();
-		if($this->config->item('enableCaching')) {
+		if($this->config->item('enableCaching') && $this->user_model->userId) {
 			$this->doctrineCache->setNamespace('userCache_');
 			$this->doctrineCache->delete($this->user_model->userId);
 		}
