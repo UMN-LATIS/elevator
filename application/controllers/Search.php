@@ -68,7 +68,10 @@ class Search extends Instance_Controller {
 		$this->template->publish();
 	}
 
-	function s($args){
+	function s($args = null){
+		if($args == null) {
+			$this->errorhandler_helper->callError("genericError");
+		}
 		$this->index($args);
 	}
 
