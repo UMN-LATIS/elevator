@@ -70,7 +70,7 @@ class Search extends Instance_Controller {
 
 	function s($args = null){
 		if($args == null) {
-			$this->errorhandler_helper->callError("genericError");
+			$this->errorhandler_helper->callError("badSearch");
 		}
 		$this->index($args);
 	}
