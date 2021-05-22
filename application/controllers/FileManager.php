@@ -66,8 +66,14 @@ class FileManager extends Instance_Controller {
 		//TODO : CHECK PERMS - should be able to pull the collection at this stage?
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		$fileHandler->loadByObjectId($fileId);
-		$this->redirectToPreviewImage($fileHandler, $retina, "thumbnail");
+		if($fileHandler) {
+			$fileHandler->loadByObjectId($fileId);
+			$this->redirectToPreviewImage($fileHandler, $retina, "thumbnail");
+		}
+		else {
+			show_404();
+		}
+		
 	}
 
 	function tinyImageByFileId($fileId, $retina=false) {
