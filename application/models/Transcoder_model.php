@@ -116,7 +116,7 @@ class Transcoder_Model extends CI_Model {
 		 */
 		$this->load->model("asset_model");
 		$uploadWidget = $this->fileHandler->getUploadWidget();
-		if(stristr($uploadWidget->fileDescription, "spherical")) {
+		if(isset($uploadWidget) && stristr($uploadWidget->fileDescription, "spherical")) {
 			$targetMetadata["spherical"] = true;
 		
 			if(stristr($uploadWidget->fileDescription, "stereo")) {
