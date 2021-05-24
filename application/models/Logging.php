@@ -35,7 +35,7 @@ class Logging extends CI_Model {
 		});
 		
 		if(is_a($message, "Exception")) {
-			\Sentry\captureException($message);
+			// \Sentry\captureException($message);
 		}
 		else {
 			// \Sentry\captureMessage($task);
