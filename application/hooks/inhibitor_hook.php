@@ -52,7 +52,7 @@ class InhibitorHook {
 	{
 		
 		if (($error = error_get_last())) {
-			\Sentry\captureLastError();
+			// \Sentry\captureLastError();
 			$buffer = ob_get_contents();
 			if($buffer) {
 				ob_clean();
@@ -85,7 +85,7 @@ class InhibitorHook {
 	 */
 	public function handle_exceptions($exception)
 	{
-		\Sentry\captureLastError();
+		// \Sentry\captureLastError();
 
 		$message = "\nError Type: ".get_class($exception)."\n";
 		$message .= "Error Message: ".$exception->getMessage()."\n";
@@ -123,7 +123,7 @@ class InhibitorHook {
 			return;
 
 		}
-		\Sentry\captureLastError();
+		// \Sentry\captureLastError();
 		$data = array(
             'errno' => $errno,
             'errtype' => $this->_friendly_error_type($errno) ? $this->_friendly_error_type($errno) : $errno,
