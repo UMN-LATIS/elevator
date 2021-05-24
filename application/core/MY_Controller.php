@@ -14,7 +14,7 @@ class MY_Controller extends CI_Controller {
 			]);
 			
 		if($this->config->item('css_override') && $this->config->item('css_override') !== "FALSE") {
-			$cssLoadArray = ["bootstrap_" . $this->config->itemgetenv('ENVIRONMENT')('css_override'), $this->config->item('css_override')];
+			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
 		}
 		else {
 			$cssLoadArray = ["bootstrap", "screen"];
