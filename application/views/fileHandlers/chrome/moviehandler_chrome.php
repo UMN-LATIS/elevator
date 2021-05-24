@@ -16,7 +16,11 @@ if($widgetObject->parentWidget->interactiveTranscript && isset($widgetObject->si
 
 $embed = htmlentities('<iframe width="560" height="' . $displayHeight . '" src="' . $fileObject->getEmbedURL() . '" frameborder="0" allowfullscreen></iframe>', ENT_QUOTES);
 
-$ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+$ratio = 1;
+if(isset($fileObject->sourceFile->metadata["height"]) && $fileObject->sourceFile->metadata["height"] > 0) {
+  $ratio = $fileObject->sourceFile->metadata["width"] / $fileObject->sourceFile->metadata["height"];
+}
+
 
 
 if(isset($fileObject->sourceFile->metadata["rotation"]) && (abs($fileObject->sourceFile->metadata["rotation"]) == 90 || abs($fileObject->sourceFile->metadata["rotation"]) == 270)) {

@@ -10,13 +10,15 @@ if(isset($fileContainers['dicom'])) {
   $masterExif = $fileObject->sourceFile->metadata['exif'];
   $seriesList = $fileContainers['dicom']->metadata;
 
-  $outputJson['patientName'] = array_key_exists("dcm:Patient\'sName", $masterExif)?$masterExif['dcm:Patient\'sName']:null;
-  $outputJson['patientId'] = array_key_exists("dcm:Patient\'sID", $masterExif)?$masterExif['dcm:Patient\'sID']:null;
-  $outputJson['studyDate'] = array_key_exists("dcm:StudyDate", $masterExif)?$masterExif['dcm:StudyDate']:null;
-  $outputJson['modality'] = array_key_exists("dcm:Modality", $masterExif)?$masterExif['dcm:Modality']:null;
-  $outputJson['studyDescription'] = array_key_exists("dcm:StudyDescription", $masterExif)?$masterExif['dcm:StudyDescription']:null;
-  $outputJson['studyId'] = array_key_exists("dcm:StudyID", $masterExif)?$masterExif['dcm:StudyID']:null;
-
+  if(is_array($masterExif)) {
+    $outputJson['patientName'] = array_key_exists("dcm:Patient\'sName", $masterExif)?$masterExif['dcm:Patient\'sName']:null;
+    $outputJson['patientId'] = array_key_exists("dcm:Patient\'sID", $masterExif)?$masterExif['dcm:Patient\'sID']:null;
+    $outputJson['studyDate'] = array_key_exists("dcm:StudyDate", $masterExif)?$masterExif['dcm:StudyDate']:null;
+    $outputJson['modality'] = array_key_exists("dcm:Modality", $masterExif)?$masterExif['dcm:Modality']:null;
+    $outputJson['studyDescription'] = array_key_exists("dcm:StudyDescription", $masterExif)?$masterExif['dcm:StudyDescription']:null;
+    $outputJson['studyId'] = array_key_exists("dcm:StudyID", $masterExif)?$masterExif['dcm:StudyID']:null;
+  }
+  
   foreach($seriesList as $key=>$series) {
     if(!array_key_exists("instanceList", $series)) {
       continue;

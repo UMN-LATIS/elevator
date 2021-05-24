@@ -188,7 +188,7 @@ class search_model extends CI_Model {
 		if(count($fileTypes)>0) {
 			foreach($fileTypes as $upload) {
 				foreach($upload->fieldContentsArray as $uploadContent) {
-					if($uploadContent->hasContents()) {
+					if($uploadContent->hasContents() && $uploadContent->getFileHandler()) {
 						$fileTypeArray[] = strtolower(str_ireplace("handler", "", get_class($uploadContent->getFileHandler())));
 					}
 				}

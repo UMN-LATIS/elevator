@@ -3,7 +3,7 @@
 * Bennington OAuth Helper
 */
 
-// define("GROUP_MEMBER", "Google Group");
+define("GROUP_MEMBER", "Internal Group");
 
 require_once("AuthHelper.php");
 class BenningtonOAuthHelper extends AuthHelper
