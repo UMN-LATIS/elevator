@@ -354,15 +354,52 @@ class search_model extends CI_Model {
 
 
 		if(isset($searchArray["sort"]) && $searchArray["sort"] != "0") {
-			$sortTerm = $searchArray["sort"];
-			if(substr($searchArray["sort"], -5, 5) == ".desc") {
-				$sortTerm = str_replace(".desc", "", $sortTerm);
-				$sortFilter[$sortTerm]["order"] = "desc";
+			$sortFilter = [];
+			
+			if($searchArray["sort"] == "collection" && $this->instance) {
+				$sortCollections = $this->instance->getCollectionsWithoutParent();
+				
+				function recursiveFunctionWalker($collection) {
+					$childrenArray = [];
+					if($collection->hasChildren()) {
+						foreach($collection->getChildren() as $child) {
+							$childrenArray = $childrenArray + recursiveFunctionWalker($child);
+						}
+					}
+					return [$collection->getId()=>$collection->getTitle()] + $childrenArray;
+				};
+				$collectionArray = [];
+				foreach($sortCollections as $collection) {
+					$collectionArray = $collectionArray + recursiveFunctionWalker($collection);
+				}
+
+				$collectionSortIds = array_keys($collectionArray);
+
+				$sortFilter["_script"] = [
+					"type" => "number",
+					"script" => [
+						"lang" => "painless",
+						"params" => [
+							"ids" => $collectionSortIds
+						],
+						"inline" => "int idsCount = params.ids.size();def id = (int)doc['collectionId'].value;int foundIdx = params.ids.indexOf(id);return foundIdx > -1 ? foundIdx: idsCount + 1;"
+					]
+				];
+
 			}
 			else {
-				$sortTerm = str_replace(".asc", "", $sortTerm);
-				$sortFilter[$sortTerm]["order"] = "asc";
+				$sortTerm = $searchArray["sort"];
+				if(substr($searchArray["sort"], -5, 5) == ".desc") {
+					$sortTerm = str_replace(".desc", "", $sortTerm);
+					$sortFilter[$sortTerm]["order"] = "desc";
+				}
+				else {
+					$sortTerm = str_replace(".asc", "", $sortTerm);
+					$sortFilter[$sortTerm]["order"] = "asc";
+				}
 			}
+
+			
     		$sort[] = $sortFilter;
 
 		}
@@ -579,7 +616,7 @@ class search_model extends CI_Model {
 
     	$searchParams['body']['stored_fields'] = "_id";
 
-    	// $this->logging->logError("params", $searchParams);
+    	$this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
     	// $this->logging->logError("queryParams", $queryResponse);
 
@@ -800,6 +837,7 @@ class search_model extends CI_Model {
 			}
 			unset($asset);
 		}
+
 
 		$this->asset_model->disableObjectCache();
 		$matchArray['matches'] = $resultsArray;

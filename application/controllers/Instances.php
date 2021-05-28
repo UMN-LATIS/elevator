@@ -66,6 +66,7 @@ class Instances extends Instance_Controller {
 		$instance->setAllowIndexing($this->input->post('allowIndexing')?1:0);
 		$instance->setEnableHLSStreaming($this->input->post('enableHLSStreaming')?1:0);
 		$instance->setEnableInterstitial($this->input->post('enableInterstitial')?1:0);
+		$instance->setEnableSortByCollection($this->input->post('enableSortByCollection')?1:0);
 		$instance->setInterstitialText($this->input->post('interstitialText'));
 		$instance->setShowCollectionInSearchResults($this->input->post('showCollectionInSearchResults')?1:0);
 		$instance->setShowTemplateInSearchResults($this->input->post('showTemplateInSearchResults')?1:0);
