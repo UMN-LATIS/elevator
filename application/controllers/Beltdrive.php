@@ -9,7 +9,8 @@ class Beltdrive extends CI_Controller {
 	public $qb;
 	public $serverId = null;
 	public $reserveCount = array();
-
+	public $remoteFileName = null;
+	
 	function getMacLinux() {
 		exec('netstat -ie', $result);
 		if(is_array($result)) {

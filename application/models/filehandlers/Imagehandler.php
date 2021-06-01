@@ -237,7 +237,7 @@ class ImageHandler extends FileHandlerBase {
 	public function tileImage($args) {
 		$uploadWidget = $this->getUploadWidget();
 
-		if(!$uploadWidget->parentWidget->enableTiling) {
+		if(!isset($uploadWidget) || !isset($uploadWidget->parentWidget) || !$uploadWidget->parentWidget->enableTiling) {
 			$this->queueTask(3);
 			return JOB_SUCCESS;
 		}

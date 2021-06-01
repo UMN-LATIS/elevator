@@ -517,6 +517,10 @@ class Transcoder_Model extends CI_Model {
 		}
 
 		$dimensions = getimagesize($derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
+		
+		if(!$dimensions) {
+			return JOB_FAILED;
+		}
 
 		$width = $dimensions[0];
 		$height = $dimensions[1];
