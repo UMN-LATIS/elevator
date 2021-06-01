@@ -2146,16 +2146,16 @@
         },
         {
             "name": "jean85/pretty-package-versions",
-            "version": "2.0.3",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Jean85/pretty-package-versions.git",
-                "reference": "b2c4ec2033a0196317a467cb197c7c843b794ddf"
+                "reference": "694492c653c518456af2805f04eec445b997ed1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Jean85/pretty-package-versions/zipball/b2c4ec2033a0196317a467cb197c7c843b794ddf",
-                "reference": "b2c4ec2033a0196317a467cb197c7c843b794ddf",
+                "url": "https://api.github.com/repos/Jean85/pretty-package-versions/zipball/694492c653c518456af2805f04eec445b997ed1f",
+                "reference": "694492c653c518456af2805f04eec445b997ed1f",
                 "shasum": ""
             },
             "require": {
@@ -2199,9 +2199,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Jean85/pretty-package-versions/issues",
-                "source": "https://github.com/Jean85/pretty-package-versions/tree/2.0.3"
+                "source": "https://github.com/Jean85/pretty-package-versions/tree/2.0.4"
             },
-            "time": "2021-02-22T10:52:38+00:00"
+            "time": "2021-05-26T08:46:42+00:00"
         },
         {
             "name": "markwilson/verbal-expressions-php",
@@ -3429,16 +3429,16 @@
         },
         {
             "name": "sentry/sentry",
-            "version": "3.2.1",
+            "version": "3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php.git",
-                "reference": "fb4f83e6e2d718d1e5fbfe3a20cced83f47f040f"
+                "reference": "3bb122f9fc2bc43a4646e37db79eaf115b35b047"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/fb4f83e6e2d718d1e5fbfe3a20cced83f47f040f",
-                "reference": "fb4f83e6e2d718d1e5fbfe3a20cced83f47f040f",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/3bb122f9fc2bc43a4646e37db79eaf115b35b047",
+                "reference": "3bb122f9fc2bc43a4646e37db79eaf115b35b047",
                 "shasum": ""
             },
             "require": {
@@ -3483,7 +3483,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.2.x-dev"
+                    "dev-master": "3.3.x-dev"
                 }
             },
             "autoload": {
@@ -3517,7 +3517,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php/issues",
-                "source": "https://github.com/getsentry/sentry-php/tree/3.2.1"
+                "source": "https://github.com/getsentry/sentry-php/tree/3.3.0"
             },
             "funding": [
                 {
@@ -3529,7 +3529,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2021-04-06T07:55:41+00:00"
+            "time": "2021-05-25T18:32:24+00:00"
         },
         {
             "name": "smalot/pdfparser",
