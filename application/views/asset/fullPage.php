@@ -25,10 +25,11 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 	</div>
 
 	<div class="col-md-5 rightColumn objectIdHost" data-objectid="<?=$assetModel->getObjectId()?>">
-
+		<?$haveTopItem = false;?>
 		<?if($assetModel->assetTemplate->getShowCollection() && $assetModel->assetTemplate->getCollectionPosition() == 1):?>
+		<?$haveTopItem = true;?>
 		<div class="row">
-			<div class="col-md-12 assetWidget">
+			<div class="col-md-12 assetWidget miniTopElement">
 				<strong>Collection:</strong>
 				<ul class="collectionList">
 						<? foreach(array_reverse($this->collection_model->getFullHierarchy($collectionId)) as $collection):?>
@@ -40,8 +41,9 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 		</div>
 		<?endif?>
 		<?if($assetModel->assetTemplate->getShowTemplate()  && $assetModel->assetTemplate->getTemplatePosition() == 1):?>
+		<?$haveTopItem = true;?>
 		<div class="row">
-			<div class="col-md-12 assetWidget">
+			<div class="col-md-12 assetWidget miniTopElement">
 				<strong>Template:</strong>
 				<ul class="collectionList">
 					<li><a href="<?=instance_url("search/scopedQuerySearch/template/" . $assetModel->assetTemplate->getId())?>"><?=$assetModel->assetTemplate->getName()?></a>
@@ -53,7 +55,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 
 		<div class="row">
-			<div class="col-md-12">
+			<div class="col-md-12 <?=$haveTopItem?"itemAboveTitle":null?>">
 				<h3><?
 				if(!$assetModel->getAssetTitleWidget()) {
 					echo "No Title";
