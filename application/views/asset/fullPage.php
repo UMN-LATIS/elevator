@@ -26,6 +26,32 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 	<div class="col-md-5 rightColumn objectIdHost" data-objectid="<?=$assetModel->getObjectId()?>">
 
+		<?if($assetModel->assetTemplate->getShowCollection() && $assetModel->assetTemplate->getCollectionPosition() == 1):?>
+		<div class="row">
+			<div class="col-md-12 assetWidget">
+				<strong>Collection:</strong>
+				<ul class="collectionList">
+						<? foreach(array_reverse($this->collection_model->getFullHierarchy($collectionId)) as $collection):?>
+						<li><a href="<?=instance_url("collections/browseCollection/". $collection->getId())?>"><?=$collection->getTitle()?></a>
+						</li>
+						<?endforeach?>
+				</ul>
+			</div>
+		</div>
+		<?endif?>
+		<?if($assetModel->assetTemplate->getShowTemplate()  && $assetModel->assetTemplate->getTemplatePosition() == 1):?>
+		<div class="row">
+			<div class="col-md-12 assetWidget">
+				<strong>Template:</strong>
+				<ul class="collectionList">
+					<li><a href="<?=instance_url("search/scopedQuerySearch/template/" . $assetModel->assetTemplate->getId())?>"><?=$assetModel->assetTemplate->getName()?></a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<?endif?>
+
+
 		<div class="row">
 			<div class="col-md-12">
 				<h3><?
@@ -50,7 +76,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 		<?endif?>
 		<?endforeach?>
 
-		<?if($assetModel->assetTemplate->getShowCollection()):?>
+		<?if($assetModel->assetTemplate->getShowCollection() && $assetModel->assetTemplate->getCollectionPosition() == 0):?>
 		<div class="row">
 			<div class="col-md-12 assetWidget">
 				<strong>Collection:</strong>
@@ -63,7 +89,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 			</div>
 		</div>
 		<?endif?>
-		<?if($assetModel->assetTemplate->getShowTemplate()):?>
+		<?if($assetModel->assetTemplate->getShowTemplate()  && $assetModel->assetTemplate->getTemplatePosition() == 0):?>
 		<div class="row">
 			<div class="col-md-12 assetWidget">
 				<strong>Template:</strong>

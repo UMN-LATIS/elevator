@@ -101,6 +101,9 @@ class Templates extends Instance_Controller {
 		$template->setIsHidden(($this->input->post("isHidden")=="On")?1:0);
 		$template->setShowCollection(($this->input->post("showCollection")=="On")?1:0);
 		$template->setShowTemplate(($this->input->post("showTemplate")=="On")?1:0);
+		$template->setCollectionPosition($this->input->post("collectionPosition"));
+		$template->setTemplatePosition($this->input->post("templatePosition"));
+		
 		$template->setTemplateColor($this->input->post("templateColor"));
 		$this->doctrine->em->persist($template);
 		$this->doctrine->em->flush();

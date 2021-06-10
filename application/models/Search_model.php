@@ -432,17 +432,18 @@ class search_model extends CI_Model {
 		}
 
 
-		if(isset($searchArray['templateId']) && count($searchArray['templateId']) > 0) {
-			if(count($searchArray['templateId']) == 1 && $searchArray['templateId'][0] == 0) {
-
-			}
-			else {
-				if(is_array($searchArray['templateId'])) {
-					$filter[]['terms']['templateId'] = $searchArray['templateId'];
+		if(isset($searchArray['templateId'])) {
+			if(is_array($searchArray['templateId']) && count($searchArray['templateId']) > 0) {
+				if(count($searchArray['templateId']) == 1 && $searchArray['templateId'][0] == 0) {
+				
 				}
 				else {
-					$filter[]['terms']['templateId'] = [$searchArray['templateId']];
+					$filter[]['terms']['templateId'] = $searchArray['templateId'];
 				}
+				
+			}
+			else {
+				$filter[]['terms']['templateId'] = [$searchArray['templateId']];
 			}
 
 		}
@@ -766,12 +767,13 @@ class search_model extends CI_Model {
 		$resultsArray = array();
 
 		$this->asset_model->enableObjectCache();
-
+		$showCollection = false;
 		if($this->instance->getShowCollectionInSearchResults()) {
 			$showCollection = true;
 			$collectionLinkCache = [];
 		}
 		
+		$showTemplate = false;
 		if($this->instance->getShowTemplateInSearchResults()) {
 			$showTemplate = true;
 			$templateCache = [];

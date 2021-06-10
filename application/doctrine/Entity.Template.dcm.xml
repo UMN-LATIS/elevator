@@ -39,6 +39,17 @@
               <option name="default">0</option>
             </options>
           </field>
+          <field name="collectionPosition" type="integer">
+            <options>
+              <option name="default">0</option>
+            </options>
+          </field>
+          <field name="templatePosition" type="integer">
+            <options>
+              <option name="default">0</option>
+            </options>
+          </field>
+
         
       </entity>
 

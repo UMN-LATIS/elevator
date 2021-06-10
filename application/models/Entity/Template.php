@@ -420,4 +420,62 @@ class Template
     {
         return $this->showTemplateInBrowse;
     }
+    /**
+     * @var int
+     */
+    private $collectionPosition = '1';
+
+    /**
+     * @var int
+     */
+    private $templatePosition = '1';
+
+
+    /**
+     * Set collectionPosition.
+     *
+     * @param int $collectionPosition
+     *
+     * @return Template
+     */
+    public function setCollectionPosition($collectionPosition)
+    {
+        $this->collectionPosition = $collectionPosition;
+
+        return $this;
+    }
+
+    /**
+     * Get collectionPosition.
+     *
+     * @return int
+     */
+    public function getCollectionPosition()
+    {
+        return $this->collectionPosition;
+    }
+
+    /**
+     * Set templatePosition.
+     *
+     * @param int $templatePosition
+     *
+     * @return Template
+     */
+    public function setTemplatePosition($templatePosition)
+    {
+        $this->templatePosition = $templatePosition;
+
+        return $this;
+    }
+
+    /**
+     * Get templatePosition.
+     *
+     * @return int
+     */
+    public function getTemplatePosition()
+    {
+        return $this->templatePosition;
+    }
 }

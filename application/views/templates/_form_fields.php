@@ -34,12 +34,34 @@
 		Show Collection when viewing asset
 	</label>
 </div>
+
+<div class="form-group hide collectionPosition">
+	<label for="collectionPos" class="col-sm-2 control-label">Collection Position:</label>
+	<div class="col-sm-2">
+		<select name="collectionPosition" id="collectionPos" class="form-control" required="required">
+			<option value="0" <?=$template->getCollectionPosition()==0?"selected":null?>>Bottom</option>
+			<option value="1" <?=$template->getCollectionPosition()==1?"selected":null?>>Top</option>
+		</select>
+	</div>
+</div>
+
 <div class="checkbox">
 	<label>
 		<input type="checkbox" value="On" id="showTemplate" name="showTemplate" <?=$template->getShowTemplate()?"checked":null?>>
 		Show Template when viewing asset
 	</label>
 </div>
+
+<div class="form-group hide templatePosition">
+	<label for="templatePos" class="col-sm-2 control-label">Template Position:</label>
+	<div class="col-sm-2">
+		<select name="templatePosition" id="templatePos" class="form-control" required="required">
+			<option value="0" <?=$template->getTemplatePosition()==0?"selected":null?>>Bottom</option>
+			<option value="1" <?=$template->getTemplatePosition()==1?"selected":null?>>Top</option>
+		</select>
+	</div>
+</div>
+
 <div class="color">
 	<label>
 		<input value="<?=$template->getTemplateColor()?$template->getTemplateColor():0?>" name="templateColor">
