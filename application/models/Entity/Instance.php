@@ -1399,33 +1399,5 @@ class Instance
     {
         return $this->showTemplateInSearchResults;
     }
-    /**
-     * @var bool|null
-     */
-    private $enableSortByCollection;
 
-
-    /**
-     * Set enableSortByCollection.
-     *
-     * @param bool|null $enableSortByCollection
-     *
-     * @return Instance
-     */
-    public function setEnableSortByCollection($enableSortByCollection = null)
-    {
-        $this->enableSortByCollection = $enableSortByCollection;
-
-        return $this;
-    }
-
-    /**
-     * Get enableSortByCollection.
-     *
-     * @return bool|null
-     */
-    public function getEnableSortByCollection()
-    {
-        return $this->enableSortByCollection;
-    }
 }

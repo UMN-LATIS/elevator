@@ -278,14 +278,7 @@
 		</label>
 	</div>
 </div>
-<div class="form-group">
-	<div class="col-sm-offset-2 col-sm-8">
-		<label>
-			<input type="checkbox" id="enableSortByCollection" name="enableSortByCollection" value="On" <?=$instance->getEnableSortByCollection()?"checked":null?>>
-			Enable sorting by collection
-		</label>
-	</div>
-</div>
+
 
 </fieldset>
 
