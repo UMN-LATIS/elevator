@@ -19,9 +19,7 @@
         <option value="lastModified.desc">Modified Date (newest to oldest)</option>
         <option value="lastModified.asc">Modified Date (oldest to newest)</option>
         <option value="title.raw">Default Title</option>
-        <?if($this->instance->getEnableSortByCollection()):?>
 		<option value="collection">Collection</option>
-		<?endif?>
 		<?foreach($searchableWidgets as $title=>$values):?>
         	<?if($values['type'] == "date"):?>
         		<option value="dateCache.startDate.desc"><?=$values['label']?> (newest to oldest)</option>
