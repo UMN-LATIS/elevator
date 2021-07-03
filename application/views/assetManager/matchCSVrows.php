@@ -68,6 +68,7 @@
 					<? $selected = ($widget->getLabel()==$row)?"selected":null; ?>
 					<option value="<?=$widget->getFieldTitle()?>" <?=$selected?>><?=$widget->getLabel()?></option>
 					<?endforeach?>
+					<option value="readyForDisplay">Ready For Display</option>
 				</select>
 			</div>
 			<div class="col-sm-2">
