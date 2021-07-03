@@ -27,12 +27,12 @@ class Template
     /**
      * @var boolean
      */
-    private $includeInSearch;
+    private $includeInSearch = true;
 
     /**
      * @var boolean
      */
-    private $indexForSearching;
+    private $indexForSearching = true;
 
     /**
      * @var integer
@@ -477,5 +477,34 @@ class Template
     public function getTemplatePosition()
     {
         return $this->templatePosition;
+    }
+    /**
+     * @var int
+     */
+    private $recursiveIndexDepth = '1';
+
+
+    /**
+     * Set recursiveIndexDepth.
+     *
+     * @param int $recursiveIndexDepth
+     *
+     * @return Template
+     */
+    public function setRecursiveIndexDepth($recursiveIndexDepth)
+    {
+        $this->recursiveIndexDepth = $recursiveIndexDepth;
+
+        return $this;
+    }
+
+    /**
+     * Get recursiveIndexDepth.
+     *
+     * @return int
+     */
+    public function getRecursiveIndexDepth()
+    {
+        return $this->recursiveIndexDepth;
     }
 }

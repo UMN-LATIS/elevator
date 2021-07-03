@@ -196,7 +196,12 @@ class search_model extends CI_Model {
 		}
 
  		// only go only level deep in recursion?
-    	$body  = $asset->getSearchEntry(2);
+		$recursiveDepth = 1;
+		if( $asset->assetTemplate) {
+			$recursiveDepth = $asset->assetTemplate->getRecursiveIndexDepth();
+		}
+		
+    	$body  = $asset->getSearchEntry($recursiveDepth);
 
     	// strip any illegal UTF8 characters, elastic is more picky about this
     	$body = $this->cleanCharacters($body);

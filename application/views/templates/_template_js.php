@@ -152,6 +152,11 @@ $(document).ready(function() {
 		}
 	});
 
+	$(document).on("click", ".advancedSettings", function(e) {
+		e.preventDefault();
+		$(".advancedSettingsDialog").toggleClass("hide");
+	});
+
 	$("input[name=showCollection]").trigger("change");
 	$("input[name=showTemplate]").trigger("change");
 
