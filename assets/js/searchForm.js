@@ -20,6 +20,11 @@ $(document).on("click", ".addAnotherCollection", function() {
     $(collectionCopy).after(newCollection);
 });
 
+$(document).on("click", ".addAnotherTemplate", function() {
+    var templateCopy = $(this).closest('.form-group');
+    var newTemplate = $(templateCopy).clone(false);
+    $(templateCopy).after(newTemplate);
+});
 
 
 $(document).on("change", ".searchDropdown", function() {

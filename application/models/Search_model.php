@@ -392,6 +392,27 @@ class search_model extends CI_Model {
 				];
 
 			}
+			else if($searchArray["sort"] == "template" && $this->instance) {
+				$templates = $this->instance->getTemplates();
+				
+				$templateArray = [];
+				foreach($templates as $template) {
+					$templateArray[$template->getId()] = $template->getName();
+				}
+				asort($templateArray);
+				$templateIds = array_keys($templateArray);
+				$sortFilter["_script"] = [
+					"type" => "number",
+					"script" => [
+						"lang" => "painless",
+						"params" => [
+							"ids" => $templateIds
+						],
+						"inline" => "int idsCount = params.ids.size();def id = (int)doc['templateId'].value;int foundIdx = params.ids.indexOf(id);return foundIdx > -1 ? foundIdx: idsCount + 1;"
+					]
+				];
+
+			}
 			else {
 				$sortTerm = $searchArray["sort"];
 				if(substr($searchArray["sort"], -5, 5) == ".desc") {

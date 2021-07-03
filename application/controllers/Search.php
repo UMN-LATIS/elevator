@@ -518,6 +518,17 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		/**
+		 * if they've set "any" (0) for template specific search, disregard
+		 */
+		if(isset($searchArray["templateId"])) {
+			foreach($searchArray["templateId"] as $templateId) {
+				if($templateId == 0) {
+					unset($searchArray["templateId"]);
+				}
+			}
+		}
+
 
 		if(isset($searchArray["specificSearchText"])) {
 

@@ -20,6 +20,9 @@
         <option value="lastModified.asc">Modified Date (oldest to newest)</option>
         <option value="title.raw">Default Title</option>
 		<option value="collection">Collection</option>
+		<?if($this->instance->getShowTemplateInSearchResults()):?>
+		<option value="template">Template</option>
+		<?endif?>
 		<?foreach($searchableWidgets as $title=>$values):?>
         	<?if($values['type'] == "date"):?>
         		<option value="dateCache.startDate.desc"><?=$values['label']?> (newest to oldest)</option>
