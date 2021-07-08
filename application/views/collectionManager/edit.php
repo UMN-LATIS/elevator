@@ -52,7 +52,7 @@ $(document).ready(function() {
 					<select name="parent" id="inputParent" class="form-control" required="required">
 						<option value=0>None</option>
 						<?foreach($this->instance->getCollections() as $collectionItem):?>
-						<option value=<?=$collectionItem->getId()?> <?=($collection->getParent()&&$collectionItem->getId()==$collection->getParent()->getId())?"SELECTED":null?> ><?=$collectionItem->getTitle()?></option>
+						<option value=<?=$collectionItem->getId()?> <?=($collectionItem->getId() == $collection->getId() || in_array($collectionItem, $collection->getFlattenedChildren()))?"DISABLED":null?> <?=($collection->getParent()&&$collectionItem->getId()==$collection->getParent()->getId())?"SELECTED":null?> ><?=$collectionItem->getTitle()?></option>
 						<?endforeach?>
 					</select>
 				</div>
