@@ -27,12 +27,12 @@ class Template
     /**
      * @var boolean
      */
-    private $includeInSearch;
+    private $includeInSearch = true;
 
     /**
      * @var boolean
      */
-    private $indexForSearching;
+    private $indexForSearching = true;
 
     /**
      * @var integer
@@ -419,5 +419,92 @@ class Template
     public function getShowTemplateInBrowse()
     {
         return $this->showTemplateInBrowse;
+    }
+    /**
+     * @var int
+     */
+    private $collectionPosition = '1';
+
+    /**
+     * @var int
+     */
+    private $templatePosition = '1';
+
+
+    /**
+     * Set collectionPosition.
+     *
+     * @param int $collectionPosition
+     *
+     * @return Template
+     */
+    public function setCollectionPosition($collectionPosition)
+    {
+        $this->collectionPosition = $collectionPosition;
+
+        return $this;
+    }
+
+    /**
+     * Get collectionPosition.
+     *
+     * @return int
+     */
+    public function getCollectionPosition()
+    {
+        return $this->collectionPosition;
+    }
+
+    /**
+     * Set templatePosition.
+     *
+     * @param int $templatePosition
+     *
+     * @return Template
+     */
+    public function setTemplatePosition($templatePosition)
+    {
+        $this->templatePosition = $templatePosition;
+
+        return $this;
+    }
+
+    /**
+     * Get templatePosition.
+     *
+     * @return int
+     */
+    public function getTemplatePosition()
+    {
+        return $this->templatePosition;
+    }
+    /**
+     * @var int
+     */
+    private $recursiveIndexDepth = '1';
+
+
+    /**
+     * Set recursiveIndexDepth.
+     *
+     * @param int $recursiveIndexDepth
+     *
+     * @return Template
+     */
+    public function setRecursiveIndexDepth($recursiveIndexDepth)
+    {
+        $this->recursiveIndexDepth = $recursiveIndexDepth;
+
+        return $this;
+    }
+
+    /**
+     * Get recursiveIndexDepth.
+     *
+     * @return int
+     */
+    public function getRecursiveIndexDepth()
+    {
+        return $this->recursiveIndexDepth;
     }
 }

@@ -196,7 +196,12 @@ class search_model extends CI_Model {
 		}
 
  		// only go only level deep in recursion?
-    	$body  = $asset->getSearchEntry(2);
+		$recursiveDepth = 1;
+		if( $asset->assetTemplate) {
+			$recursiveDepth = $asset->assetTemplate->getRecursiveIndexDepth();
+		}
+		
+    	$body  = $asset->getSearchEntry($recursiveDepth);
 
     	// strip any illegal UTF8 characters, elastic is more picky about this
     	$body = $this->cleanCharacters($body);
@@ -354,15 +359,73 @@ class search_model extends CI_Model {
 
 
 		if(isset($searchArray["sort"]) && $searchArray["sort"] != "0") {
-			$sortTerm = $searchArray["sort"];
-			if(substr($searchArray["sort"], -5, 5) == ".desc") {
-				$sortTerm = str_replace(".desc", "", $sortTerm);
-				$sortFilter[$sortTerm]["order"] = "desc";
+			$sortFilter = [];
+			
+			if($searchArray["sort"] == "collection" && $this->instance) {
+				$sortCollections = $this->instance->getCollectionsWithoutParent();
+				
+				function recursiveFunctionWalker($collection) {
+					$childrenArray = [];
+					if($collection->hasChildren()) {
+						foreach($collection->getChildren() as $child) {
+							$childrenArray = $childrenArray + recursiveFunctionWalker($child);
+						}
+					}
+					return [$collection->getId()=>$collection->getTitle()] + $childrenArray;
+				};
+				$collectionArray = [];
+				foreach($sortCollections as $collection) {
+					$collectionArray = $collectionArray + recursiveFunctionWalker($collection);
+				}
+
+				$collectionSortIds = array_keys($collectionArray);
+
+				$sortFilter["_script"] = [
+					"type" => "number",
+					"script" => [
+						"lang" => "painless",
+						"params" => [
+							"ids" => $collectionSortIds
+						],
+						"inline" => "int idsCount = params.ids.size();def id = (int)doc['collectionId'].value;int foundIdx = params.ids.indexOf(id);return foundIdx > -1 ? foundIdx: idsCount + 1;"
+					]
+				];
+
+			}
+			else if($searchArray["sort"] == "template" && $this->instance) {
+				$templates = $this->instance->getTemplates();
+				
+				$templateArray = [];
+				foreach($templates as $template) {
+					$templateArray[$template->getId()] = $template->getName();
+				}
+				asort($templateArray);
+				$templateIds = array_keys($templateArray);
+				$sortFilter["_script"] = [
+					"type" => "number",
+					"script" => [
+						"lang" => "painless",
+						"params" => [
+							"ids" => $templateIds
+						],
+						"inline" => "int idsCount = params.ids.size();def id = (int)doc['templateId'].value;int foundIdx = params.ids.indexOf(id);return foundIdx > -1 ? foundIdx: idsCount + 1;"
+					]
+				];
+
 			}
 			else {
-				$sortTerm = str_replace(".asc", "", $sortTerm);
-				$sortFilter[$sortTerm]["order"] = "asc";
+				$sortTerm = $searchArray["sort"];
+				if(substr($searchArray["sort"], -5, 5) == ".desc") {
+					$sortTerm = str_replace(".desc", "", $sortTerm);
+					$sortFilter[$sortTerm]["order"] = "desc";
+				}
+				else {
+					$sortTerm = str_replace(".asc", "", $sortTerm);
+					$sortFilter[$sortTerm]["order"] = "asc";
+				}
 			}
+
+			
     		$sort[] = $sortFilter;
 
 		}
@@ -395,17 +458,18 @@ class search_model extends CI_Model {
 		}
 
 
-		if(isset($searchArray['templateId']) && count($searchArray['templateId']) > 0) {
-			if(count($searchArray['templateId']) == 1 && $searchArray['templateId'][0] == 0) {
-
-			}
-			else {
-				if(is_array($searchArray['templateId'])) {
-					$filter[]['terms']['templateId'] = $searchArray['templateId'];
+		if(isset($searchArray['templateId'])) {
+			if(is_array($searchArray['templateId']) && count($searchArray['templateId']) > 0) {
+				if(count($searchArray['templateId']) == 1 && $searchArray['templateId'][0] == 0) {
+				
 				}
 				else {
-					$filter[]['terms']['templateId'] = [$searchArray['templateId']];
+					$filter[]['terms']['templateId'] = $searchArray['templateId'];
 				}
+				
+			}
+			else {
+				$filter[]['terms']['templateId'] = [$searchArray['templateId']];
 			}
 
 		}
@@ -524,7 +588,7 @@ class search_model extends CI_Model {
 				$i++;
 
 			}
-			if($searchArray["combineSpecificSearches"] && $searchArray["combineSpecificSearches"] == "AND")  {
+			if(isset($searchArray["combineSpecificSearches"]) && $searchArray["combineSpecificSearches"] == "AND")  {
 				$searchParams['body']['query']['bool']['minimum_should_match'] = count($searchArray["specificFieldSearch"]) ;
 			}
 			else {
@@ -729,12 +793,13 @@ class search_model extends CI_Model {
 		$resultsArray = array();
 
 		$this->asset_model->enableObjectCache();
-
+		$showCollection = false;
 		if($this->instance->getShowCollectionInSearchResults()) {
 			$showCollection = true;
 			$collectionLinkCache = [];
 		}
 		
+		$showTemplate = false;
 		if($this->instance->getShowTemplateInSearchResults()) {
 			$showTemplate = true;
 			$templateCache = [];
@@ -800,6 +865,7 @@ class search_model extends CI_Model {
 			}
 			unset($asset);
 		}
+
 
 		$this->asset_model->disableObjectCache();
 		$matchArray['matches'] = $resultsArray;

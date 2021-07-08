@@ -8,7 +8,7 @@ class Home extends Instance_Controller {
 	{
 		parent::__construct();
 	}
-
+	
 	public function index()
 	{
 		$this->template->loadJavascript(["bootstrap-show-password"]);

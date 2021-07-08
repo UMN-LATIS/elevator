@@ -7,11 +7,11 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 		
 		parent::__construct();
-			// \Sentry\init([
-  			// 	'dsn' => $this->config->item('sentry_dsn'),
-			// 	'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
-			// 	'server_name' => $this->config->item('authHelper')
-			// ]);
+			\Sentry\init([
+  				'dsn' => $this->config->item('sentry_dsn'),
+				'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
+				'server_name' => $this->config->item('authHelper')
+			]);
 			
 		if($this->config->item('css_override') && $this->config->item('css_override') !== "FALSE") {
 			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
