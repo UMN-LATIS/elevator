@@ -123,6 +123,9 @@ capturedScope = scope();
 	.bootstrap-tagsinput {
 		width: 100%
 	}
+	.twitter-typeahead {
+		width: 100%
+	}
 
 .twitter-typeahead .tt-query,
 .twitter-typeahead .tt-hint {
