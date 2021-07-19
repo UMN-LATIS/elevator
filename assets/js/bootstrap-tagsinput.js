@@ -305,10 +305,12 @@
           source: function (query, process) {
             function processItems(items) {
               var texts = [];
-
+              console.log(items.length);
               for (var i = 0; i < items.length; i++) {
                 var text = self.options.itemText(items[i]);
                 map[text] = items[i];
+                console.log(map);
+                console.log(text);
                 texts.push(text);
               }
               process(texts);
