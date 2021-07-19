@@ -47,7 +47,7 @@
 		<div class="form-group">
 			<label for="<?=$textId?>" class="col-sm-2 control-label"><?=$labelText?></label>
 			<div class="col-sm-8">
-				<input type="text" <?=$required?> class="mainWidgetEntry form-control" id="<?=$textId?>" name="<?=$textName?>" placeholder="<?=$labelText?> (comma separated)" value="<?=htmlentities(join(",", $fieldContents))?>">
+				<input type="text" <?=$required?> class="mainWidgetEntry form-control" id="<?=$textId?>" name="<?=$textName?>" placeholder="<?=$labelText?> (comma separated)" value="<?= htmlentities(join(";", array_map(function ($e) { return $e;}, $fieldContents))) ?>">
 			</div>
 		</div>
 
@@ -98,6 +98,7 @@ $(document).ready(function($) {
 	}
 capturedScope = scope();
 	$("#<?=$textId?>").tagsinput({
+		delimiterRegex: /[;]+/,
 		typeaheadjs: {
     		displayKey: 'value',
     		valueKey: 'value',
@@ -116,3 +117,18 @@ capturedScope = scope();
 <?if($widgetModel->offsetCount==0):?>
 <?=$this->load->view("widget_form_partials/widget_footer", array("widgetModel"=>$widgetModel), true)?>
 <?endif?>
+
+
+<style>
+	.bootstrap-tagsinput {
+		width: 100%
+	}
+
+	.tt-menu {
+		background-color: white;
+		margin: 5px;
+		padding: 5px;
+		border: 1px gray solid;
+		cursor: pointer;
+	}
+</style>
