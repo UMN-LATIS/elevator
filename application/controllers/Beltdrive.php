@@ -551,7 +551,7 @@ class Beltdrive extends CI_Controller {
         		}
         		else {
         			$this->deleteDir($fileInfo->getRealPath());
-        			rmdir($fileInfo->getRealPath());
+        			@rmdir($fileInfo->getRealPath());
         		}
 
  		   	}
