@@ -139,7 +139,7 @@ $(document).ready(function() {
 	    selector: "textarea",
 	    menubar : false,
 	    relative_urls : false,
-	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | image link ",
+	    toolbar: "undo redo | styleselect | removeformat | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | image link ",
 	    plugins: ["link", "code", "image"]
 	 });
 });
