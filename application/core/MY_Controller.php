@@ -61,7 +61,11 @@ class MY_Controller extends CI_Controller {
 			if($this->config->item('enableCaching')) {
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
-					 $user_model = $storedObject;
+					$user_model = $storedObject;
+					if(!is_object($user_model)) {
+						$this->doctrineCache->delete($userId);
+						$user_model = null;
+					}
 				 	if(!$user_model) {
 				 		$this->user_model->loadUser($userId);
 				 	}
