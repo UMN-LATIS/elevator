@@ -33,7 +33,7 @@ class Tags_contents extends Widget_contents_base {
 			 */
 
 			if($key == "tags" && !is_array($entry)) {
-				$tempArray = explode(",", $entry);
+				$tempArray = str_getcsv(stripslashes($entry));
 				$this->tags = array();
 				foreach($tempArray as $value) {
 					if(trim($value) !== "") {

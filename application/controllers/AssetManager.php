@@ -978,7 +978,7 @@ class AssetManager extends Admin_Controller {
 						}
 						else if(get_class($widget) == "Tags") {
 							if(strpos($rowEntry, ",")) {
-								$exploded = explode(",", $rowEntry);
+								$exploded = str_getcsv($rowEntry);
 								$widgetContainer->tags = $exploded;
 							}
 							else {
