@@ -654,6 +654,28 @@ class AssetManager extends Admin_Controller {
 							}
 							$outputRow[] = implode("|", $outputObjects);
 						}
+						elseif(get_class($object) == "Date") {
+							$outputObjects = array();
+							foreach($object->fieldContentsArray as $entry) {
+								$outputString = "";								
+								if($entry->start["text"]) {
+									$outputString .= $entry->start["text"];
+								}
+								
+								if($entry->range) {
+									$outputString .= " - " . $entry->end["text"];
+								}
+								
+								if($entry->label) {
+									if(strlen($outputString) > 0) {
+										$outputString .= ",";
+									}
+									$outputString .= $entry->label;
+								}
+								$outputObjects[] = $outputString;
+							}
+							$outputRow[] = implode("|", $outputObjects);
+						}
 						else {
 							$outputRow[] = implode("|",$object->getAsText(0));	
 						}
