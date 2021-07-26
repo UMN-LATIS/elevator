@@ -736,6 +736,14 @@ class Asset_model extends CI_Model {
 
 		$outputObject["objectId"] = $this->getObjectId();
 
+		if($this->getGlobalValue("modified")) {
+			$outputObject["lastModified"] = $this->getGlobalValue("modified")->format('Y-m-d H:i:s');
+		}
+		else {
+			$outputObject["lastModified"] = "";
+		}
+		
+
 		try {
 			$fileHandler = false;
 
