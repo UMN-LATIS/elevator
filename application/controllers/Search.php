@@ -183,11 +183,16 @@ class Search extends Instance_Controller {
 			$returnInfo['type'] = "select";
 			$returnInfo['values'] = ["boolean_false"=>"Unchecked", "boolean_true"=>"Checked"];
 		}
+		else if(get_class($widget) == "Tags") {
+			// generate taglist here
+			$returnInfo['type'] = "tag";
+			$returnInfo['values'] = ["test"=> "test2"];
+		}
 		else {
 			$returnInfo['type'] = "text";
 		}
 
-		echo json_encode($returnInfo);
+		return render_json($returnInfo);
 
 
 
