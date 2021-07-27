@@ -174,6 +174,26 @@
       </div>
     </div>
 
+    <?if($this->instance->getShowTemplateInSearchResults()):?>
+     <div class="form-group">
+      <label for="templateId" class="col-sm-2 control-label">Search Template:</label>
+      <div class="col-md-6">
+
+        <select name="templateId[]" id="templateId" class="form-control">
+          <option value="0">All</option>
+           <?foreach($this->instance->getTemplates() as $template):?>
+              <?if(!$template->getIsHidden()):?>
+              <option value=<?=$template->getId()?>><?=$template->getName()?></option>
+              <?endif?>
+            <?endforeach?>
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <button type="button" class="btn btn-default addAnotherTemplate">Add Another</button>
+      </div>
+    </div>
+    <?endif?>
+
     <?if($this->user_model->userLoaded && $this->user_model->getIsSuperAdmin() || $this->user_model->getAccessLevel("instance",$this->instance)>=PERM_ADDASSETS):?>
     <hr>
     <div class="checkbox">

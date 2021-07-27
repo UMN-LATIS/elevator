@@ -2,7 +2,7 @@
 
 <div class="jumbotron <?=$this->instance->getFeaturedAsset()?"col-lg-8 col-sm-12 col-md-7":null?>">
 	<div class="container">
-		<h2><?=$this->instance->getName()?></h2>
+		<h2 class="instanceNameField"><?=$this->instance->getName()?></h2>
 		<p><?=$homeText?></p>
 
 	</div>

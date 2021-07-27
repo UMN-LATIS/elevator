@@ -77,7 +77,7 @@ $(document).ready(function() {
 	    menubar: false,
 		browser_spellcheck: true,
 	    plugins: "code link",
-	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link code",
+	    toolbar: "undo redo | styleselect | removeformat| bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link code",
 	    setup: function(editor) {
  			editor.on('change', function () {
             	tinymce.triggerSave();

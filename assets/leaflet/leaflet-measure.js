@@ -7143,6 +7143,7 @@ L.Control.Measure = L.Control.extend({
     }
     var measurement = {};
     measurement.length = 0;
+    console.log(this._pixelPos);
     if (this._pixelPos.length >= 2) {
       for (var i = this._pixelPos.length - 1; i > 0; i--) {
         measurement.length += Math.sqrt(Math.pow(Math.abs(this._pixelPos[i - 1][0] - this._pixelPos[i][0]), 2) + Math.pow(Math.abs(this._pixelPos[i - 1][1] - this._pixelPos[i][1]), 2));
@@ -7272,12 +7273,26 @@ L.Control.Measure = L.Control.extend({
   },
   // handle map click during ongoing measurement
   // add new clicked point, update measure layers and results ui
+  _getMaxNativeZoom: function(map) {
+      var maxNativeZoom = null;
+      map.eachLayer(function (l) {
+        if (l.options.maxNativeZoom) {
+          maxNativeZoom = l.options.maxNativeZoom;
+        }
+      });
+      if(maxNativeZoom) {
+        return maxNativeZoom;
+      }
+      return map.getMaxZoom();
+      
+  },
+
   _handleMeasureClick: function (evt) {
     var latlng = this._map.mouseEventToLatLng(evt.originalEvent), // get actual latlng instead of the marker's latlng from originalEvent
       lastClick = _.last(this._latlng),
       vertexSymbol = this._symbols.getSymbol('measureVertex');
     ///var pixelPos = [evt.originalEvent.layerX, evt.originalEvent.layerY, evt.target._map._zoom, evt.target._map._layersMaxZoom];
-    var pixelPos = [evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().x, evt.target._map.project(latlng, evt.target._map.getMaxZoom()).floor().y]; //lat lng in terms of absolute pixel units
+    var pixelPos = [evt.target._map.project(latlng,this._getMaxNativeZoom(evt.target._map)).floor().x, evt.target._map.project(latlng, this._getMaxNativeZoom(evt.target._map)).floor().y]; //lat lng in terms of absolute pixel units
     if (!lastClick || !latlng.equals(lastClick)) { // skip if same point as last click, happens on `dblclick`
       this._latlngs.push(latlng);
       this._pixelPos.push(pixelPos);

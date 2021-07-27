@@ -43,9 +43,9 @@ Now click the “Add App” button.  You’re all set!  If you use multiple Elev
 
 ### Using Elevator to Embed Assets
 
-Once you’ve setup the Elevator LTI, there’ll be a new Elevator button available in every text field in Canvas (**in some cases, it may take a minute or two for it to appear**).  To find it, click the “V” icon (“More External Tools”) which will reveal your Elevator button.  You can use it to add assets to pages, assignments, or anything else. Just click the button and an Elevator window will open.  Browse your site to find the asset you’d like to embed, and then click “Add to Canvas” in the Elevator toolbar. When you save your page in Canvas, the asset will be automatically embedded with the correct permissions, so all of your students will have access.
+Once you’ve setup the Elevator LTI, there’ll be a new Elevator button available in every text field in Canvas (**in some cases, it may take a minute or two for it to appear**).  To find it, click the “plug” icon (“Apps) which will reveal your Elevator button. The first time you use this feature, you may need to click "view all" and then select Elevator.  You can use it to add assets to pages, assignments, or anything else. Just click the button and an Elevator window will open.  Browse your site to find the asset you’d like to embed, and then click “Add to Canvas” in the Elevator toolbar. When you save your page in Canvas, the asset will be automatically embedded with the correct permissions, so all of your students will have access.
 
-!["Using the Canvas Embed"](./canvas-animation.gif)
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/fdbf-qYokqE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### Troubleshooting
 

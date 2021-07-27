@@ -71,7 +71,7 @@ class API_Controller extends MY_Controller {
 			if($this->config->item('enableCaching')) {
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($authUser)) {
-					$user_model = unserialize($storedObject);
+					$user_model = $storedObject;
 					if(!$user_model) {
 						$this->user_model->loadUser($authUser);
 					}
@@ -100,7 +100,7 @@ class API_Controller extends MY_Controller {
 
 				// extend cache (if we move to a sane caching library we can remove this)
 				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->save($this->user_model->getId(), serialize($this->user_model), 900);
+					$this->doctrineCache->save($this->user_model->getId(), $this->user_model, 900);
 				}
 
 

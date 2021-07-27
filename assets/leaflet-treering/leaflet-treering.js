@@ -756,20 +756,22 @@ function Autoscroll (viewer) {
 function MarkerIcon(color, imagePath) {
 
   var colors = {
-    'light_blue': { 'path': imagePath + 'images/light_blue_rect_circle_dot_crosshair.png',
+    'light_blue' : { 'path': imagePath + 'images/light_blue_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'dark_blue' : { 'path': imagePath + 'images/dark_blue_rect_circle_dot_crosshair.png',
+    'dark_blue'  : { 'path': imagePath + 'images/dark_blue_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'white_start'   : { 'path': imagePath + 'images/white_tick_icon.png',
+    'white_start': { 'path': imagePath + 'images/white_tick_icon.png',
                     'size': [32, 48] },
-    'white_break'   : { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
+    'white_break': { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
                     'size': [32, 48] },
-    'red'       : { 'path': imagePath + 'images/red_dot_icon.png',
+    'red'        : { 'path': imagePath + 'images/red_dot_icon.png',
                     'size': [12, 12] },
     'light_red'  : { 'path': imagePath + 'images/cb_light_red_tick_icon.png',
                     'size': [32, 48] },
-    'pale_red' : { 'path': imagePath + 'images/cb_pale_red_tick_icon.png',
+    'pale_red'   : { 'path': imagePath + 'images/cb_pale_red_tick_icon.png',
                     'size': [32, 48] },
+    'empty'      : { 'path': imagePath + 'images/empty_marker.png',
+                    'size': [0, 0] },
   };
 
   return L.icon({
@@ -905,25 +907,25 @@ function MouseLine (Lt) {
           // path guide for point
           this.layer.addLayer(L.polyline([latLng, latLngOne],
               {interactive: false, color: color, opacity: '.75',
-                weight: '3'}));
+                weight: '5'}));
 
           // path guide for mouse
           this.layer.addLayer(L.polyline([mouseLatLng, latLngTwo],
               {interactive: false, color: color, opacity: '.75',
-                weight: '3'}));
+                weight: '5'}));
 
         };
 
         this.layer.addLayer(L.polyline([latLng, mouseLatLng],
             {interactive: false, color: color, opacity: '.75',
-              weight: '3'}));
+              weight: '5'}));
 
         this.layer.addLayer(L.polyline([topLeftPoint, bottomLeftPoint],
             {interactive: false, color: color, opacity: '.75',
-              weight: '3'}));
+              weight: '5'}));
         this.layer.addLayer(L.polyline([topRightPoint, bottomRightPoint],
             {interactive: false, color: color, opacity: '.75',
-              weight: '3'}));
+              weight: '5'}));
       }
     });
   }
@@ -938,11 +940,10 @@ function MouseLine (Lt) {
   * @param {Drag ability} iconDrag
   * @param {Marker title} title
   */
-function getMarker(iconLatLng, color, iconImagePath, iconDrag, title) {
+function getMarker(iconLatLng, color, iconImagePath, iconDrag) {
   return L.marker(iconLatLng, {
         icon: new MarkerIcon(color, iconImagePath),
         draggable: iconDrag,
-        title: title,
         riseOnHover: true
       })
   };
@@ -971,14 +972,78 @@ function VisualAsset (Lt) {
     this.lineLayer.clearLayers();
     this.lines = new Array();
 
-    //plot the data back onto the map
+    // plot the data back onto the map
     if (Lt.data.points !== undefined) {
       Object.values(Lt.data.points).map((e, i) => {
         if (e != undefined) {
           this.newLatLng(Lt.data.points, i, e.latLng);
+
+          // marker tool tips
+          if (Lt.data.points[i].year && Lt.measurementOptions.subAnnual) {
+            var descFor = (Lt.data.points[i].earlywood) ? ', early' : ', late';
+            var descBac = (Lt.data.points[i].earlywood) ? ', late' : ', early';
+            var desc = (Lt.preferences.forwardDirection) ? descFor : descBac;
+            this.markers[i].bindTooltip(String(Lt.data.points[i].year) + desc, { direction: 'top' });
+          } else if (Lt.data.points[i].year) {
+            this.markers[i].bindTooltip(String(Lt.data.points[i].year), { direction: 'top' });
+          } else if (Lt.data.points[i].start) {
+            this.markers[i].bindTooltip('Start', { direction: 'top' });
+          } else if (Lt.data.points[i].break) {
+            this.markers[i].bindTooltip('Break', { direction: 'top' });
+          }
         }
       });
     }
+
+    // bind popups to lines if not popped out
+    const pts = JSON.parse(JSON.stringify(Lt.data.points)).filter( pt => pt ); // filter null points
+
+    function create_tooltips_annual () {
+      pts.map((e, i) => {
+        let year = (Lt.preferences.forwardDirection) ? pts[i].year : pts[i].year + 1;
+        if (year) {
+          let first_or_last = (i == 1 || i == pts.length - 1) ? true : false;
+          let options = (year % 50 == 0 || first_or_last) ? { permanent: true, direction: 'top' } : { direction: 'top' };
+          let tooltip = String(year);
+          Lt.visualAsset.lines[i].bindTooltip(tooltip, options);
+        }
+      });
+    }
+
+    function create_tooltips_subAnnual () {
+      pts.map((e, i) => {
+        let forward = Lt.preferences.forwardDirection;
+        let backward = !Lt.preferences.forwardDirection;
+        let year = (forward || (backward && !pts[i].earlywood)) ? pts[i].year : pts[i].year + 1;
+        let ew = (forward) ? pts[i].earlywood : !pts[i].earlywood;
+        let latLng = L.latLng(pts[i].latLng);
+        if (year) {
+          let first_or_last = (i == 1 || i == pts.length - 2) ? true : false;
+          let static = (year % 50 == 0 || first_or_last) ? true : false;
+          let options = (static && ew) ? { permanent: true, direction: 'top' } : { direction: 'top' };
+          let tooltip = String(year);
+
+          if (static && ew) { // permanent tooltips are attached to 1st increment of sub-annual measurements
+            let inv_marker = getMarker(latLng, 'empty', Lt.basePath, false);
+            inv_marker.bindTooltip(tooltip, options);
+            inv_marker.addTo(Lt.viewer);
+            inv_marker.openTooltip();
+            options = { direction: 'top' };
+          }
+          tooltip = (pts[i].earlywood) ? tooltip += ', early' : tooltip += ', late';
+          Lt.visualAsset.lines[i].bindTooltip(tooltip, options);
+        }
+      });
+    }
+
+    if (window.name.includes('popout') == false) {
+      if (Lt.measurementOptions.subAnnual) {
+        create_tooltips_subAnnual();
+      } else {
+        create_tooltips_annual();
+      };
+    }
+
   }
 
   /**
@@ -996,48 +1061,48 @@ function VisualAsset (Lt) {
       draggable = true;
     }
 
-    var marker;
+    let marker;
 
     if (pts[i].start) { //check if index is the start point
-      marker = getMarker(leafLatLng, 'white_start', Lt.basePath, draggable, 'Start');
+      marker = getMarker(leafLatLng, 'white_start', Lt.basePath, draggable);
     } else if (pts[i].break) { //check if point is a break
-      marker = getMarker(leafLatLng, 'white_break', Lt.basePath, draggable, 'Break');
+      marker = getMarker(leafLatLng, 'white_break', Lt.basePath, draggable);
     } else if (Lt.measurementOptions.subAnnual) { //check if point subAnnual
         if (pts[i].earlywood) { //check if point is earlywood
           if (pts[i].year % 10 == 0) {
             // which marker asset is used depends on measurement direction
             if (Lt.measurementOptions.forwardDirection) { // check if years counting up
-              marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+              marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable);
             } else { // otherwise years counting down & marker assets need to be flipped
-              marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+              marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable);
             };
           } else {
             if (Lt.measurementOptions.forwardDirection) {
-              marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+              marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable);
             } else {
-              marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+              marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable);
             }
           }
         } else { //otherwise it's latewood
             if (pts[i].year % 10 == 0) {
               if (Lt.measurementOptions.forwardDirection) { // check if years counting up
-                marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+                marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable);
               } else { // otherwise years counting down
-                marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+                marker = getMarker(leafLatLng, 'pale_red', Lt.basePath, draggable);
               };
             } else {
               if (Lt.measurementOptions.forwardDirection) {
-                marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', latewood');
+                marker = getMarker(leafLatLng, 'dark_blue', Lt.basePath, draggable);
               } else {
-                marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year + ', earlywood');
+                marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable);
               }
             }
         }
     } else {
       if (pts[i].year % 10 == 0) {
-        marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable, 'Year ' + pts[i].year)
+        marker = getMarker(leafLatLng, 'light_red', Lt.basePath, draggable);
       } else {
-        marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable, 'Year ' + pts[i].year)
+        marker = getMarker(leafLatLng, 'light_blue', Lt.basePath, draggable);
       }
     };
 
@@ -1050,7 +1115,7 @@ function VisualAsset (Lt) {
         this.lines[i] =
             L.polyline([this.lines[i]._latlngs[0], e.target._latlng],
             { color: this.lines[i].options.color,
-              opacity: '.75', weight: '3'});
+              opacity: '.75', weight: '5'});
         this.lineLayer.addLayer(this.lines[i]);
       }
       if (this.lines[i + 1] !== undefined) {
@@ -1059,7 +1124,7 @@ function VisualAsset (Lt) {
             L.polyline([e.target._latlng, this.lines[i + 1]._latlngs[1]],
             { color: this.lines[i + 1].options.color,
               opacity: '.75',
-              weight: '3'
+              weight: '5'
             });
         this.lineLayer.addLayer(this.lines[i + 1]);
       } else if (this.lines[i + 2] !== undefined && !pts[i + 1].start) {
@@ -1068,7 +1133,7 @@ function VisualAsset (Lt) {
             L.polyline([e.target._latlng, this.lines[i + 2]._latlngs[1]],
             { color: this.lines[i + 2].options.color,
               opacity: '.75',
-              weight: '3' });
+              weight: '5' });
         this.lineLayer.addLayer(this.lines[i + 2]);
       }
     });
@@ -1123,7 +1188,7 @@ function VisualAsset (Lt) {
     //drawing the line if the previous point exists
     if (pts[i - 1] != undefined && !pts[i].start) {
       var opacity = '.5';
-      var weight = '3';
+      var weight = '5';
       if (pts[i].earlywood || !Lt.measurementOptions.subAnnual ||
           (!pts[i - 1].earlywood && pts[i].break)) {
         var color = '#17b0d4'; // original = #00BCD4 : actual = #5dbcd
@@ -1149,16 +1214,17 @@ function VisualAsset (Lt) {
         };
       };
 
-      this.lines[i] =
-          L.polyline([pts[i - 1].latLng, leafLatLng],
-          {color: color, opacity: opacity, weight: weight});
+      this.lines[i] = L.polyline([pts[i - 1].latLng, leafLatLng], {color: color, opacity: opacity, weight: weight});
       this.lineLayer.addLayer(this.lines[i]);
+
     }
 
     this.previousLatLng = leafLatLng;
     //add the marker to the marker layer
     this.markerLayer.addLayer(this.markers[i]);
   };
+
+
 }
 
 function AnnotationAsset(Lt) {
@@ -2780,6 +2846,16 @@ function Dating(Lt) {
     () => { this.disable() }
   );
 
+  // enable with ctrl-d
+  L.DomEvent.on(window, 'keydown', (e) => {
+     if (e.keyCode == 68 && !(e.getModifierState("Shift")) && e.getModifierState("Control") && window.name.includes('popout')) { // 68 refers to 'd'
+       e.preventDefault();
+       e.stopPropagation();
+       Lt.disableTools();
+       this.enable();
+     }
+  }, this);
+
   /**
    * Open a text container for user to input date
    * @function action
@@ -2837,6 +2913,7 @@ function Dating(Lt) {
   Dating.prototype.enable = function() {
     this.btn.state('active');
     this.active = true;
+    Lt.viewer.getContainer().style.cursor = 'pointer';
   };
 
   /**
@@ -2851,6 +2928,7 @@ function Dating(Lt) {
     $(Lt.viewer.getContainer()).off('click');
     $(document).off('keypress');
     this.active = false;
+    Lt.viewer.getContainer().style.cursor = 'default';
   };
 }
 
@@ -2936,7 +3014,13 @@ function CreatePoint(Lt) {
               $(document).keypress(e => {
                 var key = e.which || e.keyCode;
                 if (key === 13) {
-                  Lt.data.year = parseInt(document.getElementById('year_input').value);
+                  if (Lt.measurementOptions.forwardDirection == false && Lt.measurementOptions.subAnnual == false) {
+                    // must subtract one so newest measurment is consistent with measuring forward value
+                    // issue only applies to meauring backwwards annually
+                    Lt.data.year = parseInt(document.getElementById('year_input').value) - 1;
+                  } else  {
+                    Lt.data.year = parseInt(document.getElementById('year_input').value);
+                  }
                   popup.remove(Lt.viewer);
                 }
               });
@@ -4225,6 +4309,7 @@ function ViewData(Lt) {
         Lt.data.index = 0;
 
         Lt.visualAsset.reload();
+        Lt.metaDataText.updateText();
 
         this.disable();
       });
@@ -4775,8 +4860,14 @@ function MetaDataText (Lt) {
         startYear = firstYear;
         endYear = lastYear;
       } else if (firstYear > lastYear) { // for measuring backward in time, largest year value first in points array
-        startYear = lastYear;
-        endYear = firstYear;
+        startYear = lastYear + 1; // last point considered a start point when measuring backwards
+        if (Lt.measurementOptions.subAnnual == false) {
+          // add 1 to keep points consistent with measuring forwards
+          // only applies to measuring bakcwards annually
+          endYear = firstYear + 1;
+        } else {
+          endYear = firstYear;
+        }
       };
 
       this.years = '';
@@ -5057,6 +5148,10 @@ function KeyboardShortCutDialog (Lt) {
       {
        'key': 'Ctrl-i',
        'use': 'Insert measurement point',
+      },
+      {
+        'key': 'Ctrl-d',
+        'use': 'Edit measurement point dating',
       },
       {
        'key': 'Ctrl-a',

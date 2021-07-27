@@ -52,7 +52,7 @@ $(document).ready(function() {
 					<select name="parent" id="inputParent" class="form-control" required="required">
 						<option value=0>None</option>
 						<?foreach($this->instance->getCollections() as $collectionItem):?>
-						<option value=<?=$collectionItem->getId()?> <?=($collection->getParent()&&$collectionItem->getId()==$collection->getParent()->getId())?"SELECTED":null?> ><?=$collectionItem->getTitle()?></option>
+						<option value=<?=$collectionItem->getId()?> <?=($collectionItem->getId() == $collection->getId() || in_array($collectionItem, $collection->getFlattenedChildren()))?"DISABLED":null?> <?=($collection->getParent()&&$collectionItem->getId()==$collection->getParent()->getId())?"SELECTED":null?> ><?=$collectionItem->getTitle()?></option>
 						<?endforeach?>
 					</select>
 				</div>
@@ -139,7 +139,7 @@ $(document).ready(function() {
 	    selector: "textarea",
 	    menubar : false,
 	    relative_urls : false,
-	    toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | image link ",
+	    toolbar: "undo redo | styleselect | removeformat | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | code | image link ",
 	    plugins: ["link", "code", "image"]
 	 });
 });

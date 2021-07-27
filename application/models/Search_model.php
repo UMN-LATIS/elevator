@@ -197,7 +197,12 @@ class search_model extends CI_Model {
 		}
 
  		// only go only level deep in recursion?
-    	$body  = $asset->getSearchEntry(2);
+		$recursiveDepth = 1;
+		if( $asset->assetTemplate) {
+			$recursiveDepth = $asset->assetTemplate->getRecursiveIndexDepth();
+		}
+		
+    	$body  = $asset->getSearchEntry($recursiveDepth);
 
     	// strip any illegal UTF8 characters, elastic is more picky about this
     	$body = $this->cleanCharacters($body);
@@ -385,6 +390,27 @@ class search_model extends CI_Model {
 							"ids" => $collectionSortIds
 						],
 						"inline" => "int idsCount = params.ids.size();def id = (int)doc['collectionId'].value;int foundIdx = params.ids.indexOf(id);return foundIdx > -1 ? foundIdx: idsCount + 1;"
+					]
+				];
+
+			}
+			else if($searchArray["sort"] == "template" && $this->instance) {
+				$templates = $this->instance->getTemplates();
+				
+				$templateArray = [];
+				foreach($templates as $template) {
+					$templateArray[$template->getId()] = $template->getName();
+				}
+				asort($templateArray);
+				$templateIds = array_keys($templateArray);
+				$sortFilter["_script"] = [
+					"type" => "number",
+					"script" => [
+						"lang" => "painless",
+						"params" => [
+							"ids" => $templateIds
+						],
+						"inline" => "int idsCount = params.ids.size();def id = (int)doc['templateId'].value;int foundIdx = params.ids.indexOf(id);return foundIdx > -1 ? foundIdx: idsCount + 1;"
 					]
 				];
 
@@ -690,8 +716,35 @@ class search_model extends CI_Model {
 		$queryResponse = $this->es->search($searchParams);
 
 		return $queryResponse;
-
 	}
+
+	/*
+	 * Get all of the used tags within a specific field of the index. These will be instance-unique but not template-unique.
+	 * Elastic returns them ranked by use, but we reorder alphabetically. Long term, moving to a more dynamic UI component could
+	 * allow us to lift the cap on results.
+	 */
+	public function getAggregatedTags($tagField) {
+		$searchParams = array();
+		$searchParams['index'] = $this->config->item('elasticIndex');
+		$searchParams['body']["size"]=0;
+		$searchParams['body']["aggs"]["tags"]["terms"]["field"] = $tagField;
+		$searchParams['body']["aggs"]["tags"]["terms"]["size"] = 100;
+
+		$queryResponse = $this->es->search($searchParams);
+		if(!isset($queryResponse["aggregations"]["tags"]["buckets"]) || count($queryResponse["aggregations"]["tags"]["buckets"]) >= 100) {
+			return [];
+		}
+		else {
+			$this->logging->logError("test", "hey");
+			$tags = array_map(function($value) {
+				return $value["key"];
+			}, $queryResponse["aggregations"]["tags"]["buckets"]);
+			sort($tags);
+			return $tags;
+		}
+		
+	}
+
 
 	public function autocompleteResults($searchTerm, $fieldTitle, $templateId) {
 		// todo : do this the right way
