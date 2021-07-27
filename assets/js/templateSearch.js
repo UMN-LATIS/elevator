@@ -28,7 +28,6 @@ $(document).on("change", ".searchDropdown", function() {
 
 var storeAndSearch = function(searchId, targetForm) {
     $.post( basePath + "search/searchResults/" + searchId, {storeOnly:true, searchQuery:JSON.stringify($( targetForm ).serializeForm())}, function( data ) {
-        console.log(data);
         try{
             cachedResults = $.parseJSON(data);
             cachedDates = null;
@@ -50,15 +49,11 @@ var storeAndSearch = function(searchId, targetForm) {
 
 var buildFieldInfo = function(templateId, fieldTitle, targetGroup) {
     $.post(basePath+'search/getFieldInfo', {fieldTitle: fieldTitle, template: templateId}, function(data, textStatus, xhr) {
-        var results;
-        try {
-            results = $.parseJSON(data);
-        }
-        catch(e) {
-            console.log("error occurred");
+        if(typeof data !== "object") {
+            console.log("An error occured loading fieldinfo: ", data);
         }
 
-        if(results.type == "text") {
+        if(data.type == "text") {
             $(targetGroup).html("");
             $(targetGroup).html('<input type="text" name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent" value="">');
         }
@@ -66,7 +61,7 @@ var buildFieldInfo = function(templateId, fieldTitle, targetGroup) {
             $(targetGroup).html("");
             $(targetGroup).html('<select name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent">');
             selectElement = $(targetGroup).find("select");
-            $.each(results.values, function(index, val) {
+            $.each(data.values, function(index, val) {
                 var optionValue;
                 if($.isNumeric(index)) {
                     optionValue = val;

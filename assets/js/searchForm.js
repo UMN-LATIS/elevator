@@ -2,8 +2,6 @@ var targetTemplate = "#result-template";
 var listTemplate = "#list-template";
 
 
-
-
 $(document).on("click", ".addAnotherSpecific", function() {
     $(".searchCombine").removeClass("hide");
     var specificSearch = $(this).closest('.specificSearch');
@@ -33,15 +31,7 @@ $(document).on("change", ".searchDropdown", function() {
     var templateId = $(selectedOption).data('templateid');
     var targetGroup = $(this).closest(".form-group").find(".specificSearchTextContainer");
     $.post(basePath + 'search/getFieldInfo', {fieldTitle: content, template: templateId}, function(data, textStatus, xhr) {
-        var results;
-        try {
-            results = $.parseJSON(data);
-        }
-        catch(e) {
-            console.log("error occurred");
-        }
-
-        if(results.type == "text") {
+        if(data.type == "text") {
             $(targetGroup).html("");
             $(targetGroup).html('<input type="text" name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent" value="">');
         }
@@ -49,7 +39,7 @@ $(document).on("change", ".searchDropdown", function() {
             $(targetGroup).html("");
             $(targetGroup).html('<select name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent">');
             selectElement = $(targetGroup).find("select");
-            $.each(results.values, function(index, val) {
+            $.each(data.values, function(index, val) {
                 if(typeof index == "string") {
                     $(selectElement).append($('<option>', {value: index}).text(val));
                 }
