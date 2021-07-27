@@ -31,8 +31,6 @@ $(document).on("change", ".searchDropdown", function() {
     var templateId = $(selectedOption).data('templateid');
     var targetGroup = $(this).closest(".form-group").find(".specificSearchTextContainer");
     $.post(basePath + 'search/getFieldInfo', {fieldTitle: content, template: templateId}, function(data, textStatus, xhr) {
-
-        console.log(data);
         if(data.type == "text") {
             $(targetGroup).html("");
             $(targetGroup).html('<input type="text" name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent" value="">');

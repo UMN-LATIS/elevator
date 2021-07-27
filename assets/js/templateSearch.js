@@ -28,7 +28,6 @@ $(document).on("change", ".searchDropdown", function() {
 
 var storeAndSearch = function(searchId, targetForm) {
     $.post( basePath + "search/searchResults/" + searchId, {storeOnly:true, searchQuery:JSON.stringify($( targetForm ).serializeForm())}, function( data ) {
-        console.log(data);
         try{
             cachedResults = $.parseJSON(data);
             cachedDates = null;
