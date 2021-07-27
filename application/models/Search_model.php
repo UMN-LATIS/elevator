@@ -712,8 +712,35 @@ class search_model extends CI_Model {
 		$queryResponse = $this->es->suggest($searchParams);
 
 		return $queryResponse;
-
 	}
+
+	/*
+	 * Get all of the used tags within a specific field of the index. These will be instance-unique but not template-unique.
+	 * Elastic returns them ranked by use, but we reorder alphabetically. Long term, moving to a more dynamic UI component could
+	 * allow us to lift the cap on results.
+	 */
+	public function getAggregatedTags($tagField) {
+		$searchParams = array();
+		$searchParams['index'] = $this->config->item('elasticIndex');
+		$searchParams['body']["size"]=0;
+		$searchParams['body']["aggs"]["tags"]["terms"]["field"] = $tagField;
+		$searchParams['body']["aggs"]["tags"]["terms"]["size"] = 100;
+
+		$queryResponse = $this->es->search($searchParams);
+		if(!isset($queryResponse["aggregations"]["tags"]["buckets"]) || count($queryResponse["aggregations"]["tags"]["buckets"]) >= 100) {
+			return [];
+		}
+		else {
+			$this->logging->logError("test", "hey");
+			$tags = array_map(function($value) {
+				return $value["key"];
+			}, $queryResponse["aggregations"]["tags"]["buckets"]);
+			sort($tags);
+			return $tags;
+		}
+		
+	}
+
 
 	public function autocompleteResults($searchTerm, $fieldTitle, $templateId) {
 		// todo : do this the right way

@@ -186,7 +186,15 @@ class Search extends Instance_Controller {
 		else if(get_class($widget) == "Tags") {
 			// generate taglist here
 			$returnInfo['type'] = "tag";
-			$returnInfo['values'] = ["test"=> "test2"];
+			$this->load->model("search_model");
+			$tags = $this->search_model->getAggregatedTags($field . ".raw");
+			if(count($tags) > 0) {
+				$returnInfo['values'] = $tags;
+			}
+			else {
+				$returnInfo['type'] = "text";
+			}
+			
 		}
 		else {
 			$returnInfo['type'] = "text";
