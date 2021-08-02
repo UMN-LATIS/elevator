@@ -24,7 +24,7 @@ class MY_Controller extends CI_Controller {
 		$jsLoadArray = ["bootstrap", "jquery-ui","jquery.cookie", "jquery.lazy", "sugar", "mousetrap", "bootbox"];
 
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-			$jsLoadArray= array_merge($jsLoadArray, ["serializeForm", "dateWidget", "template"]);
+			$jsLoadArray= array_merge($jsLoadArray, ["serializeForm", "dateWidget", "template", "advancedSearchForm"]);
 
 		}
 		else {
