@@ -189,8 +189,8 @@ class asset extends API_Controller {
 
 	}
 
-	public function getEmbedLink($objectId, $instance=null) {
-		if($instance) {
+	public function getEmbedLink($objectId, $instance=null, $returnJSON=false) {
+		if($instance && $instance !== "false") {
 			$this->instance = $this->doctrine->em->getRepository("Entity\Instance")->find($instance);	
 		}
 		
@@ -209,7 +209,13 @@ class asset extends API_Controller {
 
 		$targetQuery = ["apiHandoff"=>$signedString, "authKey"=>$this->apiKey->getApiKey(), "timestamp"=>$timestamp, "targetObject"=>$fileHandler->parentObjectId];
 
-		echo site_url("/" . $this->instance->getDomain() . "/asset/getEmbed/" . $objectId.  "/null/true?" . http_build_query($targetQuery));
+		$embedURL = site_url("/" . $this->instance->getDomain() . "/asset/getEmbed/" . $objectId.  "/null/true?" . http_build_query($targetQuery));
+		if($returnJSON) {
+			render_json($embedURL);
+		}
+		else {
+			echo $embedURL;
+		}
 
 	}
 
