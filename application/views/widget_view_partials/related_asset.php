@@ -68,7 +68,7 @@ $seed = round(microtime(true))// we're using a seed to provide collisions with r
 				<?
 				// standard list view
 				elseif($fieldContent->getRelatedObjectId()):?>
-					<?$title = reset($fieldContent->getRelatedObjectTitle()); if($title):?>
+					<?$objectTitle = $fieldContent->getRelatedObjectTitle(); $title = reset($objectTitle); if($title):?>
 						<div class="panel panel-default relatedAssetContainer relatedListToggle"  data-objectid="<?=$fieldContent->getRelatedObjectId()?>" id="accordion<?=$fieldContent->getRelatedObjectId()?><?=$seed?>">
 							<div class="panel-heading">
 								<h4 class="panel-title">
