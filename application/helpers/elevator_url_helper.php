@@ -79,3 +79,12 @@ function autolink_elevator($str, $type = 'both', $popup = FALSE)
 		
 		return $str;
 	}
+
+function render_json($source, $status = 200) {
+	$CI =& get_instance();
+	return $CI->output
+		->set_content_type('application/json')
+		->set_status_header($status)
+		->set_output(json_encode($source));
+
+}
