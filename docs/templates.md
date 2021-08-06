@@ -10,22 +10,40 @@ Even file attachments are a type of field within a metadata template.  If you do
 When adding an asset, template fields that are left empty won’t be displayed, so it’s ok to have “sometimes” fields in the template.
 
 There’s no special “title” field in a template – whichever field you make the first field in a template will become a title.
-
 ### Creating a Template
 Select “Edit Templates” from the Admin pulldown.  Click “Create New Template.”
 
 Begin by giving your template a title that will make it clear what this template is for.
 
-#### Include in Public search Results
+## Advanced Settings
+
+Many features in Elevator are controlled on a template-by-template basis via the advanced settings. We try to set sensible defaults for these. 
+
+### Include in Public search Results
 Sometimes you want to add assets, but not have them included in public search results.  For example, if this template is intended to be nested within other templates (rather than existing on its own) you would leave this box unchecked.
 
-#### Index For Searching
+### Index For Searching
 When unchecked, this template will not be indexed for searching at all.  Assets using this template can only be accessed via their unique identifier, or via links from other assets.  This is intended to be used for “join” templates – templates that join one asset to another asset with some descriptive data, but which have no value on their own.
 
-#### Hide from “Add”
+### Hide from “Add”
 When checked, this template will not appear in the list of options when creating new assets, but still remains available for editing existing assets.  This is useful for templates you wish to deprecate, without removing their assets.
 
-### Adding a Widget
+### Show Collection when Viewing Asset
+
+This will add a synthetic "collection" value to assets, allowing users to click and browse all of the assets in that collection. You can control whether this appears at the bottom of the asset, or at the top (in a more traditional breadcrumb format)
+### Show Template when Viewing Asset
+
+In most instances, templates are only relevant for administrators and curators. However, if you wish to allow your users to view and search by templates, this options allows you to add a synthetic "template" value to assets, allowing users to click and browse all of the assets which use that template. You can control whether this appears at the bottom of the asset, or at the top (in a more traditional breadcrumb format)
+
+### Indexing Depth
+
+When templates use the "related asset" widget type to point to other assets, the Elevator search engine attempts to deep-index these related values. For example, if you had a template with a list of classrooms, and each of those pointed to a "building" record via a related asset field, you may wish for a search for the building name to return all of the classrooms in that building. That would involve an indexing depth of 1. If your building assets had a related asset pointing to a "campus" asset, an indexing depth of 2 would allow a search for the campus to return all of the associated classrooms. 
+
+### Color
+
+This dropdown allows you to pick a highlight color for each template. This can be helpful if you often have many templates open at once. 
+
+## Adding a Widget
 Each field in your template is defined by a “widget”.  A widget has a variety of fields.
 
 !["Adding a Widget"](./add-widget.png)
