@@ -29,8 +29,9 @@
       />
     </Sidebar>
 
+    
     <Home v-if="$page.frontmatter.home"/>
-
+    <BlogLayout v-else-if="$pagination && $pagination.pages.length > 0" />
     <Page
       v-else
       :sidebar-items="sidebarItems"
@@ -38,12 +39,17 @@
       <slot
         name="page-top"
         slot="top"
-      />
+      >
+      
+      </slot>
       <slot
         name="page-bottom"
         slot="bottom"
       />
+      
     </Page>
+    
+
   </div>
 </template>
 
@@ -53,9 +59,10 @@ import Navbar from '@theme/components/Navbar.vue'
 import Page from '@theme/components/Page.vue'
 import Sidebar from '@theme/components/Sidebar.vue'
 import { resolveSidebarItems } from '../util'
+import BlogLayout from './BlogLayout.vue'
 
 export default {
-  components: { Home, Page, Sidebar, Navbar },
+  components: { Home, Page, Sidebar, Navbar, BlogLayout: BlogLayout  },
 
   data () {
     return {

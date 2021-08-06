@@ -63,10 +63,11 @@
 
 <script>
 import { resolvePage, outboundRE, endingSlashRE } from '../util'
+import Post from "../layouts/Post.vue";
 
 export default {
   props: ['sidebarItems'],
-
+  components: {Post},
   computed: {
     lastUpdated () {
       return this.$page.lastUpdated
