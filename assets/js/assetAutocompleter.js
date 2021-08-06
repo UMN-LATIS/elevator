@@ -49,7 +49,7 @@ var relatedAssetPreview = function(relatedAssetId, targetContainer, targetParent
  				source: function(request, response) {
  					var searchRequest = { "searchText": request.term};
  					var templateId = $(value).closest(targetContainer).find(".matchAgainstSelector").val();
-
+					// todo: there's no reason this should be saving a new search query teach time to begin with
  					$.post( basePath + "search/searchResults/", {searchQuery:JSON.stringify(searchRequest), templateId: templateId, suppressRecent:true, showHidden:true}, function( data ) {
  						try{
  							jsonObject = $.parseJSON(data);

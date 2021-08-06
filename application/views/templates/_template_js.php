@@ -134,6 +134,31 @@ $(document).ready(function() {
 
 	$(".fieldType").trigger('change');
 
+	$(document).on("change", "input[name=showCollection]", function(event) {
+		if($(event.target).is(":checked")) {
+			$(".collectionPosition").removeClass("hide");
+		}
+		else {
+			$(".collectionPosition").addClass("hide");
+		}
+	});
+
+	$(document).on("change", "input[name=showTemplate]", function(event) {
+		if($(event.target).is(":checked")) {
+			$(".templatePosition").removeClass("hide");
+		}
+		else {
+			$(".templatePosition").addClass("hide");
+		}
+	});
+
+	$(document).on("click", ".advancedSettings", function(e) {
+		e.preventDefault();
+		$(".advancedSettingsDialog").toggleClass("hide");
+	});
+
+	$("input[name=showCollection]").trigger("change");
+	$("input[name=showTemplate]").trigger("change");
 
 });
 </script>

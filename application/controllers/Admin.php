@@ -222,7 +222,7 @@ class admin extends Admin_Controller {
 		$searchModel->flushBulkUpdates();
 		echo "Completed reindexing " . $count . "\n";
 
-		instance_redirect("admin");
+		// instance_redirect("admin");
 
 	}
 

@@ -25,9 +25,22 @@
           <field name="name" type="string" />
           <field name="createdAt" type="datetime" />
           <field name="modifiedAt" type="datetime" />
-          <field name="includeInSearch" type="boolean" />
-          <field name="indexForSearching" type="boolean" />
+          <field name="includeInSearch" type="boolean" >
+          <options>
+              <option name="default">1</option>
+            </options>
+            </field>
+          <field name="indexForSearching" type="boolean" >
+          <options>
+              <option name="default">1</option>
+            </options>
+            </field>
           <field name="templateColor" type="integer" />
+          <field name="recursiveIndexDepth" type="integer" >
+           <options>
+              <option name="default">1</option>
+            </options>
+          </field>
           <field name="isHidden" type="boolean" />
           <field name="showCollection" type="boolean">
             <options>
@@ -39,6 +52,17 @@
               <option name="default">0</option>
             </options>
           </field>
+          <field name="collectionPosition" type="integer">
+            <options>
+              <option name="default">0</option>
+            </options>
+          </field>
+          <field name="templatePosition" type="integer">
+            <options>
+              <option name="default">0</option>
+            </options>
+          </field>
+
         
       </entity>
 

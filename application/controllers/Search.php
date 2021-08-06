@@ -183,11 +183,24 @@ class Search extends Instance_Controller {
 			$returnInfo['type'] = "select";
 			$returnInfo['values'] = ["boolean_false"=>"Unchecked", "boolean_true"=>"Checked"];
 		}
+		else if(get_class($widget) == "Tags") {
+			// generate taglist here
+			$this->load->model("search_model");
+			$tags = $this->search_model->getAggregatedTags($field . ".raw");
+			if(count($tags) > 0) {
+				$returnInfo['type'] = "tag";
+				$returnInfo['values'] = $tags;
+			}
+			else {
+				$returnInfo['type'] = "text";
+			}
+			
+		}
 		else {
 			$returnInfo['type'] = "text";
 		}
 
-		echo json_encode($returnInfo);
+		return render_json($returnInfo);
 
 
 
@@ -514,6 +527,17 @@ class Search extends Instance_Controller {
 			foreach($searchArray["collection"] as $collection) {
 				if($collection == 0) {
 					unset($searchArray["collection"]);
+				}
+			}
+		}
+
+		/**
+		 * if they've set "any" (0) for template specific search, disregard
+		 */
+		if(isset($searchArray["templateId"])) {
+			foreach($searchArray["templateId"] as $templateId) {
+				if($templateId == 0) {
+					unset($searchArray["templateId"]);
 				}
 			}
 		}

@@ -821,10 +821,14 @@ class AssetManager extends Admin_Controller {
 
 		$isUpdate = false;
 		$updateField = null;
+		$readyForDisplayField = null;
 		foreach($cacheArray['mapping'] as $key=>$value) {
 			if($value == "objectId") {
 				$isUpdate = true;
 				$updateField = $key;
+			}
+			if($value == "readyForDisplay") {
+				$readyForDisplayField = $key;
 			}
 		}
 
@@ -899,7 +903,18 @@ class AssetManager extends Admin_Controller {
 				$newEntry = array();
 			}
 
-			$newEntry["readyForDisplay"] = true;
+			if($readyForDisplayField) {
+				 if(isset($row[$readyForDisplayField]) && ($row[$readyForDisplayField] == 1 || strtolower($row[$readyForDisplayField]) == "on" || strtolower($row[$readyForDisplayField]) == "true")){
+					$newEntry["readyForDisplay"] = true;
+				 }
+				 else {
+					$newEntry["readyForDisplay"] = false;
+				 }
+			}
+			else {
+				$newEntry["readyForDisplay"] = true;
+			}
+			
 			
 			if(!$isUpdate) {
 				$newEntry["templateId"] = $cacheArray['templateId'];
@@ -921,7 +936,7 @@ class AssetManager extends Admin_Controller {
 				}
 				$firstLoop = true;
 				foreach($rowArray as $rowEntry) {
-					if($cacheArray['mapping'][$key] !== "ignore" && $cacheArray['mapping'][$key] !== "objectId") {
+					if($cacheArray['mapping'][$key] !== "ignore" && $cacheArray['mapping'][$key] !== "objectId" && $cacheArray['mapping'][$key] !== "readyForDisplay") {
 						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
 						$widgetContainer = $widget->getContentContainer();
 

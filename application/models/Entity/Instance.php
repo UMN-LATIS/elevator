@@ -1399,4 +1399,5 @@ class Instance
     {
         return $this->showTemplateInSearchResults;
     }
+
 }

@@ -1,8 +1,4 @@
 
-var MarkerSource;
-var MarkerTemplate;
-var TimelineTemplate;
-var TimelineTemplate;
 var cachedResults = "";
 var cachedDates = null;
 var searchId = null;
@@ -13,15 +9,31 @@ var previousEventComplete = true;
 var dataAvailable = true;
 var disableHashChange = false;
 var totalResults = 0;
+
 $(document).ready(function() {
 
-	$(window).scroll(function(){
-		if (resultsAvailable && $(document).height() - 50 <= $(window).scrollTop() + $(window).height()) {
-			if(($('.nav-tabs .active').text() == "Grid" || $('.nav-tabs .active').text() == "List") && previousEventComplete && dataAvailable) {
-				doSearch(searchId, currentPageNumber+1);
-			}
-		}
-	});
+	registerScrollHandlers();
+	registerClickHandlers();
+	loadTemplates();
+	
+
+	// if we have a specific tab specified (gallery, list, etc) load that
+	if (location.hash !== '')  {
+		$('a[href="' + location.hash + '"]').tab('show');
+	}
+
+	// remember the hash in the URL without jumping
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+       if(history.pushState) {
+            history.pushState(null, null, '#'+$(e.target).attr('href').substr(1));
+       } else {
+            location.hash = '#'+$(e.target).attr('href').substr(1);
+       }
+    });
+});
+
+
+var registerClickHandlers = function() {
 
 	$(".searchText").on("blur", function() {
 		$(".advancedSearchText").val($(".searchText").val());
@@ -48,45 +60,12 @@ $(document).ready(function() {
 		$("#listResults").find("img").trigger("show");
 	});
 
-
-
-
-	$(".previousPage").on("click",function() {
-		doSearch(searchId, currentPageNumber-1);
-		return false;
-	});
-
 	$(".nextPage").on("click",function() {
 		doSearch(searchId, currentPageNumber+1);
 		return false;
 	});
 
-
-	MarkerSource   = $("#marker-template").html();
-	MarkerTemplate = Handlebars.compile(MarkerSource);
-
-	TimelineSource   = $("#timeline-template").html();
-	TimelineTemplate = Handlebars.compile(TimelineSource);
-
-
-	if (location.hash !== '')  {
-		$('a[href="' + location.hash + '"]').tab('show');
-	}
-
-    // remember the hash in the URL without jumping
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-       if(history.pushState) {
-            history.pushState(null, null, '#'+$(e.target).attr('href').substr(1));
-       } else {
-            location.hash = '#'+$(e.target).attr('href').substr(1);
-       }
-    });
-
-    function htmlEntities(str) {
-    	return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-	}
-
-    $(".embedMap").on("click", function(e) {
+	$(".embedMap").on("click", function(e) {
     	e.preventDefault();
     	embedPath =  "//" + window.location.hostname + basePath + "search/map/" + getCurrentSearchId();
 
@@ -105,10 +84,9 @@ $(document).ready(function() {
 				}
 			}
 		});
-
     });
 
-    $(".embedTimeline").on("click", function(e) {
+	$(".embedTimeline").on("click", function(e) {
     	e.preventDefault();
     	embedPath = "//" + window.location.hostname + basePath + "search/timeline/" + getCurrentSearchId();
 
@@ -152,8 +130,84 @@ $(document).ready(function() {
 
     });
 
+	$(document).on("click", ".embedControl", function() {
+		$(this).select();
+	});
 
-});
+
+	$(document).on("click", ".exportCSV", function(e) {
+		e.preventDefault();
+		target = e.target.href;
+		window.location = target + "#" + searchId;
+
+	});
+
+	$(document).on("click", ".fullscreen", function() {
+		if($.fullscreen.isNativelySupported()) {
+			$(".frameFullscreenContainer").first().fullscreen({ "toggleClass": "imageFullscreen"});
+		}
+	});
+	
+	$(document).on("click", ".assetLink", function(e) {
+		$.cookie('lastSearch', searchId, { path: "/"});
+	});
+
+	$(document).on("click", ".useSuggest", function() {
+		$(".searchText").val($(this).text());
+		$(".searchForm").submit();
+	});
+
+	$(document).on("change", ".sortBy", function() {
+		$(".hiddenSort").val($(this).val());
+		performSearchForButtonPress($(".searchForm").first());
+	});
+
+
+	$(document).on("click", "#loadAllResults", function(e) {
+		e.preventDefault();
+		if(dataAvailable) {
+			doSearch(searchId, currentPageNumber+1, true);
+			dataAvailable = false;
+			$("#loadAllResults").hide();
+			$(".paginationBlock").hide();
+			resultsAvailable = false;
+		}
+	});
+
+
+}
+
+var registerScrollHandlers = function() {
+		$(window).scroll(function(){
+		if (resultsAvailable && $(document).height() - 50 <= $(window).scrollTop() + $(window).height()) {
+			if(($('.nav-tabs .active').text() == "Grid" || $('.nav-tabs .active').text() == "List") && previousEventComplete && dataAvailable) {
+				doSearch(searchId, currentPageNumber+1);
+			}
+		}
+	});
+}
+
+
+
+var MarkerSource;
+var MarkerTemplate;
+var TimelineTemplate;
+var TimelineTemplate;
+var targetTemplate = "#result-template";
+var listTemplate = "#list-template";
+
+var loadTemplates = function() {
+	MarkerSource   = $("#marker-template").html();
+	MarkerTemplate = Handlebars.compile(MarkerSource);
+
+	TimelineSource   = $("#timeline-template").html();
+	TimelineTemplate = Handlebars.compile(TimelineSource);
+	
+}
+
+function htmlEntities(str) {
+	return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 
 function getCurrentSearchId() {
@@ -177,9 +231,6 @@ function parseSearch() {
 
 	if(searchId && !disableHashChange) {
 		resetSearchFrame();
-
-
-
 		// you can set a global var "loadAll" to cause us to load all available results at pageload.
 		// leaving this here just to make it explicit
 		var localLoadAll = false;
@@ -203,67 +254,64 @@ function loadCollectionHeader() {
 
 // ignore results is used to force the server to pre-cache the next set of results
 function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
-
-
 	if(!ignoreResults) {
 		previousEventComplete = false;
 		currentPageNumber = pageNumber;
 	}
 
-
 	loadAll = (loadAll)?"true":"false";
 
 	$.get(basePath + "search/searchResults/" + searchId + "/" + pageNumber + "/" + loadAll, function(data) {
-			if(ignoreResults) {
-				return;
+		if(ignoreResults) {
+			return;
+		}
+		var oldMatches = [];
+		var oldResults = [];
+		try{
+			if(cachedResults) {
+				oldMatches = cachedResults.matches;
+				oldResults = cachedResults.searchResults;
 			}
-			var oldMatches = [];
-			var oldResults = [];
-			try{
-				if(cachedResults) {
-					oldMatches = cachedResults.matches;
-					oldResults = cachedResults.searchResults;
-				}
-				cachedResults = $.parseJSON(data);
+			cachedResults = $.parseJSON(data);
 
+		}
+		catch(e){
+			alert(e + " " + data);
+		}
+
+		if(cachedResults.success === true) {
+
+			if(cachedResults.totalResults == 1 ) {
+				// special case - one match, let's just load it
+				var objectId = cachedResults.matches[0].objectId;
+				$.cookie('lastSearch', searchId, { path: "/"});
+
+				// window.location.hash = "";
+				window.location.pathname = basePath + "/asset/viewAsset/" + objectId;
 			}
-			catch(e){
-				alert(e + " " + data);
+			cachedResults.totalLoadedCount = cachedResults.matches.length + oldMatches.length;
+			processSearchResults(cachedResults);
+			newArray = $.merge(cachedResults.matches, oldMatches);
+			cachedResults.searchResults = $.merge(cachedResults.searchResults, oldResults);
+			cachedResults.matches = newArray;
+
+			// we want these to use the full stored set, not just the curret batch, so we run them after merging.
+			if($('a[href="#map"]').parent().hasClass("active")) {
+				prepMap();
 			}
 
-			if(cachedResults.success === true) {
+			// we want these to use the full stored set, not just the curret batch, so we run them after merging.
+			// if($('a[href="#gallery"]').parent().hasClass("active")) {
+			// 	prepGallery();
+			// }
 
-				if(cachedResults.totalResults == 1 ) {
-					// special case - one match, let's just load it
-					var objectId = cachedResults.matches[0].objectId;
-					$.cookie('lastSearch', searchId, { path: "/"});
-
-					// window.location.hash = "";
-					window.location.pathname = basePath + "/asset/viewAsset/" + objectId;
-				}
-				cachedResults.totalLoadedCount = cachedResults.matches.length + oldMatches.length;
-				processSearchResults(cachedResults);
-				newArray = $.merge(cachedResults.matches, oldMatches);
-				cachedResults.searchResults = $.merge(cachedResults.searchResults, oldResults);
-				cachedResults.matches = newArray;
-
-				// we want these to use the full stored set, not just the curret batch, so we run them after merging.
-				if($('a[href="#map"]').parent().hasClass("active")) {
-					prepMap();
-				}
-
-				// we want these to use the full stored set, not just the curret batch, so we run them after merging.
-				// if($('a[href="#gallery"]').parent().hasClass("active")) {
-				// 	prepGallery();
-				// }
-
-				if($('a[href="#timeline"]').parent().hasClass("active")) {
-					cachedDates = null;
-					prepTimeline();
-				}
-
+			if($('a[href="#timeline"]').parent().hasClass("active")) {
+				cachedDates = null;
+				prepTimeline();
 			}
-		});
+
+		}
+	});
 }
 
 function processSearchResults(cachedResults) {
@@ -274,42 +322,11 @@ function processSearchResults(cachedResults) {
 		dataAvailable = false;
 	}
 	previousEventComplete = true;
-	
 }
 
-$(document).on("click", ".assetLink", function(e) {
-	$.cookie('lastSearch', searchId, { path: "/"});
 
-});
-
-$(document).on("click", ".useSuggest", function() {
-
-	$(".searchText").val($(this).text());
-	$(".searchForm").submit();
-
-});
-
-$(document).on("change", ".sortBy", function() {
-	$(".hiddenSort").val($(this).val());
-	performSearchForButtonPress($(".searchForm").first());
-});
-
-
-$(document).on("click", "#loadAllResults", function(e) {
-	e.preventDefault();
-	if(dataAvailable) {
-		doSearch(searchId, currentPageNumber+1, true);
-		dataAvailable = false;
-		$("#loadAllResults").hide();
-		$(".paginationBlock").hide();
-		resultsAvailable = false;
-	}
-
-
-});
 
 function getSuggestions(searchTerm) {
-
 	var localSearch = searchTerm;
 	$.post(basePath + "search/getSuggestion", {"searchTerm":searchTerm}, function(data, textStatus) {
 		var resultArray = $.parseJSON(data);
@@ -417,7 +434,6 @@ function populateSearchResults(searchObject) {
 		$(".resultsData p").append(" <a href='' id='loadAllResults'>[Load All]</a>");
 	}
 
-
 	if(searchObject.totalResults > searchObject.totalLoadedCount) {
 		$(".paginationBlock").show();
 		resultsAvailable = true;
@@ -456,14 +472,9 @@ function populateSearchResults(searchObject) {
 
 }
 
+
+
 var galleryFrame = null;
-
-$(document).on("click", ".fullscreen", function() {
-	if($.fullscreen.isNativelySupported()) {
-		$(".frameFullscreenContainer").first().fullscreen({ "toggleClass": "imageFullscreen"});
-	}
-});
-
 function prepGallery() {
 	if(cachedResults === "") {
 		return;
@@ -562,11 +573,6 @@ function loadGalleryElement(index) {
 	targetItem = galleryFrame.items[index].el;
 	$(".frameHeader").html("<a href='" + basePath + "asset/viewAsset/" + $(targetItem).data("objectid") + "'><h2>" + $(targetItem).data("title") + "</h2></a>" );
 	$(".galleryIframe").attr("src", basePath + "asset/getEmbed/" + $(targetItem).data("primaryhandler") + "/" + $(targetItem).data("objectid") + "/true");
-}
-
-function loadNestedAssets(objectId) {
-
-
 }
 
 
@@ -738,14 +744,4 @@ function injectStyles(rule) {
 }
 
 
-$(document).on("click", ".embedControl", function() {
-	$(this).select();
-});
 
-
-$(document).on("click", ".exportCSV", function(e) {
-	e.preventDefault();
-	target = e.target.href;
-	window.location = target + "#" + searchId;
-
-});
