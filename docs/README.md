@@ -12,5 +12,5 @@ features:
   details: Pick the metadata schema that's right for your content. Mix and match metadata formats to meet your changing needs. Whether you need a simple template with just a handful of fields, or a full Dublin Core-style schema, Elevator has it covered.
 - title: Born in the Cloud
   details: Elevator was built from the ground up to run in the cloud. Leveraging the power and affordability of the Amazon Web Services cloud platform, Elevator can offer performance, reliability, and scalability without introducing IT overhead.
-footer: Developed by the University of Minnesotae
+footer: Developed by the University of Minnesota
 ---

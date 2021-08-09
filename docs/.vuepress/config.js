@@ -17,7 +17,7 @@ module.exports = {
         ]
     ],
     title: 'Elevator Documentation',
-    base: '/elevator/',
+    base: '/',
     themeConfig: {
         // Assumes GitHub. Can also be a full GitLab url.
         sidebarDepth: 2,
