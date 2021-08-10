@@ -37,13 +37,31 @@ The Elevator plugin uses a special WordPress “shortcode” to handle the embed
 
 ### Setup
 
-Elevator will need to be enabled within your Canvas course site before you can begin using it.  Within your course site, select “settings” and then “apps”. Elevator should be displayed as an option.  Click on the icon and then select “add.” In the field that says “What is the name (URL) of the instance you’d like to use?”, enter the full address (without the http://) of your Elevator instance. For example, to use the DCL, enter dcl.elevator.umn.edu.
+Elevator will need to be enabled within your Canvas course site before you can begin using it.  Within your course site, select “settings” and then “apps”. Elevator should be displayed as an option.  Click on the icon and then select “add.”
 
-Now click the “Add App” button.  You’re all set!  If you use multiple Elevator sites, you can add each of them.
+!["Add Elevator App"](./Elevator_Canvas_icon.png)
+
+ In the field that says “What is the name (URL) of the instance you’d like to use?”, enter the full address (without the http://) of your Elevator instance. For example, to use the DCL, enter dcl.elevator.umn.edu. Now click the “Add App” button.  You’re all set!  If you use multiple Elevator sites, you can add each of them.
 
 ### Using Elevator to Embed Assets
 
-Once you’ve setup the Elevator LTI, there’ll be a new Elevator button available in every text field in Canvas (**in some cases, it may take a minute or two for it to appear**).  To find it, click the “plug” icon (“Apps) which will reveal your Elevator button. The first time you use this feature, you may need to click "view all" and then select Elevator.  You can use it to add assets to pages, assignments, or anything else. Just click the button and an Elevator window will open.  Browse your site to find the asset you’d like to embed, and then click “Add to Canvas” in the Elevator toolbar. When you save your page in Canvas, the asset will be automatically embedded with the correct permissions, so all of your students will have access.
+Once you’ve setup the Elevator LTI, there’ll be a new Elevator button available in every "[rich content](https://it.umn.edu/news-alerts/news/what-you-need-know-about-new-rce)" field in Canvas (**in some cases, it may take a minute or two for it to appear**).  Generally, you'll want to create a new page to embed an Elevator asset in your course, but you can also use the functionality in quizes, forum posts, and elsewhere. 
+
+!["Rich Content Editor"](./FullMenu.jpg)
+
+Because the options in this menu are extensive the menu is often to wide to fit on the screen. In this case, the menu is truncated, and only the first few text-focused icons are visible. The three vertical dots at the right indicate that this menu of icons is expandable. Click on the vertical ellipsis icon on the far right-hand side of the top menu to expand it
+
+!["Expanded menu"](./ExpandMenu.jpg)
+
+To find your Elevator site, click the “plug” icon (“Apps) which will reveal your Elevator button. **The first time you use this feature, you may need to click "view all" and then select Elevator from the "Select App" screen.**
+
+After clicking on your Elevator link in Canvas, an Elevator window will open.  Browse your site to find the asset you’d like to embed, and then click “Add to Canvas” in the Elevator toolbar. 
+
+!["Add to Canvas Button"](./AddToCanvasBtn.jpg)
+
+When you save your page in Canvas, the asset will be automatically embedded with the correct permissions, so all of your students will have access.
+
+The screencast below shows the embedding process. 
 
 <iframe width="100%" height="400" src="https://www.youtube.com/embed/fdbf-qYokqE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
