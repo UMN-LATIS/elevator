@@ -479,11 +479,11 @@ class FileManager extends Instance_Controller {
 		}
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		$fileHandler->loadByObjectId($fileId);
 		if(!($fileHandler)) {
 			instance_redirect("errorHandler/error/unknownFile");
 			return;
 		}
+		$fileHandler->loadByObjectId($fileId);
 
 		$sidecar = $fileHandler->getSidecarView(array(), $rootFormField);
 		echo $sidecar;
