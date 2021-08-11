@@ -1,7 +1,7 @@
 <base target="_parent">
 <div id="timelineContainer">
 	<div id="">
-		<div id="timelinePane" style="width: 100%; height: 100%;">
+		<div id="timelinePane" style="width: 100%; height: 100vh;">
 
 
 		</div>
