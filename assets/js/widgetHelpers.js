@@ -293,6 +293,10 @@ $(document).ready(function() {
 		var sourceReference = this;
 		targetTemplate = $(sourceReference).val();
 		sourceTemplate = $("#sourceTemplate").val();
+		
+		if(targetTemplate == "---") {
+			return;
+		}
 		jQuery.getJSON(basePath + "assetManager/compareTemplates/" + sourceTemplate + "/" + targetTemplate, {}, function(json, textStatus) {
 
 			if(json.length === 0) {
