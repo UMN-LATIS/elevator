@@ -8,7 +8,7 @@
 	</div>
 </div>
 
-<?if($this->instance->getFeaturedAsset()):?>
+<?if($this->instance->getFeaturedAsset() && isset($assetData)):?>
 
 <div class="col-lg-3 col-sm-6 col-md-4 featuredAssetColumn">
 
@@ -30,7 +30,7 @@
 	</div>
 	<div class="previewContent">
 
-
+	<?if(is_array($assetData['entries'])):?>
 		<?foreach($assetData['entries'] as $entry):?>
 		<div class="previewEntry"> <strong><?=$entry['label']?>:</strong><ul>
 					<?foreach($entry['entries'] as $value):?>
@@ -39,6 +39,7 @@
 				</ul>
 		</div>
 		<?endforeach?>
+	<?endif?>
 	</div>
 	</div>
 </div>

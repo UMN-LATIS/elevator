@@ -108,6 +108,10 @@ class S3_model extends CI_Model {
 				$this->logging->logError("putObject", $e, $sourceFile);
 				return false;
 			}
+			catch (\Aws\S3\Exception\S3Exception $e) {
+				$this->logging->logError("putObject", $e, $sourceFile);
+				return false;
+			}
 		}
 		else {
 
@@ -409,6 +413,11 @@ class S3_model extends CI_Model {
 
 		}
 		catch (Exception $e) {
+			echo $e;
+			$this->logging->logError("getProtectedURL", $e, $targetKey);
+			return false;
+		}
+		catch (\Aws\Sts\Exception\StsException $e) {
 			echo $e;
 			$this->logging->logError("getProtectedURL", $e, $targetKey);
 			return false;

@@ -508,7 +508,10 @@ class Asset_model extends CI_Model {
 		// inline the related asset cache so consumers can draw thumbnails
 		if($includeRelatedAssetCache) {
 			$assetCache = $this->assetObject->getAssetCache();
-			$outputObject['relatedAssetCache'] = $assetCache->getRelatedAssetCache();
+			if($assetCache) {
+				$outputObject['relatedAssetCache'] = $assetCache->getRelatedAssetCache();
+			}
+			
 		}
 
 		return $outputObject;

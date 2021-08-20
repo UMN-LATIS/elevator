@@ -497,6 +497,10 @@ class AssetManager extends Admin_Controller {
 
 		$sourceTemplate = $this->asset_template->getTemplate($sourceTemplate);
 		$destinationTemplate = $this->asset_template->getTemplate($destinationTemplate);
+		
+		if(!$destinationTemplate) {
+			render_json("error", 500);
+		}
 
 		$missingFields = array();
 

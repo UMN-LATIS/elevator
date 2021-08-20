@@ -404,6 +404,9 @@ class Collection
 
     public function getFlattenedChildren() {
         $outputArray = array();
+        if(!$this->hasChildren()) {
+            return $outputArray;
+        }
         foreach($this->children as $child) {
             $outputArray[] = $child;
             if($child->hasChildren()) {
