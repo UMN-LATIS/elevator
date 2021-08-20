@@ -8,7 +8,7 @@
 	</div>
 </div>
 
-<?if($this->instance->getFeaturedAsset()):?>
+<?if($this->instance->getFeaturedAsset() && isset($assetData)):?>
 
 <div class="col-lg-3 col-sm-6 col-md-4 featuredAssetColumn">
 
