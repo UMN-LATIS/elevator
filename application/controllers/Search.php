@@ -635,21 +635,25 @@ class Search extends Instance_Controller {
 			$searchArchive = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 		}
 		else {
+			// change we're making on aug 11: don't update existing search entries.
+			// this seems like it'll fix bugs with timeline/map/gallery embeds triggering
+			// database updates that we don't want.
 			$searchArchive = new Entity\SearchEntry;
+			$searchArchive->setUser($this->user_model->user);
+			$searchArchive->setInstance($this->instance);
+			$searchArchive->setSearchText($searchArray['searchText']);
+			$searchArchive->setSearchData($searchArray);
+			$searchArchive->setCreatedAt(new DateTime());
+			$searchArchive->setUserInitiated(false);
+			if(!$this->input->post("suppressRecent")) {
+				$searchArchive->setUserInitiated(true);
+			}
+
+			$this->doctrine->em->persist($searchArchive);
+			$this->doctrine->em->flush();
 		}
 
-		$searchArchive->setUser($this->user_model->user);
-		$searchArchive->setInstance($this->instance);
-		$searchArchive->setSearchText($searchArray['searchText']);
-		$searchArchive->setSearchData($searchArray);
-		$searchArchive->setCreatedAt(new DateTime());
-		$searchArchive->setUserInitiated(false);
-		if(!$this->input->post("suppressRecent")) {
-			$searchArchive->setUserInitiated(true);
-		}
-
-		$this->doctrine->em->persist($searchArchive);
-		$this->doctrine->em->flush();
+		
 
 		$this->searchId = $searchArchive->getId();
 

@@ -271,7 +271,6 @@ class UMNHelper extends AuthHelper
 		// hacky fallback temporarily
 		if(count($returnArray) == 0) {
 			ldap_unbind($connect);
-			ldap_close($connect);
 			$connect = ldap_connect( $ldap_host);
 			$r=ldap_bind($connect);
 			$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
