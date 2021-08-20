@@ -295,6 +295,7 @@ $(document).ready(function() {
 		sourceTemplate = $("#sourceTemplate").val();
 		
 		if(targetTemplate == "---") {
+			$(sourceReference).val(sourceTemplate);
 			return;
 		}
 		jQuery.getJSON(basePath + "assetManager/compareTemplates/" + sourceTemplate + "/" + targetTemplate, {}, function(json, textStatus) {

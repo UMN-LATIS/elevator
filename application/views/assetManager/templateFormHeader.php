@@ -238,7 +238,7 @@ $(function() {
 							<div class="col-sm-3">
 								<input type="hidden" name="templateId" value="<?=$template->getId()?>" id="sourceTemplate">
 								<select name="newTemplateId" id="inputNewTemplateId" class="form-control input-large">
-									<option>---</option>
+									<option disabled>---</option>
 									<? foreach($this->instance->getTemplates() as $internalTemplate):?>
 									<option <?=($internalTemplate->getId()==$template->getId())?"SELECTED":null?> value="<?=$internalTemplate->getId()?>"><?=$internalTemplate->getName()?></option>
 									<?endforeach?>
