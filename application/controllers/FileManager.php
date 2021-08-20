@@ -602,7 +602,9 @@ class FileManager extends Instance_Controller {
 
 
 	function getStream($fileId, $streamType) {
-		
+		// do some explicitly cache control because Chrome seems to be aggressive about caching m3u8?
+		header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		$fileHandler->loadByObjectId($fileId);
 		if(!($fileHandler)) {
