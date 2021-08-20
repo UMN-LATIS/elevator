@@ -216,6 +216,11 @@ class Instances extends Instance_Controller {
 
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
 
+		if($pageId && !is_numeric($pageId)) {
+			instance_redirect("errorHandler/error/noPermission");
+			return;
+		}
+
 		if($pageId) {
 			$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
 
