@@ -417,6 +417,11 @@ class S3_model extends CI_Model {
 			$this->logging->logError("getProtectedURL", $e, $targetKey);
 			return false;
 		}
+		catch (\Aws\Sts\Exception\StsException $e) {
+			echo $e;
+			$this->logging->logError("getProtectedURL", $e, $targetKey);
+			return false;
+		}
 
 	}
 
