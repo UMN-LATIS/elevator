@@ -606,6 +606,7 @@ class AssetManager extends Admin_Controller {
 			$i=0;
 
 			$out = fopen('php://output', 'w');
+			fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
 			$widgetArray = array();
 			$widgetArray[] = "objectId";
 			$widgetArray[] = "collection";
