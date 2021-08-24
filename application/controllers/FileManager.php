@@ -318,11 +318,7 @@ class FileManager extends Instance_Controller {
 	function getDerivativeById($fileId, $derivativeType) {
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		$fileHandler->loadByObjectId($fileId);
-
-
-
-		if(!($fileHandler)) {
+		if(!$fileHandler || !$fileHandler->loadByObjectId($fileId)) {
 			instance_redirect("errorHandler/error/unknownFile");
 			return;
 		}
