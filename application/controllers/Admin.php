@@ -7,7 +7,7 @@ class admin extends Admin_Controller {
 	{
 		parent::__construct();
 
-		if(!$this->input->is_cli_request() && !$this->user_model->getIsSuperAdmin()) {
+		if(!$this->input->is_cli_request() && (!$this->user_model || !$this->user_model->getIsSuperAdmin())) {
 			instance_redirect("errorHandler/error/noPermission");
 			return;
 		}
