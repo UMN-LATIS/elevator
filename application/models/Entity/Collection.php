@@ -394,6 +394,9 @@ class Collection
      * @return boolean
      */
     public function hasChildren() {
+        if(!$this->children) { 
+            return false;
+        }
         return !$this->children->isEmpty();
     }
 
