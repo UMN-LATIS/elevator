@@ -5,7 +5,9 @@ $(document).ready(function () {
 
 		e.preventDefault(); //STOP default action
 		var postData = $(this).serializeArray();
-
+		if($("#drawerList").find(":selected").length == 0) {
+			alert("You must create a drawer first");
+		}
 		if(typeof(excerptId) != 'undefined') {
 			postData.push({name: 'excerptId', value: excerptId});
 		}

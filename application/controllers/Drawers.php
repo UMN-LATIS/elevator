@@ -178,6 +178,9 @@ class Drawers extends Instance_Controller {
 
 	public function addToDrawer() {
 		$drawerId = $this->input->post("drawerList");
+		if(!$drawerId) {
+			render_json("error", 500);
+		}
 		$drawer = $this->doctrine->em->find('Entity\Drawer', $drawerId);
 
 		$drawer->setChangedSinceArchive(true);
