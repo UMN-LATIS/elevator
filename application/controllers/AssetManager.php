@@ -895,6 +895,11 @@ class AssetManager extends Admin_Controller {
 					continue;
 				}
 			}
+			if(max(array_map('strlen', $row)) == 0) {
+				// every item in this row is blank. Thanks Excel! Let's skip it.
+				$rowCount++;
+				continue;
+			}
 			$assetModel = null;
 			if($isUpdate) {
 				$assetModel = new asset_model();
