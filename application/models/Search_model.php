@@ -150,22 +150,24 @@ class search_model extends CI_Model {
     	$dateDataArray = array();
 		if(count($uploads)>0) {
 			foreach($uploads as $upload) {
-				foreach($upload->fieldContentsArray as $uploadContent) {
-					if($uploadContent->hasContents() && $uploadContent->getSearchData() != "") {
-						$uploadContentArray[] = $uploadContent->getSearchData();
-						$uploadContent->searchData = "";
-					}
-					if($uploadContent->hasContents() && $uploadContent->getLocationData() != "") {
+				if($upload->getSearchable()) {
+					foreach($upload->fieldContentsArray as $uploadContent) {
+						if($uploadContent->hasContents() && $uploadContent->getSearchData() != "") {
+							$uploadContentArray[] = $uploadContent->getSearchData();
+							$uploadContent->searchData = "";
+						}
+						if($uploadContent->hasContents() && $uploadContent->getLocationData() != "") {
 
-						$locationDataArray[] = $uploadContent->getLocationData();
-						$uploadContent->locationData = "";
-					}
-					if($uploadContent->hasContents() && $uploadContent->getDateData() != "") {
-						$tempArray = array();
-						$tempArray["startDate"]=intval(strtotime($uploadContent->getDateData()));
-						$tempArray["endDate"]=-631139000000000000; // negative 20 billion years ago
-						$dateDataArray[] = $tempArray;
-						$uploadContent->dateData = "";
+							$locationDataArray[] = $uploadContent->getLocationData();
+							$uploadContent->locationData = "";
+						}
+						if($uploadContent->hasContents() && $uploadContent->getDateData() != "") {
+							$tempArray = array();
+							$tempArray["startDate"]=intval(strtotime($uploadContent->getDateData()));
+							$tempArray["endDate"]=-631139000000000000; // negative 20 billion years ago
+							$dateDataArray[] = $tempArray;
+							$uploadContent->dateData = "";
+						}
 					}
 				}
 			}
