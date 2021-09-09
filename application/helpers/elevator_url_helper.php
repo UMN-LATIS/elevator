@@ -79,26 +79,6 @@ function autolink_elevator($str, $type = 'both', $popup = FALSE)
 		
 		return $str;
 	}
-function follow_redirects($url, $maxdepth = 10, $depth = 0)
-{
-    //return the current url if we have hit the maximum depth
-    if($depth >= $maxdepth)
-        return $url;
-
-    //download the headers from the url and make all the keys lowercase
-    $headers = get_headers($url, true);
-    $headers = array_change_key_case($headers);
-    //we have a redirect if the `location` header is set
-    if(isset($headers["location"]))
-    {
-        return follow_redirects($headers["location"], $maxdepth, $depth + 1);
-    }
-    else
-    {
-        return $url;
-    }
-}
-
 
 function render_json($source, $status = 200) {
 	$CI =& get_instance();
