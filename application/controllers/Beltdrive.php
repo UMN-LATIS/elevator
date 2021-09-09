@@ -724,7 +724,8 @@ class Beltdrive extends CI_Controller {
 						'verify_peer_name' => false,
 					],
 				]);
-				$headers = get_headers($importEntry['url']);
+				$destinationURL = getFinalURL($importEntry['url']);
+				$headers = get_headers($destinationURL);
 				foreach($headers as $header) {
 
 					$len = strlen($header);
