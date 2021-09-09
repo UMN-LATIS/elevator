@@ -694,7 +694,8 @@ class Beltdrive extends CI_Controller {
 				if(!is_numeric($assetModel->getGlobalValue("collectionId"))) {
 					continue;
 				}
-				$parsedURL = parse_url($importEntry['url'], PHP_URL_PATH);
+				$finalURL = getFinalURL($importEntry['url']);
+				$parsedURL = parse_url($finalURL, PHP_URL_PATH);
 				$urlFile = basename($parsedURL);
 				$description = isset($importEntry["description"])?$importEntry["description"]:null;
 				$fileContainer = new fileContainerS3();
@@ -724,8 +725,7 @@ class Beltdrive extends CI_Controller {
 						'verify_peer_name' => false,
 					],
 				]);
-				$destinationURL = getFinalURL($importEntry['url']);
-				$headers = get_headers($destinationURL);
+				$headers = get_headers($finalURL);
 				foreach($headers as $header) {
 
 					$len = strlen($header);
@@ -761,7 +761,7 @@ class Beltdrive extends CI_Controller {
 					$this->headers[$name] = trim($value);
 				}
       
-				$extractString = "curl -k -L -s -o '" . $localPath . "' " . escapeshellarg($importEntry['url']);
+				$extractString = "curl -k -L -s -o '" . $localPath . "' " . escapeshellarg($finalURL);
 				$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 				$process->run();
 				while($process->isRunning()) {
