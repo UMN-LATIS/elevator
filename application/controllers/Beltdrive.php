@@ -755,7 +755,7 @@ class Beltdrive extends CI_Controller {
 					$this->headers[$name] = trim($value);
 				}
       
-				$extractString = "curl -L -s -o '" . $localPath . "' " . escapeshellarg($importEntry['url']);
+				$extractString = "curl -k -L -s -o '" . $localPath . "' " . escapeshellarg($importEntry['url']);
 				$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 				$process->run();
 				while($process->isRunning()) {
