@@ -718,8 +718,16 @@ class Beltdrive extends CI_Controller {
 				
 				
 				$localPath = $fileContainer->getPathToLocalFile();
+				stream_context_set_default( [
+					'ssl' => [
+						'verify_peer' => false,
+						'verify_peer_name' => false,
+					],
+				]);
 
-				$headers = get_headers($importEntry['url']);
+				$unpackedURL = follow_redirects($importEntry['url'], 5);
+
+				$headers = get_headers($unpackedURL);
 				foreach($headers as $header) {
 
 					$len = strlen($header);
