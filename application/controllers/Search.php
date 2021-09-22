@@ -582,7 +582,12 @@ class Search extends Instance_Controller {
 
 		$showHidden = false;
 
-		if($searchId) {
+		if($searchId && strlen($searchId) < 10) {
+			// this is an invalid search id. 
+			$searchId = null;
+		}
+
+		if($searchId && strlen($searchId) > 10) {
 			$this->searchId = $searchId;
 			if(!isset($searchArray)) {
 				$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);

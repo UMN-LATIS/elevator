@@ -80,6 +80,32 @@ function autolink_elevator($str, $type = 'both', $popup = FALSE)
 		return $str;
 	}
 
+function getFinalURL($url)
+{
+    $ch = curl_init();
+
+	// set URL and other appropriate options
+	curl_setopt($ch, CURLOPT_URL,$url);
+	curl_setopt($ch, CURLOPT_HEADER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($ch, CURLOPT_NOBODY, true);
+	curl_exec($ch);
+	$outputURL = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+
+	// close cURL resource, and free up system resources
+	curl_close($ch);
+	if($outputURL) {
+		return $outputURL;
+	}
+	else {
+		return $url;
+	}
+}
+
+
 function render_json($source, $status = 200) {
 	$CI =& get_instance();
 	return $CI->output

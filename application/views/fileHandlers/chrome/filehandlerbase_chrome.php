@@ -18,7 +18,7 @@ if(count($fileContainers)>0) {
 $fileInfo = [];
 $fileInfo["File Type"] = "Zip";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
+$fileInfo["File Size"] = byte_format($fileObject->sourceFile->metadata["filesize"]);
 
 if($widgetObject) {
   if($widgetObject->fileDescription) {

@@ -249,6 +249,9 @@ var loadView = function (e) {
 
 	// we pass in the page's objectId so that assets inside drawers load properly.
 
+	if(!fileObjectId || fileObjectId.length < 10) {
+		return;
+	}
 
 	$.get(basePath + "asset/getEmbedWithChrome/" + fileObjectId + "/" + objectId, function (data) {
 		$("#embedView").html(data);
