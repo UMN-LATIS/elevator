@@ -46,7 +46,7 @@ if(count($fileContainers)>0) {
 $fileInfo = [];
 $fileInfo["File Type"] = "Image";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
-$fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"] ?? 0;
+$fileInfo["File Size"] = byte_format($fileObject->sourceFile->metadata["filesize"] ?? 0);
 $fileInfo["Image Size"] = ($fileObject->sourceFile->metadata["width"] ?? 0) . "x" . ($fileObject->sourceFile->metadata["height"] ?? 0);
 
 if($widgetObject) {
