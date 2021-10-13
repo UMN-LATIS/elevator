@@ -422,6 +422,14 @@ class Search extends Instance_Controller {
 		$searchId = $this->input->post("searchId");
 		$objectId = $this->input->post("objectId");
 		$this->load->model("search_model");
+		if(!$searchId || strlen($searchId) < 10) {
+			return json_encode([]);
+		}
+
+		if(!$objectId || strlen($objectId) < 10) {
+			return json_encode([]);
+		}
+
 
 		// $searchId = "7f53eb65-316b-4faa-be0b-c288c7c31d74";
 		// $objectId = "585d3408ba98a8f9404059c2";
