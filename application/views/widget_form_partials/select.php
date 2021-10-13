@@ -44,9 +44,13 @@ if(isset($widgetModel->parsedFieldData["multiSelect"]) && $widgetModel->parsedFi
 		<div class="form-group">
 			<label for="<?=$selectId?>" class="col-sm-2 control-label"><?=$labelText?></label>
 			<div class="col-sm-4">
+				<?if(!isset($widgetModel->parsedFieldData["selectGroup"]) || !is_array($widgetModel->parsedFieldData["selectGroup"])):?>
+					<b>Invalid select configuration in template</b>
+				<?else:?>
 				<select <?=$size?> <?=$multiselect?> <?=$required?> class="mainWidgetEntry form-control" id="<?=$selectId?>" name="<?=$selectName?>">
-					<? 
-					foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption) {
+					
+					
+					<?foreach($widgetModel->parsedFieldData["selectGroup"] as $key=>$selectOption) {
 						$selected = NULL;
 						if(!is_numeric($key)) {
 							$searchValue = $key;
@@ -83,8 +87,10 @@ if(isset($widgetModel->parsedFieldData["multiSelect"]) && $widgetModel->parsedFi
 							
 					}
 					?>
+					
 
 				</select>
+				<?endif?>
 			</div>
 		</div>
 
