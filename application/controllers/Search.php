@@ -611,7 +611,7 @@ class Search extends Instance_Controller {
 		}
 
 
-		if(count($searchArray) == 0) {
+		if(!is_countable($searchArray) || count($searchArray) == 0) {
 			return;
 		}
 
