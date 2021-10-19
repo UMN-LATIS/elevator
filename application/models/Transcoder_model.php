@@ -171,7 +171,7 @@ class Transcoder_Model extends CI_Model {
 
 		$outputFormat = new \PHPVideoToolkit\ImageFormat_Jpeg('output', $this->videoToolkitConfig);
 		$outputFormat->setThreads($this->threadCount);
-		$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig);
+		$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig, null, false);
 
 		$duration = $this->fileHandler->sourceFile->metadata["duration"];
 
@@ -258,7 +258,7 @@ class Transcoder_Model extends CI_Model {
 		$outputformat = new \PHPVideoToolkit\ImageFormat_Jpeg('output', $this->videoToolkitConfig);
 
 		try {
-			$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig);
+			$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig, null, false);
 		}
 		catch(Exception $e)
 		{
@@ -318,7 +318,7 @@ class Transcoder_Model extends CI_Model {
 		$this->fileHandler->derivatives['thumbnail2x'] = $derivativeContainer;
 
 		try {
-		$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig);
+		$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig, null, false);
 		}
 		catch(Exception $e)
 		{
@@ -366,7 +366,7 @@ class Transcoder_Model extends CI_Model {
 		$outputformat = new \PHPVideoToolkit\ImageFormat_Jpeg('output', $this->videoToolkitConfig);
 
 		try {
-			$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig);
+			$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig, null, false);
 		}
 		catch(Exception $e)
 		{
@@ -421,7 +421,7 @@ class Transcoder_Model extends CI_Model {
 		$derivativeContainer->originalFilename = $pathparts['filename'] .  "_" . "tiny2x" . '.jpg';
 		$derivativeContainer->setParent($this->fileHandler);
 		$this->fileHandler->derivatives['tiny2x'] = $derivativeContainer;
-		$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig);
+		$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig, null, false);
 
 		$duration = $this->fileHandler->sourceFile->metadata["duration"];
 		$time = new \PHPVideoToolkit\Timecode($duration*.2);
@@ -483,7 +483,7 @@ class Transcoder_Model extends CI_Model {
 
 
 		try {
-			$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig);
+			$video = new \PHPVideoToolkit\Video($this->fileHandler->sourceFile->getPathToLocalFile(), $this->videoToolkitConfig, null, false);
 		}
 		catch(Exception $e)
 		{
@@ -633,7 +633,7 @@ class Transcoder_Model extends CI_Model {
 				$derivativeContainer->setParent($this->fileHandler);
 				$this->fileHandler->derivatives['mp4sd'] = $derivativeContainer;
 
-				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
+				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig, null, false);
 				$process = $video->getProcess();
 
         		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
@@ -690,7 +690,7 @@ class Transcoder_Model extends CI_Model {
 				$derivativeContainer->setParent($this->fileHandler);
 				$this->fileHandler->derivatives['mp4hd'] = $derivativeContainer;
 
-				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
+				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig, null, false);
 				$process = $video->getProcess();
 
         		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
@@ -746,7 +746,7 @@ class Transcoder_Model extends CI_Model {
 				$derivativeContainer->setParent($this->fileHandler);
 				$this->fileHandler->derivatives['mp4hd1080'] = $derivativeContainer;
 
-				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig);
+				$video = new \PHPVideoToolkit\Video($localPath, $this->videoToolkitConfig, null, false);
 				$process = $video->getProcess();
 
         		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
@@ -835,7 +835,7 @@ class Transcoder_Model extends CI_Model {
 				if($hdContainer) {
 					$haveHD = true;
 					$hdPath = $hdContainer->getPathToLocalFile();
-					$video = new \PHPVideoToolkit\Video($hdPath, $this->videoToolkitConfig);
+					$video = new \PHPVideoToolkit\Video($hdPath, $this->videoToolkitConfig, null, false);
 					$process = $video->getProcess();
 
 	        		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
@@ -861,7 +861,7 @@ class Transcoder_Model extends CI_Model {
 				 * 1200K SD
 				 */
 				$sdPath = $sdContainer->getPathToLocalFile();
-				$video = new \PHPVideoToolkit\Video($sdPath, $this->videoToolkitConfig);
+				$video = new \PHPVideoToolkit\Video($sdPath, $this->videoToolkitConfig, null, false);
 				$process = $video->getProcess();
 
         		$outputFormat = new \PHPVideoToolkit\VideoFormat_H264('output', $this->videoToolkitConfig);
