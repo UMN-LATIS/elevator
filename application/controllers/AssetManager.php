@@ -536,7 +536,10 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if(!isset($_POST["templateId"])) {
-			$this->template->content->view("assetManager/importCSV", array());
+
+			$csvBatches = $this->doctrine->em->getRepository("Entity\CSVBatch")->findBy(["createdBy"=>$this->user_model->user], ["id"=>"desc"]);
+
+			$this->template->content->view("assetManager/importCSV", ["csvBatches" => $csvBatches]);
 			$this->template->publish();
 			return;
 		}
@@ -807,6 +810,17 @@ class AssetManager extends Admin_Controller {
 			$cacheArray['collectionId'] = $this->input->post("collectionId");
 			$cacheArray['mapping'] = $this->input->post("targetField");
 			$cacheArray['delimiter'] = $this->input->post("delimiter");
+
+			$csvBatch = new Entity\CSVBatch();
+			$csvBatch->setCollection($this->collection_model->getCollection($cacheArray['collectionId']));
+			$templateModel = $this->doctrine->em->find('Entity\Template', $cacheArray['templateId']);
+			$csvBatch->setTemplate($templateModel);
+			$csvBatch->setCreatedBy($this->user_model->user);
+			$csvBatch->setFilename($cacheArray['filename']);
+			$csvBatch->setCreatedAt(new DateTime());
+			$this->doctrine->em->persist($csvBatch);
+			$this->doctrine->em->flush();
+			$cacheArray['importId'] = $csvBatch->getId();
 			$hash = sha1(rand());
 		}
 		else {
@@ -814,6 +828,7 @@ class AssetManager extends Admin_Controller {
 			if($hash) {
 				$this->doctrineCache->setNamespace('importCache_');
 				$cacheArray = $this->doctrineCache->fetch($hash);
+				$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cacheArray['importId']);
 			}
 			else {
 				$this->logging->logError("Cachine Error");
@@ -912,6 +927,8 @@ class AssetManager extends Admin_Controller {
 			else {
 				$newEntry = array();
 			}
+
+			$newEntry["csvBatch"] = $csvBatch->getId();
 
 			if($readyForDisplayField) {
 				 if(isset($row[$readyForDisplayField]) && ($row[$readyForDisplayField] == 1 || strtolower($row[$readyForDisplayField]) == "on" || strtolower($row[$readyForDisplayField]) == "true")){

@@ -528,4 +528,45 @@ class Collection
     {
         return $this->previewImage;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $csv_imports;
+
+
+    /**
+     * Add csvImport.
+     *
+     * @param \Entity\CSVBatch $csvImport
+     *
+     * @return Collection
+     */
+    public function addCsvImport(\Entity\CSVBatch $csvImport)
+    {
+        $this->csv_imports[] = $csvImport;
+
+        return $this;
+    }
+
+    /**
+     * Remove csvImport.
+     *
+     * @param \Entity\CSVBatch $csvImport
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeCsvImport(\Entity\CSVBatch $csvImport)
+    {
+        return $this->csv_imports->removeElement($csvImport);
+    }
+
+    /**
+     * Get csvImports.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getCsvImports()
+    {
+        return $this->csv_imports;
+    }
 }

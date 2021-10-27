@@ -37,6 +37,8 @@
     <field name="collectionMigration" type="boolean"  nullable='true' />
     <field name="deleted" type="boolean"  nullable='true' />
     <field name="deletedAt" type="datetime" nullable='true'/>
+    
+    <many-to-one field="csvImport" inversed-by="assets" target-entity="CSVBatch"/>
     <one-to-one field="assetCache" target-entity="AssetCache" mapped-by="asset" fetch="EAGER" >
       <cascade><cascade-remove /></cascade>
     </one-to-one>

@@ -1,0 +1,32 @@
+<!-- Entity.Asset.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+  http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+  <entity name="Entity\CSVBatch" table="csv_batches">
+    <id name="id" type="integer">
+      <generator strategy="AUTO" />
+    </id>
+    <many-to-one field="collection" target-entity="Collection" inversed-by="csvImports">
+    </many-to-one>
+    <many-to-one field="template" target-entity="Template" inversed-by="csvImports">
+    </many-to-one>
+    <many-to-one field="createdBy" target-entity="User" inversed-by="csvImports">
+    </many-to-one>
+    <one-to-many field="assets" target-entity="Asset" mapped-by="csvImport">
+    </one-to-many>
+    <field name="filename" type="string"  nullable='false' />
+    <field name="createdAt" type="datetime">
+      <options>
+        <option name="default">CURRENT_TIMESTAMP</option>
+      </options>
+    </field>
+
+    <indexes>
+      <!-- <index columns="collection"/>
+      <index columns="template"/>
+      <index columns="createdBy"/> -->
+    </indexes>
+  </entity>
+</doctrine-mapping>

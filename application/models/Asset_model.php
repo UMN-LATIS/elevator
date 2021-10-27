@@ -12,7 +12,7 @@ class Asset_model extends CI_Model {
 	/**
 	 * These are the values that are valid for all items, regardless of metadata schema.  In a relational database, these would be columns.
 	 */
-	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null, "deleted"=>false, "deletedBy"=>"", "deletedAt"=>""];
+	public $globalValues = ["templateId"=>"", "readyForDisplay"=>"", "collectionId"=>"",  "availableAfter"=>"", "modified"=>"", "modifiedBy"=>"", "createdBy"=>"","collectionMigration"=>null, "deleted"=>false, "deletedBy"=>"", "deletedAt"=>"", "csvBatch"=>null];
 
 	public $assetTemplate = null;
 	public $assetObjects = array();
@@ -94,6 +94,7 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("deletedBy", $record->getDeletedBy());
 		$this->setGlobalValue("deleted", $record->getDeleted());
 		$this->setGlobalValue("deletedAt", $record->getDeletedAt());
+		$this->setGlobalValue("csvBatch", $record->getCSVImport()->getId());
 
 		if($noHydrate) {
 			return;
@@ -823,6 +824,7 @@ class Asset_model extends CI_Model {
 		$this->assetObject->setReadyForDisplay($this->getGlobalValue("readyForDisplay")?true:false);
 		$this->assetObject->setCollectionId($this->getGlobalValue("collectionId"));
 		$this->assetObject->setCollectionMigration($this->getGlobalValue("collectionMigration"));
+		$this->assetObject->setCSVImport($this->getGlobalValue("csvBatch")?$this->doctrine->em->find('Entity\CSVBatch',$this->getGlobalValue("csvBatch")):null);
 		$this->assetObject->setTemplateId($this->templateId);
 		if(is_object($this->getGlobalValue("availableAfter"))) {
 			$this->assetObject->setAvailableAfter($this->getGlobalValue("availableAfter"));
