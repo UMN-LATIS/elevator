@@ -48,15 +48,17 @@
 				<th>Collection</th>
 				<th>Filename</th>
 				<th>Asset Count</th>
+				<th>Purge</th>
 		</thead>
 		<tbody>
 			<?foreach($csvBatches as $batch):?>
 			<tr>
 				<td><A href="<?=instance_url("/search/scopedQuerySearch/csvBatch/". rawurlencode($batch->getId()))?>"><?=$batch->getId()?></a></td>
-				<td><?=$batch->getTemplate()->getName()?></td>
-				<td><?=$batch->getCollection()->getTitle()?></td>
+				<td><?=$batch->getTemplate()?$batch->getTemplate()->getName():null?></td>
+				<td><?=$batch->getCollection()?$batch->getCollection()->getTitle():null?></td>
 				<td><?=$batch->getFilename()?></td> 
 				<td><?=$batch->getAssets()->count()?></td>
+				<td><a href="<?=instance_url("/assetManager/purgeCSVImport/". rawurlencode($batch->getId()))?>" onclick="return confirm('Are you sure you wish to delete these records?');">Purge</a></td>
 			</tr>
 			<?endforeach?>
 		</tbody>

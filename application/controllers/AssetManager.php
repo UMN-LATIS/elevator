@@ -1141,7 +1141,45 @@ class AssetManager extends Admin_Controller {
 
 	}
 
+	/**
+	 * delete all of the records that were imported with a batch
+	 */
+	public function purgeCSVImport($importId) {
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+		if($accessLevel < PERM_ADMIN) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
 
+		$csvBatch = $this->doctrine->em->find("Entity\CSVBatch", $importId);
+		if(!$csvBatch) {
+			$this->errorhandler_helper->callError("unknownAsset");
+		}
+		$this->load->model("asset_model");
+		$this->load->model("asset_template");
+		$this->load->model("search_model");
+
+		$assets = $csvBatch->getAssets();
+		$output = "<ul>";
+		$countStart = 0;
+		foreach($assets as $assetRecord) {
+			$asset = new Asset_model();
+			$output .= "<li>Loading Asset: " . $assetRecord->getAssetId() . "</li>";
+			$asset->loadAssetFromRecord($assetRecord);
+			$asset->delete();
+			$this->search_model->remove($asset);
+			$this->doctrine->em->clear();
+			$countStart++;
+		}
+		$output .="</ul>";
+		$output .="Count: " . $countStart . "\n";
+		$csvBatch = $this->doctrine->em->find("Entity\CSVBatch", $importId);
+		$this->doctrine->em->remove($csvBatch);
+		$this->doctrine->em->flush();
+		$this->template->content->set("CSV Content Purged<hr>" . $output);
+		$this->template->publish();
+
+
+	}
 
 	/**
 	 * If changing collections will result in the file being migrated from one bucket to another, we

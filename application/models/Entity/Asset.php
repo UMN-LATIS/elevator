@@ -619,47 +619,12 @@ class Asset
     {
         return $this->deletedBy;
     }
+    
     /**
-     * @var \Doctrine\Common\Collections\Collection
+     * @var \Entity\CSVBatch
      */
     private $csvImport;
 
-
-    /**
-     * Add csvImport.
-     *
-     * @param \Entity\CSVBatch $csvImport
-     *
-     * @return Asset
-     */
-    public function addCsvImport(\Entity\CSVBatch $csvImport)
-    {
-        $this->csvImport[] = $csvImport;
-
-        return $this;
-    }
-
-    /**
-     * Remove csvImport.
-     *
-     * @param \Entity\CSVBatch $csvImport
-     *
-     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
-     */
-    public function removeCsvImport(\Entity\CSVBatch $csvImport)
-    {
-        return $this->csvImport->removeElement($csvImport);
-    }
-
-    /**
-     * Get csvImport.
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getCsvImport()
-    {
-        return $this->csvImport;
-    }
 
     /**
      * Set csvImport.
@@ -673,5 +638,15 @@ class Asset
         $this->csvImport = $csvImport;
 
         return $this;
+    }
+
+    /**
+     * Get csvImport.
+     *
+     * @return \Entity\CSVBatch|null
+     */
+    public function getCsvImport()
+    {
+        return $this->csvImport;
     }
 }

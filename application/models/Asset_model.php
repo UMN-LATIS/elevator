@@ -94,7 +94,7 @@ class Asset_model extends CI_Model {
 		$this->setGlobalValue("deletedBy", $record->getDeletedBy());
 		$this->setGlobalValue("deleted", $record->getDeleted());
 		$this->setGlobalValue("deletedAt", $record->getDeletedAt());
-		$this->setGlobalValue("csvBatch", $record->getCSVImport()->getId());
+		$this->setGlobalValue("csvBatch", $record->getCSVImport()?$record->getCSVImport()->getId():null);
 
 		if($noHydrate) {
 			return;
