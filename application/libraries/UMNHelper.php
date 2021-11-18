@@ -178,6 +178,9 @@ class UMNHelper extends AuthHelper
 			}
 			
 		}
+		else {
+			return false;
+		}
 
 
 		$userData[COURSE_TYPE] = ["values"=>$courses, "hints"=>$coursesTaught];
