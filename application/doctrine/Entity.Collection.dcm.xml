@@ -8,7 +8,7 @@
           <id name="id" type="integer">
               <generator strategy="AUTO" />
           </id>
-
+  
           <one-to-many field="permissions" target-entity="CollectionPermission" mapped-by="collection" >
             <cascade><cascade-remove /></cascade>
           </one-to-many>
@@ -16,7 +16,7 @@
                 <cascade><cascade-remove /></cascade>
           </one-to-many>
           <many-to-many field="instances" mapped-by="collections" target-entity="Instance"/>
-
+           <one-to-many field="csv_imports" target-entity="CSVBatch" mapped-by="collection" />
         <one-to-many field="children" target-entity="Collection" mapped-by="parent" >
           <order-by>
             <order-by-field name="title" direction="ASC" />
