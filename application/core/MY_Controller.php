@@ -75,7 +75,7 @@ class MY_Controller extends CI_Controller {
 				}
 				else {
 					$this->user_model->loadUser($userId);
-					$this->doctrineCache->save($userId, ($this->user_model), 3600);
+					$this->doctrineCache->save($userId, ($this->user_model), 14400);
 				}
 			}
 			else {
@@ -98,7 +98,7 @@ class MY_Controller extends CI_Controller {
 				else {
 					$this->user_model->resolvePermissions();
 					$userId = session_id();
-					$this->doctrineCache->save($userId, ($this->user_model), 3600);
+					$this->doctrineCache->save($userId, ($this->user_model), 14400);
 				}
 			}
 			else {
