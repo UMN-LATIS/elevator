@@ -196,6 +196,16 @@ class UMNHelper extends AuthHelper
 
 		$userData[EMPLOYEE_TYPE] = ["values"=>array_unique($employeeType), "hints"=>["Faculty" => "Faculty","Student" => "Student","Staff" => "Staff","Alum " => "Alum" ,"Member" => "Member","Affiliate" => "Affiliate"]];
 
+		// log all our shib data to help debug some random failures
+		$shib = ["eduPersonAffiliation","eppn","isGuest","uid","umnDID","umnJobSummary","umnRegSummary", "eduCourseMember"];
+		$shibData = [];
+		foreach($_SERVER as $key=>$value) {
+			if(in_array($key, $shib)) {
+				$shibData[$key]= $value;
+			}
+		}
+		$CI =& get_instance();
+		$CI->logging->logError($user->getEmail(), $shibData);
 		return $userData;
 
 	}

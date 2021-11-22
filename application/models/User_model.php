@@ -112,14 +112,17 @@ class User_model extends CI_Model {
 				}
 
 				$collection = $this->collection_model->getCollection($assetCollection);
-				foreach($collection->getInstances() as $instance) {
-					if(array_key_exists($instance->getId(), $this->instancePermissions)) {
-						$perm = max($perm, $this->instancePermissions[$instance->getId()]);
+				if($collection) {
+					foreach($collection->getInstances() as $instance) {
+						if(array_key_exists($instance->getId(), $this->instancePermissions)) {
+							$perm = max($perm, $this->instancePermissions[$instance->getId()]);
+						}
+					}
+					if(array_key_exists($object->getObjectId(),$this->assetPermissions)) {
+						$perm = max($perm, $this->assetPermissions[$object->getObjectId()]);
 					}
 				}
-				if(array_key_exists($object->getObjectId(),$this->assetPermissions)) {
-					$perm = max($perm, $this->assetPermissions[$object->getObjectId()]);
-				}
+				
 
 				return $perm;
 				break;

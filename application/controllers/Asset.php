@@ -36,8 +36,12 @@ class asset extends Instance_Controller {
 		
 		if(!$assetModel->loadAssetById($objectId)) {
 			show_404();
-			
 		}
+
+		if(!$this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"))) {
+			show_404();
+		}
+		
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
 		if($this->accessLevel == PERM_NOPERM) {
