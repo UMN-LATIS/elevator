@@ -139,7 +139,7 @@ if($widgetObject->parentWidget->dendroFields) {
 			maxNativeZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1,
 			maxZoom: <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> + 0,
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
-			pixelsPerMillimeter: pixelsPerMillimeter,
+			ppm: pixelsPerMillimeter,
 			detectRetina: false,
 			renderer: L.canvas()
 		};
