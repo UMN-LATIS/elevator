@@ -91,5 +91,6 @@
           <field name="enableHLSStreaming" type="boolean" nullable='true' />
           <field name="enableInterstitial" type="boolean" nullable='true' />
           <field name="interstitialText" type="text" nullable='true' />
+          <field name="notes" type="text" nullable='true' />
       </entity>
 </doctrine-mapping>
