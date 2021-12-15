@@ -360,7 +360,7 @@ class Instances extends Instance_Controller {
 			if($this->input->post("useLifecycle")) {
 				$useLifecycle = true;
 				$transition[] = ['Days' => 60,
-	                    			'StorageClass' => 'GLACIER'];
+	                    			'StorageClass' => 'GLACIER_IR'];
 			}
 			if($this->input->post("useStandardIA")) {
 				$useStandardIA = true;
