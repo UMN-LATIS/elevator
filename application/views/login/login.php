@@ -22,6 +22,8 @@ $(document).ready(function() {
 				<script>
 
 				function isCrossOriginFrame() {
+					// changing this to see if there's a downside to just always doing auth in a popup
+					return true;
 					try {
 						return (!window.top.location.hostname);
 					} catch (e) {
