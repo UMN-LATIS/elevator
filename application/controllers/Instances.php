@@ -72,6 +72,7 @@ class Instances extends Instance_Controller {
 		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
+		$instance->setNotes($this->input->post('notes'));
 		$instance->setModifiedAt(new DateTime);
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';

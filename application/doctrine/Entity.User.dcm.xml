@@ -32,7 +32,7 @@
                 <order-by-field name="createdAt" direction="ASC" />
             </order-by>
            </one-to-many>
-
+          <one-to-many field="csv_imports" target-entity="CSVBatch" mapped-by="createdBy" />
           <field name="emplid" type="string"  nullable='true' />
           <field name="username" type="string"  nullable='true' />
           <field name="userType" type="string"  nullable='true' />

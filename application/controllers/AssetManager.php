@@ -536,7 +536,10 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if(!isset($_POST["templateId"])) {
-			$this->template->content->view("assetManager/importCSV", array());
+
+			$csvBatches = $this->doctrine->em->getRepository("Entity\CSVBatch")->findBy(["createdBy"=>$this->user_model->user], ["id"=>"desc"]);
+
+			$this->template->content->view("assetManager/importCSV", ["csvBatches" => $csvBatches]);
 			$this->template->publish();
 			return;
 		}
@@ -807,6 +810,17 @@ class AssetManager extends Admin_Controller {
 			$cacheArray['collectionId'] = $this->input->post("collectionId");
 			$cacheArray['mapping'] = $this->input->post("targetField");
 			$cacheArray['delimiter'] = $this->input->post("delimiter");
+
+			$csvBatch = new Entity\CSVBatch();
+			$csvBatch->setCollection($this->collection_model->getCollection($cacheArray['collectionId']));
+			$templateModel = $this->doctrine->em->find('Entity\Template', $cacheArray['templateId']);
+			$csvBatch->setTemplate($templateModel);
+			$csvBatch->setCreatedBy($this->user_model->user);
+			$csvBatch->setFilename($cacheArray['filename']);
+			$csvBatch->setCreatedAt(new DateTime());
+			$this->doctrine->em->persist($csvBatch);
+			$this->doctrine->em->flush();
+			$cacheArray['importId'] = $csvBatch->getId();
 			$hash = sha1(rand());
 		}
 		else {
@@ -814,6 +828,7 @@ class AssetManager extends Admin_Controller {
 			if($hash) {
 				$this->doctrineCache->setNamespace('importCache_');
 				$cacheArray = $this->doctrineCache->fetch($hash);
+				$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cacheArray['importId']);
 			}
 			else {
 				$this->logging->logError("Cachine Error");
@@ -895,6 +910,11 @@ class AssetManager extends Admin_Controller {
 					continue;
 				}
 			}
+			if(max(array_map('strlen', $row)) == 0) {
+				// every item in this row is blank. Thanks Excel! Let's skip it.
+				$rowCount++;
+				continue;
+			}
 			$assetModel = null;
 			if($isUpdate) {
 				$assetModel = new asset_model();
@@ -907,6 +927,8 @@ class AssetManager extends Admin_Controller {
 			else {
 				$newEntry = array();
 			}
+
+			$newEntry["csvBatch"] = $csvBatch->getId();
 
 			if($readyForDisplayField) {
 				 if(isset($row[$readyForDisplayField]) && ($row[$readyForDisplayField] == 1 || strtolower($row[$readyForDisplayField]) == "on" || strtolower($row[$readyForDisplayField]) == "true")){
@@ -1119,7 +1141,45 @@ class AssetManager extends Admin_Controller {
 
 	}
 
+	/**
+	 * delete all of the records that were imported with a batch
+	 */
+	public function purgeCSVImport($importId) {
+		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
+		if($accessLevel < PERM_ADMIN) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
 
+		$csvBatch = $this->doctrine->em->find("Entity\CSVBatch", $importId);
+		if(!$csvBatch) {
+			$this->errorhandler_helper->callError("unknownAsset");
+		}
+		$this->load->model("asset_model");
+		$this->load->model("asset_template");
+		$this->load->model("search_model");
+
+		$assets = $csvBatch->getAssets();
+		$output = "<ul>";
+		$countStart = 0;
+		foreach($assets as $assetRecord) {
+			$asset = new Asset_model();
+			$output .= "<li>Loading Asset: " . $assetRecord->getAssetId() . "</li>";
+			$asset->loadAssetFromRecord($assetRecord);
+			$asset->delete();
+			$this->search_model->remove($asset);
+			$this->doctrine->em->clear();
+			$countStart++;
+		}
+		$output .="</ul>";
+		$output .="Count: " . $countStart . "\n";
+		$csvBatch = $this->doctrine->em->find("Entity\CSVBatch", $importId);
+		$this->doctrine->em->remove($csvBatch);
+		$this->doctrine->em->flush();
+		$this->template->content->set("CSV Content Purged<hr>" . $output);
+		$this->template->publish();
+
+
+	}
 
 	/**
 	 * If changing collections will result in the file being migrated from one bucket to another, we

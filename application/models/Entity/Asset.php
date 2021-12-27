@@ -619,4 +619,34 @@ class Asset
     {
         return $this->deletedBy;
     }
+    
+    /**
+     * @var \Entity\CSVBatch
+     */
+    private $csvImport;
+
+
+    /**
+     * Set csvImport.
+     *
+     * @param \Entity\CSVBatch|null $csvImport
+     *
+     * @return Asset
+     */
+    public function setCsvImport(\Entity\CSVBatch $csvImport = null)
+    {
+        $this->csvImport = $csvImport;
+
+        return $this;
+    }
+
+    /**
+     * Get csvImport.
+     *
+     * @return \Entity\CSVBatch|null
+     */
+    public function getCsvImport()
+    {
+        return $this->csvImport;
+    }
 }

@@ -22,6 +22,7 @@
             </order-by>
           </one-to-many>
 
+          <one-to-many field="csv_imports" target-entity="CSVBatch" mapped-by="template" />
           <field name="name" type="string" />
           <field name="createdAt" type="datetime" />
           <field name="modifiedAt" type="datetime" />

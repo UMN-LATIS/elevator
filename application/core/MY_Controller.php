@@ -75,14 +75,19 @@ class MY_Controller extends CI_Controller {
 				}
 				else {
 					$this->user_model->loadUser($userId);
-					$this->doctrineCache->save($userId, ($this->user_model), 14400);
+					if($this->user_model->userLoaded) {
+						$this->doctrineCache->save($userId, ($this->user_model), 14400);
+					}
+					
 				}
 			}
 			else {
 				$this->user_model->loadUser($userId);
 			}
 		}
-		else {
+
+		// if the user isn't loaded, make a guest login
+		if(!$this->user_model->userLoaded) {
 			if($this->config->item('enableCaching')) {
 				$userId = session_id();
 				$this->doctrineCache->setNamespace('userGuestCache_');

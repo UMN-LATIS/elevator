@@ -17,6 +17,7 @@ class Errorhandler_helper {
 			echo $CI->load->view($view, array(), true);
 		}
 		else {
+			header('HTTP/1.0 500 Internal Server Error');
 			$CI->template->content->view($view);
 			$CI->template->publish();
 			$CI->output->_display();

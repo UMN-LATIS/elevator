@@ -1400,4 +1400,33 @@ class Instance
         return $this->showTemplateInSearchResults;
     }
 
+    /**
+     * @var string|null
+     */
+    private $notes;
+
+
+    /**
+     * Set notes.
+     *
+     * @param string|null $notes
+     *
+     * @return Instance
+     */
+    public function setNotes($notes = null)
+    {
+        $this->notes = $notes;
+
+        return $this;
+    }
+
+    /**
+     * Get notes.
+     *
+     * @return string|null
+     */
+    public function getNotes()
+    {
+        return $this->notes;
+    }
 }
