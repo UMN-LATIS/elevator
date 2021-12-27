@@ -306,7 +306,7 @@ void main(void){
 		canSave = true;
 		<?endif?>
 		popoutURL = "<?=stripHTTP(instance_url("asset/getEmbed/" . $fileObject->getObjectId() . "/null/true"));?>";
-		treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:layer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
+		treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>});
     	treering.loadInterface();
     	// if(saveURL != "") {
     	// 	treering.addSaveButton();

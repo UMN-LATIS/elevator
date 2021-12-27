@@ -221,7 +221,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
           </li>
           <?if($this->user_model->userLoaded):?>
 
-            <li class="dropdown">
+            <li class="dropdown drawerToggle">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Drawers <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li class="disabled"><a href="#">Recent Drawers:</a></li>
