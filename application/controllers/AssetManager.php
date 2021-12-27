@@ -811,6 +811,12 @@ class AssetManager extends Admin_Controller {
 			$cacheArray['mapping'] = $this->input->post("targetField");
 			$cacheArray['delimiter'] = $this->input->post("delimiter");
 
+			if(!$this->collection_model->getCollection($cacheArray['collectionId'])) {
+				$this->template->content->set("Invalid Collection");
+				$this->template->publish();
+				return;
+			}
+
 			$csvBatch = new Entity\CSVBatch();
 			$csvBatch->setCollection($this->collection_model->getCollection($cacheArray['collectionId']));
 			$templateModel = $this->doctrine->em->find('Entity\Template', $cacheArray['templateId']);
@@ -852,12 +858,7 @@ class AssetManager extends Admin_Controller {
 			}
 		}
 
-		if(!$this->collection_model->getCollection($cacheArray['collectionId'])) {
-			$this->template->content->set("Invalid Collection");
-			$this->template->publish();
-			return;
-		}
-
+		
 		$template = new Asset_template($cacheArray['templateId']);
 
 		if(!$fp = fopen($cacheArray['filename'], "r")) {
