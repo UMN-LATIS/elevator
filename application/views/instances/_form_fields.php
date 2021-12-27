@@ -86,6 +86,14 @@
 	</div>
 </div>
 
+<div class="form-group">
+	<label for="inputNotes" class="col-sm-2 control-label">Instance Notes</label>
+	<div class="col-sm-6">
+		<textarea name="notes" class="form-control"><?= $instance->getNotes(); ?></textarea><br/>
+	</div>
+</div>
+
+
 <fieldset class="fieldsetSection">
 
 <legend>Storage Settings</legend>
