@@ -88,6 +88,7 @@ class MY_Controller extends CI_Controller {
 
 		// if the user isn't loaded, make a guest login
 		if(!$this->user_model->userLoaded) {
+			$this->user_model = new User_model();
 			if($this->config->item('enableCaching')) {
 				$userId = session_id();
 				$this->doctrineCache->setNamespace('userGuestCache_');
