@@ -40,7 +40,7 @@ $(document).ready(function() {
 				}
 
 				$(document).ready(function() {
-					if(isCrossOriginFrame()) {
+					if(inIframe()) {
 						$(".loginLink").on('click', function(e) {
 							e.preventDefault();
 							var myWindow = window.open($(".loginLink").attr("href"), "Login", "width=640,height=480");
