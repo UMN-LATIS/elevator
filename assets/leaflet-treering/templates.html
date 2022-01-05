@@ -1,0 +1,148 @@
+<script id="annotation-dialog-window-template" type="text/x-handlebars-template">
+  <div id="tab" class="tab">
+    <button class="tabLinks" id="summary-btn">Summary</button>
+    <button class="tabLinks" id="edit-summary-btn">Edit</button>
+  </div>
+  <div id="summary-tab" class="tabContent"></div>
+  <div id="edit-summary-tab" class="tabContent"></div>
+</script>
+
+<script id="attributes-dialog-window-template" type="text/x-handlebars-template">
+  <div id="attributes-options">
+    <label class="attribute-label" id="title-label" for="title-input">Title: </label>
+    <button class="annotation-btn" id="create-option"><i class="fa fa-plus" aria-hidden="true"></i></button>
+    <textarea class="attribute-textbox" id="title-input" placeholder="Title."></textarea>
+  </div>
+  <hr id="attributes-hr"></hr>
+  <div>
+    <p id="attributes-warning"> Use ESC to exit without saving. </p>
+  </div>
+</script>
+
+<script id="link-template" type="text/x-handlebars-template">
+  <a href= {{url}} > {{title}} </a>
+</script>
+
+<script id="scale-bar-template" type="text/x-handlebars-template">
+  <div id="scale-bar-div">
+   <canvas id="scale-bar-canvas" width= {{width}} height="100"></canvas>
+   </div>
+</script>
+
+<script id="font-awesome-icon-template" type="text/x-handlebars-template">
+  <i class= "{{icon_class}}" aria-hidden="true"></i>
+</script>
+
+<script id="button-icon-template" type="text/x-handlebars-template">
+  <i class="material-icons md-18"> {{icon_string}} </i>
+</script>
+
+<script id="calibration-template" type="text/x-handlebars-template">
+  <input type="number" style="border:none; width:50px;" value="10" id="length"></input> mm
+</script>
+
+<script id="dating-template" type="text/x-handlebars-template">
+  <input type="number" style="border:none;width:50px;" value= {{date_year}} id="year_input"></input>
+</script>
+
+<script id="start-point-popup-template" type="text/x-handlebars-template">
+  <input type="number" style="border:none; width:50px;" value="0" id="year_input"></input>
+</script>
+
+<script id="view-data-default-template" type="text/x-handlebars-template">
+  <h5>No Measurement Data</h5>
+</script>
+
+<script id="string-setup-data-template" type="text/x-handlebars-template">
+  <div class ="dataWindow">
+    <div class="button-set">
+      <button id="copy-data-button" class="icon-button" title="Copy Data to Clipboard, Tab Delimited Column Format">
+        <i class="material-icons md-18-data-view">content_copy</i></button><br>
+      <button id="download-tab-button" class ="text-button" title="Download Measurements, Tab Delimited Format">TAB</button><br>
+      <button id="download-csv-button" class="text-button" title="Download Measurements, Common Separated Column Format">CSV</button><br>
+  <button id="download-ltrr-button" class ="text-button" title="Download Measurements, LTRR Ring Width Format">RWL</button><br>
+  <button id="delete-button" class="icon-button delete" title="Delete All Measurement Point Data">
+    <i class="material-icons md-18-data-view">delete</i></button></div><table><tr>
+  <th style="width: 45%;">Year<br><br></th>
+  <th style="width: 70%;">Width (mm)</th></tr>
+</script>
+
+<script id="concat-string-content-A-template" type="text/x-handlebars-template">
+  <tr><td> {{y}}-</td><td>N/A</td></tr>
+</script>
+
+<script id="string-setup-no-data-template" type="text/x-handlebars-template">
+  <div class ="button-set">
+    <button id="copy-data-button" class="icon-button disabled"  title="Copy Data to Clipboard, Tab Delimited Column Format" disabled>
+      <i class="material-icons md-18-data-view">content_copy</i></button><br>
+  <button id="download-ltrr-button" class ="text-button disabled" title="Download Measurements, LTRR Ring Width Format" disabled>RWL</button><br>
+  <button id="download-csv-button" class="text-button disabled" title="Download Measurements, Common Separated Column Format" disabled>CSV</button><br>
+  <button id="download-tab-button" class ="text-button disabled" title="Download Measurements, Tab Delimited Format" disabled>TAB</button><br>
+  <button id="delete-button" class="icon-button delete" title="Delete All Measurement Point Data">
+    <i class="material-icons md-18-data-view">delete</i></button></div>
+  <h5>No Measurement Data</h5>
+</script>
+
+<script id="data-view-delete-template" type="text/x-handlebars-template">
+  <p>This action will delete all data points. Annotations will not be effected. Are you sure you want to continue?</p>
+  <p>
+    <button id="confirm-delete" class="mdc-button mdc-button--unelevated mdc-button-compact"> confirm </button>
+    <button id="cancel-delete" class="mdc-button mdc-button--unelevated mdc-button-compact"> cancel </button>
+  </p>
+</script>
+
+<script id="image-adjustment-template" type="text/x-handlebars-template">
+  <div><label style="text-align:center;display:block;">Brightness</label>
+  <input class="imageSlider" id="brightness-slider" value=100 min=0 max=300 type=range>
+  <label style="text-align:center;display:block;">Contrast</label>
+  <input class="imageSlider" id="contrast-slider" type=range min=50 max=350 value=100></div>
+  <label style="text-align:center;display:block;">Saturation</label>
+  <input class="imageSlider" id="saturation-slider" type=range min=0 max=350 value=100></div>
+  <label style="text-align:center;display:block;">Hue Rotation</label>
+  <input class="imageSlider" id="hue-slider" type=range min=0 max=360 value=0>
+   <label style="text-align:center;display:block;">Sharpness</label>
+  <input class="imageSlider" id="sharpness-slider" value=0 min=0 max=1 step=0.05 type=range>
+  <label style="text-align:center;display:block;">Emboss</label>
+  <input class="imageSlider" id="emboss-slider" value=0 min=0 max=1 step=0.05 type=range>
+  <label style="text-align:center;display:block;">edgeDetect</label>
+  <input class="imageSlider" id="edgeDetect-slider" value=0 min=0 max=1 step=0.05 type=range>
+  <label style="text-align:center;display:block;">unsharpen</label>
+  <input class="imageSlider" id="unsharpness-slider" value=0 min=0 max=1 step=0.05 type=range>
+  <div class = "checkbox" style = "text-align:center; margin-left:auto; margin-right:auto; margin-top: 5px;display:block;"> <label> <input type = "checkbox" id = "invert-checkbox" > Invert </label></div>
+  <button id="reset-button" style="margin-left:auto; margin-right:auto; margin-top: 5px;display:block;" class="mdc-button mdc-button--unelevated mdc-button-compact">reset</button></div>
+</script>
+
+<script id="measurement-options-dialog-template" type="text/x-handlebars-template">
+  <div><h4 style="text-align:left">Select Preferences for Time-Series Measurement:</h4></div> \
+  <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+   <div><h4>Measurement Direction:</h4></div>
+   <div><input type="radio" name="direction" id="forward_radio"> Measure forward in time (e.g., 1257 &rArr; 1258 &rArr; 1259 ... 2020)</input>
+    <br><input type="radio" name="direction" id="backward_radio"> Measure backward in time (e.g., 2020 &rArr; 2019 &rArr; 2018 ... 1257)</input></div>
+  <br>
+   <div><h4>Measurement Interval:</h4></div>
+   <div><input type="radio" name="increment" id="annual_radio"> One increment per year (e.g., total-ring width)</input>
+    <br><input type="radio" name="increment" id="subannual_radio"> Two increments per year (e.g., earlywood- & latewood-ring width)</input></div>
+  <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+   <div><p style="text-align:right;font-size:20px">&#9831; &#9831; &#9831;  &#9831; &#9831; &#9831; &#9831; &#9831; &#9831; &#9831;<button type="button" id="confirm-button" class="preferences-button"> Save & close </button></p></div>
+   <div><p style="text-align:left;font-size:12px">Please note: Once measurements are initiated, these preferences are set. To modify, delete all existing points for this asset and initiate a new set of measurements.</p></div>
+</script>
+
+<script id="meta-data-top-div-template" type="text/x-handlebars-template">
+  <div><p id="meta-data-top-text" class="meta-data-text-box"></p></div>
+</script>
+
+<script id="meta-data-bottom-div-template" type="text/x-handlebars-template">
+  <div><p id="meta-data-bottom-text" class="meta-data-text-box"></p></div>
+</script>
+
+<script id="assign-row-color-subannual-template" type="text/x-handlebars-template">
+  <tr style="color:{{row_color}};"><td> {{row_year}} {{row_wood}} </td><td> {{length}} </td></tr>
+</script>
+
+<script id="assign-row-color-annual-template" type="text/x-handlebars-template">
+  <tr style="color:{{row_color}};"><td> {{row_year}} </td><td> {{length}} </td></tr>
+</script>
+
+<script id="empty-div-template" type="text/x-handlebars-template">
+  <div id="{{div_name}}"></div>
+</script>
