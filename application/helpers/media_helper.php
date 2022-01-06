@@ -240,5 +240,8 @@ function mungeImageType($sourceFile) {
 	if($type == "jpf") {
 		return "jp2";
 	}
+	if($type == "jfif") {
+		return "jpeg";
+	}
 	return $type;
 }
