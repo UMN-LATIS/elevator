@@ -30,6 +30,7 @@ class Collections extends Instance_Controller {
 		$searchArray["searchText"] = "";
 		$searchArray["collection"] = [$collectionId];
 		$searchArray["fuzzySearch"] = false;
+		$searchArray["sort"] = "title.raw";
 
 		if(count($searchArray) == 0) {
 			return;
