@@ -217,6 +217,13 @@ class AssetManager extends Admin_Controller {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
+		$restoreObject = $this->internalRestore($objectId);
+		
+
+		instance_redirect("asset/viewAsset/" .$restoreObject);
+	}
+
+	private function internalRestore($objectId) {
 		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
 		$currentParent = $restoreObject->getRevisionSource();
 
@@ -240,9 +247,9 @@ class AssetManager extends Admin_Controller {
 
 
 		$this->doctrine->em->flush();
-
-		$this->asset_model->loadAssetById($restoreObject->getAssetId());
-		$files = $this->asset_model->getAllWithinAsset("Upload");
+		$assetObject = new Asset_model;
+		$assetObject->loadAssetById($restoreObject->getAssetId());
+		$files = $assetObject->getAllWithinAsset("Upload");
 		foreach($files as $file) {
 			foreach($file->fieldContentsArray as $entry) {
 				if($entry->fileHandler->deleted == true) {
@@ -253,10 +260,8 @@ class AssetManager extends Admin_Controller {
 			}
 		}
 
-		$this->asset_model->save(true,false);
-
-
-		instance_redirect("asset/viewAsset/" .$restoreObject->getAssetId());
+		$assetObject->save(true,false);
+		return $restoreObject->getAssetId();
 	}
 
 	// save an asset
@@ -1090,6 +1095,7 @@ class AssetManager extends Admin_Controller {
 			}
 			else {
 				$assetModel->loadWidgetsFromArray($newEntry);
+				$assetModel->setGlobalValue("csvBatch", $newEntry["csvBatch"]);
 			}
 			
 			
@@ -1166,9 +1172,19 @@ class AssetManager extends Admin_Controller {
 			$asset = new Asset_model();
 			$output .= "<li>Loading Asset: " . $assetRecord->getAssetId() . "</li>";
 			$asset->loadAssetFromRecord($assetRecord);
-			$asset->delete();
-			$this->search_model->remove($asset);
-			$this->doctrine->em->clear();
+
+			$revisions = $asset->assetObject->getRevisions();
+			if(count($revisions) > 0) {
+				$mostRecentRevision = $revisions->last();
+				$this->internalRestore($mostRecentRevision->getId());
+			}
+			else {
+				$asset->delete();
+				$this->search_model->remove($asset);
+				$this->doctrine->em->clear();
+			}
+
+			
 			$countStart++;
 		}
 		$output .="</ul>";

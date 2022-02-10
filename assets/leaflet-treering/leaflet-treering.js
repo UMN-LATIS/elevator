@@ -14,7 +14,7 @@
  * @param {string} basePath - this is a path to the treering image folder
  * @param {object} options -
  */
-function LTreering (viewer, basePath, options) {
+function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   this.viewer = viewer;
   this.basePath = basePath;
 
@@ -105,6 +105,8 @@ function LTreering (viewer, basePath, options) {
 
   this.keyboardShortCutDialog = new KeyboardShortCutDialog(this);
 
+  this.popoutPlots = new PopoutPlots(this);
+
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
   this.annotationTools = new ButtonBar(this, [this.annotationAsset.createBtn, this.annotationAsset.deleteBtn], 'comment', 'Manage annotations');
   this.createTools = new ButtonBar(this, [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurements');
@@ -116,8 +118,8 @@ function LTreering (viewer, basePath, options) {
   this.tools = [this.viewData, this.calibration, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustment, this.measurementOptions];
 
   this.baseLayer = {
-    'Tree Ring': baseLayer,
-    'GL Layer': layer
+    'Tree Ring': base_layer,
+    'GL Layer': gl_layer
   };
 
   this.overlay = {
@@ -142,6 +144,9 @@ function LTreering (viewer, basePath, options) {
     $(map.getContainer()).css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
+
+    // test placement
+    this.popoutPlots.btn.addTo(this.viewer);
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
@@ -302,8 +307,13 @@ function MeasurementData (dataObject, Lt) {
 
 
     this.index++;
-    Lt.metaDataText.updateText(); // update every time a point is placed
+
+    // update every time a point is placed
+    Lt.metaDataText.updateText();
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
   };
 
   /**
@@ -388,6 +398,9 @@ function MeasurementData (dataObject, Lt) {
 
     Lt.metaDataText.updateText(); // updates after a point is deleted
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
   };
 
   /**
@@ -469,6 +482,9 @@ function MeasurementData (dataObject, Lt) {
 
     Lt.metaDataText.updateText(); // updates after points are cut
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
   };
 
   /**
@@ -577,6 +593,9 @@ function MeasurementData (dataObject, Lt) {
 
     Lt.metaDataText.updateText(); // updates after a single point is inserted
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
     return tempK;
   };
 
@@ -646,6 +665,9 @@ function MeasurementData (dataObject, Lt) {
 
     Lt.metaDataText.updateText(); // updates after a single point is inserted
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
     return tempK;
   };
 
@@ -1406,20 +1428,16 @@ function AnnotationAsset(Lt) {
     let size = this.annotationDialogSize || [284, 265];
     let anchor = this.annotationDialogAnchor || [50, 5];
 
+    // handlebars from template.html
+    let content = document.getElementById("annotation-dialog-window-template").innerHTML;
+
     this.dialogAnnotationWindow = L.control.dialog({
       'minSize': [284, 265],
       'maxSize': [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
       'size': size,
       'anchor': anchor,
       'initOpen': true
-    }).setContent(
-      '<div id="tab" class="tab"> \
-        <button class="tabLinks" id="summary-btn">Summary</button> \
-        <button class="tabLinks" id="edit-summary-btn">Edit</button> \
-      </div> \
-      <div id="summary-tab" class="tabContent"></div> \
-      <div id="edit-summary-tab" class="tabContent"></div>',
-    ).addTo(Lt.viewer);
+    }).setContent(content).addTo(Lt.viewer);
 
     // remember annotation size/location each times its resized/moved
     $(this.dialogAnnotationWindow._map).on('dialog:resizeend', () => { this.annotationDialogSize = this.dialogAnnotationWindow.options.size } );
@@ -1491,23 +1509,16 @@ function AnnotationAsset(Lt) {
     let size = this.attributesDialogSize || [273, 215];
     let anchor = this.attributesDialogAnchor || [50, 294];
 
+    // handlebars from template.html
+    let content = document.getElementById("attributes-dialog-window-template").innerHTML;
+
     this.dialogAttributesWindow = L.control.dialog({
       'minSize': [273, 215],
       'maxSize': [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
       'size': size,
       'anchor': anchor,
       'initOpen': true
-    }).setContent(
-      '<div id="attributes-options"> \
-        <label class="attribute-label" id="title-label" for="title-input">Title: </label> \
-        <button class="annotation-btn" id="create-option"><i class="fa fa-plus" aria-hidden="true"></i></button> \
-        <textarea class="attribute-textbox" id="title-input" placeholder="Title."></textarea> \
-      </div> \
-      <hr id="attributes-hr"> \
-      <div> \
-        <p id="attributes-warning"> Use ESC to exit without saving. </p> \
-      </div>'
-    ).addTo(Lt.viewer);
+    }).setContent(content).addTo(Lt.viewer);
 
     // remember annotation size/location each times its resized/moved
     $(this.dialogAttributesWindow._map).on('dialog:resizeend', () => { this.attributesDialogSize = this.dialogAttributesWindow.options.size; console.log(this.attributesDialogSize);} );
@@ -1528,7 +1539,13 @@ function AnnotationAsset(Lt) {
 
       var optionDeleteBtn = document.createElement('button');
       optionDeleteBtn.className = 'annotation-btn';
-      optionDeleteBtn.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
+
+      // handlebars from templates.html
+      let content = document.getElementById("font-awesome-icon-template").innerHTML;
+      let template = Handlebars.compile(content);
+      let html = template({ icon_class: "fa fa-times" });
+
+      optionDeleteBtn.innerHTML = html;
       $(optionDeleteBtn).click(() => {
         // remove div & option description/code from this.description & this.code
         let descriptionTextarea = newOptionDiv.getElementsByTagName('DIV')[0].getElementsByTagName('TEXTAREA')[0];
@@ -1698,7 +1715,13 @@ function AnnotationAsset(Lt) {
 
       let deleteAttributeBtn = document.createElement('button');
       deleteAttributeBtn.className = 'annotation-btn attribute-btn';
-      deleteAttributeBtn.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
+
+      // handlebars from templates.html
+      let content_A = document.getElementById("font-awesome-icon-template").innerHTML;
+      let template_A = Handlebars.compile(content_A);
+      let html_A = template_A({ icon_class: "fa fa-times" });
+
+      deleteAttributeBtn.innerHTML = html_A;
       $(deleteAttributeBtn).click((e) => {
         var divToDelete = e.target.parentNode.parentNode; // user will click <i> image not button
         for (let checkboxDiv of divToDelete.getElementsByTagName('DIV')) {
@@ -1724,7 +1747,13 @@ function AnnotationAsset(Lt) {
 
       let editAttributeBtn = document.createElement('button');
       editAttributeBtn.className = 'annotation-btn attribute-btn';
-      editAttributeBtn.innerHTML = '<i class="fa fa-pencil" aria-hidden="true"></i>';
+
+      // handlebars from templates.html
+      let content_B = document.getElementById("font-awesome-icon-template").innerHTML;
+      let template_B = Handlebars.compile(content_B);
+      let html_B = template_B({ icon_class: "fa fa-pencil" });
+
+      editAttributeBtn.innerHTML = html_B;
       $(editAttributeBtn).click((e) => {
         // edits saved with createAttributesDialog save button
         this.createAttributesDialog(attributeIndex);
@@ -1897,7 +1926,12 @@ function AnnotationAsset(Lt) {
 
     // how marker reacts when moussed over
     $(this.markers[index]).mouseover(() => {
-      this.markers[index].bindPopup('<div id="mouseover-popup-div"></div>', { minWidth:160, closeButton:false }).openPopup();
+      // handlebars from templates.html
+      let content = document.getElementById("empty-div-template").innerHTML;
+      let template = Handlebars.compile(content);
+      let html = template( {div_name: "mouseover-popup-div"} )
+
+      this.markers[index].bindPopup(html, { minWidth:160, closeButton:false }).openPopup();
 
       var popupDiv = document.getElementById('mouseover-popup-div');
 
@@ -2088,14 +2122,25 @@ function AnnotationAsset(Lt) {
     };
 
     var linkTitle = document.createElement('h5');
-    linkTitle.innerHTML = '<a href=' + String(parsedURL) + '> Annotation GeoLink</a>';
+    // handlebars from template.html
+    let content = document.getElementById("link-template").innerHTML;
+    let template = Handlebars.compile(content);
+    let html = template( {url: String(parsedURL), title: 'Annotation GeoLink'} );
+
+    linkTitle.innerHTML = html;
     linkTitle.className = 'annotation-title';
     linkTitle.id = 'link-title';
     summaryLinkDiv.appendChild(linkTitle)
 
     var copyLinkBtn = document.createElement('button');
     copyLinkBtn.className = 'annotation-link-btn';
-    copyLinkBtn.innerHTML = '<i class="fa fa-clone" aria-hidden="true"></i>';
+
+    // handlebars from templates.html
+    let content_C = document.getElementById("font-awesome-icon-template").innerHTML;
+    let template_C = Handlebars.compile(content_C);
+    let html_C = template_C({ icon_class: "fa fa-clone" });
+
+    copyLinkBtn.innerHTML = html_C;
     $(copyLinkBtn).click(() => {
       window.copyToClipboard(parsedURL);
     });
@@ -2140,7 +2185,13 @@ function AnnotationAsset(Lt) {
     // add a new attribute options
     var openAttributeEditButton = document.createElement('button');
     openAttributeEditButton.className = 'annotation-btn';
-    openAttributeEditButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i>';
+
+    // handlebars from templates.html
+    let content = document.getElementById("font-awesome-icon-template").innerHTML;
+    let template = Handlebars.compile(content);
+    let html = template({ icon_class: "fa fa-plus" });
+
+    openAttributeEditButton.innerHTML = html;
     $(openAttributeEditButton).click(() => {
       if (this.dialogAttributesWindow) {
         this.dialogAttributesWindow.destroy();
@@ -2322,10 +2373,12 @@ function ScaleBarCanvas (Lt) {
   var scaleBarDiv = document.createElement('div');
   var nativeWindowWidth = Lt.viewer.getContainer().clientWidth;
 
-  scaleBarDiv.innerHTML =
-      '<div id="scale-bar-div"> \
-       <canvas id="scale-bar-canvas" width="' + nativeWindowWidth + '" height="100"></canvas> \
-       </div>';
+  // handlebars from template.html
+  let content = document.getElementById("scale-bar-template").innerHTML;
+  let template = Handlebars.compile(content);
+  let html = template( {width: nativeWindowWidth} );
+
+  scaleBarDiv.innerHTML = html;
   document.getElementsByClassName('leaflet-bottom leaflet-left')[0].appendChild(scaleBarDiv);
 
   var canvas = document.getElementById("scale-bar-canvas");
@@ -2556,9 +2609,15 @@ function ScaleBarCanvas (Lt) {
  */
 function Button(icon, toolTip, enable, disable) {
   var states = [];
+
+  // handlebars from templates.html
+  let content_A = document.getElementById("button-icon-template").innerHTML;
+  let template_A = Handlebars.compile(content_A);
+  let html_A = template_A({ icon_string: icon });
+
   states.push({
     stateName: 'inactive',
-    icon: '<i class="material-icons md-18">' + icon + '</i>',
+    icon: html_A,
     title: toolTip,
     onClick: enable
   });
@@ -2570,9 +2629,15 @@ function Button(icon, toolTip, enable, disable) {
       var icon = 'clear';
       var title = 'Cancel';
     }
+
+    // handlebars from templates.html
+    let content_B = document.getElementById("button-icon-template").innerHTML;
+    let template_B = Handlebars.compile(content_B);
+    let html_B = template_B({ icon_string: icon });
+
     states.push({
       stateName: 'active',
-      icon: '<i class="material-icons md-18">' + icon + '</i>',
+      icon: html_B,
       title: title,
       onClick: disable
     })
@@ -2591,11 +2656,21 @@ function Button(icon, toolTip, enable, disable) {
 function ButtonBar(Lt, btns, icon, toolTip) {
   this.btns = btns;
 
+  // handlebars from templates.html
+  let content_A = document.getElementById("button-icon-template").innerHTML;
+  let template_A = Handlebars.compile(content_A);
+  let html_A = template_A({ icon_string: icon });
+
+  // handlebars from templates.html
+  let content_B = document.getElementById("button-icon-template").innerHTML;
+  let template_B = Handlebars.compile(content_B);
+  let html_B = template_B({ icon_string: "expand_less" });
+
   this.btn = L.easyButton({
     states: [
       {
         stateName: 'collapse',
-        icon: '<i class="material-icons md-18">'+icon+'</i>',
+        icon: html_A,
         title: toolTip,
         onClick: () => {
           Lt.disableTools();
@@ -2605,7 +2680,7 @@ function ButtonBar(Lt, btns, icon, toolTip) {
       },
       {
         stateName: 'expand',
-        icon: '<i class="material-icons md-18">expand_less</i>',
+        icon: html_B,
         title: 'Collapse',
         onClick: () => {
           this.collapse();
@@ -2644,11 +2719,46 @@ function ButtonBar(Lt, btns, icon, toolTip) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function Popout(Lt) {
-  this.btn = new Button('launch', 'Enter Popout Mode to access the full suite\nof measurement and annotation tools', () => {
+  var height = (1/3) * screen.height;
+  var width = screen.width;
+
+  this.btn = new Button('straighten', 'Enter Popout Mode to access the full suite\nof measurement and annotation tools', () => {
     window.open(Lt.meta.popoutUrl, 'popout' + Math.round(Math.random()*10000),
-                'location=yes,height=600,width=800,scrollbars=yes,status=yes');
+                'location=yes,height=' + height + ',width=' + width + ',scrollbars=yes,status=yes, top=0');
   });
-}
+};
+
+/** A popout with time series plots
+ * @constructor
+ * @param {Ltreering} Lt - Leaflet treering object
+ */
+ function PopoutPlots (Lt) {
+   var height = (4/9) * screen.height;
+   var top = (2/3) * screen.height;
+   var width = screen.width;
+   this.childSite = null
+   this.win = null
+
+   this.btn = new Button('insights',
+                         'Open time series plots in a new window',
+                         () => {
+                           //this.childSite = 'http://localhost:8080/dendro-plots/'
+                           this.childSite = 'https://umn-latis.github.io/dendro-plots/'
+                           this.win = window.open(this.childSite, 'popout' + Math.round(Math.random()*10000),
+                                       'location=yes,height=' + height + ',width=' + width + ',scrollbars=yes,status=yes, top=' + top);
+
+                           let data = { points: Lt.helper.findDistances(), annotations: Lt.aData.annotations };
+                           window.addEventListener('message', () => {
+                             this.win.postMessage(data, this.childSite);
+                           }, false)
+                         });
+
+    PopoutPlots.prototype.sendData = function() {
+      let data = { points: Lt.helper.findDistances(), annotations: Lt.aData.annotations };
+      this.win.postMessage(data, this.childSite);
+    }
+
+};
 
 /**
  * Undo actions
@@ -2657,7 +2767,13 @@ function Popout(Lt) {
  */
 function Undo(Lt) {
   this.stack = new Array();
-  this.btn = new Button('undo', 'Undo', () => { this.pop(); Lt.metaDataText.updateText() });
+  this.btn = new Button('undo', 'Undo', () => {
+    this.pop();
+    Lt.metaDataText.updateText();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
+  });
   this.btn.disable();
 
   /**
@@ -2713,7 +2829,13 @@ function Undo(Lt) {
  */
 function Redo(Lt) {
   this.stack = new Array();
-  this.btn = new Button('redo', 'Redo', () => { this.pop(); Lt.metaDataText.updateText();});
+  this.btn = new Button('redo', 'Redo', () => {
+    this.pop();
+    Lt.metaDataText.updateText();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
+  });
   this.btn.disable();
 
   /**
@@ -2748,9 +2870,11 @@ function Redo(Lt) {
  */
 function Calibration(Lt) {
   this.active = false;
-  this.popup = L.popup({closeButton: false}).setContent(
-              '<input type="number" style="border:none; width:50px;"' +
-              'value="10" id="length"></input> mm')
+
+  // handlebars from templates.html
+  let content = document.getElementById("calibration-template").innerHTML;
+
+  this.popup = L.popup({closeButton: false}).setContent(content)
   this.btn = new Button(
     'space_bar',
     'Calibrate pixels per millimeter by measuring a known distance\n(This will override image resolution metadata from Elevator!)',
@@ -2862,10 +2986,14 @@ function Dating(Lt) {
    */
   Dating.prototype.action = function(i) {
     if (Lt.data.points[i].year != undefined) {
+
+      // handlebars from templates.html
+      let content = document.getElementById("dating-template").innerHTML;
+      let template = Handlebars.compile(content);
+      let html = template({ date_year: Lt.data.points[i].year });
+
       var popup = L.popup({closeButton: false})
-          .setContent(
-          '<input type="number" style="border:none;width:50px;" value="' +
-          Lt.data.points[i].year + '" id="year_input"></input>')
+          .setContent(html)
           .setLatLng(Lt.data.points[i].latLng)
           .openOn(Lt.viewer);
 
@@ -2923,6 +3051,9 @@ function Dating(Lt) {
   Dating.prototype.disable = function() {
     Lt.metaDataText.updateText(); // updates once user hits enter
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
 
     this.btn.state('inactive');
     $(Lt.viewer.getContainer()).off('click');
@@ -3003,9 +3134,11 @@ function CreatePoint(Lt) {
 
       if (this.startPoint) {
         if (Lt.data.points.length <= 1) { // only pop up for first start point
-          var popup = L.popup({closeButton: false}).setContent(
-              '<input type="number" style="border:none; width:50px;" \
-              value="0" id="year_input"></input>')
+
+          // handlebars from templates.html
+          let content = document.getElementById("start-point-popup-template").innerHTML;
+
+          var popup = L.popup({closeButton: false}).setContent(content)
               .setLatLng(latLng)
               .openOn(Lt.viewer);
 
@@ -3118,6 +3251,9 @@ function CreateZeroGrowth(Lt) {
 
       Lt.metaDataText.updateText(); // updates after point is inserted
       Lt.annotationAsset.reloadAssociatedYears();
+      if (Lt.popoutPlots.win) {
+        Lt.popoutPlots.sendData();
+      }
 
     } else {
       alert('First year cannot be missing!');
@@ -3432,6 +3568,9 @@ function ConvertToStartPoint(Lt) {
     Lt.visualAsset.reload();
     Lt.metaDataText.updateText();
     Lt.annotationAsset.reloadAssociatedYears();
+    if (Lt.popoutPlots.win) {
+      Lt.popoutPlots.sendData();
+    }
   };
 
   ConvertToStartPoint.prototype.enable = function () {
@@ -3566,6 +3705,8 @@ function InsertBreak(Lt) {
         Lt.visualAsset.newLatLng(new_points, k, latLng);
         k++;
 
+        // TODO: use handlebars once fixed
+
         var popup = L.popup({closeButton: false}).setContent(
             '<input type="number" style="border:none;width:50px;"' +
             'value="' + second_points[0].year +
@@ -3644,117 +3785,13 @@ function ViewData(Lt) {
     () => { this.disable() }
   );
 
+  // handlebars from templates.html
+  let content = document.getElementById("view-data-default-template").innerHTML;
+
   this.dialog = L.control.dialog({'size': [200, 235], 'anchor': [50, 0], 'initOpen': false})
-    .setContent('<h5>No Measurement Data</h5>')
+    .setContent(content)
 
     .addTo(Lt.viewer);
-
-  /**
-   * Calculate distance from p1 to p2
-   * @function distance
-   * @param p1 leaflet point - first point
-   * @param p2 leaflet point - second point
-   */
-  ViewData.prototype.distance = function(p1, p2) {
-    var lastPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
-    var newPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
-    var length = Math.sqrt(Math.pow(Math.abs(lastPoint.x - newPoint.x), 2) +
-        Math.pow(Math.abs(newPoint.y - lastPoint.y), 2));
-    var pixelsPerMillimeter = 1;
-    Lt.viewer.eachLayer((layer) => {
-      if (layer.options.pixelsPerMillimeter > 0 || Lt.meta.ppm > 0) {
-        pixelsPerMillimeter = Lt.meta.ppm;
-      }
-    });
-    length = length / pixelsPerMillimeter;
-    var retinaFactor = 1;
-    // if (L.Browser.retina) {
-    //   retinaFactor = 2; // this is potentially incorrect for 3x+ devices
-    // }
-    return length * retinaFactor;
-  }
-
-  /**
-   * Format data to have years ascending
-   * @function reverseData
-   */
-  ViewData.prototype.reverseData = function() {
-    var pref = Lt.measurementOptions; // preferences
-    var pts = JSON.parse(JSON.stringify(Lt.data.points)); // deep copy of points
-
-    var i; // index
-    var lastIndex = pts.length - 1;
-    var before_lastIndex = pts.length - 2;
-
-    // reformatting done in seperate for-statements for code clarity/simplicity
-
-    if (pref.subAnnual) { // subannual earlywood and latewood values swap cycle
-      for (i = 0; i < pts.length; i++) {
-        if (pts[i]) {
-          if (pts[i].earlywood) {
-            pts[i].earlywood = false;
-          } else {
-            pts[i].earlywood = true;
-          };
-        };
-      };
-    };
-
-    for (i = 0; i < pts.length; i++) { // swap start & break point cycle
-      if (pts[i + 1] && pts[i]) {
-        if (pts[i].break && pts[i + 1].start) {
-          pts[i].start = true;
-          pts[i].break = false;
-          pts[i + 1].start = false;
-          pts[i + 1].break = true;
-        };
-      };
-    };
-
-    for (i = 0; i < pts.length; i++) { // swap start & end point cycle
-      if (pts[i + 2] && pts[i + 1] && pts[i]) {
-        if (pts[i].year && pts[i + 1].start && !pts[i + 2].break) { // many conditions so prior cycle is not undone
-          pts[i + 1].start = false;
-          pts[i + 1].year = pts[i].year;
-          pts[i + 1].earlywood = pts[i].earlywood;
-          pts[i].start = true;
-          delete pts[i].year;
-          delete pts[i].earlywood;
-        };
-      };
-    };
-
-    // reverse array order so years ascending
-    pts.reverse();
-
-    // change last point from start to end point
-    if (pts[lastIndex] && pts[before_lastIndex]) {
-      pts[lastIndex].start = false;
-
-      if (pts[before_lastIndex].earlywood) {
-        pts[lastIndex].year = pts[before_lastIndex].year;
-        pts[lastIndex].earlywood = false;
-      } else { // otherwise latewood or annual increment
-        pts[lastIndex].year = pts[before_lastIndex].year + 1
-        pts[lastIndex].earlywood = true;
-      };
-    };
-
-    for (i = lastIndex; i >= 0; i--) { // remove any null points
-      if (pts[i] == null) {
-        pts.splice(i, 1);
-      };
-    };
-
-    // change first point to start point
-    if (pts.length > 0) {
-      pts[0].start = true;
-      delete pts[0].year;
-      delete pts[0].earlywood;
-    };
-
-    return pts;
-  }
 
   /**
    * Format and download data in Dan's archaic format
@@ -3837,7 +3874,7 @@ function ViewData(Lt) {
     if (Lt.measurementOptions.forwardDirection) { // years ascend in value
       var pts = Lt.data.points;
     } else { // otherwise years descend in value
-      var pts = this.reverseData();
+      var pts = Lt.helper.reverseData();
     }
 
     if (Lt.data.points != undefined && Lt.data.points[1] != undefined) {
@@ -3875,7 +3912,7 @@ function ViewData(Lt) {
             last_latLng = e.latLng;
           } else if (e.break) {
             break_length =
-              Math.round(this.distance(last_latLng, e.latLng) * 1000);
+              Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
               break_point = true;
           } else {
             if (e.year % 10 == 0) {
@@ -3899,7 +3936,7 @@ function ViewData(Lt) {
               last_latLng = e.latLng;
             };
 
-            var length = Math.round(this.distance(last_latLng, e.latLng) * 1000);
+            var length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
             if (break_point) {
               length += break_length;
               break_point = false;
@@ -3944,7 +3981,7 @@ function ViewData(Lt) {
             last_latLng = e.latLng;
           } else if (e.break) {
             break_length =
-              Math.round(this.distance(last_latLng, e.latLng) * 1000);
+              Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
             break_point = true;
           } else {
             if (e.year % 10 == 0) {
@@ -3978,7 +4015,7 @@ function ViewData(Lt) {
               }
             }
 
-            length = Math.round(this.distance(last_latLng, e.latLng) * 1000);
+            length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
             if (break_point) {
               length += break_length;
               break_point = false;
@@ -4039,7 +4076,7 @@ function ViewData(Lt) {
             }
             else if (e.break) {
               break_length =
-                Math.round(this.distance(last_latLng, e.latLng) * 1000);
+                Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
               break_point = true;
             } else {
             if (e.year % 10 == 0) {
@@ -4059,7 +4096,7 @@ function ViewData(Lt) {
               }
             }
 
-            length = Math.round(this.distance(last_latLng, e.latLng) * 1000);
+            length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
             if (break_point) {
               length += break_length;
               break_point = false;
@@ -4117,30 +4154,16 @@ function ViewData(Lt) {
     if (Lt.measurementOptions.forwardDirection) { // years ascend in value
       var pts = Lt.data.points;
     } else { // otherwise years descend in value
-      var pts = this.reverseData();
+      var pts = Lt.helper.reverseData();
     };
 
     if (pts[0] != undefined) {
       var y = pts[1].year;
 
-      stringSetup = '<div class ="dataWindow"><div class="button-set">' +
-      '<button id="copy-data-button"' +
-      'class="icon-button" title="Copy Data to Clipboard, Tab Delimited Column Format"'+
-      '><i class="material-icons md-18-data-view">content_copy</i></button><br>  ' +
-      '<button id="download-tab-button"' +
-      'class ="text-button" title="Download Measurements, Tab Delimited Format"' +
-      '>TAB</button><br>  '+
-      '<button id="download-csv-button"' +
-      'class="text-button" title="Download Measurements, Common Separated Column Format"' +
-      '>CSV</button><br>  '+
-      '<button id="download-ltrr-button"' +
-      'class ="text-button" title="Download Measurements, LTRR Ring Width Format"' +
-      '>RWL</button><br>  '+
-      '<button id="delete-button"' +
-      'class="icon-button delete" title="Delete All Measurement Point Data"' +
-      '><i class="material-icons md-18-data-view">delete</i></button></div><table><tr>' +
-      '<th style="width: 45%;">Year<br><br></th>' +
-      '<th style="width: 70%;">Width (mm)</th></tr>';
+      // handlebars from templates.html
+      let content_A = document.getElementById("string-setup-data-template").innerHTML;
+
+      stringSetup = content_A;
 
       var break_point = false;
       var last_latLng;
@@ -4166,15 +4189,19 @@ function ViewData(Lt) {
           last_latLng = e.latLng;
         } else if (e.break) {
           break_length =
-            Math.round(this.distance(last_latLng, e.latLng) * 1000) / 1000;
+            Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000) / 1000;
           break_point = true;
         } else {
           while (e.year > y) {
-            stringContent = stringContent.concat('<tr><td>' + y +
-                '-</td><td>N/A</td></tr>');
+            // handlebars from templates.html
+            let content_B = document.getElementById("concat-string-content-A-template").innerHTML;
+            let template_B = Handlebars.compile(content_B);
+            let html_B = template_B( {y: y} )
+
+            stringContent = stringContent.concat(html_B);
             y++;
           }
-          length = Math.round(this.distance(last_latLng, e.latLng) * 1000) / 1000;
+          length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000) / 1000;
           if (break_point) {
             length += break_length;
             length = Math.round(length * 1000) / 1000;
@@ -4244,20 +4271,10 @@ function ViewData(Lt) {
       });
       this.dialog.setContent(stringSetup + stringContent + '</table><div>');
     } else {
-      stringSetup = '<div class ="button-set"><button id="copy-data-button" class="icon-button disabled"  title="Copy Data to Clipboard, Tab Delimited Column Format"'+
-      'disabled><i class="material-icons md-18-data-view">content_copy</i></button><br>'+
-      '<button id="download-ltrr-button"' +
-      'class ="text-button disabled" title="Download Measurements, LTRR Ring Width Format"' +
-      'disabled>RWL</button><br>'+
-      '<button id="download-csv-button" class="text-button disabled" title="Download Measurements, Common Separated Column Format"' +
-      'disabled>CSV</button><br>'+
-      '<button id="download-tab-button"' +
-      'class ="text-button disabled" title="Download Measurements, Tab Delimited Format"' +
-      'disabled>TAB</button><br>'+
-      '<button id="delete-button"' +
-      'class="icon-button delete" title="Delete All Measurement Point Data"' +
-      '><i class="material-icons md-18-data-view">delete</i></button></div>' +
-          '<h5>No Measurement Data</h5>';
+      // handlebars from templates.html
+      let content_D = document.getElementById("string-setup-no-data-template").innerHTML;
+
+      stringSetup = content_D;
       this.dialog.setContent(stringSetup);
     }
     this.dialog.lock();
@@ -4286,15 +4303,10 @@ function ViewData(Lt) {
          }
        );
     $('#delete-button').click(() => {
-      this.dialog.setContent(
-          '<p>This action will delete all data points.' +
-          'Annotations will not be effected.' +
-          'Are you sure you want to continue?</p>' +
-          '<p><button id="confirm-delete"' +
-          'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
-          '>confirm</button><button id="cancel-delete"' +
-          'class="mdc-button mdc-button--unelevated mdc-button-compact"' +
-          '>cancel</button></p>');
+      // handlebars from templates.html
+      let content_E = document.getElementById("data-view-delete-template").innerHTML;
+
+      this.dialog.setContent(content_E);
 
       $('#confirm-delete').click(() => {
         Lt.undo.push();
@@ -4364,29 +4376,14 @@ function ImageAdjustment(Lt) {
     () => { this.disable() }
   );
 
+  // handlebars from templates.html
+  let content = document.getElementById("image-adjustment-template").innerHTML;
+
   this.dialog = L.control.dialog({
     'size': [340, 280],
     'anchor': [50, 5],
     'initOpen': false
-  }).setContent(
-    '<div><label style="text-align:center;display:block;">Brightness</label> \
-    <input class="imageSlider" id="brightness-slider" value=100 min=0 max=300 type=range> \
-    <label style="text-align:center;display:block;">Contrast</label> \
-    <input class="imageSlider" id="contrast-slider" type=range min=50 max=350 value=100></div> \
-    <label style="text-align:center;display:block;">Saturation</label> \
-    <input class="imageSlider" id="saturation-slider" type=range min=0 max=350 value=100></div> \
-    <label style="text-align:center;display:block;">Hue Rotation</label> \
-    <input class="imageSlider" id="hue-slider" type=range min=0 max=360 value=0> \
-     <label style="text-align:center;display:block;">Sharpness</label> \
-    <input class="imageSlider" id="sharpness-slider" value=0 min=0 max=1 step=0.05 type=range> \
-    <label style="text-align:center;display:block;">Emboss</label> \
-    <input class="imageSlider" id="emboss-slider" value=0 min=0 max=1 step=0.05 type=range> \
-    <label style="text-align:center;display:block;">edgeDetect</label> \
-    <input class="imageSlider" id="edgeDetect-slider" value=0 min=0 max=1 step=0.05 type=range> \
-    <label style="text-align:center;display:block;">unsharpen</label> \
-    <input class="imageSlider" id="unsharpness-slider" value=0 min=0 max=1 step=0.05 type=range> \
-    <div class = "checkbox" style = "text-align:center; margin-left:auto; margin-right:auto; margin-top: 5px;display:block;"> <label> <input type = "checkbox" id = "invert-checkbox" > Invert </label></div> \
-    <button id="reset-button" style="margin-left:auto; margin-right:auto; margin-top: 5px;display:block;" class="mdc-button mdc-button--unelevated mdc-button-compact">reset</button></div>').addTo(Lt.viewer);
+  }).setContent(content).addTo(Lt.viewer);
 
   /**
    * Update the image filter to reflect slider values
@@ -4532,23 +4529,14 @@ function MeasurementOptions(Lt) {
   * @function displayDialog
   */
 MeasurementOptions.prototype.displayDialog = function () {
+  // handlebars from templates.html
+  let content = document.getElementById("measurement-options-dialog-template").innerHTML;
+
   return L.control.dialog({
      'size': [510, 420],
      'anchor': [50, 5],
      'initOpen': false
-   }).setContent(
-     '<div><h4 style="text-align:left">Select Preferences for Time-Series Measurement:</h4></div> \
-     <hr style="height:2px;border-width:0;color:gray;background-color:gray"> \
-      <div><h4>Measurement Direction:</h4></div> \
-      <div><input type="radio" name="direction" id="forward_radio"> Measure forward in time (e.g., 1257 &rArr; 1258 &rArr; 1259 ... 2020)</input> \
-       <br><input type="radio" name="direction" id="backward_radio"> Measure backward in time (e.g., 2020 &rArr; 2019 &rArr; 2018 ... 1257)</input></div> \
-     <br> \
-      <div><h4>Measurement Interval:</h4></div> \
-      <div><input type="radio" name="increment" id="annual_radio"> One increment per year (e.g., total-ring width)</input> \
-       <br><input type="radio" name="increment" id="subannual_radio"> Two increments per year (e.g., earlywood- & latewood-ring width)</input></div> \
-     <hr style="height:2px;border-width:0;color:gray;background-color:gray"> \
-      <div><p style="text-align:right;font-size:20px">&#9831; &#9831; &#9831;  &#9831; &#9831; &#9831; &#9831; &#9831; &#9831; &#9831;<button type="button" id="confirm-button" class="preferences-button"> Save & close </button></p></div> \
-      <div><p style="text-align:left;font-size:12px">Please note: Once measurements are initiated, these preferences are set. To modify, delete all existing points for this asset and initiate a new set of measurements.</p></div>').addTo(Lt.viewer);
+   }).setContent(content).addTo(Lt.viewer);
   };
 
   /**
@@ -4691,6 +4679,7 @@ function SaveLocal(Lt) {
       'points': Lt.data.points,
       'attributesObjectArray': Lt.annotationAsset.attributesObjectArray,
       'annotations': Lt.aData.annotations,
+      'ptWidths': Lt.helper.findDistances(),
     };
 
     // don't serialize our default value
@@ -4825,14 +4814,19 @@ function MetaDataText (Lt) {
   MetaDataText.prototype.initialize = function () {
     if (window.name.includes('popout')) {
       var metaDataTopDiv = document.createElement('div');
-      metaDataTopDiv.innerHTML =
-                '<div><p id="meta-data-top-text" class="meta-data-text-box"></p></div>'
+
+      // handlebars from templates.html
+      let content_A = document.getElementById("meta-data-top-div-template").innerHTML;
+
+      metaDataTopDiv.innerHTML = content_A;
       document.getElementsByClassName('leaflet-bottom leaflet-left')[0].appendChild(metaDataTopDiv);
     };
 
+    // handlebars from templates.html
+    let content_B = document.getElementById("meta-data-bottom-div-template").innerHTML;
+
     var metaDataBottomDiv = document.createElement('div');
-    metaDataBottomDiv.innerHTML =
-              '<div><p id="meta-data-bottom-text" class="meta-data-text-box"></p></div>'
+    metaDataBottomDiv.innerHTML = content_B;
     document.getElementsByClassName('leaflet-bottom leaflet-left')[0].appendChild(metaDataBottomDiv);
   };
 
@@ -5185,7 +5179,12 @@ function KeyboardShortCutDialog (Lt) {
       this.dialog.setContent('');
     };
 
-    this.dialog.setContent('<div id="keyboardShortcutDiv"></div>');
+    // handlebars from template.html
+    let content = document.getElementById("empty-div-template").innerHTML;
+    let template = Handlebars.compile(content);
+    let html = template( {div_name: "keyboardShortcutDiv"} );
+
+    this.dialog.setContent(html);
 
     let mainDiv = document.getElementById('keyboardShortcutDiv');
 
@@ -5219,6 +5218,177 @@ function KeyboardShortCutDialog (Lt) {
  * @function
  */
 function Helper(Lt) {
+
+  /**
+   * Reverses points data structure so points ascend in time.
+   * @function trueDistance
+   * @param {first point.latLng} p1
+   * @param {second point.latLng} p2
+   */
+  Helper.prototype.trueDistance = function(p1, p2) {
+    var lastPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
+    var newPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
+    var length = Math.sqrt(Math.pow(Math.abs(lastPoint.x - newPoint.x), 2) +
+        Math.pow(Math.abs(newPoint.y - lastPoint.y), 2));
+    var pixelsPerMillimeter = 1;
+    Lt.viewer.eachLayer((layer) => {
+      if (layer.options.pixelsPerMillimeter > 0 || Lt.meta.ppm > 0) {
+        pixelsPerMillimeter = Lt.meta.ppm;
+      }
+    });
+    length = length / pixelsPerMillimeter;
+    var retinaFactor = 1;
+    return length * retinaFactor;
+  };
+
+  /**
+   * Reverses points data structure so points ascend in time.
+   * @function
+   */
+ Helper.prototype.reverseData = function(inputPts) {
+   var pref = Lt.measurementOptions; // preferences
+   if (inputPts) {
+     var pts = inputPts;
+   } else {
+     var pts = JSON.parse(JSON.stringify(Lt.data.points)); // deep copy of points
+   };
+
+   var i; // index
+   var lastIndex = pts.length - 1;
+   var before_lastIndex = pts.length - 2;
+
+   // reformatting done in seperate for-statements for code clarity/simplicity
+
+   for (i = 0; i < pts.length; i++) { // subtract 1 from points cycle
+     if (!pref.subAnnual && pts[i] && pts[i].year) { // only need to subtract if annual
+       pts[i].year--;
+     };
+   };
+
+   if (pref.subAnnual) { // subannual earlywood and latewood values swap cycle
+     for (i = 0; i < pts.length; i++) {
+       if (pts[i]) {
+         if (pts[i].earlywood) {
+           pts[i].earlywood = false;
+         } else {
+           pts[i].earlywood = true;
+         };
+       };
+     };
+   };
+
+   for (i = 0; i < pts.length; i++) { // swap start & break point cycle
+     if (pts[i + 1] && pts[i]) {
+       if (pts[i].break && pts[i + 1].start) {
+         pts[i].start = true;
+         pts[i].break = false;
+         pts[i + 1].start = false;
+         pts[i + 1].break = true;
+       };
+     };
+   };
+
+   for (i = 0; i < pts.length; i++) { // swap start & end point cycle
+     if (pts[i + 2] && pts[i + 1] && pts[i]) {
+       if (pts[i].year && pts[i + 1].start && !pts[i + 2].break) { // many conditions so prior cycle is not undone
+         pts[i + 1].start = false;
+         pts[i + 1].year = pts[i].year;
+         pts[i + 1].earlywood = pts[i].earlywood;
+         pts[i].start = true;
+         delete pts[i].year;
+         delete pts[i].earlywood;
+       };
+     };
+   };
+
+   // reverse array order so years ascending
+   pts.reverse();
+
+   // change last point from start to end point
+   if (pts[lastIndex] && pts[before_lastIndex]) {
+     pts[lastIndex].start = false;
+
+     if (pts[before_lastIndex].earlywood) {
+       pts[lastIndex].year = pts[before_lastIndex].year;
+       pts[lastIndex].earlywood = false;
+     } else { // otherwise latewood or annual increment
+       pts[lastIndex].year = pts[before_lastIndex].year + 1;
+       pts[lastIndex].earlywood = true;
+     };
+   };
+
+   for (i = lastIndex; i >= 0; i--) { // remove any null points
+     if (pts[i] == null) {
+       pts.splice(i, 1);
+     };
+   };
+
+   // change first point to start point
+   if (pts.length > 0) {
+     pts[0].start = true;
+     delete pts[0].year;
+     delete pts[0].earlywood;
+   };
+
+   return pts;
+  };
+
+  /**
+   * Finds distances between points for plotting
+   * @function
+   */
+   Helper.prototype.findDistances = function () {
+     var disObj = new Object()
+     var pts = (Lt.measurementOptions.forwardDirection) ? Lt.data.points : this.reverseData();
+
+     var yearArray = [];
+     var ewWidthArray = [];
+     var lwWidthArray = [];
+     var twWidthArray = [];
+
+     var breakDis = 0;
+     var prevPt = null;
+     pts.map((e, i) => {
+       if (!e) {
+         return
+       }
+       if (e.start) {
+         if (!pts[i - 1] || !pts[i - 1].break) {
+           prevPt = e;
+         } else if (pts[i - 1].break) {
+           breakDis = Lt.helper.trueDistance(prevPt.latLng, e.latLng);
+         }
+       } else if (e.year || e.year == 0) {
+         if (!yearArray.includes(e.year)) {
+            yearArray.push(parseInt(e.year));
+         }
+         var width = Lt.helper.trueDistance(prevPt.latLng, e.latLng) - breakDis;
+         width = parseFloat(width.toFixed(5));
+         if (e.earlywood && Lt.measurementOptions.subAnnual) {
+           ewWidthArray.push(width);
+         } else if (!e.earlywood && Lt.measurementOptions.subAnnual) {
+           lwWidthArray.push(width)
+         } else {
+           twWidthArray.push(width)
+         }
+         breakDis = 0;
+         prevPt = e;
+       }
+     });
+
+     if (Lt.measurementOptions.subAnnual) {
+       disObj.ew = { x: yearArray, y: ewWidthArray, name: Lt.meta.assetName + '_ew' };
+       disObj.lw = { x: yearArray, y: lwWidthArray, name: Lt.meta.assetName + '_lw' };
+       for (let i = 0; i < ewWidthArray.length; i++) {
+         let width = ewWidthArray[i] + lwWidthArray[i];
+         twWidthArray.push(parseFloat(width.toFixed(5)));
+       }
+     }
+
+     disObj.tw = { x: yearArray, y: twWidthArray, name: Lt.meta.assetName + '_tw' }
+
+     return disObj
+   }
 
   /**
    * Finds closest points for connection
@@ -5363,12 +5533,23 @@ function Helper(Lt) {
          }
        }
 
-       stringContent = '<tr style="color:' + row_color + ';">';
-       stringContent = stringContent.concat('<td>' + e.year + wood + '</td><td>'+ lengthAsAString + '</td></tr>');
+       // handlebars from template.html
+       let content_A = document.getElementById("assign-row-color-subannual-template").innerHTML;
+       let template_A = Handlebars.compile(content_A);
+       let html_A = template_A( {row_color: row_color, row_year: e.year, row_wood: wood, length: lengthAsAString} );
+
+       stringContent = html_A;
      } else {
        y++;
-       row_color = e.year%10===0? 'red':'#00d2e6';
-       stringContent = ('<tr style="color:' + row_color +';">' + '<td>' + e.year + '</td><td>'+ lengthAsAString + '</td></tr>');
+
+       row_color = e.year % 10===0 ? 'red':'#00d2e6';
+
+       // handlebars from template.html
+       let content_B = document.getElementById("assign-row-color-annual-template").innerHTML;
+       let template_B = Handlebars.compile(content_B);
+       let html_B = template_B( {row_color: row_color, row_year: e.year, length: lengthAsAString} );
+
+       stringContent = html_B;
      }
      return stringContent;
    }
