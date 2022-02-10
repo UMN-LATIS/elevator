@@ -121,6 +121,8 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <input type="hidden" name="specificSearchField[]" id="specificSearchField">
       <input type="hidden" name="specificSearchText[]" id="specificSearchText">
       <input type="hidden" name="specificSearchFuzzy[]" id="specificSearchFuzzy">
+      <input type="hidden" id="templateId" name="templateId[]" value="0">
+      <input type="hidden" id="showHidden" name="showHidden" value="0">
       <input type="hidden" name="fuzzySearch" value=0>
       <div class="input-group">
       

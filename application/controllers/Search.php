@@ -604,7 +604,7 @@ class Search extends Instance_Controller {
 		}
 
 
-		if($this->input->post("showHidden") || isset($searchArray['showHidden'])) {
+		if($this->input->post("showHidden") || (isset($searchArray['showHidden']) && $searchArray['showHidden'] != false)) {
 			// This will include items that are not yet flagged "Ready for display"
 			$showHidden = true;
 			$searchArray['showHidden'] = true;
