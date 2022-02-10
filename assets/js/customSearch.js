@@ -115,5 +115,5 @@ $(document).on('change', ".searchField", function(event) {
 	var fieldTitle = $(this).val();
 	var templateId = $(parentGroup).find(".templateSelector").val();
 	var targetGroup = $(parentGroup).find(".specificSearchTextContainer");
-	buildFieldInfo(templateId, fieldTitle, targetGroup);
+	buildSearchForm(fieldTitle,templateId, targetGroup);
 });

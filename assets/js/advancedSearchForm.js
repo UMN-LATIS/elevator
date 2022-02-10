@@ -27,7 +27,12 @@ $(document).on("change", ".searchDropdown", function() {
     var content = $(selectedOption).val();
     var templateId = $(selectedOption).data('templateid');
     var targetGroup = $(this).closest(".form-group").find(".specificSearchTextContainer");
-    $.post(basePath + 'search/getFieldInfo', {fieldTitle: content, template: templateId}, function(data, textStatus, xhr) {
+    buildSearchForm(content, templateId, targetGroup);
+    
+});
+
+const buildSearchForm = function(fieldTitle, templateId, targetGroup) {
+    $.post(basePath + 'search/getFieldInfo', {fieldTitle: fieldTitle, template: templateId}, function(data, textStatus, xhr) {
         if(data.type == "text") {
             $(targetGroup).html("");
             $(targetGroup).html('<input type="text" name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent" value="">');
@@ -49,5 +54,5 @@ $(document).on("change", ".searchDropdown", function() {
         }
 
     });
-});
 
+}

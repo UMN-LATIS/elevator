@@ -269,7 +269,9 @@ class Search extends Instance_Controller {
 			$searchArray["specificSearchField"] = [$fieldName];
 			$searchArray["specificSearchText"] = [rawurldecode($searchString)];
 			$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
+			$searchArray["sort"] = "title.raw";
 		}
+
 
 		$searchArchive = new Entity\SearchEntry;
 		$searchArchive->setUser($this->user_model->user);

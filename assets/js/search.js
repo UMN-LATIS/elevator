@@ -195,6 +195,7 @@ var TimelineTemplate;
 var TimelineTemplate;
 var targetTemplate = "#result-template";
 var listTemplate = "#list-template";
+var timeline = null;
 
 var loadTemplates = function() {
 	MarkerSource   = $("#marker-template").html();
@@ -728,7 +729,7 @@ function prepTimeline() {
 		$("#hackyGeoStyle").remove();
 	}
 
-	var timeline = new TL.Timeline('timelinePane', compiledDate, {
+	timeline = new TL.Timeline('timelinePane', compiledDate, {
         timenav_position: "bottom",
         timenav_height_percentage: "70"
 	});
