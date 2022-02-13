@@ -23,6 +23,8 @@ class StOlafOAuthHelper extends AuthHelper
 
 
 	public function remoteLogin($redirectURL, $noForcedAuth=false) {
+		$jwt = new \Firebase\JWT\JWT;
+		$jwt::$leeway = 5;
 		$client = new Google_Client();
 		$client->setApplicationName($this->CI->config->item("oAuthApplication"));
 		$client->setClientId($this->CI->config->item("oAuthClient"));
