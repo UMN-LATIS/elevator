@@ -81,7 +81,8 @@ class asset extends API_Controller {
 			"title"=>"Asset",
 			"source"=>$sourceLink,
 			"best"=>$bestURL,
-			"original"=>$original
+			"original"=>$original,
+			"metadata"=>$fileHandler->sourceFile->metadata
 			]);
 
 	}
