@@ -186,7 +186,8 @@ if(typeof objectId == 'undefined') {
       playlist: <?=json_encode($playlist) ?>,
       width: "100%",
       height: `calc(100vh - ${transcriptOffset})`,
-      preload: 'none'
+      preload: 'none',
+      playbackRateControls:  true
       });
     }
     
