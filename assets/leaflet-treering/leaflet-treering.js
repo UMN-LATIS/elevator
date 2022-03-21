@@ -763,19 +763,17 @@ function Autoscroll (viewer) {
 function MarkerIcon(color, imagePath) {
 
   var colors = {
-    'light_blue' : { 'path': imagePath + 'images/light_blue_rect_circle_dot_crosshair.png',
+    'light_blue' : { 'path': imagePath + 'images/EW_Year_Manual.png',
                     'size': [32, 48] },
-    'dark_blue'  : { 'path': imagePath + 'images/dark_blue_rect_circle_dot_crosshair.png',
+    'dark_blue'  : { 'path': imagePath + 'images/LW_Year_Manual.png',
                     'size': [32, 48] },
-    'white_start': { 'path': imagePath + 'images/white_tick_icon.png',
+    'white_start': { 'path': imagePath + 'images/Start_Point_Manual.png',
                     'size': [32, 48] },
-    'white_break': { 'path': imagePath + 'images/white_rect_circle_dot_crosshair.png',
+    'white_break': { 'path': imagePath + 'images/BreakPoint.png',
                     'size': [32, 48] },
-    'red'        : { 'path': imagePath + 'images/red_dot_icon.png',
-                    'size': [12, 12] },
-    'light_red'  : { 'path': imagePath + 'images/cb_light_red_tick_icon.png',
+    'light_red'  : { 'path': imagePath + 'images/LW_Decade_Manual.png',
                     'size': [32, 48] },
-    'pale_red'   : { 'path': imagePath + 'images/cb_pale_red_tick_icon.png',
+    'pale_red'   : { 'path': imagePath + 'images/EW_Decade_Manual.png',
                     'size': [32, 48] },
     'empty'      : { 'path': imagePath + 'images/empty_marker.png',
                     'size': [0, 0] },
@@ -1055,7 +1053,7 @@ function VisualAsset (Lt) {
 
     function create_tooltips_annual () {
       pts.map((e, i) => {
-        let year = (Lt.preferences.forwardDirection) ? pts[i].year : pts[i].year + 1;
+        let year = (Lt.measurementOptions.forwardDirection) ? pts[i].year : pts[i].year + 1;
         if (year) {
           let first_or_last = (i == 1 || i == pts.length - 1) ? true : false;
           let options = (year % 50 == 0 || first_or_last) ? { permanent: true, direction: 'top' } : { direction: 'top' };
@@ -1067,8 +1065,8 @@ function VisualAsset (Lt) {
 
     function create_tooltips_subAnnual () {
       pts.map((e, i) => {
-        let forward = Lt.preferences.forwardDirection;
-        let backward = !Lt.preferences.forwardDirection;
+        let forward = Lt.measurementOptions.forwardDirection;
+        let backward = !Lt.measurementOptions.forwardDirection;
         let year = pts[i].year;
         let ew = pts[i].earlywood;
         let latLng = L.latLng(pts[i].latLng);
@@ -1088,7 +1086,7 @@ function VisualAsset (Lt) {
           }
           // When measuring forwards, tooltip is attached to the line behind the marker.
           // When measuring backwards, tooltip is attached to the line infront of the marker.
-          tooltip = (ew && backward) ? pts[i].year : pts[i].year + 1;
+          tooltip = ((ew && backward) || forward) ? pts[i].year : pts[i].year + 1;
           ((ew && forward) || (!ew && backward)) ? tooltip += ', early' : tooltip += ', late';
           Lt.visualAsset.lines[i].bindTooltip(tooltip, options);
         }
@@ -2842,7 +2840,8 @@ function Popout(Lt) {
    this.childSite = null
    this.win = null
 
-   this.btn = new Button('insights',
+   // prev icon: insights
+   this.btn = new Button('insert_chart_outlined',
                          'Open time series plots in a new window',
                          () => {
                            //this.childSite = 'http://localhost:8080/dendro-plots/'
