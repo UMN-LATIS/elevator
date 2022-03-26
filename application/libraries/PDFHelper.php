@@ -3,17 +3,15 @@
 class PDFHelper {
 
 	private $CI = null;
-	private $pathToScripts = null;
 
 	function __construct()
 	{
 		$this->CI =& get_instance();
-		$this->pathToScripts =realpath(NULL) . "/assets/pdf_scripts/";
 		ini_set('memory_limit','2048M');
 	}
 
 	public function minifyPDF($pdfFile) {
-		$pathToShrinkScript = $this->pathToScripts . "shrinkpdf.sh";
+		$pathToShrinkScript = "/usr/local/bin/shrinkpdf";
 		$outFile = $pdfFile . "_shrunk";
 		$commandLine = $pathToShrinkScript . " "  . $pdfFile . " " . $outFile . " 150";
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($commandLine);
