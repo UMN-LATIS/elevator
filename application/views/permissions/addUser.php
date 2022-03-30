@@ -111,6 +111,14 @@ $(document).on("ready", function() {
 			</div>
 		</div>
 
+		<?if($user->getUserType() == "Local"):?>
+			<div class="form-group">
+			<label for="inputAPISecret" class="col-sm-2 control-label">Created By:</label>
+			<div class="col-sm-5">
+				<?=$user->getCreatedBy()->getDisplayName()?>
+			</div>
+		</div>
+		<?endif?>
 <!--
 
 		<div class="form-group">
