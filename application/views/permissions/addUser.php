@@ -115,7 +115,7 @@ $(document).on("ready", function() {
 			<div class="form-group">
 			<label for="inputAPISecret" class="col-sm-2 control-label">Created By:</label>
 			<div class="col-sm-5">
-				<?=$user->getCreatedBy()->getDisplayName()?>
+				<?=$user->getCreatedBy()?$user->getCreatedBy()->getDisplayName():null?>
 			</div>
 		</div>
 		<?endif?>
