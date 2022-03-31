@@ -19,7 +19,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 	<div class="col-xs-6 col-sm-2 col-sm-offset-8 text-right"><a href="#" class="nextResult">Next Result <span class="glyphicon glyphicon-chevron-right"></span></a></div>
 </div>
 <?endif?>
-<div class="row">
+<div class="row assetRow">
 
 	<div class="col-md-7" id="embedView" data-objectid="<?=$firstAsset?>">
 	</div>
