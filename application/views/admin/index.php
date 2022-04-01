@@ -16,7 +16,7 @@
 
 	<div class="form-group">
 		<label class="sr-only" for="">User Lookup</label>
-		<input type="text" name="inputGroupValue" class="form-control" id="inputGroupValue" placeholder="User Lookup">
+		<input type="text" name="inputGroupValue" class="form-control inputGroupValue" id="inputGroupValue" placeholder="User Lookup">
 		<input type="hidden" name="inputGroupType" class="form-control" value="User" id="inputGroupType">
 	</div>
 	<button type="submit" class="btn btn-primary">Edit</button>

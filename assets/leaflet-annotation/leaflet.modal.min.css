@@ -10,11 +10,10 @@
     display: block;
     background: #222;
     opacity: 0;
-    filter: alpha(opacity=0);
     z-index: 10001;
-    -webkit-transition: opacity 0.25s linear;
-    -o-transition: opacity 0.25s linear;
-    transition: opacity 0.25s linear
+    -webkit-transition: opacity .25s linear;
+    -o-transition: opacity .25s linear;
+    transition: opacity .25s linear
 }
 
 .leaflet-modal .close {
@@ -29,13 +28,11 @@
     line-height: 1;
     color: #000;
     text-shadow: 0 1px 0 #fff;
-    opacity: .2;
-    filter: alpha(opacity=20)
+    opacity: .2
 }
 
 .leaflet-modal .close:hover {
-    opacity: .8;
-    filter: alpha(opacity=80)
+    opacity: .8
 }
 
 .leaflet-modal .modal {
@@ -61,17 +58,17 @@
     -webkit-background-clip: padding-box;
     background-clip: padding-box;
     border: 1px solid #999;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, .2);
     border-radius: 4px;
     outline: 0;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 0px;
+    margin-top: 0;
     margin-bottom: 40px;
     max-width: 600px;
-    -webkit-transition: margin 0.3s linear;
-    -o-transition: margin 0.3s linear;
-    transition: margin 0.3s linear
+    -webkit-transition: margin .3s linear;
+    -o-transition: margin .3s linear;
+    transition: margin .3s linear
 }
 
 .leaflet-modal.show {
@@ -86,6 +83,5 @@
 }
 
 .leaflet-modal.show .overlay {
-    opacity: .6;
-    filter: alpha(opacity=60)
+    opacity: .6
 }

@@ -111,6 +111,14 @@ $(document).on("ready", function() {
 			</div>
 		</div>
 
+		<?if($user->getUserType() == "Local"):?>
+			<div class="form-group">
+			<label for="inputAPISecret" class="col-sm-2 control-label">Created By:</label>
+			<div class="col-sm-5">
+				<?=$user->getCreatedBy()?$user->getCreatedBy()->getDisplayName():null?>
+			</div>
+		</div>
+		<?endif?>
 <!--
 
 		<div class="form-group">
@@ -162,11 +170,66 @@ $(document).on("ready", function() {
 			</div>
 		</div>
 
-		<?if(1==0 && $user->getId() == $this->user_model->getId()):?>
-		<pre>
-			<?=var_dump($this->user_model->userData);?>
-		</pre>
-		<?endif?>
+		
 </form>
 
 </div>
+
+<?if($userModel->userLoaded):?>
+<h2>User Permissions</h2>
+
+<div class="row">
+	<h3>Instance Permissions</h3>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Instance</th>
+				<th>Permission</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?foreach($userModel->instancePermissions as $instanceId=>$permission):?>
+				<tr>
+					<td>
+						<?$instance= $this->doctrine->em->getRepository("Entity\Instance")->find($instanceId)?>
+						<?=$instance?$instance->getName():"unknown"?>
+					</td>
+					<td>
+						<? foreach ($permissionList as $permissionItem) : ?>
+							<?if($permissionItem->getLevel() == $permission):?>
+								<?=$permissionItem->getLabel()?>
+							<?endif?>
+						<?endforeach?>
+					</td>
+				</tr>
+			<?endforeach?>
+		</tbody>
+	</table>
+</div>
+
+<div class="row">
+	<h3>Collection Permissions</h3>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Collection</th>
+				<th>Permission</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?foreach($userModel->collectionPermissions as $collectionId=>$permission):?>
+				<tr>
+					<td><?=$this->collection_model->getCollection($collectionId)?$this->collection_model->getCollection($collectionId)->getTitle():$collectionId?></td>
+					<td>
+						<? foreach ($permissionList as $permissionItem) : ?>
+							<?if($permissionItem->getLevel() == $permission):?>
+								<?=$permissionItem->getLabel()?>
+							<?endif?>
+						<?endforeach?>
+					</td>
+				</tr>
+			<?endforeach?>
+		</tbody>
+	</table>
+
+<?endif?>
