@@ -175,7 +175,7 @@ $(document).on("ready", function() {
 
 </div>
 
-<?if($userModel->userLoaded):?>
+<?if(isset($userModel) && $userModel->userLoaded):?>
 <h2>User Permissions</h2>
 
 <div class="row">
