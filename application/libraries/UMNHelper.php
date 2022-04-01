@@ -212,7 +212,9 @@ class UMNHelper extends AuthHelper
 
 	public function getGroupMapping($userData) {
 		$outputArray = array();
-
+		if(!$userData || !is_array($userData)) {
+			return $outputArray;
+		}
 		foreach($userData as $key=>$value) {
 			$outputArray[$key] = $value["values"];
 		}

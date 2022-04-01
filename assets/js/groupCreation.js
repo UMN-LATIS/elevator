@@ -10,7 +10,10 @@ var loadValues = function(groupArray) {
 
 var addValue = function(value) {
 
-	var source   = $("#group-value").html();
+	var source = $("#group-value").html();
+	if (!source) {
+		return;
+	}
 	var template = Handlebars.compile(source);
 
 	var sourceObject = {};
@@ -43,8 +46,10 @@ $(document).on("click", ".removeValueButton", function() {
 
 $(document).ready(function() {
 
-
-	loadValues(existingGroups);
+	if (typeof existingGroups !== 'undefined') {
+		loadValues(existingGroups);	
+	}
+	
 	addValue("");
 
 	$("#addAnotherValue").on("click", function() {
@@ -123,7 +128,9 @@ $(document).ready(function() {
 });
 
 function updateHints(targetElement) {
-
+	if (typeof hints == 'undefined') {
+		return;
+	}
 	$(".hintSelectorGroup").remove();
 	if(hints[targetElement.val()] && Object.keys(hints[targetElement.val()]).length >0) {	
 	
@@ -142,6 +149,9 @@ function updateHints(targetElement) {
 	}
 }
 function updateHelptext(targetElement) {
+	if (typeof helpText == 'undefined') {
+		return;
+	}
 	$("#helpText").text("");
 	if(helpText[targetElement.val()] && Object.keys(helpText[targetElement.val()]).length >0) {	
 		$("#helpText").text(helpText[targetElement.val()]);
@@ -152,8 +162,8 @@ function buildAutocomplete() {
 	var source   = $("#person-autocompleter-template").html();
 	var template = Handlebars.compile(source);
 
-
-	$(".inputGroupValue").each(function(index, el) {
+	$(".inputGroupValue").each(function (index, el) {
+		
 		$(el).autocomplete({
 
 			source: function(request, response) {
