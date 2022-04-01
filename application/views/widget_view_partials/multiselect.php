@@ -5,10 +5,14 @@
 		<?$firstItem = true; ?>
 				<li>
 		<?foreach(array_filter($fieldContent->getSortedValues()) as $outputValue):?>
+
 			<? $currentValue = ($firstItem?null:" : ") . $outputValue;?>
 			<? $builtList .= $currentValue; ?>
-	
-			<? echo getClickToSearchLink($widgetModel, $builtList, $currentValue)?>
+			<?if($widgetModel->getClickToSearch()):?>
+				<? echo getClickToSearchLink($widgetModel, $builtList, $currentValue)?>
+			<?else:?>
+				<? echo $currentValue?>
+			<?endif?>
 
 			<?$firstItem = false;?>
 		<?endforeach?>

@@ -645,6 +645,9 @@ class Permissions extends Instance_Controller {
 		if($user === null) {
 			//must be a remote user
 			$userId = $this->makeUserLocal($userId);
+			if(!$userId) {
+				instance_redirect("errorHandler/error/invalidUser");
+			}
 			instance_redirect("permissions/editUser/" . $userId);
 		}
 
@@ -697,10 +700,19 @@ class Permissions extends Instance_Controller {
 			$apiKey = $userModel->generateKeys();
 		}
 
+		if($userModel->getUserType() == "Remote") {
+			// normally a remote user loaded directly won't populate perms because we don't have a full set of attributes
+			// in this case, do our best and just see what they're manually added to
+			$userModel->userLoaded = true;
+			$userModel->resolvePermissions();
+		}
+
+		$permissionList = $this->doctrine->em->getRepository("Entity\Permission")->findAll();
+
 		$this->template->loadJavascript(["bootstrap-datepicker","bootstrap-show-password"]);
 		$this->template->loadCSS(["datepicker"]);
 
-		$this->template->content->view('permissions/addUser', ["user"=>$user, "instanceList"=>$instanceList, "apiKey"=>$apiKey]);
+		$this->template->content->view('permissions/addUser', ["user"=>$user, "instanceList"=>$instanceList, "apiKey"=>$apiKey, "userModel"=>$userModel, "hiddenAssetArray"=>$hiddenAssetArray, "permissionList"=>$permissionList]);
 		$this->template->content->view('user/hiddenAssets', ["hiddenAssets"=>$hiddenAssetArray, "isOffset"=>false]);
 		$this->template->publish();
 
@@ -732,6 +744,7 @@ class Permissions extends Instance_Controller {
 		$authHelper = $this->user_model->getAuthHelper();
 		
 		$user = $authHelper->createUserFromRemote($umndid);
+		if(!$user) {return false;}
 		return $user->getId();
 	}
 
