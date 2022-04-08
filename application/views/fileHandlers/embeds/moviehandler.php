@@ -187,7 +187,8 @@ if(typeof objectId == 'undefined') {
       width: "100%",
       height: `calc(100vh - ${transcriptOffset})`,
       preload: 'none',
-      playbackRateControls:  true
+      playbackRateControls:  true,
+      repeat: false
       });
     }
     
