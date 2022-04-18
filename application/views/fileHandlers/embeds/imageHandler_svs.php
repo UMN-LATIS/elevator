@@ -54,6 +54,11 @@
     max-height: 100%
 }
 
+#imageMap {
+    /* font-size: 12px; */
+    font-size: 1em;
+}
+
 </style>
 
 <div class="fixedHeightContainerSVS"><div style="height:100%; width:100%" id="imageMap"></div></div>

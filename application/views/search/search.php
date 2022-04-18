@@ -87,7 +87,7 @@
 
 				</div>
 				<div id="mapFrame">
-				<div id="mapPane">
+				<div id="mapPane" style="font-size: 1em;">
 
 
 				</div>

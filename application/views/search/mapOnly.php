@@ -19,6 +19,8 @@ $(document).ready(function() {
 #mapContainer {
 	height: 100%;
 	width: 100%;
+    font-size: 1em;
+
 }
 </style>
 <?$this->load->view("handlebarsTemplates");?>

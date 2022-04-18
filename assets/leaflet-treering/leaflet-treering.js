@@ -1533,7 +1533,8 @@ function AnnotationAsset(Lt) {
       'maxSize': [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
       'size': size,
       'anchor': anchor,
-      'initOpen': true
+      'initOpen': true,
+       'position': 'topleft'
     }).setContent(content).addTo(Lt.viewer);
 
     // remember annotation size/location each times its resized/moved
@@ -3922,9 +3923,8 @@ function ViewData(Lt) {
   // handlebars from templates.html
   let content = document.getElementById("view-data-default-template").innerHTML;
 
-  this.dialog = L.control.dialog({'size': [200, 235], 'anchor': [50, 0], 'initOpen': false})
+  this.dialog = L.control.dialog({'size': [200, 235], 'anchor': [50, 0], 'initOpen': false, 'position': 'topleft'})
     .setContent(content)
-
     .addTo(Lt.viewer);
 
   /**
@@ -4512,7 +4512,8 @@ function ImageAdjustment(Lt) {
   this.dialog = L.control.dialog({
     'size': [340, 280],
     'anchor': [50, 5],
-    'initOpen': false
+    'initOpen': false,
+     'position': 'topleft'
   }).setContent(content).addTo(Lt.viewer);
 
   /**

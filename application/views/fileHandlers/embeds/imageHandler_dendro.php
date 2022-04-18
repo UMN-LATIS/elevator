@@ -43,7 +43,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/file-saver/FileSaver.min.js"></script>
 
-	<script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script>
+	<script src="/assets/leaflet/leaflet.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
@@ -73,6 +73,12 @@ if($widgetObject->parentWidget->dendroFields) {
 	margin-left: 5px;
 	margin-top: 3px;
 }
+
+#imageMap {
+    /* font-size: 12px; */
+    font-size: 1em;
+}
+
 
 </style>
 
