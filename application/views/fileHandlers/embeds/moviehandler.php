@@ -89,7 +89,6 @@ foreach($derivatives as $entry) {
 
 $playlist["tracks"] = [];
 $captionPath = null;
-$cahpterPAth = null;
 
 if(isset($fileContainers['vtt'])) {
   $playlist["tracks"][] = [

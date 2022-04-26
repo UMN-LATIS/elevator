@@ -12,6 +12,52 @@ if($this->user_model->userLoaded) {
     $drawerArray[] = $drawer;
   }
 }
+
+$playlist = [];
+
+$playlist["image"] =isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png";
+
+$playlist["sources"] = [];
+
+$playlist["sources"][] = [
+    "type"=>"mp3",
+    "file"=>isset($fileContainers['mp3'])?stripHTTP($fileContainers['mp3']->getProtectedURLForFile(null, "+240 minutes", "audio/mp3")):null
+  ];
+
+$playlist["tracks"] = [];
+$captionPath = null;
+
+if(isset($fileContainers['vtt'])) {
+  $playlist["tracks"][] = [
+    "file" => isset($fileContainers['vtt'])?stripHTTP($fileContainers['vtt']->getProtectedURLForFile(".vtt")):null,
+    "kind" => "thumbnails"
+  ];
+}
+
+$captionPath = null;
+if(isset($widgetObject->sidecars) && array_key_exists("captions", $widgetObject->sidecars) && strlen($widgetObject->sidecars['captions'])>5) {
+  $captionPath = stripHTTP(instance_url("fileManager/getSidecar/" . $fileObjectId . "/captions"));
+  $playlist["tracks"][] = [
+    "file" => $captionPath,
+    "label" => "English",
+    "kind" => "captions"
+  ];
+}
+else {
+  $interactiveTranscript = false;
+}
+
+$chapterPath=  null;
+if(isset($widgetObject->sidecars) && array_key_exists("chapters", $widgetObject->sidecars) && strlen($widgetObject->sidecars['chapters'])>5) {
+  $chapterPath = stripHTTP(instance_url("fileManager/getSidecar/" . $fileObjectId . "/chapters"));
+  $playlist["tracks"][] = [
+    "file" => $chapterPath,
+    "kind" => "chapters"
+  ];
+  
+}
+
+
 ?>
 
 <script src="https://cdn.jwplayer.com/libraries/pTP0K0kA.js"></script>
@@ -43,11 +89,7 @@ if($this->user_model->userLoaded) {
 
 <script type="text/javascript">
 jwplayer("videoElement").setup({
-  image: "<?=isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png"?>",
-  <?if(isset($fileContainers['mp3'])):?>
-  file: "<?=isset($fileContainers['mp3'])?stripHTTP($fileContainers['mp3']->getProtectedURLForFile(null, "+240 minutes", "audio/mp3")):null?>",
-  type: "mp3",
-  <?endif?>
+  playlist: <?=json_encode($playlist) ?>,
   width: "100%",
   height: "100%",
   stretching: "<?=$stretchingSetting?>"
