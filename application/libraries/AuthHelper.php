@@ -83,9 +83,9 @@ class AuthHelper
 	public function autocompleteUsername($partialUsername) {
 		$CI =& get_instance();
 		$result = $CI->doctrine->em->getRepository("Entity\User")->createQueryBuilder('u')
-				->where('u.instance= :instance')
+				// ->where('u.instance= :instance')
 				->andWhere('u.displayName LIKE :name')
-				->setParameter('instance', $CI->instance)
+				// ->setParameter('instance', $CI->instance)
 				->setParameter('name', '%'.$partialUsername.'%')
 				->getQuery()
 				->getResult();
