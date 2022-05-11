@@ -562,7 +562,7 @@ class Beltdrive extends CI_Controller {
 
 	public function populateCacheTube() {
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
+		echo "Launching populateCacheTube\n";
 		while(1) {
 
 			$job = $this->pheanstalk->watch('cacheRebuild')->ignore('default')->reserve();
@@ -596,7 +596,7 @@ class Beltdrive extends CI_Controller {
 				echo "Rebuilding template: " . $templateToReindex . "\n";
 				$qb = $this->doctrine->em->createQueryBuilder();
 				$qb->from("Entity\Asset", 'a')
-					->select("a")
+					->select("a.assetId")
 					->where("a.deleted != TRUE")
 					->orWhere("a.deleted IS NULL")
 					->andWhere("a.assetId IS NOT NULL")
@@ -607,15 +607,20 @@ class Beltdrive extends CI_Controller {
 				$result = $qb->getQuery()->iterate();
 
 				foreach($result as $entry) {
-					$entry = $entry[0];
-					$newTask = json_encode(["objectId"=>$entry->getAssetId(),"instance"=>$instanceId]);
+					$entry = array_pop($entry);
+					$newTask = json_encode(["objectId"=>$entry["assetId"], "instance"=>$instanceId]);
 					$jobId= $this->pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+					$entry = null;
+					$newTask = null;
+					$count++;
+					if($count % 100 == 0) {
+						gc_collect_cycles();
+						$this->pheanstalk->touch($job);
+						$this->doctrine->em->clear();
+					}
 				}
-				$count++;
-				if($count % 100 == 0) {
-					gc_collect_cycles();
-					$this->pheanstalk->touch($jobId);
-				}
+				echo "Finished reindexing assets.\n";
+				
 				
 			}
 
