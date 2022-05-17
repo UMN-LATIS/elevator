@@ -1,8 +1,8 @@
 <strong><?=$widgetModel->getLabel()?>:</strong>
 <ul>
-	<? $builtList = ""; foreach($widgetModel->fieldContentsArray as $fieldContent):?>
+	<? foreach($widgetModel->fieldContentsArray as $fieldContent):?>
 		
-		<?$firstItem = true; ?>
+		<?$firstItem = true; $builtList = ""; ?>
 				<li>
 		<?foreach(array_filter($fieldContent->getSortedValues()) as $outputValue):?>
 
