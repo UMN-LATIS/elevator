@@ -653,7 +653,7 @@ class AssetManager extends Admin_Controller {
 				$outputRow[] = $assetModel->getObjectId();
 				$collection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
 				$outputRow[] = $collection->getTitle();
-				$outputRow[] = instance_url("assets/viewAsset/" . $assetModel->getObjectId());
+				$outputRow[] = instance_url("asset/viewAsset/" . $assetModel->getObjectId());
 				foreach($assetTemplate->widgetArray as $key => $widgets) {
 					if(isset($assetModel->assetObjects[$key])) {
 						$object = $assetModel->assetObjects[$key];
