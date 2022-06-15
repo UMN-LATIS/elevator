@@ -981,22 +981,30 @@ class AssetManager extends Admin_Controller {
 
 						if(get_class($widget) == "Upload" && strlen(trim($rowEntry))>0) {
 							$description = null;
+							$captions = null;
+							$chapters = null;
 							if(strpos($rowEntry, ",")) {
-								$fileUploadExploded = $exploded = preg_split("/,/", $rowEntry, 2);
+								$fileUploadExploded = $exploded = preg_split("/,/", $rowEntry);
 								$url = $fileUploadExploded[0];
-								if($fileUploadExploded[1]) {
+								if(isset($fileUploadExploded[1])) {
 									$description = $fileUploadExploded[1];
+								}
+								if(isset($fileUploadExploded[2])) { 
+									$captions = $fileUploadExploded[2];
+								}
+								if(isset($fileUploadExploded[3])) { 
+									$chapters = $fileUploadExploded[3];
 								}
 							}
 							else {
 								$url = $rowEntry;
 							}
-							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($url), "description"=>$description];
+							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($url), "description"=>$description, "captions"=>trim($captions),"chapters"=>trim($chapters)];
 							continue;
 						}
 						else if(get_class($widget) == "Date") {
 							if(strpos($rowEntry, ",")) {
-								$dateExploded = $exploded = preg_split("/,/", $rowEntry, 2);
+								$dateExploded = $exploded = str_getcsv($rowEntry);
 								$widgetContainer->label = $dateExploded[1];
 								$dateString = $dateExploded[0];
 							}
