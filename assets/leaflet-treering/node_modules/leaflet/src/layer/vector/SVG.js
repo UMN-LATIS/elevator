@@ -1,7 +1,7 @@
 import {Renderer} from './Renderer';
 import * as DomUtil from '../../dom/DomUtil';
 import * as DomEvent from '../../dom/DomEvent';
-import * as Browser from '../../core/Browser';
+import Browser from '../../core/Browser';
 import {stamp} from '../../core/Util';
 import {svgCreate, pointsToPath} from './SVG.Util';
 export {pointsToPath};
@@ -17,7 +17,7 @@ export var create = Browser.vml ? vmlCreate : svgCreate;
  * Allows vector layers to be displayed with [SVG](https://developer.mozilla.org/docs/Web/SVG).
  * Inherits `Renderer`.
  *
- * Due to [technical limitations](http://caniuse.com/#search=svg), SVG is not
+ * Due to [technical limitations](https://caniuse.com/svg), SVG is not
  * available in all web browsers, notably Android 2.x and 3.x.
  *
  * Although SVG is not available on IE7 and IE8, these browsers support
@@ -47,12 +47,6 @@ export var create = Browser.vml ? vmlCreate : svgCreate;
 
 export var SVG = Renderer.extend({
 
-	getEvents: function () {
-		var events = Renderer.prototype.getEvents.call(this);
-		events.zoomstart = this._onZoomStart;
-		return events;
-	},
-
 	_initContainer: function () {
 		this._container = create('svg');
 
@@ -68,13 +62,7 @@ export var SVG = Renderer.extend({
 		DomEvent.off(this._container);
 		delete this._container;
 		delete this._rootGroup;
-	},
-
-	_onZoomStart: function () {
-		// Drag-then-pinch interactions might mess up the center and zoom.
-		// In this case, the easiest way to prevent this is re-do the renderer
-		//   bounds and padding when the zooming starts.
-		this._update();
+		delete this._svgSize;
 	},
 
 	_update: function () {
@@ -180,15 +168,15 @@ export var SVG = Renderer.extend({
 
 	_updateCircle: function (layer) {
 		var p = layer._point,
-		    r = layer._radius,
-		    r2 = layer._radiusY || r,
+		    r = Math.max(Math.round(layer._radius), 1),
+		    r2 = Math.max(Math.round(layer._radiusY), 1) || r,
 		    arc = 'a' + r + ',' + r2 + ' 0 1,0 ';
 
 		// drawing a circle with two half-arcs
 		var d = layer._empty() ? 'M0 0' :
-				'M' + (p.x - r) + ',' + p.y +
-				arc + (r * 2) + ',0 ' +
-				arc + (-r * 2) + ',0 ';
+			'M' + (p.x - r) + ',' + p.y +
+			arc + (r * 2) + ',0 ' +
+			arc + (-r * 2) + ',0 ';
 
 		this._setPath(layer, d);
 	},
@@ -211,6 +199,7 @@ if (Browser.vml) {
 	SVG.include(vmlMixin);
 }
 
+// @namespace SVG
 // @factory L.svg(options?: Renderer options)
 // Creates a SVG renderer with the given options.
 export function svg(options) {

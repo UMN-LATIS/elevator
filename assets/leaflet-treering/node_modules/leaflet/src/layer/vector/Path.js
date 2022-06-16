@@ -1,6 +1,5 @@
 import {Layer} from '../Layer';
 import * as Util from '../../core/Util';
-import {touch} from '../../core/Browser';
 
 /*
  * @class Path
@@ -106,6 +105,9 @@ export var Path = Layer.extend({
 		Util.setOptions(this, style);
 		if (this._renderer) {
 			this._renderer._updateStyle(this);
+			if (this.options.stroke && style && Object.prototype.hasOwnProperty.call(style, 'weight')) {
+				this._updateBounds();
+			}
 		}
 		return this;
 	},
@@ -140,6 +142,7 @@ export var Path = Layer.extend({
 
 	_clickTolerance: function () {
 		// used when doing hit detection for Canvas layers
-		return (this.options.stroke ? this.options.weight / 2 : 0) + (touch ? 10 : 0);
+		return (this.options.stroke ? this.options.weight / 2 : 0) +
+		  (this._renderer.options.tolerance || 0);
 	}
 });

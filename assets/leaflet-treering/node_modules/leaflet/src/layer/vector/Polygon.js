@@ -109,13 +109,13 @@ export var Polygon = Polyline.extend({
 
 	_setLatLngs: function (latlngs) {
 		Polyline.prototype._setLatLngs.call(this, latlngs);
-		if (LineUtil._flat(this._latlngs)) {
+		if (LineUtil.isFlat(this._latlngs)) {
 			this._latlngs = [this._latlngs];
 		}
 	},
 
 	_defaultShape: function () {
-		return LineUtil._flat(this._latlngs[0]) ? this._latlngs[0] : this._latlngs[0][0];
+		return LineUtil.isFlat(this._latlngs[0]) ? this._latlngs[0] : this._latlngs[0][0];
 	},
 
 	_clipPoints: function () {
@@ -155,7 +155,7 @@ export var Polygon = Polyline.extend({
 		var inside = false,
 		    part, p1, p2, i, j, k, len, len2;
 
-		if (!this._pxBounds.contains(p)) { return false; }
+		if (!this._pxBounds || !this._pxBounds.contains(p)) { return false; }
 
 		// ray casting algorithm for detecting if point is in polygon
 		for (i = 0, len = this._parts.length; i < len; i++) {

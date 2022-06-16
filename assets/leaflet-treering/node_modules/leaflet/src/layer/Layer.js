@@ -14,7 +14,7 @@ import * as Util from '../core/Util';
  * @example
  *
  * ```js
- * var layer = L.Marker(latlng).addTo(map);
+ * var layer = L.marker(latlng).addTo(map);
  * layer.addTo(map);
  * layer.remove();
  * ```
@@ -36,7 +36,7 @@ export var Layer = Evented.extend({
 		pane: 'overlayPane',
 
 		// @option attribution: String = null
-		// String to be shown in the attribution control, describes the layer data, e.g. "© Mapbox".
+		// String to be shown in the attribution control, e.g. "© OpenStreetMap contributors". It describes the layer data and is often a legal obligation towards copyright holders and tile providers.
 		attribution: null,
 
 		bubblingMouseEvents: true
@@ -45,8 +45,8 @@ export var Layer = Evented.extend({
 	/* @section
 	 * Classes extending `L.Layer` will inherit the following methods:
 	 *
-	 * @method addTo(map: Map): this
-	 * Adds the layer to the given map
+	 * @method addTo(map: Map|LayerGroup): this
+	 * Adds the layer to the given map or layer group.
 	 */
 	addTo: function (map) {
 		map.addLayer(this);
@@ -61,6 +61,10 @@ export var Layer = Evented.extend({
 
 	// @method removeFrom(map: Map): this
 	// Removes the layer from the given map
+	//
+	// @alternative
+	// @method removeFrom(group: LayerGroup): this
+	// Removes the layer from the given `LayerGroup`
 	removeFrom: function (obj) {
 		if (obj) {
 			obj.removeLayer(this);
@@ -109,10 +113,6 @@ export var Layer = Evented.extend({
 
 		this.onAdd(map);
 
-		if (this.getAttribution && map.attributionControl) {
-			map.attributionControl.addAttribution(this.getAttribution());
-		}
-
 		this.fire('add');
 		map.fire('layeradd', {layer: this});
 	}
@@ -155,6 +155,10 @@ Map.include({
 	// @method addLayer(layer: Layer): this
 	// Adds the given layer to the map
 	addLayer: function (layer) {
+		if (!layer._layerAdd) {
+			throw new Error('The provided object is not a Layer.');
+		}
+
 		var id = Util.stamp(layer);
 		if (this._layers[id]) { return this; }
 		this._layers[id] = layer;
@@ -181,10 +185,6 @@ Map.include({
 			layer.onRemove(this);
 		}
 
-		if (layer.getAttribution && this.attributionControl) {
-			this.attributionControl.removeAttribution(layer.getAttribution());
-		}
-
 		delete this._layers[id];
 
 		if (this._loaded) {
@@ -200,7 +200,7 @@ Map.include({
 	// @method hasLayer(layer: Layer): Boolean
 	// Returns `true` if the given layer is currently added to the map
 	hasLayer: function (layer) {
-		return !!layer && (Util.stamp(layer) in this._layers);
+		return Util.stamp(layer) in this._layers;
 	},
 
 	/* @method eachLayer(fn: Function, context?: Object): this
@@ -227,7 +227,7 @@ Map.include({
 	},
 
 	_addZoomLimit: function (layer) {
-		if (isNaN(layer.options.maxZoom) || !isNaN(layer.options.minZoom)) {
+		if (!isNaN(layer.options.maxZoom) || !isNaN(layer.options.minZoom)) {
 			this._zoomBoundLayers[Util.stamp(layer)] = layer;
 			this._updateZoomLevels();
 		}

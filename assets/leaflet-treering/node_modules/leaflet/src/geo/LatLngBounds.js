@@ -24,6 +24,10 @@ import {LatLng, toLatLng} from './LatLng';
  * ```
  *
  * Caution: if the area crosses the antimeridian (often confused with the International Date Line), you must specify corners _outside_ the [-180, 180] degrees longitude range.
+ *
+ * Note that `LatLngBounds` does not inherit from Leaflet's `Class` object,
+ * which means new classes can't inherit from it, and new methods
+ * can't be added to it with the `include` function.
  */
 
 export function LatLngBounds(corner1, corner2) { // (LatLng, LatLng) or (LatLng[])
@@ -77,7 +81,9 @@ LatLngBounds.prototype = {
 	},
 
 	// @method pad(bufferRatio: Number): LatLngBounds
-	// Returns bigger bounds created by extending the current bounds by a given percentage in each direction.
+	// Returns bounds created by extending or retracting the current bounds by a given ratio in each direction.
+	// For example, a ratio of 0.5 extends the bounds by 50% in each direction.
+	// Negative values will retract the bounds.
 	pad: function (bufferRatio) {
 		var sw = this._southWest,
 		    ne = this._northEast,
@@ -189,7 +195,7 @@ LatLngBounds.prototype = {
 		return latIntersects && lngIntersects;
 	},
 
-	// @method overlaps(otherBounds: Bounds): Boolean
+	// @method overlaps(otherBounds: LatLngBounds): Boolean
 	// Returns `true` if the rectangle overlaps the given bounds. Two bounds overlap if their intersection is an area.
 	overlaps: function (bounds) {
 		bounds = toLatLngBounds(bounds);
@@ -212,7 +218,7 @@ LatLngBounds.prototype = {
 	},
 
 	// @method equals(otherBounds: LatLngBounds, maxMargin?: Number): Boolean
-	// Returns `true` if the rectangle is equivalent (within a small margin of error) to the given bounds. The margin of error can be overriden by setting `maxMargin` to a small number.
+	// Returns `true` if the rectangle is equivalent (within a small margin of error) to the given bounds. The margin of error can be overridden by setting `maxMargin` to a small number.
 	equals: function (bounds, maxMargin) {
 		if (!bounds) { return false; }
 
