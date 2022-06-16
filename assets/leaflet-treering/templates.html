@@ -1,3 +1,17 @@
+<script id="edit-tools-shifting-dialog-template" type="text/x-handlebars-template">
+  <div id="shift-container">
+    <p id="shift-header"> {{title}} </p>
+    <p id="shift-desc"> {{desc}} </p>
+    <div style="width:50%; display:inline; float:right;">
+      <label for="shift-radioA"> <input type="radio" name="shift-choice" id="shift-radioA"> <b>Adjust later points: </b> {{optionA}} </label>
+    </div>
+    <div style="width:48%; display:inline; float:right; margin-right:2%; border-right:2px double #cccccc;">
+      <label for="shift-radioB"> <input type="radio" name="shift-choice" id="shift-radioB"> <b>Adjust earlier points: </b> {{optionB}} </label>
+    </div>
+    <label for="shift-checkbox" style="margin-top:5px;"> <input type="checkbox" id="shift-checkbox"> Remember choice until page is reloaded. </label><br>
+  </div>
+</script>
+
 <script id="annotation-dialog-window-template" type="text/x-handlebars-template">
   <div id="tab" class="tab">
     <button class="tabLinks" id="summary-btn">Summary</button>
@@ -42,7 +56,7 @@
 </script>
 
 <script id="dating-template" type="text/x-handlebars-template">
-  <input type="number" style="border:none;width:50px;" value= {{date_year}} id="year_input"></input>
+  <input type="number" style="border:none;width:60px;" value= {{date_year}} id="year_input"></input>
 </script>
 
 <script id="start-point-popup-template" type="text/x-handlebars-template">
@@ -128,6 +142,10 @@
 
 <script id="meta-data-top-div-template" type="text/x-handlebars-template">
   <div><p id="meta-data-top-text" class="meta-data-text-box"></p></div>
+</script>
+
+<script id="meta-data-middle-div-template" type="text/x-handlebars-template">
+  <div><p id="meta-data-middle-text" class="meta-data-text-box"></p></div>
 </script>
 
 <script id="meta-data-bottom-div-template" type="text/x-handlebars-template">

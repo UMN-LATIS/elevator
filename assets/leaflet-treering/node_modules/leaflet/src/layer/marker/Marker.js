@@ -2,7 +2,9 @@ import {Layer} from '../Layer';
 import {IconDefault} from './Icon.Default';
 import * as Util from '../../core/Util';
 import {toLatLng as latLng} from '../../geo/LatLng';
+import {toPoint as point} from '../../geometry/Point';
 import * as DomUtil from '../../dom/DomUtil';
+import * as DomEvent from '../../dom/DomEvent';
 import {MarkerDrag} from './Marker.Drag';
 
 /*
@@ -32,21 +34,19 @@ export var Marker = Layer.extend({
 		// Option inherited from "Interactive layer" abstract class
 		interactive: true,
 
-		// @option draggable: Boolean = false
-		// Whether the marker is draggable with mouse/touch or not.
-		draggable: false,
-
 		// @option keyboard: Boolean = true
 		// Whether the marker can be tabbed to with a keyboard and clicked by pressing enter.
 		keyboard: true,
 
 		// @option title: String = ''
 		// Text for the browser tooltip that appear on marker hover (no tooltip by default).
+		// [Useful for accessibility](https://leafletjs.com/examples/accessibility/#markers-must-be-labelled).
 		title: '',
 
-		// @option alt: String = ''
-		// Text for the `alt` attribute of the icon image (useful for accessibility).
-		alt: '',
+		// @option alt: String = 'Marker'
+		// Text for the `alt` attribute of the icon image.
+		// [Useful for accessibility](https://leafletjs.com/examples/accessibility/#markers-must-be-labelled).
+		alt: 'Marker',
 
 		// @option zIndexOffset: Number = 0
 		// By default, marker images zIndex is set automatically based on its latitude. Use this option if you want to put the marker on top of all others (or below), specifying a high value like `1000` (or high negative value, respectively).
@@ -68,10 +68,38 @@ export var Marker = Layer.extend({
 		// `Map pane` where the markers icon will be added.
 		pane: 'markerPane',
 
+		// @option shadowPane: String = 'shadowPane'
+		// `Map pane` where the markers shadow will be added.
+		shadowPane: 'shadowPane',
+
 		// @option bubblingMouseEvents: Boolean = false
 		// When `true`, a mouse event on this marker will trigger the same event on the map
 		// (unless [`L.DomEvent.stopPropagation`](#domevent-stoppropagation) is used).
-		bubblingMouseEvents: false
+		bubblingMouseEvents: false,
+
+		// @option autoPanOnFocus: Boolean = true
+		// When `true`, the map will pan whenever the marker is focused (via
+		// e.g. pressing `tab` on the keyboard) to ensure the marker is
+		// visible within the map's bounds
+		autoPanOnFocus: true,
+
+		// @section Draggable marker options
+		// @option draggable: Boolean = false
+		// Whether the marker is draggable with mouse/touch or not.
+		draggable: false,
+
+		// @option autoPan: Boolean = false
+		// Whether to pan the map when dragging this marker near its edge or not.
+		autoPan: false,
+
+		// @option autoPanPadding: Point = Point(50, 50)
+		// Distance (in pixels to the left/right and to the top/bottom) of the
+		// map edge to start panning the map.
+		autoPanPadding: [50, 50],
+
+		// @option autoPanSpeed: Number = 10
+		// Number of pixels the map should pan by.
+		autoPanSpeed: 10
 	},
 
 	/* @section
@@ -142,6 +170,12 @@ export var Marker = Layer.extend({
 		return this.update();
 	},
 
+	// @method getIcon: Icon
+	// Returns the current icon used by the marker
+	getIcon: function () {
+		return this.options.icon;
+	},
+
 	// @method setIcon(icon: Icon): this
 	// Changes the marker icon.
 	setIcon: function (icon) {
@@ -166,7 +200,7 @@ export var Marker = Layer.extend({
 
 	update: function () {
 
-		if (this._icon) {
+		if (this._icon && this._map) {
 			var pos = this._map.latLngToLayerPoint(this._latlng).round();
 			this._setPos(pos);
 		}
@@ -191,8 +225,9 @@ export var Marker = Layer.extend({
 			if (options.title) {
 				icon.title = options.title;
 			}
-			if (options.alt) {
-				icon.alt = options.alt;
+
+			if (icon.tagName === 'IMG') {
+				icon.alt = options.alt || '';
 			}
 		}
 
@@ -200,6 +235,7 @@ export var Marker = Layer.extend({
 
 		if (options.keyboard) {
 			icon.tabIndex = '0';
+			icon.setAttribute('role', 'button');
 		}
 
 		this._icon = icon;
@@ -209,6 +245,10 @@ export var Marker = Layer.extend({
 				mouseover: this._bringToFront,
 				mouseout: this._resetZIndex
 			});
+		}
+
+		if (this.options.autoPanOnFocus) {
+			DomEvent.on(icon, 'focus', this._panOnFocus, this);
 		}
 
 		var newShadow = options.icon.createShadow(this._shadow),
@@ -236,7 +276,7 @@ export var Marker = Layer.extend({
 		}
 		this._initInteraction();
 		if (newShadow && addShadow) {
-			this.getPane('shadowPane').appendChild(this._shadow);
+			this.getPane(options.shadowPane).appendChild(this._shadow);
 		}
 	},
 
@@ -246,6 +286,10 @@ export var Marker = Layer.extend({
 				mouseover: this._bringToFront,
 				mouseout: this._resetZIndex
 			});
+		}
+
+		if (this.options.autoPanOnFocus) {
+			DomEvent.off(this._icon, 'focus', this._panOnFocus, this);
 		}
 
 		DomUtil.remove(this._icon);
@@ -262,7 +306,10 @@ export var Marker = Layer.extend({
 	},
 
 	_setPos: function (pos) {
-		DomUtil.setPosition(this._icon, pos);
+
+		if (this._icon) {
+			DomUtil.setPosition(this._icon, pos);
+		}
 
 		if (this._shadow) {
 			DomUtil.setPosition(this._shadow, pos);
@@ -274,7 +321,9 @@ export var Marker = Layer.extend({
 	},
 
 	_updateZIndex: function (offset) {
-		this._icon.style.zIndex = this._zIndex + offset;
+		if (this._icon) {
+			this._icon.style.zIndex = this._zIndex + offset;
+		}
 	},
 
 	_animateZoom: function (opt) {
@@ -320,7 +369,9 @@ export var Marker = Layer.extend({
 	_updateOpacity: function () {
 		var opacity = this.options.opacity;
 
-		DomUtil.setOpacity(this._icon, opacity);
+		if (this._icon) {
+			DomUtil.setOpacity(this._icon, opacity);
+		}
 
 		if (this._shadow) {
 			DomUtil.setOpacity(this._shadow, opacity);
@@ -335,12 +386,26 @@ export var Marker = Layer.extend({
 		this._updateZIndex(0);
 	},
 
+	_panOnFocus: function () {
+		var map = this._map;
+		if (!map) { return; }
+
+		var iconOpts = this.options.icon.options;
+		var size = iconOpts.iconSize ? point(iconOpts.iconSize) : point(0, 0);
+		var anchor = iconOpts.iconAnchor ? point(iconOpts.iconAnchor) : point(0, 0);
+
+		map.panInside(this._latlng, {
+			paddingTopLeft: anchor,
+			paddingBottomRight: size.subtract(anchor)
+		});
+	},
+
 	_getPopupAnchor: function () {
-		return this.options.icon.options.popupAnchor || [0, 0];
+		return this.options.icon.options.popupAnchor;
 	},
 
 	_getTooltipAnchor: function () {
-		return this.options.icon.options.tooltipAnchor || [0, 0];
+		return this.options.icon.options.tooltipAnchor;
 	}
 });
 
