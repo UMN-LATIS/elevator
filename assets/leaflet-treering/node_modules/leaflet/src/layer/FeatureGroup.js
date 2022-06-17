@@ -69,7 +69,7 @@ export var FeatureGroup = LayerGroup.extend({
 	},
 
 	// @method bringToBack(): this
-	// Brings the layer group to the top of all other layers
+	// Brings the layer group to the back of all other layers
 	bringToBack: function () {
 		return this.invoke('bringToBack');
 	},
@@ -87,8 +87,8 @@ export var FeatureGroup = LayerGroup.extend({
 	}
 });
 
-// @factory L.featureGroup(layers: Layer[])
-// Create a feature group, optionally given an initial set of layers.
-export var featureGroup = function (layers) {
-	return new FeatureGroup(layers);
+// @factory L.featureGroup(layers?: Layer[], options?: Object)
+// Create a feature group, optionally given an initial set of layers and an `options` object.
+export var featureGroup = function (layers, options) {
+	return new FeatureGroup(layers, options);
 };

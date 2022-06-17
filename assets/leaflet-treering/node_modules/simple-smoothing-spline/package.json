@@ -1,0 +1,85 @@
+{
+  "_from": "simple-smoothing-spline",
+  "_id": "simple-smoothing-spline@0.1.7",
+  "_inBundle": false,
+  "_integrity": "sha512-PwlO1fyf74U8Q5nnfEZ8+uMO6Efxu96Jpp9lbdanfxH3PDmVLyUVQvr0pZH0fMMHoQcdL1jdan4xz4pIbFgkFw==",
+  "_location": "/simple-smoothing-spline",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "simple-smoothing-spline",
+    "name": "simple-smoothing-spline",
+    "escapedName": "simple-smoothing-spline",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/simple-smoothing-spline/-/simple-smoothing-spline-0.1.7.tgz",
+  "_shasum": "a07f85c7e475afe2e771adb98acf850aaca192bf",
+  "_spec": "simple-smoothing-spline",
+  "_where": "C:\\Users\\JThorneUMN\\Documents\\GitHub\\leaflet-treering\\assets",
+  "author": {
+    "name": "James Johnson",
+    "email": "johnsojr@umn.edu"
+  },
+  "bugs": {
+    "url": "https://github.com/UMN-LATIS/simple-smoothing-spline/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "mathjs": "^9.4.4"
+  },
+  "deprecated": false,
+  "description": "Fit a smoothing spline to collection of data points",
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "d3": "^7.0.0",
+    "eslint": "^7.30.0",
+    "jest": "^27.0.6",
+    "np": "^7.5.0",
+    "plotly.js-dist": "^2.2.1",
+    "prettier": "^2.3.2",
+    "snowpack": "^3.8.2",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
+  },
+  "engines": {
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+  },
+  "exports": "./dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "homepage": "https://github.com/UMN-LATIS/simple-smoothing-spline#readme",
+  "keywords": [
+    "smoothing",
+    "spline",
+    "cubic",
+    "regression",
+    "plot",
+    "data",
+    "analysis"
+  ],
+  "license": "MIT",
+  "name": "simple-smoothing-spline",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UMN-LATIS/simple-smoothing-spline.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "publish": "np",
+    "start": "snowpack dev",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:watch": "npm run test -- --watch"
+  },
+  "type": "module",
+  "version": "0.1.7"
+}

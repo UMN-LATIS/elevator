@@ -1,7 +1,8 @@
 import {TileLayer} from './TileLayer';
 import {extend, setOptions, getParamString} from '../../core/Util';
-import {retina} from '../../core/Browser';
+import Browser from '../../core/Browser';
 import {EPSG4326} from '../../geo/crs/CRS.EPSG4326';
+import {toBounds} from '../../geometry/Bounds';
 
 /*
  * @class TileLayer.WMS
@@ -27,7 +28,7 @@ export var TileLayerWMS = TileLayer.extend({
 	// @aka TileLayer.WMS options
 	// If any custom options not documented here are used, they will be sent to the
 	// WMS server as extra parameters in each request URL. This can be useful for
-	// [non-standard vendor WMS parameters](http://docs.geoserver.org/stable/en/user/services/wms/vendor.html).
+	// [non-standard vendor WMS parameters](https://docs.geoserver.org/stable/en/user/services/wms/vendor.html).
 	defaultWmsParams: {
 		service: 'WMS',
 		request: 'GetMap',
@@ -79,7 +80,10 @@ export var TileLayerWMS = TileLayer.extend({
 
 		options = setOptions(this, options);
 
-		wmsParams.width = wmsParams.height = options.tileSize * (options.detectRetina && retina ? 2 : 1);
+		var realRetina = options.detectRetina && Browser.retina ? 2 : 1;
+		var tileSize = this.getTileSize();
+		wmsParams.width = tileSize.x * realRetina;
+		wmsParams.height = tileSize.y * realRetina;
 
 		this.wmsParams = wmsParams;
 	},
@@ -97,16 +101,15 @@ export var TileLayerWMS = TileLayer.extend({
 
 	getTileUrl: function (coords) {
 
-		var tileBounds = this._tileCoordsToBounds(coords),
-		    nw = this._crs.project(tileBounds.getNorthWest()),
-		    se = this._crs.project(tileBounds.getSouthEast()),
-
+		var tileBounds = this._tileCoordsToNwSe(coords),
+		    crs = this._crs,
+		    bounds = toBounds(crs.project(tileBounds[0]), crs.project(tileBounds[1])),
+		    min = bounds.min,
+		    max = bounds.max,
 		    bbox = (this._wmsVersion >= 1.3 && this._crs === EPSG4326 ?
-			    [se.y, nw.x, nw.y, se.x] :
-			    [nw.x, se.y, se.x, nw.y]).join(','),
-
+		    [min.y, min.x, max.y, max.x] :
+		    [min.x, min.y, max.x, max.y]).join(','),
 		    url = TileLayer.prototype.getTileUrl.call(this, coords);
-
 		return url +
 			getParamString(this.wmsParams, url, this.options.uppercase) +
 			(this.options.uppercase ? '&BBOX=' : '&bbox=') + bbox;
