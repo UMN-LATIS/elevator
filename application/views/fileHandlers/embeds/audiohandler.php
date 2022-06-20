@@ -78,6 +78,11 @@ if(isset($widgetObject->sidecars) && array_key_exists("chapters", $widgetObject-
 <div id="videoElement">Loading the player...</div>
 
 <style>
+.jw-cue {
+  background-color: yellow !important;
+  height: 15px !important;
+}
+
 .jwplayer.jw-flag-audio-player .jw-preview {
   display:block;
 }
