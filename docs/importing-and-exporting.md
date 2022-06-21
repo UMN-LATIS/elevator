@@ -34,6 +34,14 @@ Location fields should be of the form latitude,longitude,label (label being opti
 #### Checkbox Fields
 CheckBox fields can either be blank or “off” for unchecked.  Any other value is treated as true.
 
+#### Upload Fields
+An upload field can either be just a basic URL (accessible via the web) or a compound field with additional information separated by commas. The structure as:
+```
+url,description,caption-vtt-url,chapter-vtt-url
+```
+
+The `caption` and `chapter` urls are only relevant for audio and video files, and should point to web accessible URLs hosting VTT files. These will be added as sidecar data when the core asset is ingested. The description field can be populated for any file. As long as you're using proper CSV encoding (with double quotes around text containing commas, etc) there should not be any additional restrictions on characters used in the description.
+
 ## Exporting to CSV
 Elevator can export sets of documents to the standard CSV format.  Each CSV file can only contain documents from a single template.
 
