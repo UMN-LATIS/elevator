@@ -703,7 +703,25 @@ class Beltdrive extends CI_Controller {
 
 				// this handler type may get overwritten later - for example, once we identify the contents of a zip
 				$fileHandler = $this->filehandler_router->getHandlerForType($fileContainer->getType());
-
+				$captionText = null;
+				$chapterText = null;
+				if($importEntry['captions']) {
+					try {
+						echo "Importing Captions\n";
+						$captionText = file_get_contents($importEntry['captions']);
+					}
+					catch(Exception $e) {
+					}
+				}
+				if($importEntry["chapters"]) {
+					try {
+						echo "Importing Chapters\n";
+						$chapterText = file_get_contents($importEntry["chapters"]);
+					}
+					catch(Exception $e) {
+					}
+					
+				}
 				$fileHandler->sourceFile = $fileContainer;
 				$fileHandler->parentObjectId = $assetModel->getObjectId();
 				$fileHandler->setCollectionId($assetModel->getGlobalValue("collectionId"));
@@ -779,6 +797,17 @@ class Beltdrive extends CI_Controller {
 				if(file_exists($localPath)) {
 					if($fileContainer->copyToRemoteStorage()) {
 						$assetArray[$importEntry['field']][] = ["fileId"=>$fileId, "regenerate"=>"On", "fileDescription"=>$description];							
+						if(isset($captionText)) {
+							$assetArray[$importEntry['field']][0]['sidecars'] = [];
+							$assetArray[$importEntry['field']][0]['sidecars']['captions'] = $captionText;
+							var_dump($assetArray);
+						}
+						if(isset($chapterText)) {
+							if(!isset($assetArray[$importEntry['field']][0]['sidecars'])) {
+								$assetArray[$importEntry['field']][0]['sidecars'] = [];
+							}
+							$assetArray[$importEntry['field']][0]['sidecars']['chapters'] = $chapterText;
+						}
 						unlink($localPath);
 					}
 					else {
