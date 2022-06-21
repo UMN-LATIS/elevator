@@ -984,7 +984,7 @@ class AssetManager extends Admin_Controller {
 							$captions = null;
 							$chapters = null;
 							if(strpos($rowEntry, ",")) {
-								$fileUploadExploded = $exploded = preg_split("/,/", $rowEntry);
+								$fileUploadExploded = str_getcsv($rowEntry);
 								$url = $fileUploadExploded[0];
 								if(isset($fileUploadExploded[1])) {
 									$description = $fileUploadExploded[1];
