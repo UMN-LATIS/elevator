@@ -2,7 +2,7 @@
 $fileObjectId = $fileObject->getObjectId();
 $drawerArray = array();
 if($this->user_model->userLoaded) {
-  foreach($this->user_model->getDrawers(true) as $drawer) {
+  foreach($this->user_model->getDrawers(true,true) as $drawer) {
     $drawerArray[] = $drawer;
   }
 }
