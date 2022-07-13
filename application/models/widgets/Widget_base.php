@@ -77,6 +77,8 @@ class Widget_base extends CI_Model {
 		$widgetArray["directSearch"] = $this->widgetObject->getDirectSearch();
 		$widgetArray["clickToSearch"] = $this->widgetObject->getClickToSearch();
 		$widgetArray["clickToSearchType"] = $this->widgetObject->getClickToSearchType();
+		$widgetArray["viewOrder"] = $this->widgetObject->getViewOrder();
+		$widgetArray["templateOrder"] = $this->widgetObject->getTemplateOrder();
 		return $widgetArray;
 	}
 

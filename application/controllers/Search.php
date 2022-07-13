@@ -196,6 +196,12 @@ class Search extends Instance_Controller {
 			}
 			
 		}
+		else if(get_class($widget) == "Multiselect") {
+			$this->load->helper("multiselect");
+			$returnInfo['type'] = "multiselect";
+			$returnInfo['values'] = array();
+			$returnInfo['renderContent'] = "<div id='cascade' class='multiselectGroup'>" . $this->load->view("widget_form_partials/multiselect_inner", ["widgetFieldData"=>$widget->getFieldData(), "formFieldName"=>"specificSearchText[]", "formFieldId"=>"cascade"], true) . "</div>";
+		}
 		else {
 			$returnInfo['type'] = "text";
 		}
