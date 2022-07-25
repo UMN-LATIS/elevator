@@ -31,6 +31,10 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		$inputSwitches[] = "-define dcm:rescale=true";
 	}
 
+	if($sourceImage->getType() == "pdf") {
+		$inputSwitches[] = "-trim";
+	}
+
 	$outputSwitches[] = "-compress JPEG";
 	$outputSwitches[] = "-quality " . $compressionQuality;
 	$outputSwitches[] = "-background white";
