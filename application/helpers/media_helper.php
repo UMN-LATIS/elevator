@@ -33,6 +33,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 
 	if($sourceImage->getType() == "pdf") {
 		$inputSwitches[] = "-trim";
+		$outputSwitches[] = "-trim";
 	}
 
 	$outputSwitches[] = "-compress JPEG";
