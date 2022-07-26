@@ -13,7 +13,7 @@
 		$dateString .= " - " . $fieldContent->end["text"];
 	}
 
-
+	$outputString = "";
 	if($labelString) {
 		$outputString .= $labelString . " <span class='date_value'>(" . $dateString . ")</span>";
 	}
