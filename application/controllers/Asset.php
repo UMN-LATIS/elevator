@@ -27,6 +27,34 @@ class asset extends Instance_Controller {
 		$this->load->model("asset_model");
 	}
 
+	function getAsset($objectId) {
+		$assetModel = new Asset_model;
+		if(!$objectId) {
+			show_404();
+		}
+
+		
+		if(!$assetModel->loadAssetById($objectId, $noHydrate = true)) {
+			show_404();
+		}
+
+		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
+			show_404();
+		}
+		
+		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+		if($this->accessLevel == PERM_NOPERM) {
+			$this->errorhandler_helper->callJsonError("noPermission");
+		}
+		if($this->config->item('restrict_hidden_assets') == "TRUE" && $this->accessLevel < PERM_ADDASSETS && 	$assetModel->getGlobalValue("readyForDisplay") == false) {
+			$this->errorhandler_helper->callJsonError("noPermission");
+		}
+
+		return render_json($assetModel->assetObject->getWidgets());
+
+	}
+
 	function viewAsset($objectId=null, $returnJson=false) {
 		$assetModel = new Asset_model;
 		if(!$objectId) {
