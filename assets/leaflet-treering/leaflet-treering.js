@@ -736,42 +736,60 @@ function MeasurementData (dataObject, Lt) {
 
     // Index to splice new points in array depends on shifting direction.
     let k = (direction == tempDirection) ? i : i + 1;
+    if (!k) k = 1;
     let earlywoodAdjusted = true;
 
-    if (Lt.measurementOptions.subAnnual) {
-      // See above for how years & indices decided.
-      let yearA = (Lt.insertZeroGrowth.adjustOuter) ? this.points[i].year + 1 : this.points[i].year;
-      let yearB = (Lt.insertZeroGrowth.adjustOuter) ? this.points[i].year + 1 : this.points[i].year - 1;
+    let comparisonYear = (this.points[i].year) ? this.points[i].year : this.points.slice(i).find(e => !e.start && !e.break && (e.year || e.year === 0)).year;
+    if (!i && !Lt.insertZeroGrowth.adjustOuter) comparisonYear++;
 
-      let indexA, indexB;
-      if (direction == forwardInTime) {
-        indexA = (Lt.insertZeroGrowth.adjustOuter) ? i + 1 : i;
-        indexB = (Lt.insertZeroGrowth.adjustOuter) ? i + 2 : i;
+    if (Lt.measurementOptions.subAnnual) {
+      let yearA, yearB, indexA, indexB, ewA, ewB;
+      // Special case for inserting a zero growth year on the first point when measuring backwards.
+      // (Hidden start point.)
+      if (i === 0 && direction == backwardInTime) {
+        yearA = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear : comparisonYear - 2;
+        yearB = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear - 1;
+        indexA = 1;
+        indexB = 1;
+        ewA = false;
+        ewB = true;
       } else {
-        indexA = (Lt.insertZeroGrowth.adjustOuter) ? i : i + 1;
-        indexB = (Lt.insertZeroGrowth.adjustOuter) ? i : i + 2;
+        // See above for how years & indices decided.
+        yearA = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear;
+        yearB = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear - 1;
+
+        if (direction == forwardInTime) {
+          indexA = (Lt.insertZeroGrowth.adjustOuter) ? i + 1 : i;
+          indexB = (Lt.insertZeroGrowth.adjustOuter) ? i + 2 : i;
+        } else {
+          indexA = (Lt.insertZeroGrowth.adjustOuter) ? i : i + 1;
+          indexB = (Lt.insertZeroGrowth.adjustOuter) ? i : i + 2;
+        }
+
+        ewA = true;
+        ewB = false;
       }
 
       let pt_A = {
         'start': false, 'skip': false, 'break': false,
-        'year': yearA, 'earlywood': true, 'latLng': latLng
+        'year': yearA, 'earlywood': ewA, 'latLng': latLng
       };
       new_points.splice(indexA, 0, pt_A);
 
       let pt_B = {
         'start': false, 'skip': false, 'break': false,
-        'year': yearB, 'earlywood': false, 'latLng': latLng
+        'year': yearB, 'earlywood': ewB, 'latLng': latLng
       };
       new_points.splice(indexB, 0, pt_B);
       (direction == tempDirection) ? k-- : k++;
     } else {
-      let yearAdjusted = (Lt.insertZeroGrowth.adjustOuter) ? this.points[i].year + 1 : this.points[i].year - 1;
+      let yearAdjusted = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear - 1;
       let new_pt = {
         'start': false, 'skip': false, 'break': false,
         'year': yearAdjusted, 'earlywood': true, 'latLng': latLng
       };
       new_points.splice(k, 0, new_pt);
-    }
+    };
 
     let year_adjustment = (Lt.insertZeroGrowth.adjustOuter) ? 1 : -1;
     let index_adjustment = (direction == tempDirection) ? 0 : k;
@@ -779,10 +797,15 @@ function MeasurementData (dataObject, Lt) {
     let second_points = (direction == tempDirection) ? JSON.parse(JSON.stringify(this.points)).slice(0, i) :
                                                        JSON.parse(JSON.stringify(this.points)).slice(i);
 
+
     second_points.map((e, j) => {
       if (!e) return;
       if (!e.start && !e.break) e.year = e.year + year_adjustment;
-      new_points[index_adjustment + j] = e;
+      if (i) {
+        new_points[index_adjustment + j] = e;
+      } else {
+        if (!e.start) new_points[index_adjustment + j] = e;
+      }
     });
 
     this.points = new_points.filter(Boolean);
@@ -1353,6 +1376,11 @@ function VisualAsset (Lt) {
         } else {
           color = ((pts[i + 1].year + 1) % 10 == 0) ? 'dark_red' : 'light_blue';
         }
+
+        if ((forward && pts[i - 1] && pts[i].latLng.lat == pts[i - 1].latLng.lat && pts[i].latLng.lng == pts[i - 1].latLng.lng) ||
+            (backward && pts[i + 1] && pts[i].latLng.lat == pts[i + 1].latLng.lat && pts[i].latLng.lng == pts[i + 1].latLng.lng)) {
+          color = 'zero';
+        }
       } else {
         color = (annual) ? 'light_blue' : 'dark_blue';
       }
@@ -1444,7 +1472,9 @@ function VisualAsset (Lt) {
       };
 
       if (Lt.insertZeroGrowth.active) {
-        if ((Lt.measurementOptions.subAnnual && pts[i].earlywood) || pts[i].start || pts[i].break) {
+        if ((Lt.measurementOptions.subAnnual && pts[i].earlywood && !pts[i].start) ||
+             (Lt.measurementOptions.forwardDirection && pts[i].start) ||
+             (!Lt.measurementOptions.forwardDirection && pts[i + 1]?.start) || pts[i].break) {
           alert('Zero width years must be added at the annual ring boundary, (i.e. latewood points)');
         } else {
           Lt.insertZeroGrowth.openDialog(e, i);
@@ -3205,7 +3235,6 @@ function Redo(Lt) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function Calibration(Lt) {
-  this.updated = false;
   this.active = false;
 
   // handlebars from templates.html
@@ -3220,8 +3249,6 @@ function Calibration(Lt) {
   );
 
   Calibration.prototype.calculatePPM = function(p1, p2, length) {
-    this.updated = true;
-
     var startPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
     var endPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
     var pixel_length = Math.sqrt(Math.pow(Math.abs(startPoint.x - endPoint.x), 2) +
@@ -3395,9 +3422,10 @@ function Dating(Lt) {
       // Delta is the starting count value. Need "jump start" value if...
       // ... expected to increment on next value. Special case if any ...
       // values before point are 0, then do not "jump start".
+      let numOfZeroYears = pts_before.filter(e => e.year === 0).length;
       let delta = 0;
-      if (pts_before.filter(e => e.year === 0).length) delta = 0;
-      else if (year != 0 && incrementYear(Lt.data.points[i])) delta = 1;
+      if (numOfZeroYears && year != 0 && !incrementYear(Lt.data.points[i])) delta = -1;
+      else if (!numOfZeroYears && incrementYear(Lt.data.points[i])) delta = 1;
       pts_before.map((pb, j) => {
         if (pb.year || pb.year == 0) {
           pb.year = new_year - dir_constant * (year_diff - delta);
@@ -5249,10 +5277,10 @@ function SaveCloud(Lt) {
       }
 
       this.saveText =
-          date.year + '/' + date.month + '/' + date.day + ' ' + date.hour + ':' + minute_string + am_pm;
+          "Saved to cloud " + date.year + '/' + date.month + '/' + date.day + ' ' + date.hour + ':' + minute_string + am_pm;
     } else if (date.day != undefined) {
       this.saveText =
-          date.year + '/' + date.month + '/' + date.day;
+          "Saved to cloud " + date.year + '/' + date.month + '/' + date.day;
     } else {
       this.saveText =
           'No data saved to cloud';
@@ -5332,8 +5360,8 @@ function MetaDataText (Lt) {
 
   MetaDataText.prototype.updateText = function () {
     let pts = JSON.parse(JSON.stringify(Lt.data.points));
-    let firstPt = pts.find(e => e.year);
-    let lastPt = pts.reverse().find(e => e.year);
+    let firstPt = pts.find(e => (e.year || e.year === 0));
+    let lastPt = pts.reverse().find(e => (e.year || e.year === 0));
 
     let startPt, endPt;
     if (firstPt?.year <= lastPt?.year) {
@@ -5344,6 +5372,9 @@ function MetaDataText (Lt) {
       endPt = firstPt;
       // Add 1 to keep points consistent with measuring forwards.
       startPt.year++;
+      if (!Lt.measurementOptions.subAnnual) {
+        endPt.year++;
+      }
     }
 
     let years = '';
@@ -5360,16 +5391,15 @@ function MetaDataText (Lt) {
       years = startAddition + String(startPt.year) + " — " + String(endPt.year) + endAddition + " &nbsp;|&nbsp; ";
     };
 
-    let speciesID = this.speciesID + " &nbsp;|&nbsp;";
+    let speciesID = this.speciesID + " &nbsp;|&nbsp; ";
     let branding = 'DendroElevator developed at <a href="http://z.umn.edu/treerings" target="_blank"> UMN </a>';
-    let saveText = (Lt.meta.savePermission) ? Lt.saveCloud.saveText : '';
-    saveText = saveText + " &nbsp;|&nbsp; ";
+    let saveText = (Lt.meta.savePermission) ? Lt.saveCloud.saveText + " &nbsp;|&nbsp; " : '';
     let increment = (Lt.measurementOptions.subAnnual) ? 'sub-annual increments' : 'annual increments';
     let direction = (Lt.measurementOptions.forwardDirection) ? 'Measuring forward, ' : 'Measuring backward, ';
 
     let dpi = Lt.meta.ppm * 25.4;
     let ppmText = Math.round(Lt.meta.ppm).toLocaleString() + " p/mm (" + Math.round(dpi).toLocaleString() + " dpi) &nbsp;|&nbsp; "
-    if (!Lt.calibration.updated && !Lt.options.initialData.ppm) ppmText = "Resolution unknown &nbsp;|&nbsp; "
+    if (!Lt.meta.ppmCalibration && !Lt.options.ppm) ppmText = "Resolution unknown &nbsp;|&nbsp; "
 
     let zoomPercentage = 100 * ((Lt.viewer.getZoom() - Lt.viewer.getMinZoom()) / (Lt.viewer.getMaxZoom() - Lt.viewer.getMinZoom()));
     let zoom = Math.round(zoomPercentage) + '% zoom';
@@ -5432,9 +5462,11 @@ function LoadLocal(Lt) {
       // if the JSON has PPM data, use that instead of loaded data.
       if(newDataJSON.ppm) {
         Lt.meta.ppm = newDataJSON.ppm;
+        Lt.options.ppm = newDataJSON.ppm;
       }
 
       Lt.loadData();
+      Lt.metaDataText.updateText();
     };
 
     fr.readAsText(files.item(0));
@@ -5660,6 +5692,10 @@ function KeyboardShortCutDialog (Lt) {
       {
        'key': 'Right click or esc',
        'use': 'Disable current tool',
+      },
+      {
+        'key': 'Enter or return',
+        'use': 'Accept menu selection',
       },
     ];
 
