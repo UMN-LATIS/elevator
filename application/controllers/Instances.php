@@ -355,6 +355,18 @@ class Instances extends Instance_Controller {
 				]);
 
 
+			$result = $s3Client->putBucketTagging([
+				'Bucket' => $bucketName,
+				'Tagging' => [
+					'TagSet' => [
+						[
+						'Key' => 'storage-elevator',
+						'Value' => $bucketName
+						]
+					]
+				]
+			]);
+
 			$useLifecycle = false;
 			$useStandardIA = false;
 			$transition = array();

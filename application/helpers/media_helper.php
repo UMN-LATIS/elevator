@@ -31,6 +31,7 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 		$inputSwitches[] = "-define dcm:rescale=true";
 	}
 
+
 	$outputSwitches[] = "-compress JPEG";
 	$outputSwitches[] = "-quality " . $compressionQuality;
 	$outputSwitches[] = "-background white";
@@ -38,7 +39,11 @@ function compressImageAndSave($sourceImage, $targetImage, $width, $height, $comp
 	$outputSwitches[] = "-flatten";
 	$outputSwitches[] = "-format jpeg";
 
-	
+	// this has to be after -flatten or it gets ignored
+	if($sourceImage->getType() == "pdf") {
+		$inputSwitches[] = "-trim";
+		$outputSwitches[] = "-trim";
+	}
 	// $image = $image->flattenImages();
 
 	$rotation = null;
