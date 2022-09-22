@@ -27,6 +27,35 @@ class asset extends Instance_Controller {
 		$this->load->model("asset_model");
 	}
 
+	function getAsset($objectId) {
+		$assetModel = new Asset_model;
+		if(!$objectId) {
+			show_404();
+		}
+
+		
+		if(!$assetModel->loadAssetById($objectId, $noHydrate = true)) {
+			show_404();
+		}
+
+		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
+			show_404();
+		}
+		
+		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+		if($this->accessLevel == PERM_NOPERM) {
+			$this->errorhandler_helper->callJsonError("noPermission");
+		}
+		if($this->config->item('restrict_hidden_assets') == "TRUE" && $this->accessLevel < PERM_ADDASSETS && 	$assetModel->getGlobalValue("readyForDisplay") == false) {
+			$this->errorhandler_helper->callJsonError("noPermission");
+		}
+		
+		return render_json($assetModel->assetObject->getWidgets());
+
+	}
+
+
 	function viewAsset($objectId=null, $returnJson=false) {
 		$assetModel = new Asset_model;
 		if(!$objectId) {
@@ -55,6 +84,8 @@ class asset extends Instance_Controller {
 		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
 
 		$targetObject = null;
+		$targetObjectId = null;
+		$targetFileObjectId = null;
 		try {
 			$fileHandler = $assetModel->getPrimaryFilehandler();
 
@@ -69,10 +100,12 @@ class asset extends Instance_Controller {
 				else {
 					$targetObject = $fileHandler->parentObjectId;
 				}
-				
+				$targetObjectId = $targetObject;
+				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 			else {
 				$targetObject = $fileHandler->getObjectId();
+				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 		}
 		catch (Exception $e) {
@@ -81,9 +114,11 @@ class asset extends Instance_Controller {
 
 		if($returnJson == "true") {
 			$json = $assetModel->getAsArray(null,false, $includeRelatedAssetCache= true); // include related assets
-			header('Content-type: application/json');
-			echo json_encode($json);
-			return;
+			$json["firstFileHandlerId"] = $targetFileObjectId;
+			$json["firstObjectId"] = $targetObjectId;
+			$json["title"] = $assetModel->getAssetTitle();
+			$json["titleObject"] = $assetModel->getAssetTitleWidget()?$assetModel->getAssetTitleWidget()->getFieldTitle():null;
+			return render_json($json);;
 		}
 		else {
 		// for subclipping movies
