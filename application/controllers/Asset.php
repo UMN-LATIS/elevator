@@ -278,6 +278,14 @@ class asset extends Instance_Controller {
 
 	}
 
+	public function getEmbedAsJson($fileObjectId, $parentObject=null) {
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		if($parentObject) {
+			$fileHandler->parentObjectId = $parentObject;
+		}
+		return $this->loadAssetView($assetModel, $fileHandler, false, true);
+	}
+
 	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
 		
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
@@ -405,7 +413,7 @@ class asset extends Instance_Controller {
 		return $includeOriginal;
 	}
 
-	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
+	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false, $returnJson=false) {
 
 	
 
@@ -425,9 +433,15 @@ class asset extends Instance_Controller {
 		if($fileHandler) {
 			try {
 				$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
+				if($returnJson) {
+					return render_json($embedAssets);
+				}
 				$embed = $fileHandler->getEmbedViewWithFiles($embedAssets, $includeOriginal, $embedded);
 			}
 			catch (Exception $e) {
+				if($returnJson) {
+					return render_json([]);
+				}
 				$embed = $fileHandler->getEmbedViewWithFiles(array(), $includeOriginal, $embedded);
 			}
 
