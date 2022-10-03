@@ -36,6 +36,11 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		if($this->instance->getInterfaceVersion() == 1) {
+			echo "VUE FACE";
+			return;
+		}
+
 		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
 			$jsLoadArray = ["search", "searchForm"];
@@ -680,8 +685,7 @@ class Search extends Instance_Controller {
 
 		if($this->input->post("storeOnly") == true) {
 
-			echo json_encode(["success"=>true, "searchId"=>$this->searchId]);
-			return;
+			return render_json(["success"=>true, "searchId"=>$this->searchId]);
 		}
 
 		if($this->input->post("redirectSearch") == true) {

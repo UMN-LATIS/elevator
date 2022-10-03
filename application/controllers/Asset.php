@@ -57,6 +57,7 @@ class asset extends Instance_Controller {
 
 
 	function viewAsset($objectId=null, $returnJson=false) {
+
 		$assetModel = new Asset_model;
 		if(!$objectId) {
 			show_404();
@@ -78,6 +79,12 @@ class asset extends Instance_Controller {
 		}
 		if($this->config->item('restrict_hidden_assets') == "TRUE" && $this->accessLevel < PERM_ADDASSETS && $assetModel->getGlobalValue("readyForDisplay") == false) {
 			$this->errorhandler_helper->callError("noPermission");
+		}
+
+
+		if($this->instance->getInterfaceVersion() == 1 && $returnJson == false) {
+			echo "VUE FACE";
+			return;
 		}
 
 
@@ -121,8 +128,6 @@ class asset extends Instance_Controller {
 			return render_json($json);;
 		}
 		else {
-		// for subclipping movies
-
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
 			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
