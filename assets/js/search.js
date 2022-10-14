@@ -514,8 +514,10 @@ function prepGallery() {
 				if(parsed.relatedAssetCache) {
 					for (var key in parsed.relatedAssetCache) { 
 						element = parsed.relatedAssetCache[key];
-						if(element.primaryHandler && element.primaryHandler.length > 0) {
-							fileIds.push(element.primaryHandler);
+						if (!element.ignoreForDigitalAsset) {
+							if (element.primaryHandler && element.primaryHandler.length > 0) {
+								fileIds.push(element.primaryHandler);
+							}
 						}
 					}
 				}

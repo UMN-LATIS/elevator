@@ -975,7 +975,7 @@ class Asset_model extends CI_Model {
 					catch (Exception $e) {
 
 					}
-					$relatedAssetCache[$nestedAsset->getObjectId()] = ["relatedAssetTitle"=>$nestedAsset->getAssetTitle(), "primaryHandler"=>$primaryHandlerId, "readyForDisplay"=>$nestedAsset->getGlobalValue("readyForDisplay")?true:false];
+					$relatedAssetCache[$nestedAsset->getObjectId()] = ["relatedAssetTitle"=>$nestedAsset->getAssetTitle(), "primaryHandler"=>$primaryHandlerId, "readyForDisplay"=>$nestedAsset->getGlobalValue("readyForDisplay")?true:false, "ignoreForDigitalAsset"=>$relatedWidget->ignoreForDigitalAsset];
 				}
 			}
 		}
