@@ -14,10 +14,15 @@ class Drawers extends Instance_Controller {
 
 	public function listDrawers() {
 		$drawers = $this->user_model->getDrawers($adminOnly=false, $nonGlobalOnly=true);
+		function customSort($a, $b) {
+			$aSort = $a->getTitle();
+			$bSort = $b->getTitle();
+			return strncmp($aSort, $bSort);
+		}
+		usort($drawers, "customSort");	
 		$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
 		$this->template->publish();
 	}
-
 
 	public function viewDrawer($drawerId) {
 
