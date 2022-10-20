@@ -17,7 +17,7 @@ class Drawers extends Instance_Controller {
 		function customSort($a, $b) {
 			$aSort = $a->getTitle();
 			$bSort = $b->getTitle();
-			return strncmp($aSort, $bSort);
+			return strncmp($aSort, $bSort, 100);
 		}
 		usort($drawers, "customSort");	
 		$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
