@@ -1429,4 +1429,33 @@ class Instance
     {
         return $this->notes;
     }
+    /**
+     * @var int
+     */
+    private $interfaceVersion = '0';
+
+
+    /**
+     * Set interfaceVersion.
+     *
+     * @param int $interfaceVersion
+     *
+     * @return Instance
+     */
+    public function setInterfaceVersion($interfaceVersion)
+    {
+        $this->interfaceVersion = $interfaceVersion;
+
+        return $this;
+    }
+
+    /**
+     * Get interfaceVersion.
+     *
+     * @return int
+     */
+    public function getInterfaceVersion()
+    {
+        return $this->interfaceVersion;
+    }
 }

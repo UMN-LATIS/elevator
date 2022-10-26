@@ -70,6 +70,15 @@ class Widget_base extends CI_Model {
 		$widgetArray["label"] = $this->widgetObject->getLabel();
 		$widgetArray["tooltip"] = $this->widgetObject->getTooltip();
 		$widgetArray["fieldData"] = $this->widgetObject->getFieldData();
+		$widgetArray["display"] = $this->widgetObject->getDisplay();
+		$widgetArray["displayInPreview"] = $this->widgetObject->getDisplayInPreview();
+		$widgetArray["required"] = $this->widgetObject->getRequired();
+		$widgetArray["searchable"] = $this->widgetObject->getSearchable();
+		$widgetArray["directSearch"] = $this->widgetObject->getDirectSearch();
+		$widgetArray["clickToSearch"] = $this->widgetObject->getClickToSearch();
+		$widgetArray["clickToSearchType"] = $this->widgetObject->getClickToSearchType();
+		$widgetArray["viewOrder"] = $this->widgetObject->getViewOrder();
+		$widgetArray["templateOrder"] = $this->widgetObject->getTemplateOrder();
 		return $widgetArray;
 	}
 

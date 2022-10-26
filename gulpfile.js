@@ -38,7 +38,7 @@ gulp.task('webRTI', function() {
 });
 
 gulp.task('basicFiles', function() {
-    return gulp.src(["./assets/js/serializeForm.js", "./assets/js/dateWidget.js", "./assets/js/template.js", "./assets/js/advancedSearchForm.js"])
+    return gulp.src(["./assets/js/serializeForm.js", "./assets/js/dateWidget.js", "./assets/js/template.js", "./assets/js/advancedSearchForm.js", "./assets/js/multiselectWidget.js"])
         .pipe(sourcemaps.init())
         .pipe(uglify())
         .pipe(concat('serializeDateTemplate.min.js'))

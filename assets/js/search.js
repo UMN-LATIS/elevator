@@ -262,7 +262,7 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 
 	loadAll = (loadAll)?"true":"false";
 
-	$.get(basePath + "search/searchResults/" + searchId + "/" + pageNumber + "/" + loadAll, function(data) {
+	$.get(basePath + "search/searchResults/" + searchId + "/" + pageNumber + "/" + loadAll, function (data) {
 		if(ignoreResults) {
 			return;
 		}
@@ -273,7 +273,7 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 				oldMatches = cachedResults.matches;
 				oldResults = cachedResults.searchResults;
 			}
-			cachedResults = $.parseJSON(data);
+			cachedResults = data;
 
 		}
 		catch(e){
@@ -312,7 +312,13 @@ function doSearch(searchId, pageNumber, loadAll, ignoreResults) {
 			}
 
 		}
-	});
+	})
+		.fail(function (e) {
+			if (e.readyState > 0) {
+				alert(JSON.stringify(e));
+			}
+			
+		});
 }
 
 function processSearchResults(cachedResults) {
@@ -514,8 +520,10 @@ function prepGallery() {
 				if(parsed.relatedAssetCache) {
 					for (var key in parsed.relatedAssetCache) { 
 						element = parsed.relatedAssetCache[key];
-						if(element.primaryHandler && element.primaryHandler.length > 0) {
-							fileIds.push(element.primaryHandler);
+						if (!element.ignoreForDigitalAsset) {
+							if (element.primaryHandler && element.primaryHandler.length > 0) {
+								fileIds.push(element.primaryHandler);
+							}
 						}
 					}
 				}

@@ -6,7 +6,7 @@ $(document).on("submit", ".searchForm", function() {
 var storeAndSearch = function(searchId, targetForm) {
     $.post( basePath + "search/searchResults/" + searchId, {storeOnly:true, searchQuery:JSON.stringify($( targetForm ).serializeForm())}, function( data ) {
         try{
-            cachedResults = $.parseJSON(data);
+            cachedResults = data;
             cachedDates = null;
         }
         catch(e){
@@ -18,6 +18,11 @@ var storeAndSearch = function(searchId, targetForm) {
         if(cachedResults.success === true) {
             searchId = cachedResults.searchId;
             window.location = basePath + "search/s/" + searchId;
+        }
+
+    }).fail(function (e) {
+        if (e.readyState > 0) {
+            alert(JSON.stringify(e));
         }
 
     });

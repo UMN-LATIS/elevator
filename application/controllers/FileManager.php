@@ -335,7 +335,6 @@ class FileManager extends Instance_Controller {
 			$allDerivatives = $fileHandler->allDerivativesForAccessLevel($accessLevel);
 		}
 		catch (Exception $e) {
-
 			if($this->user_model->userLoaded || !$this->instance->getUseCentralAuth()) {
 				$this->errorhandler_helper->callError("noPermission");
 			}
@@ -462,7 +461,8 @@ class FileManager extends Instance_Controller {
 		}
 
 		$metadata = $fileHandler->sourceFile->metadata;
-		echo json_encode($metadata);
+		$metadata['sourcefile'] = $fileHandler->sourceFile->originalFilename;
+		return render_json($metadata);
 
 	}
 

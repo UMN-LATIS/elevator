@@ -37,7 +37,7 @@ const buildSearchForm = function(fieldTitle, templateId, targetGroup) {
             $(targetGroup).html("");
             $(targetGroup).html('<input type="text" name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent" value="">');
         }
-        else {
+        else if(data.type == "select" || data.type=="checkbox" || data.type == "tag") {
             $(targetGroup).html("");
             $(targetGroup).html('<select name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent">');
             selectElement = $(targetGroup).find("select");
@@ -50,6 +50,34 @@ const buildSearchForm = function(fieldTitle, templateId, targetGroup) {
                 }
                 
             });
+
+        }
+        else if (data.type == "multiselect") {
+            console.log("Hey");
+            $(targetGroup).html(data.renderContent);
+            $(targetGroup).append('<input type="text" name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent searchText" value="">');
+            $(targetGroup).find("select").on("change", function () {
+                console.log(targetGroup);
+                let selectedValues = $(targetGroup).find("select").map(function (index, el) {
+                    return $(el).find(":selected").text();
+                });
+                
+                $(targetGroup).find(".searchText").val($.makeArray(selectedValues).join(", "))
+            });
+            eval($(targetGroup).find("script").text());
+            loadGroup("cascade");
+
+            // $(targetGroup).html('<select name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent">');
+            // selectElement = $(targetGroup).find("select");
+            // $.each(data.values, function(index, val) {
+            //     if(typeof index == "string") {
+            //         $(selectElement).append($('<option>', {value: index}).text(val));
+            //     }
+            //     else {
+            //         $(selectElement).append($('<option>', {value: val}).text(val));
+            //     }
+                
+            // });
 
         }
 

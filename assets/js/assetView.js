@@ -427,13 +427,7 @@ var loadMoreLikeThis = function (e) {
 
 	// get related results via search
 	$.post( basePath + "search/searchResults/", {"suppressRecent": true, "searchRelated": true, searchQuery:JSON.stringify(searchRequest)}, function( data ) {
-		try{
-			jsonObject = $.parseJSON(data);
-		}
-		catch(e){
-			alert(e + " " + data);
-			return;
-		}
+		const jsonObject = data;
 
 		if(jsonObject.success === true) {
 
@@ -456,6 +450,11 @@ var loadMoreLikeThis = function (e) {
 				$("#relatedAssets").append("<p>No Related Assets Found</p>");
 			}
 		}
+	}).fail(function (e) {
+		if (e.readyState > 0) {
+			alert(JSON.stringify(e));
+		}
+
 	});
 };
 

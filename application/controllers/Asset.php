@@ -27,7 +27,37 @@ class asset extends Instance_Controller {
 		$this->load->model("asset_model");
 	}
 
+	function getAsset($objectId) {
+		$assetModel = new Asset_model;
+		if(!$objectId) {
+			show_404();
+		}
+
+		
+		if(!$assetModel->loadAssetById($objectId, $noHydrate = true)) {
+			show_404();
+		}
+
+		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
+			show_404();
+		}
+		
+		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+		if($this->accessLevel == PERM_NOPERM) {
+			$this->errorhandler_helper->callJsonError("noPermission");
+		}
+		if($this->config->item('restrict_hidden_assets') == "TRUE" && $this->accessLevel < PERM_ADDASSETS && 	$assetModel->getGlobalValue("readyForDisplay") == false) {
+			$this->errorhandler_helper->callJsonError("noPermission");
+		}
+		
+		return render_json($assetModel->assetObject->getWidgets());
+
+	}
+
+
 	function viewAsset($objectId=null, $returnJson=false) {
+
 		$assetModel = new Asset_model;
 		if(!$objectId) {
 			show_404();
@@ -52,9 +82,17 @@ class asset extends Instance_Controller {
 		}
 
 
+		if($this->instance->getInterfaceVersion() == 1 && $returnJson == false) {
+			echo "VUE FACE";
+			return;
+		}
+
+
 		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
 
 		$targetObject = null;
+		$targetObjectId = null;
+		$targetFileObjectId = null;
 		try {
 			$fileHandler = $assetModel->getPrimaryFilehandler();
 
@@ -69,10 +107,12 @@ class asset extends Instance_Controller {
 				else {
 					$targetObject = $fileHandler->parentObjectId;
 				}
-				
+				$targetObjectId = $targetObject;
+				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 			else {
 				$targetObject = $fileHandler->getObjectId();
+				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 		}
 		catch (Exception $e) {
@@ -81,13 +121,13 @@ class asset extends Instance_Controller {
 
 		if($returnJson == "true") {
 			$json = $assetModel->getAsArray(null,false, $includeRelatedAssetCache= true); // include related assets
-			header('Content-type: application/json');
-			echo json_encode($json);
-			return;
+			$json["firstFileHandlerId"] = $targetFileObjectId;
+			$json["firstObjectId"] = $targetObjectId;
+			$json["title"] = $assetModel->getAssetTitle();
+			$json["titleObject"] = $assetModel->getAssetTitleWidget()?$assetModel->getAssetTitleWidget()->getFieldTitle():null;
+			return render_json($json);;
 		}
 		else {
-		// for subclipping movies
-
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
 			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
@@ -243,6 +283,14 @@ class asset extends Instance_Controller {
 
 	}
 
+	public function getEmbedAsJson($fileObjectId, $parentObject=null) {
+		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
+		if($parentObject) {
+			$fileHandler->parentObjectId = $parentObject;
+		}
+		return $this->loadAssetView($assetModel, $fileHandler, false, true);
+	}
+
 	public function getEmbedWithChrome($fileObjectId, $parentObject=null) {
 		
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject);
@@ -370,7 +418,7 @@ class asset extends Instance_Controller {
 		return $includeOriginal;
 	}
 
-	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false) {
+	public function loadAssetView($assetModel, $fileHandler=null, $embedded=false, $returnJson=false) {
 
 	
 
@@ -390,9 +438,15 @@ class asset extends Instance_Controller {
 		if($fileHandler) {
 			try {
 				$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
+				if($returnJson) {
+					return render_json($embedAssets);
+				}
 				$embed = $fileHandler->getEmbedViewWithFiles($embedAssets, $includeOriginal, $embedded);
 			}
 			catch (Exception $e) {
+				if($returnJson) {
+					return render_json([]);
+				}
 				$embed = $fileHandler->getEmbedViewWithFiles(array(), $includeOriginal, $embedded);
 			}
 

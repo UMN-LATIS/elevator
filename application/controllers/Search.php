@@ -36,6 +36,11 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		if($this->instance->getInterfaceVersion() == 1) {
+			echo "VUE FACE";
+			return;
+		}
+
 		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
 			$jsLoadArray = ["search", "searchForm"];
@@ -195,6 +200,12 @@ class Search extends Instance_Controller {
 				$returnInfo['type'] = "text";
 			}
 			
+		}
+		else if(get_class($widget) == "Multiselect") {
+			$this->load->helper("multiselect");
+			$returnInfo['type'] = "multiselect";
+			$returnInfo['values'] = array();
+			$returnInfo['renderContent'] = "<div id='cascade' class='multiselectGroup'>" . $this->load->view("widget_form_partials/multiselect_inner", ["widgetFieldData"=>$widget->getFieldData(), "formFieldName"=>"specificSearchText[]", "formFieldId"=>"cascade"], true) . "</div>";
 		}
 		else {
 			$returnInfo['type'] = "text";
@@ -674,8 +685,7 @@ class Search extends Instance_Controller {
 
 		if($this->input->post("storeOnly") == true) {
 
-			echo json_encode(["success"=>true, "searchId"=>$this->searchId]);
-			return;
+			return render_json(["success"=>true, "searchId"=>$this->searchId]);
 		}
 
 		if($this->input->post("redirectSearch") == true) {
@@ -693,7 +703,7 @@ class Search extends Instance_Controller {
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
 		$matchArray["searchId"] = $this->searchId;
-		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));
+		return render_json($this->search_model->processSearchResults($searchArray, $matchArray));
 
 
 	}

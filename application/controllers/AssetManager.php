@@ -124,7 +124,7 @@ class AssetManager extends Admin_Controller {
 
 		$templateArray["collections"] = $collections;
 		$templateArray["allowedCollections"] = $allowedCollections;
-		$templateArray["templates"] = $templates;
+		// $templateArray["templates"] = $templates;
 
 		echo json_encode($templateArray);
 	}
