@@ -75,6 +75,9 @@ class Home extends Instance_Controller {
 				}
 			}
 		}
+		if($dump=="user") {
+			var_dump($this->user_model->userData);
+		}
 	}
 
 	/*

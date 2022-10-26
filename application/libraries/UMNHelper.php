@@ -125,29 +125,6 @@ class UMNHelper extends AuthHelper
 		$employeeType = array();
 		
 		if ($this->shibboleth->hasSession()) {
-			// if($this->shibboleth->getAttributeValue('eduCourseMember')) {
-			// 	$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
-
-			// 	// hacky stuff to deal with the way this info is passed in
-			// 	// todo: learn about the actual standard for eduCourseMember
-			// 	foreach($courseArray as $course) {
-			// 		$explodedString = explode("@", $course);
-			// 		if(count($explodedString)>0) {
-			// 			$role = $explodedString[0];
-			// 		}
-			// 		$courseString = explode("/", $course);
-			// 		$courseId = intval($courseString[8]);
-			// 		$deptCourse = $courseString[6];
-			// 		if($role == "Instructor") {
-						
-			// 			$courseName = $courseString[6];
-			// 			$coursesTaught[$courseId] = $courseName;
-			// 			$deptCoursesTaught[$courseName] = $courseName;
-			// 		}
-			// 		$courses[] = $courseId;
-			// 		$deptCourses[] = $deptCourse;
-			// 	}
-			// }
 			
 			$emplId = $this->shibboleth->getAttributeValue('emplid');
 			if($emplId) {
@@ -178,6 +155,12 @@ class UMNHelper extends AuthHelper
 						$units[] = $entry->DEPTID;
 					}
 				}
+
+				$reg = $this->fetchBandaidResult("/api/enrollment/regsummary/" . $emplId);
+				if($reg) {
+					$studentStatus[] = $reg->ACAD_CAREER;
+				}
+				
 				
 				
 				if($this->shibboleth->getAttributeValue('umnRegSummary')) {
