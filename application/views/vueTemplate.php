@@ -21,7 +21,13 @@
   <script>
     window.Elevator = {
       config: {
-        baseUrl: <?= "'{$this->template->relativePath}'" ?? 'undefined' ?>,
+        base: {
+          origin: window.location.origin,
+          path: <?= '"'. rtrim($this->template->relativePath, '/') . '"' ?>,
+          get url() {
+            return `${this.origin}${this.path}`;
+          },
+        },
       },
     }
   </script>
