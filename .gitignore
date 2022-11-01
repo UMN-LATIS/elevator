@@ -18,3 +18,6 @@ assets/instanceAssets/*
 .DS_Store
 .phpintel
 docs/.vuepress/dist
+.htaccess
+.vscode
+.env
