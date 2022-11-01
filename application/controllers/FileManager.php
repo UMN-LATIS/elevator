@@ -11,7 +11,6 @@ class FileManager extends Instance_Controller {
 	public function __construct()
 	{
 		parent::__construct();
-
 		$this->load->model("asset_model");
 	}
 
@@ -77,7 +76,6 @@ class FileManager extends Instance_Controller {
 	}
 
 	function tinyImageByFileId($fileId, $retina=false) {
-
 		if($retina === "false") {
 			$retina = false;
 		}
@@ -86,6 +84,7 @@ class FileManager extends Instance_Controller {
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		$fileHandler->loadByObjectId($fileId);
+		
 
 		$this->redirectToPreviewImage($fileHandler, $retina, "tiny");
 	}
@@ -116,8 +115,6 @@ class FileManager extends Instance_Controller {
 
 
 	function redirectToPreviewImage($fileHandler, $retina, $size) {
-
-
 		$resultURL = $this->getURLForPreviewImage($fileHandler, $retina, $size);
 		redirect(matchScheme($resultURL), 307);
 	}

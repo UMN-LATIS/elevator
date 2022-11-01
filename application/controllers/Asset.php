@@ -57,7 +57,6 @@ class asset extends Instance_Controller {
 
 
 	function viewAsset($objectId=null, $returnJson=false) {
-
 		$assetModel = new Asset_model;
 		if(!$objectId) {
 			show_404();
@@ -80,14 +79,13 @@ class asset extends Instance_Controller {
 		if($this->config->item('restrict_hidden_assets') == "TRUE" && $this->accessLevel < PERM_ADDASSETS && $assetModel->getGlobalValue("readyForDisplay") == false) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
-
+		
 
 		if($this->instance->getInterfaceVersion() == 1 && $returnJson == false) {
-			echo "VUE FACE";
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
 			return;
 		}
-
-
 		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
 
 		$targetObject = null;
@@ -120,7 +118,23 @@ class asset extends Instance_Controller {
 		}
 
 		if($returnJson == "true") {
-			$json = $assetModel->getAsArray(null,false, $includeRelatedAssetCache= true); // include related assets
+			// $json = $assetModel->getAsArray(null,false, $includeRelatedAssetCache= true); // include related assets
+			$assetObject = $assetModel->assetObject;
+			$json = $assetObject->getWidgets();
+			$assetCache = $assetObject->getAssetCache();
+			if($assetCache) {
+				$json['relatedAssetCache'] = $assetCache->getRelatedAssetCache();
+			}
+
+			foreach($assetModel->globalValues as $key=>$value) {
+				if($key == "templateId" || $key == "collectionId") {
+					$json[$key] = (int)$value;
+				}
+				else {
+					$json[$key] = $value;
+				}
+			}
+			
 			$json["firstFileHandlerId"] = $targetFileObjectId;
 			$json["firstObjectId"] = $targetObjectId;
 			$json["title"] = $assetModel->getAssetTitle();
@@ -128,10 +142,12 @@ class asset extends Instance_Controller {
 			return render_json($json);;
 		}
 		else {
+			
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
 			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
 			$this->template->publish();
+			
 	
 		}
 
@@ -303,7 +319,6 @@ class asset extends Instance_Controller {
 	}
 
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
-
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject, $embedded);
 		if(!$fileHandler) {
 			return;

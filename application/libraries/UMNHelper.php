@@ -126,7 +126,7 @@ class UMNHelper extends AuthHelper
 		
 		if ($this->shibboleth->hasSession()) {
 			
-			$emplId = $this->shibboleth->getAttributeValue('emplid');
+			$emplId = $this->shibboleth->getAttributeValue('umnEmplId');
 			if($emplId) {
 				$enrollment = $this->fetchBandaidResult("/api/enrollment/student/" . $emplId);
 				if(is_array($enrollment)) {
@@ -158,7 +158,10 @@ class UMNHelper extends AuthHelper
 
 				$reg = $this->fetchBandaidResult("/api/enrollment/regsummary/" . $emplId);
 				if($reg) {
-					$studentStatus[] = $reg->ACAD_CAREER;
+					if(isset($reg->ACAD_CAREER)) {
+						$studentStatus[] = $reg->ACAD_CAREER;
+					}
+					
 				}
 				
 				

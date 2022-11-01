@@ -36,10 +36,6 @@ class Search extends Instance_Controller {
 			}
 		}
 
-		if($this->instance->getInterfaceVersion() == 1) {
-			echo "VUE FACE";
-			return;
-		}
 
 		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {

@@ -7,12 +7,13 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 		
 		parent::__construct();
+		
 			\Sentry\init([
   				'dsn' => $this->config->item('sentry_dsn'),
 				'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
 				'server_name' => $this->config->item('authHelper')
 			]);
-			
+		
 		if($this->config->item('css_override') && $this->config->item('css_override') !== "FALSE") {
 			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
 		}
@@ -56,9 +57,14 @@ class MY_Controller extends CI_Controller {
 		}
 
 		$userId = $this->session->userdata('userId');
-
+		// HACK HACK HACK
+		// Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
+		if(strtolower($this->uri->segment(2)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "loginmanager") {
+			session_write_close();
+		}
 		if($userId) {
 			if($this->config->item('enableCaching')) {
+				
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
 					$user_model = $storedObject;
