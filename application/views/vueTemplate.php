@@ -29,7 +29,7 @@
           },
         },
         arcgis: {
-          apiKey: "AAPK643c9db6c3284f19906113b16d1d5a174_yMGawXaIbntl6b848QSdNE6rhdtY5KMGQLBKrSTGLIM7hVrvF6gRhhzhLR9NfK",
+          apiKey: "<?=$this->config->item('arcgis_access_token')?>",
         },
       },
     }
