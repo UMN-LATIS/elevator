@@ -23,13 +23,13 @@
       config: {
         base: {
           origin: window.location.origin,
-          path: "<?= rtrim($this->template->relativePath, '/') ?>",
+          path: <?= '"' . rtrim($this->template->relativePath, '/') . '"' ?>,
           get url() {
             return `${this.origin}${this.path}`;
           },
         },
         arcgis: {
-          apiKey: "<?= $this->config->item('arcgis_access_token') ?>",
+          apiKey: "<?=$this->config->item('arcgis_access_token')?>",
         },
       },
     }
