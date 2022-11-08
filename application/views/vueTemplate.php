@@ -16,11 +16,18 @@
   <script>
     window.Elevator = {
       config: {
-        base: {
-          origin: window.location.origin,
-          path: <?= '"' . rtrim($this->template->relativePath, '/') . '"' ?>,
-          get url() {
-            return `${this.origin}${this.path}`;
+        instance: {
+          name: "<?=
+                  $this->template->title->default(isset($this->instance)
+                    ? $this->instance->getName()
+                    : 'Elevator');
+                  ?>",
+          base: {
+            origin: window.location.origin,
+            path: "<?= rtrim($this->template->relativePath, '/') ?>",
+            get url() {
+              return `${this.origin}${this.path}`;
+            },
           },
         },
         arcgis: {
