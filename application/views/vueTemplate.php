@@ -6,7 +6,7 @@
   <link rel="icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>
-    <?php
+    <?=
     $this->template->title->default(isset($this->instance)
       ? $this->instance->getName()
       : "Elevator");
