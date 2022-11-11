@@ -21,3 +21,6 @@ docs/.vuepress/dist
 .htaccess
 .vscode
 .env
+
+!assets/elevator-ui/dist
+assets/elevator-ui/*
