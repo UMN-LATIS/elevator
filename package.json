@@ -1,7 +1,9 @@
 {
   "scripts": {
     "dev": "npm run development",
-    "docs:build": "cd docs; vuepress build"
+    "docs:build": "cd docs; vuepress build",
+    "ui:build": "(cd assets/elevator-ui && yarn build)",
+    "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)"
   },
   "devDependencies": {
     "del": "^6.0.0",
