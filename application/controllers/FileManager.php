@@ -312,8 +312,11 @@ class FileManager extends Instance_Controller {
 
 	}
 
-	function getDerivativeById($fileId, $derivativeType) {
-
+	function getDerivativeById($fileId=null, $derivativeType=null) {
+		if(!$fileId) {
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		if(!$fileHandler || !$fileHandler->loadByObjectId($fileId)) {
 			instance_redirect("errorHandler/error/unknownFile");
@@ -340,7 +343,9 @@ class FileManager extends Instance_Controller {
 			}
 
 		}
-
+		if(!$derivativeType) {
+			$derivativeType = "thumbnail";
+		}
 
 		if(!array_key_exists($derivativeType, $allDerivatives)) {
 			instance_redirect("errorHandler/error/derivativeNotAvailable");
