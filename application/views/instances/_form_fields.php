@@ -224,6 +224,20 @@
 
 <fieldset class="fieldsetSection">
 <legend>Miscellaneous Configuration</legend>
+
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-2">
+		<label class="control-label">
+			Interface Version
+		</label>
+	</div>
+	<div class="col-sm-4">
+			<select name="interfaceVersion" class="form-control">
+				<option value="0" <?=$instance->getInterfaceVersion()==0?'SELECTED':null?>>Classic</option>
+				<option value="1" <?=$instance->getInterfaceVersion()==1?'SELECTED':null?>>VueJS</option>
+			</selecT>
+	</div>
+</div>
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>

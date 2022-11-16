@@ -11,7 +11,6 @@ class FileManager extends Instance_Controller {
 	public function __construct()
 	{
 		parent::__construct();
-
 		$this->load->model("asset_model");
 	}
 
@@ -77,7 +76,6 @@ class FileManager extends Instance_Controller {
 	}
 
 	function tinyImageByFileId($fileId, $retina=false) {
-
 		if($retina === "false") {
 			$retina = false;
 		}
@@ -86,6 +84,7 @@ class FileManager extends Instance_Controller {
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		$fileHandler->loadByObjectId($fileId);
+		
 
 		$this->redirectToPreviewImage($fileHandler, $retina, "tiny");
 	}
@@ -116,8 +115,6 @@ class FileManager extends Instance_Controller {
 
 
 	function redirectToPreviewImage($fileHandler, $retina, $size) {
-
-
 		$resultURL = $this->getURLForPreviewImage($fileHandler, $retina, $size);
 		redirect(matchScheme($resultURL), 307);
 	}
@@ -315,8 +312,11 @@ class FileManager extends Instance_Controller {
 
 	}
 
-	function getDerivativeById($fileId, $derivativeType) {
-
+	function getDerivativeById($fileId=null, $derivativeType=null) {
+		if(!$fileId) {
+			instance_redirect("errorHandler/error/unknownFile");
+			return;
+		}
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		if(!$fileHandler || !$fileHandler->loadByObjectId($fileId)) {
 			instance_redirect("errorHandler/error/unknownFile");
@@ -343,7 +343,9 @@ class FileManager extends Instance_Controller {
 			}
 
 		}
-
+		if(!$derivativeType) {
+			$derivativeType = "thumbnail";
+		}
 
 		if(!array_key_exists($derivativeType, $allDerivatives)) {
 			instance_redirect("errorHandler/error/derivativeNotAvailable");
@@ -461,7 +463,8 @@ class FileManager extends Instance_Controller {
 		}
 
 		$metadata = $fileHandler->sourceFile->metadata;
-		echo json_encode($metadata);
+		$metadata['sourcefile'] = $fileHandler->sourceFile->originalFilename;
+		return render_json($metadata);
 
 	}
 

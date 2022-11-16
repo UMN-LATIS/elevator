@@ -92,5 +92,10 @@
           <field name="enableInterstitial" type="boolean" nullable='true' />
           <field name="interstitialText" type="text" nullable='true' />
           <field name="notes" type="text" nullable='true' />
+          <field name="interfaceVersion" type="integer" nullable='false'>
+            <options>
+                <option name="default">0</option>
+              </options>
+          </field>
       </entity>
 </doctrine-mapping>
