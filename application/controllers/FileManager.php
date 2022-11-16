@@ -335,7 +335,6 @@ class FileManager extends Instance_Controller {
 			$allDerivatives = $fileHandler->allDerivativesForAccessLevel($accessLevel);
 		}
 		catch (Exception $e) {
-
 			if($this->user_model->userLoaded || !$this->instance->getUseCentralAuth()) {
 				$this->errorhandler_helper->callError("noPermission");
 			}
