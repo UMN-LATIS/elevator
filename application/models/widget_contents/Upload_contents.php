@@ -43,7 +43,8 @@ class Upload_contents extends Widget_contents_base {
 				}
 			}
 
-			return array_merge($dateData, ["fileId"=>$this->fileHandler->getObjectId(), "fileDescription"=>$this->fileDescription, "fileType"=>$this->fileHandler->sourceFile->getType(), "searchData"=>$this->getSearchData(), "loc"=>$location, "sidecars"=>$this->sidecars, "isPrimary"=>$this->isPrimary]);
+
+			return array_merge($dateData, ["fileId"=>$this->fileHandler->getObjectId(),"fileDescription"=>$this->fileDescription, "fileType"=>$this->fileHandler->sourceFile->getType(), "searchData"=>$this->getSearchData(), "loc"=>$location, "sidecars"=>$this->sidecars, "isPrimary"=>$this->isPrimary]);
 		}
 		else {
 			return array();
