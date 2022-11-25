@@ -61,7 +61,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   //error alerts in 'measuring' mode aka popout window
   //will not alert in 'browsing' mode aka DE browser window
   if (window.name.includes('popout') && options.ppm === 0 && !options.initialData.ppm) {
-    alert('Calibration needed: set p/mm in asset metadata or use calibration tool.');
+    alert('Calibration needed: set p/mm in asset metadata or use calibration tool');
   }
 
   this.autoscroll = new Autoscroll(this.viewer);
@@ -111,8 +111,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
   this.annotationTools = new ButtonBar(this, [this.annotationAsset.createBtn, this.annotationAsset.deleteBtn], 'comment', 'Manage annotations');
   this.createTools = new ButtonBar(this, [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurements');
-  // add this.insertBreak.btn below once fixed
-  this.editTools = new ButtonBar(this, [this.dating.btn, this.insertPoint.btn, this.convertToStartPoint.btn, this.deletePoint.btn, this.insertZeroGrowth.btn, this.cut.btn], 'edit', 'Edit existing measurements');
+  this.editTools = new ButtonBar(this, [this.dating.btn, this.insertPoint.btn, this.insertBreak.btn, this.convertToStartPoint.btn, this.deletePoint.btn, this.insertZeroGrowth.btn, this.cut.btn], 'edit', 'Edit existing measurements');
   this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'Save or upload a record of measurements, annotations, etc.');
   this.settings = new ButtonBar(this, [this.measurementOptions.btn, this.calibration.btn, this.keyboardShortCutDialog.btn], 'settings', 'Measurement preferences & distance calibration');
 
@@ -341,15 +340,10 @@ function MeasurementData (dataObject, Lt) {
     if (this.points[i].start) {
       // Case 1: Start point of break pair. Remove break section.
       if (this.points[i - 1] != undefined && this.points[i - 1].break) {
-        i--;
-        second_points = this.points.slice().splice(i + 2, this.index - 1);
-        second_points.map(e => {
-          this.points[i] = e;
-          i++;
-        });
-        this.index -= 2;
-        delete this.points[this.index];
-        delete this.points[this.index + 1];
+        delete this.points[i];
+        delete this.points[i - 1];
+        this.points = this.points.filter(Boolean);
+        this.index = this.points.length;
       // Case 2: Typical start point. Connect to previous measurement section.
       // If very first start point, remove & create new start point.
       } else {
@@ -368,14 +362,10 @@ function MeasurementData (dataObject, Lt) {
       }
     // Case 3: Break point of break pair. Remove break section.
     } else if (this.points[i].break) {
-      second_points = this.points.slice().splice(i + 2, this.index - 1);
-      second_points.map(e => {
-        this.points[i] = e;
-        i++;
-      });
-      this.index -= 2;
-      delete this.points[this.index];
-      delete this.points[this.index + 1];
+      delete this.points[i];
+      if (this.points[i + 1] && this.points[i + 1]?.start) delete this.points[i + 1];
+      this.points = this.points.filter(Boolean);
+      this.index = this.points.length;
     // Case 4: Point selected has a year value.
     } else {
       let tempDirection = (Lt.deletePoint.adjustOuter) ? backwardInTime : forwardInTime;
@@ -527,7 +517,7 @@ function MeasurementData (dataObject, Lt) {
 
     var i = Lt.helper.closestPointIndex(latLng);
     if (!i && i != 0) {
-      alert('New point must be within existing points. Use the create toolbar to add new points to the series.');
+      alert('New point must be within existing points. Use the create toolbar to add new points to the series');
       return;
     };
 
@@ -571,11 +561,12 @@ function MeasurementData (dataObject, Lt) {
         }
       }
     } else {
-      alert('Please insert new point closer to connecting line.')
+      alert('Please insert new point closer to connecting line')
       return
     };
 
-    // Snap inserted point to nearest polyline.
+    // Snap inserted point to nearest polyline if line exists.
+    if (!Lt.visualAsset.lines[i]) return;
     coord = Lt.viewer.latLngToLayerPoint(latLng)
     new_coord = Lt.visualAsset.lines[i].closestLayerPoint(coord)
     new_latLng = Lt.viewer.layerPointToLatLng(new_coord)
@@ -736,21 +727,20 @@ function MeasurementData (dataObject, Lt) {
 
     // Index to splice new points in array depends on shifting direction.
     let k = (direction == tempDirection) ? i : i + 1;
-    if (!k) k = 1;
     let earlywoodAdjusted = true;
-
     let comparisonYear = (this.points[i].year) ? this.points[i].year : this.points.slice(i).find(e => !e.start && !e.break && (e.year || e.year === 0)).year;
-    if (!i && !Lt.insertZeroGrowth.adjustOuter) comparisonYear++;
 
     if (Lt.measurementOptions.subAnnual) {
       let yearA, yearB, indexA, indexB, ewA, ewB;
-      // Special case for inserting a zero growth year on the first point when measuring backwards.
-      // (Hidden start point.)
-      if (i === 0 && direction == backwardInTime) {
-        yearA = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear : comparisonYear - 2;
-        yearB = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear - 1;
-        indexA = 1;
-        indexB = 1;
+      // Special case for inserting a zero growth year on ends points when measuring backwards (hidden start points.)
+      // No need to adjust when adjusting inner portion and need to shift point to be within next
+      // measurement segement.
+      if (this.points[i].start) {
+        yearA = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear : comparisonYear - 1;
+        yearB = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear;
+        if (Lt.insertZeroGrowth.adjustOuter) k++;
+        indexA = k;
+        indexB = k;
         ewA = false;
         ewB = true;
       } else {
@@ -784,6 +774,13 @@ function MeasurementData (dataObject, Lt) {
       (direction == tempDirection) ? k-- : k++;
     } else {
       let yearAdjusted = (Lt.insertZeroGrowth.adjustOuter) ? comparisonYear + 1 : comparisonYear - 1;
+
+      // Special case when measuring backwards b/c start points are treated like measurment points;
+      // no need to adjust when adjusting inner portion and need to shift point to be within next
+      // measurement segement.
+      if (this.points[i].start && !Lt.insertZeroGrowth.adjustOuter) yearAdjusted = comparisonYear;
+      if (this.points[i].start && Lt.insertZeroGrowth.adjustOuter) k++;
+
       let new_pt = {
         'start': false, 'skip': false, 'break': false,
         'year': yearAdjusted, 'earlywood': true, 'latLng': latLng
@@ -797,14 +794,13 @@ function MeasurementData (dataObject, Lt) {
     let second_points = (direction == tempDirection) ? JSON.parse(JSON.stringify(this.points)).slice(0, i) :
                                                        JSON.parse(JSON.stringify(this.points)).slice(i);
 
-
     second_points.map((e, j) => {
       if (!e) return;
       if (!e.start && !e.break) e.year = e.year + year_adjustment;
-      if (i) {
-        new_points[index_adjustment + j] = e;
-      } else {
+      if (this.points[i].start) { // Special case when measuring backwards b/c start points are treated like measurment points.
         if (!e.start) new_points[index_adjustment + j] = e;
+      } else {
+        new_points[index_adjustment + j] = e;
       }
     });
 
@@ -1215,11 +1211,16 @@ function VisualAsset (Lt) {
             tooltip = 'Start';
           }
           // First point is treated as a measurement point, not a start point.
-          if (i === 0 && Lt.data.points[i + 1]) {
-            var desc = (!Lt.measurementOptions.subAnnual) ? '' :
-                       (Lt.data.points[i + 1].earlywood) ? ', late' : ', early';
-            var c = (!Lt.measurementOptions.subAnnual || !Lt.data.points[i + 1].earlywood) ? 1 : 0;
-            tooltip = String(Lt.data.points[i + 1].year + c) + desc;
+          if (i === 0) {
+            let firstMeasurementPt = Lt.data.points.find(e => !e.start && !e.break && (e.year || e.year === 0));
+            if (firstMeasurementPt) {
+              var desc = (!Lt.measurementOptions.subAnnual) ? '' :
+                         (Lt.data.points[i + 1].earlywood) ? ', late' : ', early';
+              var c = (!Lt.measurementOptions.subAnnual || !firstMeasurementPt.earlywood) ? 1 : 0;
+              tooltip = String(firstMeasurementPt.year + c) + desc;
+            } else {
+              tooltip = 'Start';
+            }
           // Last point is treated as a start point, not a measurement point.
           } else if (i === Lt.data.points.length - 1) {
             tooltip = 'Start';
@@ -1307,10 +1308,16 @@ function VisualAsset (Lt) {
     var backward = !forward;
     var annual = !Lt.measurementOptions.subAnnual;
     var subAnnual = !annual;
+
+    // Zero growth point icon:
+    if (zero ||
+       (forward && pts[i - 1] && pts[i].latLng.lat == pts[i - 1].latLng.lat && pts[i].latLng.lng == pts[i - 1].latLng.lng) ||
+       (backward && pts[i + 1] && pts[i].latLng.lat == pts[i + 1].latLng.lat && pts[i].latLng.lng == pts[i + 1].latLng.lng)) {
+      color = 'zero';
     // Start point icon:
     // !!! Start points after break points are visually shown as break points. !!!
     // !!! Refactor so break point is placed instead of start point !!!
-    if (pts[i].start) {
+    } else if (pts[i].start) {
       if (forward) {
         if (pts[i - 1] && pts[i - 1].break) {
           color = 'break';
@@ -1334,12 +1341,6 @@ function VisualAsset (Lt) {
     // Break point icon:
     } else if (pts[i].break) {
       color = 'break';
-    // Zero growth point icon:
-    } else if (zero ||
-              (forward && pts[i - 1] && pts[i].latLng.lat == pts[i - 1].latLng.lat && pts[i].latLng.lng == pts[i - 1].latLng.lng) ||
-              (backward && pts[i + 1] && pts[i].latLng.lat == pts[i + 1].latLng.lat && pts[i].latLng.lng == pts[i + 1].latLng.lng)) {
-      color = 'zero';
-    // Sub-annual icons:
     } else if (subAnnual) {
       if (pts[i].earlywood) {
         // Decades are colored red.
@@ -1365,13 +1366,14 @@ function VisualAsset (Lt) {
     // Start and end points swapped when measuring backwards.
     // Only apply this when active measuring disabled.
     if (backward && i === 0) {
-      if (pts[i + 1]) {
+      let nextMeasurePt = pts.find(e => !e.start && !e.break && (e.year || e.year === 0));
+      if (nextMeasurePt && pts[i + 1]) {
         if (subAnnual) {
-          if (pts[i + 1].earlywood) {
+          if (nextMeasurePt.earlywood) {
             // Decades are colored red.
-            color = (pts[i + 1].year % 10 == 0) ? 'dark_red' : 'dark_blue';
+            color = (nextMeasurePt.year % 10 == 0) ? 'dark_red' : 'dark_blue';
           } else { // Otherwise, point is latewood.
-            color = (pts[i + 1].year % 10 == 0) ? 'light_red' : 'light_blue';
+            color = (nextMeasurePt.year % 10 == 0) ? 'light_red' : 'light_blue';
           }
         } else {
           color = ((pts[i + 1].year + 1) % 10 == 0) ? 'dark_red' : 'light_blue';
@@ -1472,17 +1474,15 @@ function VisualAsset (Lt) {
       };
 
       if (Lt.insertZeroGrowth.active) {
+        // Cannot add a zero growth ring to earlywood, start points (shifted when measuring backwards), or break sets.
         if ((Lt.measurementOptions.subAnnual && pts[i].earlywood && !pts[i].start) ||
-             (Lt.measurementOptions.forwardDirection && pts[i].start) ||
-             (!Lt.measurementOptions.forwardDirection && pts[i + 1]?.start) || pts[i].break) {
+            (Lt.measurementOptions.forwardDirection && pts[i].start) ||
+            (!Lt.measurementOptions.forwardDirection && pts[i + 1]?.start) ||
+             pts[i].break || (pts[i].start && pts[i - 1]?.break)) {
           alert('Zero width years must be added at the annual ring boundary, (i.e. latewood points)');
         } else {
           Lt.insertZeroGrowth.openDialog(e, i);
         }
-      }
-
-      if (Lt.insertBreak.active) {
-        Lt.insertBreak.action(i);
       }
 
       if (Lt.dating.active) {
@@ -1545,14 +1545,23 @@ function VisualAsset (Lt) {
 
       // Check if break in middle of decade measurment.
       if (pts[i].break) {
-        closest_prevPt = pts.slice(0, i).reverse().find(e => !e.start && !e.break && e.year);
+        let closest_prevPt = pts.slice(0, i).reverse().find(e => !e.start && !e.break && (e.year || e.year === 0));
+        // Special case for first start point.
+        if (!closest_prevPt) {
+          let closest_nextPt = pts.slice(i).find(e => !e.start && !e.break && (e.year || e.year === 0));
+          closest_prevPt = {
+            "year": (forward) ? closest_nextPt?.year - 1 : ((annual) ? closest_nextPt?.year + 1 : closest_nextPt?.year),
+            "earlywood": (annual) ? closest_nextPt?.earlywood : !closest_nextPt?.earlywood,
+          }
+        }
+
         if (annual) {
-          year = (forward) ? closest_prevPt.year + 1 : closest_prevPt.year;
+          year = (forward) ? closest_prevPt?.year + 1 : closest_prevPt?.year;
         } else {
           if (forward) {
-            year = (closest_prevPt.earlywood) ? closest_prevPt.year : closest_prevPt.year + 1;
+            year = (closest_prevPt?.earlywood) ? closest_prevPt?.year : closest_prevPt?.year + 1;
           } else {
-            year = closest_prevPt.year;
+            year = closest_prevPt?.year;
           }
         }
       }
@@ -1986,7 +1995,7 @@ function AnnotationAsset(Lt) {
 
         if (optionsElmList.length == 0) {
           this.dialogAttributesWindow.open();
-          alert("Attribute must have at least one option.");
+          alert("Attribute must have at least one option");
         };
 
         function uniqueNumber () {
@@ -2003,7 +2012,7 @@ function AnnotationAsset(Lt) {
             this.dialogAttributesWindow.open();
             if (this.alertCount == 0) { // alert fires 3 times without catch for unknown reason
               this.alertCount += 1;
-              alert("Attribute must have a title and all options must be named.");
+              alert("Attribute must have a title and all options must be named");
             };
             allOptionsTitled = false;
             break;
@@ -3358,8 +3367,11 @@ function Dating(Lt) {
       // Need to provide way for users to "re-date" them.
       let pt_forLocation = Lt.data.points[i];
       if (i == 0 || !Lt.data.points[i - 1]) {
-        alert("Cannot date first point. Select a different point to adjust dating.")
-        return
+        alert("Cannot date first point. Select a different point to adjust dating");
+        return;
+      } else if (Lt.data.points[i].break || (Lt.data.points[i].start && Lt.data.points[i - 1].break)) {
+        alert("Cannot date break points. Select a different point to adjust dating");
+        return;
       } else if (Lt.data.points[i].start) {
         i--;
         if (!Lt.measurementOptions.forwardDirection) pt_forLocation = Lt.data.points[i + 1];
@@ -3380,7 +3392,7 @@ function Dating(Lt) {
       document.getElementById('year_input').select();
 
       $(Lt.viewer.getContainer()).click(e => {
-        popup.remove(Lt.viewer);
+        this.popup.remove(Lt.viewer);
         this.disable();
       });
     }
@@ -3402,7 +3414,7 @@ function Dating(Lt) {
       this.popup.remove(Lt.viewer);
 
       if (!new_year && new_year != 0) {
-        alert("Entered year must be a number.");
+        alert("Entered year must be a number");
         return
       }
 
@@ -3649,7 +3661,7 @@ function CreateZeroGrowth(Lt) {
         var yearAdjustment = Lt.data.year;
         if (yearsDecrease) yearAdjustment--;
       } else {
-        alert('Must be inserted at end of year.');
+        alert('Must be inserted at end of year');
         return;
       };
 
@@ -3781,7 +3793,7 @@ function DeletePoint(Lt) {
    * @function openDialog
    */
   DeletePoint.prototype.openDialog = function(e, i) {
-    if (this.maintainAdjustment) {
+    if (this.maintainAdjustment || (Lt.data.points[i].start && Lt.data.points[i - 1].break) || Lt.data.points[i].break) {
       this.action(i);
     } else {
       Lt.helper.createEditToolDialog(e.containerPoint.x, e.containerPoint.y, i, "deletePoint");
@@ -3881,7 +3893,7 @@ function Cut(Lt) {
       return;
     }
 
-    if (this.maintainAdjustment) {
+    if (this.maintainAdjustment || (Lt.data.points[i].start && Lt.data.points[i - 1].break) || Lt.data.points[i].break) {
       this.action(i);
     } else {
       Lt.helper.createEditToolDialog(e.containerPoint.x, e.containerPoint.y, i, "cut");
@@ -4051,7 +4063,7 @@ function ConvertToStartPoint(Lt) {
     // Start points are camouflage when measuring backwards.
     if (Lt.data.points[i].start || Lt.data.points[i].break ||
         (!Lt.measurementOptions.forwardDirection && Lt.data.points[i + 1] && Lt.data.points[i + 1].start)) {
-      alert("Can only convert measurement points.")
+      alert("Can only convert measurement points")
       return;
     }
 
@@ -4177,10 +4189,15 @@ function InsertZeroGrowth(Lt) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function InsertBreak(Lt) {
+  this.firstLatLng = null;
+  this.secondLatLng = null;
+  this.closestFirstIndex = null;
+  this.closestSecondIndex = null;
+
   this.active = false;
   this.btn = new Button(
     'broken_image',
-    'Add a break in the series',
+    'Insert a within-year break and exclude that measurement increment',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
@@ -4190,80 +4207,75 @@ function InsertBreak(Lt) {
    * @function action
    * @param i int - add the break point after index i
    */
-  InsertBreak.prototype.action = function(i) {
-    var new_points = Lt.data.points;
-    var second_points = Object.values(Lt.data.points).splice(i + 1, Lt.data.index - 1);
-    var first_point = true;
-    var second_point = false;
-    var k = i + 1;
-
-    Lt.mouseLine.enable();
-    Lt.mouseLine.from(Lt.data.points[i].latLng);
+  InsertBreak.prototype.action = function() {
+    Lt.viewer.getContainer().style.cursor = 'pointer';
 
     $(Lt.viewer.getContainer()).click(e => {
       // Prevent jQuery event error.
       if (!e.originalEvent) return;
-      var latLng = Lt.viewer.mouseEventToLatLng(e);
-      Lt.viewer.dragging.disable();
 
-      if (first_point) {
-        Lt.mouseLine.from(latLng);
-        new_points[k] = {'start': false, 'skip': false, 'break': true,
-          'latLng': latLng};
-        Lt.visualAsset.newLatLng(new_points, k, latLng);
-        k++;
-        first_point = false;
-        second_point = true;
-      } else if (second_point) {
-        this.disable();
-        second_point = false;
-        this.active = false;
-        Lt.mouseLine.layer.clearLayers();
+      // Check if click is for second break placement decision first.
+      // Then assign first click placement value, etc..
+      if (this.firstLatLng && !this.secondLatLng) {
+        this.secondLatLng = Lt.viewer.mouseEventToLatLng(e);
 
-        new_points[k] = {'start': true, 'skip': false, 'break': false,
-          'latLng': latLng};
-        Lt.visualAsset.newLatLng(new_points, k, latLng);
-        k++;
+        this.closestSecondIndex = Lt.helper.closestPointIndex(this.secondLatLng);
+        if (!this.closestSecondIndex && this.closestSecondIndex != 0) {
+          alert('New break points must be within existing points. Use the create toolbar to add new points to the series');
+          return;
+        };
 
-        // TODO: use handlebars once fixed
+        // Check if both break points would be placed in same point interval.
+        // If not, throw alert and have user choose second point again.
+        // Add/subtract 1 to closestFirstIndex to account for its own index since it was spliced in previously.
+        // Adding & subtracting dependent on measurement direction.
+        let adjustedFirstIndex = this.closestFirstIndex + 1;
+        if (adjustedFirstIndex !== this.closestSecondIndex) {
+          alert('Insert a within-year break and exclude that measurement increment: ' +
+                'The newly inserted break points must be added between two already ' +
+                'existing and temporally consecutive points. Also, the new points ' +
+                'must be added in sequence consistent with that of the series measurement direction (forward or backward)');
+          this.secondLatLng = null;
+          this.closestSecondIndex = null;
+          return;
+        }
 
-        var popup = L.popup({closeButton: false}).setContent(
-            '<input type="number" style="border:none;width:50px;"' +
-            'value="' + second_points[0].year +
-            '" id="year_input"></input>').setLatLng(latLng)
-            .openOn(Lt.viewer);
-
-        document.getElementById('year_input').select();
-
-        $(document).keypress(e => {
-          var key = e.which || e.keyCode;
-          if (key === 13) {
-            var new_year = parseInt(document.getElementById('year_input').value);
-            popup.remove(Lt.viewer);
-
-            var shift = new_year - second_points[0].year;
-
-            second_points.map(e => {
-              e.year += shift;
-              new_points[k] = e;
-              k++;
-            });
-            Lt.data.year += shift;
-
-            $(Lt.viewer.getContainer()).off('click');
-
-            Lt.undo.push();
-
-            Lt.data.points = new_points;
-            Lt.data.index = k;
-
-            Lt.visualAsset.reload();
-            this.disable();
-          }
-        });
-      } else {
-        this.disable();
+        // Snap inserted point to nearest polyline.
+        if (!Lt.visualAsset.lines[i]) return;
+        let secondLayerCoord = Lt.viewer.latLngToLayerPoint(this.secondLatLng)
+        let secondSnapLayerCoord = Lt.visualAsset.lines[this.closestSecondIndex].closestLayerPoint(secondLayerCoord)
+        let secondSnapLatLng = Lt.viewer.layerPointToLatLng(secondSnapLayerCoord)
+        let secondBreakPt = {'start': true, 'skip': false, 'break': false, 'latLng': secondSnapLatLng};
+        Lt.data.points.splice(this.closestSecondIndex, 0, secondBreakPt);
+        Lt.data.index = Lt.data.points.length;
         Lt.visualAsset.reload();
+        if (Lt.popoutPlots.win) {
+          Lt.popoutPlots.sendData();
+        }
+
+        this.disable();
+      } else if (!this.firstLatLng) {
+        this.firstLatLng = Lt.viewer.mouseEventToLatLng(e);
+
+        this.closestFirstIndex = Lt.helper.closestPointIndex(this.firstLatLng);
+        if (!this.closestFirstIndex && this.closestFirstIndex != 0) {
+          alert('New break points must be within existing points. Use the create toolbar to add new points to the series');
+          this.firstLatLng = null;
+          this.closestFirstIndex = null;
+          return;
+        };
+
+        Lt.undo.push();
+
+        // Snap inserted point to nearest polyline.
+        if (!Lt.visualAsset.lines[i]) return;
+        let firstLayerCoord = Lt.viewer.latLngToLayerPoint(this.firstLatLng)
+        let firstSnapLayerCoord = Lt.visualAsset.lines[this.closestFirstIndex].closestLayerPoint(firstLayerCoord)
+        let firstSnapLatLng = Lt.viewer.layerPointToLatLng(firstSnapLayerCoord)
+        let firstBreakPt = {'start': false, 'skip': false, 'break': true, 'latLng': firstSnapLatLng};
+        Lt.data.points.splice(this.closestFirstIndex, 0, firstBreakPt);
+        Lt.visualAsset.reload();
+
       }
     });
   };
@@ -4274,8 +4286,14 @@ function InsertBreak(Lt) {
    */
   InsertBreak.prototype.enable = function() {
     this.btn.state('active');
+
     this.active = true;
-    Lt.viewer.getContainer().style.cursor = 'pointer';
+    this.firstLatLng = null;
+    this.secondLatLng = null;
+    this.closestFirstIndex = null;
+    this.closestSecondIndex = null;
+
+    this.action();
   };
 
   /**
@@ -4285,7 +4303,20 @@ function InsertBreak(Lt) {
   InsertBreak.prototype.disable = function() {
     $(Lt.viewer.getContainer()).off('click');
     this.btn.state('inactive');
+
+    // Remove incomplete break point sets.
+    if ((!this.secondLatLng || !this.closestSecondIndex) && this.closestFirstIndex) {
+      Lt.data.points.splice(this.closestFirstIndex, 1);
+      Lt.undo.stack.pop();
+      Lt.visualAsset.reload();
+    }
+
     this.active = false;
+    this.firstLatLng = null;
+    this.secondLatLng = null;
+    this.closestFirstIndex = null;
+    this.closestSecondIndex = null;
+
     Lt.viewer.getContainer().style.cursor = 'default';
     Lt.viewer.dragging.enable();
     Lt.mouseLine.disable();
@@ -5360,8 +5391,8 @@ function MetaDataText (Lt) {
 
   MetaDataText.prototype.updateText = function () {
     let pts = JSON.parse(JSON.stringify(Lt.data.points));
-    let firstPt = pts.find(e => (e.year || e.year === 0));
-    let lastPt = pts.reverse().find(e => (e.year || e.year === 0));
+    let firstPt = pts.find(e => (e && (e?.year || e?.year === 0)));
+    let lastPt = pts.reverse().find(e => (e && (e?.year || e?.year === 0)));
 
     let startPt, endPt;
     if (firstPt?.year <= lastPt?.year) {
@@ -5817,7 +5848,7 @@ function Helper(Lt) {
   }
 
   /**
-   * Reverses points data structure so points ascend in time.
+   * Finds true distance between two points.
    * @function trueDistance
    * @param {first point.latLng} p1
    * @param {second point.latLng} p2
@@ -5876,13 +5907,14 @@ function Helper(Lt) {
      };
    };
 
-   // reverse array order so years ascending
+   // reverse array order so years ascending, but get ending year first
+   let endPt_withYear = pts.find(e => !e.start && !e.break && (e.year || e.year === 0));
    pts.reverse();
 
    // change last point from start to end point
    if (pts[lastIndex] && pts[before_lastIndex]) {
      pts[lastIndex].start = false;
-     pts[lastIndex].year =  (pref.subAnnual) ? pts[before_lastIndex].year : pts[before_lastIndex].year + 1;
+     pts[lastIndex].year =  (pref.subAnnual) ? endPt_withYear.year : endPt_withYear.year + 1;
      pts[lastIndex].earlywood = false;
    };
 
@@ -5973,7 +6005,6 @@ function Helper(Lt) {
      }
 
      disObj.tw = { x: yearArray, y: twWidthArray, name: Lt.meta.assetName + '_tw' }
-     console.log(disObj);
 
      return disObj
    }
