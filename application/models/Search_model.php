@@ -731,9 +731,7 @@ class search_model extends CI_Model {
 		$queryResponse = $this->es->search($searchParams);
 		if(!isset($queryResponse["aggregations"]["tags"]["buckets"]) || count($queryResponse["aggregations"]["tags"]["buckets"]) >= 100) {
 			return [];
-		}
-		else {
-			$this->logging->logError("test", "hey");
+		} else {
 			$tags = array_map(function($value) {
 				return $value["key"];
 			}, $queryResponse["aggregations"]["tags"]["buckets"]);
