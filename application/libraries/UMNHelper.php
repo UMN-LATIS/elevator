@@ -125,56 +125,59 @@ class UMNHelper extends AuthHelper
 		$employeeType = array();
 		
 		if ($this->shibboleth->hasSession()) {
-			if($this->shibboleth->getAttributeValue('eduCourseMember')) {
-				$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
-
-				// hacky stuff to deal with the way this info is passed in
-				// todo: learn about the actual standard for eduCourseMember
-				foreach($courseArray as $course) {
-					$explodedString = explode("@", $course);
-					if(count($explodedString)>0) {
-						$role = $explodedString[0];
-					}
-					$courseString = explode("/", $course);
-					$courseId = intval($courseString[8]);
-					$deptCourse = $courseString[6];
-					if($role == "Instructor") {
-						
-						$courseName = $courseString[6];
-						$coursesTaught[$courseId] = $courseName;
-						$deptCoursesTaught[$courseName] = $courseName;
-					}
-					$courses[] = $courseId;
-					$deptCourses[] = $deptCourse;
-				}
-			}
 			
-			if($this->shibboleth->getAttributeValue('umnJobSummary')) {
-				$jobCodeSummary = explode(";",$this->shibboleth->getAttributeValue('umnJobSummary'));
-				foreach($jobCodeSummary as $jobCode) {
-					$jobCodeArray = explode(":", $jobCode);
-					if(isset($jobCodeArray[2])) {
-						$jobCodes[] = intval($jobCodeArray[2]);
+			$emplId = $this->shibboleth->getAttributeValue('umnEmplId');
+			if($emplId) {
+				$enrollment = $this->fetchBandaidResult("/api/enrollment/student/" . $emplId);
+				if(is_array($enrollment)) {
+					foreach($enrollment as $entry) {
+						$deptCourses[] = join(".", [$entry->SUBJECT, $entry->CATALOG_NBR, $entry->CLASS_SECTION]);
+						$courses[] = $entry->CLASS_NBR;
 					}
-					if(isset($jobCodeArray[10])) {
-						$units[] = $jobCodeArray[10];
-					}
-
 				}
-			}
-			
-			if($this->shibboleth->getAttributeValue('umnRegSummary')) {
-				$regSummary = explode(";",$this->shibboleth->getAttributeValue('umnRegSummary'));
-				foreach($regSummary as $studentCode) {
-					$studentStatusArray = explode(":", $studentCode);
-					if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
-						$studentStatus[] = $studentStatusArray[12];
-					}
-				}	
-			}
+				
 
-			if($this->shibboleth->getAttributeValue('eduPersonAffiliation')) {
-				$employeeType = explode(";",$this->shibboleth->getAttributeValue('eduPersonAffiliation'));
+				$instructed = $this->fetchBandaidResult("/api/enrollment/instructor/" . $emplId);
+				if(is_array($instructed)) {
+					foreach($instructed as $entry) {
+						$courseName = join(".", [$entry->SUBJECT, $entry->CATALOG_NBR, $entry->SECTION]);
+						$deptCoursesTaught[$courseName] = $entry->DESCRIPTION;
+						$coursesTaught[$entry->CLASS_NUMBER] = $courseName; 
+					}
+				}
+				
+
+				$jobs = $this->fetchBandaidResult("/api/employment/employee/" . $emplId);
+				if(is_array($jobs)) {
+					foreach($jobs as $entry) {
+
+						$jobCodes[] = $entry->JOBCODE;
+						$units[] = $entry->DEPTID;
+					}
+				}
+
+				$reg = $this->fetchBandaidResult("/api/enrollment/regsummary/" . $emplId);
+				if($reg) {
+					if(isset($reg->ACAD_CAREER)) {
+						$studentStatus[] = $reg->ACAD_CAREER;
+					}
+					
+				}
+				
+				
+				
+				if($this->shibboleth->getAttributeValue('umnRegSummary')) {
+					$regSummary = explode(";",$this->shibboleth->getAttributeValue('umnRegSummary'));
+					foreach($regSummary as $studentCode) {
+						$studentStatusArray = explode(":", $studentCode);
+						if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
+							$studentStatus[] = $studentStatusArray[12];
+						}
+					}	
+				}
+				if($this->shibboleth->getAttributeValue('eduPersonAffiliation')) {
+					$employeeType = explode(";",$this->shibboleth->getAttributeValue('eduPersonAffiliation'));
+				}
 			}
 			
 		}
@@ -327,6 +330,19 @@ class UMNHelper extends AuthHelper
 
 	public function templateView() {
 		return $this->CI->load->view("authHelpers/autoRedirect", null, true);
+	}
+
+
+	private function fetchBandaidResult($apiPath) {
+	$CI =& get_instance();
+       $ch = curl_init('https://cla-bandaid-prd-web.oit.umn.edu' . $apiPath); // Initialise cURL
+       $authorization = "Authorization: Bearer ".$CI->config->item('umn_bearer_token'); // Prepare the authorisation token
+       curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json' , $authorization )); // Inject the token into the header
+       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // This will follow any redirects
+       $result = curl_exec($ch); // Execute the cURL statement
+       curl_close($ch); // Close the cURL connection
+       return json_decode($result); // Return the received data
 	}
 
 }
