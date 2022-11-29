@@ -50,7 +50,7 @@ class MY_Controller extends CI_Controller {
 		$this->load->model("user_model");
 		//$this->user_model->loadUser(1);
 
-		if($this->config->item('enableCaching')) {
+		if (1 == 1 || $this->config->item('enableCaching')) {
 			$redisCache = new \Doctrine\Common\Cache\RedisCache();
         	$redisCache->setRedis($this->doctrine->redisHost);
 			$this->doctrineCache = $redisCache;
@@ -63,7 +63,7 @@ class MY_Controller extends CI_Controller {
 			session_write_close();
 		}
 		if($userId) {
-			if($this->config->item('enableCaching')) {
+			if (1 == 1 || $this->config->item('enableCaching')) {
 				
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
@@ -95,7 +95,7 @@ class MY_Controller extends CI_Controller {
 		// if the user isn't loaded, make a guest login
 		if(!$this->user_model->userLoaded) {
 			$this->user_model = new User_model();
-			if($this->config->item('enableCaching')) {
+			if ($this->config->item('enableCaching')) {
 				$userId = session_id();
 				$this->doctrineCache->setNamespace('userGuestCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
