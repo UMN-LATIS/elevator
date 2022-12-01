@@ -209,6 +209,7 @@ class UMNHelper extends AuthHelper
 		}
 		$CI =& get_instance();
 		$CI->logging->logError($user->getEmail(), $shibData);
+		$CI->logging->logError($user->getEmail(), $userData);
 		return $userData;
 
 	}
