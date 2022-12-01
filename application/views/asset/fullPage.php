@@ -69,7 +69,7 @@ var objectId = "<?=$assetModel->getObjectId()?>";
 
 
 		<?foreach($assetModel->assetObjects as $widget):?>
-		<?if($widget->getDisplay() && $widget->hasContents() && !(implode("", $widget->getAsText(-1)) == $assetTitle && $widget == $assetModel->getAssetTitleWidget())):?>
+		<?if($widget->getDisplay() && $widget->hasContents() && !(implode("", $widget->getAsText(-1)) == $assetTitle && $widget == $assetModel->getAssetTitleWidget() && get_class($widget) !== "Related_asset")):?>
 		<div class="row">
 			<div class="col-md-12 assetWidget" id="<?=$widget->getFieldTitle()?>">
 				<?=$widget->getView()?>
