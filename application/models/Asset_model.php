@@ -32,6 +32,14 @@ class Asset_model extends CI_Model {
 		}
 	}
 
+	public function getIconPath() {
+		if ($this->instance->getInterfaceVersion() == 1) {
+			return "/assets/icons/800x450/";
+		} 
+		
+		return "/assets/icons/512px/";
+	}
+
 	/**
 	 * special handy getter for objectId
 	 */
