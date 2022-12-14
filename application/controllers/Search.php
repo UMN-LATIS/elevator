@@ -36,6 +36,12 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		if ($this->instance->getInterfaceVersion() == 1) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 
 		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
