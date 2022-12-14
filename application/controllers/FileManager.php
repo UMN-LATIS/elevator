@@ -29,7 +29,8 @@ class FileManager extends Instance_Controller {
 		}
 		if(!$fileHandler) {
 			// no file handler for this asset
-			redirect($this->asset_model->getIconPath() . "_blank.png", 307);
+			$icon = getIconPath() . "_blank.png";
+			redirect($icon, 307);
 			return;
 		}
 		$this->redirectToPreviewImage($fileHandler, $retina, "thumbnail");
@@ -49,8 +50,8 @@ class FileManager extends Instance_Controller {
 
 		if(!$fileHandler) {
 			// no file handler for this asset
-			$tinyIconPath = $this->asset_model->getIconPath('tiny');
-			redirect($tinyIconPath . "_blank.png", 307);
+			$icon = getIconPath() . "_blank.png";
+			redirect($icon, 307);
 			return;
 		}
 
@@ -100,7 +101,7 @@ class FileManager extends Instance_Controller {
 			}
 		}
 		catch (Exception $e) {
-			return $this->asset_model->getIconPath($size) . $fileHandler->getIcon();
+			return getIconPath($size) . $fileHandler->getIcon();
 		}
 
 		return $targetURL;
@@ -237,7 +238,7 @@ class FileManager extends Instance_Controller {
 		catch (Exception $e) {
 			//TODO: go to error page
 			$this->logging->logError("bestDerivativeByObjectId", "Tried to find best derivative for an object but couldn't", $objectId);
-			redirect($this->asset_model->getIconPath() . $fileHandler->getIcon(), 307);
+			redirect(getIconPath() . $fileHandler->getIcon(), 307);
 		}
 
 		redirect(matchScheme($targetURL), 307);

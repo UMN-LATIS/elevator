@@ -79,7 +79,7 @@ class FileHandlerBase extends CI_Model {
 		}
 		
 		$iconFile = strtolower($this->sourceFile->getType()).".png";
-		$iconPath = $this->asset_model->getIconPath();
+		$iconPath = getIconPath();
 		return file_exists($iconPath . $iconFile)
 			? $iconFile
 			: "_blank.png";
@@ -97,7 +97,7 @@ class FileHandlerBase extends CI_Model {
 		}
 		else {
 			if($this->icon) {
-				$iconPath = $this->asset_model->getIconPath();
+				$iconPath = getIconPath();
 				$fileContainer = new FileContainer($iconPath . $this->icon);
 				return $fileContainer;
 			}

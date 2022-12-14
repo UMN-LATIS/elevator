@@ -1,6 +1,6 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
-$iconSrc = $this->asset_model->getIconPath() . "txt.png";
+$iconSrc = getIconPath() . "txt.png";
 ?>
 
 		<?if($allowOriginal):?>

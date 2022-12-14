@@ -17,7 +17,7 @@ $playlist = [];
 
 $playlist["image"] = isset($fileContainers['thumbnail2x']) 
   ? stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")) 
-  : $this->asset_model->getIconPath() . "mp3.png";
+  : getIconPath() . "mp3.png";
 
 $playlist["sources"] = [];
 

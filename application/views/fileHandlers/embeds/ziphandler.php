@@ -1,6 +1,6 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
-$iconSrc = $this->asset_model->getIconPath() . "_blank.png";
+$iconSrc = getIconPath() . "_blank.png";
 ?>
 
 		<?if($allowOriginal):?>

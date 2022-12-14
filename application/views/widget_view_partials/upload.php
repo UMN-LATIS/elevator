@@ -12,7 +12,7 @@
 				}
 			}
 			catch (Exception $e) {
-				$iconPath = $this->asset_model->getIconPath('tiny');
+				$iconPath = getIconPath('tiny');
 				$hasIcon = $fileHandler && $fileHandler->icon;
 
 				$retina = $hasIcon 

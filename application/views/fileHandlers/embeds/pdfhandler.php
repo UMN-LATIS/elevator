@@ -13,7 +13,7 @@ if (isset($fileContainers['shrunk_pdf'])) {
 
 $iconSrc = isset($fileContainers['thumbnail2x'])
 	? stripHTTP($fileContainers['thumbnail2x']->getProtectedURLForFile())
-	: $this->asset_model->getIconPath() . "pdf.png"
+	: getIconPath() . "pdf.png"
 ?>
 
 <? if ($targetFile) : ?>

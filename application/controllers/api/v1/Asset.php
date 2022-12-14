@@ -306,7 +306,7 @@ class asset extends API_Controller {
 
 					if (!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
 						$targetURL = site_url(
-							$this->asset_model->getIconPath() . $contents->fileHandler->getIcon(),
+							getIconPath() . $contents->fileHandler->getIcon(),
 							307
 						);
 
