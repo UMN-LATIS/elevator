@@ -77,12 +77,12 @@ class FileHandlerBase extends CI_Model {
 		if(isset($this->icon)) {
 			return $this->icon;
 		}
-		else if(file_exists("assets/icons/512px/".strtolower($this->sourceFile->getType()) . ".png")) {
-			return strtolower($this->sourceFile->getType()).".png";
-		}
-		else {
-			return "_blank.png";
-		}
+		
+		$iconFile = strtolower($this->sourceFile->getType()).".png";
+		$iconPath = $this->asset_model->getIconPath();
+		return file_exists($iconPath . $iconFile)
+			? $iconFile
+			: "_blank.png";
 	}
 
 	public function getPreviewThumbnail($retina=false) {
@@ -97,8 +97,8 @@ class FileHandlerBase extends CI_Model {
 		}
 		else {
 			if($this->icon) {
-
-				$fileContainer = new FileContainer("/assets/icons/512px/".$this->icon);
+				$iconPath = $this->asset_model->getIconPath();
+				$fileContainer = new FileContainer($iconPath . $this->icon);
 				return $fileContainer;
 			}
 			else {

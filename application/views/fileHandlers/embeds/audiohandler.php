@@ -15,7 +15,9 @@ if($this->user_model->userLoaded) {
 
 $playlist = [];
 
-$playlist["image"] =isset($fileContainers['thumbnail2x'])?stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")):"/assets/icons/512px/mp3.png";
+$playlist["image"] = isset($fileContainers['thumbnail2x']) 
+  ? stripHTTP(instance_url("fileManager/previewImageByFileId/" . $fileObjectId . "/true")) 
+  : $this->asset_model->getIconPath() . "mp3.png";
 
 $playlist["sources"] = [];
 

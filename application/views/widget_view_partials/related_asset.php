@@ -20,15 +20,16 @@ $seed = round(microtime(true))// we're using a seed to provide collisions with r
 			}
 			}
 			catch (Exception $e) {
-				if($fileHandler && $fileHandler->icon) {
-					$retina = "/assets/icons/48px/" . $fileHandler->icon;
-					$standard = "/assets/icons/48px/" . $fileHandler->icon;
-				}
-				else {
-					$retina = "/assets/icons/48px/_blank.png";
-					$standard = "/assets/icons/48px/_blank.png";
-				}
+				$iconPath = $this->asset_model->getIconPath();
+				$hasIcon = $fileHandler && $fileHandler->icon;
 
+				$retina = $hasIcon 
+					? $iconPath . $fileHandler->icon 
+					: $iconPath . "_blank.png";
+
+				$standard = $hasIcon
+					? $iconPath . $fileHandler->icon
+					: $iconPath . "_blank.png";
 			}
 
 

@@ -32,13 +32,6 @@ class Asset_model extends CI_Model {
 		}
 	}
 
-	public function getIconPath() {
-		if ($this->instance->getInterfaceVersion() == 1) {
-			return "/assets/icons/800x450/";
-		} 
-		
-		return "/assets/icons/512px/";
-	}
 
 	/**
 	 * special handy getter for objectId
@@ -1138,6 +1131,27 @@ class Asset_model extends CI_Model {
 		}
         $this->doctrine->em->persist($oldAssetObject);
         $this->doctrine->em->flush();
+	}
+
+	public function getIconPath($size = 'default') {
+		$interfaceVersion = $this->instance->getInterfaceVersion();
+		$pathsByInterfaceVersion = [
+			// classic
+			0 => [
+				'tiny' => '/assets/icons/48px/',
+				'thumbnail' => '/assets/icons/512px/',
+				'default' => '/assets/icons/512px/',
+			],
+
+			// vue template interface
+			1 => [
+				'tiny' => '/assets/icons/800x450/',
+				'thumbnail' => '/assets/icons/800x450/',
+				'default' => '/assets/icons/800x450/',
+			],
+		];
+
+		return $pathsByInterfaceVersion[$interfaceVersion][$size]	?? $pathsByInterfaceVersion[0]['default'];
 	}
 
 }

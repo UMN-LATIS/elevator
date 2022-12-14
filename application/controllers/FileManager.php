@@ -29,7 +29,7 @@ class FileManager extends Instance_Controller {
 		}
 		if(!$fileHandler) {
 			// no file handler for this asset
-			redirect("/assets/icons/512px/_blank.png", 307);
+			redirect($this->asset_model->getIconPath() . "_blank.png", 307);
 			return;
 		}
 		$this->redirectToPreviewImage($fileHandler, $retina, "thumbnail");
@@ -49,7 +49,8 @@ class FileManager extends Instance_Controller {
 
 		if(!$fileHandler) {
 			// no file handler for this asset
-			redirect("/assets/icons/48px/_blank.png", 307);
+			$tinyIconPath = $this->asset_model->getIconPath('tiny');
+			redirect($tinyIconPath . "_blank.png", 307);
 			return;
 		}
 
@@ -99,15 +100,7 @@ class FileManager extends Instance_Controller {
 			}
 		}
 		catch (Exception $e) {
-			//TODO: go to error page
-			//$this->logging->logError("previewImage", "Tried to find a thumbnail for a filehandler but couldn't", $objectId);
-			if($size=="thumbnail") {
-				return "/assets/icons/512px/".$fileHandler->getIcon();
-			}
-			elseif($size=="tiny") {
-				return "/assets/icons/48px/".$fileHandler->getIcon();
-			}
-
+			return $this->asset_model->getIconPath($size) . $fileHandler->getIcon();
 		}
 
 		return $targetURL;
@@ -244,7 +237,7 @@ class FileManager extends Instance_Controller {
 		catch (Exception $e) {
 			//TODO: go to error page
 			$this->logging->logError("bestDerivativeByObjectId", "Tried to find best derivative for an object but couldn't", $objectId);
-			redirect("/assets/icons/512px/".$fileHandler->getIcon(), 307);
+			redirect($this->asset_model->getIconPath() . $fileHandler->getIcon(), 307);
 		}
 
 		redirect(matchScheme($targetURL), 307);
