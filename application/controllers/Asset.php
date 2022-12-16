@@ -454,6 +454,12 @@ class asset extends Instance_Controller {
 			try {
 				$embedAssets = $fileHandler->allDerivativesForAccessLevel($this->accessLevel);
 				if($returnJson) {
+					if ($includeOriginal) {
+						$embedAssets["original"] = [
+							"originalFilename" => $fileHandler->sourceFile->originalFilename,
+							"path" => "original"
+						];
+					}
 					return render_json($embedAssets);
 				}
 				$embed = $fileHandler->getEmbedViewWithFiles($embedAssets, $includeOriginal, $embedded);
