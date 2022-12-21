@@ -751,10 +751,10 @@ class Search extends Instance_Controller {
 			}
 		}
 		if($target) {
-			echo json_encode(["status"=>"found", "targetId"=>$target]);
+			return render_json(["status" => "found", "targetId" => $target]);
 		}
 		else {
-			echo json_encode(["status"=>"notfound", "search"=>$searchId]);
+			return render_json(["status" => "notfound", "search" => $searchId]);
 		}
 		
 		

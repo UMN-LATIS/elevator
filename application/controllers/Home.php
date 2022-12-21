@@ -188,6 +188,7 @@ class Home extends Instance_Controller {
 
 		$headerData["useCentralAuth"] = $this->instance->getUseCentralAuth();
 		$headerData["centralAuthLabel"] = $this->config->item("remoteLoginLabel");
+		$headerData["showPreviousNext"] = $this->instance->getShowPreviousNextSearchResults();
 
 		// collection information
 		$outputCollections = $this->getNestedCollections($this->collection_model->getUserCollections());
