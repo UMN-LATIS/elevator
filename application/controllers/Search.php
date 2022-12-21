@@ -36,6 +36,13 @@ class Search extends Instance_Controller {
 			}
 		}
 
+		if ($this->instance->getInterfaceVersion() == 1) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
+
 		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
 			$jsLoadArray = ["search", "searchForm"];
@@ -680,8 +687,7 @@ class Search extends Instance_Controller {
 
 		if($this->input->post("storeOnly") == true) {
 
-			echo json_encode(["success"=>true, "searchId"=>$this->searchId]);
-			return;
+			return render_json(["success"=>true, "searchId"=>$this->searchId]);
 		}
 
 		if($this->input->post("redirectSearch") == true) {
@@ -699,7 +705,7 @@ class Search extends Instance_Controller {
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
 		$matchArray["searchId"] = $this->searchId;
-		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));
+		return render_json($this->search_model->processSearchResults($searchArray, $matchArray));
 
 
 	}

@@ -1,10 +1,11 @@
 <?
 $fileObjectId = $fileObject->getObjectId();
+$iconSrc = getIconPath() . "txt.png";
 ?>
 
 		<?if($allowOriginal):?>
 		<a href="<?=instance_url("fileManager/getOriginal/". $fileObjectId)?>">
-			<img src="/assets/icons/512px/txt.png" class="img-responsive" style="width: 50%; margin-left:auto; margin-right:auto"/>
+			<img src="<?= $iconSrc ?>" class="img-responsive" style="width: 50%; margin-left:auto; margin-right:auto"/>
 		</a>
 				<?else:?>
 		<p class="alert alert-info">No derivatives found.

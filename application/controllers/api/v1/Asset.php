@@ -304,9 +304,18 @@ class asset extends API_Controller {
 						$outputTitle = $outputTitle . ": " . $contents->getFileHandler()->sourceFile->originalFilename;
 					}
 
-					if(!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
-						$targetURL = site_url("/assets/icons/512px/".$contents->fileHandler->getIcon(), 307);
-						$outputArray[] = array("title"=>$outputTitle, "primaryHandlerId"=>$contents->getFileHandler()->getObjectId(), "primaryHandlerTiny"=>$targetURL,"primaryHandlerTiny2x"=>$targetURL,"primaryHandlerThumbnail"=>$targetURL,"primaryHandlerThumbnail2x"=>$targetURL);
+					if (!$mimeType || stristr(get_class($contents->getFileHandler()), $mimeType)) {
+						$targetURL = site_url(
+							getIconPath() . $contents->fileHandler->getIcon(),
+							307
+						);
+
+						$outputArray[] = [
+							"title" => $outputTitle,
+							"primaryHandlerId" => $contents->getFileHandler()->getObjectId(), "primaryHandlerTiny" => $targetURL,
+							"primaryHandlerTiny2x" => $targetURL,
+							"primaryHandlerThumbnail" => $targetURL, "primaryHandlerThumbnail2x" => $targetURL
+						];
 					}
 					// it's ok not to do anytihng, might not have an entry
 				}

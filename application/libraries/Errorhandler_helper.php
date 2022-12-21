@@ -26,6 +26,17 @@ class Errorhandler_helper {
 
 	}
 
+	public function callJsonError($error) {
+		$CI =& get_instance();
+		$e = new Exception;
+		$CI->logging->logError($error, $e->getTraceAsString());
+
+		header('HTTP/1.0 500 Internal Server Error');
+		echo json_encode(["error"=>$error]);
+		exit();
+
+	}
+
 }
 
 /* End of file  */
