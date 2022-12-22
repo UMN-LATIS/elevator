@@ -53,25 +53,14 @@ class Search extends Instance_Controller {
 		}
 		$jsLoadArray[] = "spin";
 
-		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
-
-		$widgetArray = array();
-		foreach($directSearch as $widget) {
-			if($this->instance->getTemplates()->contains($widget->getTemplate())) {
-				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId(), "type"=>$widget->getFieldType()->getName()];	
-			}
-		}
-
-		uasort($widgetArray, function($a, $b) {
-			return strcmp($a["label"], $b["label"]);
-		});
+		$sortArray = $this->buildSortStructure();
 
 		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
 		$this->template->javascript->add("/assets/js/sly.min.js");
 		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
-		$this->template->content->view("search/search", ["searchableWidgets"=>$widgetArray]);
+		$this->template->content->view("search/search", ["sortArray" => $sortArray]);
 		$this->template->publish();
 	}
 
@@ -705,6 +694,7 @@ class Search extends Instance_Controller {
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
 		$matchArray["searchId"] = $this->searchId;
+		$matchArray["sortableWidgets"] = $this->buildSortStructure();
 		return render_json($this->search_model->processSearchResults($searchArray, $matchArray));
 
 
@@ -900,7 +890,50 @@ class Search extends Instance_Controller {
 
 	}
 
+	private function buildSortStructure() {
+		if ($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('sortCache_');
+			if ($storedObject = $this->doctrineCache->fetch($this->instance->getId())) {
+				return $storedObject;
+			}
+		}
+		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch" => true]);
+		$widgetArray = array();
+		foreach ($directSearch as $widget) {
+			if ($this->instance->getTemplates()->contains($widget->getTemplate())) {
+				$widgetArray[$widget->getFieldTitle()] = ["label" => $widget->getLabel(), "template" => $widget->getTemplate()->getId(), "type" => $widget->getFieldType()->getName()];
+			}
+		}
 
+		uasort($widgetArray, function ($a, $b) {
+			return strcmp($a["label"], $b["label"]);
+		});
+
+		$formattedReturnArray = array();
+		$formattedReturnArray["0"] = "Best Match";
+		$formattedReturnArray["lastModified.desc"] = "Modified Date (newest to oldest)";
+		$formattedReturnArray["lastModified.asc"] = "Modified Date (oldest to newest)";
+		$formattedReturnArray["title.raw"] = "Default Title";
+		$formattedReturnArray["collection"] = "Collection";
+		if ($this->instance->getShowTemplateInSearchResults()) {
+			$formattedReturnArray["template"] = "Template";
+		}
+		foreach ($widgetArray as $title => $values) {
+			if ($values["type"] == "date") {
+				$formattedReturnArray["dateCache.startDate.desc"] = $values["label"] . " (newest to oldest)";
+				$formattedReturnArray["dateCache.startDate.asc"] = $values["label"] . " (oldest to newest)";
+			} else {
+				$formattedReturnArray[$title . ".raw"] = $values["label"];
+			}
+		}
+
+		if ($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('sortCache_');
+			$this->doctrineCache->save($this->instance->getId(), $formattedReturnArray, 14400);
+		}
+
+		return $formattedReturnArray;
+	}
 
 }
 
