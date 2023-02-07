@@ -30,9 +30,10 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   }
 
   //options
+  this.defaultResolution = 468;
   this.options = options;
   this.meta = {
-    'ppm': options.ppm || 468,
+    'ppm': options.initialData.ppm || options.ppm || this.defaultResolution,
     'saveURL': options.saveURL || '',
     'savePermission': options.savePermission || false,
     'popoutUrl': options.popoutUrl || null,
@@ -49,9 +50,6 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
 
   this.data = new MeasurementData(options.initialData, this);
   this.aData = new AnnotationData(options.initialData.annotations);
-  if (options.initialData.ppm) {
-    this.meta.ppm = options.initialData.ppm;
-  };
 
   /* Current helper tools:
    * closestPointIndex -> will find the absolute closest point and its index or its point[i] value
@@ -5234,11 +5232,12 @@ function SaveLocal(Lt) {
       'points': Lt.data.points,
       'attributesObjectArray': Lt.annotationAsset.attributesObjectArray,
       'annotations': Lt.aData.annotations,
+      'ppm': Lt.meta.ppm,
       'ptWidths': Lt.helper.findDistances(),
     };
 
     // don't serialize our default value
-    if(Lt.meta.ppm != 468 || Lt.meta.ppmCalibration) {
+    if(Lt.meta.ppm != Lt.defaultResolution || Lt.meta.ppmCalibration) {
       dataJSON.ppm = Lt.meta.ppm;
     }
 
@@ -5338,10 +5337,11 @@ function SaveCloud(Lt) {
         'points': Lt.data.points,
         'attributesObjectArray': Lt.annotationAsset.attributesObjectArray,
         'annotations': Lt.aData.annotations,
+        'ppm': Lt.meta.ppm,
       };
 
       // don't serialize our default value
-      if (Lt.meta.ppm != 468 || Lt.meta.ppmCalibration) {
+      if (Lt.meta.ppm != Lt.defaultResolution || Lt.meta.ppmCalibration) {
         dataJSON.ppm = Lt.meta.ppm;
       }
       $.post(Lt.meta.saveURL, {sidecarContent: JSON.stringify(dataJSON)})
@@ -5430,7 +5430,7 @@ function MetaDataText (Lt) {
 
     let dpi = Lt.meta.ppm * 25.4;
     let ppmText = Math.round(Lt.meta.ppm).toLocaleString() + " p/mm (" + Math.round(dpi).toLocaleString() + " dpi) &nbsp;|&nbsp; "
-    if (!Lt.meta.ppmCalibration && !Lt.options.ppm) ppmText = "Resolution unknown &nbsp;|&nbsp; "
+    if (!Lt.meta.ppmCalibration && !Lt.options.ppm && !Lt.options.initialData.ppm && Lt.meta.ppm == Lt.defaultResolution) ppmText = "Resolution unknown &nbsp;|&nbsp; "
 
     let zoomPercentage = 100 * ((Lt.viewer.getZoom() - Lt.viewer.getMinZoom()) / (Lt.viewer.getMaxZoom() - Lt.viewer.getMinZoom()));
     let zoom = Math.round(zoomPercentage) + '% zoom';
