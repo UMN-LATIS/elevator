@@ -50,7 +50,8 @@ class InhibitorHook {
 	 */
 	public function handle_fatal_errors()
 	{
-		
+		// bump the memory limit during spindown so we can actually log OOM errors
+		ini_set('memory_limit', '512M');
 		if(($error = error_get_last())) {
 			\Sentry\captureLastError();
 			$buffer = ob_get_contents();
