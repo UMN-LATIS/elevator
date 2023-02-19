@@ -51,27 +51,31 @@ class InhibitorHook {
 	public function handle_fatal_errors()
 	{
 		
-		if (($error = error_get_last())) {
+
 			\Sentry\captureLastError();
 			$buffer = ob_get_contents();
 			if($buffer) {
 				ob_clean();
 			}
 
+			if(($error = error_get_last())) {
+				$message = "\nError Type: [".$error['type']."] ".$this->_friendly_error_type($error['type'])."\n";
+				$message .= "Error Message: ".$error['message']."\n";
+				$message .= "In File: ".$error['file']."\n";
+				$message .= "At Line: ".$error['line']."\n";
+				$message .= "Platform: " . PHP_VERSION . " (" . PHP_OS . ")\n";
+
+				$message .= "\nBACKTRACE\n";
+				$message .= $buffer;
+				$message .= "\nEND\n";
+			}
+			else {
+				$message = "No error code logged. Please note the time and date when reporting this error.\n";
+			}
 			// xdebug_break();
-			$message = "\nError Type: [".$error['type']."] ".$this->_friendly_error_type($error['type'])."\n";
-			$message .= "Error Message: ".$error['message']."\n";
-			$message .= "In File: ".$error['file']."\n";
-			$message .= "At Line: ".$error['line']."\n";
-			$message .= "Platform: " . PHP_VERSION . " (" . PHP_OS . ")\n";
-
-			$message .= "\nBACKTRACE\n";
-			$message .= $buffer;
-			$message .= "\nEND\n";
-
+			
 			$this->_forward_error($message);
 
-		}
 
 	}
 

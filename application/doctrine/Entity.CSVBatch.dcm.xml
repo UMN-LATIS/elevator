@@ -17,7 +17,7 @@
     <many-to-one field="createdBy" target-entity="User" inversed-by="csvImports">
       <join-column name="createdby_id" referenced-column-name="id" on-delete="SET NULL"/>
     </many-to-one>
-    <one-to-many field="assets" target-entity="Asset" mapped-by="csvImport" on-delete="SET NULL">
+    <one-to-many field="assets" target-entity="Asset" mapped-by="csvImport" on-delete="SET NULL" fetch="EXTRA_LAZY">
     </one-to-many>
     <field name="filename" type="string"  nullable='false' />
     <field name="createdAt" type="datetime">
