@@ -212,7 +212,7 @@ function htmlEntities(str) {
 
 
 function getCurrentSearchId() {
-	currentURL = window.location.href.replace(window.location.hash,"");
+	currentURL = window.location.href.replace(window.location.hash,"").replace("#", "");
 	currentHash = window.location.hash.replace("#", "");
 	if(currentHash.length == 36) {
 		// this is an old hash, we need to keep that

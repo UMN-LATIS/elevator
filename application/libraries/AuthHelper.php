@@ -84,7 +84,7 @@ class AuthHelper
 		$CI =& get_instance();
 		$result = $CI->doctrine->em->getRepository("Entity\User")->createQueryBuilder('u')
 				// ->where('u.instance= :instance')
-				->andWhere('u.displayName LIKE :name')
+				->andWhere('lower(u.displayName) LIKE lower(:name)')
 				// ->setParameter('instance', $CI->instance)
 				->setParameter('name', '%'.$partialUsername.'%')
 				->getQuery()

@@ -51,28 +51,29 @@ class InhibitorHook {
 	public function handle_fatal_errors()
 	{
 		
-		if (($error = error_get_last())) {
+		if(($error = error_get_last())) {
 			\Sentry\captureLastError();
 			$buffer = ob_get_contents();
 			if($buffer) {
 				ob_clean();
 			}
 
+			
+				$message = "\nError Type: [".$error['type']."] ".$this->_friendly_error_type($error['type'])."\n";
+				$message .= "Error Message: ".$error['message']."\n";
+				$message .= "In File: ".$error['file']."\n";
+				$message .= "At Line: ".$error['line']."\n";
+				$message .= "Platform: " . PHP_VERSION . " (" . PHP_OS . ")\n";
+
+				$message .= "\nBACKTRACE\n";
+				$message .= $buffer;
+				$message .= "\nEND\n";
+		
 			// xdebug_break();
-			$message = "\nError Type: [".$error['type']."] ".$this->_friendly_error_type($error['type'])."\n";
-			$message .= "Error Message: ".$error['message']."\n";
-			$message .= "In File: ".$error['file']."\n";
-			$message .= "At Line: ".$error['line']."\n";
-			$message .= "Platform: " . PHP_VERSION . " (" . PHP_OS . ")\n";
-
-			$message .= "\nBACKTRACE\n";
-			$message .= $buffer;
-			$message .= "\nEND\n";
-
+			
 			$this->_forward_error($message);
 
 		}
-
 	}
 
 	/**
@@ -201,10 +202,11 @@ class InhibitorHook {
 			$CI->load->library('session');
 			$CI->session->set_flashdata('error', substr($message,0,500));
 			redirect("/errorHandler/fatalError");
-
+			exit(1);
 		}
 		else {
 			var_dump($message);
+			exit(1);
 		}
 
 	}
