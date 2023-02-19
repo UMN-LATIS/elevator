@@ -201,10 +201,11 @@ class InhibitorHook {
 			$CI->load->library('session');
 			$CI->session->set_flashdata('error', substr($message,0,500));
 			redirect("/errorHandler/fatalError");
-
+			exit(1);
 		}
 		else {
 			var_dump($message);
+			exit(1);
 		}
 
 	}
