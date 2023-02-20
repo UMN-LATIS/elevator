@@ -365,16 +365,18 @@ class search_model extends CI_Model {
 			
 			if($searchArray["sort"] == "collection" && $this->instance) {
 				$sortCollections = $this->instance->getCollectionsWithoutParent();
-				
-				function recursiveFunctionWalker($collection) {
-					$childrenArray = [];
-					if($collection->hasChildren()) {
-						foreach($collection->getChildren() as $child) {
-							$childrenArray = $childrenArray + recursiveFunctionWalker($child);
+				if(!function_exists("recursiveFunctionWalker")) {
+					function recursiveFunctionWalker($collection) {
+						$childrenArray = [];
+						if($collection->hasChildren()) {
+							foreach($collection->getChildren() as $child) {
+								$childrenArray = $childrenArray + recursiveFunctionWalker($child);
+							}
 						}
-					}
-					return [$collection->getId()=>$collection->getTitle()] + $childrenArray;
-				};
+						return [$collection->getId()=>$collection->getTitle()] + $childrenArray;
+					};
+				}
+				
 				$collectionArray = [];
 				foreach($sortCollections as $collection) {
 					$collectionArray = $collectionArray + recursiveFunctionWalker($collection);
