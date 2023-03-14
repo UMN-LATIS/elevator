@@ -585,7 +585,15 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function exportCSV() {
-		
+		function collapseParents($collection) { 
+			$parent = $collection->getParent();
+			if($parent) {
+				return collapseParents($parent)  . $parent->getTitle() . "/";
+			}
+			else {
+				return "";
+			}
+		}
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADMIN) {
@@ -651,8 +659,14 @@ class AssetManager extends Admin_Controller {
 				}
 				$outputRow = [];
 				$outputRow[] = $assetModel->getObjectId();
+				$collection =  $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
+				
+				
+				
+				$parents = collapseParents($collection) . $collection->getTitle();
+
 				$collection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
-				$outputRow[] = $collection->getTitle();
+				$outputRow[] = $parents;
 				$outputRow[] = instance_url("asset/viewAsset/" . $assetModel->getObjectId());
 				foreach($assetTemplate->widgetArray as $key => $widgets) {
 					if(isset($assetModel->assetObjects[$key])) {
@@ -773,6 +787,7 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function parseTime($timeString) {
+		$timeString = trim($timeString);
 		// anything less than 2 chars is probably just noise
 		if(strlen($timeString) < 4) {
 			return false;
