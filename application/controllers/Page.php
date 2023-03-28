@@ -20,6 +20,13 @@ class Page extends Instance_Controller {
 		if ($returnJSON) {
 			return render_json(["title" => $page->getTitle(), "content" => $page->getBody()]);
 		}
+
+		if ($this->instance->getInterfaceVersion() == 1) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$this->template->title = $page->getTitle();
 		$this->template->content->view("staticPage", ["content"=>$page->getBody()]);
 		$this->template->publish();
