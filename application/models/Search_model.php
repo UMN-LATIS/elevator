@@ -365,16 +365,18 @@ class search_model extends CI_Model {
 			
 			if($searchArray["sort"] == "collection" && $this->instance) {
 				$sortCollections = $this->instance->getCollectionsWithoutParent();
-				
-				function recursiveFunctionWalker($collection) {
-					$childrenArray = [];
-					if($collection->hasChildren()) {
-						foreach($collection->getChildren() as $child) {
-							$childrenArray = $childrenArray + recursiveFunctionWalker($child);
+				if(!function_exists("recursiveFunctionWalker")) {
+					function recursiveFunctionWalker($collection) {
+						$childrenArray = [];
+						if($collection->hasChildren()) {
+							foreach($collection->getChildren() as $child) {
+								$childrenArray = $childrenArray + recursiveFunctionWalker($child);
+							}
 						}
-					}
-					return [$collection->getId()=>$collection->getTitle()] + $childrenArray;
-				};
+						return [$collection->getId()=>$collection->getTitle()] + $childrenArray;
+					};
+				}
+				
 				$collectionArray = [];
 				foreach($sortCollections as $collection) {
 					$collectionArray = $collectionArray + recursiveFunctionWalker($collection);
@@ -726,10 +728,10 @@ class search_model extends CI_Model {
 		$searchParams['index'] = $this->config->item('elasticIndex');
 		$searchParams['body']["size"]=0;
 		$searchParams['body']["aggs"]["tags"]["terms"]["field"] = $tagField;
-		$searchParams['body']["aggs"]["tags"]["terms"]["size"] = 100;
+		$searchParams['body']["aggs"]["tags"]["terms"]["size"] = 1000;
 
 		$queryResponse = $this->es->search($searchParams);
-		if(!isset($queryResponse["aggregations"]["tags"]["buckets"]) || count($queryResponse["aggregations"]["tags"]["buckets"]) >= 100) {
+		if(!isset($queryResponse["aggregations"]["tags"]["buckets"]) || count($queryResponse["aggregations"]["tags"]["buckets"]) >= 1000) {
 			return [];
 		} else {
 			$tags = array_map(function($value) {
