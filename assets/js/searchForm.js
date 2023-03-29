@@ -26,7 +26,7 @@ var performSearchForButtonPress = function(targetForm) {
     previousEventComplete = false;
     $.post( basePath + "search/searchResults/" + searchId, {searchQuery:JSON.stringify($( targetForm ).serializeForm())}, function( data ) {
         try{
-            cachedResults = $.parseJSON(data);
+            cachedResults = data;
             cachedDates = null;
         }
         catch(e){
@@ -67,6 +67,11 @@ var performSearchForButtonPress = function(targetForm) {
             }
 
         }
+    }).fail(function (e) {
+        if (e.readyState > 0) {
+            alert(JSON.stringify(e));
+        }
+
     });
     return false;
 }

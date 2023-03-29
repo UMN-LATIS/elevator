@@ -74,6 +74,7 @@ class Instances extends Instance_Controller {
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 		$instance->setNotes($this->input->post('notes'));
 		$instance->setModifiedAt(new DateTime);
+		$instance->setInterfaceVersion($this->input->post('interfaceVersion'));
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
 		$config['allowed_types'] = 'png';
