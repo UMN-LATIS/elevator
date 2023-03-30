@@ -212,6 +212,7 @@ class Home extends Instance_Controller {
 				$collectionEntry = [];
 				$collectionEntry["id"] = $collection->getId();
 				$collectionEntry["title"] = $collection->getTitle();
+				$collectionEntry["previewImageId"] = $collection->getPreviewImage();
 				if ($collection->hasChildren()) {
 					$collectionEntry["children"] = $this->getNestedCollections($collection->getChildren());
 				}
