@@ -11,6 +11,13 @@ class Home extends Instance_Controller {
 	
 	public function index()
 	{
+
+		if ($this->instance->getInterfaceVersion() == 1) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+		
 		$this->template->loadJavascript(["bootstrap-show-password"]);
 
 		if($this->user_model) {
