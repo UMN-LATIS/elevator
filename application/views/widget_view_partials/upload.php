@@ -12,14 +12,16 @@
 				}
 			}
 			catch (Exception $e) {
-				if($fileHandler && $fileHandler->icon) {
-					$retina = "/assets/icons/48px/" . $fileHandler->icon;
-					$standard = "/assets/icons/48px/" . $fileHandler->icon;
-				}
-				else {
-					$retina = "/assets/icons/48px/_blank.png";
-					$standard = "/assets/icons/48px/_blank.png";
-				}
+				$iconPath = getIconPath('tiny');
+				$hasIcon = $fileHandler && $fileHandler->icon;
+
+				$retina = $hasIcon 
+					? $iconPath . $fileHandler->icon 
+					: $iconPath . "_blank.png";
+
+				$standard = $hasIcon
+					? $iconPath . $fileHandler->icon
+					: $iconPath . "_blank.png";
 
 			}
 	?>

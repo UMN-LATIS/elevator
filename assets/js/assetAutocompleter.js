@@ -52,7 +52,7 @@ var relatedAssetPreview = function(relatedAssetId, targetContainer, targetParent
 					// todo: there's no reason this should be saving a new search query teach time to begin with
  					$.post( basePath + "search/searchResults/", {searchQuery:JSON.stringify(searchRequest), templateId: templateId, suppressRecent:true, showHidden:true}, function( data ) {
  						try{
- 							jsonObject = $.parseJSON(data);
+								jsonObject = data;
  						}
  						catch(e){
  							alert(e + " " + data);
@@ -71,6 +71,11 @@ var relatedAssetPreview = function(relatedAssetId, targetContainer, targetParent
 
  							response(jsonObject.matches);
  						}
+ 					}).fail(function (e) {
+ 						if (e.readyState > 0) {
+ 							alert(JSON.stringify(e));
+ 						}
+
  					});
  				},
  				messages: {
