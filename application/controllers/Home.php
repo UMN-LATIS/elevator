@@ -103,7 +103,7 @@ class Home extends Instance_Controller {
 
 		$instancePages = $this->instance->getPages()->filter(
 			function ($entry) {
-			    return ($entry->getIncludeInHeader() && $entry->getParent() == null);
+			    return $entry->getParent() == null;
 		    }
 		);
 
@@ -113,12 +113,14 @@ class Home extends Instance_Controller {
 			$pageEntry = [];
 			$pageEntry["title"] = $page->getTitle();
 			$pageEntry["id"] = $page->getId();
+			$pageEntry["includeInNav"] = $page->getIncludeInHeader();
 			$pageEntry["children"] = [];
 			if ($page->getChildren()->count() > 0) {
 				foreach ($page->getChildren() as $child) {
 					$childPage = [];
 					$childPage["id"] = $child->getId();
 					$childPage["title"] = $child->getTitle();
+					$childPage["includeInNav"] = $child->getIncludeInHeader();
 					$pageEntry["children"][] = $childPage;
 				}
 			}
@@ -136,8 +138,9 @@ class Home extends Instance_Controller {
 		$headerData["instanceName"] = $this->instance->getName();
 		$headerData["instanceId"] = $this->instance->getId();
 		$headerData["instanceHasLogo"] = $this->instance->getUseHeaderLogo();
-
 		$headerData["instanceLogo"] = $this->instance->getId();
+		$headerData["featuredAssetId"] = $this->instance->getFeaturedAsset();
+		$headerData["featuredAssetText"] = $this->instance->getFeaturedAssetText();
 
 		// load prefs for a logged in user
 		if ($this->user_model->userLoaded && !$this->user_model->assetOverride) {
