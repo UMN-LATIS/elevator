@@ -201,6 +201,29 @@ function getImageMetadata($sourceImage) {
 	$metadata["width"] = $extractedRaw["ImageWidth"] ?? 0;
 	$metadata["height"] = $extractedRaw["ImageHeight"] ?? 0;
 
+	if($sourceImage->getType() == "tif") {
+		// we might have a crazy multilayer tiff. Let's get the max width/height
+		$results = null;
+		$commandline = "exiftool -a -G0:1 -api largefilesupport=1 -j " . escapeshellarg($sourceImage->getPathToLocalFile());
+		exec($commandline, $results);
+		if(isset($results) && is_array($results) && count($results)> 0) {
+			$extractedPages = json_decode(implode("\n", $results), true);
+			$extractedPages = $extractedPages[0];
+			foreach($extractedPages as $key=>$value) {
+				if(stristr($key, "ImageWidth")) {
+					if($value > $metadata["width"]) {
+						$metadata["width"] = $value;
+					}
+				}
+				if(stristr($key, "ImageHeight")) {
+					if($value > $metadata["height"]) {
+						$metadata["height"] = $value;
+					}
+				}
+			}
+		}
+	}
+
 	if(isset($extractedParsed["SourceFile"])) {
 		unset($extractedParsed["SourceFile"]);
 	}
