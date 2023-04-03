@@ -3,7 +3,7 @@
 
 class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic", "jfif", "jp2", 'ndpi', 'jpf', 'bmp');
+	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic", "jfif", "jp2", 'ndpi', 'jpf', 'bmp', 'czi');
 	protected $noDerivatives = false;
 
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true, "ttr"=>600]],
@@ -104,7 +104,8 @@ class ImageHandler extends FileHandlerBase {
 			$sourceFile = $fileObject;
 		}
 		else {
-			$sourceFile = $this->swapLocalForPNG();
+			$sourceFile = $this->makeCZIProxy();
+			$sourceFile = $this->swapLocalForPNG($sourceFile);
 		}
 		
 
@@ -158,9 +159,10 @@ class ImageHandler extends FileHandlerBase {
 
 	public function createDerivative($args) {
 		$success = true;
-
-		$sourceFile = $this->swapLocalForPNG();
-
+		
+		$sourceFile = $this->makeCZIProxy();
+		$sourceFile = $this->swapLocalForPNG($sourceFile);
+		
 
 		foreach($args as $key=>$derivativeSetting) {
 			$this->pheanstalk->touch($this->job);
@@ -250,7 +252,7 @@ class ImageHandler extends FileHandlerBase {
 		}
 		// don't swap, VIPS can handle SVS
 		$sourceFile = $this->sourceFile;
-
+		$sourceFile = $this->makeCZIProxy();
 
 
 		$localPath = $sourceFile->getPathToLocalFile();
@@ -374,6 +376,10 @@ class ImageHandler extends FileHandlerBase {
 			if(file_exists($dest)) {
 				unlink($dest);
 			}
+			$dest = $this->sourceFile->getPathToLocalFile() . ".tiff";
+			if(file_exists($dest)) {
+				unlink($dest);
+			}
 		}
 		return true;
 	}
@@ -391,9 +397,15 @@ class ImageHandler extends FileHandlerBase {
 
 	}
 
-	function swapLocalForPNG() {
+	function swapLocalForPNG($sourceFile= null) {
+		if(!$sourceFile) {
+			$sourceFile = $this->sourceFile;
+		}
+		// this is ugly, but we might get passed in an intermediate. We need to look at the original to see if 
+		// it was a whole slide
 		if(isWholeSlideImage($this->sourceFile)) {
-			$source = $this->sourceFile->getPathToLocalFile();
+			$source = $sourceFile->getPathToLocalFile();
+			// use the original filename as well to keep extensions sane
 			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
@@ -411,13 +423,13 @@ class ImageHandler extends FileHandlerBase {
 		}
 
 		$megapixels = 0;
-		if(isset($this->sourceFile->metadata) && isset($this->sourceFile->metadata["width"])) {
-			$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
+		if(isset($sourceFile->metadata) && isset($sourceFile->metadata["width"])) {
+			$megapixels = ($sourceFile->metadata["width"] * $sourceFile->metadata["height"]) / 1000000;
 		}
 		
 		if($megapixels > 100) {
-			$source = $this->sourceFile->getPathToLocalFile();
-			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
+			$source = $sourceFile->getPathToLocalFile();
+			$dest = $sourceFile->getPathToLocalFile() . ".png";
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
@@ -437,6 +449,27 @@ class ImageHandler extends FileHandlerBase {
 
 
 		
+		return $sourceFile;
+	}
+
+	public function makeCZIProxy() {
+		if($this->sourceFile->getType() == "czi") {
+			$source = $this->sourceFile->getPathToLocalFile();
+			$dest = $this->sourceFile->getPathToLocalFile() . ".tiff";
+			if(file_exists($dest)) {
+				return new FileContainer($dest);
+			}
+			$convertString = $this->config->item('cziutils') . " " . $source . " " . $dest;
+			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
+			$process->run();
+			while($process->isRunning()) {
+				sleep(5);
+				$this->pheanstalk->touch($this->job);
+				echo ".";
+			}
+
+			return new FileContainer($dest);
+		}
 		return $this->sourceFile;
 	}
 
