@@ -35,4 +35,28 @@ function instance_redirect($target) {
 
 }
 
-?>
+/**
+ * Get the absolute path to an icon based on the interface version
+ * @return string 
+ */
+function getIconPath($size = 'default') {
+	$pathsByInterfaceVersion = [
+		// classic
+		0 => [
+			'tiny' => '/assets/icons/48px/',
+			'thumbnail' => '/assets/icons/512px/',
+			'default' => '/assets/icons/512px/',
+		],
+
+		// vue template interface
+		1 => [
+			'tiny' => '/assets/icons/160x90/',
+			'thumbnail' => '/assets/icons/800x450/',
+			'default' => '/assets/icons/800x450/',
+		],
+	];
+
+	$CI =& get_instance();
+	$interfaceVersion = $CI->instance->getInterfaceVersion();
+	return $pathsByInterfaceVersion[$interfaceVersion][$size]	?? $pathsByInterfaceVersion[0]['default'];
+}

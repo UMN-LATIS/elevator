@@ -8,36 +8,23 @@
 
 <!-- Nav tabs -->
 <ul class="nav nav-tabs searchTabHeader">
-  <li class="active"><a href="#grid" data-toggle="tab">Grid</a></li>
-  <li><a href="#list" data-toggle="tab">List</a></li>
-  <li><a href="#map" data-toggle="tab">Map</a></li>
-  <li><a href="#timeline" data-toggle="tab">Timeline</a></li>
-  <li><a href="#gallery" data-toggle="tab">Gallery</a></li>
-  <?if(!isset($drawerMode) || $drawerMode == false):?>
-	<li class="navbar-right"><select class="form-control sortBy input-xs">
-        <option value="0">Best Match</option>
-        <option value="lastModified.desc">Modified Date (newest to oldest)</option>
-        <option value="lastModified.asc">Modified Date (oldest to newest)</option>
-        <option value="title.raw">Default Title</option>
-		<option value="collection">Collection</option>
-		<?if($this->instance->getShowTemplateInSearchResults()):?>
-		<option value="template">Template</option>
-		<?endif?>
-		<?foreach($searchableWidgets as $title=>$values):?>
-        	<?if($values['type'] == "date"):?>
-        		<option value="dateCache.startDate.desc"><?=$values['label']?> (newest to oldest)</option>
-        		<option value="dateCache.startDate.asc"><?=$values['label']?> (oldest to newest)</option>
-        	<?else:?>
-				<option value="<?=$title?>.raw"><?=$values['label']?></option>
-			<?endif?>
-		<?endforeach?>
-  </select>
-  <?else:?>
-  	<li class="navbar-right"><select class="form-control sortBy input-xs">
-        <option value="title.raw" <?=(!$orderBy || $orderBy=="title.raw")?"SELECTED":null?>>Default Title</option>
-        <option value="custom" <?=($orderBy=="custom")?"SELECTED":null?>>Custom Order</option>
-  </select>
-  <?endif?>
+	<li class="active"><a href="#grid" data-toggle="tab">Grid</a></li>
+	<li><a href="#list" data-toggle="tab">List</a></li>
+	<li><a href="#map" data-toggle="tab">Map</a></li>
+	<li><a href="#timeline" data-toggle="tab">Timeline</a></li>
+	<li><a href="#gallery" data-toggle="tab">Gallery</a></li>
+	<? if (!isset($drawerMode) || $drawerMode == false) : ?>
+		<li class="navbar-right"><select class="form-control sortBy input-xs">
+				<? foreach ($sortArray as $value => $title) : ?>
+					<option value="<?= $value ?>"><?= $title ?></option>
+				<? endforeach ?>
+			</select>
+		<? else : ?>
+		<li class="navbar-right"><select class="form-control sortBy input-xs">
+				<option value="title.raw" <?= (!$orderBy || $orderBy == "title.raw") ? "SELECTED" : null ?>>Default Title</option>
+				<option value="custom" <?= ($orderBy == "custom") ? "SELECTED" : null ?>>Custom Order</option>
+			</select>
+		<? endif ?>
 
 </ul>
 
@@ -46,35 +33,35 @@
 <div class="tab-content searchTabs">
 	<div class="tab-pane active" id="grid">
 		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" >
+			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 				<div class="resultsData">
 
 				</div>
 				<div id="results">
 
 				</div>
-				 <div class="clearfix"></div>
+				<div class="clearfix"></div>
 				<div class="paginationBlock">
 					<ul class="pager">
-					  <li><a href="#" class="nextPage">Load More</a></li>
+						<li><a href="#" class="nextPage">Load More</a></li>
 					</ul>
 				</div>
 			</div>
 		</div>
 	</div>
-		<div class="tab-pane" id="list">
+	<div class="tab-pane" id="list">
 		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" >
+			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 				<div class="resultsData">
 
 				</div>
 				<div id="listResults">
 
 				</div>
-				 <div class="clearfix"></div>
+				<div class="clearfix"></div>
 				<div class="paginationBlock">
 					<ul class="pager">
-					  <li><a href="#" class="nextPage">Load More</a></li>
+						<li><a href="#" class="nextPage">Load More</a></li>
 					</ul>
 				</div>
 			</div>
@@ -87,12 +74,12 @@
 
 				</div>
 				<div id="mapFrame">
-				<div id="mapPane">
+					<div id="mapPane">
 
+
+					</div>
 
 				</div>
-
-			</div>
 			</div>
 		</div>
 		<div class="row">
@@ -135,7 +122,7 @@
 						<div class="frame" id="forcecentered">
 							<ul class="clearfix">
 							</ul>
-						</div>	
+						</div>
 						<div class="controls center">
 							<button class="btn prev"><i class="glyphicon glyphicon-chevron-left"></i> prev</button>
 							<button class="btn next">next <i class="glyphicon glyphicon-chevron-right"></i></button>
@@ -149,94 +136,100 @@
 
 				</div>
 				<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				<a style="padding-left:5px" href="" class="embedGallery">Embed Gallery</a>
-			</div>
-		</div>
+					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+						<a style="padding-left:5px" href="" class="embedGallery">Embed Gallery</a>
+					</div>
+				</div>
 			</div>
 
 		</div>
 	</div>
-	
+
 </div>
 
 
 <style>
+	.frameFullscreenContainer {
+		height: 100%;
+		width: 100%;
+	}
 
-.frameFullscreenContainer {
-	height: 100%;
-	width: 100%;
-}
+	.galleryIframe {
+		min-height: 600px;
+		height: calc(100% - 50px - 50px - 100px);
+	}
 
-.galleryIframe {
-	min-height: 600px;
-	height: calc(100% - 50px - 50px - 100px);
-}
+	/* Frame */
+	.frame {
+		height: 50px;
+		line-height: 50px;
+		overflow: hidden;
+	}
 
-/* Frame */
-.frame {
-	height: 50px;
-	line-height: 50px;
-	overflow: hidden;
-}
-.frame ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	font-size: 50px;
+	.frame ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		height: 100%;
+		font-size: 50px;
 
-}
-.frame ul li {
-	float: left;
-	width: 50px;
-	height: 100%;
-	margin: 0 1px 0 0;
-	padding: 0;
-	background: #333;
-	color: #ddd;
-	/*text-align: center;*/
-	cursor: pointer;
-	display: flex;
-  	align-items: center;
-  	justify-content: center;
-}
-.frame ul li.active {
-	color: #fff;
-	background: #a03232;
-}
+	}
 
-.frameHeader h2 {
-	height: 30px;
-	line-height: 30px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis
-}
+	.frame ul li {
+		float: left;
+		width: 50px;
+		height: 100%;
+		margin: 0 1px 0 0;
+		padding: 0;
+		background: #333;
+		color: #ddd;
+		/*text-align: center;*/
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-/* Scrollbar */
-.scrollbar {
-	margin: 0 0 1em 0;
-	height: 5px;
-	background: #ccc;
-	line-height: 0;
-}
-.scrollbar .handle {
-	width: 100px;
-	height: 100%;
-	background: #292a33;
-	cursor: pointer;
-}
-.scrollbar .handle .mousearea {
-	position: absolute;
-	top: -9px;
-	left: 0;
-	width: 100%;
-	height: 20px;
-}
+	.frame ul li.active {
+		color: #fff;
+		background: #a03232;
+	}
 
-/* Controls */
-.controls { margin: 25px 0; text-align: center; }
+	.frameHeader h2 {
+		height: 30px;
+		line-height: 30px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis
+	}
 
+	/* Scrollbar */
+	.scrollbar {
+		margin: 0 0 1em 0;
+		height: 5px;
+		background: #ccc;
+		line-height: 0;
+	}
+
+	.scrollbar .handle {
+		width: 100px;
+		height: 100%;
+		background: #292a33;
+		cursor: pointer;
+	}
+
+	.scrollbar .handle .mousearea {
+		position: absolute;
+		top: -9px;
+		left: 0;
+		width: 100%;
+		height: 20px;
+	}
+
+	/* Controls */
+	.controls {
+		margin: 25px 0;
+		text-align: center;
+	}
 </style>
-<?$this->load->view("handlebarsTemplates");?>
+<? $this->load->view("handlebarsTemplates"); ?>

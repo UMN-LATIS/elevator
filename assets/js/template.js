@@ -129,7 +129,7 @@ function loadLastSearch() {
       });
       
       $.get(basePath + "search/getResult/" + direction + "/" + searchId + "/" + objectId, function (data) {
-        var parsed = $.parseJSON(data);
+        var parsed = data;
         if (parsed.status == "found") {
           nextResultLink(parsed.targetId);
         } else {

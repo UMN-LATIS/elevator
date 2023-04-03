@@ -32,6 +32,7 @@ class Asset_model extends CI_Model {
 		}
 	}
 
+
 	/**
 	 * special handy getter for objectId
 	 */
@@ -1131,7 +1132,6 @@ class Asset_model extends CI_Model {
         $this->doctrine->em->persist($oldAssetObject);
         $this->doctrine->em->flush();
 	}
-
 }
 
 /* End of file asset.php */
