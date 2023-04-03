@@ -72,7 +72,6 @@ class asset extends Instance_Controller {
 		}
 		
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
-
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
