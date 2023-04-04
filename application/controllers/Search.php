@@ -328,6 +328,12 @@ class Search extends Instance_Controller {
 
 	public function listCollections() {
 
+		if ($this->instance->getInterfaceVersion() == 1) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$pages = $this->doctrine->em->getRepository("Entity\InstancePage")->findBy(["instance"=>$this->instance, "title"=>"Collection Page"]);
 		$collectionText = null;
 		if($pages) {
