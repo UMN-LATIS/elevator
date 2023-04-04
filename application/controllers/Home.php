@@ -136,6 +136,19 @@ class Home extends Instance_Controller {
 		$headerData["pages"] = $outputPages;
 
 		$headerData["userIsloggedIn"] = false;
+
+		$headerData["userCanSearchAndBrowse"] = false;
+		if ($this->user_model) {
+			$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+			if ($accessLevel == PERM_NOPERM) {
+				if (count($this->user_model->getAllowedCollections(PERM_SEARCH)) > 0) {
+					$headerData["userCanSearchAndBrowse"] = true;
+				}
+			} else {
+				$headerData["userCanSearchAndBrowse"] = true;
+			}
+		}
+		
 		$headerData["userCanCreateDrawers"] = false;
 		$headerData["userCanManageAssets"] = false;
 		$headerData["userId"] = null;
