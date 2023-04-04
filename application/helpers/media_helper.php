@@ -257,7 +257,7 @@ function getImageMetadata($sourceImage) {
 }
 
 function isWholeSlideImage($sourceFile) {
-	if($sourceFile->getType() == "svs" || $sourceFile->getType() == "ndpi") {
+	if($sourceFile->getType() == "svs" || $sourceFile->getType() == "ndpi" || $sourceFile->getType() == "czi") {
 		return true;
 	}
 	return false;
