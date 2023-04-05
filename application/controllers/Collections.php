@@ -9,6 +9,12 @@ class Collections extends Instance_Controller {
 
 	public function browseCollection($collectionId=null) {
 
+		if ($this->instance->getInterfaceVersion() == 1) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		if(!$collectionId) {
 			instance_redirect("/search");
 		}
