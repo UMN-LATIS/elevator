@@ -201,6 +201,15 @@ function getImageMetadata($sourceImage) {
 	$metadata["width"] = $extractedRaw["ImageWidth"] ?? 0;
 	$metadata["height"] = $extractedRaw["ImageHeight"] ?? 0;
 
+	if($metadata["width"] == 0 && $metadata["height"] == 0) {
+		if(isset($extractedRaw["ImageSizeX"])) {
+			$metadata["width"] = $extractedRaw["ImageSizeX"];
+		}
+		if(isset($extractedRaw["ImageSizeY"])) {
+			$metadata["height"] = $extractedRaw["ImageSizeY"];
+		}
+	}
+
 	if($sourceImage->getType() == "tif") {
 		// we might have a crazy multilayer tiff. Let's get the max width/height
 		$results = null;
