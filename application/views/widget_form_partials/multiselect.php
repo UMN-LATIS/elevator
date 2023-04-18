@@ -55,8 +55,6 @@ selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
 <?endforeach; endif;?>
 
 
-
-
 </script>
 
 
