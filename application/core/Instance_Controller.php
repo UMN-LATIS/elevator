@@ -10,7 +10,8 @@ class Instance_Controller extends MY_Controller
     function __construct()
     {
         parent::__construct();
-
+        
+        
         if($this->config->item('site_open') === FALSE)
         {
             show_error('Elevator is Temporarily Unavailable.');
@@ -77,11 +78,7 @@ class Instance_Controller extends MY_Controller
                 }
             }
             $CI->instanceType = "subdirectory";
-            // HACK HACK HACK
-            // Close the session if we're not going to be doing a login, prevent se$
-            if(strtolower($CI->uri->segment(2)) !== "loginmanager") {
-                session_write_close();
-            }
+
             return;
         }
 
@@ -98,11 +95,7 @@ class Instance_Controller extends MY_Controller
                 }
             }
             $CI->instanceType = "subdomain";
-            // HACK HACK HACK
-            // Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
-            if(strtolower($CI->uri->segment(1)) !== "loginmanager") {
-                session_write_close();
-            }
+
             return;
         }
 
@@ -137,7 +130,7 @@ class Instance_Controller extends MY_Controller
 
     function getAbsolutePath() {
         if($this->instanceType == "subdirectory") {
-            return site_url($this->instance->getDomain() . "/") ."/";
+            return site_url($this->instance->getDomain() . "/");
         }
         else {
             return site_url();
