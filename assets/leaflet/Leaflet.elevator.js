@@ -27,8 +27,8 @@ if(typeof require !== "undefined") var L = require('leaflet')
 	},
 	
 	getTileUrl: function(coords){
-		var url = this._loadFunction(coords);
-        return url;
+		// var url = this._loadFunction(coords);
+        // return url;
 	},
 	
 
@@ -36,13 +36,14 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		var error;
 		var tile = L.DomUtil.create('img', 'elevatorTile');
 		coords.z = coords.z  + this.options.zoomOffset;
-		var url = this._loadFunction(coords);
 		tile.onload = (function(done, error, tile) {
 			return function() {
 				done(error, tile);
 			}
 		})(done, error, tile);
-		tile.src=url;
+		this._loadFunction(coords, tile);
+
+		// tile.src=url;
 		return tile;
 	},
 
