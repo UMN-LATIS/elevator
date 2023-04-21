@@ -83,7 +83,7 @@ class S3_model extends CI_Model {
 		
 	}
 
-	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null) {
+	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null, $contentEncoding = null) {
 		if(!file_exists($sourceFile)) {
 			$this->logging->logError("putObject", "file no longer exists", $sourceFile);
 			return false;
@@ -101,7 +101,8 @@ class S3_model extends CI_Model {
 					'Key'    => $destKey,
 					'Body'   => fopen($sourceFile, "rb"),
 					'StorageClass'   => $storageClass,
-					"ContentType" => $targetMimeType
+					"ContentType" => $targetMimeType,
+					"ContentEncoding" => $contentEncoding
 					));
 			}
 			catch (Exception $e) {

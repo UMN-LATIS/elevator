@@ -44,6 +44,12 @@ class ImageHandler extends FileHandlerBase {
 			if(array_key_exists("tiled", $this->derivatives)) {
 				$derivative[] = "tiled";
 			}
+			if(array_key_exists("tiled-tar", $this->derivatives)) {
+				$derivative[] = "tiled-tar";
+			}
+			if(array_key_exists("tiled-index", $this->derivatives)) {
+				$derivative[] = "tiled-index";
+			}
 		}
 
 		if($accessLevel>PERM_NOPERM) {
@@ -258,13 +264,6 @@ class ImageHandler extends FileHandlerBase {
 		$localPath = $sourceFile->getPathToLocalFile();
 		$pathparts = pathinfo($localPath);
 
-		$derivativeType = "tiled";
-
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = $derivativeType;
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType;
 
 
 		$outputPath = $localPath . "-tiled";
@@ -312,15 +311,62 @@ class ImageHandler extends FileHandlerBase {
 
 		echo "\n";
 		$this->pheanstalk->touch($this->job);
-		
-		if($this->s3model->putDirectory($outputPath, "derivative/". $this->getReversedObjectId() . "-tiled", null, $this->job)) {
-			$this->load->helper('file');
+
+		$derivativeType = "tiled-tar";
+		$derivativeContainerTar = new fileContainerS3();
+		$derivativeContainerTar->derivativeType = $derivativeType;
+		$derivativeContainerTar->path = "derivative";
+		$derivativeContainerTar->setParent($this->sourceFile->getParent());
+		$derivativeContainerTar->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tar";
+
+		$tarString = "tar -cvf " . $derivativeContainerTar->getPathToLocalFile() . " -C " . $outputPath . " .";
+		echo $tarString . "\n";
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($tarString);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->pheanstalk->touch($this->job);
+			echo ".";
+		}
+
+
+		$derivativeType = "tiled-index";
+		$derivativeContainerIndex = new fileContainerS3();
+		$derivativeContainerIndex->derivativeType = $derivativeType;
+		$derivativeContainerIndex->path = "derivative";
+		$derivativeContainerIndex->setParent($this->sourceFile->getParent());
+		$derivativeContainerIndex->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".json.gz";
+		$derivativeContainerIndex->forcedMimeType = "application/json";
+		$derivativeContainerIndex->forcedContentEncoding = "gzip";
+		$tarIndexString = $this->config->item('tarrific') . "  " . $derivativeContainerTar->getPathToLocalFile() . " " . $derivativeContainerIndex->getPathToLocalFile();
+		echo $tarIndexString . "\n";
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($tarIndexString);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->pheanstalk->touch($this->job);
+			echo ".";
+		}
+
+		if($derivativeContainerIndex->copyToRemoteStorage() && $derivativeContainerTar->copyToRemoteStorage()) {
+			echo "Success\n";
+			unlink($derivativeContainerTar->getPathToLocalFile());
+			unlink($derivativeContainerIndex->getPathToLocalFile());
+			$derivativeContainerIndex->ready = true;
+			$derivativeContainerTar->ready = true;
+			$this->load->helper("file");
 			delete_files($outputPath, true);
 		}
+		else {
+			echo "Fail";
+		}
+
+
 
 		$this->pheanstalk->touch($this->job);
 
-		$this->derivatives[$derivativeType] = $derivativeContainer;
+		$this->derivatives[$derivativeContainerIndex->derivativeType] = $derivativeContainerIndex;
+		$this->derivatives[$derivativeContainerTar->derivativeType] = $derivativeContainerTar;
 		$this->unlinkLocalSwap();
 
 		$this->queueTask(3);
