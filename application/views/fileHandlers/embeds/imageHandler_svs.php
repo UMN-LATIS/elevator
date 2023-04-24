@@ -133,12 +133,12 @@
             setTimeout(loadedCallback, 200);
             return;
         }
-        await loadIndex();
         AWS.config = new AWS.Config();
         AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
-
         AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
         s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
+
+        await loadIndex();
         imageMap = L.map('imageMap', {
             fullscreenControl: true,
             zoomSnap: 0,

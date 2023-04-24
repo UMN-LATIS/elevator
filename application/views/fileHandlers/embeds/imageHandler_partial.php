@@ -27,7 +27,9 @@ if(isset($fileContainers['tiled-tar'])) {
             const { s, e } = fileInfo;
 
             // fetch the file
-            const response = await fetch(tiledTar, {
+            var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled-tar']->getCompositeName()?>", Range: `bytes=${s}-${e}`};
+            var url = s3.getSignedUrl('getObject', params)
+            const response = await fetch(url, {
                 headers: {
                 Range: `bytes=${s}-${e}`,
                 },

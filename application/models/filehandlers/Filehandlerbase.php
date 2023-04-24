@@ -553,7 +553,7 @@ class FileHandlerBase extends CI_Model {
 		$derivative = $this->derivatives[$derivativeTitle];
 
 		
-		$token = $this->s3model->getSecurityTokenForPath($derivative->storageKey . "/");
+		$token = $this->s3model->getSecurityTokenForPath($derivative->storageKey);
 		return $token;
 
 
