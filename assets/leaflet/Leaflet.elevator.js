@@ -26,9 +26,9 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		this.on('tileload', this._adjustNonSquareTile)
 	},
 	
-	getTileUrl: function(coords){
-		// var url = this._loadFunction(coords);
-        // return url;
+	getTileUrl: function(coords, tile){
+		this._loadFunction(coords, tile);
+        return tile;
 	},
 	
 

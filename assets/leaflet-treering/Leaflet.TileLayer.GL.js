@@ -807,7 +807,7 @@ nextHighestPowerOfTwo: function(x) {
 			function(resolve, reject) {
 				var tile = document.createElement("img");
 				tile.crossOrigin = "";
-				tile.src = layer.getTileUrl(coords);
+				tile = layer.getTileUrl(coords, tile);
 				L.DomEvent.on(tile, "load", resolve.bind(this, tile));
 				L.DomEvent.on(tile, "error", reject.bind(this, tile));
 			}.bind(this)
