@@ -320,7 +320,6 @@ class ImageHandler extends FileHandlerBase {
 		$derivativeContainerTar->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tar";
 
 		$tarString = "tar -cvf " . $derivativeContainerTar->getPathToLocalFile() . " -C " . $outputPath . " .";
-		echo $tarString . "\n";
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($tarString);
 		$process->run();
 		while($process->isRunning()) {
@@ -339,7 +338,7 @@ class ImageHandler extends FileHandlerBase {
 		$derivativeContainerIndex->forcedMimeType = "application/json";
 		$derivativeContainerIndex->forcedContentEncoding = "gzip";
 		$tarIndexString = $this->config->item('tarrific') . "  " . $derivativeContainerTar->getPathToLocalFile() . " " . $derivativeContainerIndex->getPathToLocalFile();
-		echo $tarIndexString . "\n";
+
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($tarIndexString);
 		$process->run();
 		while($process->isRunning()) {
@@ -517,6 +516,15 @@ class ImageHandler extends FileHandlerBase {
 			return new FileContainer($dest);
 		}
 		return $this->sourceFile;
+	}
+
+	public function priority() {
+		// if we're a tiled image, we give it a lower priority
+		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
+		if($megapixels > 50 || $this->forceTiling()) {
+			return 50;
+		}
+		return 0;
 	}
 
 
