@@ -265,10 +265,10 @@ class FileHandlerBase extends CI_Model {
 			$ttr = $args['ttr'];
 		}
 		if($taskId == 0) {
-			$priority = 50;
+			$priority = $this->priority() + 50;
 		}
 		else {
-			$priority = 20;
+			$priority = $this->priority() + 20;
 		}
 
 		$jobId= $this->pheanstalk->useTube('newUploads')->put($newTask, $priority, 2, $ttr);
@@ -663,6 +663,10 @@ class FileHandlerBase extends CI_Model {
 		}
 
 		
+	}
+
+	public function priority() {
+		return 0;
 	}
 
 }
