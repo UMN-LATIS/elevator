@@ -74,12 +74,7 @@
 			heightScale = 1;
 			widthScale = minimapRatio;
 		}
-		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
-			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-			var url = s3.getSignedUrl('getObject', params)
-			return url;
-
-		}, {
+		var miniLayer = L.tileLayer.elevator(tileLoadFunction, {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
 			tileSize: 254,
