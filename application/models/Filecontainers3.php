@@ -26,6 +26,7 @@ class FileContainerS3 extends FileContainer {
 	public $ready = false;
 
 	public $forcedMimeType = null;
+	public $forcedContentEncoding = null;
 
 	public function __construct($fileEntry=null)
 	{
@@ -155,7 +156,7 @@ class FileContainerS3 extends FileContainer {
 	}
 
 	public function copyToRemoteStorage($withExtension=null) {
-		return $this->parent->s3model->putObject($this->getPathToLocalFile(), $this->storageKey . $withExtension, $this->storageClass, $this->forcedMimeType);
+		return $this->parent->s3model->putObject($this->getPathToLocalFile(), $this->storageKey . $withExtension, $this->storageClass, $this->forcedMimeType, $this->forcedContentEncoding);
 
 	}
 

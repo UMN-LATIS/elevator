@@ -45,7 +45,7 @@
 }
 </style>
 
-<? $token = $fileObject->getSecurityToken("tiled")?>
+<? $token = isset($fileContainers['tiled'])?$fileObject->getSecurityToken("tiled"):$fileObject->getSecurityToken("tiled-tar")?>
 
 <style>
 
@@ -96,6 +96,10 @@
         }
         <?endif?>
     </style>
+
+
+<?=$this->load->view("fileHandlers/embeds/imageHandler_partial.php",array("fileContainers"=>$fileContainers),true)?>
+
 <script type="application/javascript">
 
     if(imageMap) {
@@ -115,24 +119,26 @@
     canSave = true;
     <?endif?>
 
+
+   
     var sideCar = null;
     <?if(isset($widgetObject->sidecars) && array_key_exists("svs", $widgetObject->sidecars)):?>
     sideCar = <?=json_encode($widgetObject->sidecars['svs'])?>;
     <?endif?>
 
-    var loadedCallback = function() {
+    var loadedCallback = async function() {
 
         if(typeof AWS === 'undefined') {
             console.log("pausing for aws");
             setTimeout(loadedCallback, 200);
             return;
         }
-
         AWS.config = new AWS.Config();
         AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
-
         AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
         s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
+
+        await loadIndex();
         imageMap = L.map('imageMap', {
             fullscreenControl: true,
             zoomSnap: 0,
@@ -154,11 +160,7 @@
             detectRetina: false
         };
 
-        layer = L.tileLayer.elevator(function(coords, tile, done) {
-            var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-			var url = s3.getSignedUrl('getObject', params)
-			return url;
-        }, mapOptions);
+        layer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
         layer.addTo(imageMap);
 
         var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
@@ -174,11 +176,7 @@
             heightScale = 1;
             widthScale = minimapRatio;
         }
-        var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
-            var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-			var url = s3.getSignedUrl('getObject', params)
-			return url;
-        }, mapOptions);
+        var miniLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
         
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,
