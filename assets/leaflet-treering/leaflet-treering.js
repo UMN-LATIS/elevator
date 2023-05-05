@@ -142,7 +142,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     $(map.getContainer()).css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-
+    $(".leaflet-control-layers-selector")[0].click();
     // test placement
     this.popoutPlots.btn.addTo(this.viewer);
 
