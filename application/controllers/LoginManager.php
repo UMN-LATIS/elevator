@@ -19,6 +19,13 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function localLogin() {
+		// use vue template if set and this is a GET request
+		if ($this->instance->getInterfaceVersion() == 1 && $this->input->get()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$this->useUnauthenticatedTemplate = true;
 
 		$redirectURL = null;
