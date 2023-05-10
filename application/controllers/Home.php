@@ -136,6 +136,19 @@ class Home extends Instance_Controller {
 		$headerData["pages"] = $outputPages;
 
 		$headerData["userIsloggedIn"] = false;
+
+		$headerData["userCanSearchAndBrowse"] = false;
+		if ($this->user_model) {
+			$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+			if ($accessLevel == PERM_NOPERM) {
+				if (count($this->user_model->getAllowedCollections(PERM_SEARCH)) > 0) {
+					$headerData["userCanSearchAndBrowse"] = true;
+				}
+			} else {
+				$headerData["userCanSearchAndBrowse"] = true;
+			}
+		}
+		
 		$headerData["userCanCreateDrawers"] = false;
 		$headerData["userCanManageAssets"] = false;
 		$headerData["userId"] = null;
@@ -189,6 +202,23 @@ class Home extends Instance_Controller {
 			}
 
 		}
+
+		// Search results data
+
+		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
+
+		$widgetArray = array();
+		foreach($directSearch as $widget) {
+			if($this->instance->getTemplates()->contains($widget->getTemplate())) {
+				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId(), "type"=>$widget->getFieldType()->getName()];	
+			}
+		}
+
+		uasort($widgetArray, function($a, $b) {
+			return strcmp($a["label"], $b["label"]);
+		});
+
+		$headerData["sortableFields"] = $widgetArray;
 
 
 		$headerData["contact"] = null;

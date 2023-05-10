@@ -12,10 +12,11 @@
 }
 </style>
 
-<? $token = $fileObject->getSecurityToken("tiled")?>
+<? $token = isset($fileContainers['tiled'])?$fileObject->getSecurityToken("tiled"):$fileObject->getSecurityToken("tiled-tar")?>
 
 
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="mapElement"></div></div>
+<?=$this->load->view("fileHandlers/embeds/imageHandler_partial.php",array("fileContainers"=>$fileContainers),true)?>
 
 <script type="application/javascript">
 	var imageMap;
@@ -25,13 +26,15 @@
 
 	
 	
-	var actualLoad = function() {
+	var actualLoad = async function() {
 
 		if(typeof AWS === 'undefined') {
 			console.log("pausing for aws");
 			setTimeout(loadedCallback, 200);
 			return;
 		}
+
+		await loadIndex();
 		console.log("entry");
 		
 		AWS.config = new AWS.Config();
@@ -47,12 +50,7 @@
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
 
-		var layer = new L.tileLayer.elevator(function(coords, tile, done) {
-			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-			var url = s3.getSignedUrl('getObject', params)
-			return url;
-
-		}, {
+		var layer = new L.tileLayer.elevator(tileLoadFunction, {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
 			detectRetina: false,
@@ -76,12 +74,7 @@
 			heightScale = 1;
 			widthScale = minimapRatio;
 		}
-		var miniLayer = L.tileLayer.elevator(function(coords, tile, done) {
-			var params = {Bucket: '<?=$fileObject->collection->getBucket()?>', Key: "derivative/<?=$fileContainers['tiled']->getCompositeName()?>/tiledBase_files/" + coords.z + "/" + coords.x + "_" + coords.y + ".jpeg"};
-			var url = s3.getSignedUrl('getObject', params)
-			return url;
-
-		}, {
+		var miniLayer = L.tileLayer.elevator(tileLoadFunction, {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
 			tileSize: 254,
