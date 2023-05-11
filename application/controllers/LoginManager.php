@@ -23,7 +23,7 @@ class LoginManager extends Instance_Controller {
 		if ($requestMethod == 'GET') {
 			return $this->template->publish('vueTemplate');
 		}
-		
+
 		// respond with json
 		header('Content-Type: application/json');
 
