@@ -60,3 +60,8 @@ function getIconPath($size = 'default') {
 	$interfaceVersion = $CI->instance->getInterfaceVersion();
 	return $pathsByInterfaceVersion[$interfaceVersion][$size]	?? $pathsByInterfaceVersion[0]['default'];
 }
+
+function isUsingVueUI() {
+	$CI =& get_instance();
+	return $CI->instance->getInterfaceVersion() == 1;
+}

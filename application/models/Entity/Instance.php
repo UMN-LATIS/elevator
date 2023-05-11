@@ -1458,8 +1458,4 @@ class Instance
     {
         return $this->interfaceVersion;
     }
-
-    public function isUsingVueUI() {
-        return $this->getInterfaceVersion() == 1;
-    }
 }

@@ -92,7 +92,7 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function localLogin() {
-		if ($this->instance->isUsingVueUI()) {
+		if (isUsingVueUI()) {
 			$this->handleLocalLoginForVueUI();
 			return;
 		}
