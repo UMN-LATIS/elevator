@@ -234,6 +234,18 @@ class Home extends Instance_Controller {
 		$outputCollections = $this->getNestedCollections($this->collection_model->getUserCollections());
 		$headerData["collections"] = $outputCollections;
 
+		if($headerData["userCanManageAssets"]) {
+			$templates[] = array();
+			foreach($this->instance->getTemplates() as $template) {
+				if(!$template->getIsHidden()) {
+					$templates[$template->getId()] = $template->getName();
+				}
+			}
+			$headerData["templates"] = $templates;
+		}
+		else {
+			$headerData["templates"] = array();
+		}
 
 		return render_json($headerData);
 
