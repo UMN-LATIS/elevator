@@ -51,15 +51,6 @@ class LoginManager extends Instance_Controller {
 		]);
 	}
 
-	function handleInvalidRequestMethod() {
-		header('Content-Type: application/json');
-		http_response_code(405);
-		echo json_encode([
-			'status' => 'error',
-			'message' => 'invalid request method'
-		]);
-	}
-
 	public function localLogin() {
 		$requestMethod = $this->input->server('REQUEST_METHOD');
 		
@@ -70,7 +61,12 @@ class LoginManager extends Instance_Controller {
 			if ($requestMethod == 'POST') {
 				return $this->handleLocalLoginForVueUI();
 			}
-			return $this->handleInvalidRequestMethod();
+
+			// not a POST or GET request
+			return render_json([
+				'status' => 'error',
+				'message' => 'invalid request method'
+			], 405);
 		}
 
 		$this->useUnauthenticatedTemplate = true;
