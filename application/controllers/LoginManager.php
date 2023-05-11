@@ -16,34 +16,28 @@ class LoginManager extends Instance_Controller {
 
 		// check if username and password are set
 		if (!$username || !$password) {
-			http_response_code(401);
-			echo json_encode([
+			return render_json([
 				'status' => 'error',
 				'message' => 'invalid username or password'
-			]);
-			return;
+			], 401);
 		}
 
 		$user = getUserBy(["username" => $username, "userType" => "Local"]);
 
 		// check if user exists and password is correct
 		if (!$user || !verifyUserPassword($user, $password)) {
-			http_response_code(401);
-			echo json_encode([
+			return render_json([
 				'status' => 'error',
 				'message' => 'invalid username or password'
-			]);
-			return;
+			], 401);
 		}
 
 		// check if account is expired
 		if (hasUserAccountExpired($user)) {
-			http_response_code(401);
-			echo json_encode([
+			return render_json([
 				'status' => 'error',
 				'message' => 'account is expired'
 			]);
-			return;
 		}
 
 		// success!
@@ -51,11 +45,10 @@ class LoginManager extends Instance_Controller {
 		$this->session->set_userdata([
 			'userId' => $user->getId()
 		]);
-		echo json_encode([
+		return render_json([
 			'status' => 'success',
 			'message' => 'login successful'
 		]);
-		return;
 	}
 
 	function handleInvalidRequestMethod() {
@@ -69,7 +62,7 @@ class LoginManager extends Instance_Controller {
 
 	public function localLogin() {
 		$requestMethod = $this->input->server('REQUEST_METHOD');
-
+		
 		if (isUsingVueUI()) {
 			if ($requestMethod == 'GET') {
 				return $this->template->publish('vueTemplate');
