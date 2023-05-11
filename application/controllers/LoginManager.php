@@ -10,13 +10,6 @@ class LoginManager extends Instance_Controller {
 
 	}
 
-	function force_ssl() {
-	    // if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
-	    //     $url = "https://". $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-	    //     redirect($url);
-	    //     exit;
-	    // }
-	}
 
 	function handleLocalLoginForVueUI() {
 		$requestMethod = $this->input->server('REQUEST_METHOD');
@@ -137,7 +130,6 @@ class LoginManager extends Instance_Controller {
 				$this->template->content->view("login/passwordFail");
 			}
 		}
-		$this->force_ssl();
 
 		$this->template->content->view("login/login", ["redirectURL"=>$redirectURL, "localOnly"=>true]);
 		$this->template->publish();
@@ -175,8 +167,6 @@ class LoginManager extends Instance_Controller {
 			// we hackily urlencode hashes
 			$redirectURL = str_replace("%23", "#", $redirectURL);
 		}
-		$this->force_ssl();
-
 
 		$authHelper = $this->user_model->getAuthHelper();
 		if($authHelper->remoteLogin($redirectURL, $noForcedAuth)) {
