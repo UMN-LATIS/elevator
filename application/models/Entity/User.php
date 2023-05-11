@@ -663,16 +663,4 @@ class User
     {
         return $this->csv_imports;
     }
-
-    public function isExpired() {
-        return $this->getHasExpiry() && $this->getExpires() < new \DateTime();
-    }
-
-    public function verifyPassword($password) {
-        $hashedPass = sha1(config_item('encryption_key') . $password);
-        $hashedPass2 = sha1("monkeybox43049pokdhjaldsjkaf" . $password);
-
-        $storedPassword = $this->getPassword();
-        return $storedPassword === $hashedPass || $storedPassword === $hashedPass2;
-    }
 }

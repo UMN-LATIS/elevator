@@ -571,21 +571,6 @@ class User_model extends CI_Model {
 	}
 
 	/**
-	 * Get a user by a set of parameters
-	 * @param  array  params for findOneBy method
-	 * @return User  User object
-	 * 
-	 * @example 
-	 * $user = $this->user_model->getUserBy([
-	 * 	"username" => "testuser",
-	 * 	"userType" => "local"
-	 * ]);
-	 */
-	public function getUserBy($params) {
-		return $this->doctrine->em->getRepository('Entity\User')->findOneBy($params);
-	}
-
-	/**
 	 * Catch invalid method calls and see if our Doctrine child instance
 	 * will respond - if so, call through to that.  Otherwise, flag an error.
 	 * @return calls through to Doctrine instance method

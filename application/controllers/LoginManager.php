@@ -57,10 +57,10 @@ class LoginManager extends Instance_Controller {
 			return;
 		}
 
-		$user = $this->user_model->getUserBy(["username" => $username, "userType" => "Local"]);
+		$user = getUserBy(["username" => $username, "userType" => "Local"]);
 
 		// check if user exists and password is correct
-		if (!$user || !$user->verifyPassword($password)) {
+		if (!$user || !verifyUserPassword($user, $password)) {
 			http_response_code(401);
 			echo json_encode([
 				'status' => 'error',
@@ -70,7 +70,7 @@ class LoginManager extends Instance_Controller {
 		}
 
 		// check if account is expired
-		if ($user->isExpired()) {
+		if (hasUserAccountExpired($user)) {
 			http_response_code(401);
 			echo json_encode([
 				'status' => 'error',
@@ -92,7 +92,7 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function localLogin() {
-		if (isUsingVueUI()) {
+		if (isUsingVueUI($this->instance)) {
 			$this->handleLocalLoginForVueUI();
 			return;
 		}
