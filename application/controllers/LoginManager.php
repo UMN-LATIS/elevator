@@ -18,11 +18,89 @@ class LoginManager extends Instance_Controller {
 	    // }
 	}
 
+	function handleLocalLoginForVueUI() {
+		$requestMethod = $this->input->server('REQUEST_METHOD');
+		if ($requestMethod == 'GET') {
+			return $this->template->publish('vueTemplate');
+		}
+		
+		// respond with json
+		header('Content-Type: application/json');
+
+		// if this isn't a POST request, return an error
+		if ($requestMethod != 'POST') {
+			http_response_code(405);
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'invalid request method'
+			]);
+			return;
+		}
+
+		// Get the data from the request body
+		$cleanJSON = $this->security->xss_clean($this->input->raw_input_stream);
+		$data = json_decode($cleanJSON);
+
+		// if the JSON data is invalid, return an error
+		if (!$data) {
+			http_response_code(400);
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'invalid json data'
+			]);
+			return;
+		}
+
+		$username = $data->username;
+		$password = $data->password;
+
+		// check if username and password are set
+		if (!$username || !$password) {
+			http_response_code(401);
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'invalid username or password'
+			]);
+			return;
+		}
+
+		$user = $this->user_model->getUserBy(["username" => $username, "userType" => "Local"]);
+
+		// check if user exists and password is correct
+		if (!$user || !$user->verifyPassword($password)) {
+			http_response_code(401);
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'invalid username or password'
+			]);
+			return;
+		}
+
+		// check if account is expired
+		if ($user->isExpired()) {
+			http_response_code(401);
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'account is expired'
+			]);
+			return;
+		}
+
+		// success!
+		// set session data
+		$this->session->set_userdata([
+			'userId' => $user->getId()
+		]);
+		echo json_encode([
+			'status' => 'success',
+			'message' => 'login successful'
+		]);
+		return;
+	}
+
 	public function localLogin() {
-		// use vue template if set and this is a GET request
-		if ($this->instance->getInterfaceVersion() == 1 && $this->input->get()) {
-			$this->template->set_template("vueTemplate");
-			$this->template->publish();
+		if ($this->instance->isUsingVueUI()) {
+			$this->handleLocalLoginForVueUI();
 			return;
 		}
 
