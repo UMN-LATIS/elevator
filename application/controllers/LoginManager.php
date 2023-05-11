@@ -71,7 +71,7 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function localLogin() {
-		if (isUsingVueUI()) {
+		if ($this->isUsingVueUI()) {
 				return $this->template->publish('vueTemplate');
 		}
 
