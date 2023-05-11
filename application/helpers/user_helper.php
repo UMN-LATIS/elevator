@@ -24,7 +24,7 @@ if (!function_exists('verifyUserPassword')) {
  * @return User  User object
  * 
  * @example 
- * $user = $this->user_model->getUserBy([
+ * $user = getUserBy([
  * 	"username" => "testuser",
  * 	"userType" => "local"
  * ]);
