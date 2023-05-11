@@ -12,7 +12,7 @@ class Home extends Instance_Controller {
 	public function index()
 	{
 
-		if ($this->instance->getInterfaceVersion() == 1) {
+		if ($this->isUsingVueUI()) {
 			$this->template->set_template("vueTemplate");
 			$this->template->publish();
 			return;

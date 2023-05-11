@@ -570,7 +570,6 @@ class User_model extends CI_Model {
 
 	}
 
-
 	/**
 	 * Catch invalid method calls and see if our Doctrine child instance
 	 * will respond - if so, call through to that.  Otherwise, flag an error.

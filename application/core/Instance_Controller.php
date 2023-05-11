@@ -147,7 +147,7 @@ class Instance_Controller extends MY_Controller
 
     }
 
-
-
-
+    protected function isUsingVueUI() {
+       return $this->instance && $this->instance->getInterfaceVersion() == 1;
+    }
 }
