@@ -21,7 +21,7 @@ class Page extends Instance_Controller {
 			return render_json(["title" => $page->getTitle(), "content" => $page->getBody()]);
 		}
 
-		if ($this->instance->getInterfaceVersion() == 1) {
+		if ($this->isUsingVueUI()) {
 			$this->template->set_template("vueTemplate");
 			$this->template->publish();
 			return;
