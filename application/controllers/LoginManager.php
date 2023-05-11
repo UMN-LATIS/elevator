@@ -11,22 +11,8 @@ class LoginManager extends Instance_Controller {
 	}
 
 	function handleLocalLoginForVueUI() {
-		// Get the data from the request body
-		$cleanJSON = $this->security->xss_clean($this->input->raw_input_stream);
-		$data = json_decode($cleanJSON);
-
-		// if the JSON data is invalid, return an error
-		if (!$data) {
-			http_response_code(400);
-			echo json_encode([
-				'status' => 'error',
-				'message' => 'invalid json data'
-			]);
-			return;
-		}
-
-		$username = $data->username;
-		$password = $data->password;
+		$username = $this->input->post("username");
+		$password = $this->input->post("password");
 
 		// check if username and password are set
 		if (!$username || !$password) {
@@ -83,7 +69,7 @@ class LoginManager extends Instance_Controller {
 
 	public function localLogin() {
 		$requestMethod = $this->input->server('REQUEST_METHOD');
-		
+
 		if (isUsingVueUI()) {
 			if ($requestMethod == 'GET') {
 				return $this->template->publish('vueTemplate');
