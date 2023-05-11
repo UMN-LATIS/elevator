@@ -10,7 +10,22 @@ class LoginManager extends Instance_Controller {
 
 	}
 
-	function handleLocalLoginForVueUI() {
+	private function verifyUserPassword($user, $password) {
+		$hashedPass = sha1(config_item('encryption_key') . $password);
+		$hashedPass2 = sha1("monkeybox43049pokdhjaldsjkaf" . $password);
+
+		$storedPassword = $user->getPassword();
+		return $storedPassword === $hashedPass || $storedPassword === $hashedPass2;
+	}
+
+	public function localLoginAsync() {
+		if ($this->input->method() !== 'post') {
+			return render_json([
+				'status' => 'error',
+				'message' => 'invalid request method'
+			], 405);
+		}
+
 		$username = $this->input->post("username");
 		$password = $this->input->post("password");
 
@@ -22,10 +37,13 @@ class LoginManager extends Instance_Controller {
 			], 401);
 		}
 
-		$user = getUserBy(["username" => $username, "userType" => "Local"]);
+		$user =  $this->doctrine->em->getRepository("Entity\User")->findOneBy([
+			"username"=> $username, 
+			"userType"=>"Local"
+		]);
 
 		// check if user exists and password is correct
-		if (!$user || !verifyUserPassword($user, $password)) {
+		if (!$user || !$this->verifyUserPassword($user, $password)) {
 			return render_json([
 				'status' => 'error',
 				'message' => 'invalid username or password'
@@ -33,7 +51,8 @@ class LoginManager extends Instance_Controller {
 		}
 
 		// check if account is expired
-		if (hasUserAccountExpired($user)) {
+		$hasUserAccountExpired = $user->getHasExpiry() && $user->getExpires() > new \DateTime();
+		if ($hasUserAccountExpired) {
 			return render_json([
 				'status' => 'error',
 				'message' => 'account is expired'
@@ -52,21 +71,8 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function localLogin() {
-		$requestMethod = $this->input->server('REQUEST_METHOD');
-		
 		if (isUsingVueUI()) {
-			if ($requestMethod == 'GET') {
 				return $this->template->publish('vueTemplate');
-			}
-			if ($requestMethod == 'POST') {
-				return $this->handleLocalLoginForVueUI();
-			}
-
-			// not a POST or GET request
-			return render_json([
-				'status' => 'error',
-				'message' => 'invalid request method'
-			], 405);
 		}
 
 		$this->useUnauthenticatedTemplate = true;
