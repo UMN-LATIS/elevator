@@ -10,26 +10,7 @@ class LoginManager extends Instance_Controller {
 
 	}
 
-
 	function handleLocalLoginForVueUI() {
-		$requestMethod = $this->input->server('REQUEST_METHOD');
-		if ($requestMethod == 'GET') {
-			return $this->template->publish('vueTemplate');
-		}
-
-		// respond with json
-		header('Content-Type: application/json');
-
-		// if this isn't a POST request, return an error
-		if ($requestMethod != 'POST') {
-			http_response_code(405);
-			echo json_encode([
-				'status' => 'error',
-				'message' => 'invalid request method'
-			]);
-			return;
-		}
-
 		// Get the data from the request body
 		$cleanJSON = $this->security->xss_clean($this->input->raw_input_stream);
 		$data = json_decode($cleanJSON);
@@ -91,10 +72,26 @@ class LoginManager extends Instance_Controller {
 		return;
 	}
 
+	function handleInvalidRequestMethod() {
+		header('Content-Type: application/json');
+		http_response_code(405);
+		echo json_encode([
+			'status' => 'error',
+			'message' => 'invalid request method'
+		]);
+	}
+
 	public function localLogin() {
-		if (isUsingVueUI($this->instance)) {
-			$this->handleLocalLoginForVueUI();
-			return;
+		$requestMethod = $this->input->server('REQUEST_METHOD');
+		
+		if (isUsingVueUI()) {
+			if ($requestMethod == 'GET') {
+				return $this->template->publish('vueTemplate');
+			}
+			if ($requestMethod == 'POST') {
+				return $this->handleLocalLoginForVueUI();
+			}
+			return $this->handleInvalidRequestMethod();
 		}
 
 		$this->useUnauthenticatedTemplate = true;
