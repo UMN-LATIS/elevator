@@ -97,5 +97,22 @@
                 <option name="default">0</option>
               </options>
           </field>
+          <field name="defaultTheme" type="text" nullable='true' />
+          <field name="enableThemes" type="boolean" nullable='true'>
+          <options>
+                <option name="default">0</option>
+              </options>
+          </field>
+          <field name="maximumMoreLikeThis" type="integer" nullable='true'>
+          <options>
+                <option name="default">3</option>
+              </options>
+          </field>
+          
+          <field name="availableThemes" type="json_array" nullable="true">
+            <options>
+              <option name="jsonb">true</option>
+            </options>
+        </field>
       </entity>
 </doctrine-mapping>
