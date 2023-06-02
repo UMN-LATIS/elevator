@@ -1,3 +1,19 @@
+<?php
+$path_to_manifest = __DIR__ . '/../../assets/elevator-ui/dist/manifest.json';
+
+if (!file_exists($path_to_manifest)|| !is_readable($path_to_manifest)) {
+    throw new Exception("Cannot read JS Manifest: $path_to_manifest");
+}
+
+$manifest = json_decode(file_get_contents($path_to_manifest), true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    throw new Exception("Failed to decode JSON from JS manifest:" . json_last_error_msg());
+}
+
+$indexFile = $manifest['src/main.ts']['file'];
+$cssFile = $manifest['src/main.css']['file'];
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -45,13 +61,12 @@
     }
   </script>
 
-  <script type="module" crossorigin src="/assets/elevator-ui/dist/assets/index.js?<?=$this->template->currentHash?>"></script>
-  <link rel="stylesheet" href="/assets/elevator-ui/dist/assets/index.css?<?=$this->template->currentHash?>">
+  <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
+  <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
 </head>
 
 <body>
   <div id="app"></div>
-
 </body>
 
 </html>
