@@ -1,0 +1,114 @@
+.fa {
+	cursor: pointer;
+}
+
+.guide {
+	color: whitesmoke;
+}
+
+/* General: */
+.AreaCapture-text {
+	font-size: 16px;
+
+	margin: 0;
+}
+
+.AreaCapture-subtext {
+	color: gray;
+	font-size: 10px;
+	font-style: italic;
+}
+
+.AreaCapture-label {
+    display: block;
+
+	font-size: 14px;
+	font-weight: normal !important;
+
+	margin-left: 30px;
+}
+
+.AreaCapture-btn-container {
+	width: 45%;
+}
+
+.AreaCapture-btn-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.AreaCapture-btn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 100%;
+	min-height: 22px;
+
+	font-size: 18px;
+	font-family: Arial;
+	color: white;
+	
+	padding: 5px;
+
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: white;
+	border-radius: 10px;
+
+	cursor: pointer;
+}
+
+.AreaCapture-radio {
+	float: left;
+}
+
+.AreaCapture-input {
+	width: 7ch;
+}
+
+/* New ellipse dialog: */
+#AreaCapture-subtractYear-btn {
+	background-color: #f5bc42;
+}
+
+#AreaCapture-addYear-btn {
+	background-color: #71b54c;
+}
+
+/* Delete ellipses dialog */
+.fa-exclamation-triangle {
+	color: #b54c4c;
+	font-size: 56px;
+
+	cursor: not-allowed;
+}
+
+.AreaCapture-deleteWarning-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#AreaCapture-confirmDelete-btn {
+	background-color: #71b54c;
+}
+
+#AreaCapture-cancelDelete-btn {
+	background-color: #b54c4c;
+}
+
+/* Date ellipses dialog */
+.AreaCapture-radioBtn-container {
+	margin-bottom: 12px;
+}
+
+#AreaCapture-confirmDate-btn {
+	background-color: #71b54c;
+}
+
+#AreaCapture-cancelDate-btn {
+	background-color: #b54c4c;
+}

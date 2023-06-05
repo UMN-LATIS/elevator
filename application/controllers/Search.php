@@ -36,7 +36,7 @@ class Search extends Instance_Controller {
 			}
 		}
 
-		if ($this->instance->getInterfaceVersion() == 1) {
+		if ($this->isUsingVueUI()) {
 			$this->template->set_template("vueTemplate");
 			$this->template->publish();
 			return;
@@ -328,7 +328,7 @@ class Search extends Instance_Controller {
 
 	public function listCollections() {
 
-		if ($this->instance->getInterfaceVersion() == 1) {
+		if ($this->isUsingVueUI()) {
 			$this->template->set_template("vueTemplate");
 			$this->template->publish();
 			return;

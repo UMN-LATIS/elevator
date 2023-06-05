@@ -1,3 +1,19 @@
+<?php
+$path_to_manifest = __DIR__ . '/../../assets/elevator-ui/dist/manifest.json';
+
+if (!file_exists($path_to_manifest)|| !is_readable($path_to_manifest)) {
+    throw new Exception("Cannot read JS Manifest: $path_to_manifest");
+}
+
+$manifest = json_decode(file_get_contents($path_to_manifest), true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    throw new Exception("Failed to decode JSON from JS manifest:" . json_last_error_msg());
+}
+
+$indexFile = $manifest['src/main.ts']['file'];
+$cssFile = $manifest['src/main.css']['file'];
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -29,21 +45,28 @@
               return `${this.origin}${this.path}`;
             },
           },
+          theming: {
+            availableThemes: <?= json_encode($this->instance->getAvailableThemes()) ?>,
+            enabled: <?= $this->instance->getEnableThemes()?"true":"false" ?>,
+            defaultTheme: "<?= $this->instance->getDefaultTheme() ?>",
+          },
         },
         arcgis: {
           apiKey: "<?= $this->config->item('arcgis_access_token') ?>",
         },
+        moreLikeThis: {
+          maxInlineResults: <?= $this->instance->getMaximumMoreLikeThis() ?>,
+        }
       },
     }
   </script>
 
-  <script type="module" crossorigin src="/assets/elevator-ui/dist/assets/index.js"></script>
-  <link rel="stylesheet" href="/assets/elevator-ui/dist/assets/index.css">
+  <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
+  <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
 </head>
 
 <body>
   <div id="app"></div>
-
 </body>
 
 </html>

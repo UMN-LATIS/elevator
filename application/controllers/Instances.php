@@ -75,6 +75,10 @@ class Instances extends Instance_Controller {
 		$instance->setNotes($this->input->post('notes'));
 		$instance->setModifiedAt(new DateTime);
 		$instance->setInterfaceVersion($this->input->post('interfaceVersion'));
+		$instance->setEnableThemes($this->input->post('enableTheming'));
+		$instance->setDefaultTheme($this->input->post('defaultTheme'));
+		$instance->setAvailableThemes($this->input->post('availableThemes'));
+		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
 		$config['allowed_types'] = 'png';

@@ -81,7 +81,7 @@ class asset extends Instance_Controller {
 		}
 		
 
-		if($this->instance->getInterfaceVersion() == 1 && $returnJson == false) {
+		if($this->isUsingVueUI() && $returnJson == false) {
 			$this->template->set_template("vueTemplate");
 			$this->template->publish();
 			return;
