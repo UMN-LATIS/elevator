@@ -115,6 +115,25 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
 
   this.tools = [this.viewData, this.calibration, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustment, this.measurementOptions];
 
+  // --- //
+  // Code hosted in Leaflet.AreaCapture.js
+  this.areaCaptureInterface = new AreaCaptureInterface(this);
+  this.areaTools = new ButtonBar(this, this.areaCaptureInterface.btns, 'hdr_strong', 'Manage ellipses');
+
+  // Alert for Beta purposes: 
+  this.betaToggle = true;
+  $(this.areaTools.btn.button).on("click", () => {
+    if (this.betaToggle) {
+      alert("Area measurement tools for beta testing & provisional data development. Please direct any issues or feedback to: thorn573@umn.edu.");
+      this.betaToggle = false;
+    }
+  })
+
+  this.areaCaptureInterface.tools.map(tool => {
+    this.tools.push(tool);
+  });
+  // --- //
+
   this.baseLayer = {
     'Tree Ring': base_layer,
     'GL Layer': gl_layer
@@ -124,7 +143,8 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     'Points': this.visualAsset.markerLayer,
     'H-bar': this.mouseLine.layer,
     'Lines': this.visualAsset.lineLayer,
-    'Annotations': this.annotationAsset.markerLayer
+    'Annotations': this.annotationAsset.markerLayer,
+    'Ellipses': this.areaCaptureInterface.ellipseVisualAssets.ellipseLayer,
   };
 
   /**
@@ -156,6 +176,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
       this.editTools.bar.addTo(this.viewer);
       this.annotationTools.bar.addTo(this.viewer);
       this.settings.bar.addTo(this.viewer);
+      this.areaTools.bar.addTo(this.viewer);
       this.undoRedoBar.addTo(this.viewer);
     } else {
       this.popout.btn.addTo(this.viewer);
@@ -240,7 +261,9 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
       delete this.annotationAsset.dialogAttributesWindow;
     };
 
-    this.tools.forEach(e => { e.disable() });
+    this.tools.forEach(e => { 
+      e.disable() 
+    });
   };
 
   LTreering.prototype.collapseTools = function() {
@@ -249,6 +272,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     this.editTools.collapse();
     this.ioTools.collapse();
     this.settings.collapse();
+    this.areaTools.collapse();
   };
 
   // we need the max native zoom, which is set on the tile layer and not the map. getMaxZoom will return a synthetic value which is no good for measurement
@@ -261,6 +285,11 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
       });
       return maxNativeZoom;
   };
+
+  // --- //
+  // Code hosted in Leaflet.AreaCapture.js
+  if (options.initialData.ellipses) this.areaCaptureInterface.ellipseData.loadJSON(options.initialData.ellipses);
+  // --- //
 }
 
 /*******************************************************************************/
@@ -3157,9 +3186,12 @@ function Undo(Lt) {
     this.btn.enable();
     Lt.redo.btn.disable();
     Lt.redo.stack.length = 0;
+
     var restore_points = JSON.parse(JSON.stringify(Lt.data.points));
+    let ellipse_points = JSON.parse(JSON.stringify(Lt.areaCaptureInterface.ellipseData.data));
+
     this.stack.push({'year': Lt.data.year, 'earlywood': Lt.data.earlywood,
-      'index': Lt.data.index, 'points': restore_points });
+      'index': Lt.data.index, 'points': restore_points, 'ellipses':  ellipse_points});
   };
 
   /**
@@ -3168,16 +3200,21 @@ function Undo(Lt) {
    */
   Undo.prototype.pop = function() {
     if (this.stack.length > 0) {
-      if (Lt.data.points[Lt.data.index - 1].start) {
-        Lt.createPoint.disable();
-      } else {
-        Lt.mouseLine.from(Lt.data.points[Lt.data.index - 2].latLng);
+      if (Lt.data.points.length) {
+        if (Lt.data.points[Lt.data.index - 1].start) {
+          Lt.createPoint.disable();
+        } else {
+          Lt.mouseLine.from(Lt.data.points[Lt.data.index - 2].latLng);
+        }
       }
 
       Lt.redo.btn.enable();
+
       var restore_points = JSON.parse(JSON.stringify(Lt.data.points));
+      let ellipse_points = JSON.parse(JSON.stringify(Lt.areaCaptureInterface.ellipseData.data));
+
       Lt.redo.stack.push({'year': Lt.data.year, 'earlywood': Lt.data.earlywood,
-        'index': Lt.data.index, 'points': restore_points});
+        'index': Lt.data.index, 'points': restore_points, 'ellipses':  ellipse_points});
       var dataJSON = this.stack.pop();
 
       Lt.data.points = JSON.parse(JSON.stringify(dataJSON.points));
@@ -3187,6 +3224,7 @@ function Undo(Lt) {
       Lt.data.earlywood = dataJSON.earlywood;
 
       Lt.visualAsset.reload();
+      Lt.areaCaptureInterface.ellipseData.undo(dataJSON.ellipses);
 
       if (this.stack.length == 0) {
         this.btn.disable();
@@ -3218,8 +3256,10 @@ function Redo(Lt) {
   Redo.prototype.pop = function() {
     Lt.undo.btn.enable();
     var restore_points = JSON.parse(JSON.stringify(Lt.data.points));
+    let ellipse_points = JSON.parse(JSON.stringify(Lt.areaCaptureInterface.ellipseData.data));
+
     Lt.undo.stack.push({'year': Lt.data.year, 'earlywood': Lt.data.earlywood,
-      'index': Lt.data.index, 'points': restore_points});
+      'index': Lt.data.index, 'points': restore_points, 'ellipses':  ellipse_points});
     var dataJSON = this.stack.pop();
 
     Lt.data.points = JSON.parse(JSON.stringify(dataJSON.points));
@@ -3229,6 +3269,7 @@ function Redo(Lt) {
     Lt.data.earlywood = dataJSON.earlywood;
 
     Lt.visualAsset.reload();
+    Lt.areaCaptureInterface.ellipseData.redo(dataJSON.ellipses);
 
     if (this.stack.length == 0) {
       this.btn.disable();
@@ -3268,6 +3309,9 @@ function Calibration(Lt) {
     Lt.meta.ppm = pixelsPerMillimeter / retinaFactor;
     Lt.meta.ppmCalibration = true;
     console.log(Lt.meta.ppm);
+
+    // Recalculate ellipse areas. 
+    Lt.areaCaptureInterface.ellipseData.reloadJSON();
   }
 
   Calibration.prototype.enable = function() {
@@ -5234,6 +5278,7 @@ function SaveLocal(Lt) {
       'annotations': Lt.aData.annotations,
       'ppm': Lt.meta.ppm,
       'ptWidths': Lt.helper.findDistances(),
+      'ellipses': Lt.areaCaptureInterface.ellipseData.getJSON(),
     };
 
     // don't serialize our default value
@@ -5338,6 +5383,7 @@ function SaveCloud(Lt) {
         'attributesObjectArray': Lt.annotationAsset.attributesObjectArray,
         'annotations': Lt.aData.annotations,
         'ppm': Lt.meta.ppm,
+        'ellipses': Lt.areaCaptureInterface.ellipseData.getJSON(),
       };
 
       // don't serialize our default value
@@ -5498,6 +5544,11 @@ function LoadLocal(Lt) {
 
       Lt.loadData();
       Lt.metaDataText.updateText();
+
+      // --- //
+      // Code hosted in Leaflet.AreaCapture.js
+      if (newDataJSON.ellipses) Lt.areaCaptureInterface.ellipseData.loadJSON(newDataJSON.ellipses);
+      // --- //
     };
 
     fr.readAsText(files.item(0));
@@ -5768,7 +5819,6 @@ function KeyboardShortCutDialog (Lt) {
 
   };
 };
-
 
 /**
  * Hosts all global helper functions
