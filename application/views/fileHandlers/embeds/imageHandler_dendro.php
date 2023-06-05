@@ -38,6 +38,7 @@ if($widgetObject->parentWidget->dendroFields) {
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-treering/leaflet.magnifyingglass.css">
 
 	<link rel="stylesheet" href="/assets/leaflet-treering/style.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/Style.AreaCapture.css">
 
 	<!-- <script src="/assets/leaflet-treering/node_modules/jquery/dist/jquery.min.js"></script> -->
 	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
@@ -53,6 +54,9 @@ if($widgetObject->parentWidget->dendroFields) {
 <script src="/assets/leaflet/Leaflet.elevator.js"></script>
 <script src="/assets/leaflet-treering/leaflet.magnifyingglass.js"></script>
 <script type="application/javascript" src="/assets/leaflet-treering/leaflet-treering.js"></script>
+<script type="application/javascript" src="/assets/leaflet-treering/Leaflet.AreaCapture.js"></script>
+<script type="application/javascript" src="/assets/leaflet-treering/node_modules/leaflet-ellipse/l.ellipse.js"></script>
+<script src="https://unpkg.com/leaflet-lasso@2.2.12/dist/leaflet-lasso.umd.min.js"></script>
 
 <script src="/assets/js/aws-s3.js"></script>
 
@@ -251,10 +255,13 @@ void main(void){
 		<?endif?>
 		popoutURL = "<?=stripHTTP(instance_url("asset/getEmbed/" . $fileObject->getObjectId() . "/null/true"));?>";
 
-		$.get("/assets/leaflet-treering/templates.html", function (data) {
-			$("body").append(data);
-			treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
-    		treering.loadInterface();
+		$.get("/assets/leaflet-treering/templates.html", function (coreassestsData) {
+			$.get("/assets/leaflet-treering/Template.AreaCapture.html", function (areaCaptureData) {
+				$("body").append(coreassestsData);
+				$("body").append(areaCaptureData);
+				treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
+				treering.loadInterface();
+			});
 		});
 
     	// if(saveURL != "") {
