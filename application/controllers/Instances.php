@@ -423,7 +423,10 @@ class Instances extends Instance_Controller {
     				],
 				]);
 			}
-
+			
+			$result = $s3Client->DeletePublicAccessBlock([
+				'Bucket'=>$bucketName
+			]);
 
 			$result = $s3Client->putBucketPolicy([
 				'Bucket'=>$bucketName,
