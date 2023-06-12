@@ -12,7 +12,7 @@ class Drawers extends Instance_Controller {
 
 	}
 
-	public function listDrawers() {
+	public function listDrawers($json=false) {
 		$drawers = $this->user_model->getDrawers($adminOnly=false, $nonGlobalOnly=true);
 		function customSort($a, $b) {
 			$aSort = $a->getTitle();
@@ -20,8 +20,18 @@ class Drawers extends Instance_Controller {
 			return strcasecmp($aSort, $bSort);
 		}
 		usort($drawers, "customSort");	
-		$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
-		$this->template->publish();
+		if($json) {
+			$drawerStructure = [];
+			foreach($drawers as $drawer) {
+				$drawerStructure[$drawer->getId()] = ["title"=>$drawer->getTitle()];
+			}
+			return render_json($drawerStructure);
+		}
+		else {
+			$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
+			$this->template->publish();
+		}
+		
 	}
 
 	public function viewDrawer($drawerId) {
@@ -145,16 +155,16 @@ class Drawers extends Instance_Controller {
 			$resultArray["totalResults"] = count($outputArray);
 			$resultArray["drawerId"] = $drawerId;
 
-			echo json_encode($resultArray);
+			return render_json($resultArray);
 		}
 		else {
-			echo "fail";
+			return render_json(["error"=>"fail"]);
 		}
 
 	}
 
 
-	public function removeFromDrawer($drawerId, $assetId) {
+	public function removeFromDrawer($drawerId, $assetId, $json=false) {
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
@@ -165,10 +175,16 @@ class Drawers extends Instance_Controller {
 
 		$this->doctrine->em->remove($drawerItem);
 		$this->doctrine->em->flush();
-		instance_redirect("drawers/viewDrawer/".$drawerId);
+		if($json) {
+			return render_json(["success"=>true]);
+		}
+		else {
+			instance_redirect("drawers/viewDrawer/".$drawerId);
+		}
+		
 	}
 
-	public function removeExcerpt($drawerId, $excerptId) {
+	public function removeExcerpt($drawerId, $excerptId, $json=false) {
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
@@ -178,7 +194,13 @@ class Drawers extends Instance_Controller {
 		$drawerItem = $this->doctrine->em->getRepository("Entity\DrawerItem")->find($excerptId);
 		$this->doctrine->em->remove($drawerItem);
 		$this->doctrine->em->flush();
-		instance_redirect("drawers/viewDrawer/".$drawerId);
+		if($json) {
+			return render_json(["success"=>true]);
+		}
+		else {
+			instance_redirect("drawers/viewDrawer/".$drawerId);
+		}
+		
 	}
 
 	public function addToDrawer() {
@@ -221,6 +243,7 @@ class Drawers extends Instance_Controller {
 			}
 		}
 		$this->doctrine->em->flush();
+		return render_json(["success"=>true]);
 	}
 
 
@@ -238,6 +261,7 @@ class Drawers extends Instance_Controller {
 		$drawerItem->setAsset($assetId);
 		$drawerItem->setDrawer($drawer);
 		$this->doctrine->em->persist($drawerItem);
+		return render_json(["success"=>true]);
 	}
 
 	private function addExcerptToDrawer($assetId, $fileHandlerId, $startTime, $endTime, $label, $drawer) {
@@ -250,6 +274,7 @@ class Drawers extends Instance_Controller {
 		$drawerItem->setExcerptEnd($endTime);
 		$drawerItem->setExcerptLabel($label);
 		$this->doctrine->em->persist($drawerItem);
+		return render_json(["success"=>true]);
 	}
 
 
@@ -324,7 +349,7 @@ class Drawers extends Instance_Controller {
 			$this->doctrineCache->delete($this->user_model->userId);
 		}
 
-		echo json_encode(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);
+		return render_json(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);
 
 	}
 
@@ -337,6 +362,7 @@ class Drawers extends Instance_Controller {
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
 		$drawer->setSortBy($sortOrder);
 		$this->doctrine->em->flush();
+		return render_json(["success"=>true]);
 
 	}
 
@@ -368,6 +394,7 @@ class Drawers extends Instance_Controller {
 		}
 
 		$this->doctrine->em->flush();
+		return render_json(["success"=>true]);
 
 	}
 
