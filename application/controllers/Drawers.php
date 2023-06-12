@@ -261,7 +261,6 @@ class Drawers extends Instance_Controller {
 		$drawerItem->setAsset($assetId);
 		$drawerItem->setDrawer($drawer);
 		$this->doctrine->em->persist($drawerItem);
-		return render_json(["success"=>true]);
 	}
 
 	private function addExcerptToDrawer($assetId, $fileHandlerId, $startTime, $endTime, $label, $drawer) {
@@ -274,7 +273,6 @@ class Drawers extends Instance_Controller {
 		$drawerItem->setExcerptEnd($endTime);
 		$drawerItem->setExcerptLabel($label);
 		$this->doctrine->em->persist($drawerItem);
-		return render_json(["success"=>true]);
 	}
 
 
