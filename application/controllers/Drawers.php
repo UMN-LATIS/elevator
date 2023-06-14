@@ -13,6 +13,12 @@ class Drawers extends Instance_Controller {
 	}
 
 	public function listDrawers($json=false) {
+		if ($this->isUsingVueUI() && !$json) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$drawers = $this->user_model->getDrawers($adminOnly=false, $nonGlobalOnly=true);
 		function customSort($a, $b) {
 			$aSort = $a->getTitle();
@@ -154,6 +160,7 @@ class Drawers extends Instance_Controller {
 			$resultArray["matches"] = $outputArray;
 			$resultArray["totalResults"] = count($outputArray);
 			$resultArray["drawerId"] = $drawerId;
+			$resultArray["drawerTitle"] = $drawer->getTitle();
 
 			return render_json($resultArray);
 		}
@@ -278,7 +285,9 @@ class Drawers extends Instance_Controller {
 
 	public function delete($drawerId) {
 		$drawer = $this->doctrine->em->find("Entity\Drawer",$drawerId);
-
+		if(!$drawer) {
+			return render_json(["error"=>"fail", "status"=>500]);
+		}
 		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
