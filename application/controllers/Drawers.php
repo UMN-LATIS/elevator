@@ -41,6 +41,11 @@ class Drawers extends Instance_Controller {
 	}
 
 	public function viewDrawer($drawerId) {
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
 
 
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
