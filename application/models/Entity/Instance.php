@@ -1458,4 +1458,122 @@ class Instance
     {
         return $this->interfaceVersion;
     }
+    /**
+     * @var string|null
+     */
+    private $defaultTheme;
+
+    /**
+     * @var bool|null
+     */
+    private $enableThemes = '0';
+
+    /**
+     * @var int|null
+     */
+    private $maximumMoreLikeThis = '3';
+
+
+
+    /**
+     * Set defaultTheme.
+     *
+     * @param string|null $defaultTheme
+     *
+     * @return Instance
+     */
+    public function setDefaultTheme($defaultTheme = null)
+    {
+        $this->defaultTheme = $defaultTheme;
+
+        return $this;
+    }
+
+    /**
+     * Get defaultTheme.
+     *
+     * @return string|null
+     */
+    public function getDefaultTheme()
+    {
+        return $this->defaultTheme;
+    }
+
+    /**
+     * Set enableThemes.
+     *
+     * @param bool|null $enableThemes
+     *
+     * @return Instance
+     */
+    public function setEnableThemes($enableThemes = null)
+    {
+        $this->enableThemes = $enableThemes;
+
+        return $this;
+    }
+
+    /**
+     * Get enableThemes.
+     *
+     * @return bool|null
+     */
+    public function getEnableThemes()
+    {
+        return $this->enableThemes;
+    }
+
+    /**
+     * Set maximumMoreLikeThis.
+     *
+     * @param int|null $maximumMoreLikeThis
+     *
+     * @return Instance
+     */
+    public function setMaximumMoreLikeThis($maximumMoreLikeThis = null)
+    {
+        $this->maximumMoreLikeThis = $maximumMoreLikeThis;
+
+        return $this;
+    }
+
+    /**
+     * Get maximumMoreLikeThis.
+     *
+     * @return int|null
+     */
+    public function getMaximumMoreLikeThis()
+    {
+        return $this->maximumMoreLikeThis;
+    }
+
+    /**
+     * @var array|null
+     */
+    private $availableThemes;
+
+
+    /**
+     * Set availableThemes.
+     *
+     * @param array|null $availableThemes
+     *
+     * @return Instance
+     */
+    public function setAvailableThemes($availableThemes = null)
+    {
+        $this->availableThemes = $availableThemes;
+
+        return $this;
+    }
+
+    /**
+     * Get availableThemes.
+     *
+     * @return array|null
+     */
+    public function getAvailableThemes()
+    {
+        return $this->availableThemes;
+    }
 }
