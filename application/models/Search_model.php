@@ -592,8 +592,10 @@ class search_model extends CI_Model {
 				$i++;
 
 			}
+			
 			if(isset($searchArray["combineSpecificSearches"]) && $searchArray["combineSpecificSearches"] == "AND")  {
-				$searchParams['body']['query']['bool']['minimum_should_match'] = count($searchArray["specificFieldSearch"]) ;
+
+				$searchParams['body']['query']['bool']['minimum_should_match'] = count($searchArray["specificFieldSearch"]) + (($searchArray["searchText"] != "")?1:0) ;
 			}
 			else {
 				$searchParams['body']['query']['bool']['minimum_should_match'] = 1;
