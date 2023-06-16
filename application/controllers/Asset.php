@@ -55,6 +55,16 @@ class asset extends Instance_Controller {
 
 	}
 
+	function create() {
+		if($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
+		show_404();
+	}
+
 
 	function viewAsset($objectId=null, $returnJson=false) {
 		$assetModel = new Asset_model;
