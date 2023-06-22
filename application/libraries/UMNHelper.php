@@ -232,7 +232,7 @@ class UMNHelper extends AuthHelper
 	}
 
 	public function findUserByUsername($key, $createMissing=false) {
-		return $this->findUser($key, "cn", $createMissing);
+		return $this->findUser($key, "uid", $createMissing);
 	}
 
 	public function findUserByName($key, $createMissing = false) {
