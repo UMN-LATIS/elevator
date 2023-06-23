@@ -18,6 +18,10 @@ class Search extends Instance_Controller {
 
 	public function index($searchId = null)
 	{
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!$searchId) {
 			instance_redirect("/");
 		}
@@ -35,13 +39,6 @@ class Search extends Instance_Controller {
 				$this->errorhandler_helper->callError("noPermission");
 			}
 		}
-
-		if ($this->isUsingVueUI()) {
-			$this->template->set_template("vueTemplate");
-			$this->template->publish();
-			return;
-		}
-
 
 		$jsloadArray = array();
 		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {

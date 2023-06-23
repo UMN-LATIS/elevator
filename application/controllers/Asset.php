@@ -67,6 +67,10 @@ class asset extends Instance_Controller {
 
 
 	function viewAsset($objectId=null, $returnJson=false) {
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		$assetModel = new Asset_model;
 		if(!$objectId) {
 			show_404();
@@ -90,12 +94,6 @@ class asset extends Instance_Controller {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 		
-
-		if($this->isUsingVueUI() && $returnJson == false) {
-			$this->template->set_template("vueTemplate");
-			$this->template->publish();
-			return;
-		}
 		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
 
 		$targetObject = null;
