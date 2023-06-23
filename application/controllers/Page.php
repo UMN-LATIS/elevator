@@ -9,6 +9,10 @@ class Page extends Instance_Controller {
 
 	public function view($pageId = null, $returnJSON = false)
 	{
+		if ($this->isUsingVueUI() && !$returnJSON) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!$pageId) {
 			instance_redirect("/");
 		}
@@ -19,12 +23,6 @@ class Page extends Instance_Controller {
 
 		if ($returnJSON) {
 			return render_json(["title" => $page->getTitle(), "content" => $page->getBody()]);
-		}
-
-		if ($this->isUsingVueUI()) {
-			$this->template->set_template("vueTemplate");
-			$this->template->publish();
-			return;
 		}
 
 		$this->template->title = $page->getTitle();
