@@ -254,9 +254,7 @@ class Search extends Instance_Controller {
 		$this->searchId = $searchArchive->getId();
 
 		if ($this->isUsingVueUI() && $shouldReturnJson) {
-			return $this->output
-			->set_content_type('application/json')
-			->set_output(json_encode(["searchId" => $this->searchId]));
+			return render_json(["searchId" => $this->searchId]);
 		}
 
 		instance_redirect("search/s/".$this->searchId);
@@ -293,9 +291,7 @@ class Search extends Instance_Controller {
 		$this->searchId = $searchArchive->getId();
 
 		if ($this->isUsingVueUI() && $shouldReturnJson) {
-			return $this->output
-			->set_content_type('application/json')
-			->set_output(json_encode(["searchId" => $this->searchId]));
+			return render_json(["searchId" => $this->searchId]);
 		}
 
 		instance_redirect("search/s/".$this->searchId);
