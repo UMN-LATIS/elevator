@@ -252,6 +252,13 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
+
+		if ($this->isUsingVueUI()) {
+			return $this->output
+			->set_content_type('application/json')
+			->set_output(json_encode(["searchId" => $this->searchId]));
+		}
+
 		instance_redirect("search/s/".$this->searchId);
 	}
 
@@ -284,6 +291,12 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
+
+		if ($this->isUsingVueUI()) {
+			return $this->output
+			->set_content_type('application/json')
+			->set_output(json_encode(["searchId" => $this->searchId]));
+		}
 
 		instance_redirect("search/s/".$this->searchId);
 	}
