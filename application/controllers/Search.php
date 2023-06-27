@@ -253,7 +253,9 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		if ($this->isUsingVueUI()) {
+		$shouldReturnJson = strpos($this->input->get_request_header('Accept', true), 'application/json') !== false;
+
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
 			return $this->output
 			->set_content_type('application/json')
 			->set_output(json_encode(["searchId" => $this->searchId]));
@@ -292,7 +294,9 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		if ($this->isUsingVueUI()) {
+		$shouldReturnJson = strpos($this->input->get_request_header('Accept', true), 'application/json') !== false;
+
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
 			return $this->output
 			->set_content_type('application/json')
 			->set_output(json_encode(["searchId" => $this->searchId]));
