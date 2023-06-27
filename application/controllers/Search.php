@@ -235,7 +235,7 @@ class Search extends Instance_Controller {
 		instance_redirect("search/s/".$this->searchId);
 	}
 
-	public function querySearch($searchString = null) {
+	public function querySearch($searchString = null, $shouldReturnJson = false) {
 		if(!$searchString) {
 			instance_redirect("/search");
 		}
@@ -253,7 +253,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		if ($this->isUsingVueUI()) {
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
 			return $this->output
 			->set_content_type('application/json')
 			->set_output(json_encode(["searchId" => $this->searchId]));
@@ -262,7 +262,7 @@ class Search extends Instance_Controller {
 		instance_redirect("search/s/".$this->searchId);
 	}
 
-	public function scopedQuerySearch($fieldName, $searchString = null) {
+	public function scopedQuerySearch($fieldName, $searchString = null, $shouldReturnJson = false) {
 		if(!$searchString) {
 			instance_redirect("/search");
 		}
@@ -292,7 +292,7 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
 
-		if ($this->isUsingVueUI()) {
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
 			return $this->output
 			->set_content_type('application/json')
 			->set_output(json_encode(["searchId" => $this->searchId]));
