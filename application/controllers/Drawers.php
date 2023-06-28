@@ -291,12 +291,14 @@ class Drawers extends Instance_Controller {
 	public function delete($drawerId, $shouldReturnJson = false) {
 		$drawer = $this->doctrine->em->find("Entity\Drawer",$drawerId);
 		if(!$drawer) {
-			return render_json(["error"=>"fail", "status"=>500]);
+			return render_json(["error" => "Not found", "status" => 404], 404);
 		}
-		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
 
-		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
+		if ($accessLevel < PERM_CREATEDRAWERS) {
+			return $shouldReturnJson 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$this->doctrine->em->remove($drawer);
