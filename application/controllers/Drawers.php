@@ -308,13 +308,16 @@ class Drawers extends Instance_Controller {
 			? render_json([ "success" => true])
 			: instance_redirect("/");
 	}
-	public function addDrawer() {
+
+	public function addDrawer($shouldReturnJson = false) {
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
 
 		$accessLevel = max($accessLevel, $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $shouldReturnJson 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$drawer = new Entity\Drawer;
