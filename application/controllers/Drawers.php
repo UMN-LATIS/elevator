@@ -288,7 +288,7 @@ class Drawers extends Instance_Controller {
 	}
 
 
-	public function delete($drawerId) {
+	public function delete($drawerId, $shouldReturnJson = false) {
 		$drawer = $this->doctrine->em->find("Entity\Drawer",$drawerId);
 		if(!$drawer) {
 			return render_json(["error"=>"fail", "status"=>500]);
@@ -301,9 +301,10 @@ class Drawers extends Instance_Controller {
 
 		$this->doctrine->em->remove($drawer);
 		$this->doctrine->em->flush();
-		instance_redirect("/");
 
-
+		return $shouldReturnJson 
+			? render_json([ "success" => true])
+			: instance_redirect("/");
 	}
 	public function addDrawer() {
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
