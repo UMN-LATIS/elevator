@@ -235,7 +235,7 @@ class Search extends Instance_Controller {
 		instance_redirect("search/s/".$this->searchId);
 	}
 
-	public function querySearch($searchString = null) {
+	public function querySearch($searchString = null, $shouldReturnJson = false) {
 		if(!$searchString) {
 			instance_redirect("/search");
 		}
@@ -252,10 +252,15 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
+
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
+			return render_json(["searchId" => $this->searchId]);
+		}
+
 		instance_redirect("search/s/".$this->searchId);
 	}
 
-	public function scopedQuerySearch($fieldName, $searchString = null) {
+	public function scopedQuerySearch($fieldName, $searchString = null, $shouldReturnJson = false) {
 		if(!$searchString) {
 			instance_redirect("/search");
 		}
@@ -284,6 +289,10 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
+
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
+			return render_json(["searchId" => $this->searchId]);
+		}
 
 		instance_redirect("search/s/".$this->searchId);
 	}
