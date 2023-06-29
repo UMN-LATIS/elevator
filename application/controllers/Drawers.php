@@ -288,30 +288,36 @@ class Drawers extends Instance_Controller {
 	}
 
 
-	public function delete($drawerId) {
+	public function delete($drawerId, $shouldReturnJSON = false) {
 		$drawer = $this->doctrine->em->find("Entity\Drawer",$drawerId);
 		if(!$drawer) {
-			return render_json(["error"=>"fail", "status"=>500]);
+			return render_json(["error" => "Not found", "status" => 404], 404);
 		}
-		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
 
-		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
+		if ($accessLevel < PERM_CREATEDRAWERS) {
+			return $shouldReturnJSON 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$this->doctrine->em->remove($drawer);
 		$this->doctrine->em->flush();
-		instance_redirect("/");
 
-
+		return $shouldReturnJSON
+			? render_json([ "success" => true])
+			: instance_redirect("/");
 	}
-	public function addDrawer() {
+
+	public function addDrawer($shouldReturnJSON = false) {
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
 
 		$accessLevel = max($accessLevel, $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $shouldReturnJSON 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$drawer = new Entity\Drawer;
