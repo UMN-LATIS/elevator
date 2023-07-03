@@ -56,7 +56,10 @@ var selectedItems = {};
 }
 
 <?if(isset($fieldContents)): foreach($fieldContents as $key=>$value):?>
-selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
+	if(typeof selectedItems["<?=$formFieldId?>"] === 'undefined') {
+		selectedItems["<?=$formFieldId?>"] = {};
+	}
+	selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
 <?endforeach; endif;?>
 
 
