@@ -222,6 +222,10 @@ class Drawers extends Instance_Controller {
 		}
 		$drawer = $this->doctrine->em->find('Entity\Drawer', $drawerId);
 
+		if (!$drawer) {
+			return render_json(["error" => "Drawer not found."], 404);
+		}
+
 		$drawer->setChangedSinceArchive(true);
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$drawer);
 
