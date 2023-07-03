@@ -50,6 +50,11 @@ $topLevels = getTopLevels($widgetModel->getFieldData());
 <script>
 
 
+if(typeof selectedItems === 'undefined') {
+
+var selectedItems = {};
+}
+
 <?if(isset($fieldContents)): foreach($fieldContents as $key=>$value):?>
 selectedItems["<?=$formFieldId?>"]["<?=$key?>"] = "<?=$value?>";
 <?endforeach; endif;?>
