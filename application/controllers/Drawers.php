@@ -215,11 +215,12 @@ class Drawers extends Instance_Controller {
 		
 	}
 
-	public function addToDrawer() {
+	public function addToDrawer($shouldReturnJSON = false) {
 		$drawerId = $this->input->post("drawerList");
-		if(!$drawerId) {
-			render_json("error", 500);
+		if (!$drawerId) {
+			return render_json(["error" => "Invalid drawer id"], 400);
 		}
+
 		$drawer = $this->doctrine->em->find('Entity\Drawer', $drawerId);
 
 		if (!$drawer) {
@@ -230,7 +231,9 @@ class Drawers extends Instance_Controller {
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $shouldReturnJSON
+				? render_json(["error" => "You do not have permission to add to this drawer."], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		if($this->input->post("excerptId")) {
