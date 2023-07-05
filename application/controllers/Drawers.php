@@ -176,24 +176,51 @@ class Drawers extends Instance_Controller {
 	}
 
 
-	public function removeFromDrawer($drawerId, $assetId, $json=false) {
-		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+	public function removeFromDrawer($drawerId, $assetId, $returnJSON = false) {
+		if (!$drawerId) {
+			return $returnJSON 
+				? render_json(["error" => "Invalid drawer ID."], 400)
+			  : $this->errorhandler_helper->callError("noPermission");
+		}
+
+		if (!$assetId) {
+			return $returnJSON 
+				? render_json(["error" => "Invalid asset ID."], 400)
+			  : $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$drawer = $this->doctrine->em->getReference("Entity\Drawer", $drawerId);
+
+		if (!$drawer) {
+			return $returnJSON 
+			? render_json(["error" => "Drawer not found."], 404)
+			: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $returnJSON
+				? render_json(["error" => "You do not have permission to remove items from this drawer."], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$drawerItem = $this->doctrine->em->getRepository("Entity\DrawerItem")->findOneBy(['drawer'=>$this->doctrine->em->getReference("Entity\Drawer", $drawerId), 'asset' => $assetId]);
 
+		// if item is not in drawer, return error
+		// or redirect to drawer view
+		if (!$drawerItem) {
+			return $returnJSON 
+				? render_json(["error" => "Asset not found in drawer."], 404)
+				: instance_redirect("drawers/viewDrawer/".$drawerId);
+		}
+
 		$this->doctrine->em->remove($drawerItem);
 		$this->doctrine->em->flush();
-		if($json) {
-			return render_json(["success"=>true]);
-		}
-		else {
-			instance_redirect("drawers/viewDrawer/".$drawerId);
-		}
 		
+		return $returnJSON
+			? render_json(["success"=>true])
+			: instance_redirect("drawers/viewDrawer/".$drawerId);
 	}
 
 	public function removeExcerpt($drawerId, $excerptId, $json=false) {
@@ -215,18 +242,25 @@ class Drawers extends Instance_Controller {
 		
 	}
 
-	public function addToDrawer() {
+	public function addToDrawer($shouldReturnJSON = false) {
 		$drawerId = $this->input->post("drawerList");
-		if(!$drawerId) {
-			render_json("error", 500);
+		if (!$drawerId) {
+			return render_json(["error" => "Invalid drawer id"], 400);
 		}
+
 		$drawer = $this->doctrine->em->find('Entity\Drawer', $drawerId);
+
+		if (!$drawer) {
+			return render_json(["error" => "Drawer not found."], 404);
+		}
 
 		$drawer->setChangedSinceArchive(true);
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $shouldReturnJSON
+				? render_json(["error" => "You do not have permission to add to this drawer."], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		if($this->input->post("excerptId")) {
