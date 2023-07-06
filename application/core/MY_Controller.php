@@ -63,7 +63,7 @@ class MY_Controller extends CI_Controller {
 			session_write_close();
 		}
 		if($userId) {
-			if (1 == 1 || $this->config->item('enableCaching')) {
+			if ($this->config->item('enableCaching')) {
 				
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
