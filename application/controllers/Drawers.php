@@ -406,17 +406,39 @@ class Drawers extends Instance_Controller {
 
 	}
 
-	public function setSortOrder($drawerId, $sortOrder) {
-		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+	public function setSortOrder($drawerId, $sortOrder, $returnJSON = false) {
+		if (!$drawerId) {
+			return $returnJSON 
+				? render_json(["error" => "Not found", "status" => 404], 404)
+				: show_404();
+		}
+
+		if (!in_array($sortOrder, ['title.raw', 'custom'])) {
+			return $returnJSON 
+				? render_json(["error" => "Invalid sort order", "status" => 400], 400)
+				: show_error("Invalid sort order", 400);
+		}
+
+		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+		if (!$drawer) {
+			return $returnJSON 
+				? render_json(["error" => "Not found", "status" => 404], 404)
+				: show_404();
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $returnJSON 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
-		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
 		$drawer->setSortBy($sortOrder);
 		$this->doctrine->em->flush();
-		return render_json(["success"=>true]);
 
+		return render_json(["success"=>true]);
 	}
 
 	public function setCustomOrder($drawerId) {
