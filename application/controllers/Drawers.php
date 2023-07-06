@@ -166,6 +166,7 @@ class Drawers extends Instance_Controller {
 			$resultArray["totalResults"] = count($outputArray);
 			$resultArray["drawerId"] = $drawerId;
 			$resultArray["drawerTitle"] = $drawer->getTitle();
+			$resultArray['sortBy'] = $drawer->getSortBy();
 
 			return render_json($resultArray);
 		}
