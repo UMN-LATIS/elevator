@@ -46,10 +46,8 @@ $(document).ready(function () {
 			url : formURL,
 			type: "POST",
 			data : postData,
-			success:function(data, textStatus, jqXHR)
+			success:function(newDrawer, textStatus, jqXHR)
 			{
-				var newDrawer = $.parseJSON(data);
-
 				var drawerId = parseInt(newDrawer.drawerId,10);
 				$("#drawerList").append("<option value='" + drawerId + "'>" + newDrawer.drawerTitle + "</option>");
 

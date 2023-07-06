@@ -87,6 +87,10 @@ class asset extends Instance_Controller {
 		
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
+		if($this->instance->getFeaturedAsset() && $this->instance->getFeaturedAsset() == $objectId) {
+			$this->accessLevel = PERM_SEARCH;
+		}
+
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
@@ -415,6 +419,10 @@ class asset extends Instance_Controller {
 		}
 		else {
 			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+		}
+
+		if($this->instance->getFeaturedAsset() && $this->instance->getFeaturedAsset() == $fileHandler->parentObjectId) {
+			$this->accessLevel = max($this->accessLevel, PERM_SEARCH);
 		}
 
 		if($this->accessLevel == PERM_NOPERM) {
