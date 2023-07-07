@@ -9,7 +9,7 @@ class Drawers extends Instance_Controller {
 
 	public function index()
 	{
-
+		return show_404();
 	}
 
 	public function listDrawers($json=false) {
@@ -72,34 +72,68 @@ class Drawers extends Instance_Controller {
 	}
 
 
-	public function downloadDrawer($drawerId) {
-		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+	public function downloadDrawer($drawerId, $returnJSON = false) {
+		if ($this->isUsingVueUI() && !$returnJSON) {
+			return $this->template->publish('vueTemplate');
+		}
 
-		if($accessLevel < PERM_ORIGINALSWITHOUTDERIVATIVES) {
-			$this->errorhandler_helper->callError("noPermission");
+		if (!$drawerId) {
+			return $returnJSON
+				? render_json(["error" => "No drawer ID provided"], 400)
+				: show_404();
 		}
 
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+		if (!$drawer) {
+			return $returnJSON
+				? render_json(["error" => "Drawer not found"], 404)
+				: show_404();
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
+
+		if ($accessLevel < PERM_ORIGINALSWITHOUTDERIVATIVES) {
+			return $returnJSON
+				? render_json(["error" => "No permission to download this drawer"], 403)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
 		$this->load->model("s3_model");
 		$this->s3_model->loadFromInstance($this->instance);
-		$objectInfo = $this->s3_model->objectInfo("drawer/".$drawerId.".zip");
-		if($objectInfo && !$drawer->getChangedSinceArchive()) {
-			redirect($this->s3_model->getProtectedURL("drawer/".$drawerId.".zip", "drawer-".$drawerId.".zip"));
-		}
-		else {
-			$drawer->setChangedSinceArchive(false);
-			$this->doctrine->em->flush();
-			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-			$newTask = json_encode(["drawerId"=>$drawerId, "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId()]);
-			$jobId= $pheanstalk->useTube('archiveTube')->put($newTask, NULL, 1, 900); // run a 15 minute TTR because zipping all these could take a while.
+		$objectInfo = $this->s3_model->objectInfo("drawer/" . $drawerId . ".zip");
 
-			$this->template->content->view("drawers/downloadDrawer");
-			$this->template->publish();
-
-
+		// If the drawer hasn't been changed since archiving
+		// and the object info exists, the zip file is ready
+		if ($objectInfo && !$drawer->getChangedSinceArchive()) {
+			$zipUrl = $this->s3_model->getProtectedURL("drawer/" . $drawerId . ".zip", "drawer-" . $drawerId . ".zip");
+			return $returnJSON
+				? render_json(["status" => "completed", "url" => $zipUrl])
+				: redirect($zipUrl);
 		}
 
 
+		// Reset the changed flag and queue a new job
+		$drawer->setChangedSinceArchive(false);
+		$this->doctrine->em->flush();
+
+		$newTask = json_encode([
+			"drawerId" => $drawerId,
+			"userContact" => $this->user_model->getEmail(),
+			"instance" => $this->instance->getId()
+		]);
+
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
+		// run a 15 minute TTR because zipping all these could take a while
+		$jobId = $pheanstalk->useTube('archiveTube')->put($newTask, NULL, 1, 900);
+
+		if ($returnJSON) {
+			return render_json(["status" => "accepted", "jobId" => $jobId]);
+		}
+
+		$this->template->content->view("drawers/downloadDrawer");
+		$this->template->publish();
 	}
 
 	public function getDrawer($drawerId) {
@@ -217,6 +251,7 @@ class Drawers extends Instance_Controller {
 		}
 
 		$this->doctrine->em->remove($drawerItem);
+		$drawer->setChangedSinceArchive(true);
 		$this->doctrine->em->flush();
 		
 		return $returnJSON
@@ -255,7 +290,6 @@ class Drawers extends Instance_Controller {
 			return render_json(["error" => "Drawer not found."], 404);
 		}
 
-		$drawer->setChangedSinceArchive(true);
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
@@ -289,6 +323,7 @@ class Drawers extends Instance_Controller {
 				$this->addItemToDrawer($assetId, $drawer);
 			}
 		}
+		$drawer->setChangedSinceArchive(true);
 		$this->doctrine->em->flush();
 		return render_json(["success"=>true]);
 	}
