@@ -237,6 +237,9 @@
 				<option value="1" <?=$instance->getInterfaceVersion()==1?'SELECTED':null?>>VueJS</option>
 			</selecT>
 	</div>
+	<div class="col-sm-2">
+		<a href="<?=instance_url("instances/previewNewInterface")?>" class="btn btn-primary">Preview VueJS Interface</a>
+	</div>
 </div>
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">

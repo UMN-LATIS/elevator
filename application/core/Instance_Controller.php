@@ -148,6 +148,6 @@ class Instance_Controller extends MY_Controller
     }
 
     protected function isUsingVueUI() {
-       return $this->instance && $this->instance->getInterfaceVersion() == 1;
+       return $this->session->userdata('useVueUI') || ($this->instance && $this->instance->getInterfaceVersion() == 1);
     }
 }
