@@ -24,7 +24,7 @@ if(typeof selectedItems === 'undefined') {
 	var selectedItems = {};
 }
 
-selectedItems["<?=$formFieldId?>"] = {};
+// selectedItems["<?=$formFieldId?>"] = {};
 
 if(!sourceContent) {
 	var sourceContent = new Array();

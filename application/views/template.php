@@ -81,6 +81,16 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
 
 </script>
 
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?=$this->instance->getGoogleAnalyticsKey()?>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '<?=$this->instance->getGoogleAnalyticsKey()?>');
+</script>
+
+
 <?endif?>
 
 <body>

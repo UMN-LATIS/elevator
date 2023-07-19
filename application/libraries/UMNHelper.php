@@ -232,7 +232,7 @@ class UMNHelper extends AuthHelper
 	}
 
 	public function findUserByUsername($key, $createMissing=false) {
-		return $this->findUser($key, "cn", $createMissing);
+		return $this->findUser($key, "uid", $createMissing);
 	}
 
 	public function findUserByName($key, $createMissing = false) {
@@ -287,41 +287,41 @@ class UMNHelper extends AuthHelper
 
 		}
 
-		// hacky fallback temporarily
-		if(count($returnArray) == 0) {
-			ldap_unbind($connect);
-			$connect = ldap_connect( $ldap_host);
-			$r=ldap_bind($connect);
-			$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
-		      or exit(">>Unable to search ldap server<<");
+		// // hacky fallback temporarily
+		// if(count($returnArray) == 0) {
+		// 	ldap_unbind($connect);
+		// 	$connect = ldap_connect( $ldap_host);
+		// 	$r=ldap_bind($connect);
+		// 	$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
+		//       or exit(">>Unable to search ldap server<<");
 			
-			foreach($search as $readItem) {
+		// 	foreach($search as $readItem) {
 
-				$info = ldap_get_entries($connect, $readItem);
-				if($info["count"] == 0) {
-					break;
-				}
-				foreach($info as $entry) {
-					if(!isset($entry["umndid"])) {
-						continue;
-					}
-					$user = new Entity\User;
-					$user->setUsername($entry["umndid"][0]);
-					if(!isset($entry["displayname"])) {
-						$user->setDisplayName(@$entry["umndisplaymail"][0]);
-					}
-					else {
-						$user->setDisplayName($entry["displayname"][0]);
-					}
+		// 		$info = ldap_get_entries($connect, $readItem);
+		// 		if($info["count"] == 0) {
+		// 			break;
+		// 		}
+		// 		foreach($info as $entry) {
+		// 			if(!isset($entry["umndid"])) {
+		// 				continue;
+		// 			}
+		// 			$user = new Entity\User;
+		// 			$user->setUsername($entry["umndid"][0]);
+		// 			if(!isset($entry["displayname"])) {
+		// 				$user->setDisplayName(@$entry["umndisplaymail"][0]);
+		// 			}
+		// 			else {
+		// 				$user->setDisplayName($entry["displayname"][0]);
+		// 			}
 
-					$user->setEmail(@$entry["umndisplaymail"][0]);
+		// 			$user->setEmail(@$entry["umndisplaymail"][0]);
 
-					$returnArray[] = $user;
-				}
+		// 			$returnArray[] = $user;
+		// 		}
 
-			}
+		// 	}
 
-		}
+		// }
 
 		
 
