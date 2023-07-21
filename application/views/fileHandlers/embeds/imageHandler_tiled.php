@@ -12,8 +12,20 @@
 }
 </style>
 
-<? $token = isset($fileContainers['tiled'])?$fileObject->getSecurityToken("tiled"):$fileObject->getSecurityToken("tiled-tar")?>
+<? 
 
+
+if(isset($fileContainers['tiled'])) {
+	$token = $fileContainers['tiled']->getSecurityToken("tiled");	
+}
+elseif(isset($fileContainers['tiled-tar'])) {
+	$token = $fileObject->getSecurityToken("tiled-tar");
+}
+elseif(isset($fileContainers['tiled-iiif'])) {
+	$token = $fileObject->getSecurityToken("tiled-iiif");
+}
+
+?>
 
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="mapElement"></div></div>
 <?=$this->load->view("fileHandlers/embeds/imageHandler_partial.php",array("fileContainers"=>$fileContainers),true)?>

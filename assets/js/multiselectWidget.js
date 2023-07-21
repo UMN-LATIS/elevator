@@ -22,7 +22,7 @@ function loadGroup(targetId) {
 				// this is a horrible hack.  We store categories with sanitized key names, but our multiselector stores them properly.
 				//
 				category = category.replace(/[^A-Za-z0-9]/g, '');
-				if(groupSelected[category]) {
+				if(groupSelected && groupSelected[category]) {
 					$(el).val(groupSelected[category]);
 					$(el).trigger("change");
 				}
@@ -108,7 +108,7 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 
 	// });
 	targetCategory = targetCategory.replace(/[^A-Za-z0-9]/g, '');
-	if(groupSelected[targetCategory]) {
+	if(groupSelected && groupSelected[targetCategory]) {
 		$(selectElement).val(groupSelected[targetCategory]);
 		$(selectElement).trigger("change");
 
