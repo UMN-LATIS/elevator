@@ -61,7 +61,7 @@ if (isset($fileContainers['tiled-tar'])) {
     <? elseif (isset($fileContainers['tiled-iiif'])) : ?>
 
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/geotiff"></script>
+        <script src="/assets/leaflet/geotiff.js"></script>
         <script>
         var tiff;
         var image;
