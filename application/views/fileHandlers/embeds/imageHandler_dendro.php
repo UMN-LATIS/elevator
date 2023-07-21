@@ -30,7 +30,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
 
-	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css">
+	<!-- <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css"> -->
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
@@ -44,7 +44,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/file-saver/FileSaver.min.js"></script>
 
-	<script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script>
+	<!-- <script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script> -->
 	<script src="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
@@ -150,7 +150,8 @@ elseif(isset($fileContainers['tiled-iiif'])) {
 			keyboard: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
-
+		
+		
 		var mapOptions = {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
@@ -168,6 +169,7 @@ elseif(isset($fileContainers['tiled-iiif'])) {
 		};
 
 		baseLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
+		
 		baseLayer.addTo(imageMap);
 		
 
@@ -275,6 +277,7 @@ void main(void){
 				$("body").append(areaCaptureData);
 				treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
 				treering.loadInterface();
+			
 			});
 		});
 

@@ -275,14 +275,14 @@ class ImageHandler extends FileHandlerBase {
 		$derivativeContainerIIIF->derivativeType = $derivativeType;
 		$derivativeContainerIIIF->path = "derivative";
 		$derivativeContainerIIIF->setParent($this->sourceFile->getParent());
-		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tar";
+		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tiff";
 
 		$outputFile = $derivativeContainerIIIF->getPathToLocalFile();
 		$rotationAppend = "";
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
 			$rotationAppend = "[autorotate]";
 		}
-		$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff " . $outputFile;
+		$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 		$process->run();
 		while($process->isRunning()) {
@@ -300,7 +300,7 @@ class ImageHandler extends FileHandlerBase {
 		$width = $this->sourceFile->metadata["width"];
 		$height = $this->sourceFile->metadata["height"];
 		$zoom = 0;
-		while($width > 256 || $height > 256) {
+		while($width > 1 || $height > 1) {
 			$width = $width / 2;
 			$height = $height / 2;
 			$zoom++;
