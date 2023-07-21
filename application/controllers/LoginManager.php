@@ -130,6 +130,13 @@ class LoginManager extends Instance_Controller {
 		$authHelper = $this->user_model->getAuthHelper();
 		$authHelper->remoteLogout();
 
+		if ($this->isUsingVueUI()) {
+			return render_json([
+				'status' => 'success',
+				'message' => 'logout successful'
+			]);
+		}
+
 		instance_redirect("");
 	}
 
