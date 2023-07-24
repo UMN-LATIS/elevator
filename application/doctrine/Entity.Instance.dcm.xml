@@ -108,7 +108,12 @@
                 <option name="default">3</option>
               </options>
           </field>
-          
+          <field name="defaultTextTruncationHeight" type="integer" nullable='true'>
+          <options>
+                <!-- 16px * 1.5 line-height * 3 lines = 72-->
+                <option name="default">72</option>
+              </options>
+          </field>
           <field name="availableThemes" type="json_array" nullable="true">
             <options>
               <option name="jsonb">true</option>
