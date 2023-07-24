@@ -347,6 +347,15 @@
 		<input type="text" name="maximumMoreLikeThis" id="maximumMoreLikeThis" class="form-control" value="<?= $instance->getMaximumMoreLikeThis(); ?>">
 	</div>
 </div>
+
+<div class="form-group">
+	<label for="defaultTextTruncationHeight" class="col-sm-2 control-label">
+		Text Area Widget Collapsed Height (px):
+	</label>
+	<div class="col-sm-6">
+		<input type="text" name="defaultTextTruncationHeight" id="defaultTextTruncationHeight" class="form-control" value="<?= $instance->getDefaultTextTruncationHeight(); ?>">
+	</div>
+</div>
 </fieldset>
 
 <div class="form-group">

@@ -1473,6 +1473,12 @@ class Instance
      */
     private $maximumMoreLikeThis = '3';
 
+    /**
+     * height of collapsed text area widget in pixels
+     * @var int|null
+     */
+    private $defaultTextTruncationHeight = 72;
+
 
 
     /**
@@ -1545,6 +1551,29 @@ class Instance
     public function getMaximumMoreLikeThis()
     {
         return $this->maximumMoreLikeThis;
+    }
+
+    /**
+     * Set defaultTextTruncationHeight.
+     * 
+     * @param int|null $defaultTextTruncationHeight
+     * 
+     * @return Instance
+     */
+    public function setDefaultTextTruncationHeight($defaultTextTruncationHeight = null) {
+        $this->defaultTextTruncationHeight = $defaultTextTruncationHeight;
+
+        return $this;
+    }
+
+
+    /**
+     * Get the height of the collapsed text area widget in pixels.
+     * 
+     * @return int|null
+     */
+    public function getDefaultTextTruncationHeight() {
+        return $this->defaultTextTruncationHeight;
     }
 
     /**
