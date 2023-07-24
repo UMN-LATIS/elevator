@@ -247,9 +247,12 @@ class Home extends Instance_Controller {
 			$headerData["templates"] = array();
 		}
 
+		// useCustomHeader also controls whether or not to show the custom footer
+		if ($this->instance->getUseCustomHeader()) {
+			$headerData['customFooter'] = $this->instance->getCustomFooterText();
+		}
+
 		return render_json($headerData);
-
-
 	}
 
 	private function getNestedCollections($collectionList)
