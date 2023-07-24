@@ -79,6 +79,7 @@ class Instances extends Instance_Controller {
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
 		$instance->setAvailableThemes($this->input->post('availableThemes'));
 		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
+		$instance->setDefaultTextTruncationHeight($this->input->post('defaultTextTruncationHeight'));
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
 		$config['allowed_types'] = 'png';

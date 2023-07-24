@@ -47,16 +47,21 @@ $cssFile = $manifest['src/main.css']['file'];
           },
           theming: {
             availableThemes: <?= json_encode($this->instance->getAvailableThemes()) ?>,
-            enabled: <?= $this->instance->getEnableThemes()?"true":"false" ?>,
+            enabled: <?= $this->instance->getEnableThemes() ? "true" : "false" ?>,
             defaultTheme: "<?= $this->instance->getDefaultTheme() ?>",
+          },
+          moreLikeThis: {
+            maxInlineResults: <?= $this->instance->getMaximumMoreLikeThis() ?>,
+          },
+          textAreaItem: {
+            defaultTextTruncationHeight: <?=
+              $this->instance->getDefaultTextTruncationHeight() 
+            ?>,
           },
         },
         arcgis: {
           apiKey: "<?= $this->config->item('arcgis_access_token') ?>",
         },
-        moreLikeThis: {
-          maxInlineResults: <?= $this->instance->getMaximumMoreLikeThis() ?>,
-        }
       },
     }
   </script>
