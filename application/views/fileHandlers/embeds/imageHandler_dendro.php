@@ -84,7 +84,7 @@ if($widgetObject->parentWidget->dendroFields) {
 
 
 if(isset($fileContainers['tiled'])) {
-	$token = $fileContainers['tiled']->getSecurityToken("tiled");	
+	$token = $fileObject->getSecurityToken("tiled");	
 }
 elseif(isset($fileContainers['tiled-tar'])) {
 	$token = $fileObject->getSecurityToken("tiled-tar");

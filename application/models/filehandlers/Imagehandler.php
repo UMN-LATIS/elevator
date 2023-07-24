@@ -265,19 +265,17 @@ class ImageHandler extends FileHandlerBase {
 
 
 		$localPath = $sourceFile->getPathToLocalFile();
-		$pathparts = pathinfo($localPath);
-
-
-
-		
+		$pathparts = pathinfo($localPath);		
 		$derivativeType = "tiled-iiif";
 		$derivativeContainerIIIF = new fileContainerS3();
 		$derivativeContainerIIIF->derivativeType = $derivativeType;
 		$derivativeContainerIIIF->path = "derivative";
 		$derivativeContainerIIIF->setParent($this->sourceFile->getParent());
+		$derivativeContainerIIIF->forcedContentEncoding = "gzip";
 		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tiff";
 
 		$outputFile = $derivativeContainerIIIF->getPathToLocalFile();
+
 		$rotationAppend = "";
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
 			$rotationAppend = "[autorotate]";
