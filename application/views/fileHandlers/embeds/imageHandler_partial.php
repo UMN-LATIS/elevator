@@ -71,7 +71,6 @@ if (isset($fileContainers['tiled-tar'])) {
         var loadIndex = async function() {
             tiff = await GeoTIFF.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>");
             image = await tiff.getImage();
-            count = await tiff.getImageCount();
         }
 
         function hexStringToUint8Array(hexString) {
