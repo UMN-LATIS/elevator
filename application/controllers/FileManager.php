@@ -458,6 +458,7 @@ class FileManager extends Instance_Controller {
 
 		$metadata = $fileHandler->sourceFile->metadata;
 		$metadata['sourcefile'] = $fileHandler->sourceFile->originalFilename;
+		$metadata["handlerType"] = get_class($fileHandler);
 		return render_json($metadata);
 
 	}
