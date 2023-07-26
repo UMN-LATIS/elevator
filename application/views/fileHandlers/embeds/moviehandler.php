@@ -188,17 +188,30 @@ if(typeof objectId == 'undefined') {
       preload: 'none',
       playbackRateControls:  true,
       repeat: false
-      });
-    }
-    
+    });
+  }
+
+
     function registerJWHandlers() {
-      jwplayer().onReady(function(event) {
-        // jwplayer().onQualityLevels(function(event) {
-        //   if(event.levels.length > 1 && screen.width > 767) {
-        //     jwplayer().setCurrentQuality(1);
-        //   }
-          
-        // });
+      jwplayer().onReady(function(event) {  
+        // when the scrubber changes, notify the parent window
+        // this is used when adding excerpts to know the current time
+        jwplayer().on('seeked', (event) => {
+          window.parent.postMessage({
+            type: event.type,
+            currentPosition: jwplayer().getPosition(),
+            duration: jwplayer().getDuration()
+          }, '*');
+        });
+
+        jwplayer().on('pause', (event) => {
+          window.parent.postMessage({
+            type: event.type,
+            currentPosition: jwplayer().getPosition(),
+            duration: jwplayer().getDuration()
+          }, '*');
+        });
+
         
         jwplayer().on('seek', function(event) {
           haveSeeked=true;
