@@ -39,33 +39,67 @@ function getTime() {
 	return jwplayer("videoElement").getPosition();
 }
 
-// listen for message from parent window to set start and end times
-window.addEventListener('message',  function handleSetPlayBoundsMessage(event) {
-	if (event.data.type !== 'setPlayBounds') {
-		return;
+/**
+ * The excerpt media player is loaded in an iframe, and we'll
+ * need to communicate with the parent window to set the play bounds
+ * and get the current scrubber position.
+ * This sets up some some simple request/response messaging between
+ * between the iframe and the parent window.
+ */
+(function setupIframeMessaging() {
+	const log = (...args) => console.log('[IFRAME] ', ...args);
+
+	const requests = {
+		SET_PLAY_BOUNDS: 'SET_PLAY_BOUNDS',
+		GET_SCRUBBER_POSITION: 'GET_SCRUBBER_POSITION',
 	}
 
-	if (Number.isNaN(event.data.startTime) || Number.isNaN(event.data.endTime)) {
-		console.log(event.data.startTime, event.data.endTime);
-		throw new Error('start and end times must be set to set play bounds');
+	const responses = {
+		MEDIAPLAYER_READY: 'MEDIAPLAYER_READY',
+		CURRENT_SCRUBBER_POSITION: 'CURRENT_SCRUBBER_POSITION',
+		SET_PLAY_BOUNDS_SUCCESS: 'SET_PLAY_BOUNDS_SUCCESS',
 	}
 
-	console.log('setting play bounds', event.data.startTime, event.data.endTime);
-
-	setPlayBounds(event.data.startTime, event.data.endTime);
-	
-	// once we've set the play bounds, 
-	// we don't need to listen for this message anymore
-	// window.removeEventListener('message', handleSetPlayBoundsMessage);
-});
-
-window.addEventListener('message',  function handleGetTimeMessage(event) {
-	if (event.data.type !== 'getTime') {
-		return;
+	function requestHandler(event) {
+		log('message received:', event.data?.type ?? 'unknown' , event.data?.payload ?? '');
+		const { type } = event.data;
+		if (type === requests.SET_PLAY_BOUNDS) {
+			return setPlayBounds(event.data.payload.startTime, event.data.payload.endTime);
+		}
+		if (type === requests.GET_SCRUBBER_POSITION) {
+			return getScrubberPosition();
+		}
 	}
 
-	window.parent.postMessage({
-		type: 'getTimeResponse',
-		currentScrubberPosition: getTime(),
-	}, '*');
-});
+	function getScrubberPosition() {
+		window.parent.postMessage({
+			type: responses.CURRENT_SCRUBBER_POSITION,
+			payload: getTime(),
+		}, '*');
+	}
+
+	function setPlayBounds(startTime, endTime) {
+		embeddedStartTimeValue = startTime;
+		embeddedEndTimeValue = endTime;
+
+		window.parent.postMessage({
+			type: responses.SET_PLAY_BOUNDS_SUCCESS,
+		}, '*');
+	}
+
+	function sendMediaPlayerReady() {
+		window.parent.postMessage({
+			type: responses.MEDIAPLAYER_READY,
+		}, '*');
+	}
+
+	// bootstrap messaging request/response
+	$(function () {
+		// listen for messages from parent window once the document is ready
+		window.addEventListener('message', requestHandler);
+
+		// when jwplayer is ready, send message to parent window
+		// so that the parent window knows it can start sending messages
+		jwplayer("videoElement").onReady(sendMediaPlayerReady);
+	});
+})();
