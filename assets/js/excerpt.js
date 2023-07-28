@@ -108,18 +108,14 @@ function getTime() {
 		return setTimeout(sendScrubberChanges, ms);
 	}
 
-	// once the document is ready, setup the iframe messaging
 	$(function () {
+		// once the document is ready, setup the iframe messaging
 		window.addEventListener('message', requestHandler);
-		const player = jwplayer("videoElement");
+		
+		// send any current scrubber position to parent window
+		sendScrubberChanges();
 
-		// when jwplayer is ready
-		player.onReady(() => { 
-			// send any current scrubber position to parent window
-			sendScrubberChanges();
-
-			// let parent window knows the media player is ready
-			sendMediaPlayerReady();
-		});
+		// let parent window knows the media player is ready
+		sendMediaPlayerReady();
 	});
 })();
