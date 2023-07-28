@@ -67,11 +67,11 @@ function getTime() {
 			return setPlayBounds(event.data.payload.startTime, event.data.payload.endTime);
 		}
 		if (type === requests.GET_SCRUBBER_POSITION) {
-			return getScrubberPosition();
+			return sendScrubberPosition();
 		}
 	}
 
-	function getScrubberPosition() {
+	function sendScrubberPosition() {
 		window.parent.postMessage({
 			type: responses.CURRENT_SCRUBBER_POSITION,
 			payload: getTime(),
@@ -81,6 +81,8 @@ function getTime() {
 	function setPlayBounds(startTime, endTime) {
 		embeddedStartTimeValue = startTime;
 		embeddedEndTimeValue = endTime;
+		const player = jwplayer("videoElement");
+		player.once('play', () => player.seek(startTime));
 
 		window.parent.postMessage({
 			type: responses.SET_PLAY_BOUNDS_SUCCESS,
@@ -93,13 +95,31 @@ function getTime() {
 		}, '*');
 	}
 
-	// bootstrap messaging request/response
-	$(function () {
-		// listen for messages from parent window once the document is ready
-		window.addEventListener('message', requestHandler);
+	// sends the current scrubber position to the parent window
+	// if changes are detected
+	let previousScrubberPosition = null;
+	function sendScrubberChanges(ms = 1000) {
+		const currentScubberPosition = getTime();
+		if (currentScubberPosition === previousScrubberPosition) {
+			return setTimeout(sendScrubberChanges, ms);
+		}
+		sendScrubberPosition();
+		previousScrubberPosition = currentScubberPosition;
+		return setTimeout(sendScrubberChanges, ms);
+	}
 
-		// when jwplayer is ready, send message to parent window
-		// so that the parent window knows it can start sending messages
-		jwplayer("videoElement").onReady(sendMediaPlayerReady);
+	// once the document is ready, setup the iframe messaging
+	$(function () {
+		window.addEventListener('message', requestHandler);
+		const player = jwplayer("videoElement");
+
+		// when jwplayer is ready
+		player.onReady(() => { 
+			// send any current scrubber position to parent window
+			sendScrubberChanges();
+
+			// let parent window knows the media player is ready
+			sendMediaPlayerReady();
+		});
 	});
 })();
