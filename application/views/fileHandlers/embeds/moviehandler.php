@@ -194,25 +194,6 @@ if(typeof objectId == 'undefined') {
 
     function registerJWHandlers() {
       jwplayer().onReady(function(event) {  
-        // when the scrubber changes, notify the parent window
-        // this is used when adding excerpts to know the current time
-        jwplayer().on('seeked', (event) => {
-          window.parent.postMessage({
-            type: event.type,
-            currentPosition: jwplayer().getPosition(),
-            duration: jwplayer().getDuration()
-          }, '*');
-        });
-
-        jwplayer().on('pause', (event) => {
-          window.parent.postMessage({
-            type: event.type,
-            currentPosition: jwplayer().getPosition(),
-            duration: jwplayer().getDuration()
-          }, '*');
-        });
-
-        
         jwplayer().on('seek', function(event) {
           haveSeeked=true;
           if(jwplayer().getState('paused') == 'paused') {
