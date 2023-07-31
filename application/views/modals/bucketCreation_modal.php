@@ -28,7 +28,7 @@
               <label for="inputBucket Name" class="col-sm-2 control-label">Bucket Name:</label>
               <div class="col-sm-10">
                 <input type="text" name="name" id="inputBucketName" class="form-control" value="" required="required" pattern="" title="" autocomplete="off">
-
+                <span class="help-block">'elevator' will automatically be added as a prefix to the bucket name.</span>
               </div>
 
             </div>
