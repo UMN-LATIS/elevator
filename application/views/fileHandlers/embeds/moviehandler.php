@@ -188,18 +188,12 @@ if(typeof objectId == 'undefined') {
       preload: 'none',
       playbackRateControls:  true,
       repeat: false
-      });
-    }
-    
+    });
+  }
+
+
     function registerJWHandlers() {
-      jwplayer().onReady(function(event) {
-        // jwplayer().onQualityLevels(function(event) {
-        //   if(event.levels.length > 1 && screen.width > 767) {
-        //     jwplayer().setCurrentQuality(1);
-        //   }
-          
-        // });
-        
+      jwplayer().onReady(function(event) {  
         jwplayer().on('seek', function(event) {
           haveSeeked=true;
           if(jwplayer().getState('paused') == 'paused') {
