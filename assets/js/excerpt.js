@@ -52,12 +52,14 @@ function getTime() {
 	const requests = {
 		SET_PLAY_BOUNDS: 'SET_PLAY_BOUNDS',
 		GET_SCRUBBER_POSITION: 'GET_SCRUBBER_POSITION',
+		PAUSE_PLAYER: 'PAUSE_PLAYER',
 	}
 
 	const responses = {
 		MEDIAPLAYER_READY: 'MEDIAPLAYER_READY',
 		CURRENT_SCRUBBER_POSITION: 'CURRENT_SCRUBBER_POSITION',
 		SET_PLAY_BOUNDS_SUCCESS: 'SET_PLAY_BOUNDS_SUCCESS',
+		PAUSE_PLAYER_SUCCESS: 'PAUSE_PLAYER_SUCCESS',
 	}
 
 	function requestHandler(event) {
@@ -69,6 +71,20 @@ function getTime() {
 		if (type === requests.GET_SCRUBBER_POSITION) {
 			return sendScrubberPosition();
 		}
+		if (type === requests.PAUSE_PLAYER) {
+			return pausePlayer();
+		}
+	}
+
+	function pausePlayer() {
+		const player = jwplayer("videoElement");
+		if (player.getState() === 'playing') {
+			player.pause();
+		}
+		window.parent.postMessage({
+			type: responses.PAUSE_PLAYER_SUCCESS,
+			payload: player.getState(),
+		}, '*');
 	}
 
 	function sendScrubberPosition() {
