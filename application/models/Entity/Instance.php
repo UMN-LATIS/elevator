@@ -1429,4 +1429,180 @@ class Instance
     {
         return $this->notes;
     }
+    /**
+     * @var int
+     */
+    private $interfaceVersion = '0';
+
+
+    /**
+     * Set interfaceVersion.
+     *
+     * @param int $interfaceVersion
+     *
+     * @return Instance
+     */
+    public function setInterfaceVersion($interfaceVersion)
+    {
+        $this->interfaceVersion = $interfaceVersion;
+
+        return $this;
+    }
+
+    /**
+     * Get interfaceVersion.
+     *
+     * @return int
+     */
+    public function getInterfaceVersion()
+    {
+        return $this->interfaceVersion;
+    }
+    /**
+     * @var string|null
+     */
+    private $defaultTheme;
+
+    /**
+     * @var bool|null
+     */
+    private $enableThemes = '0';
+
+    /**
+     * @var int|null
+     */
+    private $maximumMoreLikeThis = '3';
+
+    /**
+     * height of collapsed text area widget in pixels
+     * @var int|null
+     */
+    private $defaultTextTruncationHeight = 72;
+
+
+
+    /**
+     * Set defaultTheme.
+     *
+     * @param string|null $defaultTheme
+     *
+     * @return Instance
+     */
+    public function setDefaultTheme($defaultTheme = null)
+    {
+        $this->defaultTheme = $defaultTheme;
+
+        return $this;
+    }
+
+    /**
+     * Get defaultTheme.
+     *
+     * @return string|null
+     */
+    public function getDefaultTheme()
+    {
+        return $this->defaultTheme;
+    }
+
+    /**
+     * Set enableThemes.
+     *
+     * @param bool|null $enableThemes
+     *
+     * @return Instance
+     */
+    public function setEnableThemes($enableThemes = null)
+    {
+        $this->enableThemes = $enableThemes;
+
+        return $this;
+    }
+
+    /**
+     * Get enableThemes.
+     *
+     * @return bool|null
+     */
+    public function getEnableThemes()
+    {
+        return $this->enableThemes;
+    }
+
+    /**
+     * Set maximumMoreLikeThis.
+     *
+     * @param int|null $maximumMoreLikeThis
+     *
+     * @return Instance
+     */
+    public function setMaximumMoreLikeThis($maximumMoreLikeThis = null)
+    {
+        $this->maximumMoreLikeThis = $maximumMoreLikeThis;
+
+        return $this;
+    }
+
+    /**
+     * Get maximumMoreLikeThis.
+     *
+     * @return int|null
+     */
+    public function getMaximumMoreLikeThis()
+    {
+        return $this->maximumMoreLikeThis;
+    }
+
+    /**
+     * Set defaultTextTruncationHeight.
+     * 
+     * @param int|null $defaultTextTruncationHeight
+     * 
+     * @return Instance
+     */
+    public function setDefaultTextTruncationHeight($defaultTextTruncationHeight = null) {
+        $this->defaultTextTruncationHeight = $defaultTextTruncationHeight;
+
+        return $this;
+    }
+
+
+    /**
+     * Get the height of the collapsed text area widget in pixels.
+     * 
+     * @return int|null
+     */
+    public function getDefaultTextTruncationHeight() {
+        return $this->defaultTextTruncationHeight;
+    }
+
+    /**
+     * @var array|null
+     */
+    private $availableThemes;
+
+
+    /**
+     * Set availableThemes.
+     *
+     * @param array|null $availableThemes
+     *
+     * @return Instance
+     */
+    public function setAvailableThemes($availableThemes = null)
+    {
+        $this->availableThemes = $availableThemes;
+
+        return $this;
+    }
+
+    /**
+     * Get availableThemes.
+     *
+     * @return array|null
+     */
+    public function getAvailableThemes()
+    {
+        return $this->availableThemes;
+    }
 }

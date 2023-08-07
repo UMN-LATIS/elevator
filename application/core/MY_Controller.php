@@ -7,12 +7,13 @@ class MY_Controller extends CI_Controller {
 	function __construct() {
 		
 		parent::__construct();
+		
 			\Sentry\init([
   				'dsn' => $this->config->item('sentry_dsn'),
 				'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
 				'server_name' => $this->config->item('authHelper')
 			]);
-			
+		
 		if($this->config->item('css_override') && $this->config->item('css_override') !== "FALSE") {
 			$cssLoadArray = ["bootstrap_" . $this->config->item('css_override'), $this->config->item('css_override')];
 		}
@@ -49,16 +50,21 @@ class MY_Controller extends CI_Controller {
 		$this->load->model("user_model");
 		//$this->user_model->loadUser(1);
 
-		if($this->config->item('enableCaching')) {
+		if ($this->config->item('enableCaching')) {
 			$redisCache = new \Doctrine\Common\Cache\RedisCache();
         	$redisCache->setRedis($this->doctrine->redisHost);
 			$this->doctrineCache = $redisCache;
 		}
 
 		$userId = $this->session->userdata('userId');
-
+		// HACK HACK HACK
+		// Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
+		if(strtolower($this->uri->segment(2)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "loginmanager") {
+			session_write_close();
+		}
 		if($userId) {
-			if($this->config->item('enableCaching')) {
+			if ($this->config->item('enableCaching')) {
+				
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
 					$user_model = $storedObject;
@@ -89,7 +95,7 @@ class MY_Controller extends CI_Controller {
 		// if the user isn't loaded, make a guest login
 		if(!$this->user_model->userLoaded) {
 			$this->user_model = new User_model();
-			if($this->config->item('enableCaching')) {
+			if ($this->config->item('enableCaching')) {
 				$userId = session_id();
 				$this->doctrineCache->setNamespace('userGuestCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {

@@ -10,15 +10,71 @@ class LoginManager extends Instance_Controller {
 
 	}
 
-	function force_ssl() {
-	    // if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
-	    //     $url = "https://". $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-	    //     redirect($url);
-	    //     exit;
-	    // }
+	private function verifyUserPassword($user, $password) {
+		$hashedPass = sha1(config_item('encryption_key') . $password);
+		$hashedPass2 = sha1("monkeybox43049pokdhjaldsjkaf" . $password);
+
+		$storedPassword = $user->getPassword();
+		return $storedPassword === $hashedPass || $storedPassword === $hashedPass2;
+	}
+
+	public function localLoginAsync() {
+		if ($this->input->method() !== 'post') {
+			return render_json([
+				'status' => 'error',
+				'message' => 'invalid request method'
+			], 405);
+		}
+
+		$username = $this->input->post("username");
+		$password = $this->input->post("password");
+
+		// check if username and password are set
+		if (!$username || !$password) {
+			return render_json([
+				'status' => 'error',
+				'message' => 'invalid username or password'
+			], 401);
+		}
+
+		$user =  $this->doctrine->em->getRepository("Entity\User")->findOneBy([
+			"username"=> $username, 
+			"userType"=>"Local"
+		]);
+
+		// check if user exists and password is correct
+		if (!$user || !$this->verifyUserPassword($user, $password)) {
+			return render_json([
+				'status' => 'error',
+				'message' => 'invalid username or password'
+			], 401);
+		}
+
+		// check if account is expired
+		$hasUserAccountExpired = $user->getHasExpiry() && $user->getExpires() > new \DateTime();
+		if ($hasUserAccountExpired) {
+			return render_json([
+				'status' => 'error',
+				'message' => 'account is expired'
+			]);
+		}
+
+		// success!
+		// set session data
+		$this->session->set_userdata([
+			'userId' => $user->getId()
+		]);
+		return render_json([
+			'status' => 'success',
+			'message' => 'login successful'
+		]);
 	}
 
 	public function localLogin() {
+		if ($this->isUsingVueUI()) {
+				return $this->template->publish('vueTemplate');
+		}
+
 		$this->useUnauthenticatedTemplate = true;
 
 		$redirectURL = null;
@@ -52,7 +108,6 @@ class LoginManager extends Instance_Controller {
 				$this->template->content->view("login/passwordFail");
 			}
 		}
-		$this->force_ssl();
 
 		$this->template->content->view("login/login", ["redirectURL"=>$redirectURL, "localOnly"=>true]);
 		$this->template->publish();
@@ -75,6 +130,13 @@ class LoginManager extends Instance_Controller {
 		$authHelper = $this->user_model->getAuthHelper();
 		$authHelper->remoteLogout();
 
+		if ($this->isUsingVueUI()) {
+			return render_json([
+				'status' => 'success',
+				'message' => 'logout successful'
+			]);
+		}
+
 		instance_redirect("");
 	}
 
@@ -90,8 +152,6 @@ class LoginManager extends Instance_Controller {
 			// we hackily urlencode hashes
 			$redirectURL = str_replace("%23", "#", $redirectURL);
 		}
-		$this->force_ssl();
-
 
 		$authHelper = $this->user_model->getAuthHelper();
 		if($authHelper->remoteLogin($redirectURL, $noForcedAuth)) {

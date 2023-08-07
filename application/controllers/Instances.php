@@ -74,6 +74,12 @@ class Instances extends Instance_Controller {
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 		$instance->setNotes($this->input->post('notes'));
 		$instance->setModifiedAt(new DateTime);
+		$instance->setInterfaceVersion($this->input->post('interfaceVersion'));
+		$instance->setEnableThemes($this->input->post('enableTheming'));
+		$instance->setDefaultTheme($this->input->post('defaultTheme'));
+		$instance->setAvailableThemes($this->input->post('availableThemes'));
+		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
+		$instance->setDefaultTextTruncationHeight($this->input->post('defaultTextTruncationHeight'));
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
 		$config['allowed_types'] = 'png';
@@ -582,6 +588,17 @@ class Instances extends Instance_Controller {
 			$this->template->content->view('instances/buildBucket');
 			$this->template->publish();
 		}
+	}
+
+	public function previewNewInterface() {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADMIN) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
+		session_start();
+		$this->session->set_userdata(["useVueUI"=>true]);
+		instance_redirect("/");
 	}
 }
 

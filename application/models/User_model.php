@@ -342,6 +342,7 @@ class User_model extends CI_Model {
 		$recentDrawer->setUser($this->user);
 		$recentDrawer->setCreatedAt(new DateTime());
 		$recentDrawer->setInstance($this->instance);
+		$this->doctrine->em->persist($recentDrawer);
 		$this->user->addRecentDrawer($recentDrawer);
 
 		$this->doctrine->em->persist($this->user);
@@ -568,7 +569,6 @@ class User_model extends CI_Model {
 
 
 	}
-
 
 	/**
 	 * Catch invalid method calls and see if our Doctrine child instance

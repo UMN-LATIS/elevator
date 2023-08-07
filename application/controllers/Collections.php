@@ -9,6 +9,12 @@ class Collections extends Instance_Controller {
 
 	public function browseCollection($collectionId=null) {
 
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		if(!$collectionId) {
 			instance_redirect("/search");
 		}
@@ -54,7 +60,7 @@ class Collections extends Instance_Controller {
 
 	}
 
-	public function collectionHeader($collectionId) {
+	public function collectionHeader($collectionId, $returnJSON = false) {
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
 		if($accessLevel < PERM_SEARCH) {
@@ -69,7 +75,10 @@ class Collections extends Instance_Controller {
 		}
 
 		$collection= $this->collection_model->getCollection($collectionId);
-		
+
+		if ($returnJSON) {
+			return render_json(["collectionDescription" => $collection->getCollectionDescription(), "collectionTitle" => $collection->getTitle()]);
+		}
 		echo $this->load->view("collectionHeader", ["collectionDescription"=>$collection->getCollectionDescription(), "collectionTitle"=>$collection->getTitle()], true);
 
 	}

@@ -18,6 +18,10 @@ class Search extends Instance_Controller {
 
 	public function index($searchId = null)
 	{
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!$searchId) {
 			instance_redirect("/");
 		}
@@ -46,25 +50,14 @@ class Search extends Instance_Controller {
 		}
 		$jsLoadArray[] = "spin";
 
-		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch"=>true]);
-
-		$widgetArray = array();
-		foreach($directSearch as $widget) {
-			if($this->instance->getTemplates()->contains($widget->getTemplate())) {
-				$widgetArray[$widget->getFieldTitle()] = ["label"=>$widget->getLabel(), "template"=>$widget->getTemplate()->getId(), "type"=>$widget->getFieldType()->getName()];	
-			}
-		}
-
-		uasort($widgetArray, function($a, $b) {
-			return strcmp($a["label"], $b["label"]);
-		});
+		$sortArray = $this->buildSortStructure();
 
 		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
 		$this->template->javascript->add("/assets/js/sly.min.js");
 		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->addToDrawer->view("drawers/add_to_drawer");
-		$this->template->content->view("search/search", ["searchableWidgets"=>$widgetArray]);
+		$this->template->content->view("search/search", ["sortArray" => $sortArray]);
 		$this->template->publish();
 	}
 
@@ -201,6 +194,7 @@ class Search extends Instance_Controller {
 			$returnInfo['type'] = "multiselect";
 			$returnInfo['values'] = array();
 			$returnInfo['renderContent'] = "<div id='cascade' class='multiselectGroup'>" . $this->load->view("widget_form_partials/multiselect_inner", ["widgetFieldData"=>$widget->getFieldData(), "formFieldName"=>"specificSearchText[]", "formFieldId"=>"cascade"], true) . "</div>";
+			$returnInfo['rawContent'] = $widget->getFieldData();
 		}
 		else {
 			$returnInfo['type'] = "text";
@@ -241,7 +235,7 @@ class Search extends Instance_Controller {
 		instance_redirect("search/s/".$this->searchId);
 	}
 
-	public function querySearch($searchString = null) {
+	public function querySearch($searchString = null, $shouldReturnJson = false) {
 		if(!$searchString) {
 			instance_redirect("/search");
 		}
@@ -258,10 +252,15 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
+
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
+			return render_json(["searchId" => $this->searchId]);
+		}
+
 		instance_redirect("search/s/".$this->searchId);
 	}
 
-	public function scopedQuerySearch($fieldName, $searchString = null) {
+	public function scopedQuerySearch($fieldName, $searchString = null, $shouldReturnJson = false) {
 		if(!$searchString) {
 			instance_redirect("/search");
 		}
@@ -290,6 +289,10 @@ class Search extends Instance_Controller {
 		$this->doctrine->em->persist($searchArchive);
 		$this->doctrine->em->flush();
 		$this->searchId = $searchArchive->getId();
+
+		if ($this->isUsingVueUI() && $shouldReturnJson) {
+			return render_json(["searchId" => $this->searchId]);
+		}
 
 		instance_redirect("search/s/".$this->searchId);
 	}
@@ -331,6 +334,12 @@ class Search extends Instance_Controller {
 
 
 	public function listCollections() {
+
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
 
 		$pages = $this->doctrine->em->getRepository("Entity\InstancePage")->findBy(["instance"=>$this->instance, "title"=>"Collection Page"]);
 		$collectionText = null;
@@ -680,8 +689,7 @@ class Search extends Instance_Controller {
 
 		if($this->input->post("storeOnly") == true) {
 
-			echo json_encode(["success"=>true, "searchId"=>$this->searchId]);
-			return;
+			return render_json(["success"=>true, "searchId"=>$this->searchId]);
 		}
 
 		if($this->input->post("redirectSearch") == true) {
@@ -699,7 +707,8 @@ class Search extends Instance_Controller {
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
 		$matchArray["searchId"] = $this->searchId;
-		echo json_encode($this->search_model->processSearchResults($searchArray, $matchArray));
+		$matchArray["sortableWidgets"] = $this->buildSortStructure();
+		return render_json($this->search_model->processSearchResults($searchArray, $matchArray));
 
 
 	}
@@ -745,10 +754,10 @@ class Search extends Instance_Controller {
 			}
 		}
 		if($target) {
-			echo json_encode(["status"=>"found", "targetId"=>$target]);
+			return render_json(["status" => "found", "targetId" => $target]);
 		}
 		else {
-			echo json_encode(["status"=>"notfound", "search"=>$searchId]);
+			return render_json(["status" => "notfound", "search" => $searchId]);
 		}
 		
 		
@@ -894,7 +903,50 @@ class Search extends Instance_Controller {
 
 	}
 
+	private function buildSortStructure() {
+		if ($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('sortCache_');
+			if ($storedObject = $this->doctrineCache->fetch($this->instance->getId())) {
+				return $storedObject;
+			}
+		}
+		$directSearch = $this->doctrine->em->getRepository("Entity\Widget")->findBy(["directSearch" => true]);
+		$widgetArray = array();
+		foreach ($directSearch as $widget) {
+			if ($this->instance->getTemplates()->contains($widget->getTemplate())) {
+				$widgetArray[$widget->getFieldTitle()] = ["label" => $widget->getLabel(), "template" => $widget->getTemplate()->getId(), "type" => $widget->getFieldType()->getName()];
+			}
+		}
 
+		uasort($widgetArray, function ($a, $b) {
+			return strcmp($a["label"], $b["label"]);
+		});
+
+		$formattedReturnArray = array();
+		$formattedReturnArray["0"] = "Best Match";
+		$formattedReturnArray["lastModified.desc"] = "Modified Date (newest to oldest)";
+		$formattedReturnArray["lastModified.asc"] = "Modified Date (oldest to newest)";
+		$formattedReturnArray["title.raw"] = "Default Title";
+		$formattedReturnArray["collection"] = "Collection";
+		if ($this->instance->getShowTemplateInSearchResults()) {
+			$formattedReturnArray["template"] = "Template";
+		}
+		foreach ($widgetArray as $title => $values) {
+			if ($values["type"] == "date") {
+				$formattedReturnArray["dateCache.startDate.desc"] = $values["label"] . " (newest to oldest)";
+				$formattedReturnArray["dateCache.startDate.asc"] = $values["label"] . " (oldest to newest)";
+			} else {
+				$formattedReturnArray[$title . ".raw"] = $values["label"];
+			}
+		}
+
+		if ($this->config->item('enableCaching')) {
+			$this->doctrineCache->setNamespace('sortCache_');
+			$this->doctrineCache->save($this->instance->getId(), $formattedReturnArray, 14400);
+		}
+
+		return $formattedReturnArray;
+	}
 
 }
 

@@ -7,8 +7,12 @@ class Page extends Instance_Controller {
 		parent::__construct();
 	}
 
-	public function view($pageId = null)
+	public function view($pageId = null, $returnJSON = false)
 	{
+		if ($this->isUsingVueUI() && !$returnJSON) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!$pageId) {
 			instance_redirect("/");
 		}
@@ -16,6 +20,11 @@ class Page extends Instance_Controller {
 		if(!$page) {
 			show_404();
 		}
+
+		if ($returnJSON) {
+			return render_json(["title" => $page->getTitle(), "content" => $page->getBody()]);
+		}
+
 		$this->template->title = $page->getTitle();
 		$this->template->content->view("staticPage", ["content"=>$page->getBody()]);
 		$this->template->publish();

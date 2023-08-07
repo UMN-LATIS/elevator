@@ -9,10 +9,16 @@ class Drawers extends Instance_Controller {
 
 	public function index()
 	{
-
+		return show_404();
 	}
 
-	public function listDrawers() {
+	public function listDrawers($json=false) {
+		if ($this->isUsingVueUI() && !$json) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$drawers = $this->user_model->getDrawers($adminOnly=false, $nonGlobalOnly=true);
 		function customSort($a, $b) {
 			$aSort = $a->getTitle();
@@ -20,11 +26,26 @@ class Drawers extends Instance_Controller {
 			return strcasecmp($aSort, $bSort);
 		}
 		usort($drawers, "customSort");	
-		$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
-		$this->template->publish();
+		if($json) {
+			$drawerStructure = [];
+			foreach($drawers as $drawer) {
+				$drawerStructure[$drawer->getId()] = ["title"=>$drawer->getTitle()];
+			}
+			return render_json($drawerStructure);
+		}
+		else {
+			$this->template->content->view("listDrawers", ["drawers"=>$drawers]);
+			$this->template->publish();
+		}
+		
 	}
 
 	public function viewDrawer($drawerId) {
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
 
 
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
@@ -32,7 +53,7 @@ class Drawers extends Instance_Controller {
 		if($accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
-
+		
 		$this->user_model->addRecentDrawer($this->doctrine->em->find('Entity\Drawer', $drawerId));
 
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
@@ -51,34 +72,68 @@ class Drawers extends Instance_Controller {
 	}
 
 
-	public function downloadDrawer($drawerId) {
-		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+	public function downloadDrawer($drawerId, $returnJSON = false) {
+		if ($this->isUsingVueUI() && !$returnJSON) {
+			return $this->template->publish('vueTemplate');
+		}
 
-		if($accessLevel < PERM_ORIGINALSWITHOUTDERIVATIVES) {
-			$this->errorhandler_helper->callError("noPermission");
+		if (!$drawerId) {
+			return $returnJSON
+				? render_json(["error" => "No drawer ID provided"], 400)
+				: show_404();
 		}
 
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+		if (!$drawer) {
+			return $returnJSON
+				? render_json(["error" => "Drawer not found"], 404)
+				: show_404();
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
+
+		if ($accessLevel < PERM_ORIGINALSWITHOUTDERIVATIVES) {
+			return $returnJSON
+				? render_json(["error" => "No permission to download this drawer"], 403)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
 		$this->load->model("s3_model");
 		$this->s3_model->loadFromInstance($this->instance);
-		$objectInfo = $this->s3_model->objectInfo("drawer/".$drawerId.".zip");
-		if($objectInfo && !$drawer->getChangedSinceArchive()) {
-			redirect($this->s3_model->getProtectedURL("drawer/".$drawerId.".zip", "drawer-".$drawerId.".zip"));
-		}
-		else {
-			$drawer->setChangedSinceArchive(false);
-			$this->doctrine->em->flush();
-			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-			$newTask = json_encode(["drawerId"=>$drawerId, "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId()]);
-			$jobId= $pheanstalk->useTube('archiveTube')->put($newTask, NULL, 1, 900); // run a 15 minute TTR because zipping all these could take a while.
+		$objectInfo = $this->s3_model->objectInfo("drawer/" . $drawerId . ".zip");
 
-			$this->template->content->view("drawers/downloadDrawer");
-			$this->template->publish();
-
-
+		// If the drawer hasn't been changed since archiving
+		// and the object info exists, the zip file is ready
+		if ($objectInfo && !$drawer->getChangedSinceArchive()) {
+			$zipUrl = $this->s3_model->getProtectedURL("drawer/" . $drawerId . ".zip", "drawer-" . $drawerId . ".zip");
+			return $returnJSON
+				? render_json(["status" => "completed", "url" => $zipUrl])
+				: redirect($zipUrl);
 		}
 
 
+		// Reset the changed flag and queue a new job
+		$drawer->setChangedSinceArchive(false);
+		$this->doctrine->em->flush();
+
+		$newTask = json_encode([
+			"drawerId" => $drawerId,
+			"userContact" => $this->user_model->getEmail(),
+			"instance" => $this->instance->getId()
+		]);
+
+		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
+		// run a 15 minute TTR because zipping all these could take a while
+		$jobId = $pheanstalk->useTube('archiveTube')->put($newTask, NULL, 1, 900);
+
+		if ($returnJSON) {
+			return render_json(["status" => "accepted", "jobId" => $jobId]);
+		}
+
+		$this->template->content->view("drawers/downloadDrawer");
+		$this->template->publish();
 	}
 
 	public function getDrawer($drawerId) {
@@ -144,31 +199,67 @@ class Drawers extends Instance_Controller {
 			$resultArray["matches"] = $outputArray;
 			$resultArray["totalResults"] = count($outputArray);
 			$resultArray["drawerId"] = $drawerId;
+			$resultArray["drawerTitle"] = $drawer->getTitle();
+			$resultArray['sortBy'] = $drawer->getSortBy();
 
-			echo json_encode($resultArray);
+			return render_json($resultArray);
 		}
 		else {
-			echo "fail";
+			return render_json(["error"=>"fail"]);
 		}
 
 	}
 
 
-	public function removeFromDrawer($drawerId, $assetId) {
-		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
+	public function removeFromDrawer($drawerId, $assetId, $returnJSON = false) {
+		if (!$drawerId) {
+			return $returnJSON 
+				? render_json(["error" => "Invalid drawer ID."], 400)
+			  : $this->errorhandler_helper->callError("noPermission");
+		}
+
+		if (!$assetId) {
+			return $returnJSON 
+				? render_json(["error" => "Invalid asset ID."], 400)
+			  : $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$drawer = $this->doctrine->em->getReference("Entity\Drawer", $drawerId);
+
+		if (!$drawer) {
+			return $returnJSON 
+			? render_json(["error" => "Drawer not found."], 404)
+			: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $returnJSON
+				? render_json(["error" => "You do not have permission to remove items from this drawer."], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$drawerItem = $this->doctrine->em->getRepository("Entity\DrawerItem")->findOneBy(['drawer'=>$this->doctrine->em->getReference("Entity\Drawer", $drawerId), 'asset' => $assetId]);
 
+		// if item is not in drawer, return error
+		// or redirect to drawer view
+		if (!$drawerItem) {
+			return $returnJSON 
+				? render_json(["error" => "Asset not found in drawer."], 404)
+				: instance_redirect("drawers/viewDrawer/".$drawerId);
+		}
+
 		$this->doctrine->em->remove($drawerItem);
+		$drawer->setChangedSinceArchive(true);
 		$this->doctrine->em->flush();
-		instance_redirect("drawers/viewDrawer/".$drawerId);
+		
+		return $returnJSON
+			? render_json(["success"=>true])
+			: instance_redirect("drawers/viewDrawer/".$drawerId);
 	}
 
-	public function removeExcerpt($drawerId, $excerptId) {
+	public function removeExcerpt($drawerId, $excerptId, $json=false) {
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
@@ -178,21 +269,33 @@ class Drawers extends Instance_Controller {
 		$drawerItem = $this->doctrine->em->getRepository("Entity\DrawerItem")->find($excerptId);
 		$this->doctrine->em->remove($drawerItem);
 		$this->doctrine->em->flush();
-		instance_redirect("drawers/viewDrawer/".$drawerId);
+		if($json) {
+			return render_json(["success"=>true]);
+		}
+		else {
+			instance_redirect("drawers/viewDrawer/".$drawerId);
+		}
+		
 	}
 
-	public function addToDrawer() {
+	public function addToDrawer($shouldReturnJSON = false) {
 		$drawerId = $this->input->post("drawerList");
-		if(!$drawerId) {
-			render_json("error", 500);
+		if (!$drawerId) {
+			return render_json(["error" => "Invalid drawer id"], 400);
 		}
+
 		$drawer = $this->doctrine->em->find('Entity\Drawer', $drawerId);
 
-		$drawer->setChangedSinceArchive(true);
+		if (!$drawer) {
+			return render_json(["error" => "Drawer not found."], 404);
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$drawer);
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $shouldReturnJSON
+				? render_json(["error" => "You do not have permission to add to this drawer."], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		if($this->input->post("excerptId")) {
@@ -220,7 +323,9 @@ class Drawers extends Instance_Controller {
 				$this->addItemToDrawer($assetId, $drawer);
 			}
 		}
+		$drawer->setChangedSinceArchive(true);
 		$this->doctrine->em->flush();
+		return render_json(["success"=>true]);
 	}
 
 
@@ -253,28 +358,36 @@ class Drawers extends Instance_Controller {
 	}
 
 
-	public function delete($drawerId) {
+	public function delete($drawerId, $shouldReturnJSON = false) {
 		$drawer = $this->doctrine->em->find("Entity\Drawer",$drawerId);
+		if(!$drawer) {
+			return render_json(["error" => "Not found", "status" => 404], 404);
+		}
 
 		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
-
-		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+		if ($accessLevel < PERM_CREATEDRAWERS) {
+			return $shouldReturnJSON 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$this->doctrine->em->remove($drawer);
 		$this->doctrine->em->flush();
-		instance_redirect("/");
 
-
+		return $shouldReturnJSON
+			? render_json([ "success" => true])
+			: instance_redirect("/");
 	}
-	public function addDrawer() {
+
+	public function addDrawer($shouldReturnJSON = false) {
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
 
 		$accessLevel = max($accessLevel, $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $shouldReturnJSON 
+				? render_json(["error" => "No permission", "status" => 403], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$drawer = new Entity\Drawer;
@@ -324,20 +437,35 @@ class Drawers extends Instance_Controller {
 			$this->doctrineCache->delete($this->user_model->userId);
 		}
 
-		echo json_encode(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);
+		return render_json(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);
 
 	}
 
 	public function setSortOrder($drawerId, $sortOrder) {
-		$accessLevel = $this->user_model->getAccessLevel("drawer",$this->doctrine->em->getReference("Entity\Drawer", $drawerId));
-
-		if($accessLevel < PERM_CREATEDRAWERS) {
-			$this->errorhandler_helper->callError("noPermission");
+		if (!$drawerId) {
+			return render_json(["error" => "Not found", "status" => 404], 404);
 		}
+
+		if (!in_array($sortOrder, ['title.raw', 'custom'])) {
+			return render_json(["error" => "Invalid sort order", "status" => 400], 400);
+		}
+
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+		if (!$drawer) {
+			return render_json(["error" => "Not found", "status" => 404], 404);
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("drawer", $drawer);
+
+		if ($accessLevel < PERM_CREATEDRAWERS) {
+			return render_json(["error" => "No permission", "status" => 403], 403);
+		}
+
 		$drawer->setSortBy($sortOrder);
 		$this->doctrine->em->flush();
 
+		return render_json(["success"=>true]);
 	}
 
 	public function setCustomOrder($drawerId) {
@@ -368,6 +496,7 @@ class Drawers extends Instance_Controller {
 		}
 
 		$this->doctrine->em->flush();
+		return render_json(["success"=>true]);
 
 	}
 

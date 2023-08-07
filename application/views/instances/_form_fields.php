@@ -224,6 +224,23 @@
 
 <fieldset class="fieldsetSection">
 <legend>Miscellaneous Configuration</legend>
+
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-2">
+		<label class="control-label">
+			Interface Version
+		</label>
+	</div>
+	<div class="col-sm-4">
+			<select name="interfaceVersion" class="form-control">
+				<option value="0" <?=$instance->getInterfaceVersion()==0?'SELECTED':null?>>Classic</option>
+				<option value="1" <?=$instance->getInterfaceVersion()==1?'SELECTED':null?>>VueJS</option>
+			</selecT>
+	</div>
+	<div class="col-sm-2">
+		<a href="<?=instance_url("instances/previewNewInterface")?>" class="btn btn-primary">Preview VueJS Interface</a>
+	</div>
+</div>
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
 		<label>
@@ -291,7 +308,55 @@
 </fieldset>
 
 
+<fieldset class="fieldsetSection vueInterfaceSection">
+<legend>Vue Interface Options</legend>
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="enableThemes" name="enableTheming" value="1" <?=$instance->getEnableThemes()?"checked":null?>>
+			Enable Theme Selection
+		</label>
+	</div>
+</div>
 
+<div class="form-group">
+	<label for="defaultTheme" class="col-sm-2 control-label">Default Theme:</label>
+	<div class="col-sm-6">
+		<select name="defaultTheme" id="defaultTheme">
+			<?foreach($this->config->item("available_themes") as $theme):?>
+			<option value="<?=$theme?>" <?=$instance->getDefaultTheme()==$theme?"SELECTED":null?>><?=$theme?></option>
+			<?endforeach?>
+		</select>
+	</div>
+</div>
+<div class="form-group">
+	<label for="availableThemes" class="col-sm-2 control-label">Available Themes</label>
+	<div class="col-sm-6">
+		<ul style="list-style-type: none; margin-left:0; padding-left:0">
+			<?foreach($this->config->item("available_themes") as $theme):?>
+				<li><input type="checkbox" name="availableThemes[]" value="<?=$theme?>" id="<?=$theme?>" <?=in_array($theme, $instance->getAvailableThemes())?"CHECKED":null?>> <label for="<?=$theme?>"><?=$theme?></label></li>
+			<?endforeach?>
+	</ul>
+
+		
+	</div>
+</div>
+<div class="form-group">
+	<label for="maximumMoreLikeThis" class="col-sm-2 control-label">More Like This Display Count:</label>
+	<div class="col-sm-6">
+		<input type="text" name="maximumMoreLikeThis" id="maximumMoreLikeThis" class="form-control" value="<?= $instance->getMaximumMoreLikeThis(); ?>">
+	</div>
+</div>
+
+<div class="form-group">
+	<label for="defaultTextTruncationHeight" class="col-sm-2 control-label">
+		Text Area Widget Collapsed Height (px):
+	</label>
+	<div class="col-sm-6">
+		<input type="text" name="defaultTextTruncationHeight" id="defaultTextTruncationHeight" class="form-control" value="<?= $instance->getDefaultTextTruncationHeight(); ?>">
+	</div>
+</div>
+</fieldset>
 
 <div class="form-group">
 	<div class="col-sm-6 col-offset-2">
