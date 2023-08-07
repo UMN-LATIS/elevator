@@ -50,7 +50,7 @@ class MY_Controller extends CI_Controller {
 		$this->load->model("user_model");
 		//$this->user_model->loadUser(1);
 
-		if (1 == 1 || $this->config->item('enableCaching')) {
+		if ($this->config->item('enableCaching')) {
 			$redisCache = new \Doctrine\Common\Cache\RedisCache();
         	$redisCache->setRedis($this->doctrine->redisHost);
 			$this->doctrineCache = $redisCache;

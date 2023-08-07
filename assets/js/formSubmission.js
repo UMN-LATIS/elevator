@@ -56,7 +56,7 @@ function submitFormProtected(ignoreWarnings, supressAlertAndBlock) {
 	if($("#collectionId").val() == -1) {
 		bootbox.dialog({
 			message: "Collection cannot be empty.",
-			title: "Invalid Collction",
+			title: "Invalid Collection",
 			backdrop: true,
 			buttons: {
 

@@ -452,7 +452,12 @@ var finishEmbedTrigger = function() {
 }
 
 var testAndShowEmbedButton =function() {
-  if(sessionStorage.elevatorPlugin) {
+  try {
+    var storage = window.sessionStorage || {};  
+  } catch (e) {
+    var storage = false;  
+  }
+  if(storage && sessionStorage.elevatorPlugin) {
     if($("#embedView").length > 0) {
       $(".addToPlugin").text("Add to " + sessionStorage.elevatorPlugin);
       $(".addToPlugin").removeClass('hide');  
