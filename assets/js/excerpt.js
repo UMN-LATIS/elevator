@@ -63,6 +63,7 @@ function getTime() {
 	}
 
 	function requestHandler(event) {
+		// commenting this out because grunt doesnt like it
 		// log('message received:', event.data?.type ?? 'unknown' , event.data?.payload ?? '');
 		const { type } = event.data;
 		if (type === requests.SET_PLAY_BOUNDS) {
