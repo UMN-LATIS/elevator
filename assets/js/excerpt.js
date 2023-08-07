@@ -63,7 +63,7 @@ function getTime() {
 	}
 
 	function requestHandler(event) {
-		log('message received:', event.data?.type ?? 'unknown' , event.data?.payload ?? '');
+		// log('message received:', event.data?.type ?? 'unknown' , event.data?.payload ?? '');
 		const { type } = event.data;
 		if (type === requests.SET_PLAY_BOUNDS) {
 			return setPlayBounds(event.data.payload.startTime, event.data.payload.endTime);
