@@ -22,5 +22,5 @@ docs/.vuepress/dist
 .vscode
 .env
 
-!assets/elevator-ui/dist
 assets/elevator-ui/*
+!assets/elevator-ui/dist

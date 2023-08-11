@@ -15,16 +15,19 @@ function loadGroup(targetId) {
 				$.each(keys,function(key, value) {
 					$(el).append($("<option></option>").attr("value",value).text(value));
 				});
-				var groupSelected = selectedItems[targetId];
-				// console.log(category);
-				// console.log(selectedItems[targetId]);
-				// console.log(groupSelected);
-				// this is a horrible hack.  We store categories with sanitized key names, but our multiselector stores them properly.
-				//
-				category = category.replace(/[^A-Za-z0-9]/g, '');
-				if(groupSelected && groupSelected[category]) {
-					$(el).val(groupSelected[category]);
-					$(el).trigger("change");
+
+				if(selectedItems && selectedItems[targetId]) {
+					var groupSelected = selectedItems[targetId];
+					// console.log(category);
+					// console.log(selectedItems[targetId]);
+					// console.log(groupSelected);
+					// this is a horrible hack.  We store categories with sanitized key names, but our multiselector stores them properly.
+					//
+					category = category.replace(/[^A-Za-z0-9]/g, '');
+					if(groupSelected && groupSelected[category]) {
+						$(el).val(groupSelected[category]);
+						$(el).trigger("change");
+					}
 				}
 
 			}

@@ -188,16 +188,34 @@ class asset extends Instance_Controller {
 	}
 
 
-	function viewExcerpt($excerptId, $embedLink=false) {
+	function viewExcerpt($excerptId, $embedLink = false, $shouldReturnJSON = false) {
+		if ($this->isUsingVueUI() && !$shouldReturnJSON) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$excerpt = $this->doctrine->em->getRepository("Entity\DrawerItem")->find($excerptId);
+
+		if (!$excerpt) {
+			return $shouldReturnJSON
+				? render_json(['error' => 'Excerpt not found'], 404)
+				: show_404();
+		}
+
+		$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
+
+		if (!$fileHandler) {
+			return $shouldReturnJSON
+				? render_json(['error' => 'File handler not found'], 500)
+				: instance_redirect("errorHandler/error/badExcerpt");
+		}
+
 		$assetModel = new Asset_model;
+
 		if(!$assetModel->loadAssetById($excerpt->getAsset())) {
 			$this->logging->logError("getEmbed", "could not load asset for fileHandler" . $fileHandler->getObjectId());
 			return;
 		}
 
-		$fileHandler = $this->filehandler_router->getHandlerForObject($excerpt->getExcerptAsset());
 
 		// we check that they have access to the drawer or the specific asset (for API Calls)
 		// if they have access to the drawer for this asset, and then let them view it.
@@ -212,28 +230,23 @@ class asset extends Instance_Controller {
 				$assetModel->loadAssetById($fileHandler->parentObjectId);
 				$this->assetAccessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 				if($this->accessLevel < PERM_VIEWDERIVATIVES && $this->assetAccessLevel < PERM_VIEWDERIVATIVES) {
-					$this->errorhandler_helper->callError("noPermission");
+					return $shouldReturnJSON
+						? render_json(['error' => 'No permission to view this excerpt'], 403)
+						: $this->errorhandler_helper->callError("noPermission");
 				}
 				
 			}
 			else {
-				$this->errorhandler_helper->callError("noPermission");
+				return $shouldReturnJSON
+					? render_json(['error' => 'No permission to view this excerpt'], 403)
+					: $this->errorhandler_helper->callError("noPermission");
 			}
 			
 		}
 
 		$this->accessLevel = max($this->accessLevel, $this->assetAccessLevel);
 
-		
-
-		if(!$fileHandler) {
-			instance_redirect("errorHandler/error/badExcerpt");
-			return;
-		}
-
 		$fileHandler->loadByObjectId($excerpt->getExcerptAsset());
-
-		
 
 		if($embedLink) {
 			$this->template->set_template("noTemplate");
@@ -241,6 +254,19 @@ class asset extends Instance_Controller {
 		}
 		else {
 			$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
+		}
+
+		if ($shouldReturnJSON) {
+			return render_json([
+				'id' => $excerpt->getId(),
+				'isEmbedded' => $embedLink,
+				'embedUrl' => $fileHandler->getEmbedURL(),
+				'fileObjectId' => $fileHandler->getObjectId(),
+				'assetId' => $excerpt->getAsset(),
+				'startTime' => $excerpt->getExcerptStart(),
+				'endTime' => $excerpt->getExcerptEnd(),
+				'label' => $excerpt->getExcerptLabel(),
+			]);
 		}
 
 		$this->template->content->view("asset/excerpt", ["isEmbedded"=>$embedLink, "asset"=>$assetModel,"fileObjectId"=>$fileHandler->getObjectId(), "embed"=>$embed, "startTime"=>$excerpt->getExcerptStart(), "endTime"=>$excerpt->getExcerptEnd(),"excerptId"=>$excerpt->getId(), "label"=>$excerpt->getExcerptLabel()]);
