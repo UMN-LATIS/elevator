@@ -100,7 +100,7 @@ if (isset($fileContainers['tiled-tar'])) {
                 
                 const numTilesPerRow = Math.ceil(subimage.getWidth() / subimage.getTileWidth());
                 const numTilesPerCol = Math.ceil(subimage.getHeight() / subimage.getTileHeight());
-                console.log(coords.z, numTilesPerCol, numTilesPerRow);
+                console.log("IIIF load", coords.z, numTilesPerCol, numTilesPerRow);
                 const index = (coords.y * numTilesPerRow) + coords.x;
                 let offset;
                 let byteCount;
