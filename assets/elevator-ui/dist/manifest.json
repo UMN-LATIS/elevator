@@ -160,7 +160,7 @@
     "src": "node_modules/@knight-lab/timelinejs/src/css/icons/tl-icons.woff2"
   },
   "src/components/MapMarker/MapMarker.vue": {
-    "file": "assets/MapMarker-21ad5ba2.js",
+    "file": "assets/MapMarker-679a8ff1.js",
     "imports": [
       "src/main.ts"
     ],
@@ -175,7 +175,7 @@
     "css": [
       "assets/MapPopup-56628758.css"
     ],
-    "file": "assets/MapPopup-20d9cedc.js",
+    "file": "assets/MapPopup-91fa19e2.js",
     "imports": [
       "src/main.ts"
     ],
@@ -199,7 +199,7 @@
     "src": "src/css/themes/hotdog.css"
   },
   "src/main.css": {
-    "file": "assets/main-93a21ce2.css",
+    "file": "assets/main-182cd59c.css",
     "src": "src/main.css"
   },
   "src/main.ts": {
@@ -241,7 +241,7 @@
       "assets/work-sans-latin-600-italic-0a30fb7c.woff"
     ],
     "css": [
-      "assets/main-93a21ce2.css"
+      "assets/main-182cd59c.css"
     ],
     "dynamicImports": [
       "src/components/MapMarker/MapMarker.vue",
@@ -249,7 +249,7 @@
       "src/components/MapMarker/MapMarker.vue",
       "src/components/MapPopup/MapPopup.vue"
     ],
-    "file": "assets/main-bf072d50.js",
+    "file": "assets/main-e4f3a50d.js",
     "isEntry": true,
     "src": "src/main.ts"
   }
