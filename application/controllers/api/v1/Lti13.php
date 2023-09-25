@@ -8,9 +8,6 @@ class lti13 extends Instance_Controller {
 
 	}
 
-    public function login() {
-        
-    }
 
 	public function launchLTI()
 	{
