@@ -249,8 +249,11 @@ class Home extends Instance_Controller {
 
 		// useCustomHeader also controls whether or not to show the custom footer
 		if ($this->instance->getUseCustomHeader()) {
+			$headerData['customHeader'] = $this->instance->getCustomHeaderText();
 			$headerData['customFooter'] = $this->instance->getCustomFooterText();
 		}
+
+		$headerData['useCustomCSS'] = $this->instance->getUseCustomCSS() ?? false;
 
 		return render_json($headerData);
 	}
