@@ -370,7 +370,10 @@ class Search extends Instance_Controller {
 			else {
 				if($collection->getPreviewImage() !== null && $collection->getPreviewImage() !== "") {
 					$fileObject = $this->filehandler_router->getHandledObject($collection->getPreviewImage());
-					$collection->previewImageHandler = $fileObject;
+					if($fileObject) {
+						$collection->previewImageHandler = $fileObject;
+					}
+					
 				}
 				else {
 					$collection->previewImageHandler = null;
