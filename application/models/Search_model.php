@@ -524,6 +524,12 @@ class search_model extends CI_Model {
 //                     }
 //                 }
 //             }
+			$tokenizedSearch = explode(" ", $searchArray["searchText"]);
+			if(count($tokenizedSearch) > 500) {
+				// we don't want to search for more than 500 terms at once
+				$tokenizedSearch = array_slice($tokenizedSearch, 0, 500);
+				$searchArray["searchText"] = implode(" ", $tokenizedSearch);
+			}
 			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
 
 			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
