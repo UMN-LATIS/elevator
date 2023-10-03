@@ -433,8 +433,7 @@ class Search extends Instance_Controller {
 			}
 		}
 		
-
-		echo json_encode($output);
+		return render_json($output);
 
 	}
 
