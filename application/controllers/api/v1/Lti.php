@@ -11,7 +11,7 @@ class lti extends Instance_Controller {
 	public function launchLTI()
 	{
         $returnURL = $this->input->post('content_item_return_url');
-        echo $this->load->view("lti/ltiViewer", ["instance"=>$this->instance, "returnURL"=>$returnURL], true);
+        echo $this->load->view("lti/ltiViewer", ["instance"=>$this->instance, "returnURL"=>$returnURL, "ltiVersion"=>"1.1"], true);
 	}
 
 

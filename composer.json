@@ -44,7 +44,7 @@
     "doctrine/persistence": "1.*",
     "aws/aws-sdk-php": "^3.151",
     "sentry/sdk": "^3.1",
-    "packbackbooks/lti-1p3-tool": "dev-upstream-merge"
+    "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2"
   },
   "minimum-stability": "dev",
   "config": {
