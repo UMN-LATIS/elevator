@@ -5,7 +5,7 @@
  */
 
 /**
- * Interface for area capture tools. Instantiates & connects all area or supprting tools. 
+ * Interface for area capture tools. Instantiates & connects all area or supporting tools. 
  * @constructor
  * 
  * @param {object} Lt - LTreering object from leaflet-treering.js. 
@@ -28,10 +28,13 @@ function AreaCaptureInterface(Lt) {
 
     this.dateEllipses = new DateEllipses(this);
     this.dateEllipsesDialog = new DateEllipsesDialog(this);
+
+    this.assistBoundaryLines = new AssistBoundaryLines(this);
     
     // Order in btns array dictates order in button dropdown in browser. 
     this.btns = [
         this.newEllipse.btn, 
+        this.assistBoundaryLines.btn,
         this.lassoEllipses.btn, 
         this.dateEllipses.btn, 
         this.deleteEllipses.btn,
@@ -39,6 +42,7 @@ function AreaCaptureInterface(Lt) {
     ];
     this.tools = [
         this.newEllipse, 
+        this.assistBoundaryLines,
         this.lassoEllipses, 
         this.dateEllipses, 
         this.deleteEllipses
@@ -89,19 +93,43 @@ function EllipseData(Inte) {
     }
 
     /**
-     * Increase current year.
+     * Increase current year while maintaining decimal value.
      * @function
      */
     EllipseData.prototype.increaseYear = function() {
-        this.year++;
+        let floatYear = parseFloat(this.year);
+        let intYear = Math.floor(this.year);
+
+        // Special case when transitioning from negative to positive years (crossing 0).
+        if (intYear < floatYear) intYear++; 
+
+        let trailingNums = parseFloat((floatYear - intYear).toFixed(2));
+
+        // Special case cont.
+        if (intYear == 0) trailingNums = Math.abs(trailingNums);
+
+        let newYear = intYear + 1;
+        this.year = newYear + trailingNums;
     }
 
     /**
-     * Decrease current year. 
+     * Decrease current year while maintaining decimal value. 
      * @function
      */
     EllipseData.prototype.decreaseYear = function() {
-        this.year--;
+        let floatYear = parseFloat(this.year);
+        let intYear = Math.floor(this.year);
+
+        // Special case when transitioning from positive to negative years (crossing 0).
+        if (intYear > floatYear) intYear--; 
+
+        let trailingNums = parseFloat((floatYear - intYear).toFixed(2));
+
+        // Special case cont.
+        if (intYear == 0) trailingNums = -1 * trailingNums;
+
+        let newYear = intYear - 1;
+        this.year = newYear + trailingNums;
     }
 
     /**
@@ -189,6 +217,19 @@ function EllipseCSVDownload(Inte) {
      * @function
      */
     EllipseCSVDownload.prototype.action = function() {
+        // Sort ellipses by year before downloading.
+        Inte.ellipseData.data.sort((a, b) => {
+            if (a.year < b.year) {
+              return -1;
+            }
+
+            if (a.year > b.year) {
+              return 1;
+            }
+          
+            return 0;
+          });
+
         let csvString = "year,area_mm2\n";
         for (let obj of Inte.ellipseData.data) {
             csvString += obj.year + "," + obj.area.toFixed(3) + "\n";
@@ -214,8 +255,13 @@ function EllipseVisualAssets(Inte) {
     this.selectedElements = [];
     
     this.ellipseLayer = L.layerGroup().addTo(Inte.treering.viewer);
+
     this.guideMarkerLayer = L.layerGroup().addTo(Inte.treering.viewer);
     this.guideLineLayer = L.layerGroup().addTo(Inte.treering.viewer);
+
+    this.boundaryMarkerLayer = L.layerGroup().addTo(Inte.treering.viewer);
+    this.boundaryLineLayer = L.layerGroup().addTo(Inte.treering.viewer);
+    this.boundaryGuideLineLayer = L.layerGroup().addTo(Inte.treering.viewer);
 
     /* Full color scheme for when EW/LW difference enabled. 
     this.colorScheme = [
@@ -312,7 +358,7 @@ function EllipseVisualAssets(Inte) {
      */
     EllipseVisualAssets.prototype.cycleColorsMulti = function(year) {
         let n = this.colorScheme.length;
-        this.colorIndex = year % n;
+        this.colorIndex = Math.abs(Math.floor(year)) % n;
         this.ellipseBaseColor = this.colorScheme[this.colorIndex];
     }
 
@@ -324,7 +370,7 @@ function EllipseVisualAssets(Inte) {
      */
     EllipseVisualAssets.prototype.getColorFromCycle = function(year) {
         let n = this.colorScheme.length;
-        let index = Math.abs(year) % n;
+        let index = Math.abs(Math.floor(year)) % n;
         let color = this.colorScheme[index];
 
         return color;
@@ -727,13 +773,13 @@ function NewEllipseDialog(Inte) {
  */
 function LassoEllipses(Inte) {
     this.active = false;
-    this.shortcutsEnabled = false;
+    this.eventListenersEnabled = false;
     this.btn = new Button (
-        "settings_backup_restore",
+        "lasso_select",
         "Lasso existing ellipses",
         () => {
             Inte.treering.disableTools(); 
-            // Inte.treering.collapseTools();
+            Inte.treering.collapseTools();
             this.enable() 
         },
         () => { this.disable() },
@@ -746,7 +792,6 @@ function LassoEllipses(Inte) {
             fillRule: "nonzero",
         }
     });
-    this.lassoEventFinished = true;
 
     /**
      * Enable tool & assign shotcuts upon first enable. 
@@ -762,12 +807,12 @@ function LassoEllipses(Inte) {
         this.active = true;
         Inte.treering.viewer.getContainer().style.cursor = 'crosshair';
 
-        if (!this.shortcutsEnabled) {
+        if (!this.eventListenersEnabled) {
             // Only do once when instantiated.
             // Otherwise multiple listeners will be assigned. 
-            this.createShortcutEventListeners();
+            this.createEventListeners();
             
-            this.shortcutsEnabled = true;
+            this.eventListenersEnabled = true;
         }
 
         this.action();
@@ -789,28 +834,14 @@ function LassoEllipses(Inte) {
      * Creates keyboard shortcut event listeners. Based on file selection shortcuts.   
      * @function
      */
-    LassoEllipses.prototype.createShortcutEventListeners = function() {
-        // Keyboard short cut for deselection all points: Ctrl - Z 
-        L.DomEvent.on(window, 'keydown', (e) => {
-            if (e.keyCode == 90 && !e.shiftKey && e.ctrlKey && this.active) {
-                this.dehighlightSelected();
-                this.deselectEllipses();
-            }
-         }, this);
+    LassoEllipses.prototype.createEventListeners = function() {
+        Inte.treering.viewer.on('lasso.finished', lassoed => {
+            this.selectEllipses(lassoed.layers);
+            this.highlightSelected();
 
-        // Keyboard short cut for selecting additional points: Holding Ctrl
-        L.DomEvent.on(window, 'keydown', (e) => {
-            if (e.keyCode == 17 && this.lassoEventFinished && !e.shiftKey && this.active) {
-                this.action(e);
-            }
-        }, this); 
-        L.DomEvent.on(window, 'keyup', (e) => {
-            // Prevents extra action after Ctrl is released. 
-            if (e.keyCode == 17 && this.active) {
-                this.lasso.disable();
-                this.lassoEventFinished = true;
-            }
-        }, this); 
+            // Timeout required to avoid disable() call from lasso-handler.ts. 
+            setTimeout(() => this.lasso.enable(), 1);
+        });
     }
 
     /**
@@ -819,17 +850,6 @@ function LassoEllipses(Inte) {
      */
     LassoEllipses.prototype.action = function() {
         this.lasso.enable();
-        this.lassoEventFinished = false;
-
-        Inte.treering.viewer.on('lasso.finished', lassoed => {
-            // lasso.finished evnt fires multiple times. Need variable to prevent repeated firing. 
-            if (!this.lassoEventFinished) {
-                this.selectEllipses(lassoed.layers);
-                this.highlightSelected();
-    
-                this.lassoEventFinished = true;
-            }
-        });
     }
 
     /**
@@ -840,6 +860,7 @@ function LassoEllipses(Inte) {
      */
     LassoEllipses.prototype.selectEllipses = function(layers) {
         layers.map(layer => {
+            // Ensures measurement markers not included in selection. 
             if (!(layer instanceof L.Marker)) {
                 return
             }
@@ -1147,7 +1168,7 @@ function DateEllipsesDialog(Inte) {
         "shiftDisabled": true, 
     });
 
-    let size = [350, 296];
+    let size = [360, 296];
     this.fromLeft = ($(window).width() - size[0]) / 2;
     this.fromTop = ($(window).height() - size[1]) / 2;
     
@@ -1223,7 +1244,7 @@ function DateEllipsesDialog(Inte) {
      */
     DateEllipsesDialog.prototype.createDialogEventListeners = function() {
         $("#AreaCapture-confirmDate-btn").on("click", () => {
-            let year = parseInt($("#AreaCapture-newDate-input").val());
+            let year = parseFloat($("#AreaCapture-newDate-input").val());
             if (year || year == 0) {
                 Inte.dateEllipses.action(year);
             }
@@ -1247,6 +1268,170 @@ function DateEllipsesDialog(Inte) {
                 this.close();
             }
          }, this);        
+    }
+}
+
+/**
+ * Draws two parallel lines to bound where ellipses are drawn.  
+ * @constructor
+ * 
+ * @param {object} Inte - AreaCaptureInterface object. Allows access to all other tools.
+ */
+function AssistBoundaryLines(Inte) {
+    this.btn = new Button (
+        'text_select_move_forward_word',
+        'Draw boundary lines (currently cannot be removed)',
+        () => { this.enable() },
+        () => { this.disable() },
+    );
+    
+    /**
+     * Enables boundary drawing. 
+     * @function
+     */
+    AssistBoundaryLines.prototype.enable = function() {
+        this.btn.state('active');
+        Inte.treering.viewer.getContainer().style.cursor = 'pointer';
+
+        this.placeGuideMarker();
+    }
+
+    /**
+     * Disables boundary drawing. 
+     * @function
+     */
+    AssistBoundaryLines.prototype.disable = function() {
+        this.btn.state('inactive');
+        Inte.treering.viewer.getContainer().style.cursor = 'default';
+        $(Inte.treering.viewer.getContainer()).off('click');
+
+        Inte.ellipseVisualAssets.boundaryMarkerLayer.clearLayers();
+        Inte.ellipseVisualAssets.boundaryGuideLineLayer.clearLayers();
+    }
+
+    /**
+     * Places marker and allows user to decide width of lines. 
+     * @function
+     */
+    AssistBoundaryLines.prototype.placeGuideMarker = function() {
+        $(Inte.treering.viewer.getContainer()).on('click', (e) => {
+            $(Inte.treering.viewer.getContainer()).off('click');
+
+            let latlng = Inte.treering.viewer.mouseEventToLatLng(e);
+            this.marker = L.marker(latlng, { icon: L.divIcon({className: "fa fa-plus guide"}) }); 
+            Inte.ellipseVisualAssets.boundaryMarkerLayer.addLayer(this.marker);
+
+            let content = document.getElementById("AreaCapture-guideMarkerWidth-template").innerHTML;
+            this.marker.bindPopup(content, {closeButton: false, closeOnEscapeKey: false, closeOnClick: false}).openPopup();
+            document.getElementById("AreaCapture-guideWidth-input").select();
+
+            // Close dialog box with enter/return and draw guide lines. 
+            L.DomEvent.on(window, 'keydown', this.drawGuideLines, this);
+        });
+    }
+
+    /**
+     * Draws temporary guidelines for user to rotate around previously decided anchor. 
+     * @function
+     * 
+     * @param {object} event - Keydown event
+     */
+    AssistBoundaryLines.prototype.drawGuideLines = function(event) {
+        // Keycode 13 refers to Enter/Return buttons. 
+        if (event.keyCode == 13) {
+            let viewer = Inte.treering.viewer;
+            let halfWidthMillimeter = parseFloat(document.getElementById("AreaCapture-guideWidth-input").value) / 2; 
+            let halfWidthPixel = Inte.treering.meta.ppm * halfWidthMillimeter;
+
+            this.marker.closePopup();
+            let markerPoint = viewer.project(this.marker.getLatLng(), Inte.treering.getMaxNativeZoom());
+
+            let topLine, bottomLine;
+            let opacity = "0.75";
+            let color  = "#49c4d9";
+            let weight = "5";
+            
+            // Mouse movement events: 
+            $(viewer.getContainer()).on("mousemove", e => {
+                Inte.ellipseVisualAssets.boundaryGuideLineLayer.clearLayers();
+
+                // Get four locations of points for guidelines. Order of points determines rotation. 
+                // Based on: https://math.stackexchange.com/questions/2043054/find-a-point-on-a-perpendicular-line-a-given-distance-from-another-point
+                let mousePoint = viewer.project(viewer.mouseEventToLatLng(e), Inte.treering.getMaxNativeZoom());
+
+                let slope = (mousePoint.y - markerPoint.y) / (mousePoint.x - markerPoint.x);
+                if (slope == 0) slope = 0.00000001; // Set slope to be near 0 to avoid dividing by 0 errors. 
+                let addative = Math.sqrt((halfWidthPixel**2) / (1 + (1/(slope**2))));
+
+                let topLeftX = markerPoint.x + addative;
+                let topRightX = mousePoint.x + addative;
+                let bottomLeftX = markerPoint.x - addative;
+                let bottomRightX = mousePoint.x - addative;
+
+                let topLeftY = ((-1/slope) * (topLeftX - markerPoint.x)) + markerPoint.y;
+                let topRightY = ((-1/slope) * (topRightX - mousePoint.x)) + mousePoint.y;
+                let bottomLeftY = ((-1/slope) * (bottomLeftX - markerPoint.x)) + markerPoint.y;
+                let bottomRightY = ((-1/slope) * (bottomRightX - mousePoint.x)) + mousePoint.y;
+
+                let topLeftLatLng = viewer.unproject([topLeftX, topLeftY], Inte.treering.getMaxNativeZoom());
+                let topRightLatLng = viewer.unproject([topRightX, topRightY], Inte.treering.getMaxNativeZoom());
+                let bottomLeftLatLng = viewer.unproject([bottomLeftX, bottomLeftY], Inte.treering.getMaxNativeZoom());
+                let bottomRightLatLng = viewer.unproject([bottomRightX, bottomRightY], Inte.treering.getMaxNativeZoom());
+
+                topLine = L.polyline([topLeftLatLng, topRightLatLng], {
+                    interactive: false, 
+                    color: color, 
+                    opacity: opacity,
+                    weight: weight
+                });
+                Inte.ellipseVisualAssets.boundaryGuideLineLayer.addLayer(topLine);
+
+                let mainLine = L.polyline([this.marker.getLatLng(), viewer.mouseEventToLatLng(e)], {
+                    interactive: false, 
+                    color: color, 
+                    opacity: opacity,
+                    weight: weight
+                });
+                Inte.ellipseVisualAssets.boundaryGuideLineLayer.addLayer(mainLine);
+
+                bottomLine = L.polyline([bottomLeftLatLng, bottomRightLatLng], {
+                    interactive: false, 
+                    color: color, 
+                    opacity: opacity,
+                    weight: weight
+                });
+                Inte.ellipseVisualAssets.boundaryGuideLineLayer.addLayer(bottomLine);
+            });
+
+            // Click events: 
+            $(Inte.treering.viewer.getContainer()).on('click', (e) => {
+                if (topLine && bottomLine) this.placeBoundaryLines(topLine, bottomLine);
+            });
+        }
+    }
+
+    /**
+     * Draws boundary lines on semi-permanent layer. 
+     * @function
+     * 
+     * @param {object} top - Leaflet polyline for top boundary.
+     * @param {*} bot - Leaflet polyline for bottom boundary. 
+     */
+    AssistBoundaryLines.prototype.placeBoundaryLines = function(top, bot) {
+        // Remove placement events. 
+        $(Inte.treering.viewer.getContainer()).off('mousemove');
+        $(Inte.treering.viewer.getContainer()).off('click');
+
+        // Clear marker & guide lines. 
+        Inte.ellipseVisualAssets.boundaryMarkerLayer.clearLayers();
+        Inte.ellipseVisualAssets.boundaryGuideLineLayer.clearLayers();
+
+        // Add boundary lines. 
+        Inte.ellipseVisualAssets.boundaryLineLayer.addLayer(top);
+        Inte.ellipseVisualAssets.boundaryLineLayer.addLayer(bot);
+
+        // Start call chain again.
+        this.placeGuideMarker();
     }
 }
 

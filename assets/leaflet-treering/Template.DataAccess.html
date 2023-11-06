@@ -1,0 +1,128 @@
+<script id="DataAccess-dialog-template" type="text/x-handlebars-template">   
+    <div class= "DataAccess-Window" id="DataAccess-Window-ID">
+        <div class = "DataAccess-StatsUploadDelete-Container">
+            <div class = "DataAccess-Buttons-Container">
+                <!-- <div id = "insert_chart" class = "DataAccess-InsertChart-Buttons DataAccess-Icon-Buttons" title="Open time series plots in a new window">
+                    <span class="material-symbols-outlined DataAccess-material-symbols">
+                        insert_chart
+                    </span>
+                </div> -->
+
+                <div id = "rwl" class= "DataAccess-RwlDownload-Buttons DataAccess-Text DataAccess-Text-Buttons DataAccess-Center" 
+                     style="margin-top: 2px;" title="Download .rwl file of measurements">
+                    RWL
+                </div>
+    
+                <div id = "csv" class= "DataAccess-TsvDownload-Buttons DataAccess-Text DataAccess-Text-Buttons DataAccess-Center" title="Download .csv file of measurements">
+                    CSV
+                </div>
+        
+                <div id = "tsv" class= "DataAccess-CsvDownload-Buttons DataAccess-Text DataAccess-Text-Buttons DataAccess-Center" title="Download .tsv file of measurements">
+                    TSV
+                </div>
+        
+                <div id = "json" class= "DataAccess-JsonDownload-Buttons DataAccess-Text DataAccess-Text-Buttons DataAccess-Center" title="Download .json file of current measurements, annotations, etc.">
+                    JSON
+                </div>
+    
+                <div id = "copy" class= "DataAccess-Copy-Buttons DataAccess-Text DataAccess-Text-Buttons DataAccess-Center" 
+                     style="margin: 0;" title="Copy measurement data to clipboard">
+                    COPY
+                </div>
+
+                <br>
+
+                {{#if savePermissions}}
+                <div id = "cloud_upload" class= "DataAccess-CloudUpload-Buttons DataAccess-Icon-Buttons" title="Save the current measurements, annotations, etc. to the cloud-hosted .json file (Ctrl-s)">
+                    <span class="material-symbols-outlined DataAccess-material-symbols">
+                        cloud_upload
+                    </span>
+                </div>
+                {{/if}}
+    
+                <div id = "upload_file" class= "DataAccess-UploadFile-Buttons DataAccess-Icon-Buttons" title="Upload .json file with measurements, annotations, etc.">
+                    <span class="material-symbols-outlined DataAccess-material-symbols">
+                        upload
+                    </span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 12px;" />
+    
+            <div id = "delete" class="DataAccess-Delete-Buttons DataAccess-Delete DataAccess-Icon-Buttons" title="Delete all measurement data">
+                <span class="material-symbols-outlined ">
+                    delete
+                </span>
+            </div>
+        </div>
+
+        <div class="DataAccess-Table-div">
+            <table id="DataAccess-table-id" class="DataAccess-Table">  
+                <tbody id="DataAccess-table-body">
+                    {{#if data.tw.x.length}}
+                        <tr>
+                            <th>Year</th>
+                            <th>TW</th>
+                            {{#if data.ew}}
+                                <th>EW</th>
+                                <th>LW</th>
+                            {{/if}}
+                        </tr>
+
+                        {{#with data}}
+                            {{#each tw.x}}
+                            <tr {{#if (decadeCheck this)}} style="background-color: rgba(255, 0, 0, 0.233);"{{/if}}>
+                                <td><b>{{this}}</b></td>
+                                <td>{{numToFourDigits (lookup ../tw.y @index)}} </td>
+            
+                                {{#if ../ew}}
+                                    <td>{{numToFourDigits (lookup ../ew.y @index)}} </td>
+                                    <td>{{numToFourDigits (lookup ../lw.y @index)}} </td>
+                                {{/if}}
+            
+                            </tr>
+                            {{/each}}
+                        {{/with}}
+                    {{else}}
+                        Missing data
+                    {{/if}}
+                </tbody>
+
+                
+            </table>
+        </div>
+    </div>
+</script>
+
+<script id="DataAccess-deleteAllDialog-template" type="text/x-handlebars-template">
+    <div class="DataAccess-dialog-container">
+        <div class="DataAccess-deleteWarning-container">
+            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+            <h3>
+                Warning
+            </h3>
+            <p class="DataAccess-delete-text">
+                Are you sure you want to delete <b>ALL</b> measurement data?
+            </p>
+        </div>
+        <br>
+        <div class="DataAccess-btn-row">
+            <div class="DataAccess-btn-container">
+                <div id="DataAccess-confirmDelete-btn" class="DataAccess-delete-btn">
+                    <i class="fa fa-check" 
+                    aria-hidden="true"
+                    style="margin-right: 6px;"></i>
+                    <span> Confirm </span>
+                </div>
+            </div>
+            <div class="DataAccess-btn-container">
+                <div id="DataAccess-cancelDelete-btn" class="DataAccess-delete-btn">
+                    <span> Cancel </span>
+                    <i class="fa fa-times" 
+                    style="margin-left: 6px;"
+                    aria-hidden="true"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
