@@ -24,7 +24,7 @@ if($widgetObject->parentWidget->dendroFields) {
 ?>
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-	<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/font-awesome/css/font-awesome.css">
 
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap.min.css">
