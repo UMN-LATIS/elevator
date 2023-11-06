@@ -84,19 +84,9 @@ function ViewDataDialog(Inte) {
           return rounded;
       }
   });
-  Handlebars.registerHelper('numToFourDigits', function(decimal) {
-      if (decimal || decimal == 0) {
-          let rounded = "0.000"
-          if (decimal > 0) {
-              decimal = decimal.toString() + "000"; // Add zeroes for already truncated values (i.e. 0.3 -> 0.300).
-              let dec_idx = decimal.indexOf('.');
-              rounded = decimal.slice(0, dec_idx + 4);
-          }
-          
-          return rounded;
-      }
-      
-      console.log("Error: ", typeof(decimal));
+
+  Handlebars.registerHelper("log", function(something) {
+    console.log(something);
   });
 
   let html = document.getElementById("DataAccess-dialog-template").innerHTML;
@@ -132,6 +122,7 @@ function ViewDataDialog(Inte) {
       let dat = Inte.treering.helper.findDistances();
       let content = this.template({
           data: dat,
+          sub: dat.ew !== undefined && dat.lw !== undefined,
           savePermissions: Inte.treering.meta.savePermission,
       });
 
