@@ -179,6 +179,15 @@ function EllipseData(Inte) {
     }
 
     /**
+     * Clear JSON data. 
+     * @function
+     */
+    EllipseData.prototype.clearJSON = function() {
+        this.data = [];
+        this.reloadJSON();
+    }
+
+    /**
      * Undo recent changes.
      * @function
      * 
@@ -502,9 +511,9 @@ function NewEllipse(Inte) {
         () => { this.disable() },
     );
 
-    // Crtl-E to create a new ellipse. 
+    // Shift-E to create a new ellipse. 
     L.DomEvent.on(window, 'keydown', (e) => {
-        if (e.keyCode == 69 && e.getModifierState("Control") && window.name.includes('popout')) {
+        if (e.keyCode == 69 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) {
         e.preventDefault();
         e.stopPropagation();
         Inte.treering.disableTools();
@@ -627,8 +636,8 @@ function NewEllipse(Inte) {
  * @param {object} Inte - AreaCaptureInterface object. Allows access to all other tools.
  */
 function NewEllipseDialog(Inte) {
-    let minWidth = 170;
-    let minHeight = 115;
+    let minWidth = 130;
+    let minHeight = 130;
     this.size = [minWidth, minHeight];
     this.anchor = [50, 0];
 
@@ -733,18 +742,18 @@ function NewEllipseDialog(Inte) {
      * @function
      */
     NewEllipseDialog.prototype.createShortcutEventListeners = function () {
-        // Keyboard short cut for subtracting year: Ctrl - 1
+        // Keyboard short cut for subtracting year: Shift - 1
         L.DomEvent.on(window, 'keydown', (e) => {
-            if (e.keyCode == 49 && !e.shiftKey && e.ctrlKey && this.dialogOpen) {
+            if (e.keyCode == 49 && e.shiftKey && !e.ctrlKey && this.dialogOpen) {
                 Inte.ellipseData.decreaseYear();
                 Inte.ellipseVisualAssets.cycleColorsDown();
                 this.update();
             }
          }, this);
 
-         // Keyboard short cut for confirming a new year: Ctrl - 2
+         // Keyboard short cut for confirming a new year: Shift - 2
         L.DomEvent.on(window, 'keydown', (e) => {
-            if (e.keyCode == 50 && !e.shiftKey && e.ctrlKey && this.dialogOpen) {
+            if (e.keyCode == 50 && e.shiftKey && !e.ctrlKey && this.dialogOpen) {
                 let year = $("#AreaCapture-newYear-input").val();
                 if (year || year == 0) {
                     Inte.ellipseVisualAssets.cycleColorsMulti(year);
@@ -754,9 +763,9 @@ function NewEllipseDialog(Inte) {
             }
          }, this); 
 
-        // Keyboard short cut for adding year: Ctrl - 3
+        // Keyboard short cut for adding year: Shift - 3
         L.DomEvent.on(window, 'keydown', (e) => {
-            if (e.keyCode == 51 && !e.shiftKey && e.ctrlKey && this.dialogOpen) {
+            if (e.keyCode == 51 && e.shiftKey && !e.ctrlKey && this.dialogOpen) {
                 Inte.ellipseData.increaseYear();
                 Inte.ellipseVisualAssets.cycleColorsUp();
                 this.update();

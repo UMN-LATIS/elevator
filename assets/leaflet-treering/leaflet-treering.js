@@ -1671,7 +1671,7 @@ function AnnotationAsset(Lt) {
 
   this.createBtn = new Button (
     'comment',
-    'Create annotations (Ctrl-a)',
+    'Create annotations (Shift-a)',
     () => { Lt.disableTools(); this.enable(this.createBtn) },
     () => { this.disable(this.createBtn) }
   );
@@ -1679,7 +1679,7 @@ function AnnotationAsset(Lt) {
 
   // crtl-a to activate createBtn
   L.DomEvent.on(window, 'keydown', (e) => {
-    if (e.keyCode == 65 && e.getModifierState("Control") && window.name.includes('popout')) { // 65 refers to 'a'
+    if (e.keyCode == 65 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 65 refers to 'a'
       e.preventDefault();
       e.stopPropagation();
       Lt.disableTools();
@@ -3371,14 +3371,14 @@ function Dating(Lt) {
   this.active = false;
   this.btn = new Button(
     'access_time',
-    'Edit measurement point dating (Ctrl-d)',
+    'Edit measurement point dating (Shift-d)',
     () => { Lt.disableTools(); Lt.collapseTools(); this.enable() },
     () => { this.disable() }
   );
 
-  // enable with ctrl-d
+  // enable with shift-d
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 68 && !(e.getModifierState("Shift")) && e.getModifierState("Control") && window.name.includes('popout')) { // 68 refers to 'd'
+     if (e.keyCode == 68 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 68 refers to 'd'
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3532,14 +3532,14 @@ function CreatePoint(Lt) {
   this.startPoint = true;
   this.btn = new Button(
     'linear_scale',
-    'Create measurement points (Ctrl-m)',
+    'Create measurement points (Shift-m)',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
 
-  // create measurement w. ctrl-m
+  // create measurement w. shift-m
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 77 && e.getModifierState("Control")) {
+     if (e.keyCode == 77 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) {
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3547,9 +3547,9 @@ function CreatePoint(Lt) {
      }
   }, this);
 
-  // resume measurement w. ctrl-k
+  // resume measurement w. shift-k
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 75 && e.getModifierState("Control")) {
+     if (e.keyCode == 75 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) {
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3739,7 +3739,7 @@ function CreateBreak(Lt) {
   );
 
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 66 && e.getModifierState("Control") && window.name.includes('popout')) { // 66 refers to 'b'
+     if (e.keyCode == 66 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 66 refers to 'b'
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3941,14 +3941,14 @@ function InsertPoint(Lt) {
   this.active = false;
   this.btn = new Button(
     'add_circle_outline',
-    'Insert a point between two other points (Ctrl-i)',
+    'Insert a point between two other points (Shift-i)',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
 
-  // enable w. ctrl-i
+  // enable w. shift-i
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 73 && !(e.getModifierState("Shift")) && e.getModifierState("Control") && window.name.includes('popout')) { // 73 refers to 'i'
+     if (e.keyCode == 73 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 73 refers to 'i'
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -4790,51 +4790,51 @@ function Panhandler(La) {
   La.viewer.pan.enable();
 }
 /**
-   * copy text to clipboard
-   * @function enable
-   */
-  function copyToClipboard(allData){
-    console.log('copying...', allData);
-    const el = document.createElement('textarea');
-    el.value = allData;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-  }
+ * copy text to clipboard
+ * @function enable
+ */
+function copyToClipboard(allData){
+  console.log('copying...', allData);
+  const el = document.createElement('textarea');
+  el.value = allData;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+}
 
-  /**
-   * Download CSV ZIP file
-   * @function
-   */
-  function downloadCSVFiles(Lt,TWoodcsvDataString,EWoodcsvDataString,LWoodcsvDataString) {
-    var zip = new JSZip();
-    if(Lt.measurementOptions.subAnnual)
-    {
-    zip.file((Lt.meta.assetName + '_LW_csv.csv'), LWoodcsvDataString);
-    zip.file((Lt.meta.assetName + '_EW_csv.csv'), EWoodcsvDataString);
-    }
-    zip.file((Lt.meta.assetName + '_TW_csv.csv'), TWoodcsvDataString)
-    zip.generateAsync({type: 'blob'})
-          .then((blob) => {
-            saveAs(blob, (Lt.meta.assetName + '_csv.zip'));
-          });
-  }
-
-  function downloadTabFiles(Lt,TWTabDataString,EWTabDataString,LWTabDataString)
+/**
+ * Download CSV ZIP file
+ * @function
+ */
+function downloadCSVFiles(Lt,TWoodcsvDataString,EWoodcsvDataString,LWoodcsvDataString) {
+  var zip = new JSZip();
+  if(Lt.measurementOptions.subAnnual)
   {
-    var zip = new JSZip();
-    if(Lt.measurementOptions.subAnnual)
-    {
-    zip.file((Lt.meta.assetName + '_LW_tab.txt'), LWTabDataString);
-    zip.file((Lt.meta.assetName + '_EW_tab.txt'), EWTabDataString);
-    }
-    zip.file((Lt.meta.assetName + '_TW_tab.txt'), TWTabDataString)
-    zip.generateAsync({type: 'blob'})
-          .then((blob) => {
-            saveAs(blob, (Lt.meta.assetName + '_tab.zip'));
-          });
-        }
+  zip.file((Lt.meta.assetName + '_LW_csv.csv'), LWoodcsvDataString);
+  zip.file((Lt.meta.assetName + '_EW_csv.csv'), EWoodcsvDataString);
+  }
+  zip.file((Lt.meta.assetName + '_TW_csv.csv'), TWoodcsvDataString)
+  zip.generateAsync({type: 'blob'})
+        .then((blob) => {
+          saveAs(blob, (Lt.meta.assetName + '_csv.zip'));
+        });
+}
+
+function downloadTabFiles(Lt,TWTabDataString,EWTabDataString,LWTabDataString)
+{
+  var zip = new JSZip();
+  if(Lt.measurementOptions.subAnnual)
+  {
+  zip.file((Lt.meta.assetName + '_LW_tab.txt'), LWTabDataString);
+  zip.file((Lt.meta.assetName + '_EW_tab.txt'), EWTabDataString);
+  }
+  zip.file((Lt.meta.assetName + '_TW_tab.txt'), TWTabDataString)
+  zip.generateAsync({type: 'blob'})
+        .then((blob) => {
+          saveAs(blob, (Lt.meta.assetName + '_tab.zip'));
+        });
+}
 
 /**
  * Opens dialog box with all keyboard shortcuts
@@ -4855,7 +4855,7 @@ function KeyboardShortCutDialog (Lt) {
     let anchor = this.anchor || [1, 442];
 
     this.dialog = L.control.dialog ({
-      'size': [310, 300],
+      'size': [310, 380],
       'anchor': anchor,
       'initOpen': true,
       'position': 'topleft',
@@ -4871,31 +4871,35 @@ function KeyboardShortCutDialog (Lt) {
        'use': 'Toggle magnification loupe on/off',
       },
       {
-       'key': 'Ctrl-m',
+       'key': 'Shift-m',
        'use': 'Create new measurement path',
       },
       {
-       'key': 'Ctrl-k',
+       'key': 'Shift-k',
        'use': 'Resume last measurement path',
       },
       {
-       'key': 'Ctrl-i',
+       'key': 'Shift-i',
        'use': 'Insert measurement point',
       },
       {
-        'key': 'Ctrl-d',
+        'key': 'Shift-d',
         'use': 'Edit measurement point dating',
       },
       {
-       'key': 'Ctrl-a',
+        'key': 'Shift-e',
+        'use': 'Create new ellipse'
+      },
+      {
+       'key': 'Shift-a',
        'use': 'Create new annotation',
       },
       {
-       'key': 'Ctrl-b',
+       'key': 'Shift-b',
        'use': 'Create within-year break',
       },
       {
-       'key': 'Ctrl-s',
+       'key': 'Shift-s',
        'use': 'Save changes to cloud (if permitted)',
       },
       {
