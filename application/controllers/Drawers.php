@@ -64,7 +64,8 @@ class Drawers extends Instance_Controller {
 		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers",  "search", "loadDrawer", "jquery.fullscreen-0.4.1"];
 		$this->template->loadJavascript($jsLoadArray);
 		$this->template->javascript->add("/assets/js/sly.min.js");
-
+		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
+		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 		$this->template->addToDrawer->view("drawers/edit_drawer",["drawerId"=>$drawerId]);
 		$this->template->content->view("drawers/drawerModal");
 
