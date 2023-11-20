@@ -1124,15 +1124,21 @@ function DateEllipses(Inte) {
      * @param {integer} year - New year value. 
      */
     DateEllipses.prototype.action = function(year) {
+        let floatYear = parseFloat(year);
+        let intYear = (year >= 0) ? Math.floor(year) : Math.ceil(year);
+        let trailingNums = parseFloat((floatYear - intYear).toFixed(2));
+
         // Push change to undo stack: 
         Inte.treering.undo.push();
 
         let selectedValue = $('input[name="AreaCapture-dateRadioBtn-value"]:checked').val();
         
         let selectedYear = Inte.ellipseData.selectedData[0].year;
-        let deltaYear = year - selectedYear;
-        let otherEllipses = [];
+        let intSelectedYear = Math.floor(selectedYear);
 
+        let deltaYear = intYear - intSelectedYear;
+
+        let otherEllipses = [];
         switch(selectedValue) {
             case(this.forwardValue): {
                 otherEllipses = Inte.ellipseData.data.filter(ele => ele.year > selectedYear);
@@ -1145,7 +1151,10 @@ function DateEllipses(Inte) {
         }
 
         otherEllipses.map(ele => {
-            ele.year += deltaYear;
+            let yearIntShift = Math.floor(ele.year) + deltaYear
+            if (yearIntShift < 0) trailingNums = -1 * Math.abs(trailingNums); // Sign must be the same as year (+/-).
+            ele.year = yearIntShift + trailingNums;
+
             ele.color = Inte.ellipseVisualAssets.getColorFromCycle(ele.year);
         });
 
