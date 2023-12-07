@@ -513,7 +513,8 @@ function NewEllipse(Inte) {
 
     // Shift-E to create a new ellipse. 
     L.DomEvent.on(window, 'keydown', (e) => {
-        if (e.keyCode == 69 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) {
+        if (e.keyCode == 69 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
+        window.name.includes('popout') && !Inte.treering.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
         e.preventDefault();
         e.stopPropagation();
         Inte.treering.disableTools();

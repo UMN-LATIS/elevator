@@ -328,7 +328,8 @@ function JSONFileUpload(Inte) {
 function CloudUpload(Inte) {
     // Trigger save action with Shift-S
     L.DomEvent.on(window, 'keydown', (e) => {
-        if (e.keyCode == 83 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 83 refers to 's'
+        if (e.keyCode == 83 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 83 refers to 's'
+            window.name.includes('popout') && !Inte.treering.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
         e.preventDefault();
         e.stopPropagation();
         this.action();

@@ -1679,7 +1679,8 @@ function AnnotationAsset(Lt) {
 
   // crtl-a to activate createBtn
   L.DomEvent.on(window, 'keydown', (e) => {
-    if (e.keyCode == 65 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 65 refers to 'a'
+    if (e.keyCode == 65 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 65 refers to 'a'
+    window.name.includes('popout') && !this.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active 
       e.preventDefault();
       e.stopPropagation();
       Lt.disableTools();
@@ -3378,7 +3379,8 @@ function Dating(Lt) {
 
   // enable with shift-d
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 68 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 68 refers to 'd'
+     if (e.keyCode == 68 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 68 refers to 'd'
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active 
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3539,7 +3541,8 @@ function CreatePoint(Lt) {
 
   // create measurement w. shift-m
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 77 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) {
+     if (e.keyCode == 77 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3549,7 +3552,8 @@ function CreatePoint(Lt) {
 
   // resume measurement w. shift-k
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 75 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) {
+     if (e.keyCode == 75 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
+     Lt.data.points.length && window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3739,7 +3743,8 @@ function CreateBreak(Lt) {
   );
 
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 66 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 66 refers to 'b'
+     if (e.keyCode == 66 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 66 refers to 'b'
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3948,7 +3953,8 @@ function InsertPoint(Lt) {
 
   // enable w. shift-i
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 73 && e.getModifierState("Shift") && !e.getModifierState("Control") && window.name.includes('popout')) { // 73 refers to 'i'
+     if (e.keyCode == 73 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 73 refers to 'i'
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
