@@ -336,7 +336,7 @@ function processSearchResults(cachedResults) {
 function getSuggestions(searchTerm) {
 	var localSearch = searchTerm;
 	$.post(basePath + "search/getSuggestion", {"searchTerm":searchTerm}, function(data, textStatus) {
-		var resultArray = $.parseJSON(data);
+		var resultArray = data;
 		if(resultArray.length === 0 ) {
 			return;
 		}

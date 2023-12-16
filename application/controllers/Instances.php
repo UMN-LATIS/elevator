@@ -289,6 +289,9 @@ class Instances extends Instance_Controller {
 		if( $this->input->post("parent")) {
 			$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
 		}
+		else {
+			$page->setParent(null);
+		}
 
 		$this->doctrine->em->persist($page);
 		$this->doctrine->em->flush();
@@ -428,6 +431,7 @@ class Instances extends Instance_Controller {
 			$result = $s3Client->DeletePublicAccessBlock([
 				'Bucket'=>$bucketName
 			]);
+			sleep(2);
 
 			$result = $s3Client->putBucketPolicy([
 				'Bucket'=>$bucketName,

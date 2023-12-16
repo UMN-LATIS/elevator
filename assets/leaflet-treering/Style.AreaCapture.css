@@ -65,7 +65,7 @@
 }
 
 .AreaCapture-input {
-	width: 7ch;
+	width: 9ch;
 }
 
 /* New ellipse dialog: */
@@ -80,7 +80,7 @@
 /* Delete ellipses dialog */
 .fa-exclamation-triangle {
 	color: #b54c4c;
-	font-size: 56px;
+	font-size: 56px !important;
 
 	cursor: not-allowed;
 }
