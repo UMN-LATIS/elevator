@@ -271,7 +271,6 @@ class ImageHandler extends FileHandlerBase {
 		$derivativeContainerIIIF->derivativeType = $derivativeType;
 		$derivativeContainerIIIF->path = "derivative";
 		$derivativeContainerIIIF->setParent($this->sourceFile->getParent());
-		$derivativeContainerIIIF->forcedContentEncoding = "gzip";
 		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tiff";
 
 		$outputFile = $derivativeContainerIIIF->getPathToLocalFile();
