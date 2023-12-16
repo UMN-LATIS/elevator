@@ -48,7 +48,7 @@
 </script>
 
 <script id="button-icon-template" type="text/x-handlebars-template">
-  <i class="material-icons md-18"> {{icon_string}} </i>
+  <i class="material-symbols-outlined material-icons md-18"> {{icon_string}} </i>
 </script>
 
 <script id="calibration-template" type="text/x-handlebars-template">
@@ -61,48 +61,6 @@
 
 <script id="start-point-popup-template" type="text/x-handlebars-template">
   <input type="number" style="border:none; width:50px;" value="0" id="year_input"></input>
-</script>
-
-<script id="view-data-default-template" type="text/x-handlebars-template">
-  <h5>No Measurement Data</h5>
-</script>
-
-<script id="string-setup-data-template" type="text/x-handlebars-template">
-  <div class ="dataWindow">
-    <div class="button-set">
-      <button id="copy-data-button" class="icon-button" title="Copy Data to Clipboard, Tab Delimited Column Format">
-        <i class="material-icons md-18-data-view">content_copy</i></button><br>
-      <button id="download-tab-button" class ="text-button" title="Download Measurements, Tab Delimited Format">TAB</button><br>
-      <button id="download-csv-button" class="text-button" title="Download Measurements, Common Separated Column Format">CSV</button><br>
-  <button id="download-ltrr-button" class ="text-button" title="Download Measurements, LTRR Ring Width Format">RWL</button><br>
-  <button id="delete-button" class="icon-button delete" title="Delete All Measurement Point Data">
-    <i class="material-icons md-18-data-view">delete</i></button></div><table><tr>
-  <th style="width: 45%;">Year<br><br></th>
-  <th style="width: 70%;">Width (mm)</th></tr>
-</script>
-
-<script id="concat-string-content-A-template" type="text/x-handlebars-template">
-  <tr><td> {{y}}-</td><td>N/A</td></tr>
-</script>
-
-<script id="string-setup-no-data-template" type="text/x-handlebars-template">
-  <div class ="button-set">
-    <button id="copy-data-button" class="icon-button disabled"  title="Copy Data to Clipboard, Tab Delimited Column Format" disabled>
-      <i class="material-icons md-18-data-view">content_copy</i></button><br>
-  <button id="download-ltrr-button" class ="text-button disabled" title="Download Measurements, LTRR Ring Width Format" disabled>RWL</button><br>
-  <button id="download-csv-button" class="text-button disabled" title="Download Measurements, Common Separated Column Format" disabled>CSV</button><br>
-  <button id="download-tab-button" class ="text-button disabled" title="Download Measurements, Tab Delimited Format" disabled>TAB</button><br>
-  <button id="delete-button" class="icon-button delete" title="Delete All Measurement Point Data">
-    <i class="material-icons md-18-data-view">delete</i></button></div>
-  <h5>No Measurement Data</h5>
-</script>
-
-<script id="data-view-delete-template" type="text/x-handlebars-template">
-  <p>This action will delete all data points. Annotations will not be effected. Are you sure you want to continue?</p>
-  <p>
-    <button id="confirm-delete" class="mdc-button mdc-button--unelevated mdc-button-compact"> confirm </button>
-    <button id="cancel-delete" class="mdc-button mdc-button--unelevated mdc-button-compact"> cancel </button>
-  </p>
 </script>
 
 <script id="image-adjustment-template" type="text/x-handlebars-template">
@@ -153,11 +111,11 @@
 </script>
 
 <script id="assign-row-color-subannual-template" type="text/x-handlebars-template">
-  <tr style="color:{{row_color}};"><td> {{row_year}} {{row_wood}} </td><td> {{length}} </td></tr>
+  <tr style="color:{{ row_color }};"><td> {{row_year}} {{row_wood}} </td><td> {{length}} </td></tr>
 </script>
 
 <script id="assign-row-color-annual-template" type="text/x-handlebars-template">
-  <tr style="color:{{row_color}};"><td> {{row_year}} </td><td> {{length}} </td></tr>
+  <tr style="color:{{ row_color }};"><td> {{row_year}} </td><td> {{length}} </td></tr>
 </script>
 
 <script id="empty-div-template" type="text/x-handlebars-template">

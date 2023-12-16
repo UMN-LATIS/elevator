@@ -126,6 +126,8 @@ if (isset($fileContainers['tiled-tar'])) {
                 const uintRaw = new Uint8Array(data);
                 
                 // magic adobe header which forces the jpeg to be interpreted as RGB instead of YCbCr
+                // Note that it's likely this is necessary because when vips writes JPEGs at 90 or greater q,
+                // it disables subsampling. Maybe they're just not flagging it right? 
                 const rawAdobeHeader = hexStringToUint8Array("FFD8FFEE000E41646F626500640000000000");
                 var mergedArray = new Uint8Array(rawAdobeHeader.length + uintRaw.length + subimage.fileDirectory.JPEGTables.length -2 - 2 - 2);
                 mergedArray.set(rawAdobeHeader);

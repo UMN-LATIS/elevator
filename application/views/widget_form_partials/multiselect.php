@@ -70,10 +70,7 @@ var selectedItems = {};
 <div class="panel panel-default widgetContentsContainer">
 
 	<div class="panel-body widgetContents multiselectGroup" id="<?=$formFieldId?>">
-
-		<?=$this->template->content->view('widget_form_partials/multiselect_inner', ['widgetFieldData'=>$widgetModel->getFieldData(), "formFieldId"=>$formFieldId, "formFieldName"=>$formFieldName])?>
-
-
+		<?=$this->load->view('widget_form_partials/multiselect_inner', ['widgetFieldData'=>$widgetModel->getFieldData(), "formFieldId"=>$formFieldId, "formFieldName"=>$formFieldName], true)?>
 
 		<?if($widgetModel->getAllowMultiple()):?>
 		<div class="form-group isPrimary">

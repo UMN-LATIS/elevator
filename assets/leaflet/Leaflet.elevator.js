@@ -211,7 +211,7 @@ fitBoundsExactly: function() {
 	, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
 	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
 	var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
-	if(zoom > this.options.maxZoom) {
+	if(Math.floor(zoom) > this.options.maxZoom) {
 		return;
 	}
 	this.options.minZoom = Math.floor(zoom);

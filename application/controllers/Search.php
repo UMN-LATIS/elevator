@@ -71,10 +71,17 @@ class Search extends Instance_Controller {
 
 
 	public function map() {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 		$this->generateEmbed("map");
 	}
 
 	public function timeline() {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		$this->template->javascript->add("/assets/TimelineJS3/compiled/js/timeline.js");
 		$this->template->stylesheet->add("/assets/TimelineJS3/compiled/css/timeline.css");
 
@@ -82,6 +89,10 @@ class Search extends Instance_Controller {
 	}
 
 	public function gallery() {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		$this->template->javascript->add("/assets/js/sly.min.js");
 		$this->generateEmbed("gallery");
 	}
@@ -370,7 +381,10 @@ class Search extends Instance_Controller {
 			else {
 				if($collection->getPreviewImage() !== null && $collection->getPreviewImage() !== "") {
 					$fileObject = $this->filehandler_router->getHandledObject($collection->getPreviewImage());
-					$collection->previewImageHandler = $fileObject;
+					if($fileObject) {
+						$collection->previewImageHandler = $fileObject;
+					}
+					
 				}
 				else {
 					$collection->previewImageHandler = null;
@@ -430,8 +444,7 @@ class Search extends Instance_Controller {
 			}
 		}
 		
-
-		echo json_encode($output);
+		return render_json($output);
 
 	}
 

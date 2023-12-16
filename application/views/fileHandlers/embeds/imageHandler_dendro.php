@@ -24,7 +24,7 @@ if($widgetObject->parentWidget->dendroFields) {
 ?>
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-	<link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/font-awesome/css/font-awesome.css">
 
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap.min.css">
@@ -39,6 +39,7 @@ if($widgetObject->parentWidget->dendroFields) {
 
 	<link rel="stylesheet" href="/assets/leaflet-treering/style.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/Style.AreaCapture.css">
+	<link rel="stylesheet" href="/assets/leaflet-treering/Style.DataAccess.css"> 
 
 	<!-- <script src="/assets/leaflet-treering/node_modules/jquery/dist/jquery.min.js"></script> -->
 	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
@@ -54,7 +55,11 @@ if($widgetObject->parentWidget->dendroFields) {
 <script src="/assets/leaflet/Leaflet.elevator.js"></script>
 <script src="/assets/leaflet-treering/leaflet.magnifyingglass.js"></script>
 <script type="application/javascript" src="/assets/leaflet-treering/leaflet-treering.js"></script>
+
 <script type="application/javascript" src="/assets/leaflet-treering/Leaflet.AreaCapture.js"></script>
+
+<script type = "application/javascript" src= "/assets/leaflet-treering/Leaflet.DataAccess.js"></script>
+
 <script type="application/javascript" src="/assets/leaflet-treering/node_modules/leaflet-ellipse/l.ellipse.js"></script>
 <script src="https://unpkg.com/leaflet-lasso@2.2.12/dist/leaflet-lasso.umd.min.js"></script>
 
@@ -273,11 +278,13 @@ void main(void){
 
 		$.get("/assets/leaflet-treering/templates.html", function (coreassestsData) {
 			$.get("/assets/leaflet-treering/Template.AreaCapture.html", function (areaCaptureData) {
-				$("body").append(coreassestsData);
-				$("body").append(areaCaptureData);
-				treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
-				treering.loadInterface();
-			
+				$.get("/assets/leaflet-treering/Template.DataAccess.html", function (dataAccessData) {
+					$("body").append(coreassestsData);
+					$("body").append(areaCaptureData);
+					$("body").append(dataAccessData);
+					treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
+					treering.loadInterface();
+				});
 			});
 		});
 

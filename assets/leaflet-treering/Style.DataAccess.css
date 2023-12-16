@@ -1,0 +1,202 @@
+.DataAccess-Window {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.DataAccess-StatsUploadDelete-Container, .DataAccess-Buttons-Container {
+    max-height: 175px;
+}
+
+.DataAccess-StatsUploadDelete-Container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.DataAccess-Buttons-Container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+
+    cursor: pointer;
+}
+
+.DataAccess-Icon-Buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+    margin: 0;
+}
+
+.DataAccess-material-symbols {
+    font-size: 26px !important;
+    color: #757575;
+}
+
+.DataAccess-Text-Buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: #18848c;
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    padding: 2px;
+    cursor: pointer;
+    margin-bottom: 4px;
+}
+
+.DataAccess-Center {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.DataAccess-Text {
+    font-size: 8.5px;
+    font-family: Arial;
+    font-weight: bold;
+    text-align: center;
+}
+
+.DataAccess-Text-Buttons:hover {
+    background-color: #757575;
+}
+
+.DataAccess-Icon-Buttons:hover {
+    background-color: #ddd;
+    border-radius: 6px;
+}
+
+.DataAccess-Delete {
+    color: red;
+    border-radius: 6px;
+    width: 26px;
+    height: 26px;
+
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+
+    cursor: pointer;
+}
+
+.DataAccess-Delete:hover {
+    background-color: rgba(255, 0, 0, 0.233);
+}
+
+.DataAccess-Delete-Buttons {
+    padding: 14px;
+}
+ 
+.DataAccess-Table-div { 
+    display:flex;
+    margin-left: 6px;
+ }
+    
+th, td, tr {
+    text-align: center;
+    border: 1px solid black; 
+    border-top: none;
+    border-bottom: none;
+    border-collapse: collapse;
+    padding: 2px 4px; 
+}
+
+.DataAccess-Table, .DataAccess-Table tbody {
+    display: block;
+    height: 175px;
+}
+
+.DataAccess-Table tbody {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.DataAcess-Table, .DataAccess-Table { 
+    font-size: 10px;
+    font-family: Arial;
+    border-collapse: collapse; 
+}
+
+.DataAccess-Table th {
+    background-color: #757575;
+    color: white;
+}
+
+.DataAccess-Table td {
+    padding: 2px 8px;
+}
+
+.DataAccess-Table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}   
+
+.DataAccess-Table tr:hover {
+    background-color: #ddd;
+}
+
+/* Delete data dialog */
+.fa-exclamation-triangle {
+	color: #b54c4c;
+	font-size: 56px !important;
+
+	cursor: not-allowed;
+}
+
+.DataAccess-deleteWarning-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.DataAccess-btn-container {
+	width: 45%;
+}
+
+.DataAccess-delete-text {
+	font-size: 16px;
+
+	margin: 0;
+}
+
+.DataAccess-btn-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+#DataAccess-confirmDelete-btn {
+	background-color: #71b54c;
+}
+
+#DataAccess-cancelDelete-btn {
+	background-color: #b54c4c;
+}
+
+.DataAccess-delete-btn {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 100%;
+	min-height: 22px;
+
+	font-size: 18px;
+	font-family: Arial;
+	color: white;
+	
+	padding: 5px;
+
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: white;
+	border-radius: 10px;
+
+	cursor: pointer;
+}
