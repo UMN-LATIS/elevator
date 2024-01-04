@@ -89,7 +89,7 @@ var selectedItems = {};
 
 <script>
 $(document).ready(function() {
-	loadGroup("<?=$formFieldId?>");
+	loadGroup($("#<?=$formFieldId?>").parent());
 	$("#<?=$formFieldId?>").find(".multiSelect").on("change", function() {
 		markSaveDirty();
 	});

@@ -54,8 +54,12 @@ function serializeDrawerAndUpdate() {
 
 function loadDrawer() {
 	drawerId= getDrawer();
-    $("#results").empty();
+    if(drawerId.length > 10) {
+		return;
+	}
+	$("#results").empty();
     $("#listResults").empty();
+	
 	$.getJSON(basePath+"drawers/getDrawer/"+drawerId, function(data){
 		cachedResults = data;
 		cachedDates = null;
