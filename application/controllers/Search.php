@@ -10,7 +10,7 @@ class Search extends Instance_Controller {
 		parent::__construct();
 		$this->load->model("asset_model");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers", "jquery.fullscreen-0.4.1"];
+		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers", "jquery.fullscreen-0.4.1", "loadDrawer"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->content->view("drawers/drawerModal");
