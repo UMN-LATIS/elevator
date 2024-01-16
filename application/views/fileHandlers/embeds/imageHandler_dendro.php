@@ -229,7 +229,7 @@ void main(void){
 		L.DomEvent.on(window, 'keydown', function(e) {
 			
 			if (e.keyCode == 76 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
-     window.name.includes('popout') && !treering.annotationAsset.dialogAnnotationWindow) { 
+      !treering.annotationAsset.dialogAnnotationWindow) { 
 				e.preventDefault();
 				e.stopPropagation();
 			
