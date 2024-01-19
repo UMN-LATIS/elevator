@@ -223,6 +223,13 @@ class Beltdrive extends CI_Controller {
 				continue;
 			}
 
+			$stats = $this->pheanstalk->statsJob($job);
+			if($stats->reserves > 200) {
+				$this->logging->processingInfo("job", "drawerPrep", "drawer attempted 200 times", $job_encoded['drawerId'], $job->getId());
+				$this->pheanstalk->bury($job);
+				continue;
+			}
+
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
