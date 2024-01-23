@@ -310,6 +310,7 @@ class Beltdrive extends CI_Controller {
 
 					$this->load->library('email');
 					$this->email->from('elevator@umn.edu', 'Elevator');
+					$this->email->set_newline("\r\n");
 					$this->email->to($userEmail);
 					$this->email->subject("Drawer Ready for Download");
 					$this->email->message($drawerContent);
@@ -385,6 +386,7 @@ class Beltdrive extends CI_Controller {
 					$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
 					$this->load->library('email');
 					$this->email->from('elevator@umn.edu', 'Elevator');
+					$this->email->set_newline("\r\n");
 					$this->email->to($userEmail);
 					$this->email->subject("File Ready for Download");
 					$this->email->message($fileContent);
