@@ -5,7 +5,7 @@
 }
 
 .DataAccess-StatsUploadDelete-Container, .DataAccess-Buttons-Container {
-    max-height: 175px;
+    max-height: 205px;
 }
 
 .DataAccess-StatsUploadDelete-Container {
@@ -40,11 +40,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white;
-    background-color: #18848c;
+    color: #18848c;
+    border: 1px solid #18848c;
+    background-color: white;
     border-radius: 6px;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 36px;
     padding: 2px;
     cursor: pointer;
     margin-bottom: 4px;
@@ -57,14 +58,14 @@
 }
 
 .DataAccess-Text {
-    font-size: 8.5px;
+    font-size: 12px;
     font-family: Arial;
     font-weight: bold;
     text-align: center;
 }
 
 .DataAccess-Text-Buttons:hover {
-    background-color: #757575;
+    background-color: #c0e7ea;
 }
 
 .DataAccess-Icon-Buttons:hover {
@@ -96,6 +97,7 @@
 .DataAccess-Table-div { 
     display:flex;
     margin-left: 6px;
+    font-size: 14px;
  }
     
 th, td, tr {
@@ -109,7 +111,7 @@ th, td, tr {
 
 .DataAccess-Table, .DataAccess-Table tbody {
     display: block;
-    height: 175px;
+    height: 205px;
 }
 
 .DataAccess-Table tbody {
@@ -118,7 +120,7 @@ th, td, tr {
 }
 
 .DataAcess-Table, .DataAccess-Table { 
-    font-size: 10px;
+    font-size: 12px;
     font-family: Arial;
     border-collapse: collapse; 
 }

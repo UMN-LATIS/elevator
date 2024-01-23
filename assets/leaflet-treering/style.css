@@ -464,3 +464,31 @@ textarea {
 	display: inline-block;
 	margin-right: 0;
 }
+
+#AutoScroll-Right-Div {
+	width: 10%;
+	min-width: 50px;
+	height: 100%;
+	float: right;
+}
+
+#AutoScroll-Left-Div {
+	width: 10%;
+	min-width: 50px;
+	height: 100%;
+	float: left;
+}
+
+#AutoScroll-Up-Div {
+	height: 10%;
+	min-height: 50px;
+	width: 100%;
+}
+
+#AutoScroll-Down-Div {
+	height: 10%;
+	min-height: 50px;
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+}

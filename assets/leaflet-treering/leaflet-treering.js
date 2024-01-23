@@ -62,7 +62,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     alert('Calibration needed: set p/mm in asset metadata or use calibration tool');
   }
 
-  this.autoscroll = new Autoscroll(this.viewer);
+  this.autoscroll = new Autoscroll(this, this.viewer);
   this.mouseLine = new MouseLine(this);
   this.visualAsset = new VisualAsset(this);
   this.annotationAsset = new AnnotationAsset(this);
@@ -202,7 +202,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     // Disable all tools w/ esc.
     L.DomEvent.on(window, 'keydown', (e) => {
        if (e.keyCode == 27) {
-         this.disableTools();
+          this.disableTools();
        }
     }, this);
 
@@ -389,10 +389,7 @@ function MeasurementData (dataObject, Lt) {
     this.index++;
 
     // update every time a point is placed
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    Lt.helper.updateFunctionContainer(true);
   };
 
   /**
@@ -478,10 +475,8 @@ function MeasurementData (dataObject, Lt) {
       }
     }
 
-    Lt.metaDataText.updateText(); // updates after a point is deleted
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    // updates after a point is deleted
+    Lt.helper.updateFunctionContainer(true);
   };
 
   /**
@@ -542,6 +537,9 @@ function MeasurementData (dataObject, Lt) {
     if (!this.points[1]) {
       this.earlywood = true;
       this.year = 0;
+
+      // Updates after points are cut
+      Lt.helper.updateFunctionContainer(true);
       return
     }
 
@@ -566,10 +564,8 @@ function MeasurementData (dataObject, Lt) {
     // If first start point removed, create new one.
     if (!this.points[0].start) this.points[0] =  {'start': true, 'skip': false, 'break': false, 'latLng': this.points[0].latLng};
 
-    Lt.metaDataText.updateText(); // updates after points are cut
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    // Updates after points are cut
+    Lt.helper.updateFunctionContainer(true);
   };
 
   /**
@@ -671,10 +667,7 @@ function MeasurementData (dataObject, Lt) {
     }
 
     // Update other features after point inserted.
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    Lt.helper.updateFunctionContainer(true);
 
     return i;
   };
@@ -751,10 +744,7 @@ function MeasurementData (dataObject, Lt) {
       }
     }
 
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    Lt.helper.updateFunctionContainer(true);
   }
 
   /**
@@ -882,10 +872,7 @@ function MeasurementData (dataObject, Lt) {
     }
 
     // Update other features after point inserted.
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    Lt.helper.updateFunctionContainer(true);
 
     return k;
   };
@@ -930,44 +917,115 @@ function AnnotationData (annotations) {
 /**
  * Autoscroll feature for mouse
  * @constructor
+ * @param {object} Lt - Initializing object
  * @param {Leaflet Map Object} viewer - a refrence to the leaflet map object
  */
-function Autoscroll (viewer) {
+function Autoscroll (Lt, viewer) {
+  //Creates areas on right, left, top, bottom part of screen
+  let rightDiv = document.getElementById("AutoScroll-Right-Div");
+  let leftDiv = document.getElementById("AutoScroll-Left-Div");
+  let upDiv = document.getElementById("AutoScroll-Up-Div");
+  let downDiv = document.getElementById("AutoScroll-Down-Div");
+  let mapContainer = document.getElementById("imageMap");
+  mapContainer.append(rightDiv);
+  mapContainer.append(leftDiv);
+  mapContainer.append(upDiv);
+  mapContainer.append(downDiv);
 
   /**
    * Turn on autoscroll based on viewer dimmensions
    * @function on
    */
-  Autoscroll.prototype.on = function() {
-    var mapSize = viewer.getSize();   // Map size used for map scrolling
-    var mousePos = 0;                 // An initial mouse position
-
-    viewer.on('mousemove', (e) => {
-      var modifierState = event.getModifierState("Shift");
-      // Don't autopan if shift is held
-      if(modifierState) {
-        return;
-      }
-      var oldMousePos = mousePos;     // Save the old mouse position
-      mousePos = e.containerPoint;    // Container point of the mouse
-
-      //left bound of the map
-      if (mousePos.x <= 40 && mousePos.y > 60 && oldMousePos.x > mousePos.x) {
-        viewer.panBy([-200, 0]);
-      }
-      //right bound of the map
-      if (mousePos.x + 40 > mapSize.x && mousePos.y > 100 && oldMousePos.x < mousePos.x) {
-        viewer.panBy([200, 0]);
-      }
-      //upper bound of the map
-      if (mousePos.x > 390 && mousePos.x + 60 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y) {
-        viewer.panBy([0, -70]);
-      }
-      //lower bound of the map
-      if (mousePos.x >= 40 && mousePos.y > mapSize.y - 40 && oldMousePos.y < mousePos.y) {
-        viewer.panBy([0, 70]);
-      }
+  Autoscroll.prototype.on = function() {   
+    //Turns off scrolling when shift is released
+    $(window).on("keyup", (e) => {
+      if (e.key == "Shift") $(viewer).off("moveend");
     });
+
+    //Smooths out panning
+    let panByOptions = {animate: true, easeLinearity: 1};
+
+    $("#AutoScroll-Right-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();   // Map size used for map scrolling.
+      let panAmount = 0.15 * mapSize.x;
+
+      let panLimit = viewer.getZoom() * (mapSize.x / panAmount);
+      let panCount = 0;
+
+      //Repeatedly pans until the border of picture is reached
+      viewer.panBy([panAmount, 0], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([panAmount, 0], panByOptions);
+      });
+    })
+
+    $("#AutoScroll-Left-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();  
+      let panAmount = 0.15 * mapSize.x; 
+
+      let panLimit = viewer.getZoom() * (mapSize.x / panAmount);
+      let panCount = 0;
+
+      viewer.panBy([-panAmount, 0], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([-panAmount, 0], panByOptions);
+      })
+    })
+
+    $("#AutoScroll-Up-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();  
+      let panAmount = 0.125 * mapSize.y; 
+
+      let panLimit = viewer.getZoom() * (mapSize.y / panAmount);
+      let panCount = 0;
+
+      viewer.panBy([0, -panAmount], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([0, -panAmount], panByOptions);
+      })
+    })
+
+    $("#AutoScroll-Down-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();  
+      let panAmount = 0.125 * mapSize.y; 
+
+      let panLimit = viewer.getZoom() * (mapSize.y / panAmount);
+      let panCount = 0;
+
+      viewer.panBy([0, panAmount], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([0, panAmount], panByOptions);
+      })
+    })
+
+    //Stops panning when mouse leaves area
+    $("#AutoScroll-Right-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
+
+    $("#AutoScroll-Left-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
+
+    $("#AutoScroll-Up-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
+
+    $("#AutoScroll-Down-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
   };
 
   /**
@@ -1515,6 +1573,8 @@ function VisualAsset (Lt) {
       if (Lt.dataAccessInterface.popoutPlots.win) {
         Lt.dataAccessInterface.popoutPlots.sendData();
       }
+
+      Lt.helper.updateFunctionContainer(true);
     });
 
     // Tell marker what to do when clicked.
@@ -1721,7 +1781,7 @@ function AnnotationAsset(Lt) {
         this.createAnnotationDialog();
 
       });
-    };;
+    };
   };
 
   AnnotationAsset.prototype.disable = function (btn) {
@@ -3161,9 +3221,7 @@ function Undo(Lt) {
   this.stack = new Array();
   this.btn = new Button('undo', 'Undo', () => {
     this.pop();
-    Lt.metaDataText.updateText();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    Lt.helper.updateFunctionContainer(false);
   });
   this.btn.disable();
 
@@ -3231,9 +3289,7 @@ function Redo(Lt) {
   this.stack = new Array();
   this.btn = new Button('redo', 'Redo', () => {
     this.pop();
-    Lt.metaDataText.updateText();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+    Lt.helper.updateFunctionContainer(false);
   });
   this.btn.disable();
 
@@ -3492,6 +3548,10 @@ function Dating(Lt) {
 
       Lt.data.year += shift;
       Lt.visualAsset.reload();
+
+      // Updates once user hits enter
+      Lt.helper.updateFunctionContainer(true);
+
       this.disable();
     }
   }
@@ -3511,11 +3571,6 @@ function Dating(Lt) {
    * @function disable
    */
   Dating.prototype.disable = function() {
-    Lt.metaDataText.updateText(); // updates once user hits enter
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
-
     this.btn.state('inactive');
     $(Lt.viewer.getContainer()).off('click');
     $(document).off('keypress');
@@ -3714,10 +3769,8 @@ function CreateZeroGrowth(Lt) {
         Lt.data.year--;
       };
 
-      Lt.metaDataText.updateText(); // updates after point is inserted
-      Lt.annotationAsset.reloadAssociatedYears();
-      if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
-      if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
+      // updates after point is inserted
+      Lt.helper.updateFunctionContainer(true);
 
     } else {
       alert('First year cannot be missing!');
@@ -3739,7 +3792,7 @@ function CreateBreak(Lt) {
       this.enable();
       Lt.mouseLine.from(Lt.data.points[Lt.data.index - 1].latLng);
     },
-    () => { this.disable }
+    () => { this.disable() }
   );
 
   L.DomEvent.on(window, 'keydown', (e) => {
@@ -3817,7 +3870,7 @@ function DeletePoint(Lt) {
    * @function openDialog
    */
   DeletePoint.prototype.openDialog = function(e, i) {
-    if (this.maintainAdjustment || (Lt.data.points[i].start && Lt.data.points[i - 1].break) || Lt.data.points[i].break) {
+    if (this.maintainAdjustment || (i > 0 && Lt.data.points[i].start && Lt.data.points[i - 1].break) || Lt.data.points[i].break) {
       this.action(i);
     } else {
       Lt.helper.createEditToolDialog(e.containerPoint.x, e.containerPoint.y, i, "deletePoint");
@@ -4331,6 +4384,8 @@ function InsertBreak(Lt) {
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function ImageAdjustment(Lt) {
+  this.open = false;
+
   this.btn = new Button(
     'brightness_6',
     'Adjust image appearance settings',
@@ -4394,6 +4449,8 @@ function ImageAdjustment(Lt) {
    * @function enable
    */
   ImageAdjustment.prototype.enable = function() {
+    this.open = true;
+
     this.dialog.lock();
     this.dialog.open();
     var brightnessSlider = document.getElementById("brightness-slider");
@@ -4441,9 +4498,13 @@ function ImageAdjustment(Lt) {
    * @function disable
    */
   ImageAdjustment.prototype.disable = function() {
-    this.dialog.unlock();
-    this.dialog.close();
+    if (this.open) {
+      this.dialog.unlock();
+      this.dialog.close();
+    }
+    
     this.btn.state('inactive');
+    this.open = false;
   };
 
 }
@@ -4780,7 +4841,7 @@ function Panhandler(La) {
           break;
       }
 
-
+      console.log(panArray)
       map.panBy(panArray, {
         animate: true,
         delay: 0
@@ -4873,7 +4934,7 @@ function KeyboardShortCutDialog (Lt) {
 
     const shortcutGuide = [
       {
-       'key': 'Ctrl-l',
+       'key': 'Shift-l',
        'use': 'Toggle magnification loupe on/off',
       },
       {
@@ -4910,7 +4971,7 @@ function KeyboardShortCutDialog (Lt) {
       },
       {
        'key': 'Shift',
-       'use': 'Disable cursor panning near edge',
+       'use': 'Enable cursor panning near edge',
       },
       {
        'key': 'Arrows',
@@ -5023,7 +5084,7 @@ function Helper(Lt) {
       document.getElementById("shift-radioB").checked = !Lt[tool].adjustOuter;
 
       $(this.dialog._map).on("dialog:resizeend", () => { console.log(this.dialog) });
-      $(this.dialog._map).on("dialog:closed", () => {
+      $(this.dialog._closeNode).on("click", (e) => {
         if (this.dialog) {
           // Only have user select adjustment once per activation.
           Lt[tool].selectedAdjustment = true;
@@ -5370,5 +5431,12 @@ function Helper(Lt) {
        stringContent = html_B;
      }
      return stringContent;
+   }
+
+   Helper.prototype.updateFunctionContainer = function(reloadYears) {
+    if (reloadYears == true) Lt.annotationAsset.reloadAssociatedYears();
+    Lt.metaDataText.updateText();
+    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
+    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
    }
 };

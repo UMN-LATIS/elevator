@@ -61,6 +61,8 @@ function ViewData(Inte) {
  * @param {object} Inte - DataAccessInterface objects. Allows access to DataAccess tools.
 */
 function ViewDataDialog(Inte) {
+    this.dialogOpen = false;
+
     Handlebars.registerHelper('ifDecadeCheck', function(year, block) {
         var selected = year % 10 == 0;
         if(selected) {
@@ -88,8 +90,8 @@ function ViewDataDialog(Inte) {
     let html = document.getElementById("DataAccess-dialog-template").innerHTML;
     this.template = Handlebars.compile(html);
     
-    this.dialogHeight = 260;
-    this.tableHeight = 215;
+    this.dialogHeight = 290;
+    this.tableHeight = 250;
       
     this.dialog = L.control.dialog({
         "size": [0, 0],
@@ -99,12 +101,7 @@ function ViewDataDialog(Inte) {
         "maxSize": [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
         "minSize": [0, 0],
     }).addTo(Inte.treering.viewer);
-
-    $(this.dialog._map).on('dialog:closed', (dialog) => { 
-        Inte.viewData.btn.state('inactive'); 
-        Inte.viewData.active = false;
-        if (Inte.deleteData?.dialog) Inte.deleteData.dialog.close() 
-    });
+    this.dialog.hideClose();
 
     this.scrollPositionFromTop = 0;
 
@@ -122,7 +119,7 @@ function ViewDataDialog(Inte) {
             savePermissions: Inte.treering.meta.savePermission,
         });
 
-        let size = dat?.ew ? [240, this.dialogHeight] : [156, this.dialogHeight];
+        let size = dat?.ew ? [260, this.dialogHeight] : [176, this.dialogHeight];
         
         this.dialog.setContent(content);
 
@@ -134,6 +131,7 @@ function ViewDataDialog(Inte) {
         document.getElementById('DataAccess-table-id').style.height = this.tableHeight + "px"; 
 
         this.dialog.open();
+        this.dialogOpen = true;
 
         document.getElementById("DataAccess-table-body").scrollTop = this.scrollPositionFromTop;
         this.createEventListeners();
@@ -144,8 +142,9 @@ function ViewDataDialog(Inte) {
      * @function
      */
     ViewDataDialog.prototype.close = function() {
-        this.dialog.close();
-        if (Inte.deleteData.dialog) Inte.deleteData.dialog.close();
+        if (this.dialogOpen) this.dialog.close();
+        if (Inte.deleteData.dialogOpen) Inte.deleteData.dialog.close();
+        this.dialogOpen = false;
     }
     
     /**
@@ -156,6 +155,7 @@ function ViewDataDialog(Inte) {
         let dat = Inte.treering.helper.findDistances();
         let content = this.template({
             data: dat,
+            sub: dat.ew !== undefined && dat.lw !== undefined,
             savePermissions: Inte.treering.meta.savePermission,
         });
         
