@@ -15,6 +15,37 @@ $cssFile = $manifest['src/main.css']['file'];
 
 $customCSSFile = "/assets/instanceAssets/{$this->instance->getId()}.css";
 $customCSSHash = $this->instance->getModifiedAt()->getTimestamp();
+
+// Helper Function to Build JavaScript Config
+function makeJavaScriptConfig($instance, $config, $template) {
+  $jsConfig = [
+      'instance' => [
+          'name' => $instance->getName() ?? 'Elevator',
+          'base' => [
+              'origin' => '', // Will handle in JS
+              'path' => rtrim($template->relativePath, '/'),
+              'url' => '', // origin + path; Will handle in JS
+          ],
+          'theming' => [
+              'availableThemes' => $instance->getAvailableThemes(),
+              'enabled' => $instance->getEnableThemes(),
+              'defaultTheme' => $instance->getDefaultTheme(),
+          ],
+          'moreLikeThis' => [
+              'maxInlineResults' => $instance->getMaximumMoreLikeThis(),
+          ],
+          'textAreaItem' => [
+              'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
+          ],
+      ],
+      'arcgis' => [
+          'apiKey' => $config->item('arcgis_access_token'),
+      ],
+  ];
+
+  return json_encode($jsConfig, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -33,40 +64,13 @@ $customCSSHash = $this->instance->getModifiedAt()->getTimestamp();
   </title>
 
   <script>
-    window.Elevator = {
-      config: {
-        instance: {
-          name: "<?=
-                  $this->template->title->default(isset($this->instance)
-                    ? $this->instance->getName()
-                    : 'Elevator');
-                  ?>",
-          base: {
-            origin: window.location.origin,
-            path: "<?= rtrim($this->template->relativePath, '/') ?>",
-            get url() {
-              return `${this.origin}${this.path}`;
-            },
-          },
-          theming: {
-            availableThemes: <?= json_encode($this->instance->getAvailableThemes()) ?>,
-            enabled: <?= $this->instance->getEnableThemes() ? "true" : "false" ?>,
-            defaultTheme: "<?= $this->instance->getDefaultTheme() ?>",
-          },
-          moreLikeThis: {
-            maxInlineResults: <?= $this->instance->getMaximumMoreLikeThis() ?>,
-          },
-          textAreaItem: {
-            defaultTextTruncationHeight: <?=
-              $this->instance->getDefaultTextTruncationHeight() 
-            ?>,
-          },
-        },
-        arcgis: {
-          apiKey: "<?= $this->config->item('arcgis_access_token') ?>",
-        },
-      },
-    }
+    window.Elevator = {};
+    window.Elevator.config =  <?= 
+      makeJavaScriptConfig($this->instance, $this->config, $this->template) 
+    ?>;
+
+    window.Elevator.config.instance.base.origin = window.location.origin;
+    window.Elevator.config.instance.base.url = `${window.location.origin}${window.Elevator.config.instance.base.path}`;
   </script>
 
   <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
