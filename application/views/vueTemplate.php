@@ -41,6 +41,11 @@ function makeJavaScriptConfig($instance, $config, $template) {
       'arcgis' => [
           'apiKey' => $config->item('arcgis_access_token'),
       ],
+      'routes' => [
+        'home' => [
+          'redirect' => $instance->getCustomHomeRedirect() ?? null,
+        ]
+      ]
   ];
 
   return json_encode($jsConfig, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES);
