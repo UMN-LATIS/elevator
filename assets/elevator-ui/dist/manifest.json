@@ -184,7 +184,7 @@
     "src": "node_modules/@knight-lab/timelinejs/src/css/icons/tl-icons.woff2"
   },
   "src/components/MapMarker/MapMarker.vue": {
-    "file": "assets/MapMarker-fd330dd5.js",
+    "file": "assets/MapMarker-12d32aa3.js",
     "imports": [
       "src/main.ts"
     ],
@@ -199,7 +199,7 @@
     "css": [
       "assets/MapPopup-56628758.css"
     ],
-    "file": "assets/MapPopup-1178436b.js",
+    "file": "assets/MapPopup-2270a4d7.js",
     "imports": [
       "src/main.ts"
     ],
@@ -279,7 +279,7 @@
       "src/components/MapMarker/MapMarker.vue",
       "src/components/MapPopup/MapPopup.vue"
     ],
-    "file": "assets/main-e21bec6b.js",
+    "file": "assets/main-caa710b4.js",
     "isEntry": true,
     "src": "src/main.ts"
   }
