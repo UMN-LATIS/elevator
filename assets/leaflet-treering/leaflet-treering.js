@@ -239,7 +239,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   LTreering.prototype.disableTools = function() {
     if (this.annotationAsset.dialogAnnotationWindow && this.annotationAsset.createBtn.active) { // if user trying to create annotation, destroy dialog & marker
       this.annotationAsset.dialogAnnotationWindow.destroy();
-      this.annotationAsset.annotationIcon.removeFrom(this.viewer);
+      if (this.annotationAsset.annotationIcon) this.annotationAsset.annotationIcon.removeFrom(this.viewer);
     } else if (this.annotationAsset.dialogAnnotationWindow) {
       this.annotationAsset.dialogAnnotationWindow.destroy();
     };
@@ -1757,6 +1757,16 @@ function AnnotationAsset(Lt) {
 
     this.latLng = {};
     if (btn === this.createBtn) {
+      // Reset annotation values: 
+      this.text = '';
+      this.code = [];
+      this.description = [];
+      this.checkedUniqueNums = [];
+      this.calculatedYear = 0;
+      this.yearAdjustment = 0;
+      this.year = 0;
+      this.annotationIcon = null;
+
       Lt.viewer.doubleClickZoom.disable();
       $(Lt.viewer.getContainer()).click(e => {
         Lt.disableTools();
@@ -2312,7 +2322,7 @@ function AnnotationAsset(Lt) {
           checkbox.checked = true;
         };
 
-        $(checkbox).change(() => { // any checkbox changes are saved;
+        $(checkbox).on("change", () => { // any checkbox changes are saved;
           this.code = [];
           this.description = [];
           this.checkedUniqueNums = [];
@@ -2649,7 +2659,7 @@ function AnnotationAsset(Lt) {
 
     var textBox = document.createElement('TEXTAREA');
     textBox.value = this.text;
-    $(textBox).change(() => { //  any text changes are saved
+    $(textBox).on("input", () => { //  any text changes are saved
       this.text = textBox.value;
     });
 
