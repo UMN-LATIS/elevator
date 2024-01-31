@@ -190,7 +190,9 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
            this.dating.keypressAction(e);
            return;
          }
-         if (this.helper.dialog) this.helper.dialog.close();
+
+         if (this.helper.dialog) this.helper?.dialog._closeNode.click();
+
          if (this.measurementOptions.dialog) {
            $("#confirm-button").click();
          }
