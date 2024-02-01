@@ -434,6 +434,7 @@ class Instances extends Instance_Controller {
 			]);
 			sleep(2);
 
+			sleep(2);
 			$result = $s3Client->putBucketPolicy([
 				'Bucket'=>$bucketName,
 				'Policy'=>'{

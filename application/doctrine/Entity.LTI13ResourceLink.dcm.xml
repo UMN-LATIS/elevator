@@ -1,0 +1,33 @@
+<!-- Entity.Log.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                    http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+      <entity name="Entity\LTI13ResourceLink" table="lti13_resource_links">
+          <id name="id" type="integer">
+              <generator strategy="AUTO" />
+          </id>
+          <field name="createdAt" type="datetime" nullable='true' >
+            
+          </field>
+          <field name="updatedAt" type="datetime" nullable='true' >
+              <options>
+                <option name="default">CURRENT_TIMESTAMP</option>
+              </options>
+          </field>
+
+          <field name="resource_link" type="string"  nullable='true' />
+          <field name="created_line_item" type="string"  nullable='true' />
+          <field name="endpoint" type="json_array" nullable="true">
+            <options>
+                <option name="jsonb">true</option>
+            </options>
+            </field>
+        <many-to-one field="deployment" target-entity="LTI13Deployment">
+            <join-column name="deployment_id" referenced-column-name="id" on-delete="SET NULL"/>
+          </many-to-one>
+
+          
+      </entity>
+</doctrine-mapping>
