@@ -21,7 +21,6 @@ class lti13 extends Instance_Controller {
 
   public function login() {
     $this->load->library("LTI13Database");
-    echo "Heh";
     return LtiOidcLogin::new(new LTI13Database, new ImsCache, new ImsCookie)
         ->doOidcLoginRedirect(instance_url("api/v1/lti13/launch"))
         ->doRedirect();
@@ -69,6 +68,7 @@ class lti13 extends Instance_Controller {
   "*"
 )           
       </script>';
+      return;
 //       echo '<script>
 //       window.parent.postMessage(
 // {
@@ -83,6 +83,14 @@ class lti13 extends Instance_Controller {
       return;
   }
   $launchData = $launch->getLaunchData();
+
+  $customData = $launchData['https://purl.imsglobal.org/spec/lti/claim/custom'];
+  $userEmail = $launchData["email"];
+  $context = $launchData["https://purl.imsglobal.org/spec/lti/claim/context"];
+  $courseId = $context["id"];
+  $user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(['email' => $userEmail]);
+
+
   if($launchData["https://purl.imsglobal.org/spec/lti/claim/message_type"] != "LtiDeepLinkingRequest")  {
     echo "fail";
     return;
@@ -90,9 +98,53 @@ class lti13 extends Instance_Controller {
   $deepLinkSettings = $launchData["https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"];
   $returnURL = $deepLinkSettings["deep_link_return_url"];;
   
-      echo $this->load->view("lti/ltiViewer", ["instance"=>$this->instance, "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId()], true);
 
+  if($user) {
+    $ltiCourses = $user->getLtiCourses();
+    $connectedInstance = null;
+    if($ltiCourses) {
+      foreach($ltiCourses as $ltiCourse) {
+        if($ltiCourse->getLmsCourse() == $courseId) {
+          $connectedInstance = $ltiCourse;
+          break;
+        }
+      }
+    }
+    if(!$connectedInstance) {
+      
+      $this->template->title = 'Set LTI Association';
+      $this->template->set_template("chromelessTemplate");
+      $this->template->content->view('lti/setLTIInstance', ["userId"=>$user->getId(), "courseId"=>$courseId, "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId()]);
+      $this->template->publish();
 
+      // echo $this->load->view("lti/ltiViewer", ["instance"=>$this->instance, "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId()], true);
+    }
+    else {
+      echo $this->load->view("lti/ltiViewer", ["instance"=>$connectedInstance->getInstance(), "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId(), "userId"=>$user->getId()], true);
+    }
+  }
+
+  }
+
+  public function updateLTIinstance() {
+
+    $user = $this->input->post("user");
+    $courseId = $this->input->post("courseID");
+    $returnURL = $this->input->post("returnURL");
+    $instanceId = $this->input->post("apiInstance");
+    $launchId = $this->input->post("launchId");
+
+    $user = $this->doctrine->em->getRepository("Entity\User")->find($user);
+    $instance = $this->doctrine->em->getRepository("Entity\Instance")->find($instanceId);
+    
+    $ltiCourse = new Entity\LTI13InstanceAssociation();
+    $ltiCourse->setUser($user);
+    $ltiCourse->setLmsCourse($courseId);
+    $ltiCourse->setInstance($instance);
+    $this->doctrine->em->persist($ltiCourse);
+    $this->doctrine->em->flush();
+
+    echo $this->load->view("lti/ltiViewer", ["instance"=>$instance, "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launchId, "userId"=>$user->getId()], true);
   }
 
   public function config() {
@@ -108,8 +160,8 @@ class lti13 extends Instance_Controller {
                 "domain" => $_SERVER['HTTP_HOST'],
                 "tool_id" => "elevator",
                 "platform" => "canvas.instructure.com",
+                "privacy_level" => "public",
                 "settings" => [
-                    "privacy_level" => "public",
                     "text" => "Launch Elevator",
                     "icon_url" => site_url("/assets/images/elevatorIconTiny.png"),
                     "placements" => [
@@ -119,7 +171,9 @@ class lti13 extends Instance_Controller {
                                 "placement" => "editor_button",
                                 "message_type" => "LtiDeepLinkingRequest",
                                 "target_link_uri" => instance_url("lti13/launch"),
-                                "canvas_icon_class" => "icon-lti"
+                                "canvas_icon_class" => "icon-lti",
+                                "selection_width" => 1200,
+                                "selection_height"=>640
                             ]
                         ]
                     ]
@@ -145,9 +199,20 @@ class lti13 extends Instance_Controller {
 }
 
     public function ltiPayload() {
-        if(!$this->user_model->userLoaded) {
-          return;
+
+      
+      if(!$this->user_model->userLoaded) {
+          $user = $this->input->post("userId");
+          if($user) {
+            $this->user_model->loadUser($user);
+          }
+          else {
+            return;
+          }
+          
         }
+
+
         $objectId = $this->input->post("object");
         $fileHandler = $this->filehandler_router->getHandlerForObject($objectId);
         if(!$fileHandler) {
@@ -176,7 +241,6 @@ class lti13 extends Instance_Controller {
           $embedLink = instance_url("/asset/getEmbed/" . $objectId.  "/null/true?" . http_build_query($targetQuery));
         }
 
-
         $launchId = $this->input->post("launchId");
         if(!$launchId) {
           echo "HeH";
@@ -189,6 +253,7 @@ class lti13 extends Instance_Controller {
               'timeout' => 30,
           ])
       ));
+      
         $deepLink = $launch->getDeepLink();
         $deepLinkResource = new LtiDeepLinkResource();
         $deepLinkResource->setType("link");
@@ -213,7 +278,8 @@ class lti13 extends Instance_Controller {
         // ]
         // }');
 // var_dump($deepLinkResource->toArray());
-        echo $deepLink->outputResponseForm([$deepLinkResource]);
+          $this->logging->logError("test",$deepLink->outputResponseForm([$deepLinkResource]));
+echo $deepLink->outputResponseForm([$deepLinkResource]);
         return;
     }
 }

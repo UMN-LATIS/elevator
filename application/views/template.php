@@ -432,7 +432,7 @@ var finishEmbedTrigger = function() {
   }
   if(sessionStorage.elevatorCallbackType == "lti") {
     if(sessionStorage.ltiVersion == "1.3") {
-      $.post(basePath + "api/v1/lti13/ltiPayload", {object: fileObjectId, excerptId: excerptId, launchId: sessionStorage.launchId}, function(data, textStatus, xhr) {
+      $.post(basePath + "api/v1/lti13/ltiPayload", {object: fileObjectId, excerptId: excerptId, launchId: sessionStorage.launchId, userId: sessionStorage.userId}, function(data, textStatus, xhr) {
         
         $("body").append(data);      
     });
