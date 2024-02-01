@@ -103,6 +103,7 @@
                 <option name="default">0</option>
               </options>
           </field>
+          <field name="customHomeRedirect" type="string" nullable='true' />
           <field name="maximumMoreLikeThis" type="integer" nullable='true'>
           <options>
                 <option name="default">3</option>

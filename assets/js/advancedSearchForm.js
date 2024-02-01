@@ -65,7 +65,7 @@ const buildSearchForm = function(fieldTitle, templateId, targetGroup) {
                 $(targetGroup).find(".searchText").val($.makeArray(selectedValues).join(", "))
             });
             eval($(targetGroup).find("script").text());
-            loadGroup("cascade");
+            loadGroup(targetGroup);
 
             // $(targetGroup).html('<select name="specificSearchText[]"  autocomplete="off" class="form-control advancedOption advancedSearchContent">');
             // selectElement = $(targetGroup).find("select");

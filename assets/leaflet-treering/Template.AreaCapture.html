@@ -1,5 +1,5 @@
 <script id="AreaCapture-incrementDialog-template" type="text/x-handlebars-template">
-    <div class="AreaCapture-dialog-container">
+    <div class="AreaCapture-dialog-container">  
         <div class="AreaCapture-editYear-container">
             <p class="AreaCapture-text"> 
                 Year: {{ year }}
@@ -27,11 +27,11 @@
         </div>
         <p class="AreaCapture-subtext"
         style="display: inline;">
-            Ctrl - 1
+            Shift - 1
         </p>
         <p class="AreaCapture-subtext"
         style="float: right;">
-            Ctrl - 3
+            Shift - 3
         </p>
     </div>
 </script>
@@ -45,10 +45,17 @@
             type="number"
             placeholder="{{ year }}">
             
-            <i id="AreaCapture-confirmYear-btn"
-            class="fa fa-check-square" 
-            style="float: right;"
-            aria-hidden="true"></i>
+            <div style="margin-top: 4px;">
+                <i id="AreaCapture-confirmYear-btn"
+                class="fa fa-check-square" 
+                style="font-size: 16px;"
+                aria-hidden="true"></i>
+
+                <p class="AreaCapture-subtext"
+                style="display: inline;">
+                    Shift - 2
+                </p>
+            </div>
         </p>
     </div>
 </script>
@@ -153,3 +160,24 @@
         </p>
     </div>
 </script> 
+
+<script id="AreaCapture-guideMarkerWidth-template" type="text/x-handlebars-template">
+    <span style="font-weight: bold;">Width: </span>
+    <input type="number" style="border:none; width:50px; text-align: right;" value="5" id="AreaCapture-guideWidth-input">
+    <span> mm</span>
+
+    <p class="AreaCapture-subtext" style="margin-top: 0;">
+        Use Enter/Return to confirm 
+    </p>
+</script>
+
+<script id="AreaCapture-lassoInstructions-template" type="text/x-handlebars-template">
+    <h4 class="AreaCapture-lassoInstruction-header">Selecting ellipses to delete or re-date:</h4>
+    <p class="AreaCapture-lassoInstruction-text">Use the lasso tool to click, drag, and encircle existing ellipses in order to delete or change calendar year dating. When selected, ellipses appear as yellow.</p>
+    <p class="AreaCapture-lassoInstruction-text">Deselect ellipses by using the lasso tool again.</p>
+    <p class="AreaCapture-lassoInstruction-text"><b>Use Right-Click to disable lasso tool.</b></p>
+
+    <div class="AreaCapture-lasso-toggle">
+        <label><input type="checkbox" id="AreaCapture-lasso-btn"><span>Do not show message again.</span></label>
+    </div>
+</script>

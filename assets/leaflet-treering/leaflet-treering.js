@@ -24,7 +24,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   var latData = urlParams.get("lat");
   var lngData = urlParams.get("lng");
   if (latData && lngData) {
-    setTimeout(function() {
+    setTimeout(function() {find
       viewer.setView([latData, lngData], 16); //  max zoom level is 18
     }, 500);
   }
@@ -62,7 +62,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     alert('Calibration needed: set p/mm in asset metadata or use calibration tool');
   }
 
-  this.autoscroll = new Autoscroll(this.viewer);
+  this.autoscroll = new Autoscroll(this, this.viewer);
   this.mouseLine = new MouseLine(this);
   this.visualAsset = new VisualAsset(this);
   this.annotationAsset = new AnnotationAsset(this);
@@ -74,8 +74,6 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   this.popout = new Popout(this);
   this.undo = new Undo(this);
   this.redo = new Redo(this);
-
-  this.viewData = new ViewData(this);
 
   this.imageAdjustment = new ImageAdjustment(this);
   //this.PixelAdjustment = new PixelAdjustment(this);
@@ -94,27 +92,16 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   this.insertZeroGrowth = new InsertZeroGrowth(this);
   this.insertBreak = new InsertBreak(this);
 
-  this.saveLocal = new SaveLocal(this);
-  this.loadLocal = new LoadLocal(this);
-  var ioBtns = [this.saveLocal.btn, this.loadLocal.btn];
-  if (options.savePermission) {
-    this.saveCloud = new SaveCloud(this);
-    ioBtns.push(this.saveCloud.btn);
-  }
-
   this.keyboardShortCutDialog = new KeyboardShortCutDialog(this);
 
-  this.popoutPlots = new PopoutPlots(this);
+  this.universalDelete = new UniversalDelete(this);
 
   this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
-  this.annotationTools = new ButtonBar(this, [this.annotationAsset.createBtn, this.annotationAsset.deleteBtn], 'comment', 'Manage annotations');
   this.createTools = new ButtonBar(this, [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurements');
-  this.editTools = new ButtonBar(this, [this.dating.btn, this.insertPoint.btn, this.insertBreak.btn, this.convertToStartPoint.btn, this.deletePoint.btn, this.insertZeroGrowth.btn, this.cut.btn], 'edit', 'Edit existing measurements');
-  this.ioTools = new ButtonBar(this, ioBtns, 'folder_open', 'Save or upload a record of measurements, annotations, etc.');
+  this.editTools = new ButtonBar(this, [this.dating.btn, this.insertPoint.btn, this.insertBreak.btn, this.convertToStartPoint.btn, this.insertZeroGrowth.btn, this.cut.btn], 'edit', 'Edit existing measurements');
   this.settings = new ButtonBar(this, [this.measurementOptions.btn, this.calibration.btn, this.keyboardShortCutDialog.btn], 'settings', 'Measurement preferences & distance calibration');
 
-  this.tools = [this.viewData, this.calibration, this.dating, this.createPoint, this.createBreak, this.deletePoint, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustment, this.measurementOptions];
-
+  this.tools = [this.calibration, this.dating, this.createPoint, this.createBreak, this.universalDelete, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustment, this.measurementOptions];
   // --- //
   // Code hosted in Leaflet.AreaCapture.js
   this.areaCaptureInterface = new AreaCaptureInterface(this);
@@ -124,7 +111,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   this.betaToggle = true;
   $(this.areaTools.btn.button).on("click", () => {
     if (this.betaToggle) {
-      alert("Area measurement tools for beta testing & provisional data development. Please direct any issues or feedback to: thorn573@umn.edu.");
+      //alert("Area measurement tools for beta testing & provisional data development. Please direct any issues or feedback to: thorn573@umn.edu.");
       this.betaToggle = false;
     }
   })
@@ -133,6 +120,9 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     this.tools.push(tool);
   });
   // --- //
+
+  // Code hosted in Leaflet.DataAccess.js
+  this.dataAccessInterface = new DataAccessInterface(this);
 
   this.baseLayer = {
     'Tree Ring': base_layer,
@@ -162,27 +152,25 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     $(map.getContainer()).css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-    $(".leaflet-control-layers-selector")[0].click();
-    // test placement
-    this.popoutPlots.btn.addTo(this.viewer);
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
-      this.viewData.btn.addTo(this.viewer);
-      this.ioTools.bar.addTo(this.viewer);
       this.imageAdjustment.btn.addTo(this.viewer);
+      this.dataAccessInterface.viewData.btn.addTo(this.viewer);
+      this.dataAccessInterface.popoutPlots.btn.addTo(this.viewer);
       //this.PixelAdjustment.btn.addTo(this.viewer);
       this.createTools.bar.addTo(this.viewer);
       this.editTools.bar.addTo(this.viewer);
-      this.annotationTools.bar.addTo(this.viewer);
+      this.annotationAsset.createBtn.addTo(this.viewer);
+      this.universalDelete.btn.addTo(this.viewer);
       this.settings.bar.addTo(this.viewer);
       this.areaTools.bar.addTo(this.viewer);
       this.undoRedoBar.addTo(this.viewer);
     } else {
-      this.popout.btn.addTo(this.viewer);
-      this.viewData.btn.addTo(this.viewer);
-      this.ioTools.bar.addTo(this.viewer);
       this.imageAdjustment.btn.addTo(this.viewer);
+      this.dataAccessInterface.viewData.btn.addTo(this.viewer);
+      this.dataAccessInterface.popoutPlots.btn.addTo(this.viewer);
+      this.popout.btn.addTo(this.viewer);
       //this.PixelAdjustment.btn.addTo(this.viewer);
       //defaults overlay 'points' option to disabled
       map.removeLayer(this.visualAsset.markerLayer);
@@ -214,7 +202,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     // Disable all tools w/ esc.
     L.DomEvent.on(window, 'keydown', (e) => {
        if (e.keyCode == 27) {
-         this.disableTools();
+          this.disableTools();
        }
     }, this);
 
@@ -236,10 +224,10 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     this.annotationAsset.reload();
     if ( this.meta.savePermission ) {
       // load the save information in buttom left corner
-      this.saveCloud.displayDate();
+      this.dataAccessInterface.cloudUpload.displayDate();
     };
-    if (this.popoutPlots.win) {
-      this.popoutPlots.sendData();
+    if (this.dataAccessInterface.popoutPlots.win) {
+      this.dataAccessInterface.popoutPlots.sendData();
     }
     this.metaDataText.updateText();
   };
@@ -264,13 +252,13 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     this.tools.forEach(e => { 
       e.disable() 
     });
+
+    if (!this.dataAccessInterface.viewDataDialog.dialog.options.size[0]) this.dataAccessInterface.viewDataDialog.close();
   };
 
   LTreering.prototype.collapseTools = function() {
-    this.annotationTools.collapse();
     this.createTools.collapse();
     this.editTools.collapse();
-    this.ioTools.collapse();
     this.settings.collapse();
     this.areaTools.collapse();
   };
@@ -293,6 +281,58 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
 }
 
 /*******************************************************************************/
+
+/**
+ * Universal delete button
+ * @constructor 
+ * 
+ * @param {object} Lt - Leaflet Treering object.  
+ */
+function UniversalDelete(Lt) {
+  this.btn = new Button(
+    'delete',
+    'Delete points or annotations (not ellipses)',
+    () => { Lt.disableTools(); this.enable() },
+    () => { this.disable() }
+  );
+
+  // Enable with DEL
+  L.DomEvent.on(window, 'keydown', (e) => {
+    if (e.keyCode == 46 && window.name.includes('popout')) { 
+      e.preventDefault();
+      e.stopPropagation();
+      Lt.disableTools();
+
+      Lt.viewer.getContainer().style.cursor = 'pointer';
+      this.enable();
+    }
+ }, this);
+
+  /**
+   * Enables button
+   * @function
+   */
+  UniversalDelete.prototype.enable = function() {
+    this.btn.state('active');
+    this.btn.active = true;
+    Lt.deletePoint.selectedAdjustment = false;
+
+    Lt.viewer.getContainer().style.cursor = 'pointer';
+  }
+
+  /**
+   * Disbales button
+   * @function
+   */
+  UniversalDelete.prototype.disable = function() {
+    this.btn.state('inactive');
+    this.btn.active = false;
+    Lt.deletePoint.selectedAdjustment = false;
+
+    $(Lt.viewer.getContainer()).off('click');
+    Lt.viewer.getContainer().style.cursor = 'default';
+  }
+}
 
 /**
  * A measurement data object
@@ -349,11 +389,7 @@ function MeasurementData (dataObject, Lt) {
     this.index++;
 
     // update every time a point is placed
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    Lt.helper.updateFunctionContainer(true);
   };
 
   /**
@@ -439,11 +475,8 @@ function MeasurementData (dataObject, Lt) {
       }
     }
 
-    Lt.metaDataText.updateText(); // updates after a point is deleted
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    // updates after a point is deleted
+    Lt.helper.updateFunctionContainer(true);
   };
 
   /**
@@ -504,6 +537,9 @@ function MeasurementData (dataObject, Lt) {
     if (!this.points[1]) {
       this.earlywood = true;
       this.year = 0;
+
+      // Updates after points are cut
+      Lt.helper.updateFunctionContainer(true);
       return
     }
 
@@ -528,11 +564,8 @@ function MeasurementData (dataObject, Lt) {
     // If first start point removed, create new one.
     if (!this.points[0].start) this.points[0] =  {'start': true, 'skip': false, 'break': false, 'latLng': this.points[0].latLng};
 
-    Lt.metaDataText.updateText(); // updates after points are cut
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    // Updates after points are cut
+    Lt.helper.updateFunctionContainer(true);
   };
 
   /**
@@ -634,11 +667,8 @@ function MeasurementData (dataObject, Lt) {
     }
 
     // Update other features after point inserted.
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    Lt.helper.updateFunctionContainer(true);
+
     return i;
   };
 
@@ -714,11 +744,7 @@ function MeasurementData (dataObject, Lt) {
       }
     }
 
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    Lt.helper.updateFunctionContainer(true);
   }
 
   /**
@@ -846,11 +872,7 @@ function MeasurementData (dataObject, Lt) {
     }
 
     // Update other features after point inserted.
-    Lt.metaDataText.updateText();
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    Lt.helper.updateFunctionContainer(true);
 
     return k;
   };
@@ -895,44 +917,115 @@ function AnnotationData (annotations) {
 /**
  * Autoscroll feature for mouse
  * @constructor
+ * @param {object} Lt - Initializing object
  * @param {Leaflet Map Object} viewer - a refrence to the leaflet map object
  */
-function Autoscroll (viewer) {
+function Autoscroll (Lt, viewer) {
+  //Creates areas on right, left, top, bottom part of screen
+  let rightDiv = document.getElementById("AutoScroll-Right-Div");
+  let leftDiv = document.getElementById("AutoScroll-Left-Div");
+  let upDiv = document.getElementById("AutoScroll-Up-Div");
+  let downDiv = document.getElementById("AutoScroll-Down-Div");
+  let mapContainer = document.getElementById("imageMap");
+  mapContainer.append(rightDiv);
+  mapContainer.append(leftDiv);
+  mapContainer.append(upDiv);
+  mapContainer.append(downDiv);
 
   /**
    * Turn on autoscroll based on viewer dimmensions
    * @function on
    */
-  Autoscroll.prototype.on = function() {
-    var mapSize = viewer.getSize();   // Map size used for map scrolling
-    var mousePos = 0;                 // An initial mouse position
-
-    viewer.on('mousemove', (e) => {
-      var modifierState = event.getModifierState("Shift");
-      // Don't autopan if shift is held
-      if(modifierState) {
-        return;
-      }
-      var oldMousePos = mousePos;     // Save the old mouse position
-      mousePos = e.containerPoint;    // Container point of the mouse
-
-      //left bound of the map
-      if (mousePos.x <= 40 && mousePos.y > 60 && oldMousePos.x > mousePos.x) {
-        viewer.panBy([-200, 0]);
-      }
-      //right bound of the map
-      if (mousePos.x + 40 > mapSize.x && mousePos.y > 100 && oldMousePos.x < mousePos.x) {
-        viewer.panBy([200, 0]);
-      }
-      //upper bound of the map
-      if (mousePos.x > 390 && mousePos.x + 60 < mapSize.x && mousePos.y < 40 && oldMousePos.y > mousePos.y) {
-        viewer.panBy([0, -70]);
-      }
-      //lower bound of the map
-      if (mousePos.x >= 40 && mousePos.y > mapSize.y - 40 && oldMousePos.y < mousePos.y) {
-        viewer.panBy([0, 70]);
-      }
+  Autoscroll.prototype.on = function() {   
+    //Turns off scrolling when shift is released
+    $(window).on("keyup", (e) => {
+      if (e.key == "Shift") $(viewer).off("moveend");
     });
+
+    //Smooths out panning
+    let panByOptions = {animate: true, easeLinearity: 1};
+
+    $("#AutoScroll-Right-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();   // Map size used for map scrolling.
+      let panAmount = 0.15 * mapSize.x;
+
+      let panLimit = viewer.getZoom() * (mapSize.x / panAmount);
+      let panCount = 0;
+
+      //Repeatedly pans until the border of picture is reached
+      viewer.panBy([panAmount, 0], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([panAmount, 0], panByOptions);
+      });
+    })
+
+    $("#AutoScroll-Left-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();  
+      let panAmount = 0.15 * mapSize.x; 
+
+      let panLimit = viewer.getZoom() * (mapSize.x / panAmount);
+      let panCount = 0;
+
+      viewer.panBy([-panAmount, 0], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([-panAmount, 0], panByOptions);
+      })
+    })
+
+    $("#AutoScroll-Up-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();  
+      let panAmount = 0.125 * mapSize.y; 
+
+      let panLimit = viewer.getZoom() * (mapSize.y / panAmount);
+      let panCount = 0;
+
+      viewer.panBy([0, -panAmount], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([0, -panAmount], panByOptions);
+      })
+    })
+
+    $("#AutoScroll-Down-Div").on("mouseenter", () => {
+      if(!event.getModifierState("Shift")) return
+
+      let mapSize = viewer.getSize();  
+      let panAmount = 0.125 * mapSize.y; 
+
+      let panLimit = viewer.getZoom() * (mapSize.y / panAmount);
+      let panCount = 0;
+
+      viewer.panBy([0, panAmount], panByOptions); 
+      $(viewer).on("moveend", () => {
+        panCount++;
+        if (panCount < panLimit) viewer.panBy([0, panAmount], panByOptions);
+      })
+    })
+
+    //Stops panning when mouse leaves area
+    $("#AutoScroll-Right-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
+
+    $("#AutoScroll-Left-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
+
+    $("#AutoScroll-Up-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
+
+    $("#AutoScroll-Down-Div").on("mouseleave", () => {
+      $(viewer).off("moveend");
+    }); 
   };
 
   /**
@@ -1477,14 +1570,16 @@ function VisualAsset (Lt) {
       }
 
       Lt.annotationAsset.reloadAssociatedYears();
-      if (Lt.popoutPlots.win) {
-        Lt.popoutPlots.sendData();
+      if (Lt.dataAccessInterface.popoutPlots.win) {
+        Lt.dataAccessInterface.popoutPlots.sendData();
       }
+
+      Lt.helper.updateFunctionContainer(true);
     });
 
     // Tell marker what to do when clicked.
     this.markers[i].on('click', (e) => {
-      if (Lt.deletePoint.active) {
+      if (Lt.universalDelete.btn.active) {
         Lt.deletePoint.openDialog(e, i);
       };
 
@@ -1521,21 +1616,21 @@ function VisualAsset (Lt) {
     // Line below disables flashing when measuring.
     // && !Lt.createPoint.active
     this.markers[i].on('mouseover', e => {
-      if (Lt.popoutPlots.win && !Lt.createPoint.active) {
+      if (Lt.dataAccessInterface.popoutPlots.win && !Lt.createPoint.active) {
         // Do not highlight end point when measuring backward, but highlight start point.
         if (forward || (backward && i < pts.length - 1)) {
           var year = pts[i].year;
           if (backward && i === 0) {
             year = (annual && pts[i + 1]) ? pts[i + 1].year + 1 : pts[i + 1].year;
           }
-          Lt.popoutPlots.highlightYear(year);
+          Lt.dataAccessInterface.popoutPlots.highlightYear(year);
         }
       }
     })
 
     this.markers[i].on('mouseout', e => {
-      if (Lt.popoutPlots.win && !Lt.createPoint.active) {
-        Lt.popoutPlots.highlightYear(false)
+      if (Lt.dataAccessInterface.popoutPlots.win && !Lt.createPoint.active) {
+        Lt.dataAccessInterface.popoutPlots.highlightYear(false)
       }
     })
 
@@ -1636,23 +1731,16 @@ function AnnotationAsset(Lt) {
 
   this.createBtn = new Button (
     'comment',
-    'Create annotations (Ctrl-a)',
+    'Create annotations (Shift-a)',
     () => { Lt.disableTools(); this.enable(this.createBtn) },
     () => { this.disable(this.createBtn) }
   );
   this.createBtn.active = false;
 
-  this.deleteBtn = new Button (
-    'delete',
-    'Delete an annotation',
-    () => { Lt.disableTools(); this.enable(this.deleteBtn) },
-    () => { this.disable(this.deleteBtn) }
-  );
-  this.deleteBtn.active = false;
-
   // crtl-a to activate createBtn
   L.DomEvent.on(window, 'keydown', (e) => {
-    if (e.keyCode == 65 && e.getModifierState("Control") && window.name.includes('popout')) { // 65 refers to 'a'
+    if (e.keyCode == 65 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 65 refers to 'a'
+    window.name.includes('popout') && !this.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active 
       e.preventDefault();
       e.stopPropagation();
       Lt.disableTools();
@@ -1693,13 +1781,12 @@ function AnnotationAsset(Lt) {
         this.createAnnotationDialog();
 
       });
-    };;
+    };
   };
 
   AnnotationAsset.prototype.disable = function (btn) {
     if (!btn) { // for Lt.disableTools()
       this.disable(this.createBtn);
-      this.disable(this.deleteBtn);
       return
     };
 
@@ -2307,8 +2394,8 @@ function AnnotationAsset(Lt) {
     });
 
     // how marker reacts when clicked
-    $(this.markers[index]).click(() => {
-      if (this.deleteBtn.active) { // deleteing
+    $(this.markers[index]).on("click", () => {
+      if (Lt.universalDelete.btn.active) { // deleteing
         Lt.aData.deleteAnnotation(index);
         Lt.annotationAsset.reload();
       } else { // viewing or editing
@@ -3125,43 +3212,6 @@ function Popout(Lt) {
   });
 };
 
-/** A popout with time series plots
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
- function PopoutPlots (Lt) {
-   var height = (4/9) * screen.height;
-   var top = (2/3) * screen.height;
-   var width = screen.width;
-   this.childSite = null
-   this.win = null
-
-   // prev icon: insights
-   this.btn = new Button('insert_chart_outlined',
-                         'Open time series plots in a new window',
-                         () => {
-                           //this.childSite = 'http://localhost:8080/dendro-plots/'
-                           this.childSite = 'https://umn-latis.github.io/dendro-plots/'
-                           this.win = window.open(this.childSite, 'popout' + Math.round(Math.random()*10000),
-                                       'location=yes,height=' + height + ',width=' + width + ',scrollbars=yes,status=yes, top=' + top);
-
-                           let data = { points: Lt.helper.findDistances(), annotations: Lt.aData.annotations };
-                           window.addEventListener('message', () => {
-                             this.win.postMessage(data, this.childSite);
-                           }, false)
-                         });
-
-    PopoutPlots.prototype.sendData = function() {
-      let data = { points: Lt.helper.findDistances(), annotations: Lt.aData.annotations };
-      this.win.postMessage(data, this.childSite);
-    }
-
-    PopoutPlots.prototype.highlightYear = function(year) {
-      this.win.postMessage(year, this.childSite);
-    }
-
-};
-
 /**
  * Undo actions
  * @constructor
@@ -3171,10 +3221,7 @@ function Undo(Lt) {
   this.stack = new Array();
   this.btn = new Button('undo', 'Undo', () => {
     this.pop();
-    Lt.metaDataText.updateText();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    Lt.helper.updateFunctionContainer(false);
   });
   this.btn.disable();
 
@@ -3242,10 +3289,7 @@ function Redo(Lt) {
   this.stack = new Array();
   this.btn = new Button('redo', 'Redo', () => {
     this.pop();
-    Lt.metaDataText.updateText();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
+    Lt.helper.updateFunctionContainer(false);
   });
   this.btn.disable();
 
@@ -3384,14 +3428,15 @@ function Dating(Lt) {
   this.active = false;
   this.btn = new Button(
     'access_time',
-    'Edit measurement point dating (Ctrl-d)',
+    'Edit measurement point dating (Shift-d)',
     () => { Lt.disableTools(); Lt.collapseTools(); this.enable() },
     () => { this.disable() }
   );
 
-  // enable with ctrl-d
+  // enable with shift-d
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 68 && !(e.getModifierState("Shift")) && e.getModifierState("Control") && window.name.includes('popout')) { // 68 refers to 'd'
+     if (e.keyCode == 68 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 68 refers to 'd'
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active 
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3503,6 +3548,10 @@ function Dating(Lt) {
 
       Lt.data.year += shift;
       Lt.visualAsset.reload();
+
+      // Updates once user hits enter
+      Lt.helper.updateFunctionContainer(true);
+
       this.disable();
     }
   }
@@ -3522,12 +3571,6 @@ function Dating(Lt) {
    * @function disable
    */
   Dating.prototype.disable = function() {
-    Lt.metaDataText.updateText(); // updates once user hits enter
-    Lt.annotationAsset.reloadAssociatedYears();
-    if (Lt.popoutPlots.win) {
-      Lt.popoutPlots.sendData();
-    }
-
     this.btn.state('inactive');
     $(Lt.viewer.getContainer()).off('click');
     $(document).off('keypress');
@@ -3546,14 +3589,15 @@ function CreatePoint(Lt) {
   this.startPoint = true;
   this.btn = new Button(
     'linear_scale',
-    'Create measurement points (Ctrl-m)',
+    'Create measurement points (Shift-m)',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
 
-  // create measurement w. ctrl-m
+  // create measurement w. shift-m
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 77 && e.getModifierState("Control")) {
+     if (e.keyCode == 77 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3561,9 +3605,10 @@ function CreatePoint(Lt) {
      }
   }, this);
 
-  // resume measurement w. ctrl-k
+  // resume measurement w. shift-k
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 75 && e.getModifierState("Control")) {
+     if (e.keyCode == 75 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
+     Lt.data.points.length && window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3724,11 +3769,8 @@ function CreateZeroGrowth(Lt) {
         Lt.data.year--;
       };
 
-      Lt.metaDataText.updateText(); // updates after point is inserted
-      Lt.annotationAsset.reloadAssociatedYears();
-      if (Lt.popoutPlots.win) {
-        Lt.popoutPlots.sendData();
-      }
+      // updates after point is inserted
+      Lt.helper.updateFunctionContainer(true);
 
     } else {
       alert('First year cannot be missing!');
@@ -3750,11 +3792,12 @@ function CreateBreak(Lt) {
       this.enable();
       Lt.mouseLine.from(Lt.data.points[Lt.data.index - 1].latLng);
     },
-    () => { this.disable }
+    () => { this.disable() }
   );
 
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 66 && e.getModifierState("Control") && window.name.includes('popout')) { // 66 refers to 'b'
+     if (e.keyCode == 66 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 66 refers to 'b'
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -3822,20 +3865,12 @@ function DeletePoint(Lt) {
   this.selectedAdjustment = false;
   this.maintainAdjustment = false;
 
-  this.active = false;
-  this.btn = new Button(
-    'delete',
-    'Delete a measurement point',
-    () => { Lt.disableTools(); this.enable() },
-    () => { this.disable() }
-  );
-
   /**
    * Open dialog for user to choose shift direction
    * @function openDialog
    */
   DeletePoint.prototype.openDialog = function(e, i) {
-    if (this.maintainAdjustment || (Lt.data.points[i].start && Lt.data.points[i - 1].break) || Lt.data.points[i].break) {
+    if (this.maintainAdjustment || (i > 0 && Lt.data.points[i].start && Lt.data.points[i - 1].break) || Lt.data.points[i].break) {
       this.action(i);
     } else {
       Lt.helper.createEditToolDialog(e.containerPoint.x, e.containerPoint.y, i, "deletePoint");
@@ -3851,29 +3886,6 @@ function DeletePoint(Lt) {
     Lt.undo.push();
     Lt.data.deletePoint(i);
     Lt.visualAsset.reload();
-  };
-
-  /**
-   * Enable deleting points on click
-   * @function enable
-   */
-  DeletePoint.prototype.enable = function() {
-    this.btn.state('active');
-    this.active = true;
-    this.selectedAdjustment = false;
-    Lt.viewer.getContainer().style.cursor = 'pointer';
-  };
-
-  /**
-   * Disable deleting points on click
-   * @function disable
-   */
-  DeletePoint.prototype.disable = function() {
-    $(Lt.viewer.getContainer()).off('click');
-    this.btn.state('inactive');
-    this.active = false;
-    this.selectedAdjustment = false;
-    Lt.viewer.getContainer().style.cursor = 'default';
   };
 }
 
@@ -3987,14 +3999,15 @@ function InsertPoint(Lt) {
   this.active = false;
   this.btn = new Button(
     'add_circle_outline',
-    'Insert a point between two other points (Ctrl-i)',
+    'Insert a point between two other points (Shift-i)',
     () => { Lt.disableTools(); this.enable() },
     () => { this.disable() }
   );
 
-  // enable w. ctrl-i
+  // enable w. shift-i
   L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 73 && !(e.getModifierState("Shift")) && e.getModifierState("Control") && window.name.includes('popout')) { // 73 refers to 'i'
+     if (e.keyCode == 73 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 73 refers to 'i'
+     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
        e.preventDefault();
        e.stopPropagation();
        Lt.disableTools();
@@ -4291,8 +4304,8 @@ function InsertBreak(Lt) {
         Lt.data.points.splice(this.closestSecondIndex, 0, secondBreakPt);
         Lt.data.index = Lt.data.points.length;
         Lt.visualAsset.reload();
-        if (Lt.popoutPlots.win) {
-          Lt.popoutPlots.sendData();
+        if (Lt.dataAccessInterface.popoutPlots.win) {
+          Lt.dataAccessInterface.popoutPlots.sendData();
         }
 
         this.disable();
@@ -4366,601 +4379,13 @@ function InsertBreak(Lt) {
 }
 
 /**
- * View data and download data
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
-function ViewData(Lt) {
-  this.btn = new Button(
-    'view_list',
-    'View & download measurement data',
-    () => { Lt.disableTools(); this.enable() },
-    () => { this.disable() }
-  );
-
-  // handlebars from templates.html
-  let content = document.getElementById("view-data-default-template").innerHTML;
-
-  this.dialog = L.control.dialog({
-    'size': [200, 235],
-    'anchor': [50, 0],
-    'initOpen': false,
-    'position': 'topleft',
-    'minSize': [0, 0]
-  }).setContent(content).addTo(Lt.viewer);
-
-  /**
-   * Format and download data in Dan's archaic format
-   * @function download
-   */
-  ViewData.prototype.download = function() {
-
-    var toFourCharString = function(n) {
-      var string = n.toString();
-
-      if (string.length == 1) {
-        string = '   ' + string;
-      } else if (string.length == 2) {
-        string = '  ' + string;
-      } else if (string.length == 3) {
-        string = ' ' + string;
-      } else if (string.length == 4) {
-        string = string;
-      } else if (string.length >= 5) {
-        alert('Value exceeds 4 characters');
-        throw 'error in toFourCharString(n)';
-      } else {
-        alert('toSixCharString(n) unknown error');
-        throw 'error';
-      }
-      return string;
-    };
-
-    var toSixCharString = function(n) {
-      var string = n.toString();
-
-      if (string.length == 1) {
-        string = '     ' + string;
-      } else if (string.length == 2) {
-        string = '    ' + string;
-      } else if (string.length == 3) {
-        string = '   ' + string;
-      } else if (string.length == 4) {
-        string = '  ' + string;
-      } else if (string.length == 5) {
-        string = ' ' + string;
-      } else if (string.length >= 6) {
-        alert('Value exceeds 5 characters');
-        throw 'error in toSixCharString(n)';
-      } else {
-        alert('toSixCharString(n) unknown error');
-        throw 'error';
-      }
-      return string;
-    };
-
-    var toEightCharString = function(n) {
-      var string = n.toString();
-      if (string.length == 0) {
-        string = string + '        ';
-      } else if (string.length == 1) {
-        string = string + '       ';
-      } else if (string.length == 2) {
-        string = string + '      ';
-      } else if (string.length == 3) {
-        string = string + '     ';
-      } else if (string.length == 4) {
-        string = string + '    ';
-      } else if (string.length == 5) {
-        string = string + '   ';
-      } else if (string.length == 6) {
-        string = string + '  ';
-      } else if (string.length == 7) {
-        string = string + ' ';
-      } else if (string.length >= 8) {
-        alert('Value exceeds 7 characters');
-        throw 'error in toEightCharString(n)';
-      } else {
-        alert('toSixCharString(n) unknown error');
-        throw 'error';
-      }
-      return string;
-    };
-
-    if (Lt.measurementOptions.forwardDirection) { // years ascend in value
-      var pts = Lt.data.points;
-    } else { // otherwise years descend in value
-      var pts = Lt.helper.reverseData();
-    }
-
-    if (Lt.data.points != undefined && Lt.data.points[1] != undefined) {
-
-      var sum_points;
-      var sum_string = '';
-      var last_latLng;
-      var break_length;
-      var length_string;
-
-      if (Lt.measurementOptions.subAnnual) {
-
-        var sum_string = '';
-        var ew_string = '';
-        var lw_string = '';
-
-        y = pts[1].year;
-        var sum_points = pts.filter(e => {
-          if (e.earlywood != undefined) {
-            return !(e.earlywood);
-          } else {
-            return true;
-          }
-        });
-
-        if (sum_points[1].year % 10 > 0) {
-          sum_string = sum_string.concat(
-              toEightCharString(Lt.meta.assetName) +
-              toFourCharString(sum_points[1].year));
-        }
-
-        var break_point = false;
-        sum_points.map((e, i, a) => {
-          if (e.start) {
-            last_latLng = e.latLng;
-          } else if (e.break) {
-            break_length =
-              Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
-              break_point = true;
-          } else {
-            if (e.year % 10 == 0) {
-              if(sum_string.length > 0) {
-                sum_string = sum_string.concat('\n');
-              }
-              sum_string = sum_string.concat(
-                  toEightCharString(Lt.meta.assetName) +
-                  toFourCharString(e.year));
-            }
-            while (e.year > y) {
-              sum_string = sum_string.concat('    -1');
-              y++;
-              if (y % 10 == 0) {
-                sum_string = sum_string.concat('\n' +
-                    toFourCharString(e.year));
-              }
-            }
-
-            if (!last_latLng) {
-              last_latLng = e.latLng;
-            };
-
-            var length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
-            if (break_point) {
-              length += break_length;
-              break_point = false;
-            }
-            if (length == 9999) {
-              length = 9998;
-            }
-            if (length == 999) {
-              length = 998;
-            }
-
-            length_string = toSixCharString(length);
-
-            sum_string = sum_string.concat(length_string);
-            last_latLng = e.latLng;
-            y++;
-          }
-        });
-
-        // if we ended at the end of a decade, we need to add a new line
-        if (y % 10 == 0) {
-          sum_string = sum_string.concat('\n' +
-          toEightCharString(Lt.meta.assetName) +
-          toFourCharString(y));
-        }
-        sum_string = sum_string.concat(' -9999');
-
-        y = pts[1].year;
-
-        if (pts[1].year % 10 > 0) {
-          ew_string = ew_string.concat(
-              toEightCharString(Lt.meta.assetName) +
-              toFourCharString(pts[1].year));
-          lw_string = lw_string.concat(
-              toEightCharString(Lt.meta.assetName) +
-              toFourCharString(pts[1].year));
-        }
-
-        break_point = false;
-        pts.map((e, i, a) => {
-          if (e.start) {
-            last_latLng = e.latLng;
-          } else if (e.break) {
-            break_length =
-              Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
-            break_point = true;
-          } else {
-            if (e.year % 10 == 0) {
-              if (e.earlywood) {
-                if (ew_string.length >0) {
-                  ew_string = ew_string.concat('\n');
-                }
-                ew_string = ew_string.concat(
-                    toEightCharString(Lt.meta.assetName) +
-                    toFourCharString(e.year));
-              } else {
-                if (lw_string.length >0) {
-                  lw_string = lw_string.concat('\n');
-                }
-                lw_string = lw_string.concat(
-                    toEightCharString(Lt.meta.assetName) +
-                    toFourCharString(e.year));
-              }
-            }
-            while (e.year > y) {
-              ew_string = ew_string.concat('    -1');
-              lw_string = lw_string.concat('    -1');
-              y++;
-              if (y % 10 == 0) {
-                ew_string = ew_string.concat('\n' +
-                    toEightCharString(Lt.meta.assetName) +
-                    toFourCharString(e.year));
-                lw_string = lw_string.concat('\n' +
-                    toEightCharString(Lt.meta.assetName) +
-                    toFourCharString(e.year));
-              }
-            }
-
-            length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
-            if (break_point) {
-              length += break_length;
-              break_point = false;
-            }
-            if (length == 9999) {
-              length = 9998;
-            }
-            if (length == 999) {
-              length = 998;
-            }
-
-            length_string = toSixCharString(length);
-
-            if (e.earlywood) {
-              ew_string = ew_string.concat(length_string);
-              last_latLng = e.latLng;
-            } else {
-              lw_string = lw_string.concat(length_string);
-              last_latLng = e.latLng;
-              y++;
-            }
-          }
-        });
-
-        if (y % 10 == 0) {
-          ew_string = ew_string.concat('\n' +
-            toEightCharString(Lt.meta.assetName) +
-            toFourCharString(y));
-          lw_string = lw_string.concat('\n' +
-            toEightCharString(Lt.meta.assetName) +
-            toFourCharString(y));
-        }
-        ew_string = ew_string.concat(' -9999');
-        lw_string = lw_string.concat(' -9999');
-
-        console.log(sum_string);
-        console.log(ew_string);
-        console.log(lw_string);
-
-        var zip = new JSZip();
-        zip.file((Lt.meta.assetName + '_TW_rwl.txt'), sum_string);
-        zip.file((Lt.meta.assetName + '_LW_rwl.txt'), lw_string);
-        zip.file((Lt.meta.assetName + '_EW_rwl.txt'), ew_string);
-
-      } else {
-
-        var y = pts[1].year;
-        sum_points = pts;
-
-        if (sum_points[1].year % 10 > 0) {
-          sum_string = sum_string.concat(
-              toEightCharString(Lt.meta.assetName) +
-              toFourCharString(sum_points[1].year));
-        }
-        sum_points.map((e, i, a) => {
-          if(e.start) {
-              last_latLng = e.latLng;
-            }
-            else if (e.break) {
-              break_length =
-                Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
-              break_point = true;
-            } else {
-            if (e.year % 10 == 0) {
-              if(sum_string.length > 0) {
-                sum_string = sum_string.concat('\n');
-              }
-              sum_string = sum_string.concat(
-                  toEightCharString(Lt.meta.assetName) +
-                  toFourCharString(e.year));
-            }
-            while (e.year > y) {
-              sum_string = sum_string.concat('    -1');
-              y++;
-              if (y % 10 == 0) {
-                sum_string = sum_string.concat('\n' +
-                    toFourCharString(e.year));
-              }
-            }
-
-            length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000);
-            if (break_point) {
-              length += break_length;
-              break_point = false;
-            }
-            if (length == 9999) {
-              length = 9998;
-            }
-            if (length == 999) {
-              length = 998;
-            }
-
-            length_string = toSixCharString(length);
-
-            sum_string = sum_string.concat(length_string);
-            last_latLng = e.latLng;
-            y++;
-          }
-        });
-
-        if (y % 10 == 0) {
-          sum_string = sum_string.concat('\n' +
-            toEightCharString(Lt.meta.assetName) +
-            toFourCharString(y));
-        }
-        sum_string = sum_string.concat(' -9999');
-
-        var zip = new JSZip();
-        zip.file((Lt.meta.assetName + '_TW_rwl.txt'), sum_string);
-      }
-
-      zip.generateAsync({type: 'blob'})
-          .then((blob) => {
-            saveAs(blob, (Lt.meta.assetName + '_rwl.zip'));
-          });
-    } else {
-      alert('There is no data to download');
-    }
-  };
-
-  /**
-   * Open the data viewer box
-   * @function enable
-   */
-  ViewData.prototype.enable = function() {
-    this.btn.state('active');
-
-    var stringSetup; // buttons & table headers
-    var stringContent = ''; // years and lengths
-
-    //closes data view if mouse clicks anywhere outside the data viewer box
-    $(Lt.viewer.getContainer()).click(e => {
-      this.disable();
-    });
-
-    if (Lt.measurementOptions.forwardDirection) { // years ascend in value
-      var pts = Lt.data.points;
-    } else { // otherwise years descend in value
-      var pts = Lt.helper.reverseData();
-    };
-
-    if (pts[0] != undefined) {
-      var y = pts[1].year;
-
-      // handlebars from templates.html
-      let content_A = document.getElementById("string-setup-data-template").innerHTML;
-
-      stringSetup = content_A;
-
-      var break_point = false;
-      var last_latLng;
-      var break_length;
-      var break_point;
-      var length;
-      var copyDataString = Lt.measurementOptions.subAnnual? "Year\t   "+Lt.meta.assetName+"_ew\t"+Lt.meta.assetName+"_lw\t"+Lt.meta.assetName+"_tw\n": "Year\t"+Lt.meta.assetName+"_tw\n";
-      var EWTabDataString = "Year\t" + Lt.meta.assetName + "_EW\n";
-      var LWTabDataString ="Year\t" + Lt.meta.assetName + "_LW\n";
-      var TWTabDataString = "Year\t" + Lt.meta.assetName + "_TW\n";
-      var EWoodcsvDataString = "Year," + Lt.meta.assetName + "_EW\n";
-      var LWoodcsvDataString ="Year," + Lt.meta.assetName + "_LW\n";
-      var TWoodcsvDataString = 'Year,' + Lt.meta.assetName + "_TW\n";
-      var lengthAsAString;
-      var  totalWidthString = String(totalWidth);
-      var totalWidth = 0;
-      var wood;
-
-      Lt.data.clean();
-      pts.map((e, i, a) => {
-        wood = Lt.measurementOptions.subAnnual? (e.earlywood? "E": "L") : ""
-        if (e.start) {
-          last_latLng = e.latLng;
-        } else if (e.break) {
-          break_length =
-            Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000) / 1000;
-          break_point = true;
-        } else {
-          while (e.year > y) {
-            // handlebars from templates.html
-            let content_B = document.getElementById("concat-string-content-A-template").innerHTML;
-            let template_B = Handlebars.compile(content_B);
-            let html_B = template_B( {y: y} )
-
-            stringContent = stringContent.concat(html_B);
-            y++;
-          }
-          length = Math.round(Lt.helper.trueDistance(last_latLng, e.latLng) * 1000) / 1000;
-          if (break_point) {
-            length += break_length;
-            length = Math.round(length * 1000) / 1000;
-            break_point = false;
-          }
-          if (length == 9.999) {
-            length = 9.998;
-          }
-
-          //Format length number into a string with trailing zeros
-          lengthAsAString = String(length);
-          lengthAsAString = lengthAsAString.padEnd(5,'0');
-
-          if(lengthAsAString.includes('.999'))
-          {
-              lengthAsAString = lengthAsAString.substring(0,lengthAsAString.length-1);
-              lengthAsAString+='8';
-
-          }
-          //assign color to data row
-          var row_color_html = Lt.helper.assignRowColor(e,y,Lt,lengthAsAString)
-          stringContent = stringContent.concat(row_color_html);
-          y++;
-
-          last_latLng = e.latLng;
-
-          //Set up CSV files to download later
-          //For subannual measurements
-          if(Lt.measurementOptions.subAnnual)
-          {
-          if(wood=='E')
-          {
-            EWTabDataString += e.year + "\t" + lengthAsAString+ "\n";
-            copyDataString += e.year + "\t   "+ lengthAsAString +"   \t";
-            EWoodcsvDataString += e.year+","+lengthAsAString+"\n";
-            totalWidth+=length;
-          }
-          else
-          {
-            LWoodcsvDataString += e.year+","+lengthAsAString+"\n";
-            //adding two parts of the year together
-            totalWidth+=length;
-            totalWidth=Math.round(totalWidth * 1000) / 1000;
-            totalWidthString = String(totalWidth);
-            totalWidthString = totalWidthString.padEnd(5,'0');
-            if(totalWidthString.includes('.999'))
-          {
-              totalWidthString = totalWidthString.substring(0,totalWidthString.length-1);
-              totalWidthString+='8';
-          }
-            TWoodcsvDataString += e.year+","+totalWidthString+"\n";
-            LWTabDataString += e.year + "\t" + lengthAsAString+ "\n";
-            TWTabDataString += e.year + "\t" + totalWidthString+ "\n";
-            copyDataString += lengthAsAString +"   \t"+totalWidthString +"\n";
-            //set to zero only after latewood has been added and totalWidth is in csv
-            totalWidth = 0;
-          }
-        }
-        //For annual measurements
-        else{
-          TWoodcsvDataString+= e.year+","+lengthAsAString+"\n";
-           //Copies data to a string that can be copied to the clipboard
-           TWTabDataString += e.year + "\t" + lengthAsAString+ "\n";
-          copyDataString += e.year + "\t"+ lengthAsAString +"\n";
-        }
-        }
-      });
-      this.dialog.setContent(stringSetup + stringContent + '</table><div>');
-    } else {
-      // handlebars from templates.html
-      let content_D = document.getElementById("string-setup-no-data-template").innerHTML;
-
-      stringSetup = content_D;
-      this.dialog.setContent(stringSetup);
-    }
-    this.dialog.lock();
-    this.dialog.open();
-
-    $('#download-ltrr-button').click(() => this.download());
-    $('#copy-data-button').click(()=> copyToClipboard(copyDataString));
-    $('#download-csv-button').click(() => {
-     if(Lt.measurementOptions.subAnnual)
-     {
-       downloadCSVFiles(Lt, TWoodcsvDataString,EWoodcsvDataString, LWoodcsvDataString);
-     }
-     else{
-      downloadCSVFiles(Lt, TWoodcsvDataString);
-     }
-    }
-    );
-    $('#download-tab-button').click(() => {
-          if(Lt.measurementOptions.subAnnual)
-          {
-            downloadTabFiles(Lt, TWTabDataString,EWTabDataString, LWTabDataString);
-          }
-          else{
-           downloadTabFiles(Lt, TWTabDataString);
-          }
-         }
-       );
-    $('#delete-button').click(() => {
-      // handlebars from templates.html
-      let content_E = document.getElementById("data-view-delete-template").innerHTML;
-
-      this.dialog.setContent(content_E);
-
-      $('#confirm-delete').click(() => {
-        Lt.undo.push();
-
-        Lt.data.points = [];
-        Lt.data.year = 0;
-        Lt.data.earlywood = true;
-        Lt.data.index = 0;
-
-        Lt.visualAsset.reload();
-        Lt.metaDataText.updateText();
-
-        this.disable();
-      });
-      $('#cancel-delete').click(() => {
-        this.disable();
-        this.enable();
-      });
-    });
-  },
-  /**
-   * copy text to clipboard
-   * @function enable
-   */
-  copyToClipboard = function(allData){
-    const el = document.createElement('textarea');
-    el.value = allData;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-  }
-
-  /**
-   * close the data viewer box
-   * @function disable
-   */
-  ViewData.prototype.disable = function() {
-    $(Lt.viewer.getContainer()).off('click');
-    this.btn.state('inactive');
-    $('#confirm-delete').off('click');
-    $('#cancel-delete').off('click');
-    $('#download-ltrr-button').off('click');
-    $('#download-csv-button').off('click');
-    $('#download-tab-button').off('click');
-    $('#copy-data-button').off('click');
-    $('#delete-button').off('click');
-    $('#copy-data-button').off('click');
-    this.dialog.close();
-  };
-};
-
-/**
  * Change color properties of image
  * @constructor
  * @param {Ltreering} Lt - Leaflet treering object
  */
 function ImageAdjustment(Lt) {
+  this.open = false;
+
   this.btn = new Button(
     'brightness_6',
     'Adjust image appearance settings',
@@ -5024,6 +4449,8 @@ function ImageAdjustment(Lt) {
    * @function enable
    */
   ImageAdjustment.prototype.enable = function() {
+    this.open = true;
+
     this.dialog.lock();
     this.dialog.open();
     var brightnessSlider = document.getElementById("brightness-slider");
@@ -5071,9 +4498,13 @@ function ImageAdjustment(Lt) {
    * @function disable
    */
   ImageAdjustment.prototype.disable = function() {
-    this.dialog.unlock();
-    this.dialog.close();
+    if (this.open) {
+      this.dialog.unlock();
+      this.dialog.close();
+    }
+    
     this.btn.state('inactive');
+    this.open = false;
   };
 
 }
@@ -5249,162 +4680,6 @@ MeasurementOptions.prototype.displayDialog = function () {
 }
 
 /**
- * Save a local copy of the measurement data
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
-function SaveLocal(Lt) {
-  this.btn = new Button(
-    'save',
-    'Download .json file of current measurements, annotations, etc.',
-    () => { this.action() }
-  );
-
-  /**
-   * Save a local copy of the measurement data
-   * @function action
-   */
-  SaveLocal.prototype.action = function() {
-    Lt.data.clean();
-    var dataJSON = {
-      'SaveDate': Lt.data.saveDate,
-      'year': Lt.data.year,
-      'forwardDirection': Lt.measurementOptions.forwardDirection,
-      'subAnnual': Lt.measurementOptions.subAnnual,
-      'earlywood': Lt.data.earlywood,
-      'index': Lt.data.index,
-      'points': Lt.data.points,
-      'attributesObjectArray': Lt.annotationAsset.attributesObjectArray,
-      'annotations': Lt.aData.annotations,
-      'ppm': Lt.meta.ppm,
-      'ptWidths': Lt.helper.findDistances(),
-      'ellipses': Lt.areaCaptureInterface.ellipseData.getJSON(),
-    };
-
-    // don't serialize our default value
-    if(Lt.meta.ppm != Lt.defaultResolution || Lt.meta.ppmCalibration) {
-      dataJSON.ppm = Lt.meta.ppm;
-    }
-
-    var file = new File([JSON.stringify(dataJSON)],
-        (Lt.meta.assetName + '.json'), {type: 'text/plain;charset=utf-8'});
-    saveAs(file);
-  };
-}
-
-/**
- * Save a copy of the measurement data to the cloud
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
-function SaveCloud(Lt) {
-  this.btn = new Button(
-    'cloud_upload',
-    'Save the current measurements, annotations, etc.\nto the cloud-hosted .json file (Ctrl-s)',
-    () => { this.action() }
-  );
-
-  // save w. ctrl-s
-  L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 83 && e.getModifierState("Control") && window.name.includes('popout')) { // 83 refers to 's'
-       e.preventDefault();
-       e.stopPropagation();
-       this.action();
-     };
-  });
-
-  this.date = new Date(),
-
-  /**
-   * Update the save date & meta data
-   * @function updateDate
-   */
-  SaveCloud.prototype.updateDate = function() {
-    this.date = new Date();
-    var day = this.date.getDate();
-    var month = this.date.getMonth() + 1;
-    var year = this.date.getFullYear();
-    var minute = this.date.getMinutes();
-    var hour = this.date.getHours();
-    Lt.data.saveDate = {'day': day, 'month': month, 'year': year, 'hour': hour,
-      'minute': minute};
-  };
-
-  /**
-   * Display the save date in the bottom left corner
-   * @function displayDate
-   */
-  SaveCloud.prototype.displayDate = function() {
-    var date = Lt.data.saveDate;
-    console.log(date);
-    if (date.day != undefined && date.hour != undefined) {
-      var am_pm = 'am';
-      if (date.hour >= 12) {
-        date.hour -= 12;
-        am_pm = 'pm';
-      }
-      if (date.hour == 0) {
-        date.hour += 12;
-      }
-      var minute_string = date.minute;
-      if (date.minute < 10) {
-        minute_string = '0' + date.minute;
-      }
-
-      this.saveText =
-          "Saved to cloud " + date.year + '/' + date.month + '/' + date.day + ' ' + date.hour + ':' + minute_string + am_pm;
-    } else if (date.day != undefined) {
-      this.saveText =
-          "Saved to cloud " + date.year + '/' + date.month + '/' + date.day;
-    } else {
-      this.saveText =
-          'No data saved to cloud';
-    };
-
-    Lt.data.saveDate;
-  };
-
-  /**
-   * Save the measurement data to the cloud
-   * @function action
-   */
-  SaveCloud.prototype.action = function() {
-    if (Lt.meta.savePermission && Lt.meta.saveURL != "") {
-      Lt.data.clean();
-      this.updateDate();
-      var dataJSON = {
-        'SaveDate': Lt.data.saveDate,
-        'year': Lt.data.year,
-        'forwardDirection': Lt.measurementOptions.forwardDirection,
-        'subAnnual': Lt.measurementOptions.subAnnual,
-        'earlywood': Lt.data.earlywood,
-        'index': Lt.data.index,
-        'points': Lt.data.points,
-        'attributesObjectArray': Lt.annotationAsset.attributesObjectArray,
-        'annotations': Lt.aData.annotations,
-        'ppm': Lt.meta.ppm,
-        'ellipses': Lt.areaCaptureInterface.ellipseData.getJSON(),
-      };
-
-      // don't serialize our default value
-      if (Lt.meta.ppm != Lt.defaultResolution || Lt.meta.ppmCalibration) {
-        dataJSON.ppm = Lt.meta.ppm;
-      }
-      $.post(Lt.meta.saveURL, {sidecarContent: JSON.stringify(dataJSON)})
-          .done((msg) => {
-            this.displayDate();
-            Lt.metaDataText.updateText();
-          })
-          .fail((xhr, status, error) => {
-            alert('Error: failed to save changes');
-          });
-    } else {
-      alert('Authentication Error: save to cloud permission not granted');
-    };
-  };
-};
-
-/**
  * Display assets meta data as text
  * @constructor
  * @param {Ltreering} Lt - Leaflet treering object
@@ -5470,7 +4745,7 @@ function MetaDataText (Lt) {
 
     let speciesID = this.speciesID + " &nbsp;|&nbsp; ";
     let branding = 'DendroElevator developed at <a href="http://z.umn.edu/treerings" target="_blank"> UMN </a>';
-    let saveText = (Lt.meta.savePermission) ? Lt.saveCloud.saveText + " &nbsp;|&nbsp; " : '';
+    let saveText = (Lt.meta.savePermission) ? Lt.dataAccessInterface.cloudUpload.saveText + " &nbsp;|&nbsp; " : '';
     let increment = (Lt.measurementOptions.subAnnual) ? 'sub-annual increments' : 'annual increments';
     let direction = (Lt.measurementOptions.forwardDirection) ? 'Measuring forward, ' : 'Measuring backward, ';
 
@@ -5486,75 +4761,6 @@ function MetaDataText (Lt) {
     document.getElementById("meta-data-bottom-text").innerHTML = saveText + branding;
   };
 };
-
-/**
- * Load a local copy of the measurement data
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
-function LoadLocal(Lt) {
-  this.btn = new Button(
-    'file_upload',
-    'Upload .json file with measurements, annotations, etc.',
-    () => { this.input() }
-  );
-
-  /**
-   * Create an input div on the ui and click it
-   * @function input
-   */
-  LoadLocal.prototype.input = function() {
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.id = 'file';
-    input.style = 'display: none';
-    input.addEventListener('change', () => {this.action(input)});
-    input.click();
-  };
-
-  /**
-   * Load the file selected in the input
-   * @function action
-   */
-  LoadLocal.prototype.action = function(inputElement) {
-    var files = inputElement.files;
-    console.log(files);
-    if (files.length <= 0) {
-      return false;
-    }
-
-    var fr = new FileReader();
-
-    fr.onload = function(e) {
-      let newDataJSON = JSON.parse(e.target.result);
-
-      Lt.preferences = {
-        'forwardDirection': newDataJSON.forwardDirection,
-        'subAnnual': newDataJSON.subAnnual,
-      };
-
-      Lt.data = new MeasurementData(newDataJSON, Lt);
-      Lt.aData = new AnnotationData(newDataJSON.annotations);
-
-      // if the JSON has PPM data, use that instead of loaded data.
-      if(newDataJSON.ppm) {
-        Lt.meta.ppm = newDataJSON.ppm;
-        Lt.options.ppm = newDataJSON.ppm;
-      }
-
-      Lt.loadData();
-      Lt.metaDataText.updateText();
-
-      // --- //
-      // Code hosted in Leaflet.AreaCapture.js
-      if (newDataJSON.ellipses) Lt.areaCaptureInterface.ellipseData.loadJSON(newDataJSON.ellipses);
-      // --- //
-    };
-
-    fr.readAsText(files.item(0));
-  };
-
-}
 
 function Panhandler(La) {
   var map = La.viewer;
@@ -5635,7 +4841,7 @@ function Panhandler(La) {
           break;
       }
 
-
+      console.log(panArray)
       map.panBy(panArray, {
         animate: true,
         delay: 0
@@ -5651,51 +4857,51 @@ function Panhandler(La) {
   La.viewer.pan.enable();
 }
 /**
-   * copy text to clipboard
-   * @function enable
-   */
-  function copyToClipboard(allData){
-    console.log('copying...', allData);
-    const el = document.createElement('textarea');
-    el.value = allData;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-  }
+ * copy text to clipboard
+ * @function enable
+ */
+function copyToClipboard(allData){
+  console.log('copying...', allData);
+  const el = document.createElement('textarea');
+  el.value = allData;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+}
 
-  /**
-   * Download CSV ZIP file
-   * @function
-   */
-  function downloadCSVFiles(Lt,TWoodcsvDataString,EWoodcsvDataString,LWoodcsvDataString)
+/**
+ * Download CSV ZIP file
+ * @function
+ */
+function downloadCSVFiles(Lt,TWoodcsvDataString,EWoodcsvDataString,LWoodcsvDataString) {
+  var zip = new JSZip();
+  if(Lt.measurementOptions.subAnnual)
   {
-    var zip = new JSZip();
-    if(Lt.measurementOptions.subAnnual)
-    {
-    zip.file((Lt.meta.assetName + '_LW_csv.csv'), LWoodcsvDataString);
-    zip.file((Lt.meta.assetName + '_EW_csv.csv'), EWoodcsvDataString);
-    }
-    zip.file((Lt.meta.assetName + '_TW_csv.csv'), TWoodcsvDataString)
-    zip.generateAsync({type: 'blob'})
-          .then((blob) => {
-            saveAs(blob, (Lt.meta.assetName + '_csv.zip'));
-          });
-    }
-    function downloadTabFiles(Lt,TWTabDataString,EWTabDataString,LWTabDataString)
+  zip.file((Lt.meta.assetName + '_LW_csv.csv'), LWoodcsvDataString);
+  zip.file((Lt.meta.assetName + '_EW_csv.csv'), EWoodcsvDataString);
+  }
+  zip.file((Lt.meta.assetName + '_TW_csv.csv'), TWoodcsvDataString)
+  zip.generateAsync({type: 'blob'})
+        .then((blob) => {
+          saveAs(blob, (Lt.meta.assetName + '_csv.zip'));
+        });
+}
+
+function downloadTabFiles(Lt,TWTabDataString,EWTabDataString,LWTabDataString)
+{
+  var zip = new JSZip();
+  if(Lt.measurementOptions.subAnnual)
   {
-    var zip = new JSZip();
-    if(Lt.measurementOptions.subAnnual)
-    {
-    zip.file((Lt.meta.assetName + '_LW_tab.txt'), LWTabDataString);
-    zip.file((Lt.meta.assetName + '_EW_tab.txt'), EWTabDataString);
-    }
-    zip.file((Lt.meta.assetName + '_TW_tab.txt'), TWTabDataString)
-    zip.generateAsync({type: 'blob'})
-          .then((blob) => {
-            saveAs(blob, (Lt.meta.assetName + '_tab.zip'));
-          });
-        }
+  zip.file((Lt.meta.assetName + '_LW_tab.txt'), LWTabDataString);
+  zip.file((Lt.meta.assetName + '_EW_tab.txt'), EWTabDataString);
+  }
+  zip.file((Lt.meta.assetName + '_TW_tab.txt'), TWTabDataString)
+  zip.generateAsync({type: 'blob'})
+        .then((blob) => {
+          saveAs(blob, (Lt.meta.assetName + '_tab.zip'));
+        });
+}
 
 /**
  * Opens dialog box with all keyboard shortcuts
@@ -5716,7 +4922,7 @@ function KeyboardShortCutDialog (Lt) {
     let anchor = this.anchor || [1, 442];
 
     this.dialog = L.control.dialog ({
-      'size': [310, 300],
+      'size': [310, 380],
       'anchor': anchor,
       'initOpen': true,
       'position': 'topleft',
@@ -5728,40 +4934,44 @@ function KeyboardShortCutDialog (Lt) {
 
     const shortcutGuide = [
       {
-       'key': 'Ctrl-l',
+       'key': 'Shift-l',
        'use': 'Toggle magnification loupe on/off',
       },
       {
-       'key': 'Ctrl-m',
+       'key': 'Shift-m',
        'use': 'Create new measurement path',
       },
       {
-       'key': 'Ctrl-k',
+       'key': 'Shift-k',
        'use': 'Resume last measurement path',
       },
       {
-       'key': 'Ctrl-i',
+       'key': 'Shift-i',
        'use': 'Insert measurement point',
       },
       {
-        'key': 'Ctrl-d',
+        'key': 'Shift-d',
         'use': 'Edit measurement point dating',
       },
       {
-       'key': 'Ctrl-a',
+        'key': 'Shift-e',
+        'use': 'Create new ellipse'
+      },
+      {
+       'key': 'Shift-a',
        'use': 'Create new annotation',
       },
       {
-       'key': 'Ctrl-b',
+       'key': 'Shift-b',
        'use': 'Create within-year break',
       },
       {
-       'key': 'Ctrl-s',
+       'key': 'Shift-s',
        'use': 'Save changes to cloud (if permitted)',
       },
       {
        'key': 'Shift',
-       'use': 'Disable cursor panning near edge',
+       'use': 'Enable cursor panning near edge',
       },
       {
        'key': 'Arrows',
@@ -5874,7 +5084,7 @@ function Helper(Lt) {
       document.getElementById("shift-radioB").checked = !Lt[tool].adjustOuter;
 
       $(this.dialog._map).on("dialog:resizeend", () => { console.log(this.dialog) });
-      $(this.dialog._map).on("dialog:closed", () => {
+      $(this.dialog._closeNode).on("click", (e) => {
         if (this.dialog) {
           // Only have user select adjustment once per activation.
           Lt[tool].selectedAdjustment = true;
@@ -6221,5 +5431,12 @@ function Helper(Lt) {
        stringContent = html_B;
      }
      return stringContent;
+   }
+
+   Helper.prototype.updateFunctionContainer = function(reloadYears) {
+    if (reloadYears == true) Lt.annotationAsset.reloadAssociatedYears();
+    Lt.metaDataText.updateText();
+    if (Lt.dataAccessInterface.popoutPlots.win) Lt.dataAccessInterface.popoutPlots.sendData();
+    if (Lt.dataAccessInterface.viewData.active && Lt.dataAccessInterface.viewDataDialog?.dialog) Lt.dataAccessInterface.viewDataDialog.reload();
    }
 };

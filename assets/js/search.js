@@ -238,8 +238,16 @@ function parseSearch() {
 		if(typeof loadAll !== 'undefined' && loadAll == true) {
 			localLoadAll = true;
 		}
-
-		doSearch(searchId, 0, localLoadAll);
+		if(searchId.length < 10) {
+			// this is a drawer
+			if(typeof loadDrawer !== 'undefined') {
+				loadDrawer();
+			}
+		}
+		else {
+			doSearch(searchId, 0, localLoadAll);
+		}
+		
 	}
 
 }

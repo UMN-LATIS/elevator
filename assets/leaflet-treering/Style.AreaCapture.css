@@ -65,7 +65,7 @@
 }
 
 .AreaCapture-input {
-	width: 7ch;
+	width: 9ch;
 }
 
 /* New ellipse dialog: */
@@ -80,7 +80,7 @@
 /* Delete ellipses dialog */
 .fa-exclamation-triangle {
 	color: #b54c4c;
-	font-size: 56px;
+	font-size: 56px !important;
 
 	cursor: not-allowed;
 }
@@ -111,4 +111,39 @@
 
 #AreaCapture-cancelDate-btn {
 	background-color: #b54c4c;
+}
+
+.AreaCapture-lassoInstruction-header {
+	margin-top: 0;
+	padding: 6px;
+
+	border-radius: 4px;
+	background-color: #d4d4d4;
+	font-weight: bold;
+	font-size: 16px;
+}
+
+.AreaCapture-lassoInstruction-text {
+	font-size: 14px;
+}
+
+.AreaCapture-lasso-toggle label {
+	display: inline-block;
+	padding-right: 10px;
+	white-space: nowrap;
+	margin: 0;
+}
+
+.AreaCapture-lasso-toggle input {
+	vertical-align: middle;
+	margin: 0;
+}
+
+.AreaCapture-lasso-toggle label span {
+	vertical-align: middle;
+	margin: 0;
+	margin-left: 4px;
+	font-size: 12px;
+	font-weight: normal;
+	font-style: italic;
 }

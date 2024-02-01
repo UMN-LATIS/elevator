@@ -1,6 +1,7 @@
 
 
-function loadGroup(targetId) {
+function loadGroup(targetGroup) {
+	targetId = $(targetGroup).find(".multiselectGroup").attr("id");
 	var targetArray = sourceContent[targetId];
 	$("#"+targetId).find(".multiSelect").each(function(index, el) {
 		var selectIndex = $(el).data("cascadenumber");
