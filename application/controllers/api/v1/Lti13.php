@@ -31,10 +31,6 @@ class lti13 extends Instance_Controller {
     if(isset($_REQUEST['error']) && $_REQUEST['error'] == 'launch_no_longer_valid') {
       $exception = new \Exception($_REQUEST['error_description']);
       echo "fail";
-      // if (app()->bound('sentry')) {
-      //     app('sentry')->captureException($exception);
-      // }
-      // return view("errors.500", ["exception"=>$exception]);
   }
 
    try {
@@ -117,7 +113,6 @@ class lti13 extends Instance_Controller {
       $this->template->content->view('lti/setLTIInstance', ["userId"=>$user->getId(), "courseId"=>$courseId, "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId()]);
       $this->template->publish();
 
-      // echo $this->load->view("lti/ltiViewer", ["instance"=>$this->instance, "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId()], true);
     }
     else {
       echo $this->load->view("lti/ltiViewer", ["instance"=>$connectedInstance->getInstance(), "returnURL"=>$returnURL, "ltiVersion"=>"1.3", "launchId"=>$launch->getLaunchId(), "userId"=>$user->getId()], true);
@@ -260,26 +255,8 @@ class lti13 extends Instance_Controller {
         $deepLinkResource->setUrl($embedLink);
         $deepLinkResource->setTitle("test");
         $deepLinkResource->setIframe(new LtiDeepLinkResourceIframe(640,480, $embedLink));
-        // $string = ('{
-        // "@context": "http://purl.imsglobal.org/ctx/lti/v1/ContentItem",
-        // "@graph": [
-        //   {
-        //     "@type": "ContentItem",
-        //     "mediaType": "text/html",
-        //     "placementAdvice": {
-        //       "presentationDocumentTarget": "iframe",
-        //       "displayWidth": "640",
-        //       "displayHeight": "480"
-        //     },
-        //     "text": "",
-        //     "title": "Embedded Asset",
-        //     "url": "' . $embedLink  .'"
-        //   }
-        // ]
-        // }');
-// var_dump($deepLinkResource->toArray());
-          $this->logging->logError("test",$deepLink->outputResponseForm([$deepLinkResource]));
-echo $deepLink->outputResponseForm([$deepLinkResource]);
+
+        echo $deepLink->outputResponseForm([$deepLinkResource]);
         return;
     }
 }
