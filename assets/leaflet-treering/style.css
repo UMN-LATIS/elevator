@@ -60,18 +60,18 @@
 	font-size: 1.5em;
 }
 .icon-button{
-background-color:  #6200ee;
-height: 30px;
-width: 30px;
-color: white;
-justify-content: center;
-position: sticky;
-left: 10px;
-margin-right: 20px;
-margin-bottom: 11px;
-border-color: #A06DEB;
-vertical-align: middle;
-text-align: center;
+	background-color:  #6200ee;
+	height: 30px;
+	width: 30px;
+	color: white;
+	justify-content: center;
+	position: sticky;
+	left: 10px;
+	margin-right: 20px;
+	margin-bottom: 11px;
+	border-color: #A06DEB;
+	vertical-align: middle;
+	text-align: center;
 }
 
 .text-button{
@@ -145,6 +145,10 @@ th {
 	margin: 4px;
 }
 
+.MeasurementOptions-radio-btn {
+	font-size: 14px;
+}
+
 .preferences-button {
 	font-size: 16px;
 	text-align: center;
@@ -181,7 +185,7 @@ th {
 #keyboardShortcutDiv span {
 	margin-left: 10px;
 	margin-bottom: 5px;
-	font-size: 12px;
+	font-size: 14px;
 	display: inline;
 }
 
@@ -205,7 +209,7 @@ th {
 }
 
 #shift-container p {
-	font-size: 10px;
+	font-size: 14px;
 	font-weight: normal;
 	color: #7d7d7d;
 	margin: 0;
@@ -225,7 +229,7 @@ th {
 }
 
 #shift-container label {
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: normal;
 	color: black;
 	margin: 0;
@@ -277,7 +281,7 @@ th {
 	padding: 6px 11px;
 	border: none;
 	border-top: none;
-	font-size: 12px;
+	font-size: 14px;
 	margin-top: 0;
 	width: 100%;
 }
@@ -305,7 +309,7 @@ textarea {
 }
 
 .text-content {
-	font-size: 12px;
+	font-size: 14px;
 	word-wrap: break-word;
 }
 
@@ -317,7 +321,7 @@ textarea {
 }
 
 .summaryAttributesDiv li {
-	font-size: 12px;
+	font-size: 14px;
 }
 
 .summaryLinkDiv {
@@ -329,7 +333,7 @@ textarea {
 }
 
 .editAttributesDiv p {
-	font-size: 12px;
+	font-size: 14px;
 	margin: 0 0 0 10px;
 	display: inline;
 }
@@ -340,13 +344,13 @@ textarea {
 
 .editAttributesDiv label {
 	font-weight: normal;
-	font-size: 12px;
+	font-size: 14px;
 	margin-left: 2px;
 }
 
 .attribute-label {
 	margin-bottom: 0;
-	font-size: 12px;
+	font-size: 14px;
 }
 
 .attribute-textbox {

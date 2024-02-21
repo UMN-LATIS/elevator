@@ -654,11 +654,12 @@ function Download(Inte) {
 
         let name = this.constructNameRWL(Inte.treering.meta.assetName);
         let year = dat.tw.x[0];
+        let yearStr = this.formatYearRWL(year);
         let stopMarker = " -9999";
         
-        let outTWStr = name + dat.tw.x[0] + this.formatDataPointRWL(dat.tw.y[0]);
+        let outTWStr = name + yearStr + this.formatDataPointRWL(dat.tw.y[0]);
         // If data begins on a year ending in '9', begin newline immediately.
-        if ((year + 1) % 10 == 0) outTWStr += "\n" + name + (year + 1);;
+        if ((year + 1) % 10 == 0) outTWStr += "\n" + name + this.formatYearRWL(year + 1);;
 
         let outEWStr = "";
         let outLWStr = "";
@@ -667,11 +668,14 @@ function Download(Inte) {
             let yearEW = dat.ew.x[0];
             let yearLW = dat.lw.x[0];
 
-            outEWStr = name + yearEW + this.formatDataPointRWL(dat.ew.y[0]);
-            outLWStr = name + yearLW + this.formatDataPointRWL(dat.lw.y[0]);
+            let yearEWStr = this.formatYearRWL(yearEW);
+            let yearLWStr = this.formatYearRWL(yearLW);
 
-            if ((yearEW + 1) % 10 == 0) outEWStr += "\n" + name + (yearEW + 1);;
-            if ((yearLW + 1) % 10 == 0) outLWStr += "\n" + name + (yearLW + 1);;
+            outEWStr = name + yearEWStr + this.formatDataPointRWL(dat.ew.y[0]);
+            outLWStr = name + yearLWStr + this.formatDataPointRWL(dat.lw.y[0]);
+
+            if ((yearEW + 1) % 10 == 0) outEWStr += "\n" + name + this.formatYearRWL(yearEW + 1);;
+            if ((yearLW + 1) % 10 == 0) outLWStr += "\n" + name + this.formatYearRWL(yearLW + 1);;
         }
 
         for (let i = 1; i < dat.tw.x.length; i++) {
@@ -684,11 +688,12 @@ function Download(Inte) {
             }
     
             if ((year + 1) % 10 == 0) {
-                outTWStr += "\n" + name + (year + 1);
+                yearStr = this.formatYearRWL(year + 1);
+                outTWStr += "\n" + name + yearStr;
 
                 if (dat?.ew) {
-                    outEWStr += "\n" + name + (year + 1);
-                    outLWStr += "\n" + name + (year + 1);
+                    outEWStr += "\n" + name + yearStr;
+                    outLWStr += "\n" + name + yearStr;
                 }
             }
         }
@@ -700,6 +705,19 @@ function Download(Inte) {
 
         if (outEWStr.length > 1) this.zipFiles("rwl", "txt", outTWStr, null, outEWStr, outLWStr);
         else this.zipFiles("rwl", "txt", outTWStr);
+    }
+
+    /**
+     * Converts year value into RWL format. 
+     * @function
+     *  
+     * @param {integer} year - Year value.  
+     */
+    Download.prototype.formatYearRWL = function(year) {
+        year = String(year);
+        year = " ".repeat(4 - year.length) + year;
+
+        return year;
     }
 
     /**

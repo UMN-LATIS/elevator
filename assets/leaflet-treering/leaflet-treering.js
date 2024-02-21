@@ -190,7 +190,9 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
            this.dating.keypressAction(e);
            return;
          }
-         if (this.helper.dialog) this.helper.dialog.close();
+
+         if (this.helper.dialog) this.helper?.dialog._closeNode.click();
+
          if (this.measurementOptions.dialog) {
            $("#confirm-button").click();
          }
@@ -239,7 +241,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   LTreering.prototype.disableTools = function() {
     if (this.annotationAsset.dialogAnnotationWindow && this.annotationAsset.createBtn.active) { // if user trying to create annotation, destroy dialog & marker
       this.annotationAsset.dialogAnnotationWindow.destroy();
-      this.annotationAsset.annotationIcon.removeFrom(this.viewer);
+      if (this.annotationAsset.annotationIcon) this.annotationAsset.annotationIcon.removeFrom(this.viewer);
     } else if (this.annotationAsset.dialogAnnotationWindow) {
       this.annotationAsset.dialogAnnotationWindow.destroy();
     };
@@ -1757,6 +1759,16 @@ function AnnotationAsset(Lt) {
 
     this.latLng = {};
     if (btn === this.createBtn) {
+      // Reset annotation values: 
+      this.text = '';
+      this.code = [];
+      this.description = [];
+      this.checkedUniqueNums = [];
+      this.calculatedYear = 0;
+      this.yearAdjustment = 0;
+      this.year = 0;
+      this.annotationIcon = null;
+
       Lt.viewer.doubleClickZoom.disable();
       $(Lt.viewer.getContainer()).click(e => {
         Lt.disableTools();
@@ -1893,14 +1905,14 @@ function AnnotationAsset(Lt) {
       this.annotationIcon = this.markers[this.index];
     };
 
-    let size = this.annotationDialogSize || [284, 265];
+    let size = this.annotationDialogSize || [310, 265];
     let anchor = this.annotationDialogAnchor || [50, 5];
 
     // handlebars from template.html
     let content = document.getElementById("annotation-dialog-window-template").innerHTML;
 
     this.dialogAnnotationWindow = L.control.dialog({
-      'minSize': [284, 265],
+      'minSize': [310, 265],
       'maxSize': [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
       'size': size,
       'anchor': anchor,
@@ -2312,7 +2324,7 @@ function AnnotationAsset(Lt) {
           checkbox.checked = true;
         };
 
-        $(checkbox).change(() => { // any checkbox changes are saved;
+        $(checkbox).on("change", () => { // any checkbox changes are saved;
           this.code = [];
           this.description = [];
           this.checkedUniqueNums = [];
@@ -2649,7 +2661,7 @@ function AnnotationAsset(Lt) {
 
     var textBox = document.createElement('TEXTAREA');
     textBox.value = this.text;
-    $(textBox).change(() => { //  any text changes are saved
+    $(textBox).on("input", () => { //  any text changes are saved
       this.text = textBox.value;
     });
 
@@ -3860,7 +3872,7 @@ function DeletePoint(Lt) {
   this.desc= "To delete existing points, you must adjust the dating of earlier or later points";
   this.optA = "shift dating of later points back in time";
   this.optB = "shift dating of earlier points forward in time";
-  this.size = [280, 240];
+  this.size = [318, 230];
   this.adjustOuter = false;
   this.selectedAdjustment = false;
   this.maintainAdjustment = false;
@@ -3899,7 +3911,7 @@ function Cut(Lt) {
   this.desc = "To delete all points between two selected points, you must adjust the dating of earlier or later points.";
   this.optA = "shift dating of later points back in time";
   this.optB = "shift dating of earlier points forward in time";
-  this.size = [280, 240];
+  this.size = [320, 240];
   this.adjustOuter = false;
   this.selectedAdjustment = false;
   this.maintainAdjustment = false;
@@ -3991,7 +4003,7 @@ function InsertPoint(Lt) {
   this.desc = "To insert points along a path between two existing points, you must adjust the dating of earlier or later points.";
   this.optA = "shift dating of later points forward in time";
   this.optB = "shift dating of earlier points back in time";
-  this.size = [280, 240];
+  this.size = [312, 242];
   this.adjustOuter = false;
   this.selectedAdjustment = false;
   this.maintainAdjustment = false;
@@ -4096,7 +4108,7 @@ function ConvertToStartPoint(Lt) {
   this.desc = "To convert existing measurement points to a start point, you must adjust the dating of earlier or later points.";
   this.optA = "shift dating of later points back in time";
   this.optB = "shift dating of earlier points forward in time";
-  this.size = [280, 240];
+  this.size = [322, 242];
   this.adjustOuter = false;
   this.selectedAdjustment = false;
   this.maintainAdjustment = false;
@@ -4168,7 +4180,7 @@ function InsertZeroGrowth(Lt) {
   this.desc = "To insert a zero width year, you must adjust the dating of earlier or later points.";
   this.optA = "shift dating of later points forward in time";
   this.optB = "shift dating of earlier points back in time";
-  this.size = [280, 240];
+  this.size = [312, 230];
   this.adjustOuter = false;
   this.selectedAdjustment = false;
   this.maintainAdjustment = false;
@@ -4922,7 +4934,7 @@ function KeyboardShortCutDialog (Lt) {
     let anchor = this.anchor || [1, 442];
 
     this.dialog = L.control.dialog ({
-      'size': [310, 380],
+      'size': [320, 380],
       'anchor': anchor,
       'initOpen': true,
       'position': 'topleft',

@@ -20,6 +20,7 @@ class OUHelper extends AuthHelper
 	public function __construct()
 	{
 		parent::__construct();
+		$this->shibboleth->setCustomIdPEntityId("sso.ou.edu");
 	}
 
 	public function createUserFromRemote($userOverride=null) {
@@ -46,8 +47,8 @@ class OUHelper extends AuthHelper
 		if($this->shibboleth->getAttributeValue("isGuest") == "Y") {
 			$user->setUserType("Remote-Guest");
 		}
-		if($this->shibboleth->getAttributeValue("displayName")) {
-			$user->setDisplayName($this->shibboleth->getAttributeValue("displayName"));
+		if($this->shibboleth->getAttributeValue("givenName") && $this->shibboleth->getAttributeValue("surName")) {
+			$user->setDisplayName($this->shibboleth->getAttributeValue("givenName") . " " . $this->shibboleth->getAttributeValue("surName"));
 		}
 		if($this->shibboleth->getAttributeValue("email")) {
 			$user->setEmail($this->shibboleth->getAttributeValue("email"));
@@ -61,7 +62,7 @@ class OUHelper extends AuthHelper
 	}
 
 	public function getUserIdFromRemote() {
-		return $this->shibboleth->getAttributeValue('uwnetid');
+		return $this->shibboleth->getAttributeValue('NameID');
 	}
 
 	public function updateUserFromRemote($user) {
