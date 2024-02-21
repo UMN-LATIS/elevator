@@ -189,7 +189,7 @@ class asset extends Instance_Controller {
 
 
 	function viewExcerpt($excerptId, $embedLink = false, $shouldReturnJSON = false) {
-		if ($this->isUsingVueUI() && !$shouldReturnJSON) {
+		if ($this->isUsingVueUI() && !$embedLink && !$shouldReturnJSON) {
 			return $this->template->publish('vueTemplate');
 		}
 
