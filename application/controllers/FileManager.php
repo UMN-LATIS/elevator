@@ -611,7 +611,7 @@ class FileManager extends Instance_Controller {
 			return;
 		}
 
-		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
+		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model, true);
 
 		$requiredAccessLevel = PERM_VIEWDERIVATIVES;
 
