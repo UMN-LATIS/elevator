@@ -99,12 +99,14 @@ class User_model extends CI_Model {
 				break;
 			case "asset":
 				$assetDrawers = $object->getDrawers($includeExcerpts);
+				
 				$perm = 0;
 				foreach($assetDrawers as $drawer) {
 					if(array_key_exists($drawer, $this->drawerPermissions)) {
 						$perm = max($this->drawerPermissions[$drawer], $perm);
 					}
 				}
+				
 
 				$assetCollection = (int)$object->getGlobalValue("collectionId");
 				if(array_key_exists($assetCollection, $this->collectionPermissions)) {

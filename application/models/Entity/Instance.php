@@ -1605,4 +1605,32 @@ class Instance
     {
         return $this->availableThemes;
     }
+    /**
+     * @var string|null
+     */
+    private $customHomeRedirect;
+
+
+    /**
+     * Set customHomeRedirect.
+     *
+     * @param string|null $customHomeRedirect
+     *
+     * @return Instance
+     */
+    public function setCustomHomeRedirect($customHomeRedirect = null)
+    {
+        $this->customHomeRedirect = $customHomeRedirect;
+        return $this;
+    }
+
+    /**
+     * Get customHomeRedirect.
+     *
+     * @return string|null
+     */
+    public function getCustomHomeRedirect()
+    {
+        return $this->customHomeRedirect;
+    }
 }
