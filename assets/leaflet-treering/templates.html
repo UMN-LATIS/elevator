@@ -88,11 +88,11 @@
   <div><h4 style="text-align:left;margin:0;">Select Preferences for Time-Series Measurement:</h4></div>
   <hr style="height:2px;border-width:0;color:gray;background-color:gray;margin-top:10px;margin-bottom:10px;">
    <div><h4 style="margin:0;">Measurement Direction:</h4></div>
-   <div><input type="radio" name="direction" id="forward_radio"> Measure forward in time (e.g., 1257 &rArr; 1258 &rArr; 1259 ... 2020)</input>
-    <br><input type="radio" name="direction" id="backward_radio"> Measure backward in time (e.g., 2020 &rArr; 2019 &rArr; 2018 ... 1257)</input></div>
+   <div><input type="radio" name="direction" id="forward_radio"> <span class="MeasurementOptions-radio-btn">Measure forward in time (e.g., 1257 &rArr; 1258 &rArr; 1259 ... 2020)</span></input>
+    <br><input type="radio" name="direction" id="backward_radio"> <span class="MeasurementOptions-radio-btn">Measure backward in time (e.g., 2020 &rArr; 2019 &rArr; 2018 ... 1257)</span></input></div>
    <div><h4 style="margin:0;margin-top:10px;">Measurement Interval:</h4></div>
-   <div><input type="radio" name="increment" id="annual_radio"> One increment per year (e.g., total-ring width)</input>
-    <br><input type="radio" name="increment" id="subannual_radio"> Two increments per year (e.g., earlywood- & latewood-ring width)</input></div>
+   <div><input type="radio" name="increment" id="annual_radio"> <span class="MeasurementOptions-radio-btn">One increment per year (e.g., total-ring width)</span></input>
+    <br><input type="radio" name="increment" id="subannual_radio"> <span class="MeasurementOptions-radio-btn">Two increments per year (e.g., earlywood- & latewood-ring width)</span></input></div>
   <hr style="height:2px;border-width:0;color:gray;background-color:gray;margin-top:10px;margin-bottom:10px;">
    <div><p style="text-align:right;font-size:20px">&#9831; &#9831; &#9831;  &#9831; &#9831; &#9831; &#9831; &#9831; &#9831; &#9831;<button type="button" id="confirm-button" class="preferences-button"> Save & close </button></p></div>
    <div><p style="text-align:left;font-size:12px;margin:0;">Please note: Once measurements are initiated, these preferences are set. To modify, delete all existing points for this asset and initiate a new set of measurements.</p></div>
@@ -121,3 +121,8 @@
 <script id="empty-div-template" type="text/x-handlebars-template">
   <div id="{{div_name}}"></div>
 </script>
+
+<div id="AutoScroll-Right-Div" class="AutoScoll-Movement-Div"></div>
+<div id="AutoScroll-Left-Div" class="AutoScoll-Movement-Div"></div>
+<div id="AutoScroll-Up-Div" class="AutoScoll-Movement-Div"></div>
+<div id="AutoScroll-Down-Div" class="AutoScoll-Movement-Div"></div>

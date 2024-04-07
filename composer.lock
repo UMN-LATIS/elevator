@@ -2204,49 +2204,6 @@
             "time": "2021-05-26T08:46:42+00:00"
         },
         {
-            "name": "markwilson/verbal-expressions-php",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/markwilson/VerbalExpressionsPhp.git",
-                "reference": "913485ff43edcaf2148d497860633be631d648d6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/markwilson/VerbalExpressionsPhp/zipball/913485ff43edcaf2148d497860633be631d648d6",
-                "reference": "913485ff43edcaf2148d497860633be631d648d6",
-                "shasum": ""
-            },
-            "require-dev": {
-                "phpunit/phpunit": "3.7.*",
-                "squizlabs/php_codesniffer": "1.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "MarkWilson\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Mark Wilson",
-                    "email": "mark@89allport.co.uk",
-                    "homepage": "http://markwilson.me"
-                }
-            ],
-            "description": "VerbalExpressions for PHP; ported from jehna/VerbalExpressions",
-            "keywords": [
-                "expressions",
-                "regular",
-                "verbal"
-            ],
-            "time": "2013-07-24T16:37:26+00:00"
-        },
-        {
             "name": "monolog/monolog",
             "version": "1.25.5",
             "source": {
@@ -4565,7 +4522,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "markwilson/verbal-expressions-php": 20,
         "smalot/pdfparser": 20,
         "buggedcom/phpvideotoolkit": 20,
         "tedivm/stash": 20,

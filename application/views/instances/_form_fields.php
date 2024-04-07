@@ -341,6 +341,16 @@
 		
 	</div>
 </div>
+
+<div class="form-group">
+	<label for="customHomeRedirect" class="col-sm-2 control-label">
+		Custom Home Redirect:
+	</label>
+	<div class="col-sm-6">
+		<input type="text" name="customHomeRedirect" id="customHomeRedirect" class="form-control" value="<?= $instance->getCustomHomeRedirect(); ?>">
+	</div>
+</div>
+
 <div class="form-group">
 	<label for="maximumMoreLikeThis" class="col-sm-2 control-label">More Like This Display Count:</label>
 	<div class="col-sm-6">

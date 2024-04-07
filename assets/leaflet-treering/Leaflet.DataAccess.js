@@ -61,6 +61,8 @@ function ViewData(Inte) {
  * @param {object} Inte - DataAccessInterface objects. Allows access to DataAccess tools.
 */
 function ViewDataDialog(Inte) {
+    this.dialogOpen = false;
+
     Handlebars.registerHelper('ifDecadeCheck', function(year, block) {
         var selected = year % 10 == 0;
         if(selected) {
@@ -88,8 +90,8 @@ function ViewDataDialog(Inte) {
     let html = document.getElementById("DataAccess-dialog-template").innerHTML;
     this.template = Handlebars.compile(html);
     
-    this.dialogHeight = 260;
-    this.tableHeight = 215;
+    this.dialogHeight = 290;
+    this.tableHeight = 250;
       
     this.dialog = L.control.dialog({
         "size": [0, 0],
@@ -99,12 +101,7 @@ function ViewDataDialog(Inte) {
         "maxSize": [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
         "minSize": [0, 0],
     }).addTo(Inte.treering.viewer);
-
-    $(this.dialog._map).on('dialog:closed', (dialog) => { 
-        Inte.viewData.btn.state('inactive'); 
-        Inte.viewData.active = false;
-        if (Inte.deleteData?.dialog) Inte.deleteData.dialog.close() 
-    });
+    this.dialog.hideClose();
 
     this.scrollPositionFromTop = 0;
 
@@ -122,7 +119,7 @@ function ViewDataDialog(Inte) {
             savePermissions: Inte.treering.meta.savePermission,
         });
 
-        let size = dat?.ew ? [240, this.dialogHeight] : [156, this.dialogHeight];
+        let size = dat?.ew ? [260, this.dialogHeight] : [176, this.dialogHeight];
         
         this.dialog.setContent(content);
 
@@ -134,6 +131,7 @@ function ViewDataDialog(Inte) {
         document.getElementById('DataAccess-table-id').style.height = this.tableHeight + "px"; 
 
         this.dialog.open();
+        this.dialogOpen = true;
 
         document.getElementById("DataAccess-table-body").scrollTop = this.scrollPositionFromTop;
         this.createEventListeners();
@@ -144,8 +142,9 @@ function ViewDataDialog(Inte) {
      * @function
      */
     ViewDataDialog.prototype.close = function() {
-        this.dialog.close();
-        if (Inte.deleteData.dialog) Inte.deleteData.dialog.close();
+        if (this.dialogOpen) this.dialog.close();
+        if (Inte.deleteData.dialogOpen) Inte.deleteData.dialog.close();
+        this.dialogOpen = false;
     }
     
     /**
@@ -156,6 +155,7 @@ function ViewDataDialog(Inte) {
         let dat = Inte.treering.helper.findDistances();
         let content = this.template({
             data: dat,
+            sub: dat.ew !== undefined && dat.lw !== undefined,
             savePermissions: Inte.treering.meta.savePermission,
         });
         
@@ -654,11 +654,12 @@ function Download(Inte) {
 
         let name = this.constructNameRWL(Inte.treering.meta.assetName);
         let year = dat.tw.x[0];
+        let yearStr = this.formatYearRWL(year);
         let stopMarker = " -9999";
         
-        let outTWStr = name + dat.tw.x[0] + this.formatDataPointRWL(dat.tw.y[0]);
+        let outTWStr = name + yearStr + this.formatDataPointRWL(dat.tw.y[0]);
         // If data begins on a year ending in '9', begin newline immediately.
-        if ((year + 1) % 10 == 0) outTWStr += "\n" + name + (year + 1);;
+        if ((year + 1) % 10 == 0) outTWStr += "\n" + name + this.formatYearRWL(year + 1);;
 
         let outEWStr = "";
         let outLWStr = "";
@@ -667,11 +668,14 @@ function Download(Inte) {
             let yearEW = dat.ew.x[0];
             let yearLW = dat.lw.x[0];
 
-            outEWStr = name + yearEW + this.formatDataPointRWL(dat.ew.y[0]);
-            outLWStr = name + yearLW + this.formatDataPointRWL(dat.lw.y[0]);
+            let yearEWStr = this.formatYearRWL(yearEW);
+            let yearLWStr = this.formatYearRWL(yearLW);
 
-            if ((yearEW + 1) % 10 == 0) outEWStr += "\n" + name + (yearEW + 1);;
-            if ((yearLW + 1) % 10 == 0) outLWStr += "\n" + name + (yearLW + 1);;
+            outEWStr = name + yearEWStr + this.formatDataPointRWL(dat.ew.y[0]);
+            outLWStr = name + yearLWStr + this.formatDataPointRWL(dat.lw.y[0]);
+
+            if ((yearEW + 1) % 10 == 0) outEWStr += "\n" + name + this.formatYearRWL(yearEW + 1);;
+            if ((yearLW + 1) % 10 == 0) outLWStr += "\n" + name + this.formatYearRWL(yearLW + 1);;
         }
 
         for (let i = 1; i < dat.tw.x.length; i++) {
@@ -684,11 +688,12 @@ function Download(Inte) {
             }
     
             if ((year + 1) % 10 == 0) {
-                outTWStr += "\n" + name + (year + 1);
+                yearStr = this.formatYearRWL(year + 1);
+                outTWStr += "\n" + name + yearStr;
 
                 if (dat?.ew) {
-                    outEWStr += "\n" + name + (year + 1);
-                    outLWStr += "\n" + name + (year + 1);
+                    outEWStr += "\n" + name + yearStr;
+                    outLWStr += "\n" + name + yearStr;
                 }
             }
         }
@@ -700,6 +705,19 @@ function Download(Inte) {
 
         if (outEWStr.length > 1) this.zipFiles("rwl", "txt", outTWStr, null, outEWStr, outLWStr);
         else this.zipFiles("rwl", "txt", outTWStr);
+    }
+
+    /**
+     * Converts year value into RWL format. 
+     * @function
+     *  
+     * @param {integer} year - Year value.  
+     */
+    Download.prototype.formatYearRWL = function(year) {
+        year = String(year);
+        year = " ".repeat(4 - year.length) + year;
+
+        return year;
     }
 
     /**

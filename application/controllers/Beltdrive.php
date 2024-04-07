@@ -223,6 +223,13 @@ class Beltdrive extends CI_Controller {
 				continue;
 			}
 
+			$stats = $this->pheanstalk->statsJob($job);
+			if($stats->reserves > 200) {
+				$this->logging->processingInfo("job", "drawerPrep", "drawer attempted 200 times", $job_encoded['drawerId'], $job->getId());
+				$this->pheanstalk->bury($job);
+				continue;
+			}
+
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
@@ -302,7 +309,8 @@ class Beltdrive extends CI_Controller {
 					$drawerContent = $this->load->view("email/drawerReady", ["drawerId"=>$drawerId, "targetURL"=>$targetURL], true);
 
 					$this->load->library('email');
-					$this->email->from('elevator@umn.edu', 'Elevator');
+					$this->email->from('no-reply@elevatorapp.net', 'Elevator');
+					$this->email->set_newline("\r\n");
 					$this->email->to($userEmail);
 					$this->email->subject("Drawer Ready for Download");
 					$this->email->message($drawerContent);
@@ -377,7 +385,8 @@ class Beltdrive extends CI_Controller {
 					$this->pheanstalk->delete($job);
 					$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
 					$this->load->library('email');
-					$this->email->from('elevator@umn.edu', 'Elevator');
+					$this->email->from('no-reply@elevatorapp.net', 'Elevator');
+					$this->email->set_newline("\r\n");
 					$this->email->to($userEmail);
 					$this->email->subject("File Ready for Download");
 					$this->email->message($fileContent);

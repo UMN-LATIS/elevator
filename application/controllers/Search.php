@@ -10,7 +10,7 @@ class Search extends Instance_Controller {
 		parent::__construct();
 		$this->load->model("asset_model");
 
-		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers", "jquery.fullscreen-0.4.1"];
+		$jsLoadArray = ["handlebars-v1.1.2", "mapWidget","drawers", "jquery.fullscreen-0.4.1", "loadDrawer"];
 		$this->template->loadJavascript($jsLoadArray);
 
 		$this->template->content->view("drawers/drawerModal");
@@ -204,7 +204,8 @@ class Search extends Instance_Controller {
 			$this->load->helper("multiselect");
 			$returnInfo['type'] = "multiselect";
 			$returnInfo['values'] = array();
-			$returnInfo['renderContent'] = "<div id='cascade' class='multiselectGroup'>" . $this->load->view("widget_form_partials/multiselect_inner", ["widgetFieldData"=>$widget->getFieldData(), "formFieldName"=>"specificSearchText[]", "formFieldId"=>"cascade"], true) . "</div>";
+			$randomID = rand(1,100000);
+			$returnInfo['renderContent'] = "<div id='cascade" . $randomID . "' class='multiselectGroup'>" . $this->load->view("widget_form_partials/multiselect_inner", ["widgetFieldData"=>$widget->getFieldData(), "formFieldName"=>"specificSearchText[]", "formFieldId"=>"cascade" . $randomID], true) . "</div>";
 			$returnInfo['rawContent'] = $widget->getFieldData();
 		}
 		else {
