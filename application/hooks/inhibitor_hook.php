@@ -195,7 +195,7 @@ class InhibitorHook {
 		$CI =& get_instance();
 		
 		if(session_status() !== PHP_SESSION_ACTIVE) {
-			session_start();
+			// session_start();
 		}
 		
 		if($CI && !$CI->input->is_cli_request()) {

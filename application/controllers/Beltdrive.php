@@ -26,10 +26,13 @@ class Beltdrive extends CI_Controller {
 					}
 				}
 			}
-			return $iface[0]['mac'];
-		} else {
-			return "notfound";
+			if(isset($iface[0])){
+				return $iface[0]['mac'];	
+			}
+			
 		}
+	
+		return "notfound";
 	}
 
 	public function __construct()

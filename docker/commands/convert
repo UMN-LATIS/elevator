@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run --platform linux/x86_64 --memory=8g  --rm -i -v /scratch:/scratch ghcr.io/umn-elevator/imagemagick:latest convert "$@"

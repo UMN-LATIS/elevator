@@ -115,7 +115,6 @@ class ImageHandler extends FileHandlerBase {
 		}
 		
 
-
 		if(!$fileObject->metadata) {
 			if($fileFormat = identifyImage($sourceFile)) {
 				$originalName = $sourceFile->originalFilename;
@@ -520,6 +519,9 @@ class ImageHandler extends FileHandlerBase {
 
 	public function priority() {
 		// if we're a tiled image, we give it a lower priority
+		if(!isset($this->sourceFile->metadata["width"])) {
+			return 0;
+		}
 		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
 		if($megapixels > 50 || $this->forceTiling()) {
 			return 50;

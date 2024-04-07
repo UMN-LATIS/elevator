@@ -837,9 +837,19 @@ class Asset_model extends CI_Model {
 		$this->assetObject->setDeleted(false);
 
 		if(!$this->getObjectId()) {
-			$this->assetObject->setAssetId((string)new MongoDB\BSON\ObjectId());
-			$this->doctrine->em->persist($this->assetObject);
-			$this->doctrine->em->flush();
+			try {
+				$this->assetObject->setAssetId((string)new MongoDB\BSON\ObjectId());
+				
+				$this->doctrine->em->persist($this->assetObject);
+				$this->doctrine->em->flush();
+			}
+			catch(Exception $e) {
+				// if we're trying to save an object that already exists, we'll get a unique constraint violation
+				// in that case, we'll just try again.
+				var_dump($e);
+				die();
+			}
+			
     	}
         else if($oldAsset) {
 
@@ -907,6 +917,7 @@ class Asset_model extends CI_Model {
 				$noIndex=true;
 			}
 		}
+		
 
 		if($reindex && !$noIndex) {
 			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
