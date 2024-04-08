@@ -1430,3 +1430,9 @@ ul.collectionList li:last-child:after {
 .triggerLightbox {
   cursor: pointer;
 }
+
+
+.textAreaView {
+  width: 100%;
+  overflow-wrap: break-word;
+}
