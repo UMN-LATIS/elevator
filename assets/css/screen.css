@@ -1432,7 +1432,7 @@ ul.collectionList li:last-child:after {
 }
 
 
-.textAreaView {
+.textareaView {
   width: 100%;
   overflow-wrap: break-word;
 }
