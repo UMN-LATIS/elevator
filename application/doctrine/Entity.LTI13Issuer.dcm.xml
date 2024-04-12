@@ -1,0 +1,29 @@
+<!-- Entity.Log.dcm.xml -->
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                    http://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
+
+      <entity name="Entity\LTI13Issuer" table="lti13_issuers">
+          <id name="id" type="integer">
+              <generator strategy="AUTO" />
+          </id>
+          <field name="createdAt" type="datetime" nullable='true' >
+            
+          </field>
+          <field name="updatedAt" type="datetime" nullable='true' >
+              <options>
+                <option name="default">CURRENT_TIMESTAMP</option>
+              </options>
+          </field>
+
+          <field name="host" type="string"  nullable='true' />
+          <field name="client_id" type="string"  nullable='true' />
+          <field name="auth_login_url" type="string"  nullable='true' />
+          <field name="auth_token_url" type="string"  nullable='true' />
+          <field name="key_set_url" type="string"  nullable='true' />
+          <field name="private_key" type="text"  nullable='true' />
+          <field name="kid" type="string"  nullable='true' />
+          
+      </entity>
+</doctrine-mapping>
