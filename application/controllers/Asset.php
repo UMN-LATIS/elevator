@@ -189,7 +189,7 @@ class asset extends Instance_Controller {
 
 
 	function viewExcerpt($excerptId, $embedLink = false, $shouldReturnJSON = false) {
-		if ($this->isUsingVueUI() && !$shouldReturnJSON) {
+		if ($this->isUsingVueUI() && !$embedLink && !$shouldReturnJSON) {
 			return $this->template->publish('vueTemplate');
 		}
 
@@ -222,6 +222,7 @@ class asset extends Instance_Controller {
 		// Luckily, the rest of the auth process will be ok with this, since we don't check again further down the generation.
 		$this->accessLevel = $this->user_model->getAccessLevel("drawer", $excerpt->getDrawer());
 		$this->assetAccessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+		
 		if($this->accessLevel < PERM_VIEWDERIVATIVES && $this->assetAccessLevel < PERM_VIEWDERIVATIVES) {
 
 			// let's check if the excerpt file's parent is different. This can happen with nested views
@@ -251,10 +252,12 @@ class asset extends Instance_Controller {
 		if($embedLink) {
 			$this->template->set_template("noTemplate");
 			$embed = "<iframe class='videoEmbedFrame' src='" . $fileHandler->getEmbedURL() . "' width=100% height=100%></iframe>";
+			
 		}
 		else {
 			$embed = $this->loadAssetView($assetModel, $fileHandler, $embedLink);
 		}
+		
 
 		if ($shouldReturnJSON) {
 			return render_json([
@@ -268,7 +271,7 @@ class asset extends Instance_Controller {
 				'label' => $excerpt->getExcerptLabel(),
 			]);
 		}
-
+		
 		$this->template->content->view("asset/excerpt", ["isEmbedded"=>$embedLink, "asset"=>$assetModel,"fileObjectId"=>$fileHandler->getObjectId(), "embed"=>$embed, "startTime"=>$excerpt->getExcerptStart(), "endTime"=>$excerpt->getExcerptEnd(),"excerptId"=>$excerpt->getId(), "label"=>$excerpt->getExcerptLabel()]);
 		$this->template->publish();
 
@@ -358,6 +361,7 @@ class asset extends Instance_Controller {
 
 	public function getEmbed($fileObjectId, $parentObject=null, $embedded = false) {
 		list($assetModel, $fileHandler) = $this->getComputedAsset($fileObjectId, $parentObject, $embedded);
+	
 		if(!$fileHandler) {
 			return;
 		}
@@ -367,7 +371,6 @@ class asset extends Instance_Controller {
 		catch (exception $e) {
 
 		}
-		
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
 		if(isset($embedAssets)) {
 			$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
@@ -440,11 +443,11 @@ class asset extends Instance_Controller {
 			}
 			else {
 				// we've got a mismatch, but see if they've got access to the file without looking at the parent.
-				$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+				$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel, true);
 			}
 		}
 		else {
-			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel, true);
 		}
 
 		if($this->instance->getFeaturedAsset() && $this->instance->getFeaturedAsset() == $fileHandler->parentObjectId) {

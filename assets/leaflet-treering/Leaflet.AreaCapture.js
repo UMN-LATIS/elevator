@@ -268,14 +268,15 @@ function EllipseCSVDownload(Inte) {
     EllipseCSVDownload.prototype.raw = function(wantNA) {
         let assetName = Inte.treering.meta.assetName;
         let csvString = `${assetName}_year,${assetName}_area_mm2`;
-        let startYear = Inte.ellipseData.data[0].year;
-        let endYear = Inte.ellipseData.data[Inte.ellipseData.data.length - 1].year;
+
+        let startYear = Math.floor(Inte.ellipseData.data[0].year);
+        let endYear = Math.floor(Inte.ellipseData.data[Inte.ellipseData.data.length - 1].year);
         let n = 0;
 
         for (let year = startYear; year <= endYear; year++) {
             let yearHasData = false
-            for (i = n; i < Inte.ellipseData.data.length && year == Inte.ellipseData.data[i].year; i++) {
-                csvString += "\n" + year + "," + Inte.ellipseData.data[i].area.toFixed(3);
+            for (i = n; i < Inte.ellipseData.data.length && year == Math.floor(Inte.ellipseData.data[i].year); i++) {
+                csvString += "\n" + Inte.ellipseData.data[i].year + "," + Inte.ellipseData.data[i].area.toFixed(3);
                 yearHasData = true;
                 n++;
             }
@@ -284,7 +285,6 @@ function EllipseCSVDownload(Inte) {
                 csvString += "\n" + year + ",NA";
             }
         }
-
         return csvString
     }
 
@@ -296,13 +296,13 @@ function EllipseCSVDownload(Inte) {
 EllipseCSVDownload.prototype.stats = function(wantNA) {
         //Constructs an object with an array of data for each year
         let yearDataPairings = {};
-        let startYear = Inte.ellipseData.data[0].year;
-        let endYear = Inte.ellipseData.data[Inte.ellipseData.data.length - 1].year;
+        let startYear = Math.floor(Inte.ellipseData.data[0].year);
+        let endYear = Math.floor(Inte.ellipseData.data[Inte.ellipseData.data.length - 1].year);
         let n = 0;
 
         for (let year = startYear; year <= endYear; year++) {
             yearDataPairings[year] = [];
-            for (let i = n; i < Inte.ellipseData.data.length && year == Inte.ellipseData.data[i].year; i++) {
+            for (let i = n; i < Inte.ellipseData.data.length && year == Math.floor(Inte.ellipseData.data[i].year); i++) {
                 yearDataPairings[year].push(Inte.ellipseData.data[i].area);
                 n++;
             }
