@@ -5,6 +5,7 @@ use Packback\Lti1p3\LtiMessageLaunch;
 use Packback\Lti1p3\ImsStorage\ImsCache;
 use Packback\Lti1p3\ImsStorage\ImsCookie;
 use Packback\Lti1p3\LtiException;
+use Packback\Lti1p3\OidcException;
 use Packback\Lti1p3\LtiDeepLinkResource;
 use Packback\Lti1p3\LtiDeepLinkResourceIframe;
 
@@ -21,9 +22,18 @@ class lti13 extends Instance_Controller {
 
   public function login() {
     $this->load->library("LTI13Database");
-    return LtiOidcLogin::new(new LTI13Database, new ImsCache, new ImsCookie)
-        ->doOidcLoginRedirect(instance_url("api/v1/lti13/launch"))
-        ->doRedirect();
+    if(isset($_COOKIE) && count($_COOKIE) > 0) {
+      return LtiOidcLogin::new(new LTI13Database, new ImsCache, new ImsCookie)
+      ->doOidcLoginRedirect(instance_url("api/v1/lti13/launch"),null, $usePostMessage=false)
+      ->doRedirect();
+    }
+    else {
+      $usePostMessage = true;
+      echo LtiOidcLogin::new(new LTI13Database, new ImsCache, new ImsCookie)
+      ->doOidcLoginRedirect(instance_url("api/v1/lti13/launch"), null, $usePostMessage=true);
+    }
+   
+    
 }
 
 
@@ -32,6 +42,7 @@ class lti13 extends Instance_Controller {
       $exception = new \Exception($_REQUEST['error_description']);
       echo "fail";
   }
+
 
    try {
       $launch = LtiMessageLaunch::new(
@@ -47,8 +58,11 @@ class lti13 extends Instance_Controller {
       )
       ->validate();
   }
-  catch (LtiException $e) {
-
+  catch (Exception $e) {
+      var_dump($_REQUEST);
+      die();
+      // likely a cookie failure, try to re-login with cookies
+      // return redirect(instance_url("api/v1/lti13/login/postMessage"));
       // canvas needs to update for new window to work https://github.com/instructure/canvas-lms/commit/811a1194cabccc1b3fb22aa3d13d64cde547116d#diff-79b6cd1bab1e82354966238b3d72cfa8fffb6357a61d2454bf4aba1c85b96a5e
             echo '<script>
             window.parent.postMessage(
@@ -64,18 +78,6 @@ class lti13 extends Instance_Controller {
   "*"
 )           
       </script>';
-      return;
-//       echo '<script>
-//       window.parent.postMessage(
-// {
-// messageType: "requestFullWindowLaunch",
-// data: "' . instance_url("api/v1/lti13/launch") . '"
-// },
-// "*"
-// )           
-//       </script>
-//       <h1>Canvas Launch Error</h1>
-//       <p>' . $e->getMessage() . "</p>";
       return;
   }
   $launchData = $launch->getLaunchData();
