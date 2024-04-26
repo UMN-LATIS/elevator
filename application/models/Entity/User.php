@@ -663,4 +663,45 @@ class User
     {
         return $this->csv_imports;
     }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $lti_courses;
+
+
+    /**
+     * Add ltiCourse.
+     *
+     * @param \Entity\LTI13InstanceAssociation $ltiCourse
+     *
+     * @return User
+     */
+    public function addLtiCourse(\Entity\LTI13InstanceAssociation $ltiCourse)
+    {
+        $this->lti_courses[] = $ltiCourse;
+
+        return $this;
+    }
+
+    /**
+     * Remove ltiCourse.
+     *
+     * @param \Entity\LTI13InstanceAssociation $ltiCourse
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeLtiCourse(\Entity\LTI13InstanceAssociation $ltiCourse)
+    {
+        return $this->lti_courses->removeElement($ltiCourse);
+    }
+
+    /**
+     * Get ltiCourses.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getLtiCourses()
+    {
+        return $this->lti_courses;
+    }
 }

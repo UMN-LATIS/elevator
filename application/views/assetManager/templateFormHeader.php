@@ -16,6 +16,7 @@ $objectId = null;
 $readyForDisplay = "CHECKED";
 $collectionId = null;
 $availableAfter = null;
+$assetStatus = null;
 
 if(isset($asset)) {
 	$objectId = $asset->getObjectId();
@@ -24,6 +25,7 @@ if(isset($asset)) {
 	if($asset->getGlobalValue("availableAfter") && $asset->getGlobalValue("availableAfter")->getTimestamp() > 0) {
 		$availableAfter = $asset->getGlobalValue("availableAfter")->format("Y-m-d");
 	}
+	$assetStatus = $asset->getGlobalValue("deleted") ? "deleted" : "active";
 
 }
 
@@ -121,6 +123,25 @@ if(strlen($this->template->collectionId)>0) {
 	margin-left: 10px;
 	margin-right: 10px;
 	margin-bottom: 10px;
+}
+
+.badge {
+	text-transform: uppercase;
+	font-weight: 500;
+	letter-spacing: 0.5px;
+	border: 1px solid #ccc;
+}
+
+.badge-danger {
+	background-color: #ffe6e6;
+	color: #ad0000;
+	border-color: #ffa7a7;
+}
+
+.badge-success {
+	background-color: #f0fdf4;
+	color: #15803d;
+	border: 1px solid rgb(22 163 74 / 20%);
 }
 
 </style>
@@ -285,10 +306,13 @@ $(function() {
 						<div class="form-group">
 							<label for="inputStatus" class="col-sm-2 control-label">Status:</label>
 							<div class="col-sm-6">
-								<p class="form-control-static"><?=$asset->getGlobalValue("deleted")?"Deleted":"Active"?>
-								<?if($asset->getGlobalValue("deleted")):?>
-								(<?=$deletedBy?> - <?=$deletedAt?>)
-								<?endif?>
+								<p class="form-control-static">
+									<span class="badge badge-pill <?= $assetStatus === 'deleted' ? 'badge-danger' : 'badge-success' ?>">
+										<?= $assetStatus ?>
+									</span>
+								<? if ($assetStatus === 'deleted') : ?>
+									(<?=$deletedBy?> - <?=$deletedAt?>)
+								<? endif ?>
 								</p>
 								
 							</div>

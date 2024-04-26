@@ -466,7 +466,7 @@ class AssetManager extends Admin_Controller {
 			$this->asset_model->loadAssetFromRecord($entry, true);
 			$resultCache = $this->asset_model->getSearchResultEntry();
 
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$resultCache['title'], "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
+			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$resultCache['title']??"", "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 
 		if($offset>0) {

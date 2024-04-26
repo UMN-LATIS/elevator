@@ -357,7 +357,7 @@ if(window.location.hash  == "#secondFrame" && inIframe()) {
       <?=file_get_contents("assets/instanceAssets/" . $this->instance->getId() . "_footer.html");?>
       <?endif?>
       <p class="universityFooter">
-        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage" alt="Grain Elevator Icon">Powered by Elevator, developed by the <A href="http://www.umn.edu">University of Minnesota</a>
+        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage" alt="Grain Elevator Icon">Powered by Elevator, developed by the <A href="http://www.umn.edu" target="_blank">University of Minnesota</a>
       </p>
     </footer>
 
@@ -431,7 +431,14 @@ var finishEmbedTrigger = function() {
     excerptId = $("#embedView").data("excerpt");
   }
   if(sessionStorage.elevatorCallbackType == "lti") {
-    $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId, excerptId: excerptId}, function(data, textStatus, xhr) {
+    if(sessionStorage.ltiVersion == "1.3") {
+      $.post(basePath + "api/v1/lti13/ltiPayload", {object: fileObjectId, excerptId: excerptId, launchId: sessionStorage.launchId, userId: sessionStorage.userId}, function(data, textStatus, xhr) {
+        
+        $("body").append(data);      
+    });
+    }
+    else {
+      $.post(basePath + "api/v1/lti/ltiPayload", {object: fileObjectId, excerptId: excerptId}, function(data, textStatus, xhr) {
         returnForm = '<form id="ltiForm" action="' + sessionStorage.returnURL + '" method="post" encType="application/x-www-form-urlencoded"> \
                   <input type="hidden" name="lti_message_type" value="ContentItemSelection" /> \
                   <input type="hidden" name="lti_version" value="LTI-1p0" /> \
@@ -442,6 +449,9 @@ var finishEmbedTrigger = function() {
         $("#lti_content").val(data);
         $("#ltiForm").submit();      
     });
+
+    }
+    
   }
   else if(sessionStorage.elevatorCallbackType == "JS") {
     var currentLocation = window.location.toString();
