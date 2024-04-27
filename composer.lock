@@ -1837,12 +1837,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/cmcfadden/google-api-php-client.git",
-                "reference": "9d94afff0e4a8f2aec4756c9cc8948b38555380a"
+                "reference": "94ed040f813586f79df6c511056e18b4fa33b5e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cmcfadden/google-api-php-client/zipball/9d94afff0e4a8f2aec4756c9cc8948b38555380a",
-                "reference": "9d94afff0e4a8f2aec4756c9cc8948b38555380a",
+                "url": "https://api.github.com/repos/cmcfadden/google-api-php-client/zipball/94ed040f813586f79df6c511056e18b4fa33b5e0",
+                "reference": "94ed040f813586f79df6c511056e18b4fa33b5e0",
                 "shasum": ""
             },
             "require": {
@@ -1896,7 +1896,7 @@
             "support": {
                 "source": "https://github.com/cmcfadden/google-api-php-client/tree/disableCache-merge"
             },
-            "time": "2023-08-30T18:51:01+00:00"
+            "time": "2024-04-27T00:52:59+00:00"
         },
         {
             "name": "google/apiclient-services",

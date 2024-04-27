@@ -334,7 +334,7 @@
 	<div class="col-sm-6">
 		<ul style="list-style-type: none; margin-left:0; padding-left:0">
 			<?foreach($this->config->item("available_themes") as $theme):?>
-				<li><input type="checkbox" name="availableThemes[]" value="<?=$theme?>" id="<?=$theme?>" <?=in_array($theme, $instance->getAvailableThemes())?"CHECKED":null?>> <label for="<?=$theme?>"><?=$theme?></label></li>
+				<li><input type="checkbox" name="availableThemes[]" value="<?=$theme?>" id="<?=$theme?>" <?=in_array($theme, $instance->getAvailableThemes()??[])?"CHECKED":null?>> <label for="<?=$theme?>"><?=$theme?></label></li>
 			<?endforeach?>
 	</ul>
 
