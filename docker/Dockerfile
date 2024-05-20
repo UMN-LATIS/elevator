@@ -10,6 +10,7 @@ COPY get-docker.sh /root/
 RUN chmod +x /root/get-docker.sh
 RUN /root/get-docker.sh
 COPY commands/* /usr/local/bin/
-RUN echo "Hello"
 RUN mkdir /scratch
-
+RUN mkdir /opt
+COPY . /opt/
+WORKDIR /opt
