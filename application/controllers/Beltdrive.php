@@ -103,10 +103,16 @@ class Beltdrive extends CI_Controller {
 			return 0;
 		}
 		$fileHandler->loadByObjectId($job_encoded["fileHandlerId"]);
+		
+		$this->load->library('Fakestalk');
+		$fakePheanstsalk = new Fakestalk();
+
 		$fileHandler->pheanstalk = $fakePheanstsalk;
 		foreach($fileHandler->taskArray as $task) {
-			if($task->performTask()) {
-				continue;
+			$performTaskByName = $fileHandler->performTaskByName($task["taskType"], $task["config"]);
+			if($performTaskByName == JOB_FAILED) {
+				// do some logging?
+				return JOB_FAILED;
 			}
 		}
 	}

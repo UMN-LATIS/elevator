@@ -24,6 +24,7 @@ class MovieHandler extends FileHandlerBase {
 		parent::__construct();
 		//Do your magic here
 		$this->load->library("TranscoderCommands");
+		$this->load->library("TranscoderCommandsAWS");
 	}
 
 
@@ -135,7 +136,13 @@ class MovieHandler extends FileHandlerBase {
 		}
 
 
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		if($this->config->item('fileQueueingMethod') == 'beanstalkd') {
+			$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		}
+		else {
+			$transcodeCommands = new TranscoderCommandsAWS($this->pheanstalk, $this->videoTTR, $this->getObjectId());
+		}
+		
 		$jobId = $transcodeCommands->extractMetadata($this->getObjectId());
 
 		$this->save();
@@ -171,7 +178,13 @@ class MovieHandler extends FileHandlerBase {
 		$nextDerivative = array_shift($targetDerivatives);
 
 		$jobId = null;
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		if($this->config->item('fileQueueingMethod') == 'beanstalkd') {
+			$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		}
+		else {
+			$transcodeCommands = new TranscoderCommandsAWS($this->pheanstalk, $this->videoTTR, $this->getObjectId());
+		}
+		
 		switch($nextDerivative) {
 			case "thumbnail":
 				$jobId = $transcodeCommands->createThumbnail($this->getObjectId());
@@ -211,7 +224,12 @@ class MovieHandler extends FileHandlerBase {
 
 	public function cleanupOriginal($args) {
 
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		if($this->config->item('fileQueueingMethod') == 'beanstalkd') {
+			$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		}
+		else {
+			$transcodeCommands = new TranscoderCommandsAWS($this->pheanstalk, $this->videoTTR, $this->getObjectId());
+		}
 		$jobId = $transcodeCommands->cleanup($this->getObjectId());
 
 		if($jobId) {

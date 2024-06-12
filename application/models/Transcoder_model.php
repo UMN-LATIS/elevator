@@ -1143,6 +1143,9 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 
 	}
 
+	public function setFileHandler($objectId) {
+		$this->fileHandler = $this->filehandler_router->getHandledObject($objectId);
+	}
 
 }
 

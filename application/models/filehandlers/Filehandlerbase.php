@@ -40,6 +40,8 @@ class FileHandlerBase extends CI_Model {
 
 	public $overrideHandlerClass = false; // allows us to force a new handler for the next load
 
+	public $nextTask = null;
+
 	public function __construct()
 	{
 		parent::__construct();
@@ -205,7 +207,15 @@ class FileHandlerBase extends CI_Model {
 		else {
 			return false;
 		}
+	}
 
+	public function performTaskByName($taskName, $args) {
+		if(method_exists($this, $taskName)) {
+			return call_user_func(array($this,$taskName), $args);
+		}
+		else {
+			return false;
+		}
 	}
 
 	public function triggerReindex() {
@@ -236,7 +246,6 @@ class FileHandlerBase extends CI_Model {
 
 
 	public function queueTask($taskId, $appendData=array(), $setHostAffinity=true) {
-
 		// if we're injecting a new handler, we can't trust $this
 		if($this->overrideHandlerClass) {
 			$newHandler = new $this->overrideHandlerClass;
@@ -244,6 +253,11 @@ class FileHandlerBase extends CI_Model {
 		}
 		else {
 			$nextTask = $this->taskArray[$taskId];
+		}
+
+		if($this->config->item('fileQueueingMethod') == "aws") {
+			$this->nextTask = $nextTask;
+			return;
 		}
 
 		if(!$this->pheanstalk) {
@@ -395,7 +409,7 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function queueBatchItem($fileObjectId) {
-
+		// do AWS batch queueing here
 	}
 
 	/**
