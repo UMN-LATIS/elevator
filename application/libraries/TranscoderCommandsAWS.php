@@ -1,0 +1,65 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class TranscoderCommandsAWS {
+
+	private $pheanstalk;
+    private $transcoderModel;
+
+	public function __construct($pheanstalk = null, $videoTTR = null, $objectId) {
+
+		if($pheanstalk) {
+			$this->pheanstalk = $pheanstalk;
+			$this->videoTTR = $videoTTR;
+		}
+        $this->load->model("transcoder_model");
+        $this->transcoderModel = new Transcoder_Model();
+        $this->transcoderModel->setFileHandler($objectId);
+	}
+
+
+	public function checkCompletion($jobId) {
+
+	
+	}
+
+
+	public function extractMetadata($objectId)
+	{
+		return $this->transcoderModel->extractMetadata([]);
+	}
+
+
+	public function extractWaveform($objectId) {
+        return $this->transcoderModel->extractWaveform([]);
+	}
+
+	public function createVTT($objectId) {
+		return $this->transcoderModel->createVTT([]);
+	}
+
+
+	public function createDerivative($objectId, $type) {
+        return $this->transcoderModel->createDerivative(["type"=>$type]);
+	}
+
+
+	public function createThumbnail($objectId) {
+		return $this->transcoderModel->createThumbnail([]);
+	}
+
+	public function createTiny($objectId) {
+		return $this->transcoderModel->createTiny([]);
+	}
+
+
+	public function createSequence($objectId) {
+		return $this->transcoderModel->createSequence([]);
+	}
+
+	public function cleanup($objectId) {
+		return $this->transcoderModel->cleanup([]);
+	}
+
+}
+
+/* End of file  */
