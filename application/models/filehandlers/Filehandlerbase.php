@@ -366,7 +366,20 @@ class FileHandlerBase extends CI_Model {
 
    			$this->save();
 
-   			$this->queueTask(0, [], false);
+			if($this->config->item("fileQueueingMethod") == "beanstalkd") {
+   				$this->queueTask(0, [], false);
+			}
+			else {
+				if($this->sourceFile->isArchived()) {
+					$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+					$pathToFile = instance_url("");
+					$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
+					$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
+				}
+				else {
+					$this->queueBatchItem($fileObject->getObjectId());
+				}
+			}
 
 
    		}
@@ -378,6 +391,10 @@ class FileHandlerBase extends CI_Model {
 
 
 		return $this->getObjectId();
+
+	}
+
+	public function queueBatchItem($fileObjectId) {
 
 	}
 

@@ -413,7 +413,7 @@ class FileManager extends Instance_Controller {
 
 			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 			$pathToFile = instance_url("/fileManager/getOriginal/".$fileId);
-			$newTask = json_encode(["objectId"=>$fileHandler->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile]);
+			$newTask = json_encode(["objectId"=>$fileHandler->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"notify"]);
 			$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
 
 			$this->template->content->view('restoringFile');

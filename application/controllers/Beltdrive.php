@@ -96,6 +96,21 @@ class Beltdrive extends CI_Controller {
 		}
 	}
 
+	public function processAWSBatchJob($fileObjectId) {
+		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
+
+		if(!$fileHandler) {
+			return 0;
+		}
+		$fileHandler->loadByObjectId($job_encoded["fileHandlerId"]);
+		$fileHandler->pheanstalk = $fakePheanstsalk;
+		foreach($fileHandler->taskArray as $task) {
+			if($task->performTask()) {
+				continue;
+			}
+		}
+	}
+
 	public function processFileTask() {
 		echo "Starting processing thread\n";
 		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
@@ -372,10 +387,9 @@ class Beltdrive extends CI_Controller {
 			$userEmail = $job_encoded["userContact"];
 			$instanceId = $job_encoded["instance"];
 			$pathToFile = $job_encoded["pathToFile"];
-
+			$nextTask = $job_encoded["nextTask"];
 			$instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-			$this->filehandlerbase = new filehandlerbase();
-			$this->filehandlerbase->loadByObjectId($objectId);
+			$this->filehandlerbase = $this->filehandler_router->getHandledObject($fileObjectId);
 
 			if($this->filehandlerbase) {
 
@@ -384,16 +398,27 @@ class Beltdrive extends CI_Controller {
 					$this->pheanstalk->release($job, NULL, 120);
 				}
 				else {
-					echo "File finished". $objectId . "\n";
-					$this->pheanstalk->delete($job);
-					$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
-					$this->load->library('email');
-					$this->email->from('no-reply@elevatorapp.net', 'Elevator');
-					$this->email->set_newline("\r\n");
-					$this->email->to($userEmail);
-					$this->email->subject("File Ready for Download");
-					$this->email->message($fileContent);
-					$this->email->send();
+					if($nextTask == "notify") {
+						echo "File finished". $objectId . "\n";
+						$this->pheanstalk->delete($job);
+						$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
+						$this->load->library('email');
+						$this->email->from('no-reply@elevatorapp.net', 'Elevator');
+						$this->email->set_newline("\r\n");
+						$this->email->to($userEmail);
+						$this->email->subject("File Ready for Download");
+						$this->email->message($fileContent);
+						$this->email->send();
+					}
+					else if($nextTask == "create_derivative") {
+						if($this->config->item("fileQueueingMethod") == "aws") {
+							$this->filehandlerbase->queueBatchItem($objectId);
+						}
+						else if($this->config->item("fileQueueingMethod") == "beanstalkd") {
+							$this->filehandlerbase->queueTask(0, [], false);
+						}
+					}
+					
 
 
 				}
