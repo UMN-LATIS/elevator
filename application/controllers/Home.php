@@ -159,6 +159,8 @@ class Home extends Instance_Controller {
 		$headerData["instanceId"] = $this->instance->getId();
 		$headerData["instanceHasLogo"] = $this->instance->getUseHeaderLogo();
 		$headerData["instanceLogo"] = $this->instance->getId();
+		$headerData["instanceShowCollectionInSearchResults"] = $this->instance->getShowCollectionInSearchResults();
+		$headerData["instanceShowTemplateInSearchResults"] = $this->instance->getShowTemplateInSearchResults();
 		$headerData["featuredAssetId"] = $this->instance->getFeaturedAsset();
 		$headerData["featuredAssetText"] = $this->instance->getFeaturedAssetText();
 
