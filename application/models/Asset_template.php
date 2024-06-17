@@ -63,6 +63,10 @@ class Asset_template extends CI_Model {
 		$returnArray = [];
 		$returnArray["templateId"] = $this->templateId;
 		$returnArray["templateName"] = $this->name;
+		$returnArray["showCollection"] = $this->templateObject->getShowCollection();
+		$returnArray["showTemplate"] = $this->templateObject->getShowTemplate();
+		$returnArray["showCollectionPosition"] = $this->templateObject->getCollectionPosition();
+		$returnArray["showTemplatePosition"] = $this->templateObject->getTemplatePosition();
 		$returnArray["widgetArray"] = [];
 		foreach($this->widgetArray as $widget) {
 			$widgetArray = $widget->getWidgetDataAsArray();
