@@ -12,10 +12,10 @@ class TranscoderCommandsAWS {
 			$this->videoTTR = $videoTTR;
 		}
 		$CI =& get_instance();
-        $CI->load->model("transcoder_model");
+        
 		if($objectId) {
 
-		
+			$CI->load->model("transcoder_model");
         	$this->transcoderModel = new Transcoder_Model();
         	$this->transcoderModel->setFileHandler($objectId);
 		}
