@@ -55,7 +55,7 @@ class Instances extends Instance_Controller {
 		$instance->setBucketRegion($this->input->post('bucketRegion'));
 		$instance->setDefaultBucket($this->input->post('defaultBucket'));
 		$instance->setGoogleAnalyticsKey($this->input->post('googleAnalyticsKey'));
-		$instance->setUseCustomHeader($this->input->post('useCustomHeader')?1:0);
+		$instance->setUseCustomHeader($this->input->post('useCustomHeader'));
 		$instance->setCustomHeaderText($this->input->post("customHeaderText"));
 		$instance->setCustomFooterText($this->input->post("customFooterText"));
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);

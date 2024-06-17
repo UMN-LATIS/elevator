@@ -148,10 +148,20 @@
 
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
-		<label>
-			<input type="checkbox" id="useCustomHeader" name="useCustomHeader" value="On" <?=$instance->getUseCustomHeader()?"checked":null?>>
-			Use Custom Header and Footer
+		Display Custom Header and Footer: 
+		<ul style="list-style-type: none;">
+			<li><label>
+			<input type="radio" id="useCustomHeader" name="useCustomHeader" value="0" <?=$instance->getUseCustomHeader()==0?"checked":null?>>
+			Never</li>
 		</label>
+		<li><label>
+			<input type="radio" id="useCustomHeader" name="useCustomHeader" value="1" <?=$instance->getUseCustomHeader()==1?"checked":null?>>
+			Always
+		</label></li>
+		<li><label>
+			<input type="radio" id="useCustomHeader" name="useCustomHeader" value="2" <?=$instance->getUseCustomHeader()==2?"checked":null?>>
+			Only on Home Page
+		</label></li>
 	</div>
 </div>
 
