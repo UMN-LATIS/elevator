@@ -1,8 +1,9 @@
 
-curl -X POST 'http://localhost:9200/elevator/_open'
-curl -XPUT http://localhost:9200/elevator/_settings -d '{
-  "index.mapping.total_fields.limit": 3000
-}'
+#curl -XDELETE "http://localhost:9200/elevator/"
+#curl -X POST 'http://localhost:9200/elevator/_open'
+# curl -XPUT http://localhost:9200/elevator/_settings -d '{
+#   "index.mapping.total_fields.limit": 3000
+# }'
 
 curl -XPUT http://localhost:9200/elevator/ -d '{
   "settings": {

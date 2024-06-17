@@ -391,7 +391,7 @@ class FileHandlerBase extends CI_Model {
 					$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
 				}
 				else {
-					$this->queueBatchItem($fileObject->getObjectId());
+					$this->queueBatchItem($this->getObjectId());
 				}
 			}
 

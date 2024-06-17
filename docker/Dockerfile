@@ -11,6 +11,9 @@ RUN chmod +x /root/get-docker.sh
 RUN /root/get-docker.sh
 COPY commands/* /usr/local/bin/
 RUN mkdir /scratch
-RUN mkdir /opt
-COPY . /opt/
-WORKDIR /opt
+RUN mkdir -p /opt
+COPY ../ /var/www/html/
+WORKDIR /var/www/html
+
+# don't run this in prod
+RUN sed -i 's/scratch:/tmp:/g' /usr/local/bin/*

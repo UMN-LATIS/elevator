@@ -5,15 +5,20 @@ class TranscoderCommandsAWS {
 	private $pheanstalk;
     private $transcoderModel;
 
-	public function __construct($pheanstalk = null, $videoTTR = null, $objectId) {
+	public function __construct($pheanstalk = null, $videoTTR = null, $objectId = null) {
 
 		if($pheanstalk) {
 			$this->pheanstalk = $pheanstalk;
 			$this->videoTTR = $videoTTR;
 		}
-        $this->load->model("transcoder_model");
-        $this->transcoderModel = new Transcoder_Model();
-        $this->transcoderModel->setFileHandler($objectId);
+		$CI =& get_instance();
+        $CI->load->model("transcoder_model");
+		if($objectId) {
+
+		
+        	$this->transcoderModel = new Transcoder_Model();
+        	$this->transcoderModel->setFileHandler($objectId);
+		}
 	}
 
 

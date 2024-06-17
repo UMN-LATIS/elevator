@@ -7,7 +7,7 @@ values
 /** default password is superuser123, change after setup **/
 insert into "users" ("id", "emplid", "username", "usertype", "email", "displayname", "password", "issuperadmin", "hasexpiry", "expires", "createdat", "modifiedat", "createdby_id", "instance_id")
 values
-	(1, null, 'admin', 'Local', '', '', '43c624f81f01607ba2a4e4b756b0c2d87aece67d', true, false, '2014-01-24 00:00:00', '2014-01-24 14:33:39', null, 1, 1);
+	(1, null, 'admin', 'Local', '', '', '28579da20bee0bed0e5c3947406464c36fc74eaa', true, false, '2014-01-24 00:00:00', '2014-01-24 14:33:39', null, 1, 1);
 
 insert into "field_types" ("id", "name", "model_name", "sample_field_data")
 values
