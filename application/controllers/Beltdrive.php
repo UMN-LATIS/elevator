@@ -97,22 +97,36 @@ class Beltdrive extends CI_Controller {
 	}
 
 	public function processAWSBatchJob($fileObjectId) {
+		if(strlen($fileObjectId) != 24) {
+			return 0;
+		}
+
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 
 		if(!$fileHandler) {
 			return 0;
 		}
-		$fileHandler->loadByObjectId($job_encoded["fileHandlerId"]);
 		
+		$fileHandler->loadByObjectId($fileObjectId);
 		$this->load->library('Fakestalk');
-		$fakePheanstsalk = new Fakestalk();
-
+		$fakePheanstsalk = new Fakestalk;
+		$this->pheanstalk = $fakePheanstsalk;
 		$fileHandler->pheanstalk = $fakePheanstsalk;
 		foreach($fileHandler->taskArray as $task) {
-			$performTaskByName = $fileHandler->performTaskByName($task["taskType"], $task["config"]);
+			echo "Performing task " . $task["taskType"] . "\n";
+			if($task["taskType"] == "waitForCompletion") {
+				continue;
+			}
+			// reload each time to make sure artifacts get properly populated
+			$fileHandler->loadByObjectId($fileObjectId);
+			$performTaskByName = $fileHandler->performTaskByName($task["taskType"], array_merge($task["config"], ["runInLoop"=>true]));
 			if($performTaskByName == JOB_FAILED) {
 				// do some logging?
 				return JOB_FAILED;
+			}
+			else {
+				echo "Success!\n";
+				$fileHandler->save();
 			}
 		}
 	}

@@ -409,7 +409,7 @@ $config['mongoCollection'] = "dcl3";
 $config['historyCollection'] = "history";
 $config['fileCollection'] = "fileRepository";
 $config['beanstalkd'] = "##REPLACE##"; // beanstalkd host
-$config['scratchSpace'] = "/scratch/";
+$config['scratchSpace'] = "/tmp/";
 
 $config['elastic'] = "127.0.0.1:9200"; // elastic ip:port
 

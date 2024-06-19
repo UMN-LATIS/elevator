@@ -328,7 +328,6 @@ class FileHandlerBase extends CI_Model {
 
 
 
-
 		$fileObject->setSourceFile($this->sourceFile->getAsArray());
 
 		$derivativeArray = array();

@@ -45,6 +45,12 @@ class Transcoder_Model extends CI_Model {
 		return true;
 	}
 
+	public function triggerSave() {
+		if($this->fileHandler) {
+			$this->fileHandler->save();
+		}
+	}
+
 	public function extractMetadata() {
 
 		if(!$this->checkLocalAndCopy()) {
@@ -53,7 +59,6 @@ class Transcoder_Model extends CI_Model {
 
 
 		$phpvideotoolkit_media = new \PHPVideoToolkit\FfmpegProcess("ffprobe", $this->videoToolkitConfig);
-
 		$raw_data = $phpvideotoolkit_media->setInputPath($this->fileHandler->sourceFile->getPathToLocalFile())
 	         ->addCommand('-show_streams')
 	         ->addCommand('-show_format')
@@ -61,8 +66,8 @@ class Transcoder_Model extends CI_Model {
 	         ->addCommand('-v', "quiet")
 	         ->execute()
 	         ->getBuffer();
-
 		$sourceMetadata = json_decode($raw_data,true);
+
 		$metadata = array();
 		foreach($sourceMetadata["streams"] as $stream) {
 			$metadata[$stream["codec_type"]] = $stream;
@@ -145,6 +150,7 @@ class Transcoder_Model extends CI_Model {
 			}
 
 		}
+
 
 		$this->fileHandler->sourceFile->metadata = array_merge($this->fileHandler->sourceFile->metadata, $targetMetadata);
 
@@ -1143,8 +1149,8 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 
 	}
 
-	public function setFileHandler($objectId) {
-		$this->fileHandler = $this->filehandler_router->getHandledObject($objectId);
+	public function setFileHandler($fileHandler) {
+		$this->fileHandler = $fileHandler;
 	}
 
 }
