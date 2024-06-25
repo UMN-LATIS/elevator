@@ -11,9 +11,12 @@ RUN chmod +x /root/get-docker.sh
 RUN /root/get-docker.sh
 COPY commands/* /usr/local/bin/
 RUN mkdir /scratch
+RUN mkdir -p /tmp
 RUN mkdir -p /opt
 COPY ../ /var/www/html/
 WORKDIR /var/www/html
-
+ARG DOCKER_SCRATCH_DIR
+ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 # don't run this in prod
-RUN sed -i 's/scratch:/tmp:/g' /usr/local/bin/*
+RUN sed -i "s|/scratch:|$DOCKER_SCRATCH_DIR:|g" /usr/local/bin/*
+RUN sed -i 's/docker run/docker run --platform=linux\/amd64/g' /usr/local/bin/*

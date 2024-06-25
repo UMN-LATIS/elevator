@@ -1,8 +1,10 @@
 <?php
 
-namespace Pheanstalk;
+// namespace Pheanstalk;
 
-class Fakestalk implements PheanstalkInterface {
+use Pheanstalk\PheanstalkInterface;
+
+class Fakestalk {
     const VERSION = '3.0.2';
 
     private $_connection;
@@ -15,7 +17,7 @@ class Fakestalk implements PheanstalkInterface {
      * @param int $connectTimeout
      * @param bool $connectPersistent
      */
-    public function __construct($host, $port = PheanstalkInterface::DEFAULT_PORT, $connectTimeout = null, $connectPersistent = false)
+    public function __construct($host=null, $port = PheanstalkInterface::DEFAULT_PORT, $connectTimeout = null, $connectPersistent = false)
     {
        
     }

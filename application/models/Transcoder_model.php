@@ -11,6 +11,7 @@ class Transcoder_Model extends CI_Model {
 	public $videoToolkitConfig;
 	public $threadCount = 4;
 	private $fileHandler;
+	private $job = null;
 
 	public function __construct()
 	{
@@ -45,6 +46,12 @@ class Transcoder_Model extends CI_Model {
 		return true;
 	}
 
+	public function triggerSave() {
+		if($this->fileHandler) {
+			$this->fileHandler->save();
+		}
+	}
+
 	public function extractMetadata() {
 
 		if(!$this->checkLocalAndCopy()) {
@@ -53,7 +60,6 @@ class Transcoder_Model extends CI_Model {
 
 
 		$phpvideotoolkit_media = new \PHPVideoToolkit\FfmpegProcess("ffprobe", $this->videoToolkitConfig);
-
 		$raw_data = $phpvideotoolkit_media->setInputPath($this->fileHandler->sourceFile->getPathToLocalFile())
 	         ->addCommand('-show_streams')
 	         ->addCommand('-show_format')
@@ -61,8 +67,8 @@ class Transcoder_Model extends CI_Model {
 	         ->addCommand('-v', "quiet")
 	         ->execute()
 	         ->getBuffer();
-
 		$sourceMetadata = json_decode($raw_data,true);
+
 		$metadata = array();
 		foreach($sourceMetadata["streams"] as $stream) {
 			$metadata[$stream["codec_type"]] = $stream;
@@ -146,6 +152,7 @@ class Transcoder_Model extends CI_Model {
 
 		}
 
+
 		$this->fileHandler->sourceFile->metadata = array_merge($this->fileHandler->sourceFile->metadata, $targetMetadata);
 
 		//TODO: update asset for reindexing
@@ -206,7 +213,6 @@ class Transcoder_Model extends CI_Model {
 
 		$process = $video->getProcess();
 		$process->addCommand("-vf", $rotationString . "fps=1/" . $rate . ",scale=iw*sar:ih", true);
-
 		$video->extractFrames($time, $end, null);
 		if(!file_exists($derivativeContainer->getPathToLocalFile())) {
 			mkdir($derivativeContainer->getPathToLocalFile());
@@ -504,7 +510,6 @@ class Transcoder_Model extends CI_Model {
 			mkdir($derivativeContainer->getPathToLocalFile(). "-contents");
 		}
 
-
 		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "-contents/output%3index.jpg", $outputFormat);
 		if(!$output) {
 			delete_files($derivativeContainer->getPathToLocalFile(). "-contents/", true);
@@ -512,14 +517,23 @@ class Transcoder_Model extends CI_Model {
 		}
 		$fileList = array_diff(scandir($derivativeContainer->getPathToLocalFile() . "-contents/"),array('..', '.', ".DS_Store"));
 
+		$file = null;
 		foreach($fileList as $file) {
-			exec($this->config->item("mogrify") . " -geometry 100 " . $derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
+			if(file_exists($derivativeContainer->getPathToLocalFile() . "-contents/" . $file)) {
+				exec($this->config->item("mogrify") . " -geometry 100 " . $derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
+			}
+			
 		}
 
-		$dimensions = getimagesize($derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
+		$dimensions = null;
+		if($file && file_exists($derivativeContainer->getPathToLocalFile() . "-contents/" . $file)) {
+			$dimensions = getimagesize($derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
+		}
+		
 		
 		if(!$dimensions) {
-			return JOB_FAILED;
+			// technically this is a failure but we don't want a failed VTT to actually stop processing
+			return JOB_SUCCESS;
 		}
 
 		$width = $dimensions[0];
@@ -1143,8 +1157,8 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 
 	}
 
-	public function setFileHandler($objectId) {
-		$this->fileHandler = $this->filehandler_router->getHandledObject($objectId);
+	public function setFileHandler($fileHandler) {
+		$this->fileHandler = $fileHandler;
 	}
 
 }

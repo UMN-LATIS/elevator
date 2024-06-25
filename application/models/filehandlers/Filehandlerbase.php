@@ -220,9 +220,10 @@ class FileHandlerBase extends CI_Model {
 
 	public function triggerReindex() {
 		// we may have made some sort of change at this point, let's queue a reindex
+		// make sure we save so we don't race the index
+		$this->save();
 		if($this->parentObjectId != null) {
 			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
 			if(!$this->instance || $this->instance == null) {
 				$instanceId = 1; // welp, we're hosed, hope we can find a good one.
 				// lookup instance based on this file's collection.
@@ -325,7 +326,6 @@ class FileHandlerBase extends CI_Model {
 		else {
 			$fileObject = new Entity\FileHandler;
 		}
-
 
 
 
