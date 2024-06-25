@@ -517,6 +517,7 @@ class Transcoder_Model extends CI_Model {
 		}
 		$fileList = array_diff(scandir($derivativeContainer->getPathToLocalFile() . "-contents/"),array('..', '.', ".DS_Store"));
 
+		$file = null;
 		foreach($fileList as $file) {
 			if(file_exists($derivativeContainer->getPathToLocalFile() . "-contents/" . $file)) {
 				exec($this->config->item("mogrify") . " -geometry 100 " . $derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
@@ -525,7 +526,7 @@ class Transcoder_Model extends CI_Model {
 		}
 
 		$dimensions = null;
-		if(file_exists($derivativeContainer->getPathToLocalFile() . "-contents/" . $file)) {
+		if($file && file_exists($derivativeContainer->getPathToLocalFile() . "-contents/" . $file)) {
 			$dimensions = getimagesize($derivativeContainer->getPathToLocalFile() . "-contents/" . $file);
 		}
 		
