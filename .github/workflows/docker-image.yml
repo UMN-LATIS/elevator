@@ -28,7 +28,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: elevator-registry
-          IMAGE_TAG: ${{ github.sha }}
+          # IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: latest
         run: |
           # echo the current git commit into a file named REVISION
           echo $GITHUB_SHA > REVISION
@@ -37,5 +38,4 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG docker/
 
           # Push the Docker image to the ECR repository
-          # docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
