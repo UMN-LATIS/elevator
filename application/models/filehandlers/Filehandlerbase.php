@@ -1,6 +1,9 @@
 <?php
 
 //use Aws\S3\S3Client;
+use Aws\Batch\BatchClient;
+use Aws\Exception\AwsException;
+
 
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
@@ -409,7 +412,29 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function queueBatchItem($fileObjectId) {
-		// do AWS batch queueing here
+		$batchClient = new BatchClient([
+			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->config->item('awsQueueAccessKey'),
+				'secret' => $this->config->item('awsQueueSecretKey'),
+			],
+		]);
+		$params = [
+			'jobName' => 'transcode_' . $fileObjectId,
+			'jobQueue' => 'PrimaryJobQueue',
+			'jobDefinition' => $this->config->item('awsQueueJobDefinition'),
+			'containerOverrides' => [
+        		'command' => ['php', 'index.php', 'beltdrive', 'processAWSBatchJob', $fileObjectId],
+    		],
+		];
+		try {
+			$result = $batchClient->submitJob($params);
+		} catch (AwsException $e) {
+			$this->logging->processingInfo("taskFailed",get_class($this),"Failed to submit job to AWS Batch" . $e->getMessage(),$fileObjectId,0);
+		}
+		
+
 	}
 
 	/**
