@@ -15,6 +15,9 @@ RUN mkdir -p /tmp
 RUN mkdir -p /opt
 COPY . /var/www/html/
 WORKDIR /var/www/html
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN composer install
 ARG DOCKER_SCRATCH_DIR
 ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 # don't run this in prod
