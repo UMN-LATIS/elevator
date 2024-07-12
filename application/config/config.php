@@ -402,13 +402,13 @@ spl_autoload_register(function($class)
 });
 
 
-$config['beanstalkd'] = $_ENV['BEANSTALK_HOST']; // beanstalkd host
-$config['scratchSpace'] = $_ENV['SCRATCH_DIR'];
+$config['beanstalkd'] = $_ENV['BEANSTALK_HOST'] ?? null; // beanstalkd host
+$config['scratchSpace'] = $_ENV['SCRATCH_DIR'] ?? null;
 
-$config['elastic'] = $_ENV['ELASTIC_HOST'];
-$config['elasticIndex'] = $_ENV['ELASTIC_INDEX'];
+$config['elastic'] = $_ENV['ELASTIC_HOST'] ?? null;
+$config['elasticIndex'] = $_ENV['ELASTIC_INDEX'] ?? null;
 
-$config['redis'] = $_ENV['REDIS_HOST']; // elastic ip:port
+$config['redis'] = $_ENV['REDIS_HOST'] ?? null; // elastic ip:port
 $config['redisPort'] = "6379";
 
 /**
@@ -455,38 +455,38 @@ $config['tarrific'] = '/usr/local/bin/tarrific';
 
 // LDAP username and password.
 // Application should bind anonymously if not set, or set to blanks.
-$config['ldapUsername'] = $_ENV['LDAP_USERNAME'];
-$config['ldapPassword'] = $_ENV['LDAP_PASSWORD'];
-$config['ldapURI'] = $_ENV['LDAP_URI'];
-$config['ldapSearchBase'] = $_ENV['LDAP_SEARCH_BASE'];
+$config['ldapUsername'] = $_ENV['LDAP_USERNAME'] ?? null;
+$config['ldapPassword'] = $_ENV['LDAP_PASSWORD'] ?? null;
+$config['ldapURI'] = $_ENV['LDAP_URI'] ?? null;
+$config['ldapSearchBase'] = $_ENV['LDAP_SEARCH_BASE'] ?? null;
 
-$config['shibbolethLogin'] = $_ENV['SHIBBOLETH_LOGIN'];
-$config['shibbolethLogout'] = $_ENV['SHIBBOLETH_LOGOUT'];
+$config['shibbolethLogin'] = $_ENV['SHIBBOLETH_LOGIN'] ?? null;
+$config['shibbolethLogout'] = $_ENV['SHIBBOLETH_LOGOUT'] ?? null;
 
-$config['jwplayer'] = $_ENV['JWPLAYER_KEY'];
+$config['jwplayer'] = $_ENV['JWPLAYER_KEY'] ?? null;
 
-$config['googleApi'] = $_ENV['GOOGLE_API'];
+$config['googleApi'] = $_ENV['GOOGLE_API'] ?? null;
 
 $config['missingSiteURL'] = 'http://www.elevatorapp.net';
 
 
-$config['authHelper'] = $_ENV['AUTH_HELPER'];
+$config['authHelper'] = $_ENV['AUTH_HELPER'] ?? "AuthHelper";
 
 $config['oAuthClient'] = $_ENV['OAUTH_CLIENT'] ?? null;
 $config['oAuthSecret'] = $_ENV['OAUTH_SECRET'] ?? null;
 $config['oAuthApplication'] = $_ENV['OAUTH_APPLICATION'] ?? null;
 $config['oAuthDomain'] = $_ENV['OAUTH_DOMAIN'] ?? null;
 
-$config['oAuthDelegate']['type'] = $_ENV['OAUTH_DELEGATE_TYPE'];
-$config['oAuthDelegate']['project_id'] = $_ENV['OAUTH_DELEGATE_PROJECT_ID'];
-$config['oAuthDelegate']['private_key_id'] = $_ENV['OAUTH_DELEGATE_PRIVATE_KEY_ID'];
-$config['oAuthDelegate']['private_key'] = $_ENV['OAUTH_DELEGATE_PRIVATE_KEY'];
-$config['oAuthDelegate']['client_email'] = $_ENV['OAUTH_DELEGATE_CLIENT_EMAIL'];
-$config['oAuthDelegate']['client_id'] = $_ENV['OAUTH_DELEGATE_CLIENT_ID'];
-$config['oAuthDelegate']['auth_uri'] = $_ENV['OAUTH_DELEGATE_AUTH_URI'];
-$config['oAuthDelegate']['token_uri'] = $_ENV['OAUTH_DELEGATE_TOKEN_URI'];
-$config['oAuthDelegate']['auth_provider_x509_cert_url'] = $_ENV['OAUTH_DELEGATE_AUTH_PROVIDER_X509_CERT_URL'];
-$config['oAuthDelegate']['client_x509_cert_url'] = $_ENV['OAUTH_DELEGATE_CLIENT_X509_CERT_URL'];
+$config['oAuthDelegate']['type'] = $_ENV['OAUTH_DELEGATE_TYPE'] ?? null;
+$config['oAuthDelegate']['project_id'] = $_ENV['OAUTH_DELEGATE_PROJECT_ID'] ?? null;
+$config['oAuthDelegate']['private_key_id'] = $_ENV['OAUTH_DELEGATE_PRIVATE_KEY_ID'] ?? null;
+$config['oAuthDelegate']['private_key'] = $_ENV['OAUTH_DELEGATE_PRIVATE_KEY'] ?? null;
+$config['oAuthDelegate']['client_email'] = $_ENV['OAUTH_DELEGATE_CLIENT_EMAIL'] ?? null;
+$config['oAuthDelegate']['client_id'] = $_ENV['OAUTH_DELEGATE_CLIENT_ID'] ?? null;
+$config['oAuthDelegate']['auth_uri'] = $_ENV['OAUTH_DELEGATE_AUTH_URI'] ?? null;
+$config['oAuthDelegate']['token_uri'] = $_ENV['OAUTH_DELEGATE_TOKEN_URI'] ?? null;
+$config['oAuthDelegate']['auth_provider_x509_cert_url'] = $_ENV['OAUTH_DELEGATE_AUTH_PROVIDER_X509_CERT_URL'] ?? null;
+$config['oAuthDelegate']['client_x509_cert_url'] = $_ENV['OAUTH_DELEGATE_CLIENT_X509_CERT_URL'] ?? null;
 
 $config['remoteLoginLabel'] = $_ENV['REMOTE_LOGIN_LABEL'] ?? 'University';
 $config['guestLoginLabel'] = $_ENV['GUEST_LOGIN_LABEL'] ?? 'Guest';
