@@ -168,7 +168,6 @@ class ImageHandler extends FileHandlerBase {
 		$sourceFile = $this->makeCZIProxy();
 		$sourceFile = $this->swapLocalForPNG($sourceFile);
 		
-
 		foreach($args as $key=>$derivativeSetting) {
 			$this->pheanstalk->touch($this->job);
 			if(!is_numeric($key)) {
@@ -230,6 +229,7 @@ class ImageHandler extends FileHandlerBase {
 				$success=false;
 			}
 		}
+
 		$this->triggerReindex();
 		if($success) {
 			$this->queueTask(2, ["ttr"=>1800]);

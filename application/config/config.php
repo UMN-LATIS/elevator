@@ -271,7 +271,7 @@ $config['sess_match_ip']		= FALSE;
 $config['sess_match_useragent']	= TRUE;
 $config['sess_time_to_update']	= 86400;
 $config['sess_driver'] = 'redis';
-$config['sess_save_path'] = 'tcp://' . $_ENV['REDIS_HOST'] . ':6379';
+$config['sess_save_path'] = 'tcp://' . $_ENV['REDIS_HOST']??null . ':6379';
 
 /*
 |--------------------------------------------------------------------------
