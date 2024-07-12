@@ -55,10 +55,10 @@ class Doctrine
 
         $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
-
+        require(APPPATH . 'config/config.php');
         if($useCache && $config["redis"]) {
             $redis = new Redis();
-            require(APPPATH . 'config/config.php');
+            
             $redis->connect($config["redis"], $config["redisPort"]);
             $this->redisHost = $redis;
             $redisCache = new \Doctrine\Common\Cache\RedisCache();
