@@ -316,6 +316,6 @@ include_once './vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
-var_dump($_ENV);
+// var_dump($_ENV);
 
 require_once BASEPATH.'core/CodeIgniter.php';
