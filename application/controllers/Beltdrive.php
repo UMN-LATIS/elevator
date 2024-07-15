@@ -103,7 +103,6 @@ class Beltdrive extends CI_Controller {
 
 		// set scratchspace to include fileobject
 		$this->config->set_item("scratchSpace", $this->config->item("scratchSpace") . "/" . $fileObjectId);
-
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
 
 		if(!$fileHandler) {

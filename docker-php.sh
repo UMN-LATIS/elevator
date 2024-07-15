@@ -1,3 +1,3 @@
 #!/bin/bash
-docker-compose exec apache php "$@"
+docker compose exec apache php "$@"
 
