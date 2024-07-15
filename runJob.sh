@@ -3,12 +3,24 @@
 # capture arguments
 targetJobID=$1
 
+source .env
+# check if ENVIRONMENT variable is local
+if [ "$ENVIRONMENT" = "local" ]; then
+    # run the beltdrive command
+    targetPath="/tmp/$targetJobID"
+    command="./docker-php.sh"
+else
+    # run the beltdrive command
+    targetPath="/scratch/$targetJobID"
+    command="php"
+fi
+
 # make a directory for the job
-mkdir -p /scratch/$targetJobID
+mkdir -p $targetPath
 
 # run the beltdrive command
-php index.php beltdrive processAWSBatchJob $targetJobID
+$command index.php beltdrive processAWSBatchJob $targetJobID
 
 # delete the job directory
-rm -rf /scratch/$targetJobID
+rm -rf $targetPath
 
