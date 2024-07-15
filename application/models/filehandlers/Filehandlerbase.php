@@ -395,7 +395,7 @@ class FileHandlerBase extends CI_Model {
 					$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
 				}
 				else {
-					$this->queueBatchItem($this->getObjectId());
+					$this->queueBatchItem($this->asset, $this->sourceFile);
 				}
 			}
 
@@ -412,7 +412,17 @@ class FileHandlerBase extends CI_Model {
 
 	}
 
-	public function queueBatchItem($fileObjectId) {
+	public function queueBatchItem($asset, $sourceFile) {
+		$fileObjectId = $asset->getFileObjectId();
+		$fileSize = $sourceFile->getFileSize();
+		if($fileSize < 50*1024*1024) { 
+			// under 100mb, we can safely use our small container
+			$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-small";
+		}
+		else {
+			$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-large";
+		}
+
 		$batchClient = new BatchClient([
 			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'
 			'version' => 'latest',
@@ -424,9 +434,9 @@ class FileHandlerBase extends CI_Model {
 		$params = [
 			'jobName' => 'transcode_' . $fileObjectId,
 			'jobQueue' => 'PrimaryJobQueue',
-			'jobDefinition' => $this->config->item('awsQueueJobDefinition'),
+			'jobDefinition' => $jobDefinition,
 			'containerOverrides' => [
-        		'command' => ['php', 'index.php', 'beltdrive', 'processAWSBatchJob', $fileObjectId],
+        		'command' => ['bash', 'runJob.sh',  $fileObjectId],
     		],
 		];
 		try {
