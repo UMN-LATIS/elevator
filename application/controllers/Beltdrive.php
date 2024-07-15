@@ -121,6 +121,16 @@ class Beltdrive extends CI_Controller {
 			}
 			// reload each time to make sure artifacts get properly populated
 			$fileHandler->loadByObjectId($fileObjectId);
+			// lookup instance based on this file's collection.
+			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
+			if($collection) {
+				$instances = $collection->getInstances();
+				if(count($instances) > 0) {
+					$instance = $instances[0];
+					$instanceId = $instance->getId();
+					$this->instance = $instance;
+				}
+			}
 			$performTaskByName = $fileHandler->performTaskByName($task["taskType"], array_merge($task["config"], ["runInLoop"=>true]));
 			if($performTaskByName == JOB_FAILED) {
 				// do some logging?
