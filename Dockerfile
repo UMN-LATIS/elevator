@@ -21,9 +21,9 @@ ARG DOCKER_SCRATCH_DIR
 ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 
 # Conditionally run the following lines only if ENVIRONMENT = local
-ARG ENVIRONMENT
-ENV ENVIRONMENT $ENVIRONMENT
-RUN if [ "$ENVIRONMENT" = "local" ]; then \
+ARG DOCKER_ENVIRONMENT
+ENV DOCKER_ENVIRONMENT $DOCKER_ENVIRONMENT
+RUN if [ "$DOCKER_ENVIRONMENT" = "local" ]; then \
     sed -i "s|/scratch:|$DOCKER_SCRATCH_DIR:|g" /usr/local/bin/* && \
     sed -i 's/docker run/docker run --platform=linux\/amd64/g' /usr/local/bin/*; \
 fi
