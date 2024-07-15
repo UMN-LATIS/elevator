@@ -27,7 +27,7 @@ if(isset($_SERVER['HTTP_HOST'])) {
 	$config['base_url'] = ($_ENV['ENVIRONMENT']=='local'?'http://':'https://') .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
-	$config['base_url'] = "http://elevator.knowfear.net"; // full address http://www.test.com/
+	$config['base_url'] = "http://localhost"; // full address http://www.test.com/
 }
 
 

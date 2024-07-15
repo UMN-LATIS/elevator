@@ -415,13 +415,15 @@ class FileHandlerBase extends CI_Model {
 	public function queueBatchItem($asset, $sourceFile) {
 		$fileObjectId = $asset->getFileObjectId();
 		$fileSize = $sourceFile->getFileSize();
+		$size = "";
 		if($fileSize < 50*1024*1024) { 
 			// under 100mb, we can safely use our small container
-			$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-small";
+			$size = "small";
 		}
 		else {
-			$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-large";
+			$size = "large";
 		}
+		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $size;
 
 		$batchClient = new BatchClient([
 			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'
@@ -435,6 +437,7 @@ class FileHandlerBase extends CI_Model {
 			'jobName' => 'transcode_' . $fileObjectId,
 			'jobQueue' => 'PrimaryJobQueue',
 			'jobDefinition' => $jobDefinition,
+			'attemptDurationSeconds' => ($size=="small")? 2400 : 28800,
 			'containerOverrides' => [
         		'command' => ['bash', 'runJob.sh',  $fileObjectId],
     		],
