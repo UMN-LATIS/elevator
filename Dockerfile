@@ -1,9 +1,9 @@
 FROM php:7.4-apache
 
 
-RUN apt update && apt install -y unzip git libpq-dev docker && apt clean
+RUN apt update && apt install -y unzip git libpq-dev docker libzip-dev && apt clean
 RUN pecl install redis && docker-php-ext-enable redis
-RUN docker-php-ext-install pgsql pdo_pgsql pdo
+RUN docker-php-ext-install pgsql pdo_pgsql pdo zip
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 RUN a2enmod rewrite && a2enmod headers
 COPY docker/get-docker.sh /root/
