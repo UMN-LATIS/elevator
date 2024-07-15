@@ -57,18 +57,16 @@ class Transcoder_Model extends CI_Model {
 		if(!$this->checkLocalAndCopy()) {
 			return JOB_POSTPONE;
 		}
-		exec("ls -l " . $this->config->item("scratchSpace"), $output);
-		var_dump($output);
-		exec("ls -l " . $this->fileHandler->sourceFile->getPathToLocalFile(), $output);
-		var_dump($output);
+
 		$phpvideotoolkit_media = new \PHPVideoToolkit\FfmpegProcess("ffprobe", $this->videoToolkitConfig);
 		$raw_data = $phpvideotoolkit_media->setInputPath($this->fileHandler->sourceFile->getPathToLocalFile())
 	         ->addCommand('-show_streams')
 	         ->addCommand('-show_format')
 	         ->addCommand('-print_format', "json")
-	         ->addCommand('-v', "quiet")
+	        //  ->addCommand('-v', "quiet")
 	         ->execute()
 	         ->getBuffer();
+		var_dump($raw_data);
 		$sourceMetadata = json_decode($raw_data,true);
 
 		$metadata = array();
