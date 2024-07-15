@@ -21,5 +21,5 @@ RUN composer install
 ARG DOCKER_SCRATCH_DIR
 ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 # don't run this in prod
-RUN sed -i "s|/scratch:|$DOCKER_SCRATCH_DIR:|g" /usr/local/bin/*
-RUN sed -i 's/docker run/docker run --platform=linux\/amd64/g' /usr/local/bin/*
+# RUN sed -i "s|/scratch:|$DOCKER_SCRATCH_DIR:|g" /usr/local/bin/*
+# RUN sed -i 's/docker run/docker run --platform=linux\/amd64/g' /usr/local/bin/*
