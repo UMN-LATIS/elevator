@@ -4,11 +4,11 @@
 targetJobID=$1
 
 # make a directory for the job
-mkdir -p /scratch/$targetJobID
+mkdir -p /tmp/$targetJobID
 
 # run the beltdrive command
-php index.php beltdrive processAWSBatchJob $targetJobID
+./docker-php.sh index.php beltdrive processAWSBatchJob $targetJobID
 
 # delete the job directory
-rm -rf /scratch/$targetJobID
+rm -rf /tmp/$targetJobID
 
