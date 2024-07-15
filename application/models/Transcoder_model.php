@@ -30,14 +30,14 @@ class Transcoder_Model extends CI_Model {
         ));
 
 		// spin ffprobe to force us to pull the container
-		$phpvideotoolkit_media = new \PHPVideoToolkit\FfmpegProcess("ffprobe", $this->videoToolkitConfig);
-		$raw_data = $phpvideotoolkit_media->setInputPath("/tmp/emptyfile")
-	         ->addCommand('-show_streams')
-	         ->addCommand('-show_format')
-	         ->addCommand('-print_format', "json")
-	         ->addCommand('-v', "quiet")
-	         ->execute()
-	         ->getBuffer();
+		// $phpvideotoolkit_media = new \PHPVideoToolkit\FfmpegProcess("ffprobe", $this->videoToolkitConfig);
+		// $raw_data = $phpvideotoolkit_media->setInputPath("/tmp/emptyfile")
+	    //      ->addCommand('-show_streams')
+	    //      ->addCommand('-show_format')
+	    //      ->addCommand('-print_format', "json")
+	    //      ->addCommand('-v', "quiet")
+	    //      ->execute()
+	    //      ->getBuffer();
 
 
 		$this->load->helper("file");
