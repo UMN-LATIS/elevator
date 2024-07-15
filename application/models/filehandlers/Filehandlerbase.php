@@ -44,6 +44,8 @@ class FileHandlerBase extends CI_Model {
 	public $overrideHandlerClass = false; // allows us to force a new handler for the next load
 
 	public $nextTask = null;
+	public $taskListHasChanged = false;
+	
 
 	public function __construct()
 	{

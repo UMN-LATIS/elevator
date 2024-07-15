@@ -114,31 +114,41 @@ class Beltdrive extends CI_Controller {
 		$fakePheanstsalk = new Fakestalk;
 		$this->pheanstalk = $fakePheanstsalk;
 		$fileHandler->pheanstalk = $fakePheanstsalk;
-		foreach($fileHandler->taskArray as $task) {
-			echo "Performing task " . $task["taskType"] . "\n";
-			if($task["taskType"] == "waitForCompletion") {
-				continue;
+		$collection = $this->collection_model->getCollection($fileHandler->collectionId);
+		if($collection) {
+			$instances = $collection->getInstances();
+			if(count($instances) > 0) {
+				$instance = $instances[0];
+				$instanceId = $instance->getId();
+				$this->instance = $instance;
 			}
-			// reload each time to make sure artifacts get properly populated
-			$fileHandler->loadByObjectId($fileObjectId);
-			// lookup instance based on this file's collection.
-			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
-			if($collection) {
-				$instances = $collection->getInstances();
-				if(count($instances) > 0) {
-					$instance = $instances[0];
-					$instanceId = $instance->getId();
-					$this->instance = $instance;
+		}
+		$runOnce = true;
+		while($runOnce) {
+			$runOnce = false;
+			foreach($fileHandler->taskArray as $task) {
+				echo "Performing task " . $task["taskType"] . "\n";
+				if($task["taskType"] == "waitForCompletion") {
+					continue;
 				}
-			}
-			$performTaskByName = $fileHandler->performTaskByName($task["taskType"], array_merge($task["config"], ["runInLoop"=>true]));
-			if($performTaskByName == JOB_FAILED) {
-				// do some logging?
-				return JOB_FAILED;
-			}
-			else {
-				echo "Success!\n";
-				$fileHandler->save();
+				// reload each time to make sure artifacts get properly populated
+				$fileHandler->loadByObjectId($fileObjectId);
+				// lookup instance based on this file's collection.
+				
+				$performTaskByName = $fileHandler->performTaskByName($task["taskType"], array_merge($task["config"], ["runInLoop"=>true]));
+				if($performTaskByName == JOB_FAILED) {
+					// do some logging?
+					return JOB_FAILED;
+				}
+				else {
+					echo "Success!\n";
+					$fileHandler->save();
+				}
+
+				if($fileHandler->taskListHasChanged) {
+					$runOnce = true;
+					break;
+				}
 			}
 		}
 	}
