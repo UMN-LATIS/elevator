@@ -30,7 +30,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
 
-	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css">
+	<!-- <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css"> -->
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
@@ -45,7 +45,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/file-saver/FileSaver.min.js"></script>
 
-	<script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script>
+	<!-- <script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script> -->
 	<script src="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
@@ -85,7 +85,21 @@ if($widgetObject->parentWidget->dendroFields) {
 
 </style>
 
-<? $token = isset($fileContainers['tiled'])?$fileObject->getSecurityToken("tiled"):$fileObject->getSecurityToken("tiled-tar")?>
+<? 
+
+
+if(isset($fileContainers['tiled'])) {
+	$token = $fileObject->getSecurityToken("tiled");	
+}
+elseif(isset($fileContainers['tiled-tar'])) {
+	$token = $fileObject->getSecurityToken("tiled-tar");
+}
+elseif(isset($fileContainers['tiled-iiif'])) {
+	$token = $fileObject->getSecurityToken("tiled-iiif");
+}
+
+?>
+
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="imageMap"></div></div>
 <?=$this->load->view("fileHandlers/embeds/imageHandler_partial.php",array("fileContainers"=>$fileContainers),true)?>
 	
@@ -141,7 +155,8 @@ if($widgetObject->parentWidget->dendroFields) {
 			keyboard: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
-
+		
+		
 		var mapOptions = {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
@@ -159,6 +174,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		};
 
 		baseLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
+		
 		baseLayer.addTo(imageMap);
 		
 

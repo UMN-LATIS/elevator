@@ -112,7 +112,7 @@ function loadCascadeNumber(parentGroup, selectIndex) {
 
 	// });
 	targetCategory = targetCategory.replace(/[^A-Za-z0-9]/g, '');
-	if(groupSelected[targetCategory]) {
+	if(groupSelected && groupSelected[targetCategory]) {
 		$(selectElement).val(groupSelected[targetCategory]);
 		$(selectElement).trigger("change");
 

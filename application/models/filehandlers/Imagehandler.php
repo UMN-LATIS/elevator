@@ -47,6 +47,9 @@ class ImageHandler extends FileHandlerBase {
 			if(array_key_exists("tiled-tar", $this->derivatives)) {
 				$derivative[] = "tiled-tar";
 			}
+			if(array_key_exists("tiled-iiif", $this->derivatives)) {
+				$derivative[] = "tiled-iiif";
+			}
 			if(array_key_exists("tiled-index", $this->derivatives)) {
 				$derivative[] = "tiled-index";
 			}
@@ -261,23 +264,21 @@ class ImageHandler extends FileHandlerBase {
 
 
 		$localPath = $sourceFile->getPathToLocalFile();
-		$pathparts = pathinfo($localPath);
+		$pathparts = pathinfo($localPath);		
+		$derivativeType = "tiled-iiif";
+		$derivativeContainerIIIF = new fileContainerS3();
+		$derivativeContainerIIIF->derivativeType = $derivativeType;
+		$derivativeContainerIIIF->path = "derivative";
+		$derivativeContainerIIIF->setParent($this->sourceFile->getParent());
+		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tiff";
 
-
-
-		$outputPath = $localPath . "-tiled";
-		//TODO: catch errors here
-		if(!file_exists($outputPath)) {
-			mkdir($outputPath);
-		}
-
-		$outputFile = $outputPath ."/tiledBase";
+		$outputFile = $derivativeContainerIIIF->getPathToLocalFile();
 
 		$rotationAppend = "";
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
 			$rotationAppend = "[autorotate]";
 		}
-		$extractString = $this->config->item('vipsBinary') . " dzsave " . $localPath . $rotationAppend . " " . $outputFile;
+		$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 		$process->run();
 		while($process->isRunning()) {
@@ -286,74 +287,29 @@ class ImageHandler extends FileHandlerBase {
 			echo ".";
 		}
 
+		$this->sourceFile->metadata["dziWidth"] = $this->sourceFile->metadata["width"];
+		$this->sourceFile->metadata["dziHeight"] = $this->sourceFile->metadata["height"];
+		$this->sourceFile->metadata["dziOverlap"] = 0;
+		$this->sourceFile->metadata["dziTilesize"] = 256;
 
-		if(!file_exists($outputFile . ".dzi")) {
-			$this->logging->processingInfo("createDerivative","imageHandler","Tiling failed",$this->getObjectId(),$this->job->getId());
-			return JOB_FAILED;
+		// compute the max zoom by dividing the height and width by 2 until both valuers are less than 256
+		$width = $this->sourceFile->metadata["width"];
+		$height = $this->sourceFile->metadata["height"];
+		$zoom = 0;
+		while($width > 1 || $height > 1) {
+			$width = $width / 2;
+			$height = $height / 2;
+			$zoom++;
 		}
-
-
-		$dziContents = file_get_contents($outputFile . ".dzi");
-		$dzi = new SimpleXMLElement($dziContents);
-		$dziHeight = (int)$dzi->Size[0]["Height"];
-		$dziWidth = (int)$dzi->Size[0]["Width"];
-		$overlap = (int)$dzi["Overlap"];
-		$tilesize = (int)$dzi["TileSize"];
-		$this->sourceFile->metadata["dziWidth"] = $dziWidth;
-		$this->sourceFile->metadata["dziHeight"] = $dziHeight;
-		$this->sourceFile->metadata["dziOverlap"] = $overlap;
-		$this->sourceFile->metadata["dziTilesize"] = $tilesize;
-
-		$zoomContents = scandir($outputPath . "/tiledBase_files/");
-		$zoomLevels = count($zoomContents) - 2;
-		$this->sourceFile->metadata["dziMaxZoom"] = $zoomLevels;
+		$this->sourceFile->metadata["dziMaxZoom"] = $zoom;
 
 		echo "\n";
 		$this->pheanstalk->touch($this->job);
 
-		$derivativeType = "tiled-tar";
-		$derivativeContainerTar = new fileContainerS3();
-		$derivativeContainerTar->derivativeType = $derivativeType;
-		$derivativeContainerTar->path = "derivative";
-		$derivativeContainerTar->setParent($this->sourceFile->getParent());
-		$derivativeContainerTar->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tar";
-
-		$tarString = "tar -cvf " . $derivativeContainerTar->getPathToLocalFile() . " -C " . $outputPath . " .";
-		$process = new Cocur\BackgroundProcess\BackgroundProcess($tarString);
-		$process->run();
-		while($process->isRunning()) {
-			sleep(5);
-			$this->pheanstalk->touch($this->job);
-			echo ".";
-		}
-
-
-		$derivativeType = "tiled-index";
-		$derivativeContainerIndex = new fileContainerS3();
-		$derivativeContainerIndex->derivativeType = $derivativeType;
-		$derivativeContainerIndex->path = "derivative";
-		$derivativeContainerIndex->setParent($this->sourceFile->getParent());
-		$derivativeContainerIndex->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".json.gz";
-		$derivativeContainerIndex->forcedMimeType = "application/json";
-		$derivativeContainerIndex->forcedContentEncoding = "gzip";
-		$tarIndexString = $this->config->item('tarrific') . "  " . $derivativeContainerTar->getPathToLocalFile() . " " . $derivativeContainerIndex->getPathToLocalFile();
-
-		$process = new Cocur\BackgroundProcess\BackgroundProcess($tarIndexString);
-		$process->run();
-		while($process->isRunning()) {
-			sleep(5);
-			$this->pheanstalk->touch($this->job);
-			echo ".";
-		}
-
-		if($derivativeContainerIndex->copyToRemoteStorage() && $derivativeContainerTar->copyToRemoteStorage()) {
+		if($derivativeContainerIIIF->copyToRemoteStorage()) {
 			echo "Success\n";
-			unlink($derivativeContainerTar->getPathToLocalFile());
-			unlink($derivativeContainerIndex->getPathToLocalFile());
-			$derivativeContainerIndex->ready = true;
-			$derivativeContainerTar->ready = true;
-			$this->load->helper("file");
-			delete_files($outputPath, true);
+			unlink($derivativeContainerIIIF->getPathToLocalFile());
+			$derivativeContainerIIIF->ready = true;
 		}
 		else {
 			echo "Fail";
@@ -363,8 +319,7 @@ class ImageHandler extends FileHandlerBase {
 
 		$this->pheanstalk->touch($this->job);
 
-		$this->derivatives[$derivativeContainerIndex->derivativeType] = $derivativeContainerIndex;
-		$this->derivatives[$derivativeContainerTar->derivativeType] = $derivativeContainerTar;
+		$this->derivatives[$derivativeContainerIIIF->derivativeType] = $derivativeContainerIIIF;
 		$this->unlinkLocalSwap();
 
 		$this->queueTask(3);
@@ -519,7 +474,7 @@ class ImageHandler extends FileHandlerBase {
 
 	public function priority() {
 		// if we're a tiled image, we give it a lower priority
-		if(!isset($this->sourceFile->metadata["width"])) {
+		if(!isset($this->sourceFile->metadata["width"]) || !isset($this->sourceFile->metadata["height"])) {
 			return 0;
 		}
 		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
