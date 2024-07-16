@@ -6,6 +6,10 @@
     },
     {
       "type": "vcs",
+      "url": "https://github.com/cmcfadden/PHP-Unoconv"
+    },
+    {
+      "type": "vcs",
       "url": "https://github.com/cmcfadden/php-box-view.git"
     },
      {
@@ -15,10 +19,15 @@
     {
       "type": "vcs",
       "url": "https://github.com/cmcfadden/google-api-php-client.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/cmcfadden/lti-1-3-php-library"
     }
   ],
   "require": {
     "doctrine/common": "2.13.*",
+    "monolog/monolog": "2.9.1",
     "doctrine/dbal": "2.12.*",
     "doctrine/orm": "2.7.*",
     "doctrine/data-fixtures": "1.*",
@@ -26,14 +35,20 @@
     "elasticsearch/elasticsearch": "~5.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
-    "tedivm/stash": "dev-master",
+    "tedivm/stash": "~0.17.6",
     "umn-community-shib/basic-authenticator": "dev-master",
-    "crocodoc/php-box-view": "dev-master",
     "cocur/background-process": "^0.5.0",
-    "google/apiclient": "dev-disableCache",
-    "php-unoconv/php-unoconv": "^0.3.0",
+    "google/apiclient": "dev-disableCache-merge",
+    "php-unoconv/php-unoconv": "dev-master",
     "doctrine/persistence": "1.*",
     "aws/aws-sdk-php": "^3.151",
-    "sentry/sdk": "^3.1"
+    "sentry/sdk": "^3.1",
+    "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2"
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
   }
 }

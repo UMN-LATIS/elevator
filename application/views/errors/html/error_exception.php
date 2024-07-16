@@ -94,7 +94,7 @@
     <footer class="footer">
 
       <p class="universityFooter">
-        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage" alt="Grain Elevator Icon">Powered by Elevator, developed by the <A href="http://www.umn.edu">University of Minnesota</a>
+        <img src="/assets/images/elevatorSolo.png" class="elevatorFooterImage" alt="Grain Elevator Icon">Powered by Elevator, developed by the <A href="http://www.umn.edu" target="_blank">University of Minnesota</a>
       </p>
     </footer>
 

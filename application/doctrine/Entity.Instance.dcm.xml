@@ -69,7 +69,7 @@
           <field name="introText" type="text" nullable='true' />
           <field name="createdAt" type="datetime" nullable='true' />
           <field name="modifiedAt" type="datetime" nullable='true' />
-          <field name="useCustomHeader" type="boolean" nullable='true' />
+          <field name="useCustomHeader" type="integer" nullable='true' />
           <field name="useCustomCSS" type="boolean" nullable='true' />
           <field name="useHeaderLogo" type="boolean" nullable='true' />
           <field name="useCentralAuth" type="boolean" nullable='true' />

@@ -148,10 +148,20 @@
 
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
-		<label>
-			<input type="checkbox" id="useCustomHeader" name="useCustomHeader" value="On" <?=$instance->getUseCustomHeader()?"checked":null?>>
-			Use Custom Header and Footer
+		Display Custom Header and Footer: 
+		<ul style="list-style-type: none;">
+			<li><label>
+			<input type="radio" id="useCustomHeader" name="useCustomHeader" value="0" <?=$instance->getUseCustomHeader()==0?"checked":null?>>
+			Never</li>
 		</label>
+		<li><label>
+			<input type="radio" id="useCustomHeader" name="useCustomHeader" value="1" <?=$instance->getUseCustomHeader()==1?"checked":null?>>
+			Always
+		</label></li>
+		<li><label>
+			<input type="radio" id="useCustomHeader" name="useCustomHeader" value="2" <?=$instance->getUseCustomHeader()==2?"checked":null?>>
+			Only on Home Page
+		</label></li>
 	</div>
 </div>
 
@@ -334,7 +344,7 @@
 	<div class="col-sm-6">
 		<ul style="list-style-type: none; margin-left:0; padding-left:0">
 			<?foreach($this->config->item("available_themes") as $theme):?>
-				<li><input type="checkbox" name="availableThemes[]" value="<?=$theme?>" id="<?=$theme?>" <?=in_array($theme, $instance->getAvailableThemes())?"CHECKED":null?>> <label for="<?=$theme?>"><?=$theme?></label></li>
+				<li><input type="checkbox" name="availableThemes[]" value="<?=$theme?>" id="<?=$theme?>" <?=in_array($theme, $instance->getAvailableThemes()??[])?"CHECKED":null?>> <label for="<?=$theme?>"><?=$theme?></label></li>
 			<?endforeach?>
 	</ul>
 

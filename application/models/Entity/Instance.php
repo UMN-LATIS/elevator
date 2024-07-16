@@ -77,7 +77,7 @@ class Instance
     private $modifiedAt;
 
     /**
-     * @var boolean
+     * @var integer
      */
     private $useCustomHeader;
 
@@ -439,7 +439,7 @@ class Instance
     /**
      * Set useCustomHeader
      *
-     * @param boolean $useCustomHeader
+     * @param integer $useCustomHeader
      * @return Instance
      */
     public function setUseCustomHeader($useCustomHeader)
@@ -452,7 +452,7 @@ class Instance
     /**
      * Get useCustomHeader
      *
-     * @return boolean
+     * @return integer
      */
     public function getUseCustomHeader()
     {

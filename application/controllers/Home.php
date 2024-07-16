@@ -159,6 +159,8 @@ class Home extends Instance_Controller {
 		$headerData["instanceId"] = $this->instance->getId();
 		$headerData["instanceHasLogo"] = $this->instance->getUseHeaderLogo();
 		$headerData["instanceLogo"] = $this->instance->getId();
+		$headerData["instanceShowCollectionInSearchResults"] = $this->instance->getShowCollectionInSearchResults();
+		$headerData["instanceShowTemplateInSearchResults"] = $this->instance->getShowTemplateInSearchResults();
 		$headerData["featuredAssetId"] = $this->instance->getFeaturedAsset();
 		$headerData["featuredAssetText"] = $this->instance->getFeaturedAssetText();
 
@@ -248,6 +250,7 @@ class Home extends Instance_Controller {
 		}
 
 		// useCustomHeader also controls whether or not to show the custom footer
+		$headerData['customHeaderMode'] = $this->instance->getUseCustomHeader();
 		if ($this->instance->getUseCustomHeader()) {
 			$headerData['customHeader'] = $this->instance->getCustomHeaderText();
 			$headerData['customFooter'] = $this->instance->getCustomFooterText();
