@@ -93,7 +93,10 @@ class ZipMedDicomHandler extends ZipHandler {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
+		if(isset($this->job)) {
+			$this->pheanstalk->touch($this->job);
+		}
+		
 
 
 		$zip = new ZipArchive;
