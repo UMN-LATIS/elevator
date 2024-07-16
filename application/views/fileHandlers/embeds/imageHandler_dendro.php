@@ -3,7 +3,7 @@
 // time to get hacky, but this is special case code
 $innerYear = null;
 $haveLateWood = false;
-if($widgetObject->parentWidget->dendroFields) {
+if(isset($widgetObject->parentWidget->dendroFields)) {
 	$innerYearField = $widgetObject->parentWidget->dendroFields["innerYear"];
 	if(isset($fileObject->parentObject->assetObjects[$innerYearField])) {
 
@@ -45,7 +45,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<script src="/assets/leaflet-treering/node_modules/jszip/dist/jszip.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/file-saver/FileSaver.min.js"></script>
 
-	<!-- <script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script> -->
+	<script src="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/Leaflet.fullscreen.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 	<script src="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.js"></script>
