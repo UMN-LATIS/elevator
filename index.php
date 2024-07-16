@@ -66,6 +66,7 @@
 switch (ENVIRONMENT)
 {
 	case 'development':
+	case 'local':
 		error_reporting(-1);
 		ini_set('display_errors', 1);
 	break;
@@ -316,6 +317,5 @@ include_once './vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
-// var_dump($_ENV);
 
 require_once BASEPATH.'core/CodeIgniter.php';
