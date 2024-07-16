@@ -115,6 +115,9 @@ class OfficeHandler extends FileHandlerBase {
 		}
 
 		foreach($args as $derivativeSetting) {
+			if(!isset($derivativeSetting['type'])) {
+				continue;
+			}
 			$derivativeType = $derivativeSetting['type'];
 			$width = $derivativeSetting['width'];
 			$height = $derivativeSetting['height'];
