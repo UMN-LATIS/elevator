@@ -103,29 +103,30 @@ class Beltdrive extends CI_Controller {
 
 		// set scratchspace to include fileobject
 		$this->config->set_item("scratchSpace", $this->config->item("scratchSpace") . "/" . $fileObjectId);
-		$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
-
-		if(!$fileHandler) {
-			return 0;
-		}
 		
-		$fileHandler->loadByObjectId($fileObjectId);
-		$this->load->library('Fakestalk');
-		$fakePheanstsalk = new Fakestalk;
-		$this->pheanstalk = $fakePheanstsalk;
-		$fileHandler->pheanstalk = $fakePheanstsalk;
-		$collection = $this->collection_model->getCollection($fileHandler->collectionId);
-		if($collection) {
-			$instances = $collection->getInstances();
-			if(count($instances) > 0) {
-				$instance = $instances[0];
-				$instanceId = $instance->getId();
-				$this->instance = $instance;
-			}
-		}
 		$runOnce = true;
 		while($runOnce) {
 			$runOnce = false;
+			$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
+
+			if(!$fileHandler) {
+				return 0;
+			}
+			
+			$fileHandler->loadByObjectId($fileObjectId);
+			$this->load->library('Fakestalk');
+			$fakePheanstsalk = new Fakestalk;
+			$this->pheanstalk = $fakePheanstsalk;
+			$fileHandler->pheanstalk = $fakePheanstsalk;
+			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
+			if($collection) {
+				$instances = $collection->getInstances();
+				if(count($instances) > 0) {
+					$instance = $instances[0];
+					$instanceId = $instance->getId();
+					$this->instance = $instance;
+				}
+			}
 			foreach($fileHandler->taskArray as $task) {
 				echo "Performing task " . $task["taskType"] . "\n";
 				if($task["taskType"] == "waitForCompletion") {
@@ -134,7 +135,6 @@ class Beltdrive extends CI_Controller {
 				// reload each time to make sure artifacts get properly populated
 				$fileHandler->loadByObjectId($fileObjectId);
 				// lookup instance based on this file's collection.
-				
 				$performTaskByName = $fileHandler->performTaskByName($task["taskType"], array_merge($task["config"], ["runInLoop"=>true]));
 				if($performTaskByName == JOB_FAILED) {
 					// do some logging?
@@ -146,6 +146,7 @@ class Beltdrive extends CI_Controller {
 				}
 
 				if($fileHandler->taskListHasChanged) {
+					echo "Task list changed\n";
 					$runOnce = true;
 					break;
 				}

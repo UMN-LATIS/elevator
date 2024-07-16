@@ -17,10 +17,10 @@ WORKDIR /var/www/html
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install
+
 ARG DOCKER_SCRATCH_DIR
 ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 
-# Conditionally run the following lines only if ENVIRONMENT = local
 ARG DOCKER_ENVIRONMENT
 ENV DOCKER_ENVIRONMENT $DOCKER_ENVIRONMENT
 RUN if [ "$DOCKER_ENVIRONMENT" = "local" ]; then \
