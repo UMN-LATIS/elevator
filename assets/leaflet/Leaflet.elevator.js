@@ -50,7 +50,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 			var xPercentage = 100;
 			
 			if(coords.x* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].x) {
-				xPercentage =100 - 100*((coords.x* this.options.tileSize +  this.options.tileSize - this._imageSize[coords.x+1].y) / this.options.tileSize);
+				xPercentage = 100 - 100 * ((coords.x * this.options.tileSize + this.options.tileSize - this._imageSize[coords.z+1].x) / this.options.tileSize);
 			}
 			var yPercentage = 100;
 			if(coords.y* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].y) {
@@ -146,7 +146,6 @@ _adjustNonSquareTile: function (data) {
 
 	tile.style.width = tileSize.x + pad + 'px';
 	tile.style.height = tileSize.y + pad + 'px';
-
 },
 
 _isValidTile: function(coords) {
