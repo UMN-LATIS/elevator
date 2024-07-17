@@ -60,7 +60,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 				if(xPercentage < 1) xPercentage = 100;
 				if(yPercentage < 1) yPercentage = 100;
 				tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
-				console.log(tile.style.clipPath);
+
 		}
 		}
 		

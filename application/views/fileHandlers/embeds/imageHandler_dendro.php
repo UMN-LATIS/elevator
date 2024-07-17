@@ -20,7 +20,11 @@ if(isset($widgetObject->parentWidget->dendroFields)) {
 		$haveLateWood = $result[0]["fieldContents"];
 	}
 }
+$tileSize = $fileObject->sourceFile->metadata["dziTilesize"];
 
+if($tileSize == 254) {
+	$tileSize = 256; // hack for tar files which had a 254 tile size but don't really work with that size
+}
 ?>
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -229,7 +233,7 @@ void main(void){
             crs: L.CRS.Simple,
             noWrap: true,
             infinite: false,
-            tileSize: 256,
+            tileSize: <?=$tileSize ?>,
             detectRetina: false,
 			fragmentShader: fragmentShader2,
 			tileLayers: [baseLayer],

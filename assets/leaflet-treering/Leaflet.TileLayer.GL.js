@@ -196,6 +196,7 @@ L.TileLayer.GL = L.GridLayer.extend({
         this.options.maxZoom =this._tileLayers[0].options.maxZoom;
 		this.options.minZoom = this._tileLayers[0].options.minZoom;
 		this.options._imageSize = this._tileLayers[0]._imageSize;
+		this.options.overlap = this._tileLayers[0].options.overlap;
 		this._loadGLProgram();
 
 		// Init textures
@@ -647,10 +648,11 @@ nextHighestPowerOfTwo: function(x) {
 				L.TileLayer.prototype._tileOnError.call(this, done, tile, err);
 			}.bind(this)
 		);
-		tile.width = 255;
-		tile.height = 255;
-		tile.style.width = 256;
-		tile.style.height = 256;
+		tile.width = this.options.tileSize;
+		tile.height = this.options.tileSize;
+		tile.style.width = this.options.tileSize + this.options.overlap;
+		tile.style.height =  this.options.tileSize + this.options.overlap;
+
 		if(this.options._imageSize !== undefined) {
 			if(this.options._imageSize[coords.z+1] !== undefined) {
 
@@ -667,7 +669,7 @@ nextHighestPowerOfTwo: function(x) {
 				if(xPercentage < 1) xPercentage = 100;
 				if(yPercentage < 1) yPercentage = 100;
 				tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
-				console.log(tile.style.clipPath);
+
 			}
 		}
 
@@ -804,8 +806,10 @@ nextHighestPowerOfTwo: function(x) {
             zoom = this._tileZoom + this.options.zoomOffset,
             zoomN = this.options.maxNativeZoom;
 
-        tileSize.x = tileSize.x - 1; // with deepzoom, our tile size removes the overlap, but leaflet needs it.
-        tileSize.y = tileSize.y - 1;
+        tileSize.x = tileSize.x - this.options.overlap; // with deepzoom, our tile size removes the overlap, but leaflet needs it.
+        tileSize.y = tileSize.y - this.options.overlap;
+
+
         // increase tile size when overscaling
         var outputSize= zoomN !== null && zoom > zoomN ?
             tileSize.divideBy(map.getZoomScale(zoomN, zoom)).round() :
