@@ -152,8 +152,8 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     $(map.getContainer()).css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-    $(".leaflet-control-layers-selector")[0].click();
-    $(".leaflet-control-layers-selector")[1].click();
+    // $(".leaflet-control-layers-selector")[0].click();
+    // $(".leaflet-control-layers-selector")[1].click();
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
       this.imageAdjustment.btn.addTo(this.viewer);

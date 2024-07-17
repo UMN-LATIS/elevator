@@ -652,21 +652,23 @@ nextHighestPowerOfTwo: function(x) {
 		tile.style.width = 256;
 		tile.style.height = 256;
 		if(this.options._imageSize !== undefined) {
-			console.log("Clipping tile")
-			var xPercentage = 100;
-			
-			if(coords.x* this.options.tileSize +  this.options.tileSize > this.options._imageSize[coords.z+1].x) {
-				xPercentage = 100 - 100 * ((coords.x * this.options.tileSize + this.options.tileSize - this.options._imageSize[coords.z+1].x) / this.options.tileSize);
+			if(this.options._imageSize[coords.z+1] !== undefined) {
+
+				console.log("Clipping tile")
+				var xPercentage = 100;
+				
+				if(coords.x* this.options.tileSize +  this.options.tileSize > this.options._imageSize[coords.z+1].x) {
+					xPercentage = 100 - 100 * ((coords.x * this.options.tileSize + this.options.tileSize - this.options._imageSize[coords.z+1].x) / this.options.tileSize);
+				}
+				var yPercentage = 100;
+				if(coords.y* this.options.tileSize +  this.options.tileSize > this.options._imageSize[coords.z+1].y) {
+					yPercentage =100 - 100*((coords.y* this.options.tileSize +  this.options.tileSize - this.options._imageSize[coords.z+1].y) / this.options.tileSize);
+				}
+				if(xPercentage < 1) xPercentage = 100;
+				if(yPercentage < 1) yPercentage = 100;
+				tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
+				console.log(tile.style.clipPath);
 			}
-			var yPercentage = 100;
-			if(coords.y* this.options.tileSize +  this.options.tileSize > this.options._imageSize[coords.z+1].y) {
-				yPercentage =100 - 100*((coords.y* this.options.tileSize +  this.options.tileSize - this.options._imageSize[coords.z+1].y) / this.options.tileSize);
-			}
-			if(xPercentage < 1) xPercentage = 100;
-			if(yPercentage < 1) yPercentage = 100;
-			tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
-			console.log(tile.style.clipPath);
-	
 		}
 
 		

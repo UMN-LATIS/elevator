@@ -97,7 +97,6 @@ if (isset($fileContainers['tiled-tar'])) {
             const subimage = subimages[coords.z];
             async function getData() {
                 
-                
                 const numTilesPerRow = Math.ceil(subimage.getWidth() / subimage.getTileWidth());
                 const numTilesPerCol = Math.ceil(subimage.getHeight() / subimage.getTileHeight());
                 console.log("IIIF load", coords.z, numTilesPerCol, numTilesPerRow);
