@@ -274,6 +274,7 @@ class AssetManager extends Admin_Controller {
 		}
 
 		$data = $this->input->post("formData");
+
 		$objectArray = json_decode($data, true);
 		unset($data);
 
@@ -290,7 +291,7 @@ class AssetManager extends Admin_Controller {
 		$asset->createObjectFromJSON($objectArray);
 
 		unset($objectArray);
-
+		
 		if($firstSave) {
 			$objectId = $asset->save(false);
 		}

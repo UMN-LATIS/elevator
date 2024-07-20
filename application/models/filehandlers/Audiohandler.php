@@ -24,6 +24,8 @@ class AudioHandler extends FileHandlerBase {
 	{
 		parent::__construct();
 		//Do your magic here
+		$this->load->library("TranscoderCommands");
+		$this->load->library("TranscoderCommandsAWS");
 	}
 
 
@@ -157,8 +159,7 @@ class AudioHandler extends FileHandlerBase {
 
 	public function extractWaveform($args) {
 
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-		$jobId = $transcodeCommands->extractWaveform($this->getObjectId());
+		$jobId = $this->getTranscodeCommand()->extractWaveform($this->getObjectId());
 
 		$this->save();
 		$this->queueTask(5, ["jobId"=>$jobId, "previousTask"=>"extractWaveform"]);
@@ -166,10 +167,19 @@ class AudioHandler extends FileHandlerBase {
 
 	}
 
+	public function getTranscodeCommand() {
+		if($this->config->item('fileQueueingMethod') == 'beanstalkd') {
+			$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
+		}
+		else {
+			$transcodeCommands = new TranscoderCommandsAWS($this->pheanstalk, $this->videoTTR, $this);
+		}
+		return $transcodeCommands;
+	}
+
 	public function extractMetadata($args) {
 
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-		$jobId = $transcodeCommands->extractMetadata($this->getObjectId());
+		$jobId = $this->getTranscodeCommand()->extractMetadata($this->getObjectId());
 
 		$this->save();
 		$this->queueTask(1, ["jobId"=>$jobId, "previousTask"=>"metadata"]);
@@ -188,10 +198,9 @@ class AudioHandler extends FileHandlerBase {
 
 		$nextDerivative = array_shift($targetDerivatives);
 
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
 		$jobId = null;
 		if($nextDerivative) {
-			$jobId = $transcodeCommands->createDerivative($this->getObjectId(), $nextDerivative);	
+			$jobId = $this->getTranscodeCommand()->createDerivative($this->getObjectId(), $nextDerivative);	
 		}
 	
 

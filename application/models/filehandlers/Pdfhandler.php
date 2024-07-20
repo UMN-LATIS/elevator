@@ -128,6 +128,9 @@ class PDFHandler extends FileHandlerBase {
 		ini_set('memory_limit', '4096M');
 		$success = true;
 		foreach($args as $derivativeSetting) {
+			if(!isset($derivativeSetting['type'])) {
+				continue;
+			}
 			$derivativeType = $derivativeSetting['type'];
 			$width = $derivativeSetting['width'];
 			$height = $derivativeSetting['height'];

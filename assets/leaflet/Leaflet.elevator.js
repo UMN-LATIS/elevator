@@ -34,15 +34,36 @@ if(typeof require !== "undefined") var L = require('leaflet')
 
 	createTile: function(coords, done) {
 		var error;
+		
 		var tile = L.DomUtil.create('img', 'elevatorTile');
 		coords.z = coords.z  + this.options.zoomOffset;
+
 		tile.onload = (function(done, error, tile) {
 			return function() {
 				done(error, tile);
 			}
 		})(done, error, tile);
-		this._loadFunction(coords, tile);
 
+		this._loadFunction(coords, tile);
+		if(this._imageSize !== undefined) {
+			if(this._imageSize[coords.z+1] !== undefined) {
+				console.log("Clipping tile")
+				var xPercentage = 100;
+				
+				if(coords.x* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].x) {
+					xPercentage = 100 - 100 * ((coords.x * this.options.tileSize + this.options.tileSize - this._imageSize[coords.z+1].x) / this.options.tileSize);
+				}
+				var yPercentage = 100;
+				if(coords.y* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].y) {
+					yPercentage =100 - 100*((coords.y* this.options.tileSize +  this.options.tileSize - this._imageSize[coords.z+1].y) / this.options.tileSize);
+				}
+				if(xPercentage < 1) xPercentage = 100;
+				if(yPercentage < 1) yPercentage = 100;
+				tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
+
+		}
+		}
+		
 		// tile.src=url;
 		return tile;
 	},
@@ -123,7 +144,7 @@ _adjustNonSquareTile: function (data) {
 	, tileSize = L.point(tile.naturalWidth, tile.naturalHeight)
 
 	if(this._adjustForRetina) tileSize = tileSize.divideBy(2)
-
+	// pad = 0;
 	tile.style.width = tileSize.x + pad + 'px';
 	tile.style.height = tileSize.y + pad + 'px';
 

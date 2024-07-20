@@ -18,7 +18,9 @@ class PDFHelper {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			$this->CI->pheanstalk->touch($this->CI->job);
+			if(isset($this->CI->job)) {
+				$this->CI->pheanstalk->touch($this->CI->job);
+			}
 			echo ".";
 		}
 		if(!file_exists($outFile)) {
@@ -61,7 +63,10 @@ class PDFHelper {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			$this->CI->pheanstalk->touch($this->CI->job);
+			if(isset($this->CI->job)) {
+				$this->CI->pheanstalk->touch($this->CI->job);
+			}
+			
 			echo ".";
 		}
 

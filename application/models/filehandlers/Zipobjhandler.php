@@ -174,6 +174,7 @@ rnd.resolution_y = int(2000)
 
 		// we change dir inside docker so we have to pass in two args
 		$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . ($foundMTL?(" -s /opt/meshlab.mlx"):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn'";
+
 		exec($meshlabCommandLine . " 2>/dev/null");
 		if(!file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
 			// failed to process with the texture, let's try without.

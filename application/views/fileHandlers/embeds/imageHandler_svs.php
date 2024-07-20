@@ -45,8 +45,20 @@
 }
 </style>
 
-<? $token = isset($fileContainers['tiled'])?$fileObject->getSecurityToken("tiled"):$fileObject->getSecurityToken("tiled-tar")?>
+<? 
 
+
+if(isset($fileContainers['tiled'])) {
+	$token = $fileObject->getSecurityToken("tiled");	
+}
+elseif(isset($fileContainers['tiled-tar'])) {
+	$token = $fileObject->getSecurityToken("tiled-tar");
+}
+elseif(isset($fileContainers['tiled-iiif'])) {
+	$token = $fileObject->getSecurityToken("tiled-iiif");
+}
+
+?>
 <style>
 
 .fixedHeightContainerSVS {
