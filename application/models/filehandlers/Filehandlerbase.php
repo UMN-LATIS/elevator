@@ -439,7 +439,9 @@ class FileHandlerBase extends CI_Model {
 			'jobName' => 'transcode_' . $fileObjectId,
 			'jobQueue' => 'PrimaryJobQueue',
 			'jobDefinition' => $jobDefinition,
-			'attemptDurationSeconds' => ($size=="small")? 2400 : 28800,
+			'timeout' => [
+				"attemptDurationSeconds" => ($size=="small")? 2400 : 28800,
+			],
 			'containerOverrides' => [
         		'command' => ['bash', 'runJob.sh',  $fileObjectId],
     		],
