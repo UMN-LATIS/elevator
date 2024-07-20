@@ -403,6 +403,7 @@ function ArrowButton(La) {
       this.arrow.addTo(this.leafletAnnotate.layerGroup) //add to layerGroup because this is a non-permanent feature
       this.arrowStarted = true
       $(this.viewer._container).mousemove(this.updateArrow)
+      $(this.viewer._container).click(this.stopArrow)
     }
   }
 
@@ -414,11 +415,12 @@ function ArrowButton(La) {
       this.inflightArrowData.distance = this.viewer.distance(arrowEnd, this.inflightArrowData.latlng) * 100 + .001 //calculate distance between mouse and arrow head
       this.arrow.setData(this.inflightArrowData)
       this.arrow.addTo(this.leafletAnnotate.layerGroup) //place updated arrow back on page
-      $(this.viewer._container).click(this.stopArrow)
+      
     }
   }
 
   this.stopArrow = (e) => {
+    
     if (this.arrowStarted) {
       this.viewer.removeLayer(this.arrow)
       this.arrow.addTo(this.leafletAnnotate.layerGroup)
