@@ -27,12 +27,13 @@
 		<?else:?>
 			<?$uploadWidget = $fileObject->getUploadWidget();?>
 
+
 			<?if($uploadWidget->parentWidget->enableIframe && isset($uploadWidget->sidecars) && array_key_exists("iframe", $uploadWidget->sidecars)  && strlen($uploadWidget->sidecars["iframe"]) > 0):
 				echo $this->load->view("fileHandlers/embeds/imageHandler_iframe", ["fileObject"=>$fileObject], true);
-			elseif((isWholeSlideImage($fileObject->sourceFile) || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation)) && (array_key_exists("tiled", $fileContainers) || array_key_exists("tiled-tar", $fileContainers))):
+			elseif((isWholeSlideImage($fileObject->sourceFile) || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation)) && (array_key_exists("tiled", $fileContainers) || array_key_exists("tiled-tar", $fileContainers) || array_key_exists("tiled-iiif", $fileContainers))):
 			?>
 				<?=$this->load->view("fileHandlers/embeds/imageHandler_svs", ["fileObject"=>$fileObject], true)?>
-			<?elseif(array_key_exists("tiled", $fileContainers) || array_key_exists("tiled-tar", $fileContainers)):?>
+			<?elseif(array_key_exists("tiled", $fileContainers) || array_key_exists("tiled-tar", $fileContainers) || array_key_exists("tiled-iiif", $fileContainers)):?>
 				<?
 				if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) {
 					echo $this->load->view("fileHandlers/embeds/imageHandler_dendro", ["fileObject"=>$fileObject], true);

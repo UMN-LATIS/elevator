@@ -5,7 +5,6 @@ class MY_Controller extends CI_Controller {
 	public $doctrineCache = null;
 
 	function __construct() {
-		
 		parent::__construct();
 		
 			\Sentry\init([

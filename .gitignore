@@ -1,8 +1,8 @@
 */models/Entity/*~
 */models/Proxies/*
-*/config/config.php
-*/config/database.php
-*/config/email.php
+# */config/config.php
+# */config/database.php
+# */config/email.php
 */config/development
 */logs/log-*.php
 */logs/!index.html

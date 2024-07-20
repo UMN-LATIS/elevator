@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${DATABASE_DB}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  beanstalkd:
+    platform: linux/x86_64
+    image: schickling/beanstalkd
+    ports:
+      - "11300:11300"
+
+  apache:
+    platform: linux/x86_64
+    build: 
+      context: .
+      args:
+        - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
+        - DOCKER_ENVIRONMENT=${ENVIRONMENT}
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www/html
+      - ${DOCKER_SCRATCH_DIR}:/scratch
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+      - postgres
+      - beanstalkd
+      - elasticsearch
+  
+  elasticsearch:
+    platform: linux/x86_64
+    image: elasticsearch:5.6.16
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+volumes:
+  postgres-data:
+  elasticsearch-data:

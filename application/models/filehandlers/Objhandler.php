@@ -335,6 +335,9 @@ rnd.resolution_y = int(2000)
 		unlink($sourceFileContainer->getPathToLocalFile() . ".ply");
 		$derivativeArray = array();
 		foreach($args as $derivativeSetting) {
+			if(!isset($derivativeSetting['type'])) {
+				continue;
+			}
 			$derivativeType = $derivativeSetting['type'];
 			$width = $derivativeSetting['width'];
 			$height = $derivativeSetting['height'];
