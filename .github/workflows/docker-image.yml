@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feature/moveToENVFiles
+      - master
 
 jobs:
   build-and-push:
@@ -28,8 +28,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: elevator-registry
-          # IMAGE_TAG: ${{ github.sha }}
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || 'develop' }}
         run: |
           # echo the current git commit into a file named REVISION
           echo $GITHUB_SHA > REVISION
