@@ -179,7 +179,7 @@ class MovieHandler extends FileHandlerBase {
 			
 		}
 
-		if($args["runInLoop"] = true) {
+		if($args["runInLoop"] == true) {
 			$derivativeLoop = $targetDerivatives;
 		}
 		else {
