@@ -4,7 +4,7 @@
 targetJobID=$1
 
 # if .env exists, load it
-if [ -f .env ] then
+if [ -f .env ]; then
     source .env
 fi
 
