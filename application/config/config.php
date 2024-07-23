@@ -271,7 +271,7 @@ $config['sess_match_ip']		= FALSE;
 $config['sess_match_useragent']	= TRUE;
 $config['sess_time_to_update']	= 86400;
 $config['sess_driver'] = 'redis';
-$config['sess_save_path'] = 'tcp://' . $_ENV['REDIS_HOST']??null . ':6379';
+$config['sess_save_path'] = 'tcp://' . ($_ENV['REDIS_HOST']??null) . ':6379';
 
 /*
 |--------------------------------------------------------------------------
@@ -408,7 +408,7 @@ $config['scratchSpace'] = $_ENV['SCRATCH_DIR'] ?? null;
 $config['elastic'] = $_ENV['ELASTIC_HOST'] ?? null;
 $config['elasticIndex'] = $_ENV['ELASTIC_INDEX'] ?? null;
 
-$config['redis'] = $_ENV['REDIS_HOST'] ?? null; // elastic ip:port
+$config['redis'] = ($_ENV['REDIS_HOST'] ?? null); // elastic ip:port
 $config['redisPort'] = "6379";
 
 /**
