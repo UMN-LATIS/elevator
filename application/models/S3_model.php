@@ -92,8 +92,7 @@ class S3_model extends CI_Model {
 		if(!$targetMimeType) {
 			$targetMimeType = mime_content_type($sourceFile);
 		}
-		
-
+	
 		if(filesize($sourceFile) < 100*1024*1024) {
 			try {
 				$this->s3Client->putObject(array(

@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run --quiet --memory=8g  --rm -i -v /scratch:/scratch ghcr.io/umn-elevator/meshlab:latest  "$@"

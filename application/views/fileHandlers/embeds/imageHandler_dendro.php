@@ -3,7 +3,7 @@
 // time to get hacky, but this is special case code
 $innerYear = null;
 $haveLateWood = false;
-if($widgetObject->parentWidget->dendroFields) {
+if(isset($widgetObject->parentWidget->dendroFields)) {
 	$innerYearField = $widgetObject->parentWidget->dendroFields["innerYear"];
 	if(isset($fileObject->parentObject->assetObjects[$innerYearField])) {
 
@@ -20,7 +20,11 @@ if($widgetObject->parentWidget->dendroFields) {
 		$haveLateWood = $result[0]["fieldContents"];
 	}
 }
+$tileSize = $fileObject->sourceFile->metadata["dziTilesize"];
 
+if($tileSize == 254) {
+	$tileSize = 256; // hack for tar files which had a 254 tile size but don't really work with that size
+}
 ?>
 
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -30,7 +34,7 @@ if($widgetObject->parentWidget->dendroFields) {
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/bootstrap/dist/css/bootstrap-theme.min.css" >
 
-	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css">
+	<!-- <link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet/dist/leaflet.css"> -->
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-fullscreen/dist/leaflet.fullscreen.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-minimap/dist/Control.MiniMap.min.css" />
 	<link rel="stylesheet" href="/assets/leaflet-treering/node_modules/leaflet-easybutton/src/easy-button.css" />
@@ -91,7 +95,21 @@ if($widgetObject->parentWidget->dendroFields) {
 
 </style>
 
-<? $token = isset($fileContainers['tiled'])?$fileObject->getSecurityToken("tiled"):$fileObject->getSecurityToken("tiled-tar")?>
+<? 
+
+
+if(isset($fileContainers['tiled'])) {
+	$token = $fileObject->getSecurityToken("tiled");	
+}
+elseif(isset($fileContainers['tiled-tar'])) {
+	$token = $fileObject->getSecurityToken("tiled-tar");
+}
+elseif(isset($fileContainers['tiled-iiif'])) {
+	$token = $fileObject->getSecurityToken("tiled-iiif");
+}
+
+?>
+
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="imageMap"></div></div>
 <?=$this->load->view("fileHandlers/embeds/imageHandler_partial.php",array("fileContainers"=>$fileContainers),true)?>
 	
@@ -146,7 +164,8 @@ if($widgetObject->parentWidget->dendroFields) {
 			keyboard: false,
    	     	crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
    	     }).setView([0, 0], 0);
-
+		
+		
 		var mapOptions = {
 			width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
 			height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
@@ -164,6 +183,7 @@ if($widgetObject->parentWidget->dendroFields) {
 		};
 
 		baseLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
+		
 		baseLayer.addTo(imageMap);
 		
 
@@ -218,7 +238,7 @@ void main(void){
             crs: L.CRS.Simple,
             noWrap: true,
             infinite: false,
-            tileSize: 256,
+            tileSize: <?=$tileSize ?>,
             detectRetina: false,
 			fragmentShader: fragmentShader2,
 			tileLayers: [baseLayer],

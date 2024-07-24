@@ -1,6 +1,9 @@
 <?php
 
 //use Aws\S3\S3Client;
+use Aws\Batch\BatchClient;
+use Aws\Exception\AwsException;
+
 
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
@@ -39,6 +42,10 @@ class FileHandlerBase extends CI_Model {
 	public $postponeTime = 10;
 
 	public $overrideHandlerClass = false; // allows us to force a new handler for the next load
+
+	public $nextTask = null;
+	public $taskListHasChanged = false;
+	
 
 	public function __construct()
 	{
@@ -205,14 +212,23 @@ class FileHandlerBase extends CI_Model {
 		else {
 			return false;
 		}
+	}
 
+	public function performTaskByName($taskName, $args) {
+		if(method_exists($this, $taskName)) {
+			return call_user_func(array($this,$taskName), $args);
+		}
+		else {
+			return false;
+		}
 	}
 
 	public function triggerReindex() {
 		// we may have made some sort of change at this point, let's queue a reindex
-		if($this->parentObjectId != null) {
+		// make sure we save so we don't race the index
+		$this->save();
+		if($this->parentObjectId != null && $this->config->item("beanstalkd")) {
 			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
 			if(!$this->instance || $this->instance == null) {
 				$instanceId = 1; // welp, we're hosed, hope we can find a good one.
 				// lookup instance based on this file's collection.
@@ -244,6 +260,11 @@ class FileHandlerBase extends CI_Model {
 		}
 		else {
 			$nextTask = $this->taskArray[$taskId];
+		}
+
+		if($this->config->item('fileQueueingMethod') == "aws") {
+			$this->nextTask = $nextTask;
+			return;
 		}
 
 		if(!$this->pheanstalk) {
@@ -314,7 +335,6 @@ class FileHandlerBase extends CI_Model {
 
 
 
-
 		$fileObject->setSourceFile($this->sourceFile->getAsArray());
 
 		$derivativeArray = array();
@@ -366,7 +386,20 @@ class FileHandlerBase extends CI_Model {
 
    			$this->save();
 
-   			$this->queueTask(0, [], false);
+			if($this->config->item("fileQueueingMethod") == "beanstalkd") {
+   				$this->queueTask(0, [], false);
+			}
+			else {
+				if($this->sourceFile->isArchived()) {
+					$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+					$pathToFile = instance_url("");
+					$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
+					$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
+				}
+				else {
+					$this->queueBatchItem($this->asset, $this->sourceFile);
+				}
+			}
 
 
    		}
@@ -378,6 +411,47 @@ class FileHandlerBase extends CI_Model {
 
 
 		return $this->getObjectId();
+
+	}
+
+	public function queueBatchItem($asset, $sourceFile) {
+		$fileObjectId = $asset->getFileObjectId();
+		$fileSize = $sourceFile->getFileSize();
+		$size = "";
+		if($fileSize < 50*1024*1024) { 
+			// under 100mb, we can safely use our small container
+			$size = "small";
+		}
+		else {
+			$size = "large";
+		}
+		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $size;
+
+		$batchClient = new BatchClient([
+			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->config->item('awsQueueAccessKey'),
+				'secret' => $this->config->item('awsQueueSecretKey'),
+			],
+		]);
+		$params = [
+			'jobName' => 'transcode_' . $fileObjectId,
+			'jobQueue' => 'PrimaryJobQueue',
+			'jobDefinition' => $jobDefinition,
+			'timeout' => [
+				"attemptDurationSeconds" => ($size=="small")? 2400 : 28800,
+			],
+			'containerOverrides' => [
+        		'command' => ['bash', 'runJob.sh',  $fileObjectId],
+    		],
+		];
+		try {
+			$result = $batchClient->submitJob($params);
+		} catch (AwsException $e) {
+			$this->logging->processingInfo("taskFailed",get_class($this),"Failed to submit job to AWS Batch" . $e->getMessage(),$fileObjectId,0);
+		}
+		
 
 	}
 

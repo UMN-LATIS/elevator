@@ -36,7 +36,7 @@ class InhibitorHook {
 
 	}
 	public function runtime_error_catcher() {
-		// set_error_handler(array($this, 'handle_errors'));
+		set_error_handler(array($this, 'handle_errors'));
 		set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
@@ -195,7 +195,7 @@ class InhibitorHook {
 		$CI =& get_instance();
 		
 		if(session_status() !== PHP_SESSION_ACTIVE) {
-			session_start();
+			// session_start();
 		}
 		
 		if($CI && !$CI->input->is_cli_request()) {

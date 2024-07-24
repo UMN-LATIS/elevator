@@ -11,7 +11,6 @@ class Instance_Controller extends MY_Controller
     {
         parent::__construct();
         
-        
         if($this->config->item('site_open') === FALSE)
         {
             show_error('Elevator is Temporarily Unavailable.');
@@ -106,6 +105,9 @@ class Instance_Controller extends MY_Controller
             return;
         }
         if($this->instance->getUseCustomHeader()) {
+            if(!file_exists("assets/instanceAssets")) {
+                mkdir("assets/instanceAssets");
+            }
             if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".html")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".html", $this->instance->getCustomHeaderText());
             }

@@ -1,0 +1,36 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+INSERT INTO "instances"("id","name","domain","ownerhomepage","amazons3key","s3storagetype","defaultbucket","bucketregion","amazons3secret","googleanalyticskey","introtext","createdat","modifiedat","usecustomheader","usecustomcss","useheaderlogo","usecentralauth","hidevideoaudio","featuredasset","featuredassettext","customheadertext","customfootertext","customheadercss","customheaderimage","allowindexing","showcollectioninsearchresults","showtemplateinsearchresults","showpreviousnextsearchresults","enablehlsstreaming","enableinterstitial","interstitialtext","notes","interfaceversion","defaulttheme","enablethemes","customhomeredirect","maximummorelikethis","defaulttexttruncationheight","availablethemes")
+VALUES
+(1,E'defaultinstance',E'defaultinstance',E'mailto:mcfa0086@umn.edu',E'',E'STANDARD',E'',E'',E'',E'',E'',NULL,E'2024-04-05 17:55:03',0,FALSE,FALSE,TRUE,FALSE,E'575ee4ceba98a87472f3e030',E'This is text about the featured asset.',E'',E'',E'',NULL,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,E'',E'This is an instance note.',0,E'folwell',TRUE,E'',3,72,E'["folwell", "light"]');
+
+INSERT INTO "permissions"("id","name","label","level","createdat","modifiedat")
+VALUES
+(3,E'noperm',E'No Permissions',E'0',NULL,NULL),
+(4,E'search',E'Search and Browse',E'10',NULL,NULL),
+(5,E'viewderivatives',E'View Derivatives (Group 1)',E'20',NULL,NULL),
+(6,E'createdrawers',E'Create/Edit Drawers',E'30',NULL,NULL),
+(7,E'originals',E'Download Originals',E'40',NULL,NULL),
+(8,E'addassets',E'Add Assets to Instance',E'50',NULL,NULL),
+(9,E'admin',E'Administer Instance',E'60',NULL,NULL),
+(10,E'originalsWithoutDerivatives',E'View Derivatives (Groups 1 & 2)',E'25',NULL,NULL);
+INSERT INTO "users"("id","instance_id","emplid","username","usertype","email","displayname","fastupload","password","issuperadmin","hasexpiry","expires","createdat","modifiedat","createdby_id","apiinstance_id")
+VALUES
+(1,1,NULL,E'admin',E'Local',E'',E'',FALSE,E'28579da20bee0bed0e5c3947406464c36fc74eaa',TRUE,FALSE,E'2014-01-24 00:00:00',E'2014-01-24 14:33:39',NULL,1,NULL);
+
+INSERT INTO "field_types"("id","name","model_name","sample_field_data")
+VALUES
+(1,E'text',E'text',NULL),
+(2,E'upload',E'upload',E'{ \\"extractLocation\\":true, \\"extractDate\\":true, \\"enableTiling\\":true, \\"enableDendro\\": false, \\"enableIframe\\":false, \\"enableAnnotation\\":false, \\"forceTiling\\":false, \\"interactiveTranscript\\":false}'),
+(3,E'date',E'date',NULL),
+(4,E'select',E'select',E'{\\n \\"multiSelect\\": false, \\n  \\"selectGroup\\": [\\n    \\"option 1\\",\\n    \\"option 2\\",\\n    \\"option 3\\"\\n  ]\\n}\\n\\nalt:\\n\\n{\\n  \\"selectgroup\\": \\n    {\\"option 1\\":\\"more text about option 1\\",\\n    \\"option 2\\":\\"more text about option 2\\",\\n    \\"option 3\\":\\"more text about option 3\\"\\n}\\n  \\n}\\n'),
+(5,E'location',E'location',NULL),
+(6,E'multiselect',E'multiselect',E'{\\n  \\"country\\": {\\n    \\"usa\\": {\\n      \\"state\\": {\\n        \\"wisconsin\\": {\\n          \\"city\\": [\\n            \\"madison\\",\\n            \\"milwaukee\\"\\n          ]\\n        },\\n        \\"minnesota\\": {\\n          \\"city\\": {\\n            \\"minneapolis\\": {\\n              \\"neighborhood\\": [\\n                \\"uptown\\",\\n                \\"downtown\\"\\n              ]\\n            },\\n            \\"mankato\\": {\\n              \\"neighborhood\\": [\\n                \\"campus\\",\\n                \\"downtown\\"\\n              ]\\n            }\\n          }\\n        }\\n      }\\n    },\\n    \\"canada\\": {\\n      \\"state\\": {\\n        \\"alberta\\": {\\n          \\"city\\": [\\n            \\"fakeville\\",\\n            \\"faketown\\"\\n          ]\\n        },\\n        \\"quebec\\": {\\n          \\"city\\": [\\n            \\"montreal\\"\\n          ]\\n        }\\n      }\\n    }\\n  }\\n}'),
+(7,E'related asset',E'related_asset',E'{\\n  \\"nestData\\": true,\\n  \\"showLabel\\": true,\\n  \\"collapseNestedChildren\\": false,\\n  \\"thumbnailView\\": false,\\n  \\"defaultTemplate\\": 0,\\n \\"matchAgainst\\": [0],\\n  \\"displayInline\\": false,\\n \\"ignoreForDigitalAsset\\": false, \\"ignoreForLocationSearch\\": false, \\"ignoreForDateSearch\\": false}'),
+(8,E'tag list',E'tags',NULL),
+(10,E'text area',E'textarea',NULL),
+(11,E'checkbox',E'checkbox',NULL);
+
+INSERT INTO "instance_pages"("id","instance_id","parent_id","title","body","includeinheader","modifiedat","sortorder")
+VALUES
+(1,1,NULL,E'Home Page',E'<p>Welcome to the home page</p>',FALSE,NULL,NULL);

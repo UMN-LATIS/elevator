@@ -91,12 +91,7 @@ if (isset($fileContainers['tiled-tar'])) {
         }
         var tileLoadFunction = async function(coords, tile, done) {
             if(subimages[coords.z] == undefined) {
-                try {
-                    subimages[coords.z] = await tiff.getImage(maxZoom - coords.z);
-                } catch (error) {
-                    console.error(error);
-                    return;
-                }
+                subimages[coords.z] = await tiff.getImage(maxZoom - coords.z);
             }
             const tileSize = this.options.tileSize;;
             const subimage = subimages[coords.z];

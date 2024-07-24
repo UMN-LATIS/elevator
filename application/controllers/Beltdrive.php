@@ -26,10 +26,13 @@ class Beltdrive extends CI_Controller {
 					}
 				}
 			}
-			return $iface[0]['mac'];
-		} else {
-			return "notfound";
+			if(isset($iface[0])){
+				return $iface[0]['mac'];	
+			}
+			
 		}
+	
+		return "notfound";
 	}
 
 	public function __construct()
@@ -90,6 +93,64 @@ class Beltdrive extends CI_Controller {
 			$this->asset_model->reindex($parentArray);
 			$this->pheanstalk->delete($job);
 			$this->doctrine->em->clear();
+		}
+	}
+
+	public function processAWSBatchJob($fileObjectId) {
+		if(strlen($fileObjectId) != 24) {
+			return 0;
+		}
+
+		// set scratchspace to include fileobject
+		$this->config->set_item("scratchSpace", $this->config->item("scratchSpace") . "/" . $fileObjectId);
+		
+		$runOnce = true;
+		while($runOnce) {
+			$runOnce = false;
+			$fileHandler = $this->filehandler_router->getHandlerForObject($fileObjectId);
+
+			if(!$fileHandler) {
+				return 0;
+			}
+			
+			$fileHandler->loadByObjectId($fileObjectId);
+			$this->load->library('Fakestalk');
+			$fakePheanstsalk = new Fakestalk;
+			$this->pheanstalk = $fakePheanstsalk;
+			$fileHandler->pheanstalk = $fakePheanstsalk;
+			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
+			if($collection) {
+				$instances = $collection->getInstances();
+				if(count($instances) > 0) {
+					$instance = $instances[0];
+					$instanceId = $instance->getId();
+					$this->instance = $instance;
+				}
+			}
+			foreach($fileHandler->taskArray as $task) {
+				echo "Performing task " . $task["taskType"] . "\n";
+				if($task["taskType"] == "waitForCompletion") {
+					continue;
+				}
+				// reload each time to make sure artifacts get properly populated
+				$fileHandler->loadByObjectId($fileObjectId);
+				// lookup instance based on this file's collection.
+				$performTaskByName = $fileHandler->performTaskByName($task["taskType"], array_merge($task["config"], ["runInLoop"=>true]));
+				if($performTaskByName == JOB_FAILED) {
+					// do some logging?
+					return JOB_FAILED;
+				}
+				else {
+					echo "Success!\n";
+					$fileHandler->save();
+				}
+
+				if($fileHandler->taskListHasChanged) {
+					echo "Task list changed\n";
+					$runOnce = true;
+					break;
+				}
+			}
 		}
 	}
 
@@ -369,10 +430,9 @@ class Beltdrive extends CI_Controller {
 			$userEmail = $job_encoded["userContact"];
 			$instanceId = $job_encoded["instance"];
 			$pathToFile = $job_encoded["pathToFile"];
-
+			$nextTask = $job_encoded["nextTask"];
 			$instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-			$this->filehandlerbase = new filehandlerbase();
-			$this->filehandlerbase->loadByObjectId($objectId);
+			$this->filehandlerbase = $this->filehandler_router->getHandledObject($fileObjectId);
 
 			if($this->filehandlerbase) {
 
@@ -381,16 +441,27 @@ class Beltdrive extends CI_Controller {
 					$this->pheanstalk->release($job, NULL, 120);
 				}
 				else {
-					echo "File finished". $objectId . "\n";
-					$this->pheanstalk->delete($job);
-					$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
-					$this->load->library('email');
-					$this->email->from('no-reply@elevatorapp.net', 'Elevator');
-					$this->email->set_newline("\r\n");
-					$this->email->to($userEmail);
-					$this->email->subject("File Ready for Download");
-					$this->email->message($fileContent);
-					$this->email->send();
+					if($nextTask == "notify") {
+						echo "File finished". $objectId . "\n";
+						$this->pheanstalk->delete($job);
+						$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
+						$this->load->library('email');
+						$this->email->from('no-reply@elevatorapp.net', 'Elevator');
+						$this->email->set_newline("\r\n");
+						$this->email->to($userEmail);
+						$this->email->subject("File Ready for Download");
+						$this->email->message($fileContent);
+						$this->email->send();
+					}
+					else if($nextTask == "create_derivative") {
+						if($this->config->item("fileQueueingMethod") == "aws") {
+							$this->filehandlerbase->queueBatchItem($objectId);
+						}
+						else if($this->config->item("fileQueueingMethod") == "beanstalkd") {
+							$this->filehandlerbase->queueTask(0, [], false);
+						}
+					}
+					
 
 
 				}

@@ -88,11 +88,11 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 	this._gridSize.reverse();
 	// Register our max supported zoom level
 	var maxNativeZoom = this._gridSize.length - 1;
-	if(maxNativeZoom !== this.options.maxNativeZoom) {
-		// our metadata and our computed disagree. Let's trust the metadata?
-		console.log("Overriding computed max zoom");
-		maxNativeZoom = this.options.maxNativeZoom;
-	}
+	// if(maxNativeZoom !== this.options.maxNativeZoom) {
+	// 	// our metadata and our computed disagree. Let's trust the metadata?
+	// 	console.log("Overriding computed max zoom");
+	// 	maxNativeZoom = this.options.maxNativeZoom;
+	// }
 
 	var maxZoomGrid = this._gridSize[maxNativeZoom],
 	maxX = maxZoomGrid.x * this.options.tileSize,

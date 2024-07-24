@@ -74,8 +74,14 @@ class ZipHandler extends FileHandlerBase {
 			}
 		}
 		// use the handlers task array to enque our next item
-		if($handler) {
+		$this->taskListHasChanged = false;
+
+		if($handler && is_array($handler->taskArray) && is_array($this->taskArray) && count($handler->taskArray) != count($this->taskArray)) {
 			$this->taskArray = $handler->taskArray;
+			$this->taskListHasChanged = true;
+		}
+		else {
+			echo "Did not change taskArray\n";
 		}
 
 		$this->queueTask(1, $this->taskArray[1]["config"]);

@@ -134,8 +134,9 @@ function convert_before_json(&$item, &$key)
 
 function identifyImage($sourceImage) {
 	try {
+		$CI =& get_instance();
 		$commandline = $CI->config->item("identify") . " " . escapeshellarg($sourceImage->getPathToLocalFile());
-		exec($commandLine, $result);
+		exec($commandline, $result);
 	}
 	catch(Exception $e) {
 		return false;
@@ -153,7 +154,7 @@ function identifyImage($sourceImage) {
 function fastImageDimensions($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$commandline = "identify " . mungeImageType($sourceImage).":".$sourceImage->getPathToLocalFile();
+	$commandline = $CI->config->item("identify") . " " . mungeImageType($sourceImage).":".$sourceImage->getPathToLocalFile();
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$split = explode(" ", $results[0]);
@@ -172,14 +173,14 @@ function fastImageDimensions($sourceImage) {
 function getImageMetadata($sourceImage) {
 	$CI =& get_instance();
 	putenv("MAGICK_TMPDIR=" . $CI->config->item("scratchSpace"));
-	$commandline = "exiftool -api largefilesupport=1 -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
+	$commandline = $CI->config->item("exiftoolBinary") . " -api largefilesupport=1 -n -j " . escapeshellarg($sourceImage->getPathToLocalFile());
 	exec($commandline, $results);
 	if(isset($results) && is_array($results) && count($results)> 0) {
 		$extractedRaw = json_decode(implode("\n", $results), true);
 		$extractedRaw = $extractedRaw[0];
 	}
 	else {
-		$CI->logging->logError("Error reading raw metadata", (string)$e,  $sourceImage->storageKey);
+		$CI->logging->logError("Error reading raw metadata", $results,  $sourceImage->storageKey);
 		return false;
 	}
 
