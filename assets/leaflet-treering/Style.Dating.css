@@ -1,0 +1,45 @@
+.Dating-title {
+    margin: 0;
+    padding: 4px;
+
+    font-weight: bolder;
+    font-size: 14px;
+
+    background-color: #d9f0a3;
+    border-radius: 4px;
+}
+
+.Dating-radio-container {
+    padding: 4px;
+
+    background-color: #e0e0e0;
+    border-radius: 4px; 
+}
+
+.Dating-radio-container, .Dating-checkbox-container {
+    margin-top: 6px;
+}
+
+.Dating-radio-container input[type="radio"] {
+    vertical-align: text-bottom;
+    margin-right: 6px;
+}
+
+.Dating-radio-container label, .Dating-text, .Dating-subtext {
+    font-size: 14px;
+    font-weight: normal;
+    margin: 0;
+}
+
+.Dating-subtext {
+    font-size: 12px;
+    font-style: italic;
+}
+
+#Dating-year-input {
+    width: 90px;
+}
+
+.Dating-checkbox-container input[type="checkbox"] {
+    vertical-align: text-bottom;
+}

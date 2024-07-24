@@ -51,24 +51,24 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
 
   this.data = new MeasurementData(options.initialData, this);
   this.aData = new AnnotationData(options.initialData.annotations);
-
+  
   /* Current helper tools:
    * closestPointIndex -> will find the absolute closest point and its index or its point[i] value
   */
   this.helper = new Helper(this);
-
+  
   //error alerts in 'measuring' mode aka popout window
   //will not alert in 'browsing' mode aka DE browser window
   if (window.name.includes('popout') && options.ppm === 0 && !options.initialData.ppm) {
     alert('Calibration needed: set p/mm in asset metadata or use calibration tool');
   }
-
   this.autoscroll = new Autoscroll(this, this.viewer);
+  
   this.mouseLine = new MouseLine(this);
   this.visualAsset = new VisualAsset(this);
   this.annotationAsset = new AnnotationAsset(this);
   this.panhandler = new Panhandler(this);
-
+  
   this.scaleBarCanvas = new ScaleBarCanvas(this);
   this.metaDataText = new MetaDataText(this);
 
@@ -157,7 +157,6 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
    */
   LTreering.prototype.loadInterface = function() {
     console.log(this);
-
     this.autoscroll.on();
     this.viewer.on('resize', () => {
       this.autoscroll.reset();
@@ -166,10 +165,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
     $(map.getContainer()).css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
-<<<<<<< Updated upstream
-=======
     $(".leaflet-control-layers-selector")[0].click();
->>>>>>> Stashed changes
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {

@@ -1,0 +1,197 @@
+.PithEstimate-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.PithEstimate-table-container {
+    display: flex;
+    justify-content: center;
+}
+
+.PithEstimate-table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    border: none;
+    
+    width: 100%;
+
+    margin-top: 4px;
+}
+
+.PithEstimate-table td, th {
+    border: none;
+    padding: 0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.PithEstimate-table th {
+    background-color: #eeffc6;
+}
+
+.PithEstimate-table tr:nth-child(even) {
+    background-color: #f1f1f1;
+}
+
+.PithEstimate-table tr:hover {
+    background-color: #cbcbcb;
+    cursor: pointer;
+}
+
+.PithEstimate-vertical-headers th {
+    text-align: left;
+    padding-left: 8px;
+    padding-right: 8px;
+    width: 50%;
+}
+
+.PithEstimate-btn-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.PithEstimate-sub-container {
+    margin: 0;
+}
+
+.PithEstimate-center-content {
+    display: flex;
+    justify-content: center;
+}
+
+.PithEstimate-title {
+    margin: 0;
+    margin-bottom: 2px;
+    padding: 4px;
+
+    font-weight: bolder;
+    font-size: 14px;
+
+    background-color: #d9f0a3;
+    border-radius: 4px;
+}
+
+.PithEstimate-subTitle {
+    margin: 0;
+
+    font-weight: bolder;
+    font-size: 12px;
+}
+
+.PithEstimate-info {
+    margin: 0;
+    margin-left: 12px;
+}
+
+.PithEstimate-label {
+    margin: 0;
+
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.PithEstimate-big-btn {
+    display: flex;
+
+    margin-top: 4px;
+    margin-bottom: 4px;
+    width: 50%;
+    height: 32px;
+
+    font-weight: bolder;
+    font-size: 14px;
+    color: white;
+
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+}
+
+.PithEstimate-confirm-btn {
+    background-color: #71b54c;
+}
+
+.PithEstimate-confirm-btn:hover {
+    background-color: #5f9740;
+}
+
+#PithEstimate-copy-btn {
+    background-color: #bababa;
+}
+
+#PithEstimate-copy-btn:hover {
+    background-color: #a2a2a2;
+}
+
+.PithEstimate-zoomMultiplier-toggle label {
+	display: inline-block;
+	padding-right: 10px;
+	white-space: nowrap;
+	margin: 0;
+}
+
+.PithEstimate-zoomMultiplier-toggle input {
+	vertical-align: middle;
+	margin: 0;
+}
+
+.PithEstimate-zoomMultiplier-toggle label span {
+	vertical-align: middle;
+	margin: 0;
+	margin-left: 4px;
+	font-size: 12px;
+	font-weight: normal;
+	font-style: italic;
+}
+
+.PithEstimate-ccmOptions-div {
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.PithEstimate-ccmOptions-div input {
+	vertical-align: middle;
+	margin: 0;
+}
+
+.PithEstimate-ccmOptions-div input[type="radio"] {
+    margin-left: 8px;
+}
+
+.PithEstimate-ccmOptions-div label {
+    display: inline-block;
+	padding-right: 10px;
+	white-space: nowrap;
+	margin: 0;
+
+    font-weight: normal;
+}
+
+.PithEstimate-text-background {
+    background-color: #f3f3f3; 
+    border-radius: 10px; 
+    margin-bottom: 8px; 
+    padding: 6px;
+}
+
+.PithEstimate-instruction-text {
+    margin-bottom: 6px;
+}
+
+#PithEstimate-instruction-button {
+    border: none;
+    border-radius: 4px;
+    background-color: #ededed;
+
+    font-weight: bold;
+
+    margin: 0;
+    float: right;
+}
+
+#PithEstimate-instruction-button:hover {
+    background-color: #d8d8d8;
+}

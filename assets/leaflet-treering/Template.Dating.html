@@ -1,0 +1,21 @@
+<script id="Dating-template" type="text/x-handlebars-template">
+    <div class="Dating-title">
+        Set date of chronology:
+    </div>
+    <div style="margin-bottom: 6px;">
+        <span class="Dating-subtext">Use "Enter" to confirm new date.</span>
+    </div>
+    
+    <span class="Dating-text" style="margin-right: 6px;">Year:</span>
+    <input type="number" value={{date_year}} id="Dating-year-input">
+    <div class="Dating-radio-container">
+        <label for="Dating-shiftAll-radio"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftAll-radio">
+            Adjust all points</label><br>
+        <label for="Dating-shiftEarlier-radioB"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftEarlier-radio">
+            Adjust chronologically <b>earlier</b> points</label><br>
+        <label for="Dating-shiftLater-radio"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftLater-radio">
+            Adjust chronologically <b>later</b> points</label>
+        <label for="Dating-shiftSingle-radio"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftSingle-radio">
+            Adjust <b>only</b> selected point (<span class="Dating-subtext">debug option</span>)</label>
+    </div>
+</script>

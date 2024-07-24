@@ -1,0 +1,64 @@
+input[type = "range"] {
+	width: 85%;
+}
+
+.image-adjustment-slider-div {
+	display: flex;
+	height: 22px;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.imageInput {
+	width: 55px; 
+	height: 20px; 
+	margin-right: 5px;
+	font-size: medium;
+}
+
+.image-adjustment-slider-label {
+	text-align:left; 
+	display:block; 
+	margin-bottom: 0px; 
+	padding-top: 1.2px;
+	font-size: 14px;
+}
+
+.image-adjustment-button {
+	margin: 8px;
+	padding: 0px; 
+	height: 24px; 
+	width: 25%; 
+	font-size: 16px; 
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: 6px;
+	background-color: #e0e0e0;
+}
+
+.image-adjustment-button:hover {
+	background-color: #d4d4d4;
+}
+
+.image-adjustment-active-button {
+	background-color: #aec8f4;
+}
+
+.image-adjustment-active-button:hover {
+	background-color: #aec8f4;
+}
+
+.image-adjustment-default-div {
+	display: flex; 
+	align-items: center; 
+	height: 28px;
+	justify-content: space-between;
+}
+
+.image-adjustment-subtext {
+	font-size: 12px;
+	font-style: italic;
+	
+}

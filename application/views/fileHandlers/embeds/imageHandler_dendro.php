@@ -79,9 +79,9 @@ if($tileSize == 254) {
 
 <style type="text/css">
 
-.leaflet-top {
+/* .leaflet-top {
 	z-index: 400;
-}
+} */
 
 
 .leaflet-control {

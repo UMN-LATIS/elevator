@@ -1,0 +1,145 @@
+<script id="PithEstimate-growthRateDialog-template" type="text/x-handlebars-template">
+    <div class="PithEstimate-container">
+        <div class="PithEstimate-sub-container">
+            <p class="PithEstimate-title">
+                Geometric / Duncan &nbsp;
+                Inner Year Estimate
+            </p>
+            <p class="PithEstimate-info">
+                <i>Length:</i> {{l}} mm
+            </p>
+            <p class="PithEstimate-info">
+                <i>Height:</i> {{h}} mm 
+            </p>
+            <p class="PithEstimate-info">
+                <i>Radius:</i> {{r}} mm
+            </p>
+        </div>
+        <div class="PithEstimate-sub-container">
+            <div class="PithEstimate-table-container">
+                <table class="PithEstimate-table">
+                    <tr><th>Growth Rate</th><th>Year Est.</th></tr>
+                    <tr id="PithEstimate-5-row"><td>5 years</td><td id="PithEstimate-5-estimate">{{yearEst5}}</td></tr>
+                    <tr id="PithEstimate-10-row"><td>10 years</td><td id="PithEstimate-10-estimate">{{yearEst10}}</td></tr>
+                    <tr id="PithEstimate-20-row"><td>20 years</td><td id="PithEstimate-20-estimate">{{yearEst20}}</td></tr>
+                    <tr id="PithEstimate-30-row"><td>30 years</td><td id="PithEstimate-30-estimate">{{yearEst30}}</td></tr>
+                    <tr id="PithEstimate-custom-row">
+                        <td>
+                            <!-- <span id="PithEstimate-customBtn-text">Click for Custom</span> -->
+                            <input id="PithEstimate-customYearInput" type="number" min="0" max="{{customLimit}}" style="width: 52px;">
+                            years 
+                        </td>
+                        <td>
+                            <span id="PithEstimate-customBtn-estimate">NA</span>
+                        </td></tr>
+                </table>
+            </div>
+            
+        </div>
+        <div class="PithEstimate-sub-container PithEstimate-center-content">
+            <div id="PithEstimate-copy-btn" class="PithEstimate-big-btn">
+                C o p y  &nbsp;  T a b l e
+            </div>
+        </div>
+
+        <div class="PithEstimate-sub-container PithEstimate-center-content">
+            <div id="PithEstimate-geoConfirm-btn" class="PithEstimate-big-btn PithEstimate-confirm-btn">
+                C o n f i r m
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="PithEstimate-duncanInstructionDialog-template" type="text/x-handlebars-template">
+    <div class="PithEstimate-container">
+        <p class="PithEstimate-title">
+            Geometric / Duncan Inner Year Estimate:
+        </p>
+        <p class="PithEstimate-instruction-text">
+            Pith offset estimation using the Duncan Geometric approach.
+            Appropriate when innermost rings include a complete 180º arc within the imaged specimen area.
+            The user must identify the ring of greatest biological age that includes an arc with 180º or more.
+        </p>
+        <p class="PithEstimate-instruction-text">
+            <b>1)</b> Click to place the first width point, on the annual ring boundary on one side of the ring with the largest complete arc.
+        </p>
+        <p class="PithEstimate-instruction-text">
+            <b>2)</b> Click to place the second width point, on the annual ring boundary on the other side of the ring with the largest complete arc.
+        </p>
+        <p class="PithEstimate-instruction-text">
+            <b>3)</b> Click to place the base point for the arc, in the middle of the arcing ring, optionally using the precise midpoint as illustrated.
+        </p>
+        <p class="PithEstimate-instruction-text">
+            <b>4)</b> Click to place the height point for the arc, with a segment that is perpendicular to the width of the arc.
+        </p>
+        <p class="PithEstimate-instruction-text">
+            <b>5)</b> Click in the table row to select the number of years from which the mean growth rate will be estimated, or enter your own value.
+        </p>
+        <p class="PithEstimate-instruction-text">
+            <b>6)</b> Click to confirm the preferred option from the table.
+        </p>
+    </div>
+</script>
+
+<script id="PithEstimate-ccmInstructionDialog-template" type="text/x-handlebars-template">
+    <div class="PithEstimate-container">
+        <p class="PithEstimate-title">
+            Concentric Circle Pith Offset Estimation
+            <button id="PithEstimate-instruction-button">
+                Details
+                <i id="PithEstimate-instruction-icon-plus" class="fa fa-plus" aria-hidden="true"></i>
+                <i id="PithEstimate-instruction-icon-minus" class="fa fa-minus" aria-hidden="true" hidden></i>
+            </button>
+        </p>
+
+        <div class="PithEstimate-container" style="align-items: center;">
+            <div id="PithEstimate-instruction-container" class="PithEstimate-text-background" hidden>
+                <p class="PithEstimate-title">Intructions:</p>
+                <p class="PithEstimate-instruction-text">
+                    Distance estimates depend on image calibration. 
+                </p>
+                <p class="PithEstimate-instruction-text">
+                    <b>1)</b> Click to place the estimated pith location marker. 
+                </p>
+                <p class="PithEstimate-instruction-text">
+                    <b>2)</b> Move pith marker using WASD keys, carefully aligning circle curvature to match curvature of annual ring boundaries.
+                </p>
+                <p class="PithEstimate-instruction-text">
+                    <b>3)</b> Adjust the number of rings from which the growth rate is calculated, as needed. 
+                </p>
+                <p class="PithEstimate-instruction-text">
+                    <b>4)</b> Click confirm to update metadata.
+                </p>
+                <p class="PithEstimate-instruction-text">
+                    <b>Reference:</b> Applequist, M.B. 1958. A simple pith locator for use with off-center increment cores. <em>Journal of Forestry.</em> 56(2):141.
+                </p>
+            </div>
+        </div>
+
+        <div class="PithEstimate-text-background">
+            <div class="PithEstimate-ccmOptions-div">
+                <span> Number of rings used for estimation: </span>
+                <input type="number" style="width:60px; text-align: right;" min="2" value="{{numShownCircles}}" id="PithEstimate-numShownCircles-input">
+            </div>
+            <br>
+            <p class="PithEstimate-title">Estimated values:</p>
+            <div class="PithEstimate-ccmOptions-div">
+                <span> Offset distance: <b>{{pithDistance}} mm</b> ({{pithPercent}}% of measured + estimated)</span>
+            </div>
+            <div class="PithEstimate-ccmOptions-div">
+                <span> Offset years: <b>{{numYearEst}}</b> ({{yearPercent}}% of measured + estimated)</span>
+            </div>
+            <div class="PithEstimate-ccmOptions-div">
+                <span> Inner year estimate: <b>{{innerYearEst}}</b> ({{innerYearMeasured}} measured) </span>
+            </div>
+        </div>
+
+        <div class="PithEstimate-sub-container PithEstimate-center-content">
+            {{#if showConfirmButton}}
+            <div id="PithEstimate-ccmConfirm-btn" class="PithEstimate-big-btn PithEstimate-confirm-btn">
+                C o n f i r m
+            </div>
+            {{/if}}
+        </div>
+    </div>  
+</script>
