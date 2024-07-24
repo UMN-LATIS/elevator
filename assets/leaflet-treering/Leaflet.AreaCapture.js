@@ -227,7 +227,7 @@ function EllipseCSVDownload(Inte) {
      */
     EllipseCSVDownload.prototype.action = function() {
         if (Inte.ellipseData.data.length < 1) {
-            alert("Error: Must create ellipse data ebfore downloading.");
+            alert("Error: Must create ellipse data before downloading.");
             return;
         }
 
@@ -281,7 +281,7 @@ function EllipseCSVDownload(Inte) {
                 n++;
             }
 
-            if (yearHasData == false && wantNA) {
+            if (!yearHasData && wantNA) {
                 csvString += "\n" + year + ",NA";
             }
         }

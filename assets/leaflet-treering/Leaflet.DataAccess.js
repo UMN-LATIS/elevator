@@ -222,7 +222,7 @@ function PopoutPlots(Inte) {
      * @function
      */
     PopoutPlots.prototype.action = function() {
-        //this.childSite = 'http://localhost:8080/dendro-plots/'
+        // this.childSite = 'http://localhost:8080/dendro-plots/'
         this.childSite = 'https://umn-latis.github.io/dendro-plots/'
         this.win = window.open(this.childSite, 'popout' + Math.round(Math.random()*10000),
                     'location=yes,height=' + height + ',width=' + width + ',scrollbars=yes,status=yes, top=' + top);
@@ -296,8 +296,21 @@ function JSONFileUpload(Inte) {
 
             Inte.treering.data = new MeasurementData(newDataJSON, Inte.treering);
             Inte.treering.aData = new AnnotationData(newDataJSON.annotations);
+
             if (newDataJSON?.ellipses) Inte.treering.areaCaptureInterface.ellipseData.loadJSON(newDataJSON.ellipses); 
             else Inte.treering.areaCaptureInterface.ellipseData.clearJSON();
+            if (newDataJSON?.currentView) Inte.treering.imageAdjustmentInterface.imageAdjustment.loadCurrentViewJSON(newDataJSON.currentView);
+
+            if (newDataJSON?.pithEstimate && (newDataJSON.pithEstimate.innerYear || newDataJSON.pithEstimate.innerYear == 0)) {
+                Inte.treering.pithEstimateInterface.estimateData.updateShownValues(newDataJSON.pithEstimate.innerYear, newDataJSON.pithEstimate.growthRate);
+                Inte.treering.pithEstimateInterface.estimateVisualAssets.reloadArcVisuals(
+                    typeof newDataJSON.pithEstimate.growthRate == "string",
+                    newDataJSON.pithEstimate.pithLatLng, 
+                    newDataJSON.pithEstimate.radius_unCorrected,
+                    newDataJSON.pithEstimate.latLngObject, 
+                    newDataJSON.pithEstimate.innerYear,
+                );
+            }
 
             // If the JSON has PPM data, use that instead of loaded data.
             if (newDataJSON.ppm) {
@@ -525,6 +538,8 @@ function Download(Inte) {
           'ppm': Inte.treering.meta.ppm,
           'ptWidths': Inte.treering.helper.findDistances(),
           'ellipses': Inte.treering.areaCaptureInterface.ellipseData.getJSON(),
+          'currentView': Inte.treering.imageAdjustmentInterface.imageAdjustment.getCurrentViewJSON(),
+          'pithEstimate': Inte.treering.pithEstimateInterface.estimateData.getJSON(),
       };
 
       return data;

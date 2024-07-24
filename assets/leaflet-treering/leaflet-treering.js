@@ -14,7 +14,7 @@
  * @param {string} basePath - this is a path to the treering image folder
  * @param {object} options -
  */
-function LTreering (viewer, basePath, options, base_layer, gl_layer) {
+function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
   this.viewer = viewer;
   this.basePath = basePath;
 
@@ -24,7 +24,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   var latData = urlParams.get("lat");
   var lngData = urlParams.get("lng");
   if (latData && lngData) {
-    setTimeout(function() {find
+    setTimeout(function() {
       viewer.setView([latData, lngData], 16); //  max zoom level is 18
     }, 500);
   }
@@ -39,6 +39,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     'popoutUrl': options.popoutUrl || null,
     'assetName': options.assetName || 'N/A',
     'attributesObjectArray': options.attributesObjectArray || [],
+    'dbh': fullJSON?.dbh_33[0].fieldContents || 0,
   }
 
   this.preferences = { // catch for if forwardDirection or subAnnual are undefined/null on line ~2830
@@ -75,11 +76,11 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
   this.undo = new Undo(this);
   this.redo = new Redo(this);
 
-  this.imageAdjustment = new ImageAdjustment(this);
+  // Code hosted in Leaflet.ImageAdjustment.js
+  this.imageAdjustmentInterface = new ImageAdjustmentInterface(this);
+  // this.imageAdjustment = new ImageAdjustment(this);
   //this.PixelAdjustment = new PixelAdjustment(this);
   this.calibration = new Calibration(this);
-
-  this.dating = new Dating(this);
 
   this.createPoint = new CreatePoint(this);
   this.zeroGrowth = new CreateZeroGrowth(this);
@@ -96,37 +97,49 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
 
   this.universalDelete = new UniversalDelete(this);
 
-  this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
-  this.createTools = new ButtonBar(this, [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn], 'straighten', 'Create new measurements');
-  this.editTools = new ButtonBar(this, [this.dating.btn, this.insertPoint.btn, this.insertBreak.btn, this.convertToStartPoint.btn, this.insertZeroGrowth.btn, this.cut.btn], 'edit', 'Edit existing measurements');
-  this.settings = new ButtonBar(this, [this.measurementOptions.btn, this.calibration.btn, this.keyboardShortCutDialog.btn], 'settings', 'Measurement preferences & distance calibration');
+  this.tools = [this.calibration, this.createPoint, this.createBreak, this.universalDelete, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustmentInterface.imageAdjustment, this.measurementOptions];
+  
+  // Code hosted in Leaflet.Dating.js
+  this.datingInterface = new DatingInterface(this);
+  let editToolArr = [this.insertPoint.btn, this.insertBreak.btn, this.convertToStartPoint.btn, this.insertZeroGrowth.btn, this.cut.btn];
+  editToolArr.unshift(...this.datingInterface.btns);
+  this.tools.push(...this.datingInterface.tools);
 
-  this.tools = [this.calibration, this.dating, this.createPoint, this.createBreak, this.universalDelete, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustment, this.measurementOptions];
   // --- //
   // Code hosted in Leaflet.AreaCapture.js
   this.areaCaptureInterface = new AreaCaptureInterface(this);
   this.areaTools = new ButtonBar(this, this.areaCaptureInterface.btns, 'hdr_strong', 'Manage ellipses');
+  this.tools.push(...this.areaCaptureInterface.tools);
+  // Code hosted in Leaflet.PithEstimate.js
+  this.pithEstimateInterface = new PithEstimateInterface(this);
+  let createToolArr = [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn];
+  for (btn of this.pithEstimateInterface.btns) {
+    createToolArr.push(btn);
+  }
 
-  // Alert for Beta purposes: 
-  this.betaToggle = true;
-  $(this.areaTools.btn.button).on("click", () => {
-    if (this.betaToggle) {
-      //alert("Area measurement tools for beta testing & provisional data development. Please direct any issues or feedback to: thorn573@umn.edu.");
-      this.betaToggle = false;
-    }
-  })
-
+  // Tools in external files: 
+  // Code hosted in Leaflet.AreaCapture.js
+  this.areaCaptureInterface = new AreaCaptureInterface(this);
+  this.areaTools = new ButtonBar(this, this.areaCaptureInterface.btns, 'hdr_strong', 'Manage ellipses');
   this.areaCaptureInterface.tools.map(tool => {
     this.tools.push(tool);
   });
-  // --- //
 
+  this.pithEstimateInterface.tools.map(tool => {
+    this.tools.push(tool);
+  });
+  
   // Code hosted in Leaflet.DataAccess.js
   this.dataAccessInterface = new DataAccessInterface(this);
 
+  this.undoRedoBar = new L.easyBar([this.undo.btn, this.redo.btn]);
+  this.createTools = new ButtonBar(this, createToolArr, 'straighten', 'Create new measurements');
+  this.settings = new ButtonBar(this, [this.measurementOptions.btn, this.calibration.btn, this.keyboardShortCutDialog.btn], 'settings', 'Measurement preferences & distance calibration');
+  this.editTools = new ButtonBar(this, editToolArr, 'edit', 'Edit existing measurements');
+
   this.baseLayer = {
+    'GL Layer': gl_layer,
     'Tree Ring': base_layer,
-    'GL Layer': gl_layer
   };
 
   this.overlay = {
@@ -135,6 +148,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     'Lines': this.visualAsset.lineLayer,
     'Annotations': this.annotationAsset.markerLayer,
     'Ellipses': this.areaCaptureInterface.ellipseVisualAssets.ellipseLayer,
+    'Pith Estimate': this.pithEstimateInterface.estimateVisualAssets.arcLayer,
   };
 
   /**
@@ -152,10 +166,14 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
     $(map.getContainer()).css('cursor', 'default');
 
     L.control.layers(this.baseLayer, this.overlay).addTo(this.viewer);
+<<<<<<< Updated upstream
+=======
+    $(".leaflet-control-layers-selector")[0].click();
+>>>>>>> Stashed changes
 
     // if popout is opened display measuring tools
     if (window.name.includes('popout')) {
-      this.imageAdjustment.btn.addTo(this.viewer);
+      this.imageAdjustmentInterface.imageAdjustment.btn.addTo(this.viewer);
       this.dataAccessInterface.viewData.btn.addTo(this.viewer);
       this.dataAccessInterface.popoutPlots.btn.addTo(this.viewer);
       //this.PixelAdjustment.btn.addTo(this.viewer);
@@ -167,7 +185,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
       this.areaTools.bar.addTo(this.viewer);
       this.undoRedoBar.addTo(this.viewer);
     } else {
-      this.imageAdjustment.btn.addTo(this.viewer);
+      this.imageAdjustmentInterface.imageAdjustment.btn.addTo(this.viewer);
       this.dataAccessInterface.viewData.btn.addTo(this.viewer);
       this.dataAccessInterface.popoutPlots.btn.addTo(this.viewer);
       this.popout.btn.addTo(this.viewer);
@@ -186,8 +204,8 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer) {
        if (e.keyCode == 13) {
          // Refactor so simple loop may be used.
          console.log("Enter pressed!")
-         if (this.dating.active) {
-           this.dating.keypressAction(e);
+         if (this.datingInterface.dating.active) {
+           this.datingInterface.dating.keypressAction(e);
            return;
          }
 
@@ -1609,8 +1627,8 @@ function VisualAsset (Lt) {
         }
       }
 
-      if (Lt.dating.active) {
-        Lt.dating.action(i);
+      if (Lt.datingInterface.dating.active) {
+        Lt.datingInterface.dating.action(i);
       }
     });
 
@@ -3432,166 +3450,6 @@ function Calibration(Lt) {
 }
 
 /**
- * Set date of chronology
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
-function Dating(Lt) {
-  this.active = false;
-  this.btn = new Button(
-    'access_time',
-    'Edit measurement point dating (Shift-d)',
-    () => { Lt.disableTools(); Lt.collapseTools(); this.enable() },
-    () => { this.disable() }
-  );
-
-  // enable with shift-d
-  L.DomEvent.on(window, 'keydown', (e) => {
-     if (e.keyCode == 68 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 68 refers to 'd'
-     window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active 
-       e.preventDefault();
-       e.stopPropagation();
-       Lt.disableTools();
-       this.enable();
-     }
-  }, this);
-
-  /**
-   * Open a text container for user to input date
-   * @function action
-   */
-  Dating.prototype.action = function(i) {
-    if (Lt.data.points[i] != undefined) {
-      // Start points are "measurement" points when measuring backwards.
-      // Need to provide way for users to "re-date" them.
-      let pt_forLocation = Lt.data.points[i];
-      if (i == 0 || !Lt.data.points[i - 1]) {
-        alert("Cannot date first point. Select a different point to adjust dating");
-        return;
-      } else if (Lt.data.points[i].break || (Lt.data.points[i].start && Lt.data.points[i - 1].break)) {
-        alert("Cannot date break points. Select a different point to adjust dating");
-        return;
-      } else if (Lt.data.points[i].start) {
-        i--;
-        if (!Lt.measurementOptions.forwardDirection) pt_forLocation = Lt.data.points[i + 1];
-      }
-
-      // Handlebars from templates.html
-      this.index = i;
-      let year = Lt.data.points[i].year;
-      let content = document.getElementById("dating-template").innerHTML;
-      let template = Handlebars.compile(content);
-      let html = template({ date_year: year });
-
-      this.popup = L.popup({closeButton: false})
-          .setContent(html)
-          .setLatLng(pt_forLocation.latLng)
-          .openOn(Lt.viewer);
-
-      document.getElementById('year_input').select();
-
-      $(Lt.viewer.getContainer()).click(e => {
-        this.popup.remove(Lt.viewer);
-        this.disable();
-      });
-    }
-  };
-
-  /**
-   * Dating action after new year entered
-   * @function keypressAction
-   */
-  Dating.prototype.keypressAction = function(e) {
-    let key = e.which || e.keyCode;
-    if (key === 13) {
-      this.active = false;
-      let input = document.getElementById('year_input');
-      let i = this.index;
-      let year = Lt.data.points[i].year;
-
-      var new_year = parseInt(input.value);
-      this.popup.remove(Lt.viewer);
-
-      if (!new_year && new_year != 0) {
-        alert("Entered year must be a number");
-        return
-      }
-
-      Lt.undo.push();
-
-      function incrementYear(pt) {
-        // Increment year if annual,                 latewood when measuring forward in time,                 or earlywood when measuring backward in time
-        return (!Lt.measurementOptions.subAnnual || (Lt.measurementOptions.forwardDirection && !pt.earlywood) || (!Lt.measurementOptions.forwardDirection && pt.earlywood));
-      }
-
-      let shift = new_year - year;
-      let pts_before = Lt.data.points.slice(0, i + 1);
-      let year_diff = pts_before.filter(pb => pb.year && incrementYear(pb)).length;
-      let pts_after = Lt.data.points.slice(i + 1);
-      let dir_constant = (Lt.measurementOptions.forwardDirection) ? 1 : -1;
-
-      // Delta is the starting count value. Need "jump start" value if...
-      // ... expected to increment on next value. Special case if any ...
-      // values before point are 0, then do not "jump start".
-      let numOfZeroYears = pts_before.filter(e => e.year === 0).length;
-      let delta = 0;
-      if (numOfZeroYears && year != 0 && !incrementYear(Lt.data.points[i])) delta = -1;
-      else if (!numOfZeroYears && incrementYear(Lt.data.points[i])) delta = 1;
-      pts_before.map((pb, j) => {
-        if (pb.year || pb.year == 0) {
-          pb.year = new_year - dir_constant * (year_diff - delta);
-          if (incrementYear(pb)) {
-            delta++;
-          }
-        }
-      })
-
-      // Special case does no apply to after points.
-      delta = 0;
-      if (incrementYear(Lt.data.points[i])) delta = 1;
-      pts_after.map((pa, k) => {
-        if (pa.year || pa.year == 0) {
-          pa.year = new_year + dir_constant * (delta);
-          if (incrementYear(pa)) {
-            delta++;
-          }
-        }
-      })
-
-      Lt.data.year += shift;
-      Lt.visualAsset.reload();
-
-      // Updates once user hits enter
-      Lt.helper.updateFunctionContainer(true);
-
-      this.disable();
-    }
-  }
-
-  /**
-   * Enable dating
-   * @function enable
-   */
-  Dating.prototype.enable = function() {
-    this.btn.state('active');
-    this.active = true;
-    Lt.viewer.getContainer().style.cursor = 'pointer';
-  };
-
-  /**
-   * Disable dating
-   * @function disable
-   */
-  Dating.prototype.disable = function() {
-    this.btn.state('inactive');
-    $(Lt.viewer.getContainer()).off('click');
-    $(document).off('keypress');
-    this.active = false;
-    Lt.viewer.getContainer().style.cursor = 'default';
-  };
-}
-
-/**
  * \eate measurement points
  * @constructor
  * @param {Ltreering} Lt - Leaflet treering object
@@ -3800,21 +3658,37 @@ function CreateBreak(Lt) {
     'broken_image',
     'Create a within-year break in measurement path\n(Avoid measuring physical specimen gaps & cracks!)',
     () => {
-      Lt.disableTools();
-      this.enable();
-      Lt.mouseLine.from(Lt.data.points[Lt.data.index - 1].latLng);
+      // Code for breaking a pith measurement exists in Leaflet.PithEstimate.js
+      let pithEnabled = Lt.pithEstimateInterface.newGeoEstimate.enabled; 
+      if (pithEnabled) { 
+        Lt.pithEstimateInterface.breakGeoEstimate.enable() 
+      } else { 
+        Lt.disableTools();
+        this.enable(); 
+        Lt.mouseLine.from(Lt.data.points[Lt.data.index - 1].latLng);
+      }
     },
-    () => { this.disable() }
+    () => { 
+      Lt.pithEstimateInterface.breakGeoEstimate.disable();
+      this.disable();
+    }
   );
 
   L.DomEvent.on(window, 'keydown', (e) => {
      if (e.keyCode == 66 && e.getModifierState("Shift") && !e.getModifierState("Control") && // 66 refers to 'b'
      window.name.includes('popout') && !Lt.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
-       e.preventDefault();
-       e.stopPropagation();
-       Lt.disableTools();
-       this.enable();
-       Lt.mouseLine.from(Lt.data.points[Lt.data.index - 1].latLng);
+        e.preventDefault();
+        e.stopPropagation();
+
+       // Code for breaking a pith measurement exists in Leaflet.PithEstimate.js
+        let pithEnabled = Lt.pithEstimateInterface.newGeoEstimate.enabled; 
+        if (pithEnabled) { 
+          Lt.pithEstimateInterface.breakGeoEstimate.enable() 
+        } else { 
+          Lt.disableTools();
+          this.enable(); 
+          Lt.mouseLine.from(Lt.data.points[Lt.data.index - 1].latLng);
+        }
      };
   });
 
@@ -4390,136 +4264,153 @@ function InsertBreak(Lt) {
   };
 }
 
-/**
- * Change color properties of image
- * @constructor
- * @param {Ltreering} Lt - Leaflet treering object
- */
-function ImageAdjustment(Lt) {
-  this.open = false;
+// /**
+//  * Change color properties of image
+//  * @constructor
+//  * @param {Ltreering} Lt - Leaflet treering object
+//  */
+// function ImageAdjustment(Lt) {
+//   this.open = false;
 
-  this.btn = new Button(
-    'brightness_6',
-    'Adjust image appearance settings',
-    () => { Lt.disableTools(); this.enable() },
-    () => { this.disable() }
-  );
+//   this.btn = new Button(
+//     'brightness_6',
+//     'Adjust image appearance settings',
+//     () => { Lt.disableTools(); this.enable() },
+//     () => { this.disable() }
+//   );
 
-  // handlebars from templates.html
-  let content = document.getElementById("image-adjustment-template").innerHTML;
+//   let filterList = [
+//     {
+//       filterType: "e",
+//       value: "50",
+//       inputID: "20",
+//       sliderID: "30"
+//     },
+//     { 
+//       filterType: "e",
+//       value: "50",
+//       inputID: "20",
+//       sliderID: "30"
+//     }
+//    ]
 
-  this.dialog = L.control.dialog({
-    'size': [340, 280],
-    'anchor': [50, 5],
-    'initOpen': false,
-    'position': 'topleft',
-    'minSize': [0, 0]
-  }).setContent(content).addTo(Lt.viewer);
+//   // handlebars from templates.html
+//   let content = document.getElementById("ImageAdjustment-dialog-template").innerHTML;
+//   let template = Handlebars.compile(content);
+//   let html = template({filterList: filterList})
 
-  /**
-   * Update the image filter to reflect slider values
-   * @function updateFilters
-   */
-  ImageAdjustment.prototype.updateFilters = function() {
-    var brightnessSlider = document.getElementById("brightness-slider");
-    var contrastSlider = document.getElementById("contrast-slider");
-    var saturationSlider = document.getElementById("saturation-slider");
-    var hueSlider = document.getElementById("hue-slider");
-    var invert = $("#invert-checkbox").prop('checked')?1:0;
-    var sharpnessSlider = document.getElementById("sharpness-slider").value;
-    var embossSlider = document.getElementById("emboss-slider").value;
-    var edgeDetect = document.getElementById("edgeDetect-slider").value;
-    var unsharpnessSlider = document.getElementById("unsharpness-slider").value;
-    document.getElementsByClassName("leaflet-pane")[0].style.filter =
-      "contrast(" + contrastSlider.value + "%) " +
-      "brightness(" + brightnessSlider.value + "%) " +
-      "saturate(" + saturationSlider.value + "%) " +
-      "invert(" + invert + ")" +
-      "hue-rotate(" + hueSlider.value + "deg)";
-    Lt.baseLayer['GL Layer'].setKernelsAndStrength([
-      {
-			"name":"emboss",
-			"strength": embossSlider
-      },
-      {
-        "name":"edgeDetect3",
-        "strength": edgeDetect
-      },
-      {
-        "name":"sharpness",
-        "strength": sharpnessSlider
-      },
-      {
-        "name":"unsharpen",
-        "strength": unsharpnessSlider
-      }
-    ]);
-  };
+//   this.dialog = L.control.dialog({
+//     'size': [400, 280],
+//     'anchor': [50, 5],
+//     'initOpen': false,
+//     'position': 'topleft',
+//     'minSize': [0, 0]
+//   }).setContent(html).addTo(Lt.viewer);
 
-  /**
-   * Open the filter sliders dialog
-   * @function enable
-   */
-  ImageAdjustment.prototype.enable = function() {
-    this.open = true;
+//   /**
+//    * Update the image filter to reflect slider values
+//    * @function updateFilters
+//    */
+//   ImageAdjustment.prototype.updateFilters = function() {
+//     var brightnessSlider = document.getElementById("brightness-slider");
+//     var contrastSlider = document.getElementById("contrast-slider");
+//     var saturationSlider = document.getElementById("saturation-slider");
+//     var hueSlider = document.getElementById("hue-slider");
+//     var invert = $("#invert-checkbox").prop('checked')?1:0;
+//     var sharpnessSlider = document.getElementById("sharpness-slider").value;
+//     var embossSlider = document.getElementById("emboss-slider").value;
+//     var edgeDetect = document.getElementById("edgeDetect-slider").value;
+//     var unsharpnessSlider = document.getElementById("unsharpness-slider").value;
+//     document.getElementsByClassName("leaflet-pane")[0].style.filter =
+//       "contrast(" + contrastSlider.value + "%) " +
+//       "brightness(" + brightnessSlider.value + "%) " +
+//       "saturate(" + saturationSlider.value + "%) " +
+//       "invert(" + invert + ")" +
+//       "hue-rotate(" + hueSlider.value + "deg)";
+//     Lt.baseLayer['GL Layer'].setKernelsAndStrength([
+//       {
+// 			"name":"emboss",
+// 			"strength": embossSlider
+//       },
+//       {
+//         "name":"edgeDetect3",
+//         "strength": edgeDetect
+//       },
+//       {
+//         "name":"sharpness",
+//         "strength": sharpnessSlider
+//       },
+//       {
+//         "name":"unsharpen",
+//         "strength": unsharpnessSlider
+//       }
+//     ]);
+//   };
 
-    this.dialog.lock();
-    this.dialog.open();
-    var brightnessSlider = document.getElementById("brightness-slider");
-    var contrastSlider = document.getElementById("contrast-slider");
-    var saturationSlider = document.getElementById("saturation-slider");
-    var hueSlider = document.getElementById("hue-slider");
-    var sharpnessSlider = document.getElementById("sharpness-slider");
-    var embossSlider = document.getElementById("emboss-slider");
-    var edgeDetect = document.getElementById("edgeDetect-slider");
-    var unsharpnessSlider = document.getElementById("unsharpness-slider");
-    //Close view if user clicks anywhere outside of slider window
-    $(Lt.viewer.getContainer()).click(e => {
-      this.disable();
-    });
+//   /**
+//    * Open the filter sliders dialog
+//    * @function enable
+//    */
+//   ImageAdjustment.prototype.enable = function() {
+//     this.open = true;
 
-    this.btn.state('active');
-    $(".imageSlider").change(() => {
-      this.updateFilters();
-    });
-    $("#invert-checkbox").change(() => {
-      this.updateFilters();
-    });
-    $("#reset-button").click(() => {
-      $(brightnessSlider).val(100);
-      $(contrastSlider).val(100);
-      $(saturationSlider).val(100);
-      $(hueSlider).val(0);
-      $(sharpnessSlider).val(0);
-      $(embossSlider).val(0);
-      $(edgeDetect).val(0);
-      $(unsharpnessSlider).val(0);
-      this.updateFilters();
-    });
-    $("#invert-button").click(() => {
-      $(brightnessSlider).val(100);
-      $(contrastSlider).val(100);
-      $(saturationSlider).val(100);
-      $(hueSlider).val(0);
-      this.updateFilters();
-    });
-  };
+//     this.dialog.lock();
+//     this.dialog.open();
+//     var brightnessSlider = document.getElementById("brightness-slider");
+//     var contrastSlider = document.getElementById("contrast-slider");
+//     var saturationSlider = document.getElementById("saturation-slider");
+//     var hueSlider = document.getElementById("hue-slider");
+//     var sharpnessSlider = document.getElementById("sharpness-slider");
+//     var embossSlider = document.getElementById("emboss-slider");
+//     var edgeDetect = document.getElementById("edgeDetect-slider");
+//     var unsharpnessSlider = document.getElementById("unsharpness-slider");
+//     //Close view if user clicks anywhere outside of slider window
+//     $(Lt.viewer.getContainer()).click(e => {
+//       this.disable();
+//     });
 
-  /**
-   * Close the filter sliders dialog
-   * @function disable
-   */
-  ImageAdjustment.prototype.disable = function() {
-    if (this.open) {
-      this.dialog.unlock();
-      this.dialog.close();
-    }
+//     this.btn.state('active');
+//     $(".imageSlider").change(() => {
+//       this.updateFilters();
+//     });
+//     $("#invert-checkbox").change(() => {
+//       this.updateFilters();
+//     });
+//     $("#reset-button").click(() => {
+//       $(brightnessSlider).val(100);
+//       $(contrastSlider).val(100);
+//       $(saturationSlider).val(100);
+//       $(hueSlider).val(0);
+//       $(sharpnessSlider).val(0);
+//       $(embossSlider).val(0);
+//       $(edgeDetect).val(0);
+//       $(unsharpnessSlider).val(0);
+//       this.updateFilters();
+//     });
+//     $("#invert-button").click(() => {
+//       $(brightnessSlider).val(100);
+//       $(contrastSlider).val(100);
+//       $(saturationSlider).val(100);
+//       $(hueSlider).val(0);
+//       this.updateFilters();
+//     });
+//   };
+
+//   /**
+//    * Close the filter sliders dialog
+//    * @function disable
+//    */
+//   ImageAdjustment.prototype.disable = function() {
+//     if (this.open) {
+//       this.dialog.unlock();
+//       this.dialog.close();
+//     }
     
-    this.btn.state('inactive');
-    this.open = false;
-  };
+//     this.btn.state('inactive');
+//     this.open = false;
+//   };
 
-}
+// }
 
 /**
 * Change measurement options (set subAnnual, previously hasLatewood, and direction)
@@ -4752,6 +4643,12 @@ function MetaDataText (Lt) {
         startAddition = (startPt.earlywood) ? ew + " " : lw + " ";
         endAddition = (endPt.earlywood) ? " " + ew : " " + lw;
       }
+
+      let estInnerYear = Lt.pithEstimateInterface.estimateData.shownInnerYear;
+      if (estInnerYear) {
+        startAddition = `(~${estInnerYear}) ` + startAddition;
+      }
+
       years = startAddition + String(startPt.year) + " — " + String(endPt.year) + endAddition + " &nbsp;|&nbsp; ";
     };
 
@@ -4852,8 +4749,6 @@ function Panhandler(La) {
           panArray = [adjustedPanAmount, 0];
           break;
       }
-
-      console.log(panArray)
       map.panBy(panArray, {
         animate: true,
         delay: 0
@@ -4976,6 +4871,14 @@ function KeyboardShortCutDialog (Lt) {
       {
        'key': 'Shift-b',
        'use': 'Create within-year break',
+      },
+      {
+        'key': 'Shift-p',
+        'use': 'Create inner year estimate with Geometric or Duncan method',
+      },
+      {
+        'key': 'Shift-c',
+        'use': 'Create inner year estimate with Concentric Circles method',
       },
       {
        'key': 'Shift-s',
@@ -5128,14 +5031,18 @@ function Helper(Lt) {
   Helper.prototype.trueDistance = function(p1, p2) {
     var lastPoint = Lt.viewer.project(p1, Lt.getMaxNativeZoom());
     var newPoint = Lt.viewer.project(p2, Lt.getMaxNativeZoom());
+
     var length = Math.sqrt(Math.pow(Math.abs(lastPoint.x - newPoint.x), 2) +
         Math.pow(Math.abs(newPoint.y - lastPoint.y), 2));
+
     var pixelsPerMillimeter = 1;
+
     Lt.viewer.eachLayer((layer) => {
       if (layer.options.pixelsPerMillimeter > 0 || Lt.meta.ppm > 0) {
         pixelsPerMillimeter = Lt.meta.ppm;
       }
     });
+    
     length = length / pixelsPerMillimeter;
     var retinaFactor = 1;
     return length * retinaFactor;
@@ -5221,25 +5128,29 @@ function Helper(Lt) {
          return
        }
        if (e.start) {
-         prevPt = e;
+          prevPt = e;
        } else if (e.break) {
-         disToBreak = Lt.helper.trueDistance(prevPt.latLng, e.latLng);
+          disToBreak = Lt.helper.trueDistance(prevPt.latLng, e.latLng);
        } else if (e.year || e.year == 0) {
-         if (!yearArray.includes(e.year)) {
-            yearArray.push(parseInt(e.year));
-         }
-         var width = Lt.helper.trueDistance(prevPt.latLng, e.latLng) + disToBreak;
-         width = parseFloat(width.toFixed(5));
-         if (e.earlywood && Lt.measurementOptions.subAnnual) {
-           ewWidthArray.push(width);
-         } else if (!e.earlywood && Lt.measurementOptions.subAnnual) {
-           lwWidthArray.push(width)
-         } else {
-           twWidthArray.push(width)
-         }
-         disToBreak = 0;
-         prevPt = e;
-       }
+          // Only add year once. If subannual, both early- and late-wood points have the same year, must only add one of them. 
+          let annual = !Lt.measurementOptions.subAnnual;
+          let subAnnual = Lt.measurementOptions.subAnnual;
+          if (annual || (subAnnual && e.earlywood)) {
+              yearArray.push(parseInt(e.year));
+          }
+
+          var width = Lt.helper.trueDistance(prevPt.latLng, e.latLng) + disToBreak;
+          width = parseFloat(width.toFixed(5));
+          if (e.earlywood && subAnnual) {
+              ewWidthArray.push(width);
+          } else if (!e.earlywood && subAnnual) {
+              lwWidthArray.push(width)
+          } else {
+              twWidthArray.push(width)
+          }
+          disToBreak = 0;
+          prevPt = e;
+        }
      });
 
      if (Lt.measurementOptions.subAnnual) {

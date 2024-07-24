@@ -163,7 +163,11 @@ fitImage: function () {
 
 	this.options.bounds = bounds // used by `GridLayer.js#_isValidTile`
 	
-	map.setMaxBounds(bounds)
+	// Inital bounds view:
+	// To only allow initial view: 
+	// map.setMaxBounds(bounds) 
+	// To set inital view, but allow free movement: 
+	map.fitBounds(bounds)
 	this.fitBoundsExactly()
 },
 
@@ -179,26 +183,30 @@ fitImage: function () {
 // entire image into the available container. Fill fills the container with a 
 // zoomed portion of the image. These two zooms are stored in `this.options.zooms`
 fitBoundsExactly: function() {
-	var i, c
-	, imageSize = i = this._imageSize[this._imageSize.length-1]
-	, map = this._map
-	, containerSize = c =  map.getSize()
+	if (this._map == null) {
+		return
+	} else {
+		var i, c
+		, imageSize = i = this._imageSize[this._imageSize.length-1]
+		, map = this._map
+		, containerSize = c =  map.getSize()
 
-	var iAR, cAR
-	, imageAspectRatio = iAR = imageSize.x/imageSize.y
-	, containerAspectRatio = cAR = containerSize.x/containerSize.y
-	, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
-	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
-	var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
-	if(zoom > this.options.maxZoom) {
-		return;
-	}
-	this.options.minZoom = Math.floor(zoom);
-	map._addZoomLimit(this);
-	var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
-	
-	if(map.getZoom() < fill) {
-		map.setZoom(zoom);
+		var iAR, cAR
+		, imageAspectRatio = iAR = imageSize.x/imageSize.y
+		, containerAspectRatio = cAR = containerSize.x/containerSize.y
+		, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
+		var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
+		var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
+		if(zoom > this.options.maxZoom) {
+			return;
+		}
+		this.options.minZoom = Math.floor(zoom);
+		map._addZoomLimit(this);
+		var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
+		
+		if(map.getZoom() < fill) {
+			map.setZoom(zoom);
+		}
 	}
 },
 

@@ -469,11 +469,15 @@ textarea {
 	margin-right: 0;
 }
 
+/* Areas on image to initiate autoscroll */
 #AutoScroll-Right-Div {
 	width: 10%;
 	min-width: 50px;
 	height: 100%;
 	float: right;
+
+	position: relative;
+	z-index: 999;
 }
 
 #AutoScroll-Left-Div {
@@ -481,12 +485,18 @@ textarea {
 	min-width: 50px;
 	height: 100%;
 	float: left;
+
+	position: relative;
+	z-index: 999;
 }
 
 #AutoScroll-Up-Div {
 	height: 10%;
 	min-height: 50px;
 	width: 100%;
+
+	position: relative;
+	z-index: 999;
 }
 
 #AutoScroll-Down-Div {
@@ -495,4 +505,6 @@ textarea {
 	width: 100%;
 	position: absolute;
 	bottom: 0;
+
+	z-index: 999;
 }
