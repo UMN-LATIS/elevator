@@ -296,7 +296,7 @@ void main(void){
 			$.get("/assets/leaflet-treering/Template.PithEstimate.html", (dat) => html.push(dat)),
 		).then(() => {
 			$("body").append(...html);
-			var treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
+			treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );
 			treering.loadInterface();
 		});
 
