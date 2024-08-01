@@ -189,6 +189,7 @@ class MovieHandler extends FileHandlerBase {
 		$jobId = null;
 		
 		foreach($derivativeLoop as $nextDerivative) {
+			echo "Starting derivative for " . $nextDerivative . "\n";
 			switch($nextDerivative) {
 				case "thumbnail":
 					$jobId = $this->getTranscodeCommand()->createThumbnail($this->getObjectId());
