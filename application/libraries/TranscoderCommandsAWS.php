@@ -18,6 +18,7 @@ class TranscoderCommandsAWS {
 			$CI->load->model("transcoder_model");
         	$this->transcoderModel = new Transcoder_Model();
         	$this->transcoderModel->setFileHandler($fileHandler);
+			$this->transcoderModel->job = new \Pheanstalk\Job(1, []);
 		}
 	}
 

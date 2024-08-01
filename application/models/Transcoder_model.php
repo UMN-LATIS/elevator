@@ -11,7 +11,7 @@ class Transcoder_Model extends CI_Model {
 	public $videoToolkitConfig;
 	public $threadCount = 4;
 	private $fileHandler;
-	private $job = null;
+	public $job = null;
 
 	public function __construct()
 	{
