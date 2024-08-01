@@ -30,6 +30,7 @@ services:
       args:
         - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
         - DOCKER_ENVIRONMENT=${ENVIRONMENT}
+        - ENVIRONMENT=${ENVIRONMENT}
     ports:
       - "80:80"
     volumes:

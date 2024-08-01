@@ -1133,6 +1133,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 		while($progressHandler->completed !== true)
         {
         	$result = $progressHandler->probe(true);
+
         	if($result["error"]) {
         		$this->logging->processingInfo("ffmpeg", "video",$result, $targetPath, $this->job->getId());
         		return FALSE;
