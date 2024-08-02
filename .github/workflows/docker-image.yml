@@ -36,3 +36,10 @@ jobs:
 
           # Push the Docker image to the ECR repository
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Delete old ECR images
+        uses: agungwa/ECR-Lifecycle-Manager@v1.1.1
+        with:
+          repo_name: ${{ steps.login-ecr.outputs.registry }}/elevator-registry
+          num_to_keep: 1
+          dry_run: false
+          delete_untagged_images: true
