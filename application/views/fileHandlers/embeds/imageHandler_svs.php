@@ -169,7 +169,8 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
             pixelsPerMillimeter: pixelsPerMillimeter,
             lineColor: 'blue',
-            detectRetina: false
+            detectRetina: false,
+            tileType: tileType
         };
 
         layer = L.tileLayer.elevator(tileLoadFunction, mapOptions);

@@ -11,7 +11,7 @@ if (isset($fileContainers['tiled-tar'])) {
         var tiledTar = "<?= $tiledTar ?>";
         var tiledTarIndex = "<?= $tiledTarIndex ?>";
         var manifestJson = null;
-
+        var tileType = "tar";
         async function loadIndex() {
             const manifest = await fetch(tiledTarIndex);
             manifestJson = await manifest.json();
@@ -67,6 +67,7 @@ if (isset($fileContainers['tiled-tar'])) {
         var image;
         var count;
         var subimages = {};
+        var tileType = "iiif";
         var maxZoom = <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1;
         var loadIndex = async function() {
             tiff = await GeoTIFF.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>");
@@ -140,6 +141,7 @@ if (isset($fileContainers['tiled-tar'])) {
 
     <? else : ?>
         var loadIndex = async function() {}
+        var tileType = "tiled";
         var tileLoadFunction = function(coords, tile, done) {
             var params = {
                 Bucket: '<?= $fileObject->collection->getBucket() ?>',

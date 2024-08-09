@@ -10,6 +10,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 			attributionControl: false,
 			detectRetina: true,
 			edgeBufferTiles: 1,
+			tileType: 'tiled'
 		},
 
 		initialize: function(tileLoadFunction, options) {
@@ -45,7 +46,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		})(done, error, tile);
 
 		this._loadFunction(coords, tile);
-		if(this._imageSize !== undefined) {
+		if(this._imageSize !== undefined && this.options.tileType === 'iiif') {
 			if(this._imageSize[coords.z+1] !== undefined) {
 				console.log("Clipping tile")
 				var xPercentage = 100;

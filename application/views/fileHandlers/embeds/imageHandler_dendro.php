@@ -175,7 +175,8 @@ elseif(isset($fileContainers['tiled-iiif'])) {
 			overlap: <?=isset($fileObject->sourceFile->metadata["dziOverlap"])?$fileObject->sourceFile->metadata["dziOverlap"]:1?>,
 			pixelsPerMillimeter: pixelsPerMillimeter,
 			detectRetina: false,
-			renderer: L.canvas()
+			renderer: L.canvas(),
+			tileType: tileType
 		};
 
 		if (latData && lngData) {
