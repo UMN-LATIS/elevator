@@ -262,7 +262,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
       else this.areaCaptureInterface.ellipseData.clearJSON();
 
       // Code hosted in Leaflet.PithEstimate.js
-      if (data.pithEstimate) this.pithEstimateInterface.estimateData.loadJSON(data.pithEstimate);
+      this.pithEstimateInterface.estimateData.loadJSON(data.pithEstimate);
 
       // Code hosted in Leaflet.ImageAdjustment.js
       if (data.currentView) this.imageAdjustmentInterface.imageAdjustment.loadCurrentViewJSON(data.currentView);

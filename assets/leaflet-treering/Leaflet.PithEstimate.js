@@ -59,7 +59,20 @@ function EstimateData(Inte) {
         this.pithLatLng = pithLatLng;
         this.toPithRadius = toPithRadius;
         this.estRadiiArr = estRadiiArr;
-        Inte.treering.metaDataText.updateText(); // need ot add clear function
+        Inte.treering.metaDataText.updateText(); 
+    }
+
+    /**
+     * Clears shown data values. 
+     * @function
+     */
+    EstimateData.prototype.clearShownValues = function() {
+        this.yearEst = null;
+        this.growthRate = null;
+        this.pithLatLng = null;
+        this.toPithRadius = null;
+        this.estRadiiArr = null;
+        Inte.treering.metaDataText.updateText(); 
     }
 
     /**
@@ -83,7 +96,11 @@ function EstimateData(Inte) {
      * @param {object} data - Data package from save file.  
      */
     EstimateData.prototype.loadJSON = function(data) {
-        if (!data || !data?.pithLatLng) return;
+        if (!data || !data?.pithLatLng) {
+            this.clearShownValues();
+            Inte.estimateVisualAssets.clearArcs();
+            return;
+        };
 
         // Incoming data resembles:
         /**
@@ -360,6 +377,7 @@ function NewGeoEstimate(Inte) {
         // Inte.treering.undo.push();
         Inte.newGeoEstimateDialog.openInstructions();
         Inte.estimateVisualAssets.clearArcs();
+        Inte.estimateData.clearShownValues();
         this.action();
     }
 
@@ -920,6 +938,7 @@ function NewCcmEstimate(Inte) {
 
         Inte.newCcmEstimateDialog.openInstructions();
         Inte.estimateVisualAssets.clearArcs();
+        Inte.estimateData.clearShownValues();
         this.action();
     }
 
