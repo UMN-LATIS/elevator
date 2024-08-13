@@ -99,69 +99,30 @@ function Dating(Inte) {
      * @function keypressAction
      */
     Dating.prototype.keypressAction = function(e) {
-      let key = e.which || e.keyCode;
-      if (key === 13) {
+        let key = e.which || e.keyCode;
+        if (key === 13) {
         this.active = false;
 
         let year = Inte.treering.data.points[this.index].year;
         let newYear = Inte.datingPopup.yearInput;
         let shift = newYear - year;
         Inte.datingPopup.closePopup();
-  
+
         if (!newYear && newYear != 0) {
             alert("Entered year must be a number");
             return;
         }
-  
+
         Inte.treering.undo.push();
 
-        // Helpful constants: 
-        let directionConstant = (Inte.treering.measurementOptions.forwardDirection) ? 1 : -1;
-        let sliceStart, sliceEnd;
-
-        // There are 3 shift options: 
-        // 1 = Shift all points
-        // 2 = Shift chronologically earlier points
-        // 3 = Shift chronologically later points
-        // 4 = Shift only selected point
         let points = [];
-        switch(Inte.datingPopup.shiftOption) {
-            case 1: 
-                points = Inte.treering.data.points;
-                break;
-            case 2:
-                // Slicing index depends on if core was measured forward or backward chronologically. 
-                // If measured forward, earlier points are at smaller indices. 
-                // If measured backward, earlier points are at larger indices.
-                sliceStart = (directionConstant > 0) ? 0 : this.index;
-                sliceEnd = (directionConstant > 0) ? this.index + 1 : Inte.treering.data.points.length;
-                points = Inte.treering.data.points.slice(sliceStart, sliceEnd);
-                break;
-            case 3:
-                // Same slicing caveat as above, but logic reversed. 
-                sliceStart = (directionConstant > 0) ? this.index : 0;
-                sliceEnd = (directionConstant > 0) ? Inte.treering.data.points.length : this.index + 1; 
-                points = Inte.treering.data.points.slice(sliceStart, sliceEnd);
-                break;
-            case 4:
-                points = [Inte.treering.data.points[this.index]];
+        if (Inte.datingPopup.shiftAll) {
+            points = Inte.treering.data.points;
+        } else {
+            points = [Inte.treering.data.points[this.index]];
         }
-        this.shiftYears(shift, points);
-        // Must shift additonal point in 2 special cases: 
-        // 1) Subannual measurements, shift earlier, but select earlywood value. Must also adjust associated latewood. 
-        // 2) Subannual measurements, shift later, but select latewood value. Must also adjust associated earlywood.
-        // Direction of measuring changes which index these cases reference. 
-        if (Inte.treering.measurementOptions.subAnnual) {
-            let point = Inte.treering.data.points[this.index];
-            let pointBefore = Inte.treering.data.points.slice(0, this.index).findLast((point) => (point?.year || point?.year == 0));
-            let pointAfter = Inte.treering.data.points.slice(this.index + 1).find((point) => (point?.year || point?.year == 0));
 
-            if (Inte.datingPopup.shiftOption == 2 && point.earlywood) {
-                (directionConstant > 0) ? pointAfter.year += shift : pointBefore.year += shift;
-            } else if (Inte.datingPopup.shiftOption == 3 && !point.earlywood) {
-                (directionConstant > 0) ? pointBefore.year += shift : pointAfter.year += shift;
-            }
-        }
+        this.shiftYears(shift, points);
         
         Inte.treering.visualAsset.reload();
         // Updates once user hits enter.
@@ -170,21 +131,78 @@ function Dating(Inte) {
       }
     }
 
-    /**
-     * Checks whether point needs to be incremented when redating. 
-     * @function
-     * 
-     * @param {object} pt - Measurement point created from leaflet.treering.js.  
-     */
-    Dating.prototype.checkIncrementYear = function(pt) {
-        let annual = !Inte.treering.measurementOptions.subAnnual; // Measured annually. 
-        let subAnnual = Inte.treering.measurementOptions.subAnnual; // Measured subannually (distinguish between early- and late-wood).
-        let forward = Inte.treering.measurementOptions.forwardDirection; // Measured forward in time (1900 -> 1901 -> 1902).
-        let backward = !Inte.treering.measurementOptions.forwardDirection// Measured backward in time (1902 -> 1901 -> 1900).
+    // Possible future implementation, 4 shift options: 
+    // Dating.prototype.keypressAction = function(e) {
+    //   let key = e.which || e.keyCode;
+    //   if (key === 13) {
+    //     this.active = false;
 
-        // Increment year if annual, latewood when measuring forward in time, or earlywood when measuring backward in time.
-        return (annual || (forward && !pt.earlywood) || (backward && pt.earlywood));
-    }
+    //     let year = Inte.treering.data.points[this.index].year;
+    //     let newYear = Inte.datingPopup.yearInput;
+    //     let shift = newYear - year;
+    //     Inte.datingPopup.closePopup();
+  
+    //     if (!newYear && newYear != 0) {
+    //         alert("Entered year must be a number");
+    //         return;
+    //     }
+  
+    //     Inte.treering.undo.push();
+
+    //     // Helpful constants: 
+    //     let directionConstant = (Inte.treering.measurementOptions.forwardDirection) ? 1 : -1;
+    //     let sliceStart, sliceEnd;
+
+    //     // There are 3 shift options: 
+    //     // 1 = Shift all points
+    //     // 2 = Shift chronologically earlier points
+    //     // 3 = Shift chronologically later points
+    //     // 4 = Shift only selected point
+    //     let points = [];
+    //     switch(Inte.datingPopup.shiftOption) {
+    //         case 1: 
+    //             points = Inte.treering.data.points;
+    //             break;
+    //         case 2:
+    //             // Slicing index depends on if core was measured forward or backward chronologically. 
+    //             // If measured forward, earlier points are at smaller indices. 
+    //             // If measured backward, earlier points are at larger indices.
+    //             sliceStart = (directionConstant > 0) ? 0 : this.index;
+    //             sliceEnd = (directionConstant > 0) ? this.index + 1 : Inte.treering.data.points.length;
+    //             points = Inte.treering.data.points.slice(sliceStart, sliceEnd);
+    //             break;
+    //         case 3:
+    //             // Same slicing caveat as above, but logic reversed. 
+    //             sliceStart = (directionConstant > 0) ? this.index : 0;
+    //             sliceEnd = (directionConstant > 0) ? Inte.treering.data.points.length : this.index + 1; 
+    //             points = Inte.treering.data.points.slice(sliceStart, sliceEnd);
+    //             break;
+    //         case 4:
+    //             points = [Inte.treering.data.points[this.index]];
+    //     }
+    //     this.shiftYears(shift, points);
+    //     // Must shift additonal point in 2 special cases: 
+    //     // 1) Subannual measurements, shift earlier, but select earlywood value. Must also adjust associated latewood. 
+    //     // 2) Subannual measurements, shift later, but select latewood value. Must also adjust associated earlywood.
+    //     // Direction of measuring changes which index these cases reference. 
+    //     if (Inte.treering.measurementOptions.subAnnual) {
+    //         let point = Inte.treering.data.points[this.index];
+    //         let pointBefore = Inte.treering.data.points.slice(0, this.index).findLast((point) => (point?.year || point?.year == 0));
+    //         let pointAfter = Inte.treering.data.points.slice(this.index + 1).find((point) => (point?.year || point?.year == 0));
+
+    //         if (Inte.datingPopup.shiftOption == 2 && point.earlywood) {
+    //             (directionConstant > 0) ? pointAfter.year += shift : pointBefore.year += shift;
+    //         } else if (Inte.datingPopup.shiftOption == 3 && !point.earlywood) {
+    //             (directionConstant > 0) ? pointBefore.year += shift : pointAfter.year += shift;
+    //         }
+    //     }
+        
+    //     Inte.treering.visualAsset.reload();
+    //     // Updates once user hits enter.
+    //     Inte.treering.helper.updateFunctionContainer(true);
+    //     this.disable();
+    //   }
+    // }
 
     /**
      * Shifts a collection of points by a specified amount. 
@@ -204,7 +222,7 @@ function Dating(Inte) {
 
 
 /**
- * Generates popup related to cdating chronologies. 
+ * Generates popup related to dating chronologies. 
  * @constructor
  * 
  * @param {object} Inte - DatingInterface objects. Allows access to DataAccess tools.
@@ -212,7 +230,9 @@ function Dating(Inte) {
 function DatingPopup(Inte) {
     this.popup = null;
     this.yearInput = 0;
-    // There are 3 shift options: 
+    this.shiftAll = true;
+
+    // Possible future implementation, 4 shift options: 
     // 1 = Shift all points
     // 2 = Shift chronologically earlier points
     // 3 = Shift chronologically later points
@@ -238,7 +258,6 @@ function DatingPopup(Inte) {
             .openOn(Inte.treering.viewer);
         
         this.yearInput = year;
-        this.setDefaults();
         this.createEventListeners();
     }
 
@@ -259,21 +278,26 @@ function DatingPopup(Inte) {
             this.yearInput = parseInt($("#Dating-year-input").val());
         });
 
-        $("#Dating-shiftAll-radio").on("change", () => {
-            this.shiftOption = 1;
+        $("#Dating-shiftSingle-checkbox").on("change", () => {
+            this.shiftAll = !($("#Dating-shiftSingle-checkbox").is(":checked"));
         });
 
-        $("#Dating-shiftEarlier-radio").on("change", () => {
-            this.shiftOption = 2;
-        });
+        // Adjusting date of partial sequences of measuremet points may be enabled in future:
+        // $("#Dating-shiftAll-radio").on("change", () => {
+        //     this.shiftOption = 1;
+        // });
 
-        $("#Dating-shiftLater-radio").on("change", () => {
-            this.shiftOption = 3;
-        });
+        // $("#Dating-shiftEarlier-radio").on("change", () => {
+        //     this.shiftOption = 2;
+        // });
 
-        $("#Dating-shiftSingle-radio").on("change", () => {
-            this.shiftOption = 4;
-        })
+        // $("#Dating-shiftLater-radio").on("change", () => {
+        //     this.shiftOption = 3;
+        // });
+
+        // $("#Dating-shiftSingle-radio").on("change", () => {
+        //     this.shiftOption = 4;
+        // });
     }
 
     /**

@@ -119,7 +119,7 @@ function ViewDataDialog(Inte) {
             savePermissions: Inte.treering.meta.savePermission,
         });
 
-        let size = dat?.ew ? [260, this.dialogHeight] : [176, this.dialogHeight];
+        let size = dat?.ew ? [270, this.dialogHeight] : [180, this.dialogHeight];
         
         this.dialog.setContent(content);
 
@@ -297,21 +297,6 @@ function JSONFileUpload(Inte) {
             Inte.treering.data = new MeasurementData(newDataJSON, Inte.treering);
             Inte.treering.aData = new AnnotationData(newDataJSON.annotations);
 
-            if (newDataJSON?.ellipses) Inte.treering.areaCaptureInterface.ellipseData.loadJSON(newDataJSON.ellipses); 
-            else Inte.treering.areaCaptureInterface.ellipseData.clearJSON();
-            if (newDataJSON?.currentView) Inte.treering.imageAdjustmentInterface.imageAdjustment.loadCurrentViewJSON(newDataJSON.currentView);
-
-            if (newDataJSON?.pithEstimate && (newDataJSON.pithEstimate.innerYear || newDataJSON.pithEstimate.innerYear == 0)) {
-                Inte.treering.pithEstimateInterface.estimateData.updateShownValues(newDataJSON.pithEstimate.innerYear, newDataJSON.pithEstimate.growthRate);
-                Inte.treering.pithEstimateInterface.estimateVisualAssets.reloadArcVisuals(
-                    typeof newDataJSON.pithEstimate.growthRate == "string",
-                    newDataJSON.pithEstimate.pithLatLng, 
-                    newDataJSON.pithEstimate.radius_unCorrected,
-                    newDataJSON.pithEstimate.latLngObject, 
-                    newDataJSON.pithEstimate.innerYear,
-                );
-            }
-
             // If the JSON has PPM data, use that instead of loaded data.
             if (newDataJSON.ppm) {
                 Inte.treering.meta.ppm = newDataJSON.ppm;
@@ -319,6 +304,7 @@ function JSONFileUpload(Inte) {
             }
 
             Inte.treering.loadData();
+            Inte.treering.loadExternalTools(newDataJSON);
             Inte.treering.metaDataText.updateText();
 
             // Temporary solution to refresh data. Size does not update unless opened twice. Race condition?

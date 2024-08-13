@@ -62,6 +62,7 @@
         </p>
         <p class="PithEstimate-instruction-text">
             <b>1)</b> Click to place the first width point, on the annual ring boundary on one side of the ring with the largest complete arc.
+            <b>Note, break points may be added using SHIFT-B.</b>
         </p>
         <p class="PithEstimate-instruction-text">
             <b>2)</b> Click to place the second width point, on the annual ring boundary on the other side of the ring with the largest complete arc.
@@ -94,7 +95,7 @@
 
         <div class="PithEstimate-container" style="align-items: center;">
             <div id="PithEstimate-instruction-container" class="PithEstimate-text-background" hidden>
-                <p class="PithEstimate-title">Intructions:</p>
+                <p class="PithEstimate-title">Instructions:</p>
                 <p class="PithEstimate-instruction-text">
                     Distance estimates depend on image calibration. 
                 </p>
@@ -124,10 +125,42 @@
             <br>
             <p class="PithEstimate-title">Estimated values:</p>
             <div class="PithEstimate-ccmOptions-div">
-                <span> Offset distance: <b>{{pithDistance}} mm</b> ({{pithPercent}}% of measured + estimated)</span>
+                <span> Offset distance: <b>{{pithDistance}} mm</b> 
+                    {{#if pithPercent_isRed}}
+                    <span class="PithEstimate-critical-color">
+                        ({{pithPercent}}% of measured + estimated)
+                    </span>
+                    {{else}} 
+                        {{#if pithPercent_isYellow}}
+                        <span class="PithEstimate-warning-color">
+                            ({{pithPercent}}% of measured + estimated)
+                        </span>
+                        {{else}}
+                        <span>
+                            ({{pithPercent}}% of measured + estimated)
+                        </span>
+                        {{/if}}
+                    {{/if}}
+                </span>
             </div>
             <div class="PithEstimate-ccmOptions-div">
-                <span> Offset years: <b>{{numYearEst}}</b> ({{yearPercent}}% of measured + estimated)</span>
+                <span> Offset years: <b>{{numYearEst}}</b> 
+                    {{#if yearPercent_isRed}}
+                    <span class="PithEstimate-critical-color">
+                        ({{yearPercent}}% of measured + estimated)
+                    </span>
+                    {{else}}
+                        {{#if yearPercent_isYellow}}
+                        <span class="PithEstimate-warning-color">
+                            ({{yearPercent}}% of measured + estimated)
+                        </span>
+                        {{else}}
+                        <span>
+                            ({{yearPercent}}% of measured + estimated)
+                        </span>
+                        {{/if}}
+                    {{/if}}
+                </span>
             </div>
             <div class="PithEstimate-ccmOptions-div">
                 <span> Inner year estimate: <b>{{innerYearEst}}</b> ({{innerYearMeasured}} measured) </span>

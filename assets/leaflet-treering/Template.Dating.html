@@ -9,6 +9,13 @@
     <span class="Dating-text" style="margin-right: 6px;">Year:</span>
     <input type="number" value={{date_year}} id="Dating-year-input">
     <div class="Dating-radio-container">
+        <span class="Dating-subtext">Advanced:</span><br>
+        <label for="Dating-shiftAll-radio"> <input type="checkbox" name="Dating-shift-choice" id="Dating-shiftSingle-checkbox">
+            Adjust <b>only</b> selected point</label>
+    </div>
+
+    <!-- Adjusting date of partial sequences of measuremet points may be enabled in future: -->
+    <!-- <div class="Dating-radio-container">
         <label for="Dating-shiftAll-radio"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftAll-radio">
             Adjust all points</label><br>
         <label for="Dating-shiftEarlier-radioB"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftEarlier-radio">
@@ -17,5 +24,5 @@
             Adjust chronologically <b>later</b> points</label>
         <label for="Dating-shiftSingle-radio"> <input type="radio" name="Dating-shift-choice" id="Dating-shiftSingle-radio">
             Adjust <b>only</b> selected point (<span class="Dating-subtext">debug option</span>)</label>
-    </div>
+    </div> -->
 </script>
