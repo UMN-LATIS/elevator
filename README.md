@@ -22,3 +22,19 @@ Elevator can store content in any format, such as images, audio, video, 3D objec
 
 - Email: <elevator@umn.edu>
 
+## Running locally
+
+You'll need docker and some patience.
+
+1. run `docker compose up` and let it build
+2. run `./docker-php.sh composer.phar install`
+3. run `./docker-php.sh doctrine.php orm:schema-tool:update --force`
+4. connect to postgres (localhost 5432, u/p from your .env file) and run the queries in `postgresQueries`
+5. run `bash elastic_commands.sh`
+6. connect to http://localhost/defaultinstance in a browser, using admin username. Password is in bitwarden
+7. Optionally add some S3 bucket credentials in the instance settings. Bonus points if you mock s3 and make that all work
+
+To try processing a file, first upload it using the normal UI. Then grab the fileObjectId (press command-control-h when viewing the asset)
+
+Run `./runJob.sh <fileObjectId>`
+
