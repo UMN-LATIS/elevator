@@ -26,15 +26,17 @@ Elevator can store content in any format, such as images, audio, video, 3D objec
 
 You'll need docker and some patience.
 
-1. run `docker compose up` and let it build
-2. run `./docker-php.sh composer.phar install`
-3. run `./docker-php.sh doctrine.php orm:schema-tool:update --force`
-4. connect to postgres (localhost 5432, u/p from your .env file) and run the queries in `postgresQueries`
-5. run `bash elastic_commands.sh`
-6. connect to http://localhost/defaultinstance in a browser, using admin username. Password is in bitwarden
-7. Optionally add some S3 bucket credentials in the instance settings. Bonus points if you mock s3 and make that all work
+1. copy .env.example to .env (no changes needed)
+2. run `docker compose up` and let it build
+3. run `./docker-php.sh composer.phar install`
+4. run `./docker-php.sh doctrine.php orm:schema-tool:update --force`
+5. connect to postgres (localhost 5432, u/p from your .env file) and run the queries in `postgresQueries`
+6. run `bash elastic_commands.sh`
+7. connect to http://localhost/defaultinstance in a browser, using admin username. Password is in bitwarden. In order to use that password, you'll need to use the same encryption key as dev
+8. Optionally add some S3 bucket credentials in the instance settings. Bonus points if you mock s3 and make that all work
 
 To try processing a file, first upload it using the normal UI. Then grab the fileObjectId (press command-control-h when viewing the asset)
 
 Run `./runJob.sh <fileObjectId>`
 
+By default, you won't have job queue processing running for other tasks. That's mostly fine, but you may want search indexingin running. Run `./docker-php index.php beltdrive updateIndexes`
