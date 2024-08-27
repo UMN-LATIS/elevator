@@ -507,6 +507,7 @@ $config['awsQueueRegion'] = $_ENV['AWS_QUEUEING_REGION'] ?? 'us-east-1';
 $config['awsQueueAccessKey'] = $_ENV['AWS_QUEUEING_ACCESS_KEY_ID'] ?? null;
 $config['awsQueueSecretKey'] = $_ENV['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? null;
 $config['awsQueueJobDefinition'] = $_ENV['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
+$config['awsQueueJobQueue'] = $_ENV['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */

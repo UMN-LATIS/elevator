@@ -437,7 +437,7 @@ class FileHandlerBase extends CI_Model {
 		]);
 		$params = [
 			'jobName' => 'transcode_' . $fileObjectId,
-			'jobQueue' => 'PrimaryJobQueue',
+			'jobQueue' => $this->config->item('awsQueueJobQueue'),
 			'jobDefinition' => $jobDefinition,
 			'timeout' => [
 				"attemptDurationSeconds" => ($size=="small")? 2400 : 28800,
