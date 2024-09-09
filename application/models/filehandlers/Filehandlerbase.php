@@ -41,7 +41,7 @@ class FileHandlerBase extends CI_Model {
 
 	public $postponeTime = 10;
 
-	public $overrideHandlerClass = false; // allows us to force a new handler for the next load
+	public $overrideHandlerClass = null; // allows us to force a new handler for the next load
 
 	public $nextTask = null;
 	public $taskListHasChanged = false;
