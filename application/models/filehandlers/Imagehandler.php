@@ -484,6 +484,15 @@ class ImageHandler extends FileHandlerBase {
 		return 0;
 	}
 
+	public function getCustomJobOverrides() {
+		//if the file type is czi bump the memory
+		if($this->sourceFile->getType() == "czi") {
+			return [
+				["type"=>"MEMORY",
+						"value"=>"4096"]
+					];
+		}
+	}
 
 
 }
