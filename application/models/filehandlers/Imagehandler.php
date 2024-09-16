@@ -492,6 +492,9 @@ class ImageHandler extends FileHandlerBase {
 						"value"=>"4096"]
 					];
 		}
+		else {
+			return [];
+		}
 	}
 
 
