@@ -5141,7 +5141,7 @@ function Helper(Lt) {
        if (e.start) {
           prevPt = e;
        } else if (e.break) {
-          disToBreak = Lt.helper.trueDistance(prevPt.latLng, e.latLng);
+          disToBreak += Lt.helper.trueDistance(prevPt.latLng, e.latLng);
        } else if (e.year || e.year == 0) {
           // Only add year once. If subannual, both early- and late-wood points have the same year, must only add one of them. 
           let annual = !Lt.measurementOptions.subAnnual;
