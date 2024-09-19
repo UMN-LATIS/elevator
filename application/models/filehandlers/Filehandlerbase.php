@@ -246,7 +246,14 @@ class FileHandlerBase extends CI_Model {
 			}
 
 			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$instanceId]);
-			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
+			
+						<?php
+			try {
+				$jobId = $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
+			} catch (Exception $e) {
+				$ipAddress = gethostbyname(gethostname());
+				echo "Error: " . $e->getMessage() . " on IP: " . $ipAddress;
+			}
 		}
 	}
 
