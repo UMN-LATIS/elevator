@@ -247,7 +247,6 @@ class FileHandlerBase extends CI_Model {
 
 			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$instanceId]);
 			
-						<?php
 			try {
 				$jobId = $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
 			} catch (Exception $e) {
