@@ -77,7 +77,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
     window.Elevator.config.instance.base.origin = window.location.origin;
     window.Elevator.config.instance.base.url = `${window.location.origin}${window.Elevator.config.instance.base.path}`;
   </script>
-
+  <?=$this->user_model->getAuthHelper()->templateView();?>
   <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
   <?php if (isset($this->instance) && $this->instance->getUseCustomCSS()): ?>
     <link rel="stylesheet" href="<?= $customCSSFile ?>?hash=<?= $customCSSHash ?>">

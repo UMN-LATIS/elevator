@@ -60,6 +60,11 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
 
           document.cookie = "_check_is_passive=" + window.location + ";path=/; SameSite=None; Secure";
           // Redirect to Shibboleth handler
+          
+          if(typeof basePath == "undefined") {
+
+            basePath = window.Elevator.config.instance.base.path;
+          }
           window.location.href = "https://" + window.location.hostname + "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?redirect=" + encodeURIComponent(window.location));
 
         }
