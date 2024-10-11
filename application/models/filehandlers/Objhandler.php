@@ -1,7 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class ObjHandler extends FileHandlerBase {
-	protected $supportedTypes = array("obj", "stl");
+	protected $supportedTypes = array("obj", "stl", "3mf");
 	protected $noDerivatives = false;
 
 
@@ -123,11 +123,13 @@ rnd.resolution_y = int(2000)
 			return JOB_FAILED;
 		}
 
+		$sourceFile = $this->swapLocal3MFForSTL($this->sourceFile);
+
 		$foundMTL = false;
 
-		$localPath = $this->sourceFile->getPathToLocalFile();
+		$localPath = $sourceFile->getPathToLocalFile();
 		$pathparts = pathinfo($localPath);
-		$originalExtension = pathinfo($this->sourceFile->originalFilename, PATHINFO_EXTENSION);
+		$originalExtension = pathinfo($sourceFile->originalFilename, PATHINFO_EXTENSION);
 
 		$objFile = $localPath . "." .$originalExtension;
 
@@ -462,6 +464,35 @@ rnd.resolution_y = int(2000)
 			return JOB_FAILED;
 		}
 
+
+	}
+
+
+	function swapLocal3MFForSTL($sourceFile= null) {
+		if(!$sourceFile) {
+			$sourceFile = $this->sourceFile;
+		}
+		// this is ugly, but we might get passed in an intermediate. We need to look at the original to see if 
+		// it was a whole slide
+		if($sourceFile->getType() != "3mf") {
+			return;
+		}
+
+		$source = $sourceFile->getPathToLocalFile();
+		// use the original filename as well to keep extensions sane
+		$dest = $this->sourceFile->getPathToLocalFile() . ".stl";
+		if(file_exists($dest)) {
+			return new FileContainer($dest);
+		}
+		$convertString = $this->config->item('3mf2stl') . " -i " . $source . " -o " . $dest;
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
+		$process->run();
+		while($process->isRunning()) {
+			sleep(5);
+			$this->pheanstalk->touch($this->job);
+			echo ".";
+		}
+		return new FileContainer($dest);
 
 	}
 
