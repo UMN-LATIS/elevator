@@ -4,8 +4,6 @@
  * @version 1.0.0
  */
 
-const { point } = require("leaflet");
-
 /**
  * Interface for pith estimate tools. 
  * @constructor

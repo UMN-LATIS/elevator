@@ -690,10 +690,10 @@ function NewEllipse(Inte) {
     L.DomEvent.on(window, 'keydown', (e) => {
         if (e.keyCode == 69 && e.getModifierState("Shift") && !e.getModifierState("Control") && 
         window.name.includes('popout') && !Inte.treering.annotationAsset.dialogAnnotationWindow) { // Dialog windows w/ text cannot be active
-        e.preventDefault();
-        e.stopPropagation();
-        Inte.treering.disableTools();
-        this.enable();
+            e.preventDefault();
+            e.stopPropagation();
+            Inte.treering.disableTools();
+            this.enable();
         }
     }, this);
     
@@ -812,8 +812,8 @@ function NewEllipse(Inte) {
  * @param {object} Inte - AreaCaptureInterface object. Allows access to all other tools.
  */
 function NewEllipseDialog(Inte) {
-    let minWidth = 130;
-    let minHeight = 130;
+    let minWidth = 180;
+    let minHeight = 170;
     this.size = [minWidth, minHeight];
     this.anchor = [50, 0];
 
@@ -880,25 +880,14 @@ function NewEllipseDialog(Inte) {
      * @function
      */
     NewEllipseDialog.prototype.createDialogEventListeners = function () {
-        // Year editing buttons: 
-        $("#AreaCapture-editYear-btn").on("click", () => {
-            let html = document.getElementById("AreaCapture-newYearDialog-template").innerHTML;
-            let template = Handlebars.compile(html);
-            let content = template({
-                "year": Inte.ellipseData.year,
-            });
-            this.dialog.setContent(content);
-            document.getElementById("AreaCapture-newYear-input").select();
-
-            $("#AreaCapture-confirmYear-btn").on("click", () => {
-                let year = $("#AreaCapture-newYear-input").val();
-                if (year || year == 0) {
-                    Inte.ellipseVisualAssets.cycleColorsMulti(year);
-                    Inte.ellipseData.year = year;
-                }
-                this.update();
-            })
-        });
+        $("#AreaCapture-confirmYear-btn").on("click", () => {
+            let year = $("#AreaCapture-newYear-input").val();
+            if (year || year == 0) {
+                Inte.ellipseVisualAssets.cycleColorsMulti(year);
+                Inte.ellipseData.year = year;
+            }
+            this.update();
+        })
 
         $("#AreaCapture-subtractYear-btn").on("click", () => {
             Inte.ellipseData.decreaseYear();

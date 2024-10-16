@@ -1,13 +1,20 @@
 <script id="AreaCapture-incrementDialog-template" type="text/x-handlebars-template">
     <div class="AreaCapture-dialog-container">  
-        <div class="AreaCapture-editYear-container">
-            <p class="AreaCapture-text"> 
-                Year: {{ year }}
-
-                <i id="AreaCapture-editYear-btn" 
-                class="fa fa-pencil-square"
-                style="float: right;"
-                aria-hidden="true"></i> 
+        <h4 class="AreaCapture-lassoInstruction-header">Create ellipses:</h4>
+        <div class="AreaCapture-dialog-container">
+            <p class="AreaCapture-text" style="display: inline;"> 
+                Year: 
+                <input id="AreaCapture-newYear-input"
+                class="AreaCapture-input"
+                type="number"
+                placeholder="{{ year }}">
+                
+                <div style="display: inline;">
+                    <i id="AreaCapture-confirmYear-btn"
+                    class="fa fa-check-square" 
+                    style="font-size: 16px;"
+                    aria-hidden="true"></i>
+                </div>
             </p>
         </div>
         <div class="AreaCapture-btn-row">
@@ -32,30 +39,6 @@
         <p class="AreaCapture-subtext"
         style="float: right;">
             Shift - 3
-        </p>
-    </div>
-</script>
-
-<script id="AreaCapture-newYearDialog-template" type="text/x-handlebars-template">
-    <div class="AreaCapture-dialog-container">
-        <p class="AreaCapture-text"> 
-            Year: 
-            <input id="AreaCapture-newYear-input"
-            class="AreaCapture-input"
-            type="number"
-            placeholder="{{ year }}">
-            
-            <div style="margin-top: 4px;">
-                <i id="AreaCapture-confirmYear-btn"
-                class="fa fa-check-square" 
-                style="font-size: 16px;"
-                aria-hidden="true"></i>
-
-                <p class="AreaCapture-subtext"
-                style="display: inline;">
-                    Shift - 2
-                </p>
-            </div>
         </p>
     </div>
 </script>

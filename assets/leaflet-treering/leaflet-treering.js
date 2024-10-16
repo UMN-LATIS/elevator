@@ -106,10 +106,6 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
   this.tools.push(...this.datingInterface.tools);
 
   // --- //
-  // Code hosted in Leaflet.AreaCapture.js
-  this.areaCaptureInterface = new AreaCaptureInterface(this);
-  this.areaTools = new ButtonBar(this, this.areaCaptureInterface.btns, 'hdr_strong', 'Manage ellipses');
-  this.tools.push(...this.areaCaptureInterface.tools);
   // Code hosted in Leaflet.PithEstimate.js
   this.pithEstimateInterface = new PithEstimateInterface(this);
   let createToolArr = [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn];
