@@ -23,6 +23,7 @@ $fileInfo["File Size"] = $fileObject->sourceFile->metadata["filesize"];
 $menuArray['fileInfo'] = $fileInfo;
 
 $downloadArray = [];
+
 $targetAsset = null;
 if(isset($fileContainers['nxs']) && $fileContainers['nxs']->ready) {
   $nxsURL = isset($fileContainers['nxs'])?$fileContainers['nxs']->getProtectedURLForFile():null;
@@ -38,6 +39,15 @@ if(isset($fileContainers['ply']) && $fileContainers['ply']->ready) {
   }
 }
 
+if(isset($fileContainers['glb']) && $fileContainers['glb']->ready) {
+  $downloadArray["Download Derivative (glb)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/glb");
+  $glbURL = isset($fileContainers['glb'])?$fileContainers['glb']->getProtectedURLForFile():null;
+  if(!$targetAsset) {
+    $targetAsset = stripHTTP($glbURL) . "#.glb";
+  }
+}
+
+
 if(isset($fileContainers['stl']) && $fileContainers['stl']->ready) {
   $downloadArray["Download Derivative (stl)"] = instance_url("fileManager/getDerivativeById/". $fileObjectId . "/stl");
 }
@@ -45,7 +55,6 @@ if(isset($fileContainers['stl']) && $fileContainers['stl']->ready) {
 if($allowOriginal) {
   $downloadArray['Download Original'] = instance_url("fileManager/getOriginal/". $fileObjectId);
 }
-
 $menuArray['download'] = $downloadArray;
 
 

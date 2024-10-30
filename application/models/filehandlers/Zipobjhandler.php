@@ -4,37 +4,6 @@ class ZipObjHandler extends ZipHandler {
 	protected $supportedTypes = array("obj.zip");
 	protected $noDerivatives = false;
 	
-	protected $sourceBlenderScript = "import bpy
-
-bpy.ops.import_mesh.ply(filepath=r'{{PATHTOX3D}}', filter_glob=\"*.ply\")
-
-maxDimension = 5.0
-
-scaleFactor = maxDimension / max(bpy.context.active_object.dimensions)
-
-bpy.context.active_object.scale = (scaleFactor, scaleFactor, scaleFactor)
-
-bpy.ops.object.origin_set()
-
-bpy.ops.material.new()
-
-bpy.data.materials[0].specular_intensity = 0.1
-
-bpy.data.materials[0].use_vertex_color_paint = True
-
-bpy.context.object.data.materials.append(bpy.data.materials[0])
-
-world = bpy.context.scene.world
-
-world.horizon_color = (1, 1, 1)
-
-rnd = bpy.data.scenes[0].render
-
-rnd.resolution_x = int(2000)
-rnd.resolution_y = int(2000)
-";
-
-
 	public $taskArray = [0=>["taskType"=>"identifyContents", "config"=>array()],
 	1=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
 	2=>["taskType"=>"createDerivative", "config"=>array()],
@@ -78,6 +47,7 @@ rnd.resolution_y = int(2000)
 			$derivative[] = "nxs";
 			$derivative[] = "ply";
 			$derivative[] = "stl";
+			$derivative[] = "glb";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -132,7 +102,7 @@ rnd.resolution_y = int(2000)
 
 		$targetPath = $this->sourceFile->getPathToLocalFile() . "_extracted";
 		if(!$res) {
-			$this->logging->processingInfo("createDerivative","objHandler","Coudl not extract zip",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","objHandler","Coudl not extract zip",$this->getObjectId(), 0);
 			return JOB_FAILED;
 		}
 
@@ -173,34 +143,73 @@ rnd.resolution_y = int(2000)
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
 
 		// we change dir inside docker so we have to pass in two args
-		$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . ($foundMTL?(" -s /opt/meshlab.mlx"):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn'";
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . " obj_to_ply " . $objFile . " " . $derivativeContainer->getPathToLocalFile() . ".ply";
 
 		exec($meshlabCommandLine . " 2>/dev/null");
 		if(!file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
 			// failed to process with the texture, let's try without.
-			$this->logging->processingInfo("createDerivative","objHandler","Failed to load texture, trying without",$this->getObjectId(),$this->job->getId());
-			$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vc vn";
-			exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
-
+			$this->logging->processingInfo("createDerivative","objHandler","Failed to generate PLY",$this->getObjectId(), 0);
+			
 		}
 
 		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
 
 		$success = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload ply", $this->getObjectId(), $this->job->getId());
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload ply", $this->getObjectId(), 0);
 			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 			$success=false;
 		}
 		else {
 			$derivativeContainer->ready = true;
 			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
 				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
 		}
 		$this->derivatives["ply"] = $derivativeContainer;
+
+
+
+		// create a GLB file as well
+
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = 'glb';
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.glb';
+
+		// we change dir inside docker so we have to pass in two args
+		$meshlabCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile;
+
+		exec($meshlabCommandLine . " 2>/dev/null");
+		if(!file_exists($derivativeContainer->getPathToLocalFile() . ".glb")) {
+			// failed to process with the texture, let's try without.
+			$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
+			
+		}
+
+		rename(str_replace(".obj",".glb", $objFile), $derivativeContainer->getPathToLocalFile());
+
+		$success = true;
+		if(!$derivativeContainer->copyToRemoteStorage()) {
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), 0);
+			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+			$success=false;
+		}
+		else {
+			$derivativeContainer->ready = true;
+			if(!unlink($derivativeContainer->getPathToLocalFile())) {
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
+				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+				$success=false;
+			}
+		}
+		$this->derivatives["glb"] = $derivativeContainer;
+
+
+
 		if($success) {
 			$this->queueTask(3);
 			return JOB_SUCCESS;
@@ -243,135 +252,9 @@ rnd.resolution_y = int(2000)
 		
 
 		$targetDerivative = $this->derivatives['ply'];
-		$targetPath = $this->sourceFile->getPathToLocalFile() . "_extracted";
-		if(!file_exists($targetPath)) {
-			$zip = new ZipArchive;
-			$res = $zip->open($this->sourceFile->getPathToLocalFile());
-			if(!$res) {
-				$this->logging->processingInfo("createDerivative","objHandler","Coudl not extract zip",$this->getObjectId(),$this->job->getId());
-				return JOB_FAILED;
-			}
-
-			$zip->extractTo($targetPath);
-			$zip->close();
-
-		}
 		
-		
-		// flatten any zipped dir structure
-		$d = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS));
-		foreach($d as $file){
-        	if($file->isFile()) { 
-        		rename($file->getPathname(), $targetPath . "/" . $file->getFilename());
-        	}
-		}
+		$result = $objHandler->createNxsFileInternal($targetDerivative, $args);
 
-		$di = new RecursiveDirectoryIterator($targetPath,RecursiveDirectoryIterator::SKIP_DOTS);
-		$it = new RecursiveIteratorIterator($di);
-		$baseFolder = "";
-		$objFile = "";
-		$foundMTL = false;
-		$foundTexture = false;
-		foreach($it as $file) {
-			$onlyFilename = pathinfo($file, PATHINFO_FILENAME);
-			if(substr($onlyFilename, 0,1) == ".") {
-				continue;
-			}
-
-			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "obj") {
-				$objFile = $file;
-				$baseFolder = pathinfo($file, PATHINFO_DIRNAME);
-			}
-			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "mtl") {
-				$foundMTL = TRUE;
-			}
-			if(strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "jpg" || strtolower(pathinfo($file,PATHINFO_EXTENSION)) == "png") {
-				$foundTexture = TRUE;
-			}
-
-		}
-
-
-		if($foundMTL && $foundTexture) {
-			$localPath = $this->sourceFile->getPathToLocalFile();
-			$pathparts = pathinfo($localPath);
-
-			$derivativeContainer = new fileContainerS3();
-			$derivativeContainer->derivativeType = 'ply_texture';
-			$derivativeContainer->path = "derivative";
-			$derivativeContainer->setParent($this->sourceFile->getParent());
-			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply_texture' . '.ply';
-
-			$meshlabCommandLine =  $this->config->item("meshlabPath") . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om wt vn'";
-
-			exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
-			if(file_exists($derivativeContainer->getPathToLocalFile() . ".ply")) {
-				$sourceFileLocalName = $targetPath . "/targetFile.ply";
-				rename($derivativeContainer->getPathToLocalFile() . ".ply", $sourceFileLocalName);
-				$targetDerivative = $derivativeContainer;
-			}
-		}
-
-		if($targetDerivative->derivativeType == "ply_texture") {
-			$localPath = $targetDerivative->getPathToLocalFile();
-			$pathparts = pathinfo($localPath);
-
-			$derivativeContainer = new fileContainerS3();
-			$derivativeContainer->derivativeType = "nxs";
-			$derivativeContainer->path = "derivative";
-			$derivativeContainer->setParent($this->sourceFile->getParent());
-			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "nxs" . '.nxs';
-			//TODO: catch errors here
-			$nxsBuild = $this->config->item("nxsBuild");
-			$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
-			exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
-			unlink($sourceFileLocalName);
-			if(!file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) { 
-				// try agian without the texture
-				$nxsBuilderString = $nxsBuild . " -u -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
-				exec("cd " . $targetPath . " && " . $nxsBuilderString . " 2>/dev/null");
-				unlink($sourceFileLocalName);
-			}
-
-			$success = true;
-			if(file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) {
-				rename($derivativeContainer->getPathToLocalFile() . ".nxs", $derivativeContainer->getPathToLocalFile());
-				$derivativeContainer->ready = true;
-				if(!$derivativeContainer->copyToRemoteStorage()) {
-					//TODO: log
-					//TODO: remove derivative
-					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
-					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$success=false;
-				}
-				else {
-					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
-						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-						$success=false;
-					}
-				}
-				$derivativeArray['nxs'] = $derivativeContainer;
-			}
-			else {
-				$this->logging->processingInfo("createNXS", "objHandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
-				echo "Error generating derivatives" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
-			}
-
-			if($success) {
-				$result = $derivativeArray;
-			}
-			else {
-				$result = JOB_FAILED;
-			}
-
-
-
-		}
-		else {
-			$result = $objHandler->createNxsFileInternal($targetDerivative, $args);
-		}
 
 		if($result == JOB_POSTPONE) {
 			return JOB_POSTPONE;

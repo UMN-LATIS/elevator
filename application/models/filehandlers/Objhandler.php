@@ -5,36 +5,6 @@ class ObjHandler extends FileHandlerBase {
 	protected $noDerivatives = false;
 
 
-	protected $sourceBlenderScript = "import bpy
-
-bpy.ops.import_mesh.ply(filepath=r'{{PATHTOX3D}}', filter_glob=\"*.ply\")
-
-maxDimension = 5.0
-
-scaleFactor = maxDimension / max(bpy.context.active_object.dimensions)
-
-bpy.context.active_object.scale = (scaleFactor, scaleFactor, scaleFactor)
-
-bpy.ops.object.origin_set()
-
-bpy.ops.material.new()
-
-bpy.data.materials[0].specular_intensity = 0.1
-
-bpy.data.materials[0].use_vertex_color_paint = True
-
-bpy.context.object.data.materials.append(bpy.data.materials[0])
-
-world = bpy.context.scene.world
-
-world.horizon_color = (1, 1, 1)
-
-rnd = bpy.data.scenes[0].render
-
-rnd.resolution_x = int(2000)
-rnd.resolution_y = int(2000)
-
-";
 
 
 	public $taskArray = [
@@ -70,6 +40,7 @@ rnd.resolution_y = int(2000)
 			$derivative[] = "nxs";
 			$derivative[] = "ply";
 			$derivative[] = "stl";
+			$derivative[] = "glb";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -141,7 +112,7 @@ rnd.resolution_y = int(2000)
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
 
 
-		$meshlabCommandLine = $this->config->item("meshlabPath")  . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $objFile . ($foundMTL?(" -s " . $meshlabScript):"") . " -o " . $derivativeContainer->getPathToLocalFile() . ".ply -om vn vc'";
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . " obj_to_ply " . $objFile . " " . $derivativeContainer->getPathToLocalFile() . ".ply";
 
 		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
@@ -161,6 +132,37 @@ rnd.resolution_y = int(2000)
 		}
 		$derivativeContainer->ready = true;
 		$this->derivatives["ply"] = $derivativeContainer;
+
+
+		// create glb
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = 'glb';
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.glb';
+
+
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . " obj_to_glb " . $objFile . " " . $derivativeContainer->getPathToLocalFile() . ".glb";
+
+		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
+		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
+
+		$success = true;
+		if(!$derivativeContainer->copyToRemoteStorage()) {
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), $this->job->getId());
+			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+			$success=false;
+		}
+		else {
+			if(!unlink($derivativeContainer->getPathToLocalFile())) {
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+				$success=false;
+			}
+		}
+		$derivativeContainer->ready = true;
+		$this->derivatives["glb"] = $derivativeContainer;
+
 		if($success) {
 			$this->queueTask(2);
 			return JOB_SUCCESS;
@@ -221,8 +223,7 @@ rnd.resolution_y = int(2000)
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "stl" . '.stl';
 		//TODO: catch errors here
 
-
-		$meshlabCommandLine = $this->config->item("meshlabPath")  . " 'cd " . $baseFolder . "' 'meshlabserver -i " . $sourceFileLocalName . " -o " . $derivativeContainer->getPathToLocalFile() . ".stl'";
+		$meshlabCommandLine =  $this->config->item("meshlabPath") . " ply_to_stl " . $sourceFileLocalName . " " . $derivativeContainer->getPathToLocalFile() . ".stl";
 
 		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
 		rename($derivativeContainer->getPathToLocalFile() . ".stl", $derivativeContainer->getPathToLocalFile());
@@ -313,14 +314,9 @@ rnd.resolution_y = int(2000)
 
 		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileContainer->getPathToLocalFile() . ".ply");
 
-		$outputBlenderScript = str_replace("{{PATHTOX3D}}", $sourceFileContainer->getPathToLocalFile() . ".ply",$this->sourceBlenderScript);
-
-		$outputScript = $sourceFileContainer->getPathToLocalFile() . "_blender.py";
-		file_put_contents($outputScript, $outputBlenderScript);
-
 		$targetLargeFileShortName = $sourceFileContainer->getPathToLocalFile() . "_output";
 
-		$blenderCommandLine = $this->config->item('blenderBinary') . " -b /opt/stage.blend -P " . $outputScript . " -o " . $targetLargeFileShortName . " -F JPEG -x 1 -f 1";
+		$blenderCommandLine = $this->config->item('blenderBinary') . " -b /opt/stage.blend -P /root/convert.py". " -o " . $targetLargeFileShortName . " -F JPEG -x 1 -f 1 -- " . $sourceFileContainer->getPathToLocalFile() . ".ply";
 
 		// blender will generate a new output name
 		$targetLargeFile = $targetLargeFileShortName . "0001.jpg";
@@ -356,7 +352,7 @@ rnd.resolution_y = int(2000)
 
 
 
-			if(compressImageAndSave(new FileContainer($targetLargeFile), $derivativeContainer,$width, $height, 80, 6)) {
+			if(compressImageAndSave(new FileContainer($targetLargeFile), $derivativeContainer,$width, $height, 80, 0)) {
 				$derivativeContainer->ready = true;
 				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				if(!$derivativeContainer->copyToRemoteStorage()) {
