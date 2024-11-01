@@ -83,7 +83,7 @@ class S3_model extends CI_Model {
 		
 	}
 
-	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null, $contentEncoding = null) {
+	public function putObject($sourceFile, $destKey, $storageClass = AWS_INTELLIGENT_TIERING, $targetMimeType = null, $contentEncoding = null) {
 		if(!file_exists($sourceFile)) {
 			$this->logging->logError("putObject", "file no longer exists", $sourceFile);
 			return false;
@@ -156,12 +156,12 @@ class S3_model extends CI_Model {
 	}
 
 
-	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_REDUCED, $job=null) {
+	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_INTELLIGENT_TIERING, $job=null) {
 		try {
 			$options["concurrency"] = 50;
 			$this->storageClass = $storageClass;
 			if(!$this->storageClass) {
-				$this->storageClass = AWS_REDUCED;
+				$this->storageClass = AWS_INTELLIGENT_TIERING;
 			}
 			
 			$this->transferCount = 0;

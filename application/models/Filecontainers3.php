@@ -13,7 +13,7 @@ class FileContainerS3 extends FileContainer {
 
 	private $client;
 	private $parent;
-	public $storageClass = AWS_REDUCED;
+	public $storageClass = AWS_INTELLIGENT_TIERING;
 
 	public $originalFilename;
 	public $path = null;

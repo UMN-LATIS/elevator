@@ -388,7 +388,7 @@ class Instances extends Instance_Controller {
 			if($this->input->post("useStandardIA")) {
 				$useStandardIA = true;
 				$transition[] = ['Days' => 30,
-	                    			'StorageClass' => 'STANDARD_IA'];
+	                    			'StorageClass' => 'AWS_INTELLIGENT_TIERING'];
 			}
 
 			$result = $s3Client->putBucketVersioning([
