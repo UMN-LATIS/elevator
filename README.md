@@ -39,4 +39,4 @@ To try processing a file, first upload it using the normal UI. Then grab the fil
 
 Run `./runJob.sh <fileObjectId>`
 
-By default, you won't have job queue processing running for other tasks. That's mostly fine, but you may want search indexingin running. Run `./docker-php index.php beltdrive updateIndexes`
+By default, you won't have job queue processing running for other tasks. That's mostly fine, but you may want search indexing running. Run `./docker-php index.php beltdrive updateIndexes`
