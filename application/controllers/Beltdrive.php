@@ -432,7 +432,7 @@ class Beltdrive extends CI_Controller {
 			$pathToFile = $job_encoded["pathToFile"];
 			$nextTask = $job_encoded["nextTask"];
 			$instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-			$this->filehandlerbase = $this->filehandler_router->getHandledObject($fileObjectId);
+			$this->filehandlerbase = $this->filehandler_router->getHandledObject($objectId);
 
 			if($this->filehandlerbase) {
 
