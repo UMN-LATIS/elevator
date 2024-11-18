@@ -246,7 +246,13 @@ class FileHandlerBase extends CI_Model {
 			}
 
 			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$instanceId]);
-			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
+			
+			try {
+				$jobId = $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
+			} catch (Exception $e) {
+				$ipAddress = gethostbyname(gethostname());
+				echo "Error: " . $e->getMessage() . " on IP: " . $ipAddress;
+			}
 		}
 	}
 
@@ -414,6 +420,10 @@ class FileHandlerBase extends CI_Model {
 
 	}
 
+	public function getCustomJobOverrides() {
+		return [];
+	}
+
 	public function queueBatchItem($asset, $sourceFile) {
 		$fileObjectId = $asset->getFileObjectId();
 		$fileSize = $sourceFile->getFileSize();
@@ -425,6 +435,10 @@ class FileHandlerBase extends CI_Model {
 		else {
 			$size = "large";
 		}
+
+		$overrides = $this->getCustomJobOverrides();
+
+
 		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $size;
 
 		$batchClient = new BatchClient([
@@ -444,6 +458,7 @@ class FileHandlerBase extends CI_Model {
 			],
 			'containerOverrides' => [
         		'command' => ['bash', 'runJob.sh',  $fileObjectId],
+				'resourceRequirements' => $overrides
     		],
 		];
 		try {

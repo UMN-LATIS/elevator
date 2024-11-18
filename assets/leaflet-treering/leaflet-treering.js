@@ -106,10 +106,6 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
   this.tools.push(...this.datingInterface.tools);
 
   // --- //
-  // Code hosted in Leaflet.AreaCapture.js
-  this.areaCaptureInterface = new AreaCaptureInterface(this);
-  this.areaTools = new ButtonBar(this, this.areaCaptureInterface.btns, 'hdr_strong', 'Manage ellipses');
-  this.tools.push(...this.areaCaptureInterface.tools);
   // Code hosted in Leaflet.PithEstimate.js
   this.pithEstimateInterface = new PithEstimateInterface(this);
   let createToolArr = [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn];
@@ -5141,7 +5137,7 @@ function Helper(Lt) {
        if (e.start) {
           prevPt = e;
        } else if (e.break) {
-          disToBreak = Lt.helper.trueDistance(prevPt.latLng, e.latLng);
+          disToBreak += Lt.helper.trueDistance(prevPt.latLng, e.latLng);
        } else if (e.year || e.year == 0) {
           // Only add year once. If subannual, both early- and late-wood points have the same year, must only add one of them. 
           let annual = !Lt.measurementOptions.subAnnual;
