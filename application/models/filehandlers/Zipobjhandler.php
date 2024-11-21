@@ -298,7 +298,16 @@ class ZipObjHandler extends ZipHandler {
 	public function getEmbedView($fileContainerArray, $includeOriginal=false, $embedded=false) {
 
 		$uploadWidget = $this->getUploadWidget();
-		return $this->load->view("fileHandlers/embeds/objhandler", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+
+		$embedView = "objhandler";
+		if($this->instance->getUseVoyagerViewer() == true && $this->derivatives['glb']->ready) {
+
+			$embedView = "voyagerobjhandler";
+			$this->template->set_template("noTemplateNoJS");
+		}
+
+
+		return $this->load->view("fileHandlers/embeds/" . $embedView, ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
 	}
 
 	public function getEmbedViewWithFiles($fileContainerArray, $includeOriginal=false, $embedded=false) {
@@ -321,6 +330,23 @@ class ZipObjHandler extends ZipHandler {
 		}
 
 		return $this->load->view("fileHandlers/chrome/" . "objhandler_chrome", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
+	}
+
+	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
+		if($sidecarType == "svx") {
+			$svxData = $sidecarData['svx'];
+
+			if(isset($svxData["models"]) && isset($svxData["models"][0]) && isset($svxData["models"][0]["derivatives"])) {
+				$svxData["models"][0]["derivatives"][0]["assets"][0]["uri"] = $this->derivatives["glb"]->getProtectedURLForFile();
+
+			}
+
+			return json_encode($svxData);
+		}
+		else {
+			return $sidecarData[$sidecarType]?:null;
+		}
+
 	}
 
 }

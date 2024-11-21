@@ -314,6 +314,14 @@
 	</div>
 </div>
 
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="useVoyagerViewer" name="useVoyagerViewer" value="On" <?=$instance->getUseVoyagerViewer()?"checked":null?>>
+			Use Smithsonian Voyager for 3D
+		</label>
+	</div>
+</div>
 
 </fieldset>
 
