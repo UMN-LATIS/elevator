@@ -675,7 +675,7 @@ function prepTimeline() {
 				else {
 					t = new Date(1970,0,1);
 					t.setSeconds(startTime);
-					formattedStart = Date.create(t, {fromUTC: true});
+					formattedStart = Sugar.Date.create(t, {fromUTC: true});
 					newItem.start_date.display_date = date.start["text"];
 					newItem.start_date.year = formattedStart.getFullYear();
 					newItem.start_date.month = formattedStart.getMonth() + 1;
@@ -693,7 +693,7 @@ function prepTimeline() {
 					else {
 						t = new Date(1970,0,1);
 						t.setSeconds(endTime);
-						formattedEnd = Date.create(t, {fromUTC: true});
+						formattedEnd = Sugar.Date.create(t, {fromUTC: true});
 						newItem.end_date.display_date = date.end["text"];
 						newItem.end_date.year = formattedEnd.getFullYear();
 						newItem.end_date.month = formattedEnd.getMonth() + 1;
