@@ -32,14 +32,15 @@ function modifyRange(event) {
 
 }
 
+Sugar.extend();
+
 function parseDateString(dateString, event) {
 	if(dateString.length > 0) {
 		if(Date.create(dateString).isValid()) {
-			var dateNumeric = Date.utc.create(dateString).getTime()/1000;
+			var dateNumeric = Date.create(dateString, {fromUTC: true}).getTime()/1000;
 			if(event) {
 				$(event.target).siblings('.dateHidden').val(dateNumeric);
 			}
-
 			return true;
 		}
 		else {
