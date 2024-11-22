@@ -303,7 +303,6 @@ class ZipObjHandler extends ZipHandler {
 		if($this->instance->getUseVoyagerViewer() == true && $this->derivatives['glb']->ready) {
 
 			$embedView = "voyagerobjhandler";
-			$this->template->set_template("noTemplateNoJS");
 		}
 
 
