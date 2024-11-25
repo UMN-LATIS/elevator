@@ -372,6 +372,10 @@ class asset extends Instance_Controller {
 
 		}
 		$includeOriginal = $this->getAllowOriginal($fileHandler);
+		
+		$this->template->set_template("noTemplate");
+		$this->template->loadJavascript(["embedTriggers"]);
+		
 		if(isset($embedAssets)) {
 			$embed = $fileHandler->getEmbedView($embedAssets, $includeOriginal);
 		}
@@ -379,8 +383,6 @@ class asset extends Instance_Controller {
 			$embed = $this->load->view("fileHandlers/filenotfound", null, true);
 		}
 		
-		$this->template->set_template("noTemplate");
-		$this->template->loadJavascript(["embedTriggers"]);
 		$this->template->content = $embed;
 		$this->template->title = $assetModel->getAssetTitle(true);
 		$this->template->publish();

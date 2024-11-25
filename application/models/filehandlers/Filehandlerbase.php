@@ -758,6 +758,15 @@ class FileHandlerBase extends CI_Model {
 		return 0;
 	}
 
+	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
+		if(isset($sidecarType) && isset($sidecarData) && isset($sidecarData[$sidecarType])) {
+			$sidecarData = $sidecarData[$sidecarType];
+		}
+		else {
+			return $sidecarData;	
+		}
+	}
+
 }
 
 /* End of file modelName.php */
