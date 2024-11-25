@@ -19,7 +19,7 @@ services:
 
   beanstalkd:
     platform: linux/x86_64
-    image: schickling/beanstalkd
+    image: maateen/docker-beanstalkd
     ports:
       - "11300:11300"
 

@@ -1633,4 +1633,33 @@ class Instance
     {
         return $this->customHomeRedirect;
     }
+    /**
+     * @var bool|null
+     */
+    private $useVoyagerViewer;
+
+
+    /**
+     * Set useVoyagerViewer.
+     *
+     * @param bool|null $useVoyagerViewer
+     *
+     * @return Instance
+     */
+    public function setUseVoyagerViewer($useVoyagerViewer = null)
+    {
+        $this->useVoyagerViewer = $useVoyagerViewer;
+
+        return $this;
+    }
+
+    /**
+     * Get useVoyagerViewer.
+     *
+     * @return bool|null
+     */
+    public function getUseVoyagerViewer()
+    {
+        return $this->useVoyagerViewer;
+    }
 }

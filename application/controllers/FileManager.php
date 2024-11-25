@@ -585,8 +585,9 @@ class FileManager extends Instance_Controller {
 				if($uploadHandlerContent->fileId == $fileId) {
 
 					if(isset($uploadHandlerContent->sidecars) && array_key_exists($sidecarLabel, $uploadHandlerContent->sidecars)) {
-						echo $uploadHandlerContent->sidecars[$sidecarLabel];
-						return;
+						$fileHandler = $uploadHandlerContent->getFileHandler();
+						$mungedData = $fileHandler->mungedSidecarData($uploadHandlerContent->sidecars, $sidecarLabel);
+						echo $mungedData;
 					}
 				}
 			}

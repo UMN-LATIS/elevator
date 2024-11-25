@@ -88,6 +88,7 @@
               </options>
           </field>
           <field name="showPreviousNextSearchResults" type="boolean" nullable='true' />
+          <field name="useVoyagerViewer" type="boolean" nullable='true' />
           <field name="enableHLSStreaming" type="boolean" nullable='true' />
           <field name="enableInterstitial" type="boolean" nullable='true' />
           <field name="interstitialText" type="text" nullable='true' />

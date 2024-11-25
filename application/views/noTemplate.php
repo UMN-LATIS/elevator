@@ -60,13 +60,7 @@ body {
 }
 </style>
 <script src="/assets/minifiedjs/jquery.min.js"></script>
-<script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
-<script type="text/javascript" src='/assets/leaflet/esri-leaflet.js'></script>
-<script type="text/javascript" src='/assets/leaflet/leaflet.markercluster.js'></script>
-<script type="text/javascript" src='/assets/leaflet/L.Control.Locate.min.js'></script>
+
     <?php
     // This is the main content partial
     echo $this->template->content;

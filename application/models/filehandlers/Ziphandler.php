@@ -63,7 +63,6 @@ class ZipHandler extends FileHandlerBase {
 		$this->pheanstalk->touch($this->job);
 
 		$allZipHandlers = $this->getSubclassesOfParentClass(get_class($this));
-
 		$fileList = $this->listContentsOfZip($this->sourceFile->getPathToLocalFile());
 		$handler = null;
 		foreach($allZipHandlers as $handler) {
