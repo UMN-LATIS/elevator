@@ -21,7 +21,7 @@ if(isset($widgetObject->sidecars) && array_key_exists("svx", $widgetObject->side
 	
 <link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
 <?if($svxPath):?>
-<voyager-explorer document="<?=$svxPath?>" model="<?=$targetAsset?>"></voyager-explorer>
+<voyager-explorer document="<?=$svxPath?>" model="<?=$targetAsset?>" uiMode="menu|help"></voyager-explorer>
 <?else:?>
 <voyager-explorer model="<?=$targetAsset?>" uiMode="menu|help"></voyager-explorer>
 <?endif?>
