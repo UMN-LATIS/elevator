@@ -583,8 +583,7 @@ class FileManager extends Instance_Controller {
 			foreach($uploadHandler->fieldContentsArray as $uploadHandlerContent) {
 
 				if($uploadHandlerContent->fileId == $fileId) {
-
-					if(isset($uploadHandlerContent->sidecars) && array_key_exists($sidecarLabel, $uploadHandlerContent->sidecars)) {
+					if(isset($uploadHandlerContent->sidecars)) {
 						$fileHandler = $uploadHandlerContent->getFileHandler();
 						$mungedData = $fileHandler->mungedSidecarData($uploadHandlerContent->sidecars, $sidecarLabel);
 						echo $mungedData;

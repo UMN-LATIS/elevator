@@ -763,7 +763,7 @@ class FileHandlerBase extends CI_Model {
 			$sidecarData = $sidecarData[$sidecarType];
 		}
 		else {
-			return $sidecarData;	
+			return null;	
 		}
 	}
 

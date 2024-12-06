@@ -17,6 +17,9 @@ class ZipObjHandler extends ZipHandler {
 	5=>["taskType"=>"createSTL", "config"=>[]]
 	];
 
+	# this is our static SVX data which we'll use when rendering 3d objects that don't have baked in data
+	public $staticSVXData= '{"asset":{"type":"application/si-dpo-3d.document+json","version":"1.0","generator":"Voyager","copyright":"(c) Smithsonian Institution, all rights reserved"},"scene":0,"scenes":[{"units":"mm","nodes":[0,1,6],"meta":0,"setup":0}],"nodes":[{"translation":[-0.9240687,1.0505811,2.2558991],"rotation":[-0.2025829,-0.2200353,-0.04677,0.9530777],"scale":[1,1,1],"name":"Camera","camera":0},{"rotation":[0,-0.2249511,0,0.9743701],"name":"Lights","children":[2,3,4,5]},{"translation":[-0.6438616,0.7049399,1.1872544],"rotation":[0.4829741,-0.1070728,0.1880998,0.8484633],"scale":[0.2539177,0.2539177,0.2539177],"name":"Key","light":0},{"translation":[1.1602084,0.6859158,0.7102866],"rotation":[0.3546969,0.163893,-0.3861077,0.8356136],"scale":[0.2539177,0.2539177,0.2539177],"name":"Fill #1","light":1},{"translation":[-0.8890287,-1.1626011,0.4231521],"rotation":[0.9374013,-0.3018693,0.0532277,0.1652891],"scale":[0.2539177,0.2539177,0.2539177],"name":"Fill #2","light":2},{"translation":[1.3233654,0.0789017,-0.7506994],"rotation":[0.373256,0.6426073,-0.5786063,0.3360813],"scale":[0.2539177,0.2539177,0.2539177],"name":"Rim","light":3},{"name":"Model0","model":0}],"cameras":[{"type":"perspective","perspective":{"yfov":52,"znear":0.0106183,"zfar":10.6182517},"autoNearFar":true}],"lights":[{"color":[1,0.95,0.9],"intensity":1,"type":"directional","shadowEnabled":true,"shadowSize":2.5391769},{"color":[0.9,0.95,1],"intensity":0.7,"type":"directional","shadowEnabled":true,"shadowSize":2.5391769},{"color":[0.8,0.85,1],"intensity":0.5,"type":"directional"},{"color":[0.85,0.9078313,1],"intensity":0.6,"type":"directional"}],"models":[{"units":"cm","boundingBox":{"min":[-0.045969,-0.0705985,-0.08817],"max":[0.080032,0.058414,0.090586]},"derivatives":[]}],"metas":[{"collection":{"titles":{},"intros":{"EN":""}}}],"setups":[{"units":"cm","interface":{"visible":true,"logo":true,"menu":true,"tools":true},"viewer":{"shader":"Default","exposure":1,"gamma":2,"annotationsVisible":false},"reader":{"enabled":false,"position":"Overlay"},"navigation":{"type":"Orbit","enabled":true,"autoZoom":true,"lightsFollowCamera":true,"autoRotation":false,"orbit":{"orbit":[-24,-26,0],"offset":[0,0,150],"minOrbit":[-90,null,null],"maxOrbit":[90,null,null],"minOffset":[null,null,0.1],"maxOffset":[null,null,10000]}},"background":{"style":"RadialGradient","color0":[0.2,0.25,0.3],"color1":[0.01,0.03,0.05]},"floor":{"visible":false,"position":[0,-25,0],"size":50,"color":[0.6,0.75,0.8],"opacity":0.5,"receiveShadow":false},"grid":{"visible":false,"color":[0.5,0.7,0.8]},"tape":{"enabled":false,"startPosition":[0,0,0],"startDirection":[0,0,0],"endPosition":[0,0,0],"endDirection":[0,0,0]},"slicer":{"enabled":false,"axis":"X","inverted":false,"position":0.5}}]}';
+
 
 	public function __construct()
 	{
@@ -172,42 +175,48 @@ class ZipObjHandler extends ZipHandler {
 
 
 
-		// create a GLB file as well
+		// create a set of GLB files as well
+		$glbDerivativeSets = [
+			"small" => "0.2",
+			"medium" => "0.5",
+			"large" => "1.0"
+		];
+		foreach($glbDerivativeSets as $label=>$scale) {
 
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = 'glb';
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.glb';
+			$derivativeContainer = new fileContainerS3();
+			$derivativeContainer->derivativeType = 'glb-' . $label;
+			$derivativeContainer->path = "derivative";
+			$derivativeContainer->setParent($this->sourceFile->getParent());
+			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.glb';
 
-		// we change dir inside docker so we have to pass in two args
-		$meshlabCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile;
+			// we change dir inside docker so we have to pass in two args
+			$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale;
 
-		exec($meshlabCommandLine . " 2>/dev/null");
-		if(!file_exists($derivativeContainer->getPathToLocalFile() . ".glb")) {
-			// failed to process with the texture, let's try without.
-			$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
-			
-		}
+			exec($blenderCommandLine . " 2>/dev/null");
+			if(!file_exists($derivativeContainer->getPathToLocalFile() . ".glb")) {
+				// failed to process with the texture, let's try without.
+				$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
+				
+			}
 
-		rename(str_replace(".obj",".glb", $objFile), $derivativeContainer->getPathToLocalFile());
+			rename(str_replace(".obj",".glb", $objFile), $derivativeContainer->getPathToLocalFile());
 
-		$success = true;
-		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), 0);
-			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-			$success=false;
-		}
-		else {
-			$derivativeContainer->ready = true;
-			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
-				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+			$success = true;
+			if(!$derivativeContainer->copyToRemoteStorage()) {
+				$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), 0);
+				echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
+			else {
+				$derivativeContainer->ready = true;
+				if(!unlink($derivativeContainer->getPathToLocalFile())) {
+					$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
+					echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+					$success=false;
+				}
+			}
+			$this->derivatives["glb-" . $label] = $derivativeContainer;
 		}
-		$this->derivatives["glb"] = $derivativeContainer;
-
 
 
 		if($success) {
@@ -300,7 +309,23 @@ class ZipObjHandler extends ZipHandler {
 		$uploadWidget = $this->getUploadWidget();
 
 		$embedView = "objhandler";
-		if($this->instance->getUseVoyagerViewer() == true && $this->derivatives['glb']->ready) {
+
+
+
+		$glbItems = array_keys($this->derivatives);
+		// filter the array ot only "glb-" items
+		$glbItems = array_filter($glbItems, function($entry) {
+			return strpos($entry, "glb-") !== false;
+		});
+
+		$haveGLB = false;
+		foreach($glbItems as $glbEntry) {
+			if($this->derivatives[$glbEntry]->ready) {
+				$haveGLB = true;
+			}
+		}
+
+		if($this->instance->getUseVoyagerViewer() == true && $haveGLB) {
 
 			$embedView = "voyagerobjhandler";
 		}
@@ -333,13 +358,54 @@ class ZipObjHandler extends ZipHandler {
 
 	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
 		if($sidecarType == "svx") {
-			$svxData = $sidecarData['svx'];
-
-			if(isset($svxData["models"]) && isset($svxData["models"][0]) && isset($svxData["models"][0]["derivatives"])) {
-				$svxData["models"][0]["derivatives"][0]["assets"][0]["uri"] = $this->derivatives["glb"]->getProtectedURLForFile();
-
+			if(isset($sidecarData['svx']) && strlen($sidecarData['svx'])>0) {
+				$svxData = $sidecarData['svx'];
+			}
+			else{
+				$svxData = json_decode($this->staticSVXData, true);
 			}
 
+			$derivatives = [];
+			$derivativeTemplate = [
+				"usage"=>"Web3D",
+				"quality" => "High",
+				"assets" => [
+					[
+						"uri"=>"",
+						"type"=>"Model",
+						"mimeType"=>"model/gltf-binary"
+					]
+				]
+					];
+					
+			if(isset($this->derivatives["glb-small"])) {
+				$lowDerivative = $derivativeTemplate;
+				$lowDerivative["quality"] = "Low";
+				$lowDerivative["assets"][0]["uri"] = $this->derivatives["glb-small"]->getProtectedURLForFile();
+				$derivatives[] = $lowDerivative;
+				
+			}
+			if(isset($this->derivatives["glb-medium"])) {
+				$mediumDerivative = $derivativeTemplate;
+				$mediumDerivative["quality"] = "Medium";
+				$mediumDerivative["assets"][0]["uri"] = $this->derivatives["glb-medium"]->getProtectedURLForFile();
+				$derivatives[] = $mediumDerivative;
+				
+			}
+			if(isset($this->derivatives["glb-large"])) {
+				$highDerivative = $derivativeTemplate;
+				$highDerivative["quality"] = "High";
+				$highDerivative["assets"][0]["uri"] = $this->derivatives["glb-large"]->getProtectedURLForFile();
+				$derivatives[] = $highDerivative;
+				
+			}
+			
+
+			if(isset($svxData["models"]) && isset($svxData["models"][0]) && isset($svxData["models"][0]["derivatives"])) {
+				
+				$svxData["models"][0]["derivatives"] = $derivatives;
+			}
+			
 			return json_encode($svxData);
 		}
 		else {
