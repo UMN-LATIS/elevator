@@ -911,7 +911,7 @@ class Beltdrive extends CI_Controller {
 
 			}
 			$assetModel->createObjectFromJSON($assetArray);
-			$assetModel->save();
+			$assetModel->save(true,false);
 
 			$this->pheanstalk->delete($job);
 			$this->doctrine->em->clear();
