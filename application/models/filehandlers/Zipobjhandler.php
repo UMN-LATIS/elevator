@@ -50,7 +50,7 @@ class ZipObjHandler extends ZipHandler {
 			$derivative[] = "nxs";
 			$derivative[] = "ply";
 			$derivative[] = "stl";
-			$derivative[] = "glb-small";
+			$derivative[] = "glb-thumb";
 			$derivative[] = "glb-medium";
 			$derivative[] = "glb-large";
 		}
@@ -179,7 +179,7 @@ class ZipObjHandler extends ZipHandler {
 
 		// create a set of GLB files as well
 		$glbDerivativeSets = [
-			"small" => "small",
+			"thumb" => "thumb",
 			"medium" => "medium",
 			"large" => "large"
 		];
@@ -387,10 +387,10 @@ class ZipObjHandler extends ZipHandler {
 				]
 					];
 					
-			if(isset($this->derivatives["glb-small"])) {
+			if(isset($this->derivatives["glb-thumb"])) {
 				$lowDerivative = $derivativeTemplate;
-				$lowDerivative["quality"] = "Low";
-				$lowDerivative["assets"][0]["uri"] = $this->derivatives["glb-small"]->getProtectedURLForFile();
+				$lowDerivative["quality"] = "Thumb";
+				$lowDerivative["assets"][0]["uri"] = $this->derivatives["glb-thumb"]->getProtectedURLForFile();
 				$derivatives[] = $lowDerivative;
 				
 			}
