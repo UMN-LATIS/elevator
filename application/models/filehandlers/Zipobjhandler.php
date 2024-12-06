@@ -200,9 +200,8 @@ class ZipObjHandler extends ZipHandler {
 
 			// we change dir inside docker so we have to pass in two args
 			$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale;
-
 			exec($blenderCommandLine . " 2>/dev/null");
-			if(!file_exists($derivativeContainer->getPathToLocalFile() . ".glb")) {
+			if(!file_exists(str_replace(".obj",".glb", $objFile))) {
 				// failed to process with the texture, let's try without.
 				echo "Failed to generate GLB for\n";
 				$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
