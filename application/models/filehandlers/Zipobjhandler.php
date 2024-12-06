@@ -50,7 +50,9 @@ class ZipObjHandler extends ZipHandler {
 			$derivative[] = "nxs";
 			$derivative[] = "ply";
 			$derivative[] = "stl";
-			$derivative[] = "glb";
+			$derivative[] = "glb-small";
+			$derivative[] = "glb-medium";
+			$derivative[] = "glb-large";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
