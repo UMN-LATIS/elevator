@@ -179,9 +179,9 @@ class ZipObjHandler extends ZipHandler {
 
 		// create a set of GLB files as well
 		$glbDerivativeSets = [
-			"small" => "0.1",
-			"medium" => "0.2",
-			"large" => "1.0"
+			"small" => "small",
+			"medium" => "medium",
+			"large" => "large"
 		];
 
 		if(filesize($this->sourceFile->getParent()) < 10*1024*1024) {
