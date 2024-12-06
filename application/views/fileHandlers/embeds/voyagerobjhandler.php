@@ -16,6 +16,6 @@ $svxPath = stripHTTP(instance_url("fileManager/getSidecar/" . $fileObjectId . "/
 	
 <link href="https://cdn.jsdelivr.net/gh/smithsonian/dpo-voyager@latest/assets/fonts/fonts.css" rel="stylesheet">
 
-<voyager-explorer document="<?=$svxPath?>" uiMode="menu|help"></voyager-explorer>
+<voyager-explorer document="<?=$svxPath?>" bgcolor="white #b5b5b5" bgStyle="RadialGradient" uiMode="menu|help"></voyager-explorer>
 <!-- This is the required javascript file for the Voyager element. -->
 <script src="https://3d-api.si.edu/resources/js/voyager-explorer.min.js"></script>
