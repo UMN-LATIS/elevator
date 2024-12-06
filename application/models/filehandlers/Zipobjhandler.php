@@ -184,10 +184,10 @@ class ZipObjHandler extends ZipHandler {
 			"large" => "large"
 		];
 
-		if(filesize($this->sourceFile->getParent()) < 10*1024*1024) {
+		if(filesize($objFile) < 10*1024*1024) {
 			// small files, just do the large derivative
 			$glbDerivativeSets = [
-				"large" => "1.0"
+				"large" => "large"
 			];
 		}
 		foreach($glbDerivativeSets as $label=>$scale) {
@@ -204,6 +204,7 @@ class ZipObjHandler extends ZipHandler {
 			exec($blenderCommandLine . " 2>/dev/null");
 			if(!file_exists($derivativeContainer->getPathToLocalFile() . ".glb")) {
 				// failed to process with the texture, let's try without.
+				echo "Failed to generate GLB for\n";
 				$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
 				
 			}
