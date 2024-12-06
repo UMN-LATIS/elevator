@@ -179,10 +179,17 @@ class ZipObjHandler extends ZipHandler {
 
 		// create a set of GLB files as well
 		$glbDerivativeSets = [
-			"small" => "0.2",
-			"medium" => "0.5",
+			"small" => "0.1",
+			"medium" => "0.2",
 			"large" => "1.0"
 		];
+
+		if(filesize($this->sourceFile->getParent()) < 10*1024*1024) {
+			// small files, just do the large derivative
+			$glbDerivativeSets = [
+				"large" => "1.0"
+			];
+		}
 		foreach($glbDerivativeSets as $label=>$scale) {
 
 			$derivativeContainer = new fileContainerS3();
