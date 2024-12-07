@@ -39,13 +39,13 @@ If an upload fails for some reason, simply refresh the asset and select the file
 After a file is uploaded, a small preview will be displayed.  You may add an additional description about the file if you’d like.
 
 
-## 3D Models
+# 3D Models
 
 Elevator supports two different 3D viewers, the [3DHop](https://3dhop.net) viewer from the [Visual Computing Lab](http://vcg.isti.cnr.it) at CNR-ISTI, as well as [Voyager](https://smithsonian.github.io/dpo-voyager/) from the Smithsonian. 3DHop is the default, but Voyager can be enabled on an instance-by-instance basis in the Instance Settings. 
 
 The default mode for Voyager is a 3D model viewer with some basic tools for sliding and measurement. However, Voyager supports much more sophisticated annotation and tour-building. Currently, using these steps with Elevator requires a few extra steps. Eventually we hope to streamline these.
 
-### Model Prep
+## Model Prep
 
 Begin by uploading your model into an Elevator asset. In general, models should be zip files container OBJ, MTL and texture files. 
 
@@ -55,7 +55,7 @@ Now, use the "download derivatives" button and download the GLB-Large file.
 
 !["GLB Large Download"](./glb-large.png)
 
-### Tour/Annotation Creation
+## Tour/Annotation Creation
 
 In your browser, load the [Voyager Story Standalone](https://3d.si.edu/voyager-story-standalone) application. This is the tool for building tours. Drag and drop your GLB file into the Story tool. When it prompts you for a derivative quality, select "High".
 
@@ -66,7 +66,7 @@ Now, add any tours, annotations, or other features to your model. Currently, the
 
 When you've completed your work, click the download button in the upper right to download the finished scene. That will download a zip file.
 
-### Adding the Scene to Elevator
+## Adding the Scene to Elevator
 
 Go back into the Edit view for your asset. Unzip the file that was downloaded by Voyager Story. Find the "scene.svx.json" file and open it in a text editor like VSCode, TextEdit or Notepad. 
 
