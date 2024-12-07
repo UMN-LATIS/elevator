@@ -88,6 +88,7 @@ module.exports = {
                 sidebarDepth: 2, // optional, defaults to 1
                 children: [
                     '/curating',
+                    '/3dmodels'
                 ]
             },
             {
