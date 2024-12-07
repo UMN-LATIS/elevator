@@ -59,7 +59,10 @@ Now, use the "download derivatives" button and download the GLB-Large file.
 
 In your browser, load the [Voyager Story Standalone](https://3d.si.edu/voyager-story-standalone) application. This is the tool for building tours. Drag and drop your GLB file into the Story tool. When it prompts you for a derivative quality, select "High".
 
-Now, add any tours, annotations, or other features to your model. Currently, the "articles" feature isn't supported, but we're looking at options for that going forward. 
+Now, add any tours, annotations, or other features to your model. Currently, the "articles" feature isn't supported, but we're looking at options for that going forward. Instead, you can link to other websites to share more content - you can use the "extended" annotation type and then put links in the "Lead" section, using standard HTML:
+```
+<a href="http://www.whyshouldivisit.com">Why Should I Visit?</a>
+```
 
 When you've completed your work, click the download button in the upper right to download the finished scene. That will download a zip file.
 
