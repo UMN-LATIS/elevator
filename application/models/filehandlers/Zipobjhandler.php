@@ -367,7 +367,7 @@ class ZipObjHandler extends ZipHandler {
 
 	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
 		if($sidecarType == "svx") {
-			if(isset($sidecarData['svx']) && strlen($sidecarData['svx'])>0) {
+			if(isset($sidecarData['svx']) && strlen($sidecarData['svx'])>0 || is_array($sidecarData['svx'])) {
 				$svxData = $sidecarData['svx'];
 			}
 			else{
