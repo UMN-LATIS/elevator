@@ -238,7 +238,7 @@ class ZipObjHandler extends ZipHandler {
 		// we change dir inside docker so we have to pass in two args
 		$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale . " usdz";
 		exec($blenderCommandLine . " 2>/dev/null");
-		if(!file_exists(str_replace(".obj",".glb", $objFile))) {
+		if(!file_exists(str_replace(".obj",".usdz", $objFile))) {
 			// failed to process with the texture, let's try without.
 			echo "Failed to generate USDZ for\n";
 			$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
@@ -402,7 +402,7 @@ class ZipObjHandler extends ZipHandler {
 
 	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
 		if($sidecarType == "svx") {
-			if(isset($sidecarData['svx']) && (is_string($sidecarData['svx']) && strlen($sidecarData['svx'])>0) || is_array($sidecarData['svx'])) {
+			if(isset($sidecarData['svx']) && ((is_string($sidecarData['svx']) && strlen($sidecarData['svx'])>0) || is_array($sidecarData['svx']))) {
 				$svxData = $sidecarData['svx'];
 			}
 			else{
