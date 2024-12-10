@@ -62,7 +62,7 @@ $menuArray['download'] = $downloadArray;
 ?>
 <div class="row assetViewRow">
 	<div class="col-md-12">
-        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded 3D Model" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen class="embedAsset"></iframe>
+        <iframe width="100%" height="<?=$embedHeight?>" title="Embedded 3D Model" src="<?=$fileObject->getEmbedURL(true)?>" frameborder="0" allowfullscreen allow="xr; xr-spatial-tracking; fullscreen" class="embedAsset"></iframe>
     </div>
 </div>
 <?=renderFileMenu($menuArray)?>

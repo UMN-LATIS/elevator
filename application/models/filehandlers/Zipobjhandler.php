@@ -53,6 +53,7 @@ class ZipObjHandler extends ZipHandler {
 			$derivative[] = "glb-thumb";
 			$derivative[] = "glb-medium";
 			$derivative[] = "glb-large";
+			$derivative[] = "usdz";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -199,7 +200,7 @@ class ZipObjHandler extends ZipHandler {
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.glb';
 
 			// we change dir inside docker so we have to pass in two args
-			$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale;
+			$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale . " glb";
 			exec($blenderCommandLine . " 2>/dev/null");
 			if(!file_exists(str_replace(".obj",".glb", $objFile))) {
 				// failed to process with the texture, let's try without.
@@ -227,6 +228,40 @@ class ZipObjHandler extends ZipHandler {
 			$this->derivatives["glb-" . $label] = $derivativeContainer;
 		}
 
+
+		$derivativeContainer = new fileContainerS3();
+		$derivativeContainer->derivativeType = 'usdz';
+		$derivativeContainer->path = "derivative";
+		$derivativeContainer->setParent($this->sourceFile->getParent());
+		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.usdz';
+
+		// we change dir inside docker so we have to pass in two args
+		$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale . " usdz";
+		exec($blenderCommandLine . " 2>/dev/null");
+		if(!file_exists(str_replace(".obj",".glb", $objFile))) {
+			// failed to process with the texture, let's try without.
+			echo "Failed to generate USDZ for\n";
+			$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
+			
+		}
+
+		rename(str_replace(".obj",".usdz", $objFile), $derivativeContainer->getPathToLocalFile());
+
+		$success = true;
+		if(!$derivativeContainer->copyToRemoteStorage()) {
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), 0);
+			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
+			$success=false;
+		}
+		else {
+			$derivativeContainer->ready = true;
+			if(!unlink($derivativeContainer->getPathToLocalFile())) {
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
+				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
+				$success=false;
+			}
+		}
+		$this->derivatives["usdz"] = $derivativeContainer;
 
 		if($success) {
 			$this->queueTask(3);
@@ -367,7 +402,7 @@ class ZipObjHandler extends ZipHandler {
 
 	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
 		if($sidecarType == "svx") {
-			if(isset($sidecarData['svx']) && strlen($sidecarData['svx'])>0 || is_array($sidecarData['svx'])) {
+			if(isset($sidecarData['svx']) && (is_string($sidecarData['svx']) && strlen($sidecarData['svx'])>0) || is_array($sidecarData['svx'])) {
 				$svxData = $sidecarData['svx'];
 			}
 			else{
@@ -407,6 +442,19 @@ class ZipObjHandler extends ZipHandler {
 				$highDerivative["assets"][0]["uri"] = $this->derivatives["glb-large"]->getProtectedURLForFile();
 				$derivatives[] = $highDerivative;
 				
+				$arDerivative = $derivativeTemplate;
+				$arDerivative['usage'] = "App3D";
+				$arDerivative["quality"] = "AR";
+				$arDerivative["assets"][0]["uri"] = $this->derivatives["glb-large"]->getProtectedURLForFile();
+				$derivatives[] = $arDerivative;
+				
+			}
+			if(isset($this->derivatives["usdz"])) {
+				$arDerivative = $derivativeTemplate;
+				$arDerivative['usage'] = "iOSApp3D";
+				$arDerivative["quality"] = "AR";
+				$arDerivative["assets"][0]["uri"] = $this->derivatives["usdz"]->getProtectedURLForFile();
+				$derivatives[] = $arDerivative;
 			}
 			
 
