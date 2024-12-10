@@ -234,7 +234,7 @@ class ZipObjHandler extends ZipHandler {
 		$derivativeContainer->path = "derivative";
 		$derivativeContainer->setParent($this->sourceFile->getParent());
 		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.usdz';
-
+		$derivativeContainer->forcedMimeType = "model/vnd.usdz+zip";
 		// we change dir inside docker so we have to pass in two args
 		$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale . " usdz";
 		exec($blenderCommandLine . " 2>/dev/null");
@@ -454,6 +454,7 @@ class ZipObjHandler extends ZipHandler {
 				$arDerivative['usage'] = "iOSApp3D";
 				$arDerivative["quality"] = "AR";
 				$arDerivative["assets"][0]["uri"] = $this->derivatives["usdz"]->getProtectedURLForFile();
+				$arDerivative["mimeType"] = "model/vnd.usdz+zip";
 				$derivatives[] = $arDerivative;
 			}
 			
