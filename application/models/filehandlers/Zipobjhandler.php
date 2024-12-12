@@ -209,7 +209,7 @@ class ZipObjHandler extends ZipHandler {
 				
 			}
 
-			rename(str_replace(".obj",".glb", $objFile), $derivativeContainer->getPathToLocalFile());
+			rename(str_replace(".obj","_output.glb", $objFile), $derivativeContainer->getPathToLocalFile());
 
 			$success = true;
 			if(!$derivativeContainer->copyToRemoteStorage()) {
@@ -245,7 +245,7 @@ class ZipObjHandler extends ZipHandler {
 			
 		}
 
-		rename(str_replace(".obj",".usdz", $objFile), $derivativeContainer->getPathToLocalFile());
+		rename(str_replace(".obj","_output.usdz", $objFile), $derivativeContainer->getPathToLocalFile());
 
 		$success = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
