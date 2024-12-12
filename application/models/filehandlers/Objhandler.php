@@ -1,6 +1,10 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+require_once("application/traits/ThreeDProcessing.php");
 class ObjHandler extends FileHandlerBase {
+
+	use ThreeDProcessing;
+	
 	protected $supportedTypes = array("obj", "stl", "3mf");
 	protected $noDerivatives = false;
 
@@ -40,7 +44,10 @@ class ObjHandler extends FileHandlerBase {
 			$derivative[] = "nxs";
 			$derivative[] = "ply";
 			$derivative[] = "stl";
-			$derivative[] = "glb";
+			$derivative[] = "glb-thumb";
+			$derivative[] = "glb-medium";
+			$derivative[] = "glb-large";
+			$derivative[] = "usdz";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -77,7 +84,7 @@ class ObjHandler extends FileHandlerBase {
 
 
 	public function createDerivative($args) {
-		$meshlabScript = realpath(NULL) . "/assets/blender/meshlab.mlx";
+		
 		$fileStatus = $this->sourceFile->makeLocal();
 
 		if($fileStatus == FILE_GLACIER_RESTORING) {
@@ -102,70 +109,48 @@ class ObjHandler extends FileHandlerBase {
 		$pathparts = pathinfo($localPath);
 		$originalExtension = pathinfo($sourceFile->originalFilename, PATHINFO_EXTENSION);
 
-		$objFile = $localPath . "." .$originalExtension;
-
-		rename($localPath, $objFile);
+		if(!str_contains($localPath, ".".$originalExtension)) {
+			$objFile = $localPath . "." .$originalExtension;
+			rename($localPath, $objFile);
+		}
+		else {
+			$objFile = $localPath;
+		}
+		
+		
 		$baseFolder = pathinfo($localPath, PATHINFO_DIRNAME);
-
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = 'ply';
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'ply' . '.ply';
-
-
-		$meshlabCommandLine =  $this->config->item("meshlabPath") . " obj_to_ply " . $objFile . " " . $derivativeContainer->getPathToLocalFile() . ".ply";
-
-		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
-		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
-
-		$success = true;
-		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload ply", $this->getObjectId(), $this->job->getId());
-			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-			$success=false;
+			
+		$outputFilename = $pathparts['filename'];
+		if($derivativeContainer = $this->generatePLY($objFile, $outputFilename, $baseFolder)) {
+			$this->derivatives["ply"] = $derivativeContainer;
 		}
-		else {
-			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
-				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
+		
+
+		// create a set of GLB files as well
+		$glbDerivativeSets = [
+			"thumb" => "thumb",
+			"medium" => "medium",
+			"large" => "large"
+		];
+
+		if(filesize($objFile) < 10*1024*1024) {
+			// small files, just do the large derivative
+			$glbDerivativeSets = [
+				"large" => "large"
+			];
+		}
+		foreach($glbDerivativeSets as $label=>$scale) {
+			if($derivativeContainer = $this->generateGLB($objFile, $outputFilename, $label, $scale)) {
+				$this->derivatives["glb-" . $label] = $derivativeContainer;
 			}
 		}
-		$derivativeContainer->ready = true;
-		$this->derivatives["ply"] = $derivativeContainer;
 
-
-		// create glb
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = 'glb';
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . 'glb' . '.glb';
-
-
-		$meshlabCommandLine =  $this->config->item("meshlabPath") . " obj_to_glb " . $objFile . " " . $derivativeContainer->getPathToLocalFile() . ".glb";
-
-		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
-		rename($derivativeContainer->getPathToLocalFile() . ".ply", $derivativeContainer->getPathToLocalFile());
-
-		$success = true;
-		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), $this->job->getId());
-			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-			$success=false;
+		if($derivativeContainer = $this->generateUSDZ($objFile, $outputFilename, "large")) {
+			$this->derivatives["usdz"] = $derivativeContainer;
 		}
-		else {
-			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
-				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
-			}
-		}
-		$derivativeContainer->ready = true;
-		$this->derivatives["glb"] = $derivativeContainer;
 
-		if($success) {
+
+		if(count($this->derivatives) > 0) {
 			$this->queueTask(2);
 			return JOB_SUCCESS;
 		}
@@ -175,295 +160,7 @@ class ObjHandler extends FileHandlerBase {
 
 	}
 
-	public function createSTL($args) {
-
-
-		$result = $this->createSTLInternal($this->derivatives['ply'], $args);
-		if($result == JOB_POSTPONE) {
-			return JOB_POSTPONE;
-		}
-		if($result == JOB_FAILED) {
-			return JOB_FAILED;
-		}
-		else {
-			$this->derivatives = array_merge($this->derivatives, $result);
-		}
-		return JOB_SUCCESS;
-
-
-	}
-
-	public function createSTLInternal($sourceFileContainer, $args) {
-		$success = true;
-
-
-		$fileStatus = $sourceFileContainer->makeLocal();
-
-		if($fileStatus == FILE_GLACIER_RESTORING) {
-			$this->postponeTime = 900;
-			return JOB_POSTPONE;
-		}
-		elseif($fileStatus == FILE_ERROR) {
-			return JOB_FAILED;
-		}
-
-		$this->pheanstalk->touch($this->job);
-
-		$sourceFileLocalName = $sourceFileContainer->getPathToLocalFile() . ".ply";
-		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileLocalName);
-
-
-
-		$localPath = $sourceFileContainer->getPathToLocalFile();
-		$pathparts = pathinfo($localPath);
-		$baseFolder = pathinfo($localPath, PATHINFO_DIRNAME);
-
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = "stl";
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "stl" . '.stl';
-		//TODO: catch errors here
-
-		$meshlabCommandLine =  $this->config->item("meshlabPath") . " ply_to_stl " . $sourceFileLocalName . " " . $derivativeContainer->getPathToLocalFile() . ".stl";
-
-		exec("cd " . $baseFolder . " && " . $meshlabCommandLine . " 2>/dev/null");
-		rename($derivativeContainer->getPathToLocalFile() . ".stl", $derivativeContainer->getPathToLocalFile());
-
-		$success = true;
-		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload stl", $this->getObjectId(), $this->job->getId());
-			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-			$success=false;
-		}
-		else {
-			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
-				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
-			}
-		}
-
-		unlink($sourceFileLocalName);
-		$derivativeContainer->ready = true;
-		$derivativeArray['stl'] = $derivativeContainer;
-		
-		if($success) {
-			return $derivativeArray;
-		}
-		else {
-			return JOB_FAILED;
-		}
-
-
-
-	}
-
-	public function createThumbnails($args) {
-
-		$result = $this->createThumbInternal($this->derivatives['ply'], $args);
-		if($result == JOB_POSTPONE) {
-			return JOB_POSTPONE;
-		}
-		if($result == JOB_FAILED) {
-			return JOB_FAILED;
-		}
-		else {
-			$this->derivatives = array_merge($this->derivatives, $result);
-		}
-		$this->queueTask(3);
-		$this->triggerReindex();
-		return JOB_SUCCESS;
-
-	}
-
-	public function createNXS($args) {
-
-		$result = $this->createNxsFileInternal($this->derivatives['ply'], $args);
-		if($result == JOB_POSTPONE) {
-			return JOB_POSTPONE;
-		}
-		if($result == JOB_FAILED) {
-			return JOB_FAILED;
-		}
-		else {
-			$this->derivatives = array_merge($this->derivatives, $result);
-		}
-		$this->queueTask(4);
-		return JOB_SUCCESS;
-
-	}
-
-
-
-	public function createThumbInternal($sourceFileContainer, $args) {
-
-
-		ini_set('memory_limit', '512M');
-		$success = true;
-
-		$fileStatus = $sourceFileContainer->makeLocal();
-
-		if($fileStatus == FILE_GLACIER_RESTORING) {
-			$this->postponeTime = 900;
-			return JOB_POSTPONE;
-		}
-		elseif($fileStatus == FILE_ERROR) {
-			return JOB_FAILED;
-		}
-
-		$this->pheanstalk->touch($this->job);
-
-		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileContainer->getPathToLocalFile() . ".ply");
-
-		$targetLargeFileShortName = $sourceFileContainer->getPathToLocalFile() . "_output";
-
-		$blenderCommandLine = $this->config->item('blenderBinary') . " -b /opt/stage.blend -P /root/convert.py". " -o " . $targetLargeFileShortName . " -F JPEG -x 1 -f 1 -- " . $sourceFileContainer->getPathToLocalFile() . ".ply";
-
-		// blender will generate a new output name
-		$targetLargeFile = $targetLargeFileShortName . "0001.jpg";
-
-		$process = new Cocur\BackgroundProcess\BackgroundProcess($blenderCommandLine);
-		$process->run();
-		while($process->isRunning()) {
-			sleep(5);
-			$this->pheanstalk->touch($this->job);
-			echo ".";
-		}
-		unlink($sourceFileContainer->getPathToLocalFile() . ".ply");
-		$derivativeArray = array();
-		foreach($args as $derivativeSetting) {
-			if(!isset($derivativeSetting['type'])) {
-				continue;
-			}
-			$derivativeType = $derivativeSetting['type'];
-			$width = $derivativeSetting['width'];
-			$height = $derivativeSetting['height'];
-
-			$localPath = $sourceFileContainer->getPathToLocalFile();
-			$pathparts = pathinfo($localPath);
-
-			$derivativeContainer = new fileContainerS3();
-			$derivativeContainer->derivativeType = $derivativeType;
-			$derivativeContainer->path = $derivativeSetting['path'];
-			$derivativeContainer->setParent($this->sourceFile->getParent());
-			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
-			//TODO: catch errors here
-
-
-
-
-
-			if(compressImageAndSave(new FileContainer($targetLargeFile), $derivativeContainer,$width, $height, 80, 0)) {
-				$derivativeContainer->ready = true;
-				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
-				if(!$derivativeContainer->copyToRemoteStorage()) {
-					//TODO: log
-					//TODO: remove derivative
-					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
-					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$success=false;
-				}
-				else {
-					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
-						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-						$success=false;
-					}
-				}
-				$derivativeArray[$derivativeType] = $derivativeContainer;
-			}
-			else {
-				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
-				echo "Error generating derivatives" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
-			}
-		}
-
-		if($success) {
-			return $derivativeArray;
-		}
-		else {
-			return JOB_FAILED;
-		}
-
-
-	}
-
-
-	public function createNxsFileInternal($sourceFileContainer, $args) {
-
-		$success = true;
-
-
-		$fileStatus = $sourceFileContainer->makeLocal();
-
-		if($fileStatus == FILE_GLACIER_RESTORING) {
-			$this->postponeTime = 900;
-			return JOB_POSTPONE;
-		}
-		elseif($fileStatus == FILE_ERROR) {
-			return JOB_FAILED;
-		}
-
-		$this->pheanstalk->touch($this->job);
-
-		$sourceFileLocalName = $sourceFileContainer->getPathToLocalFile() . ".ply";
-		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileLocalName);
-
-
-
-		$localPath = $sourceFileContainer->getPathToLocalFile();
-		$pathparts = pathinfo($localPath);
-
-		$derivativeContainer = new fileContainerS3();
-		$derivativeContainer->derivativeType = "nxs";
-		$derivativeContainer->path = "derivative";
-		$derivativeContainer->setParent($this->sourceFile->getParent());
-		$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . "nxs" . '.nxs';
-		//TODO: catch errors here
-		$nxsBuild = $this->config->item("nxsBuild");
-		$nxsBuilderString = $nxsBuild . " -o " . $derivativeContainer->getPathToLocalFile() . " " . $sourceFileLocalName;
-		exec($nxsBuilderString . " 2>/dev/null");
-		unlink($sourceFileLocalName);
-
-		if(file_exists($derivativeContainer->getPathToLocalFile() . ".nxs")) {
-			rename($derivativeContainer->getPathToLocalFile() . ".nxs", $derivativeContainer->getPathToLocalFile());
-			$derivativeContainer->ready = true;
-			if(!$derivativeContainer->copyToRemoteStorage()) {
-				//TODO: log
-				//TODO: remove derivative
-				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
-				echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-				$success=false;
-			}
-			else {
-				if(!unlink($derivativeContainer->getPathToLocalFile())) {
-					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
-					echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-					$success=false;
-				}
-			}
-			$derivativeArray['nxs'] = $derivativeContainer;
-		}
-		else {
-			$this->logging->processingInfo("createNXS", "objHandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
-			echo "Error generating derivatives" . $derivativeContainer->getPathToLocalFile();
-			$success=false;
-		}
-
-
-		if($success) {
-			return $derivativeArray;
-		}
-		else {
-			return JOB_FAILED;
-		}
-
-
-	}
-
-
+	
 	function swapLocal3MFForSTL($sourceFile= null) {
 		if(!$sourceFile) {
 			$sourceFile = $this->sourceFile;
@@ -471,7 +168,7 @@ class ObjHandler extends FileHandlerBase {
 		// this is ugly, but we might get passed in an intermediate. We need to look at the original to see if 
 		// it was a whole slide
 		if($sourceFile->getType() != "3mf") {
-			return;
+			return $sourceFile;
 		}
 
 		$source = $sourceFile->getPathToLocalFile();
@@ -481,6 +178,7 @@ class ObjHandler extends FileHandlerBase {
 			return new FileContainer($dest);
 		}
 		$convertString = $this->config->item('3mf2stl') . " -i " . $source . " -o " . $dest;
+
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 		$process->run();
 		while($process->isRunning()) {
@@ -488,10 +186,12 @@ class ObjHandler extends FileHandlerBase {
 			$this->pheanstalk->touch($this->job);
 			echo ".";
 		}
+
 		return new FileContainer($dest);
 
 	}
 
+	
 }
 
 /* End of file  */

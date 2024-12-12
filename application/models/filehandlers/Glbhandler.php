@@ -1,37 +1,31 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
 require_once("application/traits/ThreeDProcessing.php");
+class GlbHandler extends FileHandlerBase {
 
-//require_once("fileHandlerBase.php");
-class PlyHandler extends FileHandlerBase {
-
-	protected $supportedTypes = array("ply");
-	protected $noDerivatives = false;
 	use ThreeDProcessing;
+	
+	protected $supportedTypes = array("glb");
+	protected $noDerivatives = false;
 
 
 
-	//public $icon = "doc.png";
 
-	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
-						  1 => ["taskType"=>"createDerivative", "config"=>[]],
-							2=>["taskType"=>"createThumbnails", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
+	public $taskArray = [
+	0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]],
+	1=>["taskType"=>"createDerivative", "config"=>array()],
+	2=>["taskType"=>"createThumbnails", "config"=>[["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
 						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
 						  												["width"=>75, "height"=>150, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
-						  												]
-						  												],
-						  3=>["taskType"=>"createNXS", "config"=>["ttr"=>900]],
-						  4=>["taskType"=>"createSTL", "config"=>[]]
-						  												];
-
+						  												]],
+																		3=>["taskType"=>"noTask", "config"=>[]]
+	];
 
 
 	public function __construct()
 	{
 		parent::__construct();
-		$this->load->helper("media");
-
-		//Do your magic here
 	}
 
 	public function allDerivativesForAccessLevel($accessLevel) {
@@ -46,8 +40,10 @@ class PlyHandler extends FileHandlerBase {
 		// }
 
 		if($accessLevel>=$this->getPermission()) {
-			$derivative[] = "nxs";
-			$derivative[] = "stl";
+			$derivative[] = "glb-thumb";
+			$derivative[] = "glb-medium";
+			$derivative[] = "glb-large";
+			$derivative[] = "usdz";
 		}
 		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
@@ -82,8 +78,8 @@ class PlyHandler extends FileHandlerBase {
 		return JOB_SUCCESS;
 	}
 
+
 	public function createDerivative($args) {
-		
 		$fileStatus = $this->sourceFile->makeLocal();
 
 		if($fileStatus == FILE_GLACIER_RESTORING) {
@@ -100,7 +96,9 @@ class PlyHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		
+
+		$foundMTL = false;
+
 		$localPath = $this->sourceFile->getPathToLocalFile();
 		$pathparts = pathinfo($localPath);
 		$originalExtension = pathinfo($this->sourceFile->originalFilename, PATHINFO_EXTENSION);
@@ -112,6 +110,7 @@ class PlyHandler extends FileHandlerBase {
 			
 		$outputFilename = $pathparts['filename'];
 		
+
 
 		// create a set of GLB files as well
 		$glbDerivativeSets = [
@@ -145,10 +144,15 @@ class PlyHandler extends FileHandlerBase {
 		else {
 			return JOB_FAILED;
 		}
+
 	}
 
-
+	
+	public function noTask($args) {
+		return JOB_SUCCESS;
+	}
+	
 }
 
-/* End of file imageHandler.php */
-/* Location: ./application/models/imageHandler.php */
+/* End of file  */
+/* Location: ./application/controllers/ */
