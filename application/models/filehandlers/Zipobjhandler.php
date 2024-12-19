@@ -202,14 +202,14 @@ class ZipObjHandler extends ZipHandler {
 			// we change dir inside docker so we have to pass in two args
 			$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale . " glb";
 			exec($blenderCommandLine . " 2>/dev/null");
-			if(!file_exists(str_replace(".obj",".glb", $objFile))) {
+			if(!file_exists(str_replace(".obj","_output.glb", $objFile))) {
 				// failed to process with the texture, let's try without.
 				echo "Failed to generate GLB for\n";
 				$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
 				
 			}
 
-			rename(str_replace(".obj",".glb", $objFile), $derivativeContainer->getPathToLocalFile());
+			rename(str_replace(".obj","_output.glb", $objFile), $derivativeContainer->getPathToLocalFile());
 
 			$success = true;
 			if(!$derivativeContainer->copyToRemoteStorage()) {
@@ -238,14 +238,14 @@ class ZipObjHandler extends ZipHandler {
 		// we change dir inside docker so we have to pass in two args
 		$blenderCommandLine =  $this->config->item("blenderBinary") . "  -P /root/glb.py -- " . $objFile . " " . $scale . " usdz";
 		exec($blenderCommandLine . " 2>/dev/null");
-		if(!file_exists(str_replace(".obj",".usdz", $objFile))) {
+		if(!file_exists(str_replace(".obj","_output.usdz", $objFile))) {
 			// failed to process with the texture, let's try without.
 			echo "Failed to generate USDZ for\n";
 			$this->logging->processingInfo("createDerivative","objHandler","Failed to generate GLB",$this->getObjectId(), 0);
 			
 		}
 
-		rename(str_replace(".obj",".usdz", $objFile), $derivativeContainer->getPathToLocalFile());
+		rename(str_replace(".obj","_output.usdz", $objFile), $derivativeContainer->getPathToLocalFile());
 
 		$success = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
