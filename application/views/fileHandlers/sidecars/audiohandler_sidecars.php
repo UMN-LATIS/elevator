@@ -1,7 +1,11 @@
 <div class="form-group">
 	<label for="<?=$formFieldRoot?>_captions" class="col-sm-3 control-label">Captions</label>
 	<div class="col-sm-5">
-		<textarea class="form-control" id="<?=$formFieldRoot?>_captions"name="<?=$formFieldRoot?>[captions]" placeholder="Captions (WebVTT or SRT)"><?=isset($sidecarData['captions'])?$sidecarData['captions']:null?></textarea>
+		<textarea class="form-control" id="<?=$formFieldRoot?>_captions" name="<?=$formFieldRoot?>[captions]" placeholder="Captions (WebVTT or SRT)"><?=isset($sidecarData['captions'])?$sidecarData['captions']:null?></textarea>
+	</div>
+	<div class="col-sm-3">
+		<label for="file-upload" class="btn btn-default">Load from File</label>
+		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[captions]" />
 	</div>
 </div>
 

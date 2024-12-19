@@ -759,6 +759,7 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	public function mungedSidecarData($sidecarData=null, $sidecarType=null) {
+
 		if(isset($sidecarType) && isset($sidecarData) && isset($sidecarData[$sidecarType])) {
 			$sidecarData = $sidecarData[$sidecarType];
 			return $sidecarData;
