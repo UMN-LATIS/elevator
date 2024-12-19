@@ -27,6 +27,4 @@ When you've completed your work, click the download button in the upper right to
 
 ## Adding the Scene to Elevator
 
-Go back into the Edit view for your asset. Unzip the file that was downloaded by Voyager Story. Find the "scene.svx.json" file and open it in a text editor like VSCode, TextEdit or Notepad. 
-
-Copy and paste all of the contents from this file into the "SVX" sidecar box in Elevator. Save your asset. Now reload the asset view - your story should appear.
+Go back into the Edit view for your asset. Unzip the file that was downloaded by Voyager Story. Use the "Load from File" button in Elevator to select the SVX file from the Voyager Story and load that into your Elevator asset. 
