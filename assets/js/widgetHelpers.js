@@ -526,3 +526,15 @@ $(document).ready(function() {
 function nextResultLink(targetId) {
 	window.location = basePath + "assetManager/editAsset/" + targetId;
 }
+
+$(document).on('change', '.importTextForSidecar', function(e) {
+	var target = $(this).data('target');
+	var selectedFile = e.target.files[0];
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		$('[name="' + target + '"]').val(e.target.result);
+	};
+
+	reader.readAsText(selectedFile);
+
+});
