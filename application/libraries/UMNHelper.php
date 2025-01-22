@@ -140,7 +140,7 @@ class UMNHelper extends AuthHelper
 				$instructed = $this->fetchBandaidResult("/api/enrollment/instructor/" . $emplId);
 				if(is_array($instructed)) {
 					foreach($instructed as $entry) {
-						$courseName = join(".", [$entry->SUBJECT, $entry->CATALOG_NBR, $entry->SECTION]);
+						$courseName = join(".", [$entry->SUBJECT, $entry->CATALOG_NUMBER, $entry->CLASS_SECTION]);
 						$deptCoursesTaught[$courseName] = $entry->DESCRIPTION;
 						$coursesTaught[$entry->CLASS_NUMBER] = $courseName; 
 					}
