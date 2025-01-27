@@ -197,7 +197,10 @@ function getImageMetadata($sourceImage) {
 		return false;
 	}
 
-
+	
+	if(isset($extractedRaw["Orientation"])) {
+		$metadata["rotation"] = $extractedRaw["Orientation"];	
+	}
 
 	$metadata["width"] = $extractedRaw["ImageWidth"] ?? 0;
 	$metadata["height"] = $extractedRaw["ImageHeight"] ?? 0;
@@ -209,6 +212,13 @@ function getImageMetadata($sourceImage) {
 		if(isset($extractedRaw["ImageSizeY"])) {
 			$metadata["height"] = $extractedRaw["ImageSizeY"];
 		}
+	}
+
+	// if this file has baked in rotation value, we need to flip height and width.
+	if(isset($metadata["rotation"]) && ($metadata["rotation"] == 6 || $metadata["rotation"] == 8)) {
+		$tmp = $metadata["width"];
+		$metadata["width"] = $metadata["height"];
+		$metadata["height"] = $tmp;
 	}
 
 	if($sourceImage->getType() == "tif") {
@@ -249,9 +259,8 @@ function getImageMetadata($sourceImage) {
 
 
 	$metadata["exif"] = $extractedParsed;
-	if(isset($extractedRaw["Orientation"])) {
-		$metadata["rotation"] = $extractedRaw["Orientation"];	
-	}
+
+
 	
 
 	if(isset($extractedRaw['GPSLatitude'])) {
