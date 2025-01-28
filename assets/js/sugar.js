@@ -13404,4 +13404,4 @@
   
     buildDateRangeUnits();
   
-  }).call(this);
+  }).call(globalThis);
