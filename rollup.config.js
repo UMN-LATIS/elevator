@@ -18,7 +18,7 @@ const config = [
   },
   // Task: webRTI
   {
-    input: "./assets/webViewer/spidergl/multires.js",
+    input: "./assets/webViewer/spidergl/index.mjs",
     output: {
       file: path.join(baseDir, "webrti.min.js"),
       format: "iife",
