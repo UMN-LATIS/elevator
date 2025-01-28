@@ -24,3 +24,6 @@ docs/.vuepress/dist
 
 assets/elevator-ui/*
 !assets/elevator-ui/dist
+
+# assets build with rollup
+assets/build
