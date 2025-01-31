@@ -122,8 +122,13 @@ class Search extends Instance_Controller {
 			$jsLoadArray = ["searchMaster"];
 		}
 		$jsLoadArray[] = "spin";
-
-
+		$this->template->javascript->add('/assets/leaflet/leaflet.js');
+		$this->template->javascript->add('/assets/leaflet/Leaflet.fullscreen.min.js');
+		$this->template->javascript->add('/assets/leaflet/leaflet-measure.min.js');
+		$this->template->javascript->add('/assets/leaflet/Control.MiniMap.min.js');
+		$this->template->javascript->add('/assets/leaflet/esri-leaflet.js');
+		$this->template->javascript->add('/assets/leaflet/leaflet.markercluster.js');
+		$this->template->javascript->add('/assets/leaflet/L.Control.Locate.min.js');
 		$this->template->set_template("noTemplate");
 		$this->template->loadJavascript($jsLoadArray);
 

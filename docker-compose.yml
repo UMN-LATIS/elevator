@@ -7,7 +7,7 @@ services:
       - "6379:6379"
 
   postgres:
-    image: postgres:latest
+    image: postgres:16
     environment:
       POSTGRES_DB: ${DATABASE_DB}
       POSTGRES_USER: ${DATABASE_USER}
