@@ -9,7 +9,7 @@ php_value upload_max_filesize 500M
 php_value post_max_size 510M
 php_value memory_limit 256M
 
-SetEnv CI_ENV development
+# SetEnv CI_ENV development
 
 # in development, some files have short open tags and need apache configuration overrides
 php_value short_open_tag On
