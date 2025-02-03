@@ -46,7 +46,7 @@ class InstancePermission
      * @param \Entity\InstanceGroup $group
      * @return InstancePermission
      */
-    public function setGroup(\Entity\InstanceGroup $group = null)
+    public function setGroup(? \Entity\InstanceGroup $group = null)
     {
         $this->group = $group;
 
@@ -69,7 +69,7 @@ class InstancePermission
      * @param \Entity\Instance $instance
      * @return InstancePermission
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(? \Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -92,7 +92,7 @@ class InstancePermission
      * @param \Entity\Permission $permission
      * @return InstancePermission
      */
-    public function setPermission(\Entity\Permission $permission = null)
+    public function setPermission(? \Entity\Permission $permission = null)
     {
         $this->permission = $permission;
 

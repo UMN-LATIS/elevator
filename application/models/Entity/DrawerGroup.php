@@ -205,7 +205,7 @@ class DrawerGroup
      * @param \Entity\User $user
      * @return DrawerGroup
      */
-    public function setUser(\Entity\User $user = null)
+    public function setUser(? \Entity\User $user = null)
     {
         $this->user = $user;
 

@@ -1,5 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+
 class SortedIterator extends SplHeap
 {
     public function __construct(Iterator $iterator)
@@ -8,7 +9,7 @@ class SortedIterator extends SplHeap
             $this->insert($item);
         }
     }
-    public function compare($b,$a)
+    public function compare($b,$a): int
     {
         return strcmp($a->getRealpath(), $b->getRealpath());
     }

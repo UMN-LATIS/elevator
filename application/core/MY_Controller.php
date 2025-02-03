@@ -58,7 +58,7 @@ class MY_Controller extends CI_Controller {
 		$userId = $this->session->userdata('userId');
 		// HACK HACK HACK
 		// Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
-		if(strtolower($this->uri->segment(2)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "loginmanager") {
+		if($this->uri->segment(2) && strtolower($this->uri->segment(2)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "loginmanager") {
 			session_write_close();
 		}
 		if($userId) {

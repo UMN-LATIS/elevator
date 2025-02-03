@@ -141,7 +141,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 				'port' => empty($matches[2]) ? NULL : $matches[2],
 				'password' => preg_match('#auth=([^\s&]+)#', $matches[3], $match) ? $match[1] : NULL,
 				'database' => preg_match('#database=(\d+)#', $matches[3], $match) ? (int) $match[1] : NULL,
-				'timeout' => preg_match('#timeout=(\d+\.\d+)#', $matches[3], $match) ? (float) $match[1] : NULL
+				'timeout' => preg_match('#timeout=(\d+\.\d+)#', $matches[3], $match) ? (float) $match[1] : 0.0
 			);
 
 			preg_match('#prefix=([^\s&]+)#', $matches[3], $match) && $this->_key_prefix = $match[1];
@@ -168,7 +168,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 	 * @param	string	$name		Session cookie name, unused
 	 * @return	bool
 	 */
-	public function open($save_path, $name)
+	public function open($save_path, $name): bool
 	{
 		if (empty($this->_config['save_path']))
 		{
@@ -208,7 +208,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 	 * @param	string	$session_id	Session ID
 	 * @return	string	Serialized session data
 	 */
-	public function read($session_id)
+	public function read($session_id): string|false
 	{
 		if (isset($this->_redis) && $this->_get_lock($session_id))
 		{
@@ -239,7 +239,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 	 * @param	string	$session_data	Serialized session data
 	 * @return	bool
 	 */
-	public function write($session_id, $session_data)
+	public function write($session_id, $session_data): bool
 	{
 		if ( ! isset($this->_redis, $this->_lock_key))
 		{
@@ -284,7 +284,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 	 *
 	 * @return	bool
 	 */
-	public function close()
+	public function close(): bool
 	{
 		if (isset($this->_redis))
 		{
@@ -320,7 +320,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 	 * @param	string	$session_id	Session ID
 	 * @return	bool
 	 */
-	public function destroy($session_id)
+	public function destroy($session_id): bool
 	{
 		if (isset($this->_redis, $this->_lock_key))
 		{
@@ -346,7 +346,7 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 	 * @param	int 	$maxlifetime	Maximum lifetime of sessions
 	 * @return	bool
 	 */
-	public function gc($maxlifetime)
+	public function gc($maxlifetime): int|false
 	{
 		// Not necessary, Redis takes care of that.
 		return $this->_success;

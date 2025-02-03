@@ -3,6 +3,7 @@
 * Based class for auth helpers
 */
 
+#[AllowDynamicProperties]
 class AuthHelper
 {
 	

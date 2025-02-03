@@ -9,6 +9,9 @@ class Upload extends Widget_base {
 	public $enableIframe = false;
 	public $interactiveTranscript = false;
 	public $ignoreForDigitalAsset = false;
+	public $forceTiling = false;
+	public $enableDendro = false;
+	public $enableAnnotation = false;
 	
 	public function __construct()
 	{
