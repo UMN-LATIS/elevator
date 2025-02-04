@@ -15,6 +15,8 @@ class Upload_contents extends Widget_contents_base {
 	public $extractLocation;
 	public $extractDate;
 	public $sidecars = array();
+	public $loc = null;
+	public $regenerate = false;
 
 	public function __construct()
 		{
@@ -56,7 +58,7 @@ class Upload_contents extends Widget_contents_base {
 		if(!$this->getFileHandler()) {
 			return "";
 		}
-		return implode(" " , [$this->getFileHandler()->getObjectId(), $this->fileDescription, substr($this->getSearchData(), 0, 100)]);
+		return implode(" " , [$this->getFileHandler()->getObjectId(), $this->fileDescription, substr($this->getSearchData() ?? "" , 0, 100)]);
 	}
 
 	public function getFileHandler() {

@@ -17,7 +17,7 @@ class FileHandlerBase extends CI_Model {
 	protected $noDerivatives = true;
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]]];
 	public $icon = "_blank.png"; // icon File to use if we don't have a thumb
-
+	public $collection = null;
 
 	public $asset = null;
 
@@ -37,7 +37,6 @@ class FileHandlerBase extends CI_Model {
 	public $derivatives = array(); // array of fileContainers
 	public $job; // beanstalkd current job
 	public $globalMetadata = array();
-	public $pheanstalk = null;
 
 	public $postponeTime = 10;
 
@@ -228,7 +227,11 @@ class FileHandlerBase extends CI_Model {
 		// make sure we save so we don't race the index
 		$this->save();
 		if($this->parentObjectId != null && $this->config->item("beanstalkd")) {
-			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+			$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+			$tube = new Pheanstalk\Values\TubeName('reindex');
+			// run a 15 minute TTR because zipping all these could take a while
+			$pheanstalk->useTube($tube);
+
 			if(!$this->instance || $this->instance == null) {
 				$instanceId = 1; // welp, we're hosed, hope we can find a good one.
 				// lookup instance based on this file's collection.
@@ -248,7 +251,7 @@ class FileHandlerBase extends CI_Model {
 			$newTask = json_encode(["objectId"=>$this->parentObjectId,"instance"=>$instanceId]);
 			
 			try {
-				$jobId = $pheanstalk->useTube('reindex')->put($newTask, NULL, 2);
+				$jobId = $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 2);
 			} catch (Exception $e) {
 				$ipAddress = gethostbyname(gethostname());
 				echo "Error: " . $e->getMessage() . " on IP: " . $ipAddress;
@@ -268,39 +271,7 @@ class FileHandlerBase extends CI_Model {
 			$nextTask = $this->taskArray[$taskId];
 		}
 
-		if($this->config->item('fileQueueingMethod') == "aws") {
-			$this->nextTask = $nextTask;
-			return;
-		}
-
-		if(!$this->pheanstalk) {
-			$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-		}
-
-		$args = array_merge($nextTask['config'], $appendData);
-
-		if($setHostAffinity) {
-			$hostAffinity = $this->serverId;
-		}
-		else {
-			$hostAffinity = null;
-		}
-
-		$newTask = json_encode(["task"=>$nextTask['taskType'], "config"=>$args, "fileHandlerId"=>$this->getObjectId(), "type"=>$this->sourceFile->getType(), "instance"=>$this->instance->getId(), "host_affinity"=>$hostAffinity]);
-		$ttr = 300;
-		if(isset($args['ttr'])){
-			$ttr = $args['ttr'];
-		}
-		if($taskId == 0) {
-			$priority = $this->priority() + 50;
-		}
-		else {
-			$priority = $this->priority() + 20;
-		}
-
-		$jobId= $this->pheanstalk->useTube('newUploads')->put($newTask, $priority, 2, $ttr);
-
-		$this->addJobId($jobId);
+		$this->nextTask = $nextTask;
 
 	}
 
@@ -392,20 +363,22 @@ class FileHandlerBase extends CI_Model {
 
    			$this->save();
 
-			if($this->config->item("fileQueueingMethod") == "beanstalkd") {
-   				$this->queueTask(0, [], false);
+		
+			if($this->sourceFile->isArchived()) {
+				$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+				$tube = new Pheanstalk\Values\TubeName('restoreTube');
+				// run a 15 minute TTR because zipping all these could take a while
+				$pheanstalk->useTube($tube);
+
+
+				$pathToFile = instance_url("");
+				$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
+				$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
 			}
 			else {
-				if($this->sourceFile->isArchived()) {
-					$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-					$pathToFile = instance_url("");
-					$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
-					$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
-				}
-				else {
-					$this->queueBatchItem($this->asset, $this->sourceFile);
-				}
+				$this->queueBatchItem($this->asset, $this->sourceFile);
 			}
+
 
 
    		}

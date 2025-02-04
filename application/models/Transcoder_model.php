@@ -12,6 +12,7 @@ class Transcoder_Model extends CI_Model {
 	public $threadCount = 4;
 	private $fileHandler;
 	public $job = null;
+	public $basePath = "";
 
 	public function __construct()
 	{
@@ -53,7 +54,6 @@ class Transcoder_Model extends CI_Model {
 				$this->logging->processingInfo("copy Local", "video","Could not copy local file", $this->fileHandler->getObjectId(), $this->job->getId());
 				return false;
 			}
-			$this->pheanstalk->touch($this->job);
 		}
 		return true;
 	}
@@ -831,7 +831,6 @@ class Transcoder_Model extends CI_Model {
 						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4sd file", $this->fileHandler->getObjectId(), $this->job->getId());
 						return false;
 					}
-				$this->pheanstalk->touch($this->job);
 				if(isset($this->fileHandler->derivatives["mp4hd"])) {
 					$hdContainer = $this->fileHandler->derivatives["mp4hd"];
 					$fileStatus = $hdContainer->makeLocal();
@@ -839,7 +838,6 @@ class Transcoder_Model extends CI_Model {
 						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4hd file", $this->fileHandler->getObjectId(), $this->job->getId());
 						return false;
 					}
-					$this->pheanstalk->touch($this->job);
 				}
 				
 
@@ -1087,7 +1085,6 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 			if(substr($file, 0,1) == ".") {
 				continue;
 			}
-			$this->pheanstalk->touch($this->job);
         	$pathToFile = $folder . "/" . $file;
         	if(!$this->fileHandler->s3model->putObject($pathToFile, $destKey . "/" . $file)) {
         		$this->logging->processingInfo("putAllFilesInFolderToKey", "uploading file failed","", $pathToFile, $this->job->getId());
@@ -1141,7 +1138,6 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
         	echo $result['percentage'] . " ";
         	// echo $process->getExecutedCommand()."\n";
             sleep(5);
-			$this->pheanstalk->touch($this->job);
         }
 
         return $output;

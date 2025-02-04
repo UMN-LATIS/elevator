@@ -94,9 +94,6 @@ class ZipMedDicomHandler extends ZipHandler {
 			return JOB_FAILED;
 		}
 
-		if(isset($this->job)) {
-			$this->pheanstalk->touch($this->job);
-		}
 		
 
 

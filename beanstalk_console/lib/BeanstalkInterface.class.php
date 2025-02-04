@@ -7,13 +7,16 @@ class BeanstalkInterface
     public function __construct($server)
     {
         $list = explode(':', $server);
-        $this->_client = new Pheanstalk\Pheanstalk($list[0], isset($list[1]) ? $list[1] : '');
+        $pheanstalk =  Pheanstalk\Pheanstalk::create($list[0], isset($list[1]) ? $list[1] : '');
+	
+        $this->_client = $pheanstalk;
     }
 
     public function getTubes()
     {
         $tubes = $this->_client->listTubes();
-        sort($tubes);
+        $tubesArray = (array)$tubes;
+        sort($tubesArray);
         return $tubes;
     }
 
@@ -211,11 +214,20 @@ class BeanstalkInterface
     private function _peek($tube, $method)
     {
         try {
-            $job = $this->_client->useTube($tube)->{$method}();
-            $peek = array(
-                'id' => $job->getId(),
-                'data' => $job->getData(),
-                'stats' => $this->_client->statsJob($job));
+            $tubeValue = new Pheanstalk\Values\TubeName($tube);
+
+            $this->_client->useTube($tubeValue);
+            $job = $this->_client->{$method}();
+            if($job) {
+                $peek = array(
+                    'id' => $job->getId(),
+                    'data' => $job->getData(),
+                    'stats' => $this->_client->statsJob($job));
+            }
+            else {
+                throw new Exception('No job found');
+            }
+            
         } catch (Exception $ex) {
             $peek = array();
         }

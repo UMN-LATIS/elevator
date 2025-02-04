@@ -68,7 +68,6 @@ class SPAHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
 			return JOB_FAILED;
@@ -116,7 +115,6 @@ class SPAHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		$sourceFile = $this->swapLocalForPNG();
 		if(!$sourceFile) {
@@ -124,7 +122,6 @@ class SPAHandler extends FileHandlerBase {
 		}
 
 		foreach($args as $key=>$derivativeSetting) {
-			$this->pheanstalk->touch($this->job);
 			if(!is_numeric($key)) {
 				continue;
 			}
@@ -142,7 +139,6 @@ class SPAHandler extends FileHandlerBase {
 				return JOB_FAILED;
 			}
 
-			$this->pheanstalk->touch($this->job);
 
 			if(!file_exists($sourceFile->getPathToLocalFile())) {
 				$this->logging->processingInfo("createDerivative","spaHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());

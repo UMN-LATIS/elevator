@@ -11,6 +11,9 @@ use Doctrine\Common\Collections\Criteria;
  */
 class Instance
 {
+    // adding to deal with deprecation warning
+    public $queryHandoff = null;
+
     /**
      * @var string
      */

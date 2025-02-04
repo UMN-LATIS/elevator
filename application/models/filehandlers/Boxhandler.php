@@ -87,7 +87,6 @@ class BoxHandler extends FileHandlerBase {
 			return JOB_POSTPONE;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
@@ -261,7 +260,6 @@ class BoxHandler extends FileHandlerBase {
 			if(substr($file, 0,1) == ".") {
 				continue;
 			}
-			$this->pheanstalk->touch($this->job);
         	$pathToFile = $folder . "/" . $file;
 
         	if(!$this->s3model->putObject($pathToFile, $destKey . "/" . $file)) {

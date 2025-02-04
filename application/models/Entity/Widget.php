@@ -489,7 +489,7 @@ class Widget
      * @param \Entity\Field_type $fieldType
      * @return Widget
      */
-    public function setFieldType(\Entity\Field_type $fieldType = null)
+    public function setFieldType(? \Entity\Field_type $fieldType = null)
     {
         $this->field_type = $fieldType;
 
@@ -512,7 +512,7 @@ class Widget
      * @param \Entity\Template $template
      * @return Widget
      */
-    public function setTemplate(\Entity\Template $template = null)
+    public function setTemplate(? \Entity\Template $template = null)
     {
         $this->template = $template;
 

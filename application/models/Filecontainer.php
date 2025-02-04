@@ -10,6 +10,7 @@ class FileContainer extends CI_Model {
 	public $localAsset;
 	public $metadata = array();
 	public $storageKey = "";
+	public $originalFilename = null;
 
 	public function __construct($targetFile=null)
 	{

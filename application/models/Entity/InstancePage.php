@@ -120,7 +120,7 @@ class InstancePage
      * @param \Entity\Instance $instance
      * @return InstancePage
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(? \Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -252,7 +252,7 @@ class InstancePage
      *
      * @return InstancePage
      */
-    public function setParent(\Entity\InstancePage $parent = null)
+    public function setParent(? \Entity\InstancePage $parent = null)
     {
         $this->parent = $parent;
 

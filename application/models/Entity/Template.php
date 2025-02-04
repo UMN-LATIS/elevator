@@ -283,7 +283,7 @@ class Template
      * @param \Entity\Template $sourceTemplate
      * @return Template
      */
-    public function setSourceTemplate(\Entity\Template $sourceTemplate = null)
+    public function setSourceTemplate(? \Entity\Template $sourceTemplate = null)
     {
         $this->source_template = $sourceTemplate;
 

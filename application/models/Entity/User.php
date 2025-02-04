@@ -519,7 +519,7 @@ class User
      *
      * @return User
      */
-    public function setCreatedBy(\Entity\User $createdBy = null)
+    public function setCreatedBy(?\Entity\User $createdBy = null)
     {
         $this->createdBy = $createdBy;
 
@@ -543,7 +543,7 @@ class User
      *
      * @return User
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -567,7 +567,7 @@ class User
      *
      * @return User
      */
-    public function setApiInstance(\Entity\Instance $apiInstance = null)
+    public function setApiInstance(?\Entity\Instance $apiInstance = null)
     {
         $this->apiInstance = $apiInstance;
 

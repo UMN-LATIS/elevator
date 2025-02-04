@@ -91,7 +91,6 @@ class OfficeHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		$fileObject->metadata["filesize"] = $this->sourceFile->getFileSize();
 
@@ -124,7 +123,6 @@ class OfficeHandler extends FileHandlerBase {
 
 			if(!$targetFile->isLocal()) {
 				if($targetFile->makeLocal()) {
-					$this->pheanstalk->touch($this->job);
 				}
 				else {
 					return JOB_FAILED;
@@ -188,7 +186,6 @@ class OfficeHandler extends FileHandlerBase {
 	public function createDerivatives($args) {
 		if(!$this->sourceFile->isLocal()) {
 			if($this->sourceFile->makeLocal()) {
-				$this->pheanstalk->touch($this->job);
 			}
 			else {
 				return JOB_FAILED;

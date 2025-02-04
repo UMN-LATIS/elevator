@@ -69,7 +69,7 @@ class LTI13InstanceAssociation
      *
      * @return LTI13InstanceAssociation
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(? \Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -93,7 +93,7 @@ class LTI13InstanceAssociation
      *
      * @return LTI13InstanceAssociation
      */
-    public function setUser(\Entity\User $user = null)
+    public function setUser(? \Entity\User $user = null)
     {
         $this->user = $user;
 

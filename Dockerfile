@@ -7,6 +7,7 @@ RUN docker-php-ext-install pgsql pdo_pgsql pdo zip
 # RUN export LDFLAGS="-lssl -lcurl"
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 # RUN a2enmod rewrite && a2enmod headers
+RUN docker-php-ext-install sockets
 COPY docker/get-docker.sh /root/
 RUN chmod +x /root/get-docker.sh
 RUN /root/get-docker.sh
@@ -19,14 +20,14 @@ COPY composer.lock /var/www/html/
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN git config --global --add safe.directory /var/www/html
-RUN composer install  --ignore-platform-reqs
+RUN composer install --ignore-platform-reqs
 
 ARG DOCKER_SCRATCH_DIR
 ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 
 COPY . /var/www/html/
 WORKDIR /var/www/html
-
+RUN chmod -R 777 /var/www/html/application/models/Proxies
 # append "short_open_tag" to php.ini
 COPY docker/php.ini "$PHP_INI_DIR/php.ini"
 

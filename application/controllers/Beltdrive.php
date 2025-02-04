@@ -1,7 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 ini_set('max_execution_time', 0);
-use Aws\S3\Model\ClearBucket;
-use Aws\Sts\StsClient;
+
 
 class Beltdrive extends CI_Controller {
 
@@ -61,11 +60,14 @@ class Beltdrive extends CI_Controller {
 
 
 	public function updateIndexes() {
-		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-		$cnt=0;
 
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('reindex');
+		$cnt=0;
+		
 		while(1) {
-			$job = $this->pheanstalk->watch('reindex')->ignore('default')->reserve();
+			$pheanstalk->watch($tube);
+			$job = $pheanstalk->reserve();
 			if(!is_object($job)) {
 				usleep(5);
 				continue;
@@ -81,7 +83,7 @@ class Beltdrive extends CI_Controller {
 			$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
 			$objectId = $job_encoded["objectId"];
 			if(!$objectId || !is_string($objectId)) {
-				$this->pheanstalk->delete($job);
+				$pheanstalk->delete($job);
 				continue;
 			}
 			echo "Reindexing " . $objectId . "\n";
@@ -91,7 +93,7 @@ class Beltdrive extends CI_Controller {
 			$parentArray = array();
 
 			$this->asset_model->reindex($parentArray);
-			$this->pheanstalk->delete($job);
+			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 		}
 	}
@@ -114,10 +116,6 @@ class Beltdrive extends CI_Controller {
 			}
 			
 			$fileHandler->loadByObjectId($fileObjectId);
-			$this->load->library('Fakestalk');
-			$fakePheanstsalk = new Fakestalk;
-			$this->pheanstalk = $fakePheanstsalk;
-			$fileHandler->pheanstalk = $fakePheanstsalk;
 			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
 			if($collection) {
 				$instances = $collection->getInstances();
@@ -154,140 +152,20 @@ class Beltdrive extends CI_Controller {
 		}
 	}
 
-	public function processFileTask() {
-		echo "Starting processing thread\n";
-		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-		$cnt=0;
-		while(1) {
-			$job = $this->pheanstalk->watch('newUploads')->ignore('default')->reserve();
-			if(!is_object($job)) {
-				usleep(5);
-				continue;
-			}
-			$this->job = $job;
-
-			//reset doctrine in case we've lost the DB
-			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
-			$this->doctrine->reset();
-
-			$job_encoded = json_decode($job->getData(), true);
-
-			$jobId = $job->getId();
-			$stats = $this->pheanstalk->statsJob($job);
-			$jobPriority = $stats->pri;
-
-
-
-			if($stats->reserves > 200 && $job_encoded['task'] != "waitForCompletion") { // if we've tried to process it 200 times, it's probably not gonna work
-				$this->logging->processingInfo("job", "transcoder", "file attempted 200 times", $job_encoded['fileHandlerId'], $job->getId());
-				$this->pheanstalk->bury($job);
-				continue;
-			}
-
-			// Ideally, a single file will live its whole life on one node.
-			// We give it a bunch fo chances, but eventually bail and just do it on a new host.
-			// This will result in stale files needing to be cleaned up!
-			// reserveCount is a local cache in each instance - if a given node has been assigned htis job more than 20 times
-			// and has rejected it each time, it gives up and just does it.
-			if(isset($job_encoded['host_affinity'])) {
-				$targetHost = $job_encoded['host_affinity'];
-
-				if($targetHost != $this->serverId) {
-					if(!isset($this->reserveCount[$jobId])) {
-						$this->reserveCount[$jobId] = 0;
-					}
-					$this->reserveCount[$jobId]++;
-					if($this->reserveCount[$jobId] < 10 ) {
-						$this->pheanstalk->release($job, $jobPriority, 1);
-						continue;
-					}
-					elseif($this->reserveCount[$jobId] < 20 ) {
-						$this->pheanstalk->release($job, $jobPriority, 5);
-						continue;
-					}
-					else {
-						$this->reserveCount[$jobId] = 0;
-					}
-				}
-			}
-
-			$instanceId = $job_encoded["instance"];
-
-			$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-
-			$fileHandler = $this->filehandler_router->getHandlerForObject($job_encoded["fileHandlerId"]);
-
-			if(!$fileHandler) {
-				$this->pheanstalk->release($job, $jobPriority, 15);
-				continue;
-			}
-			$fileHandler->loadByObjectId($job_encoded["fileHandlerId"]);
-			$fileHandler->pheanstalk = $this->pheanstalk;
-			echo "Processing " . $fileHandler->sourceFile->originalFilename . " (" . $fileHandler->getObjectId() . ") : " . $job_encoded['task'] . "\n";
-
-			$success=false;
-
-
-			$result = $fileHandler->performTask($job);
-
-			if($result == JOB_SUCCESS) {
-				if($fileHandler->save() != false) {
-					$fileHandler->removeJob($job->getId());
-					$this->pheanstalk->delete($job);
-					$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Task Ended",$fileHandler->getObjectId(),$job->getId());
-				}
-				else {
-					echo "Failed updating " . $fileHandler->getObjectId() . "\n";
-					$this->pheanstalk->bury($job);
-					$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Task Updating Failed",$fileHandler->getObjectId(),$job->getId());
-				}
-			}
-			else if($result == JOB_FAILED) {
-				echo "Job Failed\n";
-				$this->pheanstalk->bury($job);
-				$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Job Failed",$fileHandler->getObjectId(),$job->getId());
-			}
-			else if($result == JOB_POSTPONE) {
-				echo "Postponing " . $fileHandler->sourceFile->originalFilename . " : " . $job_encoded['task'] . "\n";
-				$this->pheanstalk->release($job, $jobPriority, $fileHandler->postponeTime);
-				$this->logging->processingInfo("taskEnd",get_class($fileHandler),"Postponing task " . $job_encoded['task'],$fileHandler->getObjectId(),$job->getId());
-			}
-
-			echo "Job Complete\n";
-
-			$cnt++;
-
-			// every 100 jobs, let's clear our reserve count cache
-			if($cnt % 100 == 0) {
-				$this->reserveCount = array();
-			}
-
-			$memory = memory_get_usage();
-
-			if($memory > 100000000) {
-				echo "exiting run due to memory limit\n";
-				exit;
-			}
-			$this->doctrine->em->clear();
-			sleep(1);
-		}
-	}
 
 	public function prepareDrawers() {
 
-		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('archiveTube');
 		$cnt=0;
 		while(1) {
-			$job = $this->pheanstalk->watch('archiveTube')->ignore('default')->reserve();
-			if(!is_object($job)) {
-				usleep(5);
-				continue;
-			}
+			$pheanstalk->watch($tube);
+			$job = $pheanstalk->reserve();
 
-			$stats = $this->pheanstalk->statsJob($job);
+			$stats = $pheanstalk->statsJob($job);
 			if($stats->reserves > 200) {
 				$this->logging->processingInfo("job", "drawerPrep", "drawer attempted 200 times", $job_encoded['drawerId'], $job->getId());
-				$this->pheanstalk->bury($job);
+				$pheanstalk->bury($job);
 				continue;
 			}
 
@@ -338,7 +216,7 @@ class Beltdrive extends CI_Controller {
 				}
 
 				if($allDerivativesLocal) {
-					$this->pheanstalk->touch($job);
+					$pheanstalk->touch($job);
 					echo "compressing\n";
 					$id = new MongoDB\BSON\ObjectId();
 					$zipname = $this->config->item("scratchSpace") ."/". $id.'.zip';
@@ -355,7 +233,7 @@ class Beltdrive extends CI_Controller {
 
 					$this->s3_model->loadFromInstance($instance);
 					$this->s3_model->bucket = $instance->getDefaultBucket();
-					$this->pheanstalk->touch($job);
+					$pheanstalk->touch($job);
 					$this->s3_model->putObject($zipname, "drawer/".$drawerId.".zip", $instance->getS3StorageType());
 
 					foreach($derivativeArray as $bestDerivative) {
@@ -363,7 +241,7 @@ class Beltdrive extends CI_Controller {
 					}
 					unlink($zipname);
 
-					$this->pheanstalk->delete($job);
+					$pheanstalk->delete($job);
 
 					$targetURL = site_url($instance->getDomain() . "/drawers/downloadDrawer/" . $drawerId);
 
@@ -382,12 +260,12 @@ class Beltdrive extends CI_Controller {
 				}
 				else {
 					echo "Postponing drawer " . $job_encoded['drawerId'] . "\n";
-					$this->pheanstalk->release($job, NULL, 5);
+					$pheanstalk->release($job, NULL, 5);
 				}
 
 			}
 			else {
-				$this->pheanstalk->delete($job);
+				$pheanstalk->delete($job);
 			}
 
 
@@ -406,16 +284,14 @@ class Beltdrive extends CI_Controller {
 
 	public function restoreFiles() {
 
-		$this->pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 
 		$this->load->model("filehandlerbase");
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('restoreTube');
 		$cnt=0;
+		$pheanstalk->watch($tube);
 		while(1) {
-			$job = $this->pheanstalk->watch('restoreTube')->ignore('default')->reserve();
-			if(!is_object($job)) {
-				usleep(5);
-				continue;
-			}
+			$job = $pheanstalk->reserve();
 
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -438,12 +314,12 @@ class Beltdrive extends CI_Controller {
 
 				if($this->filehandlerbase->sourceFile->isArchived()) {
 					echo "Postpononing restore watch for " . $objectId . "\n";
-					$this->pheanstalk->release($job, NULL, 120);
+					$pheanstalk->release($job, NULL, 120);
 				}
 				else {
 					if($nextTask == "notify") {
 						echo "File finished". $objectId . "\n";
-						$this->pheanstalk->delete($job);
+						$pheanstalk->delete($job);
 						$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
 						$this->load->library('email');
 						$this->email->from('no-reply@elevatorapp.net', 'Elevator');
@@ -454,12 +330,7 @@ class Beltdrive extends CI_Controller {
 						$this->email->send();
 					}
 					else if($nextTask == "create_derivative") {
-						if($this->config->item("fileQueueingMethod") == "aws") {
-							$this->filehandlerbase->queueBatchItem($objectId);
-						}
-						else if($this->config->item("fileQueueingMethod") == "beanstalkd") {
-							$this->filehandlerbase->queueTask(0, [], false);
-						}
+						$this->filehandlerbase->queueBatchItem($objectId);
 					}
 					
 
@@ -468,7 +339,7 @@ class Beltdrive extends CI_Controller {
 			}
 			else {
 				echo "File handler not found";
-				$this->pheanstalk->delete($job);
+				$pheanstalk->delete($job);
 			}
 
 
@@ -488,17 +359,15 @@ class Beltdrive extends CI_Controller {
 
 	public function migrateCollections() {
 
-		$this->pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
+		
 		$this->load->model("filehandlerbase");
 		$this->load->model("asset_model");
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('collectionMigration');
 		$cnt=0;
+		$pheanstalk->watch($tube);
 		while(1) {
-			$job = $this->pheanstalk->watch('collectionMigration')->ignore('default')->reserve();
-			if(!is_object($job)) {
-				usleep(5);
-				continue;
-			}
+			$job = $pheanstalk->reserve();
 
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -532,7 +401,7 @@ class Beltdrive extends CI_Controller {
 
 			if($haveArchivedItems) {
 				echo "Have archied items, postponing collection migration for " . $objectId . "\n";
-				$this->pheanstalk->release($job, NULL, 900);
+				$pheanstalk->release($job, NULL, 900);
 			}
 			else {
 
@@ -543,7 +412,7 @@ class Beltdrive extends CI_Controller {
 						$fileHandler->sourceFile->copyToLocalStorage();
 						$localFile = $fileHandler->sourceFile->getPathToLocalFile();
 						$originalName = $fileHandler->sourceFile->originalFilename;
-						$this->pheanstalk->touch($job);
+						$pheanstalk->touch($job);
 						echo "Migrating ". $localFile . "\n";
 						$targetClass = get_class($fileHandler);
 						$newFileHandler = new $targetClass;
@@ -567,7 +436,7 @@ class Beltdrive extends CI_Controller {
 
 							$fileHandler->deleteFile();
 
-							$this->pheanstalk->touch($job);
+							$pheanstalk->touch($job);
 							$newFileHandler->regenerate = true;
 
 							$newFileHandler->save();
@@ -588,7 +457,7 @@ class Beltdrive extends CI_Controller {
 				$assetModel->save();
 
 				echo "Files finished: ". $objectId . "\n";
-				$this->pheanstalk->delete($job);
+				$pheanstalk->delete($job);
 
 
 			}
@@ -641,15 +510,12 @@ class Beltdrive extends CI_Controller {
 	
 
 	public function populateCacheTube() {
-		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-		echo "Launching populateCacheTube\n";
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('cacheRebuild');
+		$cnt=0;
 		while(1) {
-
-			$job = $this->pheanstalk->watch('cacheRebuild')->ignore('default')->reserve();
-			if(!is_object($job)) {
-				usleep(5);
-				continue;
-			}
+			$pheanstalk->watch($tube);
+			$job = $pheanstalk->reserve();
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
@@ -689,13 +555,15 @@ class Beltdrive extends CI_Controller {
 				foreach($result as $entry) {
 					$entry = array_pop($entry);
 					$newTask = json_encode(["objectId"=>$entry["assetId"], "instance"=>$instanceId]);
-					$jobId= $this->pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+					$tube = new Pheanstalk\Values\TubeName('reindex');
+					$pheanstalk->useTube($tube);
+					$jobId = $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
 					$entry = null;
 					$newTask = null;
 					$count++;
 					if($count % 100 == 0) {
 						gc_collect_cycles();
-						$this->pheanstalk->touch($job);
+						$pheanstalk->touch($job);
 						$this->doctrine->em->clear();
 					}
 				}
@@ -704,18 +572,11 @@ class Beltdrive extends CI_Controller {
 				
 			}
 
-			$this->pheanstalk->delete($job);
+			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 		}
 
 	}
-
-	public function rebuildCache() {
-		while(1) {
-			sleep(10);
-		}
-	}
-
 
 	public function reindexTemplate($templateId, &$parentArray=array()) {
 		
@@ -743,15 +604,14 @@ class Beltdrive extends CI_Controller {
 
 	
 	public function urlImport() {
-		$this->pheanstalk = new \Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
+		
+		$count=0;
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('urlImport');
 		$count=0;
 		while(1) {
-			$job = $this->pheanstalk->watch('urlImport')->ignore('default')->reserve();
-			if(!is_object($job)) {
-				usleep(5);
-				continue;
-			}
+			$pheanstalk->watch($tube);
+			$job = $pheanstalk->reserve();
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
@@ -765,7 +625,7 @@ class Beltdrive extends CI_Controller {
 
 			$objectId = $job_encoded["objectId"];
 			if(!$objectId || !is_string($objectId)) {
-				$this->pheanstalk->delete($job);
+				$pheanstalk->delete($job);
 				continue;
 			}
 			echo "Importing files for: " . $objectId . "\n";
@@ -869,7 +729,7 @@ class Beltdrive extends CI_Controller {
 				$process->run();
 				while($process->isRunning()) {
 					sleep(5);
-					$this->pheanstalk->touch($job);
+					$pheanstalk->touch($job);
 					echo ".";
 				}
 
@@ -907,13 +767,13 @@ class Beltdrive extends CI_Controller {
 				$fileHandler->sourceFile->ready = true;
 				$fileHandler->save();
 				echo $fileContainer->getURLForFile() . "\n";
-				$this->pheanstalk->touch($job);
+				$pheanstalk->touch($job);
 
 			}
 			$assetModel->createObjectFromJSON($assetArray);
 			$assetModel->save(true,false);
 
-			$this->pheanstalk->delete($job);
+			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 			$count++;
 			if($count % 10 == 0) {

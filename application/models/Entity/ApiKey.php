@@ -152,7 +152,7 @@ class ApiKey
      *
      * @return ApiKey
      */
-    public function setOwner(\Entity\User $owner = null)
+    public function setOwner(?\Entity\User $owner = null)
     {
         $this->owner = $owner;
 

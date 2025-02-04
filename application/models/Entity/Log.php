@@ -186,7 +186,7 @@ class Log
      * @param \Entity\Instance $instance
      * @return Log
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(? \Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -209,7 +209,7 @@ class Log
      * @param \Entity\Collection $collection
      * @return Log
      */
-    public function setCollection(\Entity\Collection $collection = null)
+    public function setCollection(? \Entity\Collection $collection = null)
     {
         $this->collection = $collection;
 
@@ -232,7 +232,7 @@ class Log
      * @param \Entity\User $user
      * @return Log
      */
-    public function setUser(\Entity\User $user = null)
+    public function setUser(? \Entity\User $user = null)
     {
         $this->user = $user;
 

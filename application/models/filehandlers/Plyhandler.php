@@ -87,7 +87,6 @@ class PlyHandler extends FileHandlerBase {
 
 		$objHandler = new ObjHandler;
 		$objHandler->job = $this->job;
-		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
 
 		$result = $objHandler->createThumbInternal($this->sourceFile, $args);
@@ -109,7 +108,6 @@ class PlyHandler extends FileHandlerBase {
 	public function createNxsFile($args) {
 		$objHandler = new ObjHandler;
 		$objHandler->job = $this->job;
-		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
 
 		$result = $objHandler->createNxsFileInternal($this->sourceFile, $args);
@@ -131,7 +129,6 @@ class PlyHandler extends FileHandlerBase {
 	public function createSTL($args) {
 		$objHandler = new ObjHandler;
 		$objHandler->job = $this->job;
-		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
 
 		$result = $objHandler->createSTLInternal($this->sourceFile, $args);

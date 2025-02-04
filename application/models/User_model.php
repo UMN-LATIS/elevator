@@ -460,11 +460,13 @@ class User_model extends CI_Model {
 		return $allowedCollections;
 	}
 
-	public function havePermForCollection($permLevel=false, $collectionId) {
+	public function havePermForCollection($permLevel=false, $collectionId=false) {
 		if(!$permLevel) {
 			return array();
 		}
-		
+		if(!$collectionId) {
+			return array();
+		}
 		$allowedCollections = $this->getAllowedCollections($permLevel);
 
 		foreach($allowedCollections as $collection) {

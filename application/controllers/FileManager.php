@@ -410,11 +410,15 @@ class FileManager extends Instance_Controller {
 
 		if($fileHandler->sourceFile->isArchived(true)) {
 
+			$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+			$tube = new Pheanstalk\Values\TubeName('restoreTube');
+			// run a 15 minute TTR because zipping all these could take a while
+			$pheanstalk->useTube($tube);
 
-			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+
 			$pathToFile = instance_url("/fileManager/getOriginal/".$fileId);
 			$newTask = json_encode(["objectId"=>$fileHandler->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"notify"]);
-			$jobId= $pheanstalk->useTube('restoreTube')->put($newTask, NULL, 1);
+			$jobId= $pheanstalk>put($newTask, NULL, 1);
 
 			$this->template->content->view('restoringFile');
 			$this->template->publish();

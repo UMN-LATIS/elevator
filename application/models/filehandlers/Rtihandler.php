@@ -71,7 +71,6 @@ class RTIHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
 			return JOB_FAILED;
@@ -162,7 +161,6 @@ class RTIHandler extends FileHandlerBase {
 		$targetDerivativeContainer->originalFilename = "tiled.jpg"; // just give it a name so we can identify the type properly
 
 		foreach($args as $key=>$derivativeSetting) {
-			$this->pheanstalk->touch($this->job);
 			if(!is_numeric($key)) {
 				continue;
 			}
@@ -170,7 +168,6 @@ class RTIHandler extends FileHandlerBase {
 			$width = $derivativeSetting['width'];
 			$height = $derivativeSetting['height'];
 
-			$this->pheanstalk->touch($this->job);
 
 			if(!file_exists($targetDerivativeFile)) {
 				$this->logging->processingInfo("createDerivative","rtiHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());

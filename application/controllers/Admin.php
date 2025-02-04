@@ -25,15 +25,6 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function streamFiles($fileId) {
-		require_once(APPPATH.'controllers/Transcoder.php');
-		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		$fileHandler->loadByObjectId($fileId);
-		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-		$transcodeCommands = new TranscoderCommands($pheanstalk, 3600);
-		$transcodeCommands->createDerivative($fileHandler->getObjectId(), "HLS");
-	}
-
 	public function userLookup() {
 		$userId = $this->input->post("inputGroupValue");
 		instance_redirect("permissions/editUser/" . $userId);
@@ -370,6 +361,17 @@ class admin extends Admin_Controller {
 		$tplVars = $console->getTplVars();
 		$tplVars['servers'] = [$tplVars['server']];
 		$tplVars['console'] = $console;
+		if($tplVars['tube']) {
+			$tplVars['tube'] = new \Pheanstalk\Values\TubeName($tplVars['tube']);
+		}
+		if($tplVars['tubes']) {
+			$newArray = [];
+			foreach($tplVars['tubes'] as $key=>$tube) {
+				
+				$newArray[] = $tube;
+			}
+			$tplVars['tubes'] = $newArray;
+		}
 		$this->template->content->view('beanstalk/index', $tplVars);
 		$this->template->publish();
 

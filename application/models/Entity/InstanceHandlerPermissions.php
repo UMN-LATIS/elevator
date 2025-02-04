@@ -92,7 +92,7 @@ class InstanceHandlerPermissions
      * @param \Entity\Instance $instance
      * @return InstanceHandlerPermissions
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(? \Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 

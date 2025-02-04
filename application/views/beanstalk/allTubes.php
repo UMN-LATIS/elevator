@@ -21,11 +21,14 @@ $visible = $console->getTubeStatVisible();
                 <tr>
                     <td name="<?php echo $key ?>"><a href="<?=instance_url("admin/beanstalk/")?>?tube=<?php echo $tubeItem ?>" ><?php echo $tubeItem ?></a></td>
                     <?php $values = $console->getTubeStatValues($tubeItem) ?>
+
+    
+
                     <?php
                     foreach ($fields as $key => $item):
                         $markHidden = !in_array($key, $visible) ? ' class="hide"' : '';
                         ?>
-                        <td<?php echo $markHidden ?>><?php echo isset($values[$key]) ? $values[$key] : '' ?></td>
+                        <td<?php echo $markHidden ?>><?php echo isset($values->$key) ? $values->$key : '' ?></td>
                     <?php endforeach; ?>
                 </tr>
             <?php endforeach ?>

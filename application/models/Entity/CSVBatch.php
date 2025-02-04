@@ -105,7 +105,7 @@ class CSVBatch
      *
      * @return CSVBatch
      */
-    public function setCollection(\Entity\Collection $collection = null)
+    public function setCollection(?\Entity\Collection $collection = null)
     {
         $this->collection = $collection;
 
@@ -129,7 +129,7 @@ class CSVBatch
      *
      * @return CSVBatch
      */
-    public function setTemplate(\Entity\Template $template = null)
+    public function setTemplate(?\Entity\Template $template = null)
     {
         $this->template = $template;
 
@@ -153,7 +153,7 @@ class CSVBatch
      *
      * @return CSVBatch
      */
-    public function setCreatedBy(\Entity\User $createdBy = null)
+    public function setCreatedBy(?\Entity\User $createdBy = null)
     {
         $this->createdBy = $createdBy;
 

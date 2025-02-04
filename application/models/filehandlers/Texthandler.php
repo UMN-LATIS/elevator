@@ -71,7 +71,6 @@ class TextHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		if($this->sourceFile->getType() == "txt") {
 			$pageText =file_get_contents($this->sourceFile->getPathToLocalFile());

@@ -502,8 +502,6 @@ $config['arcgis_access_token'] = $_ENV['ARCGIS_ACCESS_TOKEN'] ?? null;
 
 $config['available_themes'] = json_decode($_ENV['AVAILABLE_THEMES'] ?? '[]', true);
 
-$config['fileQueueingMethod'] = $_ENV['QUEUEING_METHOD'] ?? 'beanstalkd';
-
 $config['awsQueueRegion'] = $_ENV['AWS_QUEUEING_REGION'] ?? 'us-east-1';
 $config['awsQueueAccessKey'] = $_ENV['AWS_QUEUEING_ACCESS_KEY_ID'] ?? null;
 $config['awsQueueSecretKey'] = $_ENV['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? null;

@@ -100,8 +100,6 @@ class ImageHandler extends FileHandlerBase {
 			}
 		}
 
-		$this->pheanstalk->touch($this->job);
-
 		if(!file_exists($fileObject->getPathToLocalFile())) {
 			return JOB_FAILED;
 		}
@@ -172,7 +170,6 @@ class ImageHandler extends FileHandlerBase {
 		$sourceFile = $this->swapLocalForPNG($sourceFile);
 		
 		foreach($args as $key=>$derivativeSetting) {
-			$this->pheanstalk->touch($this->job);
 			if(!is_numeric($key)) {
 				continue;
 			}
@@ -190,7 +187,6 @@ class ImageHandler extends FileHandlerBase {
 				return JOB_FAILED;
 			}
 
-			$this->pheanstalk->touch($this->job);
 
 			if(!file_exists($sourceFile->getPathToLocalFile())) {
 				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
@@ -283,7 +279,6 @@ class ImageHandler extends FileHandlerBase {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			$this->pheanstalk->touch($this->job);
 			echo ".";
 		}
 
@@ -304,7 +299,6 @@ class ImageHandler extends FileHandlerBase {
 		$this->sourceFile->metadata["dziMaxZoom"] = $zoom;
 
 		echo "\n";
-		$this->pheanstalk->touch($this->job);
 
 		if($derivativeContainerIIIF->copyToRemoteStorage()) {
 			echo "Success\n";
@@ -315,9 +309,6 @@ class ImageHandler extends FileHandlerBase {
 			echo "Fail";
 		}
 
-
-
-		$this->pheanstalk->touch($this->job);
 
 		$this->derivatives[$derivativeContainerIIIF->derivativeType] = $derivativeContainerIIIF;
 		$this->unlinkLocalSwap();
@@ -414,7 +405,6 @@ class ImageHandler extends FileHandlerBase {
 			$process->run();
 			while($process->isRunning()) {
 				sleep(5);
-				$this->pheanstalk->touch($this->job);
 				echo ".";
 			}
 
@@ -437,7 +427,6 @@ class ImageHandler extends FileHandlerBase {
 			$process->run();
 			while($process->isRunning()) {
 				sleep(5);
-				$this->pheanstalk->touch($this->job);
 				echo ".";
 			}
 
@@ -463,7 +452,6 @@ class ImageHandler extends FileHandlerBase {
 			$process->run();
 			while($process->isRunning()) {
 				sleep(5);
-				$this->pheanstalk->touch($this->job);
 				echo ".";
 			}
 

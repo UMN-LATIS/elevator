@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac05b39ff61579e6a7c91f38caa0eb15",
+    "content-hash": "887c715b5276eb47c068ed50ff4610dd",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -129,16 +129,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.339.4",
+            "version": "3.339.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "ea62ad03645ef7a1d3f1cda2de49f0869de3c582"
+                "reference": "7ca04301a620c9400d00108fa338ad37acf19247"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ea62ad03645ef7a1d3f1cda2de49f0869de3c582",
-                "reference": "ea62ad03645ef7a1d3f1cda2de49f0869de3c582",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7ca04301a620c9400d00108fa338ad37acf19247",
+                "reference": "7ca04301a620c9400d00108fa338ad37acf19247",
                 "shasum": ""
             },
             "require": {
@@ -221,9 +221,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.4"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.5"
             },
-            "time": "2025-01-31T19:04:39+00:00"
+            "time": "2025-02-03T19:04:31+00:00"
         },
         {
             "name": "buggedcom/phpvideotoolkit",
@@ -279,73 +279,6 @@
                 "source": "https://github.com/cmcfadden/phpvideotoolkit-v2/tree/master"
             },
             "time": "2020-09-30T15:13:59+00:00"
-        },
-        {
-            "name": "clue/stream-filter",
-            "version": "1.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/clue/stream-filter.git",
-                "reference": "b27b3b4bd1d0b28ca9ba477150515eb1b84826a4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/clue/stream-filter/zipball/b27b3b4bd1d0b28ca9ba477150515eb1b84826a4",
-                "reference": "b27b3b4bd1d0b28ca9ba477150515eb1b84826a4",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^9.6 || ^5.7 || ^4.8.36"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/functions_include.php"
-                ],
-                "psr-4": {
-                    "Clue\\StreamFilter\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Christian Lück",
-                    "email": "christian@clue.engineering"
-                }
-            ],
-            "description": "A simple and modern approach to stream filtering in PHP",
-            "homepage": "https://github.com/clue/stream-filter",
-            "keywords": [
-                "bucket brigade",
-                "callback",
-                "filter",
-                "php_user_filter",
-                "stream",
-                "stream_filter_append",
-                "stream_filter_register"
-            ],
-            "support": {
-                "issues": "https://github.com/clue/stream-filter/issues",
-                "source": "https://github.com/clue/stream-filter/tree/1.x"
-            },
-            "funding": [
-                {
-                    "url": "https://clue.engineering/support",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/clue",
-                    "type": "github"
-                }
-            ],
-            "time": "2024-10-07T20:24:34+00:00"
         },
         {
             "name": "cocur/background-process",
@@ -778,12 +711,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/deprecations.git",
-                "reference": "7014f6c1c322bb040c7db23ed44516b9a4535d20"
+                "reference": "287ffdf65b884d55ee38d52eca6a07863879fa36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/7014f6c1c322bb040c7db23ed44516b9a4535d20",
-                "reference": "7014f6c1c322bb040c7db23ed44516b9a4535d20",
+                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/287ffdf65b884d55ee38d52eca6a07863879fa36",
+                "reference": "287ffdf65b884d55ee38d52eca6a07863879fa36",
                 "shasum": ""
             },
             "require": {
@@ -816,7 +749,7 @@
                 "issues": "https://github.com/doctrine/deprecations/issues",
                 "source": "https://github.com/doctrine/deprecations/tree/1.1.x"
             },
-            "time": "2024-12-20T07:18:16+00:00"
+            "time": "2025-02-03T12:25:28+00:00"
         },
         {
             "name": "doctrine/event-manager",
@@ -1007,12 +940,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "a7d5c0d97495de8ffb1a8f057377e96c0c9df675"
+                "reference": "23d5820752e39d44928d296b0c2f86b7aaed1f33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/a7d5c0d97495de8ffb1a8f057377e96c0c9df675",
-                "reference": "a7d5c0d97495de8ffb1a8f057377e96c0c9df675",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/23d5820752e39d44928d296b0c2f86b7aaed1f33",
+                "reference": "23d5820752e39d44928d296b0c2f86b7aaed1f33",
                 "shasum": ""
             },
             "require": {
@@ -1069,7 +1002,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-01-25T00:52:04+00:00"
+            "time": "2025-02-03T18:46:24+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -1256,12 +1189,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/persistence.git",
-                "reference": "bedc1c5743b7a39204eef6d2a6c1fd73f5df356e"
+                "reference": "b3642b81b0642e0cc419d81e3fee2a383061ea21"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/persistence/zipball/bedc1c5743b7a39204eef6d2a6c1fd73f5df356e",
-                "reference": "bedc1c5743b7a39204eef6d2a6c1fd73f5df356e",
+                "url": "https://api.github.com/repos/doctrine/persistence/zipball/b3642b81b0642e0cc419d81e3fee2a383061ea21",
+                "reference": "b3642b81b0642e0cc419d81e3fee2a383061ea21",
                 "shasum": ""
             },
             "require": {
@@ -1344,7 +1277,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-12-16T20:48:16+00:00"
+            "time": "2025-02-03T19:30:02+00:00"
         },
         {
             "name": "elasticsearch/elasticsearch",
@@ -1753,12 +1686,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "d281ed313b989f213357e3be1a179f02196ac99b"
+                "reference": "41f5ce75250c5c3af5a4bb2410143ddfede8127c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/d281ed313b989f213357e3be1a179f02196ac99b",
-                "reference": "d281ed313b989f213357e3be1a179f02196ac99b",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/41f5ce75250c5c3af5a4bb2410143ddfede8127c",
+                "reference": "41f5ce75250c5c3af5a4bb2410143ddfede8127c",
                 "shasum": ""
             },
             "require": {
@@ -1856,7 +1789,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.9.2"
+                "source": "https://github.com/guzzle/guzzle/tree/7.9"
             },
             "funding": [
                 {
@@ -1872,7 +1805,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-24T11:22:20+00:00"
+            "time": "2025-02-03T10:53:14+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -1880,12 +1813,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "f9c436286ab2892c7db7be8c8da4ef61ccf7b455"
+                "reference": "90c5be4a7c8374e8079c06232b07eb6e5cbbfdf3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/f9c436286ab2892c7db7be8c8da4ef61ccf7b455",
-                "reference": "f9c436286ab2892c7db7be8c8da4ef61ccf7b455",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/90c5be4a7c8374e8079c06232b07eb6e5cbbfdf3",
+                "reference": "90c5be4a7c8374e8079c06232b07eb6e5cbbfdf3",
                 "shasum": ""
             },
             "require": {
@@ -1940,7 +1873,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/promises/issues",
-                "source": "https://github.com/guzzle/promises/tree/2.0.4"
+                "source": "https://github.com/guzzle/promises/tree/2.0"
             },
             "funding": [
                 {
@@ -1956,7 +1889,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-10-17T10:06:22+00:00"
+            "time": "2025-02-03T10:48:03+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -1964,12 +1897,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "a70f5c95fb43bc83f07c9c948baa0dc1829bf201"
+                "reference": "ca06f23f35cf0b70a6f56d3d95c51bbc1062fade"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/a70f5c95fb43bc83f07c9c948baa0dc1829bf201",
-                "reference": "a70f5c95fb43bc83f07c9c948baa0dc1829bf201",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/ca06f23f35cf0b70a6f56d3d95c51bbc1062fade",
+                "reference": "ca06f23f35cf0b70a6f56d3d95c51bbc1062fade",
                 "shasum": ""
             },
             "require": {
@@ -2057,7 +1990,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.7.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.7"
             },
             "funding": [
                 {
@@ -2073,7 +2006,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-18T11:15:46+00:00"
+            "time": "2025-02-03T10:49:42+00:00"
         },
         {
             "name": "guzzlehttp/ringphp",
@@ -2185,64 +2118,6 @@
             },
             "abandoned": true,
             "time": "2016-04-13T16:32:01+00:00"
-        },
-        {
-            "name": "http-interop/http-factory-guzzle",
-            "version": "1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/http-interop/http-factory-guzzle.git",
-                "reference": "8f06e92b95405216b237521cc64c804dd44c4a81"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/http-interop/http-factory-guzzle/zipball/8f06e92b95405216b237521cc64c804dd44c4a81",
-                "reference": "8f06e92b95405216b237521cc64c804dd44c4a81",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/psr7": "^1.7||^2.0",
-                "php": ">=7.3",
-                "psr/http-factory": "^1.0"
-            },
-            "provide": {
-                "psr/http-factory-implementation": "^1.0"
-            },
-            "require-dev": {
-                "http-interop/http-factory-tests": "^0.9",
-                "phpunit/phpunit": "^9.5"
-            },
-            "suggest": {
-                "guzzlehttp/psr7": "Includes an HTTP factory starting in version 2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Http\\Factory\\Guzzle\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "http://www.php-fig.org/"
-                }
-            ],
-            "description": "An HTTP Factory using Guzzle PSR7",
-            "keywords": [
-                "factory",
-                "http",
-                "psr-17",
-                "psr-7"
-            ],
-            "support": {
-                "issues": "https://github.com/http-interop/http-factory-guzzle/issues",
-                "source": "https://github.com/http-interop/http-factory-guzzle/tree/1.2.0"
-            },
-            "time": "2021-07-21T13:50:14+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",
@@ -2666,30 +2541,37 @@
         },
         {
             "name": "pda/pheanstalk",
-            "version": "v3.1.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pda/pheanstalk.git",
-                "reference": "430e77c551479aad0c6ada0450ee844cf656a18b"
+                "url": "https://github.com/pheanstalk/pheanstalk.git",
+                "reference": "d073283f9d276e16f965415944df018dfbb833c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pda/pheanstalk/zipball/430e77c551479aad0c6ada0450ee844cf656a18b",
-                "reference": "430e77c551479aad0c6ada0450ee844cf656a18b",
+                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/d073283f9d276e16f965415944df018dfbb833c3",
+                "reference": "d073283f9d276e16f965415944df018dfbb833c3",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "ext-mbstring": "*",
+                "php": ">=8.3.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4.0"
+                "captainhook/plugin-composer": "^5.3",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^1",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.1",
+                "phpunit/phpunit": "^11",
+                "ramsey/conventional-commits": "^1.2",
+                "symplify/easy-coding-standard": "^12"
             },
+            "suggest": {
+                "ext-sockets": "Socket implementation works best for long running processes"
+            },
+            "default-branch": true,
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.0-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "Pheanstalk\\": "src/"
@@ -2705,405 +2587,23 @@
                     "email": "paul@annesley.cc",
                     "homepage": "http://paul.annesley.cc/",
                     "role": "Developer"
+                },
+                {
+                    "name": "Sam Mousa",
+                    "email": "sam@mousa.nl",
+                    "role": "Maintainer"
                 }
             ],
             "description": "PHP client for beanstalkd queue",
-            "homepage": "https://github.com/pda/pheanstalk",
+            "homepage": "https://github.com/pheanstalk/pheanstalk",
             "keywords": [
                 "beanstalkd"
             ],
             "support": {
-                "issues": "https://github.com/pda/pheanstalk/issues",
-                "source": "https://github.com/pda/pheanstalk/tree/master"
+                "issues": "https://github.com/pheanstalk/pheanstalk/issues",
+                "source": "https://github.com/pheanstalk/pheanstalk/tree/v6.0.0"
             },
-            "time": "2015-08-07T21:42:41+00:00"
-        },
-        {
-            "name": "php-http/client-common",
-            "version": "2.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/client-common.git",
-                "reference": "0cfe9858ab9d3b213041b947c881d5b19ceeca46"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/client-common/zipball/0cfe9858ab9d3b213041b947c881d5b19ceeca46",
-                "reference": "0cfe9858ab9d3b213041b947c881d5b19ceeca46",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1 || ^8.0",
-                "php-http/httplug": "^2.0",
-                "php-http/message": "^1.6",
-                "psr/http-client": "^1.0",
-                "psr/http-factory": "^1.0",
-                "psr/http-message": "^1.0 || ^2.0",
-                "symfony/options-resolver": "~4.0.15 || ~4.1.9 || ^4.2.1 || ^5.0 || ^6.0 || ^7.0",
-                "symfony/polyfill-php80": "^1.17"
-            },
-            "require-dev": {
-                "doctrine/instantiator": "^1.1",
-                "guzzlehttp/psr7": "^1.4",
-                "nyholm/psr7": "^1.2",
-                "phpspec/phpspec": "^5.1 || ^6.3 || ^7.1",
-                "phpspec/prophecy": "^1.10.2",
-                "phpunit/phpunit": "^7.5.20 || ^8.5.33 || ^9.6.7"
-            },
-            "suggest": {
-                "ext-json": "To detect JSON responses with the ContentTypePlugin",
-                "ext-libxml": "To detect XML responses with the ContentTypePlugin",
-                "php-http/cache-plugin": "PSR-6 Cache plugin",
-                "php-http/logger-plugin": "PSR-3 Logger plugin",
-                "php-http/stopwatch-plugin": "Symfony Stopwatch plugin"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Http\\Client\\Common\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com"
-                }
-            ],
-            "description": "Common HTTP Client implementations and tools for HTTPlug",
-            "homepage": "http://httplug.io",
-            "keywords": [
-                "client",
-                "common",
-                "http",
-                "httplug"
-            ],
-            "support": {
-                "issues": "https://github.com/php-http/client-common/issues",
-                "source": "https://github.com/php-http/client-common/tree/2.7.2"
-            },
-            "time": "2024-09-24T06:21:48+00:00"
-        },
-        {
-            "name": "php-http/discovery",
-            "version": "1.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/discovery.git",
-                "reference": "82fe4c73ef3363caed49ff8dd1539ba06044910d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/82fe4c73ef3363caed49ff8dd1539ba06044910d",
-                "reference": "82fe4c73ef3363caed49ff8dd1539ba06044910d",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.0|^2.0",
-                "php": "^7.1 || ^8.0"
-            },
-            "conflict": {
-                "nyholm/psr7": "<1.0",
-                "zendframework/zend-diactoros": "*"
-            },
-            "provide": {
-                "php-http/async-client-implementation": "*",
-                "php-http/client-implementation": "*",
-                "psr/http-client-implementation": "*",
-                "psr/http-factory-implementation": "*",
-                "psr/http-message-implementation": "*"
-            },
-            "require-dev": {
-                "composer/composer": "^1.0.2|^2.0",
-                "graham-campbell/phpspec-skip-example-extension": "^5.0",
-                "php-http/httplug": "^1.0 || ^2.0",
-                "php-http/message-factory": "^1.0",
-                "phpspec/phpspec": "^5.1 || ^6.1 || ^7.3",
-                "sebastian/comparator": "^3.0.5 || ^4.0.8",
-                "symfony/phpunit-bridge": "^6.4.4 || ^7.0.1"
-            },
-            "default-branch": true,
-            "type": "composer-plugin",
-            "extra": {
-                "class": "Http\\Discovery\\Composer\\Plugin",
-                "plugin-optional": true
-            },
-            "autoload": {
-                "psr-4": {
-                    "Http\\Discovery\\": "src/"
-                },
-                "exclude-from-classmap": [
-                    "src/Composer/Plugin.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com"
-                }
-            ],
-            "description": "Finds and installs PSR-7, PSR-17, PSR-18 and HTTPlug implementations",
-            "homepage": "http://php-http.org",
-            "keywords": [
-                "adapter",
-                "client",
-                "discovery",
-                "factory",
-                "http",
-                "message",
-                "psr17",
-                "psr7"
-            ],
-            "support": {
-                "issues": "https://github.com/php-http/discovery/issues",
-                "source": "https://github.com/php-http/discovery/tree/1.20.0"
-            },
-            "time": "2024-10-02T11:20:13+00:00"
-        },
-        {
-            "name": "php-http/httplug",
-            "version": "2.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/httplug.git",
-                "reference": "37819ce3c78ed2e7d001de68b38e697bbd525f89"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/httplug/zipball/37819ce3c78ed2e7d001de68b38e697bbd525f89",
-                "reference": "37819ce3c78ed2e7d001de68b38e697bbd525f89",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1 || ^8.0",
-                "php-http/promise": "^1.1",
-                "psr/http-client": "^1.0",
-                "psr/http-message": "^1.0 || ^2.0"
-            },
-            "require-dev": {
-                "friends-of-phpspec/phpspec-code-coverage": "^4.1 || ^5.0 || ^6.0",
-                "phpspec/phpspec": "^5.1 || ^6.0 || ^7.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Http\\Client\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Eric GELOEN",
-                    "email": "geloen.eric@gmail.com"
-                },
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com",
-                    "homepage": "https://sagikazarmark.hu"
-                }
-            ],
-            "description": "HTTPlug, the HTTP client abstraction for PHP",
-            "homepage": "http://httplug.io",
-            "keywords": [
-                "client",
-                "http"
-            ],
-            "support": {
-                "issues": "https://github.com/php-http/httplug/issues",
-                "source": "https://github.com/php-http/httplug/tree/2.x"
-            },
-            "time": "2024-09-23T13:25:15+00:00"
-        },
-        {
-            "name": "php-http/message",
-            "version": "1.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/message.git",
-                "reference": "06dd5e8562f84e641bf929bfe699ee0f5ce8080a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/message/zipball/06dd5e8562f84e641bf929bfe699ee0f5ce8080a",
-                "reference": "06dd5e8562f84e641bf929bfe699ee0f5ce8080a",
-                "shasum": ""
-            },
-            "require": {
-                "clue/stream-filter": "^1.5",
-                "php": "^7.2 || ^8.0",
-                "psr/http-message": "^1.1 || ^2.0"
-            },
-            "provide": {
-                "php-http/message-factory-implementation": "1.0"
-            },
-            "require-dev": {
-                "ergebnis/composer-normalize": "^2.6",
-                "ext-zlib": "*",
-                "guzzlehttp/psr7": "^1.0 || ^2.0",
-                "laminas/laminas-diactoros": "^2.0 || ^3.0",
-                "php-http/message-factory": "^1.0.2",
-                "phpspec/phpspec": "^5.1 || ^6.3 || ^7.1",
-                "slim/slim": "^3.0"
-            },
-            "suggest": {
-                "ext-zlib": "Used with compressor/decompressor streams",
-                "guzzlehttp/psr7": "Used with Guzzle PSR-7 Factories",
-                "laminas/laminas-diactoros": "Used with Diactoros Factories",
-                "slim/slim": "Used with Slim Framework PSR-7 implementation"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/filters.php"
-                ],
-                "psr-4": {
-                    "Http\\Message\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com"
-                }
-            ],
-            "description": "HTTP Message related tools",
-            "homepage": "http://php-http.org",
-            "keywords": [
-                "http",
-                "message",
-                "psr-7"
-            ],
-            "support": {
-                "issues": "https://github.com/php-http/message/issues",
-                "source": "https://github.com/php-http/message/tree/1.16.2"
-            },
-            "time": "2024-10-02T11:34:13+00:00"
-        },
-        {
-            "name": "php-http/message-factory",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/message-factory.git",
-                "reference": "4d8778e1c7d405cbb471574821c1ff5b68cc8f57"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/message-factory/zipball/4d8778e1c7d405cbb471574821c1ff5b68cc8f57",
-                "reference": "4d8778e1c7d405cbb471574821c1ff5b68cc8f57",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4",
-                "psr/http-message": "^1.0 || ^2.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Http\\Message\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com"
-                }
-            ],
-            "description": "Factory interfaces for PSR-7 HTTP Message",
-            "homepage": "http://php-http.org",
-            "keywords": [
-                "factory",
-                "http",
-                "message",
-                "stream",
-                "uri"
-            ],
-            "support": {
-                "issues": "https://github.com/php-http/message-factory/issues",
-                "source": "https://github.com/php-http/message-factory/tree/1.1.0"
-            },
-            "abandoned": "psr/http-factory",
-            "time": "2023-04-14T14:16:17+00:00"
-        },
-        {
-            "name": "php-http/promise",
-            "version": "1.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-http/promise.git",
-                "reference": "12e12043e9ed9ddc6ea8481593fb230150227416"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-http/promise/zipball/12e12043e9ed9ddc6ea8481593fb230150227416",
-                "reference": "12e12043e9ed9ddc6ea8481593fb230150227416",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1 || ^8.0"
-            },
-            "require-dev": {
-                "friends-of-phpspec/phpspec-code-coverage": "^4.3.2 || ^6.3",
-                "phpspec/phpspec": "^5.1.2 || ^6.2 || ^7.4"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Http\\Promise\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Joel Wurtz",
-                    "email": "joel.wurtz@gmail.com"
-                },
-                {
-                    "name": "Márk Sági-Kazár",
-                    "email": "mark.sagikazar@gmail.com"
-                }
-            ],
-            "description": "Promise used for asynchronous HTTP requests",
-            "homepage": "http://httplug.io",
-            "keywords": [
-                "promise"
-            ],
-            "support": {
-                "issues": "https://github.com/php-http/promise/issues",
-                "source": "https://github.com/php-http/promise/tree/1.x"
-            },
-            "time": "2024-10-02T11:48:29+00:00"
+            "time": "2025-01-02T16:25:08+00:00"
         },
         {
             "name": "php-unoconv/php-unoconv",
@@ -3777,22 +3277,20 @@
         },
         {
             "name": "sentry/sdk",
-            "version": "3.x-dev",
+            "version": "4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php-sdk.git",
-                "reference": "2c2591b5ad870df28760e26744b31a33bfa9af9a"
+                "reference": "fcbca864e8d1dc712f3ecfaa95ea89d024fb2e53"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/2c2591b5ad870df28760e26744b31a33bfa9af9a",
-                "reference": "2c2591b5ad870df28760e26744b31a33bfa9af9a",
+                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/fcbca864e8d1dc712f3ecfaa95ea89d024fb2e53",
+                "reference": "fcbca864e8d1dc712f3ecfaa95ea89d024fb2e53",
                 "shasum": ""
             },
             "require": {
-                "http-interop/http-factory-guzzle": "^1.0",
-                "sentry/sentry": "^3.22",
-                "symfony/http-client": "^4.3|^5.0|^6.0|^7.0"
+                "sentry/sentry": "^4.0"
             },
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
@@ -3805,7 +3303,7 @@
                     "email": "accounts@sentry.io"
                 }
             ],
-            "description": "This is a metapackage shipping sentry/sentry with a recommended HTTP client.",
+            "description": "This is a meta package of sentry/sentry. We recommend using sentry/sentry directly.",
             "homepage": "http://sentry.io",
             "keywords": [
                 "crash-reporting",
@@ -3818,7 +3316,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php-sdk/issues",
-                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.x"
+                "source": "https://github.com/getsentry/sentry-php-sdk/tree/4.0.0"
             },
             "funding": [
                 {
@@ -3830,57 +3328,44 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-12-04T11:10:59+00:00"
+            "time": "2023-11-06T10:23:19+00:00"
         },
         {
             "name": "sentry/sentry",
-            "version": "3.x-dev",
+            "version": "4.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php.git",
-                "reference": "67fb063484b6acd1c158f9c95fb696a1ee01eab8"
+                "reference": "2af937d47d8aadb8dab0b1d7b9557e495dd12856"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/67fb063484b6acd1c158f9c95fb696a1ee01eab8",
-                "reference": "67fb063484b6acd1c158f9c95fb696a1ee01eab8",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/2af937d47d8aadb8dab0b1d7b9557e495dd12856",
+                "reference": "2af937d47d8aadb8dab0b1d7b9557e495dd12856",
                 "shasum": ""
             },
             "require": {
+                "ext-curl": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
-                "guzzlehttp/promises": "^1.5.3|^2.0",
+                "guzzlehttp/psr7": "^1.8.4|^2.1.1",
                 "jean85/pretty-package-versions": "^1.5|^2.0.4",
                 "php": "^7.2|^8.0",
-                "php-http/async-client-implementation": "^1.0",
-                "php-http/client-common": "^1.5|^2.0",
-                "php-http/discovery": "^1.15",
-                "php-http/httplug": "^1.1|^2.0",
-                "php-http/message": "^1.5",
-                "php-http/message-factory": "^1.1",
-                "psr/http-factory": "^1.0",
-                "psr/http-factory-implementation": "^1.0",
                 "psr/log": "^1.0|^2.0|^3.0",
-                "symfony/options-resolver": "^3.4.43|^4.4.30|^5.0.11|^6.0|^7.0",
-                "symfony/polyfill-php80": "^1.17"
+                "symfony/options-resolver": "^4.4.30|^5.0.11|^6.0|^7.0"
             },
             "conflict": {
-                "php-http/client-common": "1.8.0",
                 "raven/raven": "*"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.19|3.4.*",
+                "friendsofphp/php-cs-fixer": "^3.4",
+                "guzzlehttp/promises": "^2.0.3",
                 "guzzlehttp/psr7": "^1.8.4|^2.1.1",
-                "http-interop/http-factory-guzzle": "^1.0",
                 "monolog/monolog": "^1.6|^2.0|^3.0",
-                "nikic/php-parser": "^4.10.3",
-                "php-http/mock-client": "^1.3",
                 "phpbench/phpbench": "^1.0",
-                "phpstan/extension-installer": "^1.0",
                 "phpstan/phpstan": "^1.3",
-                "phpstan/phpstan-phpunit": "^1.0",
-                "phpunit/phpunit": "^8.5.14|^9.4",
-                "symfony/phpunit-bridge": "^5.2|^6.0",
+                "phpunit/phpunit": "^8.5|^9.6",
+                "symfony/phpunit-bridge": "^5.2|^6.0|^7.0",
                 "vimeo/psalm": "^4.17"
             },
             "suggest": {
@@ -3905,7 +3390,7 @@
                     "email": "accounts@sentry.io"
                 }
             ],
-            "description": "A PHP SDK for Sentry (http://sentry.io)",
+            "description": "PHP SDK for Sentry (http://sentry.io)",
             "homepage": "http://sentry.io",
             "keywords": [
                 "crash-reporting",
@@ -3914,11 +3399,13 @@
                 "error-monitoring",
                 "log",
                 "logging",
-                "sentry"
+                "profiling",
+                "sentry",
+                "tracing"
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php/issues",
-                "source": "https://github.com/getsentry/sentry-php/tree/3.x"
+                "source": "https://github.com/getsentry/sentry-php/tree/4.10.0"
             },
             "funding": [
                 {
@@ -3930,7 +3417,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-11-13T12:11:08+00:00"
+            "time": "2024-11-06T07:44:19+00:00"
         },
         {
             "name": "smalot/pdfparser",
@@ -4194,180 +3681,6 @@
                 }
             ],
             "time": "2024-09-25T14:21:43+00:00"
-        },
-        {
-            "name": "symfony/http-client",
-            "version": "7.3.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/http-client.git",
-                "reference": "818c5c2f9ca18ea17f89fda962d0234080ac5405"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/818c5c2f9ca18ea17f89fda962d0234080ac5405",
-                "reference": "818c5c2f9ca18ea17f89fda962d0234080ac5405",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.2",
-                "psr/log": "^1|^2|^3",
-                "symfony/deprecation-contracts": "^2.5|^3",
-                "symfony/http-client-contracts": "~3.4.4|^3.5.2",
-                "symfony/service-contracts": "^2.5|^3"
-            },
-            "conflict": {
-                "amphp/amp": "<2.5",
-                "php-http/discovery": "<1.15",
-                "symfony/http-foundation": "<6.4"
-            },
-            "provide": {
-                "php-http/async-client-implementation": "*",
-                "php-http/client-implementation": "*",
-                "psr/http-client-implementation": "1.0",
-                "symfony/http-client-implementation": "3.0"
-            },
-            "require-dev": {
-                "amphp/http-client": "^4.2.1|^5.0",
-                "amphp/http-tunnel": "^1.0|^2.0",
-                "amphp/socket": "^1.1",
-                "guzzlehttp/promises": "^1.4|^2.0",
-                "nyholm/psr7": "^1.0",
-                "php-http/httplug": "^1.0|^2.0",
-                "psr/http-client": "^1.0",
-                "symfony/amphp-http-client-meta": "^1.0|^2.0",
-                "symfony/dependency-injection": "^6.4|^7.0",
-                "symfony/http-kernel": "^6.4|^7.0",
-                "symfony/messenger": "^6.4|^7.0",
-                "symfony/process": "^6.4|^7.0",
-                "symfony/rate-limiter": "^6.4|^7.0",
-                "symfony/stopwatch": "^6.4|^7.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\HttpClient\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Provides powerful methods to fetch HTTP resources synchronously or asynchronously",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "http"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/http-client/tree/7.3"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2025-01-28T15:52:51+00:00"
-        },
-        {
-            "name": "symfony/http-client-contracts",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/http-client-contracts.git",
-                "reference": "d8d46d0f605337624f8b28fc4acf346c5156533b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/d8d46d0f605337624f8b28fc4acf346c5156533b",
-                "reference": "d8d46d0f605337624f8b28fc4acf346c5156533b",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.1"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "thanks": {
-                    "url": "https://github.com/symfony/contracts",
-                    "name": "symfony/contracts"
-                },
-                "branch-alias": {
-                    "dev-main": "3.6-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Contracts\\HttpClient\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Test/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Generic abstractions related to HTTP clients",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "abstractions",
-                "contracts",
-                "decoupling",
-                "interfaces",
-                "interoperability",
-                "standards"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/http-client-contracts/tree/main"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-12-11T15:34:14+00:00"
         },
         {
             "name": "symfony/options-resolver",
@@ -5419,16 +4732,17 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "buggedcom/phpvideotoolkit": 20,
-        "google/apiclient": 20,
-        "packbackbooks/lti-1p3-tool": 20,
-        "php-unoconv/php-unoconv": 20,
         "smalot/pdfparser": 20,
-        "umn-community-shib/basic-authenticator": 20
+        "buggedcom/phpvideotoolkit": 20,
+        "umn-community-shib/basic-authenticator": 20,
+        "google/apiclient": 20,
+        "php-unoconv/php-unoconv": 20,
+        "packbackbooks/lti-1p3-tool": 20,
+        "pda/pheanstalk": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
 }

@@ -1,6 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once(APPPATH.'controllers/Transcoder.php');
 
 class MovieHandler extends FileHandlerBase {
 
@@ -23,7 +22,6 @@ class MovieHandler extends FileHandlerBase {
 	{
 		parent::__construct();
 		//Do your magic here
-		$this->load->library("TranscoderCommands");
 		$this->load->library("TranscoderCommandsAWS");
 	}
 
@@ -83,53 +81,8 @@ class MovieHandler extends FileHandlerBase {
 	}
 
 
-	public function waitForCompletion($args) {
-		if(!$args['jobId']) {
-			return JOB_FAILED;
-		}
-
-		$jobId = $args['jobId'];
-
-		$this->postponeTime = 60;
-
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-		$response = $transcodeCommands->checkCompletion($jobId);
-		if($response == "working") {
-			return JOB_POSTPONE;
-		}
-		if($response == "error") {
-			$this->logging->processingInfo("job", "movieHandler", "Error returned from transcoder", $this->getObjectId(), $jobId);
-			return JOB_FAILED;
-		}
-
-		if($args['previousTask'] == "metadata") {
-			$this->queueTask(2, [], false);
-		}
-		elseif($args['previousTask'] == "completeDerivatives") {
-			return JOB_SUCCESS;
-		}
-		elseif($args['previousTask'] == "createDerivatives") {
-			if(isset($args['pendingDerivatives']) && count($args['pendingDerivatives'])>0) {
-
-				$this->queueTask(2, ["pendingDerivatives"=>$args['pendingDerivatives']], false);
-			}
-			else {
-				$this->queueTask(4, [], false);
-			}
-
-		}
-
-		return JOB_SUCCESS;
-
-	}
-
 	public function getTranscodeCommand() {
-		if($this->config->item('fileQueueingMethod') == 'beanstalkd') {
-			$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-		}
-		else {
-			$transcodeCommands = new TranscoderCommandsAWS($this->pheanstalk, $this->videoTTR, $this);
-		}
+		$transcodeCommands = new TranscoderCommandsAWS($this);
 		return $transcodeCommands;
 	}
 

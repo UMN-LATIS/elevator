@@ -88,7 +88,6 @@ class ObjHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
 			$this->logging->processingInfo("createDerivative","objHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
 			return JOB_FAILED;
@@ -207,7 +206,6 @@ class ObjHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		$sourceFileLocalName = $sourceFileContainer->getPathToLocalFile() . ".ply";
 		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileLocalName);
@@ -312,7 +310,6 @@ class ObjHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileContainer->getPathToLocalFile() . ".ply");
 
@@ -327,7 +324,6 @@ class ObjHandler extends FileHandlerBase {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			$this->pheanstalk->touch($this->job);
 			echo ".";
 		}
 		unlink($sourceFileContainer->getPathToLocalFile() . ".ply");
@@ -406,7 +402,6 @@ class ObjHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		$sourceFileLocalName = $sourceFileContainer->getPathToLocalFile() . ".ply";
 		rename($sourceFileContainer->getPathToLocalFile(), $sourceFileLocalName);
@@ -485,7 +480,6 @@ class ObjHandler extends FileHandlerBase {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			$this->pheanstalk->touch($this->job);
 			echo ".";
 		}
 		return new FileContainer($dest);

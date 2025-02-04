@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Collection
 {
+
+    /** colin modification for deprecation warning */
+    public $previewImageHandler = null;
+
     /**
      * @var string
      */
@@ -425,7 +429,7 @@ class Collection
      * @param \Entity\Collection $parent
      * @return Collection
      */
-    public function setParent(\Entity\Collection $parent = null)
+    public function setParent(? \Entity\Collection $parent = null)
     {
         $this->parent = $parent;
 

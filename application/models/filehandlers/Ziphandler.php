@@ -60,8 +60,6 @@ class ZipHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
-
 		$allZipHandlers = $this->getSubclassesOfParentClass(get_class($this));
 		$fileList = $this->listContentsOfZip($this->sourceFile->getPathToLocalFile());
 		$handler = null;

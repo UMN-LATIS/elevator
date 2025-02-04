@@ -30,7 +30,6 @@
     "monolog/monolog": "2.9.1",
     "doctrine/dbal": "^2.0",
     "doctrine/orm": "2.20.1",
-    "pda/pheanstalk": "~3.1.0",
     "elasticsearch/elasticsearch": "~5.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
@@ -40,10 +39,11 @@
     "google/apiclient": "dev-disableCache-merge-84",
     "php-unoconv/php-unoconv": "dev-master",
     "aws/aws-sdk-php": "^3.151",
-    "sentry/sdk": "^3.1",
+    "sentry/sdk": "^4.0",
     "vlucas/phpdotenv": "^5.6",
     "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2",
-    "doctrine/cache": "^1.13.0"
+    "doctrine/cache": "^1.13.0",
+    "pda/pheanstalk": "dev-master"
   },
   "minimum-stability": "dev",
   "config": {

@@ -74,7 +74,7 @@ class RecentDrawer
      * @param \Entity\User $user
      * @return RecentDrawer
      */
-    public function setUser(\Entity\User $user = null)
+    public function setUser(?\Entity\User $user = null)
     {
         $this->user = $user;
 
@@ -97,7 +97,7 @@ class RecentDrawer
      * @param \Entity\Drawer $drawer
      * @return RecentDrawer
      */
-    public function setDrawer(\Entity\Drawer $drawer = null)
+    public function setDrawer(?\Entity\Drawer $drawer = null)
     {
         $this->drawer = $drawer;
 
@@ -120,7 +120,7 @@ class RecentDrawer
      * @param \Entity\Instance $instance
      * @return RecentDrawer
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 

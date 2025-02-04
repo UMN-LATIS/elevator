@@ -12,6 +12,7 @@ class S3_model extends CI_Model {
 	private $key;
 	public $bucket;
 	public $sessionToken = null;
+	public $transferCount = 0;
 
 	public function __construct($collection=null)
 	{

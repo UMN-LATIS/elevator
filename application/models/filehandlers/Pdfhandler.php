@@ -93,7 +93,6 @@ class PDFHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
 
 		$this->load->library("PDFHelper");
 
@@ -137,7 +136,6 @@ class PDFHandler extends FileHandlerBase {
 
 			if(!$this->sourceFile->isLocal()) {
 				if($this->sourceFile->makeLocal()) {
-					$this->pheanstalk->touch($this->job);
 				}
 				else {
 					return JOB_FAILED;
@@ -200,7 +198,6 @@ class PDFHandler extends FileHandlerBase {
 
 		if(!$this->sourceFile->isLocal()) {
 			if($this->sourceFile->makeLocal()) {
-				$this->pheanstalk->touch($this->job);
 			}
 			else {
 				return JOB_FAILED;
@@ -300,7 +297,6 @@ class PDFHandler extends FileHandlerBase {
 
 		if(!$targetFile->isLocal()) {
 			if($targetFile->makeLocal()) {
-				$this->pheanstalk->touch($this->job);
 			}
 			else {
 				return JOB_FAILED;

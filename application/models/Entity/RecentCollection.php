@@ -74,7 +74,7 @@ class RecentCollection
      * @param \Entity\User $user
      * @return RecentCollection
      */
-    public function setUser(\Entity\User $user = null)
+    public function setUser(?\Entity\User $user = null)
     {
         $this->user = $user;
 
@@ -97,7 +97,7 @@ class RecentCollection
      * @param \Entity\Collection $collection
      * @return RecentCollection
      */
-    public function setCollection(\Entity\Collection $collection = null)
+    public function setCollection(?\Entity\Collection $collection = null)
     {
         $this->collection = $collection;
 
@@ -120,7 +120,7 @@ class RecentCollection
      * @param \Entity\Instance $instance
      * @return RecentCollection
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 

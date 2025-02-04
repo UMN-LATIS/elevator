@@ -209,7 +209,7 @@ class AssetCache
      *
      * @return AssetCache
      */
-    public function setAsset(\Entity\Asset $asset = null)
+    public function setAsset(? \Entity\Asset $asset = null)
     {
         $this->asset = $asset;
 

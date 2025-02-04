@@ -888,7 +888,8 @@ class AssetManager extends Admin_Controller {
 			return;
 		}
 
-		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+		$client = $this->queue->getClient();
+
 				
 		$targetArray = null;
 		$parentObject = null;
@@ -1130,8 +1131,8 @@ class AssetManager extends Admin_Controller {
 			}
 
 			if(count($uploadItems)>0) {
-				$newTask = json_encode(["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems]);
-				$jobId= $pheanstalk->useTube('urlImport')->put($newTask, NULL, 1, 900);
+				$newTask = ["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems];
+				$client->push('urlImport', 'urlImport', $newTask);
 			}
 
 			$cacheArray['successArray'][] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $assetModel->getObjectId()) ."\">" . $assetModel->getObjectId() . "</A>)";

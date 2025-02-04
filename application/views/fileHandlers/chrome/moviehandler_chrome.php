@@ -48,7 +48,7 @@ $fileInfo["File Type"] = "Movie";
 $fileInfo["Original Name"] = $fileObject->sourceFile->originalFilename;
 $fileInfo["File Size"] = byte_format($fileObject->sourceFile->metadata["filesize"]);
 $fileInfo["Video Size"] = $fileObject->sourceFile->metadata["width"] . "x" . $fileObject->sourceFile->metadata["height"];
-$fileInfo["Duration"] = gmdate("H:i:s", $fileObject->sourceFile->metadata["duration"]);
+$fileInfo["Duration"] = gmdate("H:i:s", (int)$fileObject->sourceFile->metadata["duration"]);
 
 if($widgetObject) {
   if($widgetObject->fileDescription) {

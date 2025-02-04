@@ -313,7 +313,7 @@ class Asset
      *
      * @return Asset
      */
-    public function setRevisionSource(\Entity\Asset $revisionSource = null)
+    public function setRevisionSource(? \Entity\Asset $revisionSource = null)
     {
         $this->revisionSource = $revisionSource;
 
@@ -574,7 +574,7 @@ class Asset
      *
      * @return Asset
      */
-    public function setAssetCache(\Entity\AssetCache $assetCache = null)
+    public function setAssetCache(? \Entity\AssetCache $assetCache = null)
     {
         $this->assetCache = $assetCache;
 
@@ -633,7 +633,7 @@ class Asset
      *
      * @return Asset
      */
-    public function setCsvImport(\Entity\CSVBatch $csvImport = null)
+    public function setCsvImport(? \Entity\CSVBatch $csvImport = null)
     {
         $this->csvImport = $csvImport;
 

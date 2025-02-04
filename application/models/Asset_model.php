@@ -868,10 +868,13 @@ class Asset_model extends CI_Model {
         			if($oldCollection->getBucket() != $newCollection->getBucket()) {
         				$this->assetObject->setCollectionId($oldAsset->getGlobalValue("collectionId"));
         				$this->assetObject->setCollectionMigration(true);
+						$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+						$tube = new Pheanstalk\Values\TubeName('collectionMigration');
+						// run a 15 minute TTR because zipping all these could take a while
+						$pheanstalk->useTube($tube);
 
-						$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
 						$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId(), "targetCollection"=>$this->getGlobalValue("collectionId")]);
-						$jobId= $pheanstalk->useTube('collectionMigration')->put($newTask, NULL, 1, 900);
+						$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1, 900);
         			}
         			else {
         				// collection is changing but bucket isn't, just update the handlers
@@ -920,9 +923,11 @@ class Asset_model extends CI_Model {
 		
 
 		if($reindex && !$noIndex) {
-			$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
+			$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+			$tube = new Pheanstalk\Values\TubeName('reindex');
+			$pheanstalk->useTube($tube);
 			$newTask = json_encode(["objectId"=>$this->getObjectId(),"instance"=>$this->instance->getId()]);
-			$jobId= $pheanstalk->useTube('reindex')->put($newTask, NULL, 1);
+			$pheanstalk->put($newTask);
 		}
 
 		if($noIndex) {

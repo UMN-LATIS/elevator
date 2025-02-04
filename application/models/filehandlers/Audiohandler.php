@@ -1,6 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-require_once(APPPATH.'controllers/Transcoder.php');
 
 class AudioHandler extends FileHandlerBase {
 
@@ -24,7 +23,6 @@ class AudioHandler extends FileHandlerBase {
 	{
 		parent::__construct();
 		//Do your magic here
-		$this->load->library("TranscoderCommands");
 		$this->load->library("TranscoderCommandsAWS");
 	}
 
@@ -104,59 +102,6 @@ class AudioHandler extends FileHandlerBase {
 	}
 
 
-
-	public function waitForCompletion($args) {
-		if(!$args['jobId']) {
-			return JOB_FAILED;
-		}
-
-		$jobId = $args['jobId'];
-		$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-
-
-		if(is_array($jobId)) {
-			foreach($jobId as $singleJobId) {
-				$response = $transcodeCommands->checkCompletion($singleJobId);
-				if($response == "working") {
-					return JOB_POSTPONE;
-				}
-				if($response == "error") {
-					$this->logging->processingInfo("create derivatives", "audioHandler", "Error returned from transcoder", $this->getObjectId(), $singleJobId);
-					return JOB_FAILED;
-				}
-			}
-		}
-		else {
-			$response = $transcodeCommands->checkCompletion($jobId);
-			if($response == "working") {
-				return JOB_POSTPONE;
-			}
-			if($response == "error") {
-				$this->logging->processingInfo("extract metadata", "audioHandler", "Error returned from transcoder", $this->getObjectId(), $jobId);
-				return JOB_FAILED;
-			}
-		}
-
-		if($args['previousTask'] == "metadata") {
-			$this->queueTask(2, []);
-		}
-		elseif($args['previousTask'] == "createDerivatives") {
-			if(isset($args['pendingDerivatives']) && count($args['pendingDerivatives'])>0) {
-
-				$this->queueTask(2, ["pendingDerivatives"=>$args['pendingDerivatives']], false);
-			}
-			else {
-				$this->queueTask(4, [], false);
-			}
-
-		}
-		else {
-			$this->queueTask(6, []);
-		}
-		return JOB_SUCCESS;
-
-	}
-
 	public function extractWaveform($args) {
 
 		$jobId = $this->getTranscodeCommand()->extractWaveform($this->getObjectId());
@@ -168,12 +113,8 @@ class AudioHandler extends FileHandlerBase {
 	}
 
 	public function getTranscodeCommand() {
-		if($this->config->item('fileQueueingMethod') == 'beanstalkd') {
-			$transcodeCommands = new TranscoderCommands($this->pheanstalk, $this->videoTTR);
-		}
-		else {
-			$transcodeCommands = new TranscoderCommandsAWS($this->pheanstalk, $this->videoTTR, $this);
-		}
+		$transcodeCommands = new TranscoderCommandsAWS($this);
+		
 		return $transcodeCommands;
 	}
 

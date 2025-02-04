@@ -23,7 +23,7 @@ $visible = $console->getTubeStatVisible();
             <?php foreach($fields as $key=>$item):
             $markHidden = !in_array($key, $visible) ? ' class="hide"' : '';
             ?>
-            <td<?php echo $markHidden?>><?php echo isset($values[$key])?$values[$key]:''?></td>
+            <td<?php echo $markHidden?>><?php echo isset($values->$key)?$values->$key:''?></td>
             <?php endforeach;?>
         </tr>
             <?php endforeach?>
@@ -103,7 +103,7 @@ $visible = $console->getTubeStatVisible();
                 <?php foreach($job['stats'] as $key=>$value):?>
                 <tr>
                     <td><?php echo $key?></td>
-                    <td><?php echo $value?></td>
+                    <td><?php echo is_string($value)?$value:""?></td>
                 </tr>
                 <?php endforeach?>
             </tbody>

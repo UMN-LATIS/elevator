@@ -15,7 +15,7 @@
                     <?$this->load->view("beanstalk/allTubes", ["console"=>$console])?>
                 </div>
                 <div id="idAllTubesCopy" style="display:none"></div>
-            <?php elseif (!in_array($tube, $tubes)): ?>
+            <?php elseif (!in_array($tube, (array)$tubes)): ?>
                 <?php echo sprintf('Tube "%s" not found or it is empty', $tube) ?>
                 <br><br><a href="./?server=<?php echo $server ?>"> back </a>
             <?php else: ?>

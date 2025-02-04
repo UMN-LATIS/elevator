@@ -6,6 +6,7 @@ class Widget_contents_base extends CI_Model {
 	public $isPrimary = FALSE;
 	public $parentObjectId = NULL;
 	public $parentWidget = NULL;
+	public $parentObject = NULL;
 
 	public function __construct()
 		{

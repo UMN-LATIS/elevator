@@ -46,7 +46,7 @@ class CollectionPermission
      * @param \Entity\InstanceGroup $group
      * @return CollectionPermission
      */
-    public function setGroup(\Entity\InstanceGroup $group = null)
+    public function setGroup(? \Entity\InstanceGroup $group = null)
     {
         $this->group = $group;
 
@@ -69,7 +69,7 @@ class CollectionPermission
      * @param \Entity\Collection $collection
      * @return CollectionPermission
      */
-    public function setCollection(\Entity\Collection $collection = null)
+    public function setCollection(? \Entity\Collection $collection = null)
     {
         $this->collection = $collection;
 
@@ -92,7 +92,7 @@ class CollectionPermission
      * @param \Entity\Permission $permission
      * @return CollectionPermission
      */
-    public function setPermission(\Entity\Permission $permission = null)
+    public function setPermission(? \Entity\Permission $permission = null)
     {
         $this->permission = $permission;
 

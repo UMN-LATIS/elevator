@@ -101,8 +101,6 @@ class ZipObjHandler extends ZipHandler {
 			return JOB_FAILED;
 		}
 
-		$this->pheanstalk->touch($this->job);
-
 		$zip = new ZipArchive;
 		$res = $zip->open($this->sourceFile->getPathToLocalFile());
 
@@ -277,7 +275,6 @@ class ZipObjHandler extends ZipHandler {
 
 		$objHandler = new ObjHandler;
 		$objHandler->job = $this->job;
-		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
 
 		$result = $objHandler->createThumbInternal($this->derivatives['ply'], $args);
@@ -300,7 +297,6 @@ class ZipObjHandler extends ZipHandler {
 	public function createNXS($args) {
 		$objHandler = new ObjHandler;
 		$objHandler->job = $this->job;
-		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
 		
 
@@ -326,7 +322,6 @@ class ZipObjHandler extends ZipHandler {
 	public function createSTL($args) {
 		$objHandler = new ObjHandler;
 		$objHandler->job = $this->job;
-		$objHandler->pheanstalk = $this->pheanstalk;
 		$objHandler->sourceFile = $this->sourceFile;
 
 		$result = $objHandler->createSTLInternal($this->derivatives['ply'], $args);

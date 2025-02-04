@@ -6,19 +6,14 @@ class TranscoderCommandsAWS {
     private $transcoderModel;
 	private $fileHandler;
 
-	public function __construct($pheanstalk = null, $videoTTR = null, $fileHandler = null) {
+	public function __construct($fileHandler = null) {
 
-		if($pheanstalk) {
-			$this->pheanstalk = $pheanstalk;
-			$this->videoTTR = $videoTTR;
-		}
 		$CI =& get_instance();
         
 		if($fileHandler) {
 			$CI->load->model("transcoder_model");
         	$this->transcoderModel = new Transcoder_Model();
         	$this->transcoderModel->setFileHandler($fileHandler);
-			$this->transcoderModel->job = new \Pheanstalk\Job(1, []);
 		}
 	}
 

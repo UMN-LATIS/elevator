@@ -124,10 +124,11 @@ class Drawers extends Instance_Controller {
 			"instance" => $this->instance->getId()
 		]);
 
-		$pheanstalk = new Pheanstalk\Pheanstalk($this->config->item("beanstalkd"));
-
+		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+		$tube = new Pheanstalk\Values\TubeName('archiveTube');
 		// run a 15 minute TTR because zipping all these could take a while
-		$jobId = $pheanstalk->useTube('archiveTube')->put($newTask, NULL, 1, 900);
+		$pheanstalk->useTube($tube);
+		$jobId = $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1, 900);
 
 		if ($returnJSON) {
 			return render_json(["status" => "accepted", "jobId" => $jobId]);

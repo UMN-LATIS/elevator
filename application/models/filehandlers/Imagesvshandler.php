@@ -91,10 +91,6 @@ class ImageSvsHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
-
-
-		$this->pheanstalk->touch($this->job);
-
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
 			return JOB_FAILED;
 		}
@@ -157,7 +153,6 @@ class ImageSvsHandler extends FileHandlerBase {
 		$fileContainer = new FileContainer($this->swapLocalForPNG());
 
 		foreach($args as $key=>$derivativeSetting) {
-			$this->pheanstalk->touch($this->job);
 			if(!is_numeric($key)) {
 				continue;
 			}
@@ -166,7 +161,6 @@ class ImageSvsHandler extends FileHandlerBase {
 			$height = $derivativeSetting['height'];
 
 
-			$this->pheanstalk->touch($this->job);
 
 
 
@@ -229,8 +223,6 @@ class ImageSvsHandler extends FileHandlerBase {
 		}
 
 		$derivativeType = "svs";
-
-		$this->pheanstalk->touch($this->job);
 
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
 			$this->logging->processingInfo("createDerivative","imageSVSHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
