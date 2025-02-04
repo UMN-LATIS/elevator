@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "887c715b5276eb47c068ed50ff4610dd",
+    "content-hash": "a0892a814b4a64bd31e44ac0002ac0a7",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -2349,6 +2349,69 @@
             "time": "2024-09-04T18:46:31+00:00"
         },
         {
+            "name": "onelogin/php-saml",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SAML-Toolkits/php-saml.git",
+                "reference": "c89d78c4aa398767cf9775d9e32d445e64213425"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SAML-Toolkits/php-saml/zipball/c89d78c4aa398767cf9775d9e32d445e64213425",
+                "reference": "c89d78c4aa398767cf9775d9e32d445e64213425",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-dom": "*",
+                "ext-mcrypt": "*",
+                "ext-openssl": "*",
+                "ext-zlib": "*",
+                "php": ">=5.3.2 <7.2"
+            },
+            "require-dev": {
+                "pdepend/pdepend": "1.1.0",
+                "phploc/phploc": "*",
+                "phpunit/phpunit": "^4.8",
+                "satooshi/php-coveralls": "1.0.1",
+                "sebastian/phpcpd": "*",
+                "squizlabs/php_codesniffer": "2.9.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "extlib/xmlseclibs",
+                    "lib/Saml",
+                    "lib/Saml2"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHP SAML Toolkit",
+            "homepage": "https://developers.onelogin.com/saml/php",
+            "keywords": [
+                "SAML2",
+                "onelogin",
+                "saml"
+            ],
+            "support": {
+                "email": "sixto.garcia@onelogin.com",
+                "issues": "https://github.com/onelogin/php-saml/issues",
+                "source": "https://github.com/onelogin/php-saml/"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/SAML-Toolkits",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-01-19T12:50:34+00:00"
+        },
+        {
             "name": "packbackbooks/lti-1p3-tool",
             "version": "dev-upstream-merge-2",
             "source": {
@@ -4606,43 +4669,6 @@
             "time": "2022-07-26T14:15:03+00:00"
         },
         {
-            "name": "umn-community-shib/basic-authenticator",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/UMNLibraries/umn-shib-php.git",
-                "reference": "4e2de359e13df1a456858fcb5afd8cb8518863a1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/UMNLibraries/umn-shib-php/zipball/4e2de359e13df1a456858fcb5afd8cb8518863a1",
-                "reference": "4e2de359e13df1a456858fcb5afd8cb8518863a1",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "UMNShib\\Basic\\": ""
-                }
-            },
-            "authors": [
-                {
-                    "name": "Michael Berkowski",
-                    "email": "mjb@umn.edu"
-                }
-            ],
-            "description": "A PHP implementation of the UMN Community Shibboleth basic authentication API and supporting utilities",
-            "support": {
-                "source": "https://github.com/UMNLibraries/umn-shib-php/tree/master",
-                "issues": "https://github.com/UMNLibraries/umn-shib-php/issues"
-            },
-            "time": "2017-05-01T16:04:08+00:00"
-        },
-        {
             "name": "vlucas/phpdotenv",
             "version": "dev-master",
             "source": {
@@ -4734,11 +4760,11 @@
     "stability-flags": {
         "smalot/pdfparser": 20,
         "buggedcom/phpvideotoolkit": 20,
-        "umn-community-shib/basic-authenticator": 20,
         "google/apiclient": 20,
         "php-unoconv/php-unoconv": 20,
         "packbackbooks/lti-1p3-tool": 20,
-        "pda/pheanstalk": 20
+        "pda/pheanstalk": 20,
+        "onelogin/php-saml": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

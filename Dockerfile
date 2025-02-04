@@ -27,6 +27,7 @@ ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 
 COPY . /var/www/html/
 WORKDIR /var/www/html
+RUN mkdir -p /var/www/html/application/models/Proxies
 RUN chmod -R 777 /var/www/html/application/models/Proxies
 # append "short_open_tag" to php.ini
 COPY docker/php.ini "$PHP_INI_DIR/php.ini"
