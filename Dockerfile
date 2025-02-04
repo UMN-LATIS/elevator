@@ -7,7 +7,7 @@ RUN docker-php-ext-install pgsql pdo_pgsql pdo zip
 # RUN export LDFLAGS="-lssl -lcurl"
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 # RUN a2enmod rewrite && a2enmod headers
-RUN docker-php-ext-install socketss
+RUN docker-php-ext-install sockets
 COPY docker/get-docker.sh /root/
 RUN chmod +x /root/get-docker.sh
 RUN /root/get-docker.sh
