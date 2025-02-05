@@ -1,19 +1,86 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Shibboleth extends CI_Controller {
+use OneLogin\Saml2\Auth as OneLogin_Saml2_Auth;
+use OneLogin\Saml2\Error as OneLogin_Saml2_Error;
+use OneLogin\Saml2\Utils;
+
+class Shibboleth extends MY_Controller {
 
 
-    /**
-     * Create the session, send the user away to the IDP
-     * for authentication.
-     */
-    public function login()
-    {
+    public function localSPLogin($passive=false) {
+        $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
+        $target=null;
+        if($this->input->get("target")) {
+            $target = urldecode($this->input->get("target"));
+        }
 
-        $targetURL = $this->config->item('shibbolethLogin');
-        return Redirect::to(url('/') . $this->getLoginURL()
-            . '?target=' . action('\\' . __CLASS__ . '@idpAuthenticate'));
+        $auth->login($target,array(),false,$passive=="true"?true:false,false,false);
     }
 
+    public function localSPLogout() {
+        $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
+        $auth->logout();
+    }
 
+    public function localSPACS() {
+        $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
+        Utils::setProxyVars(true);
+        $auth->processResponse();
+
+        $errors = $auth->getErrors();
+        if (!empty($errors)) {
+            return array('error' => $errors, 'last_error_reason' => $auth->getLastErrorReason());
+        }
+
+        if (!$auth->isAuthenticated()) {
+            return array('error' => 'Could not authenticate', 'last_error_reason' => $auth->getLastErrorReason());
+        }
+
+        
+        $shibAttributes = $auth->getAttributes();
+        foreach ($this->config->item('shib_user') as $local => $server) {
+
+            $map[$local] = $this->getServerVariable($server, $shibAttributes);
+        }
+
+        if (empty($map[$this->config->item('shib_authfield')])) {
+            return show_error('User map not found', 403);
+        }
+        $userAuthField = $map[$this->config->item('shib_authfield')];
+
+        $this->session->set_userdata('userAuthField', $userAuthField);
+        $this->session->set_userdata('userAttributesCache', $map);
+        if($_REQUEST['RelayState']) {
+            redirect($_REQUEST['RelayState']);
+        }
+        else {
+            redirect("/");
+        }
+
+    }
+
+    /**
+     * Wrapper function for getting server variables.
+     * Since Shibalike injects $_SERVER variables Laravel
+     * doesn't pick them up. So depending on if we are
+     * using the emulated IdP or a real one, we use the
+     * appropriate function.
+     */
+    private function getServerVariable($variableName, $shibAttributes=null)
+    {
+        
+        
+        if($shibAttributes) {
+            if(isset($shibAttributes[$variableName])) {
+                if(is_array($shibAttributes[$variableName])) {
+                    if(count($shibAttributes[$variableName])>1) {
+                        return $shibAttributes[$variableName];
+                    }
+                    return $shibAttributes[$variableName][0];
+                }
+                return $shibAttributes[$variableName];
+            }
+            return null;
+        }
+    }
 }

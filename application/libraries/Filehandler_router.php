@@ -8,10 +8,10 @@ class Filehandler_router {
 	{
 
 		$CI =& get_instance();
-
+		
 		$CI->load->helper("directory");
 		$CI->load->model("filehandlers/filehandlerbase");
-
+		
 		$fileHandlers = directory_map(APPPATH."models/filehandlers", TRUE);
 		sort($fileHandlers);
 		foreach($fileHandlers as $fileHandler) {

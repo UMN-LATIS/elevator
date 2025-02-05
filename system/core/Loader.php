@@ -1312,7 +1312,7 @@ class CI_Loader {
 		{
 			return;
 		}
-
+		
 		// Autoload packages
 		if (isset($autoload['packages']))
 		{
@@ -1339,13 +1339,13 @@ class CI_Loader {
 				$this->$type($autoload[$type]);
 			}
 		}
-
+		
 		// Autoload drivers
 		if (isset($autoload['drivers']))
 		{
 			$this->driver($autoload['drivers']);
 		}
-
+		
 		// Load libraries
 		if (isset($autoload['libraries']) && count($autoload['libraries']) > 0)
 		{
@@ -1359,12 +1359,13 @@ class CI_Loader {
 			// Load all other libraries
 			$this->library($autoload['libraries']);
 		}
-
+		
 		// Autoload models
 		if (isset($autoload['model']))
 		{
 			$this->model($autoload['model']);
 		}
+		
 	}
 
 	// --------------------------------------------------------------------

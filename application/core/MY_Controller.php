@@ -58,12 +58,11 @@ class MY_Controller extends CI_Controller {
 		$userId = $this->session->userdata('userId');
 		// HACK HACK HACK
 		// Close the session if we're not going to be doing a login, prevent session locks in case of hung urls
-		if($this->uri->segment(2) && strtolower($this->uri->segment(2)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "loginmanager") {
+		if($this->uri->segment(2) && strtolower($this->uri->segment(2)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "loginmanager" && strtolower($this->uri->segment(1)) !== "shibboleth") {
 			session_write_close();
 		}
 		if($userId) {
 			if ($this->config->item('enableCaching')) {
-				
 				$this->doctrineCache->setNamespace('userCache_');
 				if($storedObject = $this->doctrineCache->fetch($userId)) {
 					$user_model = $storedObject;
@@ -81,6 +80,7 @@ class MY_Controller extends CI_Controller {
 				else {
 					$this->user_model->loadUser($userId);
 					if($this->user_model->userLoaded) {
+						$this->doctrineCache->setNamespace('userCache_');
 						$this->doctrineCache->save($userId, ($this->user_model), 14400);
 					}
 					
@@ -109,6 +109,8 @@ class MY_Controller extends CI_Controller {
 				else {
 					$this->user_model->resolvePermissions();
 					$userId = session_id();
+					// reset our namespace in case the user model changed it
+					$this->doctrineCache->setNamespace('userCache_');
 					$this->doctrineCache->save($userId, ($this->user_model), 14400);
 				}
 			}

@@ -22,10 +22,10 @@ class UMNHelper extends AuthHelper
 		parent::__construct();
 	}
 
-	public function createUserFromRemote($userOverride=null) {
+	public function createUserFromRemote($userOverride=null, $map=null) {
 		$CI =& get_instance();
 		if(!$userOverride) {
-			$username = $this->getUserIdFromRemote();
+			$username = $this->getUserIdFromRemote($map);
 		}
 		else {
 			$username = $userOverride;
@@ -43,7 +43,7 @@ class UMNHelper extends AuthHelper
 		$user->setHasExpiry(false);
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
-		if($this->shibboleth->getAttributeValue("isGuest") == "Y") {
+		if($map["isGuest"] == "Y") {
 			$user->setUserType("Remote-Guest");
 		}
 		$user->setInstance($CI->instance);
@@ -54,8 +54,16 @@ class UMNHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUserIdFromRemote() {
-		return $this->shibboleth->getAttributeValue('umnDID');
+	public function getUserIdFromRemote($map=null) {
+		if(!$map) {
+			// try to load from the session and cache
+			$userAuthField = $this->CI->session->userdata('userAuthField');
+			return $userAuthField;
+		}
+		
+		if($map) {
+			return $map["umnDID"];
+		}
 	}
 
 	public function updateUserFromRemote($user) {
@@ -123,10 +131,11 @@ class UMNHelper extends AuthHelper
 		$studentStatus = array();
 		$deptCoursesTaught = array();
 		$employeeType = array();
-		
-		if ($this->shibboleth->hasSession()) {
+		$CI =& get_instance();
+		$map = $CI->session->userdata("userAttributesCache");
+		if (isset($map) && is_array($map)) {
 			
-			$emplId = $this->shibboleth->getAttributeValue('umnEmplId');
+			$emplId = $map['umnEmplId'];
 			if($emplId) {
 				$enrollment = $this->fetchBandaidResult("/api/enrollment/student/" . $emplId);
 				if(is_array($enrollment)) {
@@ -166,8 +175,8 @@ class UMNHelper extends AuthHelper
 				
 				
 				
-				if($this->shibboleth->getAttributeValue('umnRegSummary')) {
-					$regSummary = explode(";",$this->shibboleth->getAttributeValue('umnRegSummary'));
+				if($map['umnRegSummary']) {
+					$regSummary = explode(";",$map['umnRegSummary']);
 					foreach($regSummary as $studentCode) {
 						$studentStatusArray = explode(":", $studentCode);
 						if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
@@ -175,8 +184,8 @@ class UMNHelper extends AuthHelper
 						}
 					}	
 				}
-				if($this->shibboleth->getAttributeValue('eduPersonAffiliation')) {
-					$employeeType = explode(";",$this->shibboleth->getAttributeValue('eduPersonAffiliation'));
+				if($map['eduPersonAffiliation']) {
+					$employeeType = explode(";",$map['umnRegSummary']);
 				}
 			}
 			
@@ -202,7 +211,7 @@ class UMNHelper extends AuthHelper
 		// log all our shib data to help debug some random failures
 		$shib = ["eduPersonAffiliation","eppn","isGuest","uid","umnDID","umnJobSummary","umnRegSummary", "eduCourseMember"];
 		$shibData = [];
-		foreach($_SERVER as $key=>$value) {
+		foreach($map as $key=>$value) {
 			if(in_array($key, $shib)) {
 				$shibData[$key]= $value;
 			}
@@ -248,7 +257,7 @@ class UMNHelper extends AuthHelper
 
 		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
-		
+
 		if($CI->config->item('ldapUsername') != "") {
 			$r=ldap_bind($connect, $CI->config->item('ldapUsername'), $CI->config->item('ldapPassword'));
 		}

@@ -39,7 +39,7 @@ class FileContainerS3 extends FileContainer {
 		}
 
 		// use the instance storage type as default, can be overridden (Setting storageClass) if necessary
-		if($this->instance != null) {
+		if(isset($this->instance) && $this->instance != null) {
 			$this->storageClass= $this->instance->getS3StorageType();
 		}
 

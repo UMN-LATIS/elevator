@@ -508,5 +508,88 @@ $config['awsQueueSecretKey'] = $_ENV['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? null;
 $config['awsQueueJobDefinition'] = $_ENV['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
 $config['awsQueueJobQueue'] = $_ENV['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
 
+$config['shib_authfield'] = $_ENV['SHIB_AUTH_FIELD'] ?? 'email';
+$config['shib_user'] =  [
+  // fillable user model attribute => server variable
+  'email'       => $_ENV['SHIB_EMAIL_FIELD'] ?? 'eppn',
+  'name'        => $_ENV['SHIB_NAME_FIELD'] ?? 'displayName',
+  'first_name'  => $_ENV['SHIB_FIRST_NAME'] ?? 'givenName',
+  'last_name'   => $_ENV['SHIB_LAST_NAME'] ?? 'sn',
+  'umnDID'      => $_ENV['SHIB_DID'] ?? 'umnDID',
+  'umnEmplId'      => $_ENV['SHIB_EMPL_ID'] ?? 'umnEmplId',
+  'umnRegSummary' => $_ENV['SHIB_REG_SUMMARY'] ?? 'umnRegSummary',
+  'eduPersonAffiliation' => $_ENV['SHIB_AFFILIATION'] ?? 'eduPersonAffiliation',
+  'isGuest' => $_ENV['SHIB_IS_GUEST'] ?? 'isGuest',
+];
+
+$config['shib_local_settings']  = [
+    'strict' => true,
+    'debug' => false,
+    'baseurl' => null,
+    'sp' => [
+        'entityId' => $_ENV['SHIB_ENTITY_ID'] ?? '',
+        'assertionConsumerService' => [
+            'url' => $_ENV['SHIB_ASSERTION_CONSUMER_URL'] ?? '/local-sp/Login',
+            'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+        ],
+        'singleLogoutService' => [
+            'url' => $_ENV['SHIB_LOGOUT_SERVICE_URL'] ?? '/local-sp/Logout',
+            'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+        ],
+        'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+        'x509cert' => $_ENV['SHIB_X509_CERT'] ?? '',
+        'privateKey' => $_ENV['SHIB_PRIVATE_KEY'] ?? '',
+    ],
+    'idp' => [
+        'entityId' => $_ENV['SHIB_IDP_ENTITY'] ?? '',
+        'singleSignOnService' => [
+            'url' => $_ENV['SHIB_IDP_SSO'] ?? '',
+            'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+        ],
+        'singleLogoutService' => [
+            'url' => $_ENV['SHIB_IDP_SLO'] ?? '',
+            'responseUrl' => $_ENV['SHIB_IDP_SLO_RESPONSE'] ?? '',
+            'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+        ],
+        'x509certMulti' => [
+            'signing' => [
+                0 => $_ENV['SHIB_IDP_X509_SIGNING'] ?? '',
+            ],
+            'encryption' => [
+                0 => $_ENV['SHIB_IDP_X509_ENCRYPTION'] ?? '',
+            ],
+        ],
+    ],
+    'security' => [
+        'nameIdEncrypted' => false,
+        'authnRequestsSigned' => true,
+        'logoutRequestSigned' => false,
+        'logoutResponseSigned' => false,
+        'signMetadata' => true,
+        'wantXMLValidation' => false,
+        'wantMessagesSigned' => false,
+        'wantAssertionsSigned' => false,
+        'wantNameIdEncrypted' => false,
+        'requestedAuthnContext' => false,
+    ],
+    'contactPerson' => [
+        'technical' => [
+            'givenName' => 'name',
+            'emailAddress' => 'no@reply.com',
+        ],
+        'support' => [
+            'givenName' => 'Support',
+            'emailAddress' => 'no@reply.com',
+        ],
+    ],
+    'organization' => [
+        'en-US' => [
+            'name' => 'Name',
+            'displayname' => 'Display Name',
+            'url' => 'http://url',
+        ],
+    ],
+];
+
 /* End of file config.php */
 /* Location: ./application/config/config.php */

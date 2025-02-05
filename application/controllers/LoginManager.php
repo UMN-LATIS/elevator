@@ -115,6 +115,7 @@ class LoginManager extends Instance_Controller {
 
 	public function logout()
 	{
+
 		$this->session->sess_destroy();
 		if($this->config->item('enableCaching') && isset($this->user_model->userId)) {
 			$this->doctrineCache->setNamespace('userCache_');
@@ -128,7 +129,10 @@ class LoginManager extends Instance_Controller {
 		// Logout of the shib session, can be used to log out from one account
 		// and log into another.
 		$authHelper = $this->user_model->getAuthHelper();
-		$authHelper->remoteLogout();
+
+		if($this->user_model->getUserType() == "Remote") {
+			$authHelper->remoteLogout();
+		}
 
 		if ($this->isUsingVueUI()) {
 			return render_json([
@@ -137,7 +141,7 @@ class LoginManager extends Instance_Controller {
 			]);
 		}
 
-		instance_redirect("");
+		instance_redirect("/");
 	}
 
 	public function remoteLogin($noForcedAuth=false) {
@@ -146,10 +150,12 @@ class LoginManager extends Instance_Controller {
 		$redirectURL = null;
 		if(isset($_GET['redirect'])) {
 			$redirectURL = $_GET['redirect'];
+			
 			if(stristr($redirectURL, "errorHandler")) {
 				$redirectURL = "/";
 			}
 			// we hackily urlencode hashes
+			
 			$redirectURL = str_replace("%23", "#", $redirectURL);
 		}
 
@@ -157,8 +163,10 @@ class LoginManager extends Instance_Controller {
 		if($authHelper->remoteLogin($redirectURL, $noForcedAuth)) {
 			return;
 		}
+		
 
 		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUserIdFromRemote()]);
+
 		if(!$user) {
 			$user = $authHelper->createUserFromRemote();
 		}

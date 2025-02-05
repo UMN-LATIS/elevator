@@ -11,6 +11,12 @@ RUN docker-php-ext-install sockets
 COPY docker/get-docker.sh /root/
 RUN chmod +x /root/get-docker.sh
 RUN /root/get-docker.sh
+
+# add ldap php module
+RUN apt-get update && apt-get install -y libldap2-dev libldap-common
+RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
+RUN docker-php-ext-install ldap
+
 COPY docker/commands/* /usr/local/bin/
 RUN mkdir /scratch
 RUN mkdir -p /tmp

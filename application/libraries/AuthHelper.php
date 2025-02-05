@@ -14,8 +14,7 @@ class AuthHelper
 	{
 
 		$this->CI =& get_instance();
-		$this->shibboleth = new \UMNShib\Basic\BasicAuthenticator(array(), ["IdPLogoutURL"=>$this->CI->config->item("shibbolethLogout")]);
-		$this->shibboleth->setCustomIdPEntityId($this->CI->config->item("shibbolethLogin"));
+		
 	}
 
 	public function getDestination() { 
@@ -25,7 +24,8 @@ class AuthHelper
 	public function remoteLogin($redirectURL, $noForcedAuth=false) {
 		// Example Object-Oriented instantiation and redirect to login:
 		
-		if (!$this->shibboleth->hasSession()) {
+		
+		if (!$this->CI->session->userdata('userAuthField')) {
 			if($noForcedAuth == "true") {
 				if($redirectURL) {
 					redirect($redirectURL);
@@ -35,17 +35,18 @@ class AuthHelper
 				}
 				return true;
 			}
-		  	$this->shibboleth->redirectToLogin();
-		  	return true;
+			$target = urlencode(instance_url("/loginManager/remoteLogin?redirect=" . urlencode($redirectURL)));
+			
+			$redirect = "/Shibboleth/localSPLogin?target=".$target;
+			redirect($redirect);
 		}
 		return false;
 
 	}
 
 	public function remoteLogout() {
-		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
-			$this->shibboleth->redirectToLogout();
-		}
+		var_dump("Hey");
+		redirect("/Shibboleth/localSPLogout");
 	}
 
 	public function populateUserData($user) {
