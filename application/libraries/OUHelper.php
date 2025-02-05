@@ -20,10 +20,10 @@ class OUHelper extends AuthHelper
 	public function __construct()
 	{
 		parent::__construct();
-		$this->shibboleth->setCustomIdPEntityId("sso.ou.edu");
+		// $this->shibboleth->setCustomIdPEntityId("sso.ou.edu");
 	}
 
-	public function createUserFromRemote($userOverride=null) {
+	public function createUserFromRemote($userOverride=null, $map = null) {
 		$CI =& get_instance();
 		if(!$userOverride) {
 			$username = $this->getUserIdFromRemote();
@@ -44,14 +44,14 @@ class OUHelper extends AuthHelper
 		$user->setHasExpiry(false);
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
-		if($this->shibboleth->getAttributeValue("isGuest") == "Y") {
+		if($map["isGuest"]== "Y") {
 			$user->setUserType("Remote-Guest");
 		}
-		if($this->shibboleth->getAttributeValue("givenName") && $this->shibboleth->getAttributeValue("surName")) {
-			$user->setDisplayName($this->shibboleth->getAttributeValue("givenName") . " " . $this->shibboleth->getAttributeValue("surName"));
+		if($map["first_name"] && $map["last_name"]) {
+			$user->setDisplayName($map["first_name"] . " " . $map["last_name"]);
 		}
-		if($this->shibboleth->getAttributeValue("email")) {
-			$user->setEmail($this->shibboleth->getAttributeValue("email"));
+		if($map["email"]) {
+			$user->setEmail($map["email"]);
 		}
 		$user->setInstance($CI->instance);
 		$user->setIsSuperAdmin(false);
@@ -61,8 +61,16 @@ class OUHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUserIdFromRemote() {
-		return $this->shibboleth->getAttributeValue('NameID');
+	public function getUserIdFromRemote($map=null) {
+		if(!$map) {
+			// try to load from the session and cache
+			$userAuthField = $this->CI->session->userdata('userAuthField');
+			return $userAuthField;
+		}
+		
+		if($map) {
+			return $map["uniqueIdentifier"];
+		}
 	}
 
 	public function updateUserFromRemote($user) {
@@ -87,8 +95,9 @@ class OUHelper extends AuthHelper
 		$studentStatus = array();
 		$deptCoursesTaught = array();
 		$employeeType = array();
-		
-		if ($this->shibboleth->hasSession()) {
+		$CI =& get_instance();
+		$map = $CI->session->userdata("userAttributesCache");
+		if (isset($map) && is_array($map)) {
 			// if($this->shibboleth->getAttributeValue('eduCourseMember')) {
 			// 	$courseArray = explode(";",$this->shibboleth->getAttributeValue('eduCourseMember'));
 
@@ -198,4 +207,8 @@ class OUHelper extends AuthHelper
 		return $this->CI->load->view("authHelpers/autoRedirect", null, true);
 	}
 
+	public function remoteLogout() {
+		
+		
+	}
 }

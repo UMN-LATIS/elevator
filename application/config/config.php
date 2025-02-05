@@ -24,7 +24,7 @@ else{
 
 
 if(isset($_SERVER['HTTP_HOST'])) {
-	$config['base_url'] = ($_ENV['ENVIRONMENT']=='local'?'http://':'https://') .$_SERVER['HTTP_HOST'] ."/";
+	$config['base_url'] = ($_ENV['ENVIRONMENT']=='localTEMP'?'http://':'https://') .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
 	$config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
@@ -411,11 +411,8 @@ $config['elasticIndex'] = $_ENV['ELASTIC_INDEX'] ?? null;
 $config['redis'] = ($_ENV['REDIS_HOST'] ?? null); // elastic ip:port
 $config['redisPort'] = "6379";
 
-/**
- * dcl caching
- */
-
-if(defined('ENVIRONMENT') && ENVIRONMENT == "development" || $_ENV['ENVIRONMENT'] == "development") {
+if(defined('ENVIRONMENT') && ENVIRONMENT == "localTODO" || $_ENV['ENVIRONMENT'] == "development") {
+    
   $config["enableCaching"] = false;
 }
 else {
@@ -515,8 +512,8 @@ $config['shib_user'] =  [
   'name'        => $_ENV['SHIB_NAME_FIELD'] ?? 'displayName',
   'first_name'  => $_ENV['SHIB_FIRST_NAME'] ?? 'givenName',
   'last_name'   => $_ENV['SHIB_LAST_NAME'] ?? 'sn',
-  'umnDID'      => $_ENV['SHIB_DID'] ?? 'umnDID',
-  'umnEmplId'      => $_ENV['SHIB_EMPL_ID'] ?? 'umnEmplId',
+  'uniqueIdentifier'      => $_ENV['SHIB_DID'] ?? 'umnDID',
+  'emplId'      => $_ENV['SHIB_EMPL_ID'] ?? 'umnEmplId',
   'umnRegSummary' => $_ENV['SHIB_REG_SUMMARY'] ?? 'umnRegSummary',
   'eduPersonAffiliation' => $_ENV['SHIB_AFFILIATION'] ?? 'eduPersonAffiliation',
   'isGuest' => $_ENV['SHIB_IS_GUEST'] ?? 'isGuest',

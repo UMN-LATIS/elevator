@@ -156,7 +156,6 @@ class User_model extends CI_Model {
 
 			}
 
-			
 			if($this->user->getUserType() == "Remote") {
 				$authHelper = $this->getAuthHelper();
 				$this->userData = $authHelper->populateUserData($this->user);	

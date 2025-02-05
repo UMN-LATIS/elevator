@@ -22,7 +22,7 @@ class StThomasHelper extends AuthHelper
 		parent::__construct();
 	}
 
-	public function createUserFromRemote($userOverride=null) {
+	public function createUserFromRemote($userOverride=null, $map = null) {
 		$CI =& get_instance();
 		if(!$userOverride) {
 			$username = $this->getUserIdFromRemote();
@@ -44,11 +44,11 @@ class StThomasHelper extends AuthHelper
 		$user->setCreatedAt(new \DateTime("now"));
 		$user->setUserType("Remote");
 
-		if($this->shibboleth->getAttributeValue("surName")) {
-			$user->setDisplayName($this->shibboleth->getAttributeValue("givenName") . " " . $this->shibboleth->getAttributeValue("surName"));
+		if($map["last_name"]) {
+			$user->setDisplayName($map["first_name"] . " " .$map["last_name"]);
 		}
-		if($this->shibboleth->getAttributeValue("email")) {
-			$user->setEmail($this->shibboleth->getAttributeValue("email"));
+		if($map["email"]) {
+			$user->setEmail($map["email"]);
 		}
 		$user->setInstance($CI->instance);
 		$user->setIsSuperAdmin(false);
@@ -58,10 +58,16 @@ class StThomasHelper extends AuthHelper
 		return $user;
 	}
 
-	public function getUserIdFromRemote() {
-		$email = $this->shibboleth->getAttributeValue('email');
+	public function getUserIdFromRemote($map=null) {
+		if(!$map) {
+			// try to load from the session and cache
+			$userAuthField = $this->CI->session->userdata('userAuthField');
+			return array_shift(explode("@", $userAuthField));
+		}
 		
-		return array_shift(explode("@", $email));
+		if($map) {
+			return array_shift(explode("@", $map["uniqueIdentifier"]));
+		}
 	}
 
 	public function updateUserFromRemote($user) {
@@ -79,17 +85,19 @@ class StThomasHelper extends AuthHelper
 	public function populateUserData($user) {
 		$userData = array();
 
-		
-		if ($this->shibboleth->hasSession() && $this->shibboleth->getAttributeValue("groups")) {
-			$groups = explode(";", $this->shibboleth->getAttributeValue("groups"));
+		$CI =& get_instance();
+		$map = $CI->session->userdata("userAttributesCache");
+		if (isset($map) && is_array($map)) {
+			if ($map["eduPersonAffiliation"]) {
+				$groups = $map["eduPersonAffiliation"];
 
-			foreach($groups as $group) {
-				$hintMembership[$group] = $group;
-				$groupMembership[$group] = $group;
+				foreach($groups as $group) {
+					$hintMembership[$group] = $group;
+					$groupMembership[$group] = $group;
+				}
+
+				$userData[GROUP_MEMBER] = ["values"=>$groupMembership, "hints"=>$hintMembership];
 			}
-
-			$userData[GROUP_MEMBER] = ["values"=>$groupMembership, "hints"=>$hintMembership];
-
 			
 		}
 	
@@ -167,9 +175,7 @@ class StThomasHelper extends AuthHelper
 
 	public function remoteLogout() {
 		
-		if ($this->shibboleth->hasSession() && $this->CI->config->item("shibbolethLogout")) {
-			$this->shibboleth->redirectToLogout(["return"=>instance_url("/")]);
-		}
+		
 	}
 
 }

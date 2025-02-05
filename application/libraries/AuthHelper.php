@@ -40,12 +40,12 @@ class AuthHelper
 
 			instance_redirect($redirect);
 		}
+
 		return false;
 
 	}
 
 	public function remoteLogout() {
-		var_dump("Hey");
 		redirect("/Shibboleth/localSPLogout");
 	}
 

@@ -23,27 +23,27 @@ class Shibboleth extends MY_Controller {
     }
 
     public function localSPACS() {
-        $shibSettings = $this->config->item('shib_local_settings');
-
-        $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
+        
         Utils::setProxyVars(true);
+        $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
         $auth->processResponse();
-
         $errors = $auth->getErrors();
         if (!empty($errors)) {
-            return array('error' => $errors, 'last_error_reason' => $auth->getLastErrorReason());
+            return render_json(array('error' => $errors, 'last_error_reason' => $auth->getLastErrorReason()));
         }
 
         if (!$auth->isAuthenticated()) {
-            return array('error' => 'Could not authenticate', 'last_error_reason' => $auth->getLastErrorReason());
+            return render_json(array('error' => 'Could not authenticate', 'last_error_reason' => $auth->getLastErrorReason()));
         }
-
+        
         
         $shibAttributes = $auth->getAttributes();
+
         foreach ($this->config->item('shib_user') as $local => $server) {
 
             $map[$local] = $this->getServerVariable($server, $shibAttributes);
         }
+
 
         if (empty($map[$this->config->item('shib_authfield')])) {
             return show_error('User map not found', 403);

@@ -41,6 +41,7 @@
 $route['default_controller'] = "home";
 $route['404_override'] = '';
 $route['robots.txt'] = "home/robots";
+$route['Shibboleth.sso/SAML2/POST']  = "Shibboleth/localSPACS";
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

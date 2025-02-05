@@ -62,7 +62,7 @@ class UMNHelper extends AuthHelper
 		}
 		
 		if($map) {
-			return $map["umnDID"];
+			return $map["uniqueIdentifier"];
 		}
 	}
 
@@ -133,9 +133,10 @@ class UMNHelper extends AuthHelper
 		$employeeType = array();
 		$CI =& get_instance();
 		$map = $CI->session->userdata("userAttributesCache");
+
 		if (isset($map) && is_array($map)) {
 			
-			$emplId = $map['umnEmplId'];
+			$emplId = $map['emplId'];
 			if($emplId) {
 				$enrollment = $this->fetchBandaidResult("/api/enrollment/student/" . $emplId);
 				if(is_array($enrollment)) {
@@ -185,7 +186,7 @@ class UMNHelper extends AuthHelper
 					}	
 				}
 				if($map['eduPersonAffiliation']) {
-					$employeeType = explode(";",$map['umnRegSummary']);
+					$employeeType = $map['eduPersonAffiliation'];
 				}
 			}
 			
@@ -207,9 +208,9 @@ class UMNHelper extends AuthHelper
 		$userData[STATUS_TYPE] = ["values"=>array_unique($studentStatus), "hints"=>["UGRD"=>"Undergraduate", "GRAD"=>"Graduate"]];
 
 		$userData[EMPLOYEE_TYPE] = ["values"=>array_unique($employeeType), "hints"=>["Faculty" => "Faculty","Student" => "Student","Staff" => "Staff","Alum " => "Alum" ,"Member" => "Member","Affiliate" => "Affiliate"]];
-
 		// log all our shib data to help debug some random failures
-		$shib = ["eduPersonAffiliation","eppn","isGuest","uid","umnDID","umnJobSummary","umnRegSummary", "eduCourseMember"];
+		$shib = ["eduPersonAffiliation","eppn","isGuest","uid","uniqueIdentifier","umnJobSummary","umnRegSummary", "eduCourseMember"];
+
 		$shibData = [];
 		foreach($map as $key=>$value) {
 			if(in_array($key, $shib)) {

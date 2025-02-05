@@ -238,7 +238,6 @@ class lti13 extends Instance_Controller {
 
         $launchId = $this->input->post("launchId");
         if(!$launchId) {
-          echo "HeH";
           return;
         }
 

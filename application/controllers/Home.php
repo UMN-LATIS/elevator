@@ -75,11 +75,12 @@ class Home extends Instance_Controller {
 	public function debug($dump) {
 		echo "<pre>";
 		if($dump=="shib") {
-			$shib = ["eduPersonAffiliation","eppn","isGuest","uid","umnDID","umnJobSummary","umnRegSummary", "eduCourseMember","umnEmplId"];
+			$map = $this->session->userdata("userAttributesCache");
+			$shib = ["eduPersonAffiliation","eppn","isGuest","uid","uniqueIdentifier","umnJobSummary","umnRegSummary", "eduCourseMember","umnEmplId","email", "name","first_name","last_name"];
 			
-			foreach($_SERVER as $key=>$value) {
+			foreach($map as $key=>$value) {
 				if(in_array($key, $shib)) {
-					echo $key . ": " . $value . "\n";
+					echo $key . ": " . (is_array($value)?join(",",$value):$value) . "\n";
 				}
 			}
 		}
