@@ -23,6 +23,8 @@ class Shibboleth extends MY_Controller {
     }
 
     public function localSPACS() {
+        $shibSettings = $this->config->item('shib_local_settings');
+
         $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
         Utils::setProxyVars(true);
         $auth->processResponse();

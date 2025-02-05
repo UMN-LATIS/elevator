@@ -36,9 +36,9 @@ class AuthHelper
 				return true;
 			}
 			$target = urlencode(instance_url("/loginManager/remoteLogin?redirect=" . urlencode($redirectURL)));
-			
 			$redirect = "/Shibboleth/localSPLogin?target=".$target;
-			redirect($redirect);
+
+			instance_redirect($redirect);
 		}
 		return false;
 

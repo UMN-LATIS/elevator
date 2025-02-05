@@ -27,7 +27,7 @@ if(isset($_SERVER['HTTP_HOST'])) {
 	$config['base_url'] = ($_ENV['ENVIRONMENT']=='local'?'http://':'https://') .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
-	$config['base_url'] = "http://localhost"; // full address http://www.test.com/
+	$config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
 }
 
 
@@ -529,11 +529,11 @@ $config['shib_local_settings']  = [
     'sp' => [
         'entityId' => $_ENV['SHIB_ENTITY_ID'] ?? '',
         'assertionConsumerService' => [
-            'url' => $_ENV['SHIB_ASSERTION_CONSUMER_URL'] ?? '/local-sp/Login',
+            'url' => $config['base_url'] . $_ENV['SHIB_ASSERTION_CONSUMER_URL'] ?? '/local-sp/Login',
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
         ],
         'singleLogoutService' => [
-            'url' => $_ENV['SHIB_LOGOUT_SERVICE_URL'] ?? '/local-sp/Logout',
+            'url' =>  $config['base_url'] . $_ENV['SHIB_LOGOUT_SERVICE_URL'] ?? '/local-sp/Logout',
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ],
         'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',

@@ -145,6 +145,7 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function remoteLogin($noForcedAuth=false) {
+		
 		$this->useUnauthenticatedTemplate = true;
 
 		$redirectURL = null;
@@ -164,7 +165,6 @@ class LoginManager extends Instance_Controller {
 			return;
 		}
 		
-
 		$user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(["userType"=>"Remote","username"=>$authHelper->getUserIdFromRemote()]);
 
 		if(!$user) {
