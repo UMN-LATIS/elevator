@@ -30,7 +30,7 @@
     "monolog/monolog": "2.9.1",
     "doctrine/dbal": "^2.0",
     "doctrine/orm": "2.20.1",
-    "elasticsearch/elasticsearch": "~5.0",
+    "elasticsearch/elasticsearch": "8.17.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
     "tedivm/stash": "~0.17.6",

@@ -13,13 +13,12 @@ class search_model extends CI_Model {
 		parent::__construct();
 		$params= array (
     		$this->config->item('elastic'));
-		$this->es = Elasticsearch\ClientBuilder::create()->setHosts($params)->build();
+		$this->es = Elastic\Elasticsearch\ClientBuilder::create()->setHosts($params)->build();
 
 	}
 
 	public function remove($asset) {
 		$params['index'] = $this->config->item('elasticIndex');
-    	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
     	if(!$params['id'] || strlen($params['id']<5)) {
     		// if you don't pass an id, elasticsearch will eat all your data
@@ -262,12 +261,11 @@ class search_model extends CI_Model {
     	 */
     	$params['body']['assetId'] = $asset->getObjectId();
     	$params['index'] = $this->config->item('elasticIndex');
-    	$params['type']  = 'asset';
     	$params['id']    = $asset->getObjectId();
 
     	if($bulk) {
     		$bulkArrayEntry = [];
-    		$bulkArrayEntry["index"] =  ["_index"=> $params["index"], "_type"=>$params['type'], "_id"=> $params["id"]];
+    		$bulkArrayEntry["index"] =  ["_index"=> $params["index"], "_id"=> $params["id"]];
     		$bulkArrayEntry["value"] = $params["body"];
     		$this->bulkUpdates['body'][] = ["index" => $bulkArrayEntry["index"]];
     		$this->bulkUpdates['body'][] = $bulkArrayEntry["value"];
@@ -495,14 +493,14 @@ class search_model extends CI_Model {
 		$query = array();
 		$i=0;
 		if(preg_match("/[*]+/u", $searchArray["searchText"])) {
-			$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = ["_all"=>strtolower($searchArray["searchText"])];
+			$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = ["my_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
 			list($start, $end) = explode("...", strtolower($searchArray["searchText"]));
-			$searchParams['body']['query']['bool']['should'][$i]['range'] = ["_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
+			$searchParams['body']['query']['bool']['should'][$i]['range'] = ["my_all" => ["gte"=>trim($start), "lte"=>trim($end)]];
 		}
 		else if(substr($searchArray["searchText"],0,1) == '"' && substr($searchArray["searchText"], -1,1) == '"') {
-			$searchParams['body']['query']['bool']['should'][$i]['match_phrase'] = ["_all"=>strtolower($searchArray["searchText"])];
+			$searchParams['body']['query']['bool']['should'][$i]['match_phrase'] = ["my_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if($searchArray["searchText"] != "") {
 
@@ -533,7 +531,7 @@ class search_model extends CI_Model {
 			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
 
 			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
-			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = ["_all"];
+			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = ["my_all"];
 			if(!$fuzzySearch) {
 				$matchType = "cross_fields";
 				if(isset($searchArray['matchType'])) {
@@ -708,7 +706,7 @@ class search_model extends CI_Model {
     		$matchArray['totalResults'] = $totalResults;
     	}
     	else {
-    		$matchArray['totalResults'] = $queryResponse['hits']['total'];
+    		$matchArray['totalResults'] = $queryResponse['hits']['total']['value'];
     	}
 
     	return $matchArray;
@@ -718,12 +716,22 @@ class search_model extends CI_Model {
 
 		$searchParams = array();
 		$searchParams['index'] = $this->config->item('elasticIndex');
-		$searchParams['body']["suggestion-finder"]["text"] = $searchTerm;
-		$searchParams['body']["suggestion-finder"]["term"]["field"] = "_all";
+		$searchParams['body'] = [
+			'suggest' => [
+				'suggestion-finder' => [
+					'prefix' => $searchTerm, // your search term
+					'term' => [
+						'field' => 'my_all', // or specify a more specific field if needed
+						'size' => 5 // number of suggestions to return (optional)
+					]
+				]
+			]
+		];
 
-		$queryResponse = $this->es->suggest($searchParams);
+		$queryResponse = $this->es->search($searchParams);
 
 		return $queryResponse;
+
 	}
 
 	/*

@@ -5,9 +5,9 @@
 #   "index.mapping.total_fields.limit": 3000
 # }'
 
-curl -XPUT http://localhost:9200/elevator/ -d '{
+curl -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/ -d '{
   "settings": {
-    "index.mapping.total_fields.limit": 5000,
+    "index.mapping.total_fields.limit": 10000,
     "analysis": {
       "normalizer": {
         "lowerasciinormalizer": {
@@ -21,7 +21,7 @@ curl -XPUT http://localhost:9200/elevator/ -d '{
           "tokenizer": "keyword"
         },
         "default": {
-          "filter": ["standard", "lowercase", "asciifolding"],
+          "filter": ["lowercase", "asciifolding"],
           "tokenizer": "standard"
         }
       }
@@ -29,54 +29,205 @@ curl -XPUT http://localhost:9200/elevator/ -d '{
   }
 }
 '
-curl -XPUT http://localhost:9200/elevator/asset/_mapping -d '{
-  "asset": {
-    "_all": {
-      "enabled": true
-    },
-    "dynamic_templates": [
-      {
-        "text_fields": {
-          "match": "*",
-          "match_mapping_type": "string",
-          "mapping": {
-            "fields": {
-              "raw": {
-                "ignore_above": 256,
-                "type": "keyword",
-                "normalizer": "lowerasciinormalizer"
-              }
+curl  -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/_mapping -d ' {
+        "dynamic_templates": [
+            {
+            "text_fields": {
+                "mapping": {
+                    "fields": {
+                        "raw": {
+                            "ignore_above": 256,
+                            "type": "keyword",
+                            "normalizer": "lowerasciinormalizer"
+                        }
+                    },
+                    "type": "text",
+                    "copy_to": "my_all"
+                },
+                "match_mapping_type": "string",
+                "match": "*"
+            }
             },
-            "index": "analyzed",
-            "omit_norms": false,
-            "type": "text"
+            {
+            "all_fields": {
+                "match": "*",
+                "mapping": {
+                    "copy_to": "my_all"
+                }
+            }
+            }
+        ],
+
+        "date_detection": false,
+        "properties": {
+            "my_all": {
+                "type": "text"
+            },
+            "fileSearchData": {
+                "type": "text"
+            },
+            "locationCache": {
+                "type": "geo_point"
+            },
+            "lastModified": {
+                "type": "date"
+            },
+            "title": {
+                "fields": {
+                    "raw": {
+                        "ignore_above": 256,
+                        "type": "keyword",
+                        "normalizer": "lowerasciinormalizer"
+                    }
+                },
+                "type": "text"
+            }
+        }
+}'
+
+curl -H 'Content-Type: application/json' -XPOST 'http://localhost:9200/_aliases' -d '{
+  "actions": [
+    {
+      "add": {
+        "index": "elevator",
+        "alias": "sort_elevator"
+      }
+    }
+  ]
+}'
+
+
+
+
+
+
+// chatgpt genreated
+
+curl  -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/_mapping -d '{
+  "dynamic_templates": [
+    {
+      "text_fields": {
+        "match_mapping_type": "string",
+        "match": "*",
+        "mapping": {
+          "type": "text",
+          "copy_to": "my_all",
+          "fields": {
+            "raw": {
+              "type": "keyword",
+              "ignore_above": 256,
+              "normalizer": "lowerasciinormalizer"
+            }
           }
         }
       }
-    ],
-    "date_detection": false,
-    "properties": {
-      "fileSearchData": {
-        "boost": 0.8,
-        "type": "text"
-      },
-      "locationCache": {
-        "type": "geo_point"
-      },
-      "lastModified": {
-        "type": "date"
-      },
-      "title" : {
-        "type" : "text",
-        "fields" : {
-          "raw" : {
-            "type" : "keyword",
-            "ignore_above" : 256,
-            "normalizer" : "lowerasciinormalizer"
-          }
+    },
+    {
+      "all_fields": {
+        "match": "*",
+        "mapping": {
+          "copy_to": "my_all"
+        }
+      }
+    }
+  ],
+  
+  "date_detection": false,
+  
+  "properties": {
+    "my_all": {
+      "type": "text"
+    },
+    "fileSearchData": {
+      "type": "text"
+    },
+    "locationCache": {
+      "type": "geo_point"
+    },
+    "lastModified": {
+      "type": "date"
+    },
+    "title": {
+      "type": "text",
+      "fields": {
+        "raw": {
+          "type": "keyword",
+          "ignore_above": 256,
+          "normalizer": "lowerasciinormalizer"
+        }
+      }
+    }
+  },
+
+  "settings": {
+    "analysis": {
+      "normalizer": {
+        "lowerasciinormalizer": {
+          "type": "custom",
+          "char_filter": ["html_strip"],
+          "tokenizer": "keyword",
+          "filter": ["lowercase"]
         }
       }
     }
   }
-}
-'
+}'
+
+
+
+# mine from ES7
+curl  -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/_mapping -d' {
+            "dynamic_templates": [
+                {
+                "text_fields": {
+                    "mapping": {
+                        "fields": {
+                            "raw": {
+                                "ignore_above": 256,
+                                "type": "keyword",
+                                "normalizer": "lowerasciinormalizer"
+                            }
+                        },
+                        "type": "text",
+                        "copy_to": "my_all"
+                    },
+                    "match_mapping_type": "string",
+                    "match": "*"
+                }
+                },
+                {
+                "all_fields": {
+                    "match": "*",
+                    "mapping": {
+                        "copy_to": "my_all"
+                    }
+                }
+                }
+            ],
+
+            "date_detection": false,
+            "properties": {
+                "my_all": {
+                    "type": "text"
+                },
+                "fileSearchData": {
+                    "type": "text"
+                },
+                "locationCache": {
+                    "type": "geo_point"
+                },
+                "lastModified": {
+                    "type": "date"
+                },
+                "title": {
+                    "fields": {
+                        "raw": {
+                            "ignore_above": 256,
+                            "type": "keyword",
+                            "normalizer": "lowerasciinormalizer"
+                        }
+                    },
+                    "type": "text"
+                }
+            }
+    }'

@@ -79,10 +79,16 @@ services:
   #     - elasticsearch
   
   elasticsearch:
-    platform: linux/x86_64
-    image: elasticsearch:5.6.16
+    # platform: linux/x86_64
+    image: elasticsearch:8.17.1
     environment:
       - discovery.type=single-node
+      - http.cors.allow-origin=http://localhost:8080
+      - http.cors.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      # - bootstrap.system_call_filter=false
     ports:
       - "9200:9200"
       - "9300:9300"
