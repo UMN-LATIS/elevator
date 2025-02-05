@@ -27,6 +27,7 @@ class FileContainerS3 extends FileContainer {
 
 	public $forcedMimeType = null;
 	public $forcedContentEncoding = null;
+	public $storageType;
 
 	public function __construct($fileEntry=null)
 	{

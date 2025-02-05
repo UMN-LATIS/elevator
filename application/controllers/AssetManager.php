@@ -887,9 +887,6 @@ class AssetManager extends Admin_Controller {
 			$this->errorhandler_helper->callError("genericError");
 			return;
 		}
-
-		$client = $this->queue->getClient();
-
 				
 		$targetArray = null;
 		$parentObject = null;
@@ -924,9 +921,9 @@ class AssetManager extends Admin_Controller {
 			$convertLines = false;
 		}
 
-		$header = fgetcsv($fp, 0, ",");
+		$header = fgetcsv($fp, 0, ",", escape: "\\");
 		$successArray = [];
-		while($row = fgetcsv($fp, 0, ",")) {
+		while($row = fgetcsv($fp, 0, ",", escape: '\\')) {
 			if($offset > 0) {
 				if($rowCount < $offset) {
 					$rowCount++;
@@ -1016,12 +1013,12 @@ class AssetManager extends Admin_Controller {
 							else {
 								$url = $rowEntry;
 							}
-							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($url), "description"=>$description, "captions"=>trim($captions),"chapters"=>trim($chapters)];
+							$uploadItems[] = ["field"=>$widget->getfieldTitle(), "url"=>trim($url), "description"=>$description, "captions"=>trim($captions??""),"chapters"=>trim($chapters??"")];
 							continue;
 						}
 						else if(get_class($widget) == "Date") {
 							if(strpos($rowEntry, ",")) {
-								$dateExploded = $exploded = str_getcsv($rowEntry);
+								$dateExploded = $exploded = str_getcsv($rowEntry, escape: "\\");
 								$widgetContainer->label = $dateExploded[1];
 								$dateString = $dateExploded[0];
 							}
@@ -1132,7 +1129,9 @@ class AssetManager extends Admin_Controller {
 
 			if(count($uploadItems)>0) {
 				$newTask = ["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems];
-				$client->push('urlImport', 'urlImport', $newTask);
+				$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+				$tube = new Pheanstalk\Values\TubeName('urlImport');
+				$jobId = $pheanstalk->put(json_encode($newTask), Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 0,900);
 			}
 
 			$cacheArray['successArray'][] = "Imported asset: " . $assetModel->getAssetTitle(true) . " (<a href=\"" . instance_url("/asset/viewAsset/" . $assetModel->getObjectId()) ."\">" . $assetModel->getObjectId() . "</A>)";

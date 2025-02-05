@@ -18,9 +18,7 @@ class PDFHelper {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			if(isset($this->CI->job)) {
-				$this->CI->pheanstalk->touch($this->CI->job);
-			}
+			
 			echo ".";
 		}
 		if(!file_exists($outFile)) {
@@ -63,9 +61,6 @@ class PDFHelper {
 		$process->run();
 		while($process->isRunning()) {
 			sleep(5);
-			if(isset($this->CI->job)) {
-				$this->CI->pheanstalk->touch($this->CI->job);
-			}
 			
 			echo ".";
 		}
@@ -92,7 +87,6 @@ class PDFHelper {
 		$iterationCount = 0;
 		while($process->isRunning()) {
 			sleep(5);
-			$this->CI->pheanstalk->touch($this->CI->job);
 			$iterationCount++;
 			if($iterationCount > 180) {
 				// we give it a max of 15 minutes to try.

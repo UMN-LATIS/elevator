@@ -2,7 +2,6 @@
 
 class TranscoderCommandsAWS {
 
-	private $pheanstalk;
     private $transcoderModel;
 	private $fileHandler;
 

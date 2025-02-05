@@ -15,7 +15,7 @@ function mres($value)
 var instanceId = <?=$this->instance->getId()?>;
 var fieldTypeData = new Array();
 <?php foreach ($field_types as $field_type): ?>
-fieldTypeData[<?=$field_type->getId()?>] = '<?=str_replace("\n", "\\n", $field_type->getSampleFieldData())?>';
+fieldTypeData[<?=$field_type->getId()?>] = '<?=str_replace("\n", "\\n", $field_type->getSampleFieldData()??"")?>';
 <?endforeach?>
 
 $(document).ready(function() {

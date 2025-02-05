@@ -511,19 +511,20 @@ class Beltdrive extends CI_Controller {
 
 	public function populateCacheTube() {
 		$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
-		$tube = new Pheanstalk\Values\TubeName('cacheRebuild');
 		$cnt=0;
 		while(1) {
+			$tube = new Pheanstalk\Values\TubeName('cacheRebuild');
 			$pheanstalk->watch($tube);
 			$job = $pheanstalk->reserve();
+
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
 
 			$job_encoded = json_decode($job->getData(), true);
-
 			$jobId = $job->getId();
 			$templateId = $job_encoded["templateId"];
+
 			$instanceId = $job_encoded["instance"];
 			echo "Starting index job for " . $templateId . "\n";
 			$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
@@ -581,10 +582,12 @@ class Beltdrive extends CI_Controller {
 	public function reindexTemplate($templateId, &$parentArray=array()) {
 		
 		$manager = $this->doctrine->em->getConnection();
+
 		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
 		$foundItems = array();
 		if($results) {
 			$records = $results->fetchAll();
+			
 			if(count($records)>0) {
 				foreach($records as $record) {
 					if($record['template_id'] != null) {

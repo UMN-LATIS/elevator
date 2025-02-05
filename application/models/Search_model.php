@@ -719,7 +719,7 @@ class search_model extends CI_Model {
 		$searchParams['body'] = [
 			'suggest' => [
 				'suggestion-finder' => [
-					'prefix' => $searchTerm, // your search term
+					'text' => $searchTerm, // your search term
 					'term' => [
 						'field' => 'my_all', // or specify a more specific field if needed
 						'size' => 5 // number of suggestions to return (optional)

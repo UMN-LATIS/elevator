@@ -425,8 +425,8 @@ class Search extends Instance_Controller {
 		$output = array();
 		$suggestTerm = array();
 		
-		if(isset($resultArray["suggestion-finder"]) && count($resultArray["suggestion-finder"])>0) {
-			foreach($resultArray["suggestion-finder"] as $entry) {
+		if(isset($resultArray["suggest"]) && isset($resultArray["suggest"]["suggestion-finder"]) && count($resultArray["suggest"]["suggestion-finder"])>0) {
+			foreach($resultArray["suggest"]["suggestion-finder"] as $entry) {
 				if(count($entry["options"])>0) {
 					if($entry["options"][0]["score"]>= 0.8) {
 						$suggestTerm[$entry["text"]]= $entry["options"][0]["text"];

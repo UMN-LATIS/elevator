@@ -9,6 +9,11 @@ curl -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/ -
   "settings": {
     "index.mapping.total_fields.limit": 10000,
     "analysis": {
+        "char_filter": {
+          "ignore_html_tags": {
+            "type": "html_strip"
+          }
+        },
       "normalizer": {
         "lowerasciinormalizer": {
           "filter": ["lowercase", "asciifolding"],
@@ -22,6 +27,9 @@ curl -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/ -
         },
         "default": {
           "filter": ["lowercase", "asciifolding"],
+          "char_filter": [
+              "ignore_html_tags"
+            ],
           "tokenizer": "standard"
         }
       }
@@ -101,81 +109,10 @@ curl -H 'Content-Type: application/json' -XPOST 'http://localhost:9200/_aliases'
 
 
 
-// chatgpt genreated
-
-curl  -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/_mapping -d '{
-  "dynamic_templates": [
-    {
-      "text_fields": {
-        "match_mapping_type": "string",
-        "match": "*",
-        "mapping": {
-          "type": "text",
-          "copy_to": "my_all",
-          "fields": {
-            "raw": {
-              "type": "keyword",
-              "ignore_above": 256,
-              "normalizer": "lowerasciinormalizer"
-            }
-          }
-        }
-      }
-    },
-    {
-      "all_fields": {
-        "match": "*",
-        "mapping": {
-          "copy_to": "my_all"
-        }
-      }
-    }
-  ],
-  
-  "date_detection": false,
-  
-  "properties": {
-    "my_all": {
-      "type": "text"
-    },
-    "fileSearchData": {
-      "type": "text"
-    },
-    "locationCache": {
-      "type": "geo_point"
-    },
-    "lastModified": {
-      "type": "date"
-    },
-    "title": {
-      "type": "text",
-      "fields": {
-        "raw": {
-          "type": "keyword",
-          "ignore_above": 256,
-          "normalizer": "lowerasciinormalizer"
-        }
-      }
-    }
-  },
-
-  "settings": {
-    "analysis": {
-      "normalizer": {
-        "lowerasciinormalizer": {
-          "type": "custom",
-          "char_filter": ["html_strip"],
-          "tokenizer": "keyword",
-          "filter": ["lowercase"]
-        }
-      }
-    }
-  }
-}'
 
 
+# mine from ES7, working in ES8?
 
-# mine from ES7
 curl  -H 'Content-Type: application/json' -XPUT http://localhost:9200/elevator/_mapping -d' {
             "dynamic_templates": [
                 {
