@@ -11,6 +11,13 @@ class Related_asset_contents extends Widget_contents_base {
 	public $relatedObjectTitle = null;
 	public $cachedPrimaryHandler = null;
 	public $readyForDisplay = false;
+	public $collapseNestedChildren = false;
+	public $thumbnailView = null;
+	public $defaultTemplate=  null;
+	public $matchAgainst = null;
+	public $ignoreForDigitalAsset=  null;
+	public $ignoreForLocationSearch = false;
+	public $ignoreForDateSearch= false;
 
 	public function __construct()
 		{
