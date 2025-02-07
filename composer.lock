@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9da875e9585874ad0440bb7b8c4f8692",
+    "content-hash": "77f3361947d3f93cb70669c528f2edd2",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -318,6 +318,60 @@
                 "source": "https://github.com/cocur/background-process/tree/master"
             },
             "time": "2015-10-24T17:38:37+00:00"
+        },
+        {
+            "name": "deployer/deployer",
+            "version": "7.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/deployphp/deployer.git",
+                "reference": "585592f74eb8a4eed481f23167017fab442769af"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/deployphp/deployer/zipball/585592f74eb8a4eed481f23167017fab442769af",
+                "reference": "585592f74eb8a4eed481f23167017fab442769af",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "^8.0|^7.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.64",
+                "pestphp/pest": "^3.3",
+                "phpstan/phpstan": "^1.4",
+                "phpunit/php-code-coverage": "^11.0",
+                "phpunit/phpunit": "^11.4"
+            },
+            "bin": [
+                "bin/dep"
+            ],
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Anton Medvedev",
+                    "email": "anton@medv.io"
+                }
+            ],
+            "description": "Deployment Tool",
+            "homepage": "https://deployer.org",
+            "support": {
+                "docs": "https://deployer.org/docs",
+                "issues": "https://github.com/deployphp/deployer/issues",
+                "source": "https://github.com/deployphp/deployer"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/antonmedv",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-01-30T17:01:21+00:00"
         },
         {
             "name": "doctrine/cache",
