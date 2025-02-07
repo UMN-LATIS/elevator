@@ -7,9 +7,9 @@ require 'recipe/codeigniter.php';
 
 set('repository', 'git@github.com:UMN-LATIS/elevator.git');
 
-add('shared_files', []);
+set('shared_files', ['.env']);
 add('shared_dirs', []);
-add('writable_dirs', []);
+add('writable_dirs', ['application/models/Proxies']);
 
 // Hosts
 
@@ -18,5 +18,6 @@ host('cla-dev.elevatorapp.net')
     ->set('deploy_path', '/var/www/elevator');
 
 // Hooks
+
 
 after('deploy:failed', 'deploy:unlock');
