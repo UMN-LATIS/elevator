@@ -6,33 +6,9 @@ class Beltdrive extends CI_Controller {
 
 	public $instance = null;
 	public $qb;
-	public $serverId = null;
 	public $reserveCount = array();
 	public $remoteFileName = null;
 	
-	function getMacLinux() {
-		exec('netstat -ie', $result);
-		if(is_array($result)) {
-			$iface = array();
-			foreach($result as $key => $line) {
-				if($key > 0) {
-					$tmp = str_replace(" ", "", substr($line, 0, 10));
-					if($tmp <> "") {
-						$macpos = strpos($line, "ether");
-						if($macpos !== false) {
-							$iface[] = array('iface' => $tmp, 'mac' => strtolower(substr($line, $macpos+6, 17)));
-						}
-					}
-				}
-			}
-			if(isset($iface[0])){
-				return $iface[0]['mac'];	
-			}
-			
-		}
-	
-		return "notfound";
-	}
 
 	public function __construct()
 	{
@@ -43,7 +19,6 @@ class Beltdrive extends CI_Controller {
 			'environment' => (defined(ENVIRONMENT) ? ENVIRONMENT:"development"),
 			'server_name' => $this->config->item('authHelper')
 		]);
-		$this->serverId = $this->getMacLinux();
 		$this->doctrine->extendTimeout();
 
 		$this->load->model("asset_model");
@@ -184,6 +159,9 @@ class Beltdrive extends CI_Controller {
 			$instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
 
 			$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
+
+			// mount the storage
+			exec("/usr/local/bin/ebs-mount.sh");
 
 			if($drawer) {
 				$allDerivativesLocal = true;
@@ -632,6 +610,9 @@ class Beltdrive extends CI_Controller {
 				continue;
 			}
 			echo "Importing files for: " . $objectId . "\n";
+
+			// run the ebs-mount shell script to mount the storage
+			exec("/usr/local/bin/ebs-mount.sh");
 
 			$assetModel = new Asset_model($objectId);
 			$assetArray = $assetModel->getAsArray();

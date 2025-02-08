@@ -98,7 +98,7 @@ curl -H 'Content-Type: application/json' -XPOST 'http://localhost:9200/_aliases'
     {
       "add": {
         "index": "elevator",
-        "alias": "sort_elevator"
+        "alias": "elevator_dev"
       }
     }
   ]
