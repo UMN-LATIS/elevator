@@ -46,7 +46,7 @@ class DrawerPermission
      * @param \Entity\DrawerGroup $group
      * @return DrawerPermission
      */
-    public function setGroup(\Entity\DrawerGroup $group = null)
+    public function setGroup(? \Entity\DrawerGroup $group = null)
     {
         $this->group = $group;
 
@@ -69,7 +69,7 @@ class DrawerPermission
      * @param \Entity\Drawer $drawer
      * @return DrawerPermission
      */
-    public function setDrawer(\Entity\Drawer $drawer = null)
+    public function setDrawer(? \Entity\Drawer $drawer = null)
     {
         $this->drawer = $drawer;
 
@@ -92,7 +92,7 @@ class DrawerPermission
      * @param \Entity\Permission $permission
      * @return DrawerPermission
      */
-    public function setPermission(\Entity\Permission $permission = null)
+    public function setPermission(? \Entity\Permission $permission = null)
     {
         $this->permission = $permission;
 
