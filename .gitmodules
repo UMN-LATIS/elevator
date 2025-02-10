@@ -1,0 +1,3 @@
+[submodule "assets/elevator-ui"]
+	path = assets/elevator-ui
+	url = https://github.com/UMN-LATIS/elevator-ui.git
