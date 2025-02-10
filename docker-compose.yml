@@ -43,7 +43,8 @@ services:
   php-fpm:
     platform: linux/x86_64
     build: 
-      context: docker/
+      context: .
+      dockerfile: docker/Dockerfile
       args:
         - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
         - DOCKER_ENVIRONMENT=${ENVIRONMENT}

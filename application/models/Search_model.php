@@ -652,7 +652,7 @@ class search_model extends CI_Model {
 
 
     	$searchParams['body']['stored_fields'] = "_id";
-
+		$searchParams['body']['track_total_hits'] = true;
     	// $this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
     	// $this->logging->logError("queryParams", $queryResponse);

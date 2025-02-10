@@ -13,9 +13,17 @@ add('writable_dirs', ['application/models/Proxies']);
 
 // Hosts
 
-host('cla-dev.elevatorapp.net')
+host('cla-dev')
+    ->setHostname('cla-dev.elevatorapp.net')
+->setLabels(['stage' => 'cla_dev'])
     ->set('remote_user', 'latis_deploy_user')
     ->set('deploy_path', '/var/www/elevator');
+
+host('dev')
+    ->setHostname('107.21.83.113')
+    ->set('remote_user', 'latis_deploy_user')
+    ->set('deploy_path', '/var/www/elevator');
+
 
 // Hooks
 
@@ -54,6 +62,11 @@ after('deploy:git:submodules', 'elevator:build-ui');
 task('elevator:build-ui', function () {
     run('cd {{release_path}}/assets/elevator-ui && npm install');
     run('cd {{release_path}}/assets/elevator-ui && npm run build:prod');
+});
+
+after('elevator:build-ui', 'elevator:create_instance_assets');
+task('elevator:instance_assets', function () {
+    run('cd {{release_path}}/assets/ && mkdir instanceAssets && chmod 777 instanceAssets');
 });
 
 after('deploy:symlink', 'elevator:restart_systemd');
