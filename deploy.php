@@ -6,7 +6,7 @@ require 'recipe/codeigniter.php';
 // Config
 
 set('repository', 'git@github.com:UMN-LATIS/elevator.git');
-
+set('update_code_strategy', 'clone');
 set('shared_files', ['.env']);
 add('shared_dirs', []);
 add('writable_dirs', ['application/models/Proxies']);
@@ -40,6 +40,20 @@ task('elevator:restart_systemd', function() {
     run('sudo systemctl restart updateIndexes');
     run('sudo systemctl restart urlImport');
     run('sudo systemctl restart restoreFiles');
+});
+
+after('deploy:update_code', 'deploy:git:submodules');
+task('deploy:git:submodules', function () {
+    $git = get('bin/git');
+
+    cd('{{release_path}}');
+    run("$git submodule update --init");
+});
+
+after('deploy:git:submodules', 'elevator:build-ui');
+task('elevator:build-ui', function () {
+    run('cd {{release_path}}/assets/elevator-ui && npm install');
+    run('cd {{release_path}}/assets/elevator-ui && npm run build:prod');
 });
 
 after('deploy:symlink', 'elevator:restart_systemd');
