@@ -176,7 +176,7 @@ class DrawerItem
      * @param \Entity\Drawer $drawer
      * @return DrawerItem
      */
-    public function setDrawer(\Entity\Drawer $drawer = null)
+    public function setDrawer(? \Entity\Drawer $drawer = null)
     {
         $this->drawer = $drawer;
 

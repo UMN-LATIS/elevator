@@ -20,7 +20,7 @@ host('cla-dev')
     ->set('deploy_path', '/var/www/elevator');
 
 host('dev')
-    ->setHostname('107.21.83.113')
+    ->setHostname('dev.elevator.umn.edu')
     ->set('remote_user', 'latis_deploy_user')
     ->set('deploy_path', '/var/www/elevator');
 
@@ -65,7 +65,7 @@ task('elevator:build-ui', function () {
 });
 
 after('elevator:build-ui', 'elevator:create_instance_assets');
-task('elevator:instance_assets', function () {
+task('elevator:create_instance_assets', function () {
     run('cd {{release_path}}/assets/ && mkdir instanceAssets && chmod 777 instanceAssets');
 });
 

@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-
+#[\AllowDynamicProperties]
 class Upload extends Widget_base {
 
 	public $extractLocation;
