@@ -1,5 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+// didn't want to do this but we have legacy objects that create all kinds of properties
+#[\AllowDynamicProperties]
 class Upload_contents extends Widget_contents_base {
 
 	public $fileId;

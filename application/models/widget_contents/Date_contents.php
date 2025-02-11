@@ -48,7 +48,7 @@ class Date_contents extends Widget_contents_base {
 				$this->isPrimary = true;
 			}
 		}
-		if(count($this->end)>0 && strlen($this->end["text"])>0) {
+		if(count($this->end)>0 && strlen($this->end["text"]??"")>0) {
 			$this->range = true;
 		}
 	}
