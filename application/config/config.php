@@ -478,7 +478,7 @@ $config['oAuthDomain'] = $_ENV['OAUTH_DOMAIN'] ?? null;
 $config['oAuthDelegate']['type'] = $_ENV['OAUTH_DELEGATE_TYPE'] ?? null;
 $config['oAuthDelegate']['project_id'] = $_ENV['OAUTH_DELEGATE_PROJECT_ID'] ?? null;
 $config['oAuthDelegate']['private_key_id'] = $_ENV['OAUTH_DELEGATE_PRIVATE_KEY_ID'] ?? null;
-$config['oAuthDelegate']['private_key'] = str_replace("\\n","\n", $_ENV['OAUTH_DELEGATE_PRIVATE_KEY']?? null) ;
+$config['oAuthDelegate']['private_key'] = str_replace("\\n","\n", $_ENV['OAUTH_DELEGATE_PRIVATE_KEY']?? "") ;
 $config['oAuthDelegate']['client_email'] = $_ENV['OAUTH_DELEGATE_CLIENT_EMAIL'] ?? null;
 $config['oAuthDelegate']['client_id'] = $_ENV['OAUTH_DELEGATE_CLIENT_ID'] ?? null;
 $config['oAuthDelegate']['auth_uri'] = $_ENV['OAUTH_DELEGATE_AUTH_URI'] ?? null;
@@ -526,11 +526,11 @@ $config['shib_local_settings']  = [
     'sp' => [
         'entityId' => $_ENV['SHIB_ENTITY_ID'] ?? '',
         'assertionConsumerService' => [
-            'url' => $config['base_url'] . $_ENV['SHIB_ASSERTION_CONSUMER_URL'] ?? '/local-sp/Login',
+            'url' => $config['base_url'] . ($_ENV['SHIB_ASSERTION_CONSUMER_URL'] ?? '/local-sp/Login'),
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
         ],
         'singleLogoutService' => [
-            'url' =>  $config['base_url'] . $_ENV['SHIB_LOGOUT_SERVICE_URL'] ?? '/local-sp/Logout',
+            'url' =>  $config['base_url'] . ($_ENV['SHIB_LOGOUT_SERVICE_URL'] ?? '/local-sp/Logout'),
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ],
         'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',

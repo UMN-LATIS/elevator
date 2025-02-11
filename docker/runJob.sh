@@ -10,6 +10,7 @@ if [ -f .env ]; then
     source .env
 fi
 
+printenv
 
 # check if ENVIRONMENT variable is local
 if [ "$ENVIRONMENT" = "local" ]; then
