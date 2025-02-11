@@ -24,7 +24,7 @@ else{
 
 
 if(isset($_SERVER['HTTP_HOST'])) {
-	$config['base_url'] = (getenv('ENVIRONMENT')=='localTEMP'?'http://':'https://') .$_SERVER['HTTP_HOST'] ."/";
+	$config['base_url'] = ($_SERVER['ENVIRONMENT')=='localTEMP'?'http://':'https://'] .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
 	$config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
@@ -241,7 +241,7 @@ $config['cache_path'] = '';
 | MUST set an encryption key.  See the user guide for info.
 |
 */
-$config['encryption_key'] = getenv('ENCRYPTION_KEY') ?: '';
+$config['encryption_key'] = $_SERVER['ENCRYPTION_KEY'] ?? '';
 /*
 |--------------------------------------------------------------------------
 | Session Variables
@@ -270,7 +270,7 @@ $config['sess_match_ip']		= FALSE;
 $config['sess_match_useragent']	= TRUE;
 $config['sess_time_to_update']	= 86400;
 $config['sess_driver'] = 'redis';
-$config['sess_save_path'] = 'tcp://' . (getenv('REDIS_HOST')?:null) . ':6379';
+$config['sess_save_path'] = 'tcp://' . ($_SERVER['REDIS_HOST')??null] . ':6379';
 
 /*
 |--------------------------------------------------------------------------
@@ -401,16 +401,16 @@ spl_autoload_register(function($class)
 });
 
 
-$config['beanstalkd'] = getenv('BEANSTALK_HOST') ?: null; // beanstalkd host
-$config['scratchSpace'] = getenv('SCRATCH_DIR') ?: null;
+$config['beanstalkd'] = $_SERVER['BEANSTALK_HOST'] ?? null; // beanstalkd host
+$config['scratchSpace'] = $_SERVER['SCRATCH_DIR'] ?? null;
 
-$config['elastic'] = getenv('ELASTIC_HOST') ?: null;
-$config['elasticIndex'] = getenv('ELASTIC_INDEX') ?: null;
+$config['elastic'] = $_SERVER['ELASTIC_HOST'] ?? null;
+$config['elasticIndex'] = $_SERVER['ELASTIC_INDEX'] ?? null;
 
-$config['redis'] = (getenv('REDIS_HOST') ?: null); // elastic ip:port
+$config['redis'] = ($_SERVER['REDIS_HOST') ?? null]; // elastic ip:port
 $config['redisPort'] = "6379";
 
-if(defined('ENVIRONMENT') && ENVIRONMENT == "localTODO" || getenv('ENVIRONMENT') == "development") {
+if(defined('ENVIRONMENT') && ENVIRONMENT == "localTODO" || $_SERVER['ENVIRONMENT') == "development"] {
     
   $config["enableCaching"] = false;
 }
@@ -452,70 +452,70 @@ $config['3mf2stl'] = '/usr/local/bin/3mf2stl';
 
 // LDAP username and password.
 // Application should bind anonymously if not set, or set to blanks.
-$config['ldapUsername'] = getenv('LDAP_USERNAME') ?: null;
-$config['ldapPassword'] = getenv('LDAP_PASSWORD') ?: null;
-$config['ldapURI'] = getenv('LDAP_URI') ?: null;
-$config['ldapSearchBase'] = getenv('LDAP_SEARCH_BASE') ?: null;
+$config['ldapUsername'] = $_SERVER['LDAP_USERNAME'] ?? null;
+$config['ldapPassword'] = $_SERVER['LDAP_PASSWORD'] ?? null;
+$config['ldapURI'] = $_SERVER['LDAP_URI'] ?? null;
+$config['ldapSearchBase'] = $_SERVER['LDAP_SEARCH_BASE'] ?? null;
 
-$config['shibbolethLogin'] = getenv('SHIBBOLETH_LOGIN') ?: null;
-$config['shibbolethLogout'] = getenv('SHIBBOLETH_LOGOUT') ?: null;
+$config['shibbolethLogin'] = $_SERVER['SHIBBOLETH_LOGIN'] ?? null;
+$config['shibbolethLogout'] = $_SERVER['SHIBBOLETH_LOGOUT'] ?? null;
 
-$config['jwplayer'] = getenv('JWPLAYER_KEY') ?: null;
+$config['jwplayer'] = $_SERVER['JWPLAYER_KEY'] ?? null;
 
-$config['googleApi'] = getenv('GOOGLE_API') ?: null;
+$config['googleApi'] = $_SERVER['GOOGLE_API'] ?? null;
 
 $config['missingSiteURL'] = 'http://www.elevatorapp.net';
 
 
-$config['authHelper'] = getenv('AUTH_HELPER') ?: "AuthHelper";
+$config['authHelper'] = $_SERVER['AUTH_HELPER'] ?? "AuthHelper";
 
-$config['oAuthClient'] = getenv('OAUTH_CLIENT') ?: null;
-$config['oAuthSecret'] = getenv('OAUTH_SECRET') ?: null;
-$config['oAuthApplication'] = getenv('OAUTH_APPLICATION') ?: null;
-$config['oAuthDomain'] = getenv('OAUTH_DOMAIN') ?: null;
+$config['oAuthClient'] = $_SERVER['OAUTH_CLIENT'] ?? null;
+$config['oAuthSecret'] = $_SERVER['OAUTH_SECRET'] ?? null;
+$config['oAuthApplication'] = $_SERVER['OAUTH_APPLICATION'] ?? null;
+$config['oAuthDomain'] = $_SERVER['OAUTH_DOMAIN'] ?? null;
 
-$config['oAuthDelegate']['type'] = getenv('OAUTH_DELEGATE_TYPE') ?: null;
-$config['oAuthDelegate']['project_id'] = getenv('OAUTH_DELEGATE_PROJECT_ID') ?: null;
-$config['oAuthDelegate']['private_key_id'] = getenv('OAUTH_DELEGATE_PRIVATE_KEY_ID') ?: null;
-$config['oAuthDelegate']['private_key'] = str_replace("\\n","\n", getenv('OAUTH_DELEGATE_PRIVATE_KEY')?: "") ;
-$config['oAuthDelegate']['client_email'] = getenv('OAUTH_DELEGATE_CLIENT_EMAIL') ?: null;
-$config['oAuthDelegate']['client_id'] = getenv('OAUTH_DELEGATE_CLIENT_ID') ?: null;
-$config['oAuthDelegate']['auth_uri'] = getenv('OAUTH_DELEGATE_AUTH_URI') ?: null;
-$config['oAuthDelegate']['token_uri'] = getenv('OAUTH_DELEGATE_TOKEN_URI') ?: null;
-$config['oAuthDelegate']['auth_provider_x509_cert_url'] = getenv('OAUTH_DELEGATE_AUTH_PROVIDER_X509_CERT_URL') ?: null;
-$config['oAuthDelegate']['client_x509_cert_url'] = getenv('OAUTH_DELEGATE_CLIENT_X509_CERT_URL') ?: null;
+$config['oAuthDelegate']['type'] = $_SERVER['OAUTH_DELEGATE_TYPE'] ?? null;
+$config['oAuthDelegate']['project_id'] = $_SERVER['OAUTH_DELEGATE_PROJECT_ID'] ?? null;
+$config['oAuthDelegate']['private_key_id'] = $_SERVER['OAUTH_DELEGATE_PRIVATE_KEY_ID'] ?? null;
+$config['oAuthDelegate']['private_key'] = str_replace("\\n","\n", $_SERVER['OAUTH_DELEGATE_PRIVATE_KEY')?? ""] ;
+$config['oAuthDelegate']['client_email'] = $_SERVER['OAUTH_DELEGATE_CLIENT_EMAIL'] ?? null;
+$config['oAuthDelegate']['client_id'] = $_SERVER['OAUTH_DELEGATE_CLIENT_ID'] ?? null;
+$config['oAuthDelegate']['auth_uri'] = $_SERVER['OAUTH_DELEGATE_AUTH_URI'] ?? null;
+$config['oAuthDelegate']['token_uri'] = $_SERVER['OAUTH_DELEGATE_TOKEN_URI'] ?? null;
+$config['oAuthDelegate']['auth_provider_x509_cert_url'] = $_SERVER['OAUTH_DELEGATE_AUTH_PROVIDER_X509_CERT_URL'] ?? null;
+$config['oAuthDelegate']['client_x509_cert_url'] = $_SERVER['OAUTH_DELEGATE_CLIENT_X509_CERT_URL'] ?? null;
 
-$config['remoteLoginLabel'] = getenv('REMOTE_LOGIN_LABEL') ?: 'University';
-$config['guestLoginLabel'] = getenv('GUEST_LOGIN_LABEL') ?: 'Guest';
+$config['remoteLoginLabel'] = $_SERVER['REMOTE_LOGIN_LABEL'] ?? 'University';
+$config['guestLoginLabel'] = $_SERVER['GUEST_LOGIN_LABEL'] ?? 'Guest';
 
-$config['css_override'] = getenv('CSS_OVERRIDE') ?: 'FALSE';
-$config['restrict_hidden_assets'] = getenv('RESTRICT_HIDDEN_ASSETS') ?: 'FALSE';
+$config['css_override'] = $_SERVER['CSS_OVERRIDE'] ?? 'FALSE';
+$config['restrict_hidden_assets'] = $_SERVER['RESTRICT_HIDDEN_ASSETS'] ?? 'FALSE';
 
-$config['sentry_dsn'] = getenv('SENTRY_DSN') ?: null;
+$config['sentry_dsn'] = $_SERVER['SENTRY_DSN'] ?? null;
 
-$config['umn_bearer_token'] = getenv('UMN_BEARER_TOKEN') ?: null;
-$config['arcgis_access_token'] = getenv('ARCGIS_ACCESS_TOKEN') ?: null;
+$config['umn_bearer_token'] = $_SERVER['UMN_BEARER_TOKEN'] ?? null;
+$config['arcgis_access_token'] = $_SERVER['ARCGIS_ACCESS_TOKEN'] ?? null;
 
-$config['available_themes'] = json_decode(getenv('AVAILABLE_THEMES') ?: '[]', true);
+$config['available_themes'] = json_decode($_SERVER['AVAILABLE_THEMES') ?? '[]', true];
 
-$config['awsQueueRegion'] = getenv('AWS_QUEUEING_REGION') ?: 'us-east-1';
-$config['awsQueueAccessKey'] = getenv('AWS_QUEUEING_ACCESS_KEY_ID') ?: null;
-$config['awsQueueSecretKey'] = getenv('AWS_QUEUEING_SECRET_ACCESS_KEY') ?: null;
-$config['awsQueueJobDefinition'] = getenv('AWS_QUEUEING_JOB_DEFINITION') ?: 'elevator';
-$config['awsQueueJobQueue'] = getenv('AWS_QUEUEING_JOB_QUEUE') ?: 'PrimaryJobQueue';
+$config['awsQueueRegion'] = $_SERVER['AWS_QUEUEING_REGION'] ?? 'us-east-1';
+$config['awsQueueAccessKey'] = $_SERVER['AWS_QUEUEING_ACCESS_KEY_ID'] ?? null;
+$config['awsQueueSecretKey'] = $_SERVER['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? null;
+$config['awsQueueJobDefinition'] = $_SERVER['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
+$config['awsQueueJobQueue'] = $_SERVER['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
 
-$config['shib_authfield'] = getenv('SHIB_AUTH_FIELD') ?: 'email';
+$config['shib_authfield'] = $_SERVER['SHIB_AUTH_FIELD'] ?? 'email';
 $config['shib_user'] =  [
   // fillable user model attribute => server variable
-  'email'       => getenv('SHIB_EMAIL_FIELD') ?: 'eppn',
-  'name'        => getenv('SHIB_NAME_FIELD') ?: 'displayName',
-  'first_name'  => getenv('SHIB_FIRST_NAME') ?: 'givenName',
-  'last_name'   => getenv('SHIB_LAST_NAME') ?: 'sn',
-  'uniqueIdentifier'      => getenv('SHIB_DID') ?: 'umnDID',
-  'emplId'      => getenv('SHIB_EMPL_ID') ?: 'umnEmplId',
-  'umnRegSummary' => getenv('SHIB_REG_SUMMARY') ?: 'umnRegSummary',
-  'eduPersonAffiliation' => getenv('SHIB_AFFILIATION') ?: 'eduPersonAffiliation',
-  'isGuest' => getenv('SHIB_IS_GUEST') ?: 'isGuest',
+  'email'       => $_SERVER['SHIB_EMAIL_FIELD'] ?? 'eppn',
+  'name'        => $_SERVER['SHIB_NAME_FIELD'] ?? 'displayName',
+  'first_name'  => $_SERVER['SHIB_FIRST_NAME'] ?? 'givenName',
+  'last_name'   => $_SERVER['SHIB_LAST_NAME'] ?? 'sn',
+  'uniqueIdentifier'      => $_SERVER['SHIB_DID'] ?? 'umnDID',
+  'emplId'      => $_SERVER['SHIB_EMPL_ID'] ?? 'umnEmplId',
+  'umnRegSummary' => $_SERVER['SHIB_REG_SUMMARY'] ?? 'umnRegSummary',
+  'eduPersonAffiliation' => $_SERVER['SHIB_AFFILIATION'] ?? 'eduPersonAffiliation',
+  'isGuest' => $_SERVER['SHIB_IS_GUEST'] ?? 'isGuest',
 ];
 
 $config['shib_local_settings']  = [
@@ -523,36 +523,36 @@ $config['shib_local_settings']  = [
     'debug' => false,
     'baseurl' => null,
     'sp' => [
-        'entityId' => getenv('SHIB_ENTITY_ID') ?: '',
+        'entityId' => $_SERVER['SHIB_ENTITY_ID'] ?? '',
         'assertionConsumerService' => [
-            'url' => $config['base_url'] . (getenv('SHIB_ASSERTION_CONSUMER_URL') ?: '/local-sp/Login'),
+            'url' => $config['base_url'] . ($_SERVER['SHIB_ASSERTION_CONSUMER_URL') ?? '/local-sp/Login'],
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
         ],
         'singleLogoutService' => [
-            'url' =>  $config['base_url'] . (getenv('SHIB_LOGOUT_SERVICE_URL') ?: '/local-sp/Logout'),
+            'url' =>  $config['base_url'] . ($_SERVER['SHIB_LOGOUT_SERVICE_URL') ?? '/local-sp/Logout'],
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ],
         'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
-        'x509cert' => getenv('SHIB_X509_CERT') ?: '',
-        'privateKey' => getenv('SHIB_PRIVATE_KEY') ?: '',
+        'x509cert' => $_SERVER['SHIB_X509_CERT'] ?? '',
+        'privateKey' => $_SERVER['SHIB_PRIVATE_KEY'] ?? '',
     ],
     'idp' => [
-        'entityId' => getenv('SHIB_IDP_ENTITY') ?: '',
+        'entityId' => $_SERVER['SHIB_IDP_ENTITY'] ?? '',
         'singleSignOnService' => [
-            'url' => getenv('SHIB_IDP_SSO') ?: '',
+            'url' => $_SERVER['SHIB_IDP_SSO'] ?? '',
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ],
         'singleLogoutService' => [
-            'url' => getenv('SHIB_IDP_SLO') ?: '',
-            'responseUrl' => getenv('SHIB_IDP_SLO_RESPONSE') ?: '',
+            'url' => $_SERVER['SHIB_IDP_SLO'] ?? '',
+            'responseUrl' => $_SERVER['SHIB_IDP_SLO_RESPONSE'] ?? '',
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ],
         'x509certMulti' => [
             'signing' => [
-                0 => getenv('SHIB_IDP_X509_SIGNING') ?: '',
+                0 => $_SERVER['SHIB_IDP_X509_SIGNING'] ?? '',
             ],
             'encryption' => [
-                0 => getenv('SHIB_IDP_X509_ENCRYPTION') ?: '',
+                0 => $_SERVER['SHIB_IDP_X509_ENCRYPTION'] ?? '',
             ],
         ],
     ],

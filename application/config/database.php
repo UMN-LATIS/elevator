@@ -48,11 +48,11 @@
 $active_group = 'default';
 $active_record = TRUE;
 
- $db['default']['hostname'] = getenv('DATABASE_HOST'); // server ip address
+ $db['default']['hostname'] = $_SERVER['DATABASE_HOST']; // server ip address
  $db['default']['port'] = '5432';
- $db['default']['username'] = getenv('DATABASE_USER'); //  username
- $db['default']['password'] = getenv('DATABASE_PASSWORD'); //  password
- $db['default']['database'] = getenv('DATABASE_DB'); //  DB
+ $db['default']['username'] = $_SERVER['DATABASE_USER']; //  username
+ $db['default']['password'] = $_SERVER['DATABASE_PASSWORD']; //  password
+ $db['default']['database'] = $_SERVER['DATABASE_DB']; //  DB
  $db['default']['dbdriver'] = 'postgre'; // standard PHP/PDO
  $db['default']['doctrineDriver'] = 'pdo_pgsql'; // using Doctrine naming
  $db['default']['dbprefix'] = '';
