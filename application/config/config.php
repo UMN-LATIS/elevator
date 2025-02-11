@@ -496,7 +496,7 @@ $config['sentry_dsn'] = $_SERVER['SENTRY_DSN'] ?? null;
 $config['umn_bearer_token'] = $_SERVER['UMN_BEARER_TOKEN'] ?? null;
 $config['arcgis_access_token'] = $_SERVER['ARCGIS_ACCESS_TOKEN'] ?? null;
 
-$config['available_themes'] = json_decode($_SERVER['AVAILABLE_THEMES') ?? '[]', true];
+$config['available_themes'] = json_decode($_SERVER['AVAILABLE_THEMES'] ?? '[]', true);
 
 $config['awsQueueRegion'] = $_SERVER['AWS_QUEUEING_REGION'] ?? 'us-east-1';
 $config['awsQueueAccessKey'] = $_SERVER['AWS_QUEUEING_ACCESS_KEY_ID'] ?? null;
