@@ -74,7 +74,7 @@ class Beltdrive extends CI_Controller {
 	}
 
 	public function processAWSBatchJob($fileObjectId) {
-		
+
 		if(strlen($fileObjectId) != 24) {
 			return 0;
 		}
