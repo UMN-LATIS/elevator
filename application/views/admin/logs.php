@@ -21,7 +21,7 @@ word-wrap: break-word;">
 					<td><?=$log->getCreatedAt()->format('Y-m-d H:i:s')?></td>
 					<td><?=$log->getAsset()?></td>
 					<td><?=$log->getTask()?></td>
-					<td class="autoTruncate"><?=htmlentities($log->getMessage())?></td>
+					<td class="autoTruncate"><?=htmlentities($log->getMessage()??"")?></td>
 					<td><a href="<?=instance_url("/instances/edit/".($log->getInstance()?$log->getInstance()->getId():null))?>"><?=$log->getInstance()?$log->getInstance()->getId():null?></td>
 					<td><a href="<?=instance_url("/collections/edit/".($log->getCollection()?$log->getCollection()->getId():null))?>"><?=$log->getCollection()?$log->getCollection()->getId():null?></td>
 					<td><a href="<?=instance_url("/admin/user/".($log->getUser()?$log->getUser()->getId():null))?>"><?=$log->getUser()?$log->getUser()->getId():null?></td>

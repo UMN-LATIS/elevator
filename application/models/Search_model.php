@@ -531,7 +531,7 @@ class search_model extends CI_Model {
 			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['query'] = $searchArray["searchText"];
 
 			//TOOD: the intenion here is to reduce the weight of fileSearchData fields, but that isn't waht this is doing.
-			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = ["my_all"];
+			$searchParams['body']['query']['bool']['should'][$i]['multi_match']['fields'] = ["my_all", "fileSearchData^0.8"];
 			if(!$fuzzySearch) {
 				$matchType = "cross_fields";
 				if(isset($searchArray['matchType'])) {
