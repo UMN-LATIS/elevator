@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "939545fbb48f00a5b426ef7b34574f2d",
+    "content-hash": "77f3361947d3f93cb70669c528f2edd2",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -129,16 +129,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.339.9",
+            "version": "3.339.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "e443779facb8cd0bba30383753a7a451db83acd6"
+                "reference": "85b90f70f88739f4f363c1af7c230e294af3dbd0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e443779facb8cd0bba30383753a7a451db83acd6",
-                "reference": "e443779facb8cd0bba30383753a7a451db83acd6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/85b90f70f88739f4f363c1af7c230e294af3dbd0",
+                "reference": "85b90f70f88739f4f363c1af7c230e294af3dbd0",
                 "shasum": ""
             },
             "require": {
@@ -220,9 +220,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.9"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.10"
             },
-            "time": "2025-02-07T19:14:31+00:00"
+            "time": "2025-02-10T19:24:07+00:00"
         },
         {
             "name": "buggedcom/phpvideotoolkit",
@@ -324,12 +324,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/deployphp/deployer.git",
-                "reference": "585592f74eb8a4eed481f23167017fab442769af"
+                "reference": "150818da9562db52c88a7b03d4767d44c7f619b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/deployphp/deployer/zipball/585592f74eb8a4eed481f23167017fab442769af",
-                "reference": "585592f74eb8a4eed481f23167017fab442769af",
+                "url": "https://api.github.com/repos/deployphp/deployer/zipball/150818da9562db52c88a7b03d4767d44c7f619b8",
+                "reference": "150818da9562db52c88a7b03d4767d44c7f619b8",
                 "shasum": ""
             },
             "require": {
@@ -370,7 +370,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-30T17:01:21+00:00"
+            "time": "2025-02-10T15:09:58+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -651,41 +651,35 @@
         },
         {
             "name": "doctrine/dbal",
-            "version": "3.10.x-dev",
+            "version": "2.13.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/dbal.git",
-                "reference": "1eaa36c9c06732aab49c6dd83da4c7174d46aa1f"
+                "reference": "c480849ca3ad6706a39c970cdfe6888fa8a058b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/1eaa36c9c06732aab49c6dd83da4c7174d46aa1f",
-                "reference": "1eaa36c9c06732aab49c6dd83da4c7174d46aa1f",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/c480849ca3ad6706a39c970cdfe6888fa8a058b8",
+                "reference": "c480849ca3ad6706a39c970cdfe6888fa8a058b8",
                 "shasum": ""
             },
             "require": {
-                "composer-runtime-api": "^2",
+                "doctrine/cache": "^1.0|^2.0",
                 "doctrine/deprecations": "^0.5.3|^1",
-                "doctrine/event-manager": "^1|^2",
-                "php": "^7.4 || ^8.0",
-                "psr/cache": "^1|^2|^3",
-                "psr/log": "^1|^2|^3"
-            },
-            "conflict": {
-                "doctrine/cache": "< 1.11"
+                "doctrine/event-manager": "^1.0",
+                "ext-pdo": "*",
+                "php": "^7.1 || ^8"
             },
             "require-dev": {
-                "doctrine/cache": "^1.11|^2.0",
-                "doctrine/coding-standard": "12.0.0",
-                "fig/log-test": "^1",
-                "jetbrains/phpstorm-stubs": "2023.1",
-                "phpstan/phpstan": "2.1.1",
-                "phpstan/phpstan-strict-rules": "^2",
-                "phpunit/phpunit": "9.6.22",
-                "slevomat/coding-standard": "8.13.1",
-                "squizlabs/php_codesniffer": "3.10.2",
-                "symfony/cache": "^5.4|^6.0|^7.0",
-                "symfony/console": "^4.4|^5.4|^6.0|^7.0"
+                "doctrine/coding-standard": "9.0.0",
+                "jetbrains/phpstorm-stubs": "2021.1",
+                "phpstan/phpstan": "1.4.6",
+                "phpunit/phpunit": "^7.5.20|^8.5|9.5.16",
+                "psalm/plugin-phpunit": "0.16.1",
+                "squizlabs/php_codesniffer": "3.6.2",
+                "symfony/cache": "^4.4",
+                "symfony/console": "^2.0.5|^3.0|^4.0|^5.0",
+                "vimeo/psalm": "4.22.0"
             },
             "suggest": {
                 "symfony/console": "For helpful console commands such as SQL execution and import of files."
@@ -696,7 +690,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Doctrine\\DBAL\\": "src"
+                    "Doctrine\\DBAL\\": "lib/Doctrine/DBAL"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -739,13 +733,14 @@
                 "queryobject",
                 "sasql",
                 "sql",
+                "sqlanywhere",
                 "sqlite",
                 "sqlserver",
                 "sqlsrv"
             ],
             "support": {
                 "issues": "https://github.com/doctrine/dbal/issues",
-                "source": "https://github.com/doctrine/dbal/tree/3.10.x"
+                "source": "https://github.com/doctrine/dbal/tree/2.13.9"
             },
             "funding": [
                 {
@@ -761,7 +756,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-02-02T16:06:08+00:00"
+            "time": "2022-05-02T20:28:55+00:00"
         },
         {
             "name": "doctrine/deprecations",
@@ -769,12 +764,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/deprecations.git",
-                "reference": "287ffdf65b884d55ee38d52eca6a07863879fa36"
+                "reference": "738eb98a38a5897b48e44df7edc95f4fc705afee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/287ffdf65b884d55ee38d52eca6a07863879fa36",
-                "reference": "287ffdf65b884d55ee38d52eca6a07863879fa36",
+                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/738eb98a38a5897b48e44df7edc95f4fc705afee",
+                "reference": "738eb98a38a5897b48e44df7edc95f4fc705afee",
                 "shasum": ""
             },
             "require": {
@@ -807,33 +802,34 @@
                 "issues": "https://github.com/doctrine/deprecations/issues",
                 "source": "https://github.com/doctrine/deprecations/tree/1.1.x"
             },
-            "time": "2025-02-03T12:25:28+00:00"
+            "time": "2025-02-10T14:53:34+00:00"
         },
         {
             "name": "doctrine/event-manager",
-            "version": "2.1.x-dev",
+            "version": "1.2.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/event-manager.git",
-                "reference": "5e5da552e1506671353fd021f7a109e5c02b50f8"
+                "reference": "95aa4cb529f1e96576f3fda9f5705ada4056a520"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/event-manager/zipball/5e5da552e1506671353fd021f7a109e5c02b50f8",
-                "reference": "5e5da552e1506671353fd021f7a109e5c02b50f8",
+                "url": "https://api.github.com/repos/doctrine/event-manager/zipball/95aa4cb529f1e96576f3fda9f5705ada4056a520",
+                "reference": "95aa4cb529f1e96576f3fda9f5705ada4056a520",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.1"
+                "doctrine/deprecations": "^0.5.3 || ^1",
+                "php": "^7.1 || ^8.0"
             },
             "conflict": {
                 "doctrine/common": "<2.9"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^12",
-                "phpdocumentor/guides-cli": "^1.4",
-                "phpstan/phpstan": "^1.8.8",
-                "phpunit/phpunit": "^10.5"
+                "doctrine/coding-standard": "^9 || ^10",
+                "phpstan/phpstan": "~1.4.10 || ^1.8.8",
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
+                "vimeo/psalm": "^4.24"
             },
             "type": "library",
             "autoload": {
@@ -882,7 +878,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/event-manager/issues",
-                "source": "https://github.com/doctrine/event-manager/tree/2.0.x"
+                "source": "https://github.com/doctrine/event-manager/tree/1.2.x"
             },
             "funding": [
                 {
@@ -898,7 +894,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-01-10T07:09:52+00:00"
+            "time": "2022-10-12T20:51:15+00:00"
         },
         {
             "name": "doctrine/inflector",
