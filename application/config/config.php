@@ -270,7 +270,7 @@ $config['sess_match_ip']		= FALSE;
 $config['sess_match_useragent']	= TRUE;
 $config['sess_time_to_update']	= 86400;
 $config['sess_driver'] = 'redis';
-$config['sess_save_path'] = 'tcp://' . ($_SERVER['REDIS_HOST')??null] . ':6379';
+$config['sess_save_path'] = 'tcp://' . ($_SERVER['REDIS_HOST']??null) . ':6379';
 
 /*
 |--------------------------------------------------------------------------
@@ -407,10 +407,10 @@ $config['scratchSpace'] = $_SERVER['SCRATCH_DIR'] ?? null;
 $config['elastic'] = $_SERVER['ELASTIC_HOST'] ?? null;
 $config['elasticIndex'] = $_SERVER['ELASTIC_INDEX'] ?? null;
 
-$config['redis'] = ($_SERVER['REDIS_HOST') ?? null]; // elastic ip:port
+$config['redis'] = ($_SERVER['REDIS_HOST'] ?? null); // elastic ip:port
 $config['redisPort'] = "6379";
 
-if(defined('ENVIRONMENT') && ENVIRONMENT == "localTODO" || $_SERVER['ENVIRONMENT') == "development"] {
+if(defined('ENVIRONMENT') && ENVIRONMENT == "localTODO" || $_SERVER['ENVIRONMENT'] == "development") {
     
   $config["enableCaching"] = false;
 }
@@ -477,7 +477,7 @@ $config['oAuthDomain'] = $_SERVER['OAUTH_DOMAIN'] ?? null;
 $config['oAuthDelegate']['type'] = $_SERVER['OAUTH_DELEGATE_TYPE'] ?? null;
 $config['oAuthDelegate']['project_id'] = $_SERVER['OAUTH_DELEGATE_PROJECT_ID'] ?? null;
 $config['oAuthDelegate']['private_key_id'] = $_SERVER['OAUTH_DELEGATE_PRIVATE_KEY_ID'] ?? null;
-$config['oAuthDelegate']['private_key'] = str_replace("\\n","\n", $_SERVER['OAUTH_DELEGATE_PRIVATE_KEY')?? ""] ;
+$config['oAuthDelegate']['private_key'] = str_replace("\\n","\n", $_SERVER['OAUTH_DELEGATE_PRIVATE_KEY']?? "");
 $config['oAuthDelegate']['client_email'] = $_SERVER['OAUTH_DELEGATE_CLIENT_EMAIL'] ?? null;
 $config['oAuthDelegate']['client_id'] = $_SERVER['OAUTH_DELEGATE_CLIENT_ID'] ?? null;
 $config['oAuthDelegate']['auth_uri'] = $_SERVER['OAUTH_DELEGATE_AUTH_URI'] ?? null;
@@ -525,11 +525,11 @@ $config['shib_local_settings']  = [
     'sp' => [
         'entityId' => $_SERVER['SHIB_ENTITY_ID'] ?? '',
         'assertionConsumerService' => [
-            'url' => $config['base_url'] . ($_SERVER['SHIB_ASSERTION_CONSUMER_URL') ?? '/local-sp/Login'],
+            'url' => $config['base_url'] . ($_SERVER['SHIB_ASSERTION_CONSUMER_URL']?? '/local-sp/Login'),
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
         ],
         'singleLogoutService' => [
-            'url' =>  $config['base_url'] . ($_SERVER['SHIB_LOGOUT_SERVICE_URL') ?? '/local-sp/Logout'],
+            'url' =>  $config['base_url'] . ($_SERVER['SHIB_LOGOUT_SERVICE_URL'] ?? '/local-sp/Logout'),
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ],
         'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
