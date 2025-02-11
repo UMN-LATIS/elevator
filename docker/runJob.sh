@@ -1,8 +1,6 @@
 #!/bin/bash
 
 
-# change working dir to parent
-cd ../
 
 # capture arguments
 targetJobID=$1
@@ -11,6 +9,7 @@ targetJobID=$1
 if [ -f .env ]; then
     source .env
 fi
+
 
 # check if ENVIRONMENT variable is local
 if [ "$ENVIRONMENT" = "local" ]; then

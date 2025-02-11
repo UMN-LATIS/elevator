@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-
+#[\AllowDynamicProperties]
 class Related_asset extends Widget_base {
 
 	var $nestData = false;
