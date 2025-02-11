@@ -430,7 +430,7 @@ class FileHandlerBase extends CI_Model {
 				"attemptDurationSeconds" => ($size=="small")? 2400 : 28800,
 			],
 			'containerOverrides' => [
-        		'command' => ['bash', 'runJob.sh',  $fileObjectId],
+        		'command' => ['bash', 'docker/runJob.sh',  $fileObjectId],
 				'resourceRequirements' => $overrides
     		],
 		];

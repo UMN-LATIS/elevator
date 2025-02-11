@@ -1,5 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+#[\AllowDynamicProperties]
 class Widget_contents_base extends CI_Model {
 
 	public $fieldContents = NULL;

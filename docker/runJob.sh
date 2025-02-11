@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+# change working dir to parent
+cd ../
+
 # capture arguments
 targetJobID=$1
 
@@ -12,7 +16,7 @@ fi
 if [ "$ENVIRONMENT" = "local" ]; then
     # run the beltdrive command
     targetPath="/tmp/$targetJobID"
-    command="./docker-php.sh"
+    command="./docker/docker-php.sh"
 else
     # run the beltdrive command
     targetPath="/scratch/$targetJobID"
@@ -21,6 +25,7 @@ fi
 
 # make a directory for the job
 mkdir -p $targetPath
+
 
 # run the beltdrive command
 $command index.php beltdrive processAWSBatchJob $targetJobID
