@@ -418,7 +418,7 @@ class FileManager extends Instance_Controller {
 
 			$pathToFile = instance_url("/fileManager/getOriginal/".$fileId);
 			$newTask = json_encode(["objectId"=>$fileHandler->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"notify"]);
-			$jobId= $pheanstalk>put($newTask, NULL, 1);
+			$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
 
 			$this->template->content->view('restoringFile');
 			$this->template->publish();

@@ -96,14 +96,16 @@ class S3_model extends CI_Model {
 	
 		if(filesize($sourceFile) < 100*1024*1024) {
 			try {
+				$fp = fopen($sourceFile, "rb");
 				$this->s3Client->putObject(array(
 					'Bucket' => $this->bucket,
 					'Key'    => $destKey,
-					'Body'   => fopen($sourceFile, "rb"),
+					'Body'   => $fp,
 					'StorageClass'   => $storageClass,
 					"ContentType" => $targetMimeType,
 					"ContentEncoding" => $contentEncoding
 					));
+					fclose($fp);
 			}
 			catch (Exception $e) {
 				$this->logging->logError("putObject", $e, $sourceFile);

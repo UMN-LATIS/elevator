@@ -162,8 +162,9 @@ class Beltdrive extends CI_Controller {
 			$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
 
 			// mount the storage
-			exec("/usr/local/bin/ebs-mount.sh");
-
+			exec("sudo /usr/local/bin/ebs-mount.sh");
+			// make sure we hold an open file on the mount while we're working
+			$fp = fopen("/scratch/hold_file", "w");
 			if($drawer) {
 				$allDerivativesLocal = true;
 				$derivativeArray = array();
@@ -233,13 +234,13 @@ class Beltdrive extends CI_Controller {
 					$this->email->subject("Drawer Ready for Download");
 					$this->email->message($drawerContent);
 					$this->email->send();
-
+					
 					echo "Job Complete\n";
 
 				}
 				else {
 					echo "Postponing drawer " . $job_encoded['drawerId'] . "\n";
-					$pheanstalk->release($job, NULL, 5);
+					$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 5);
 				}
 
 			}
@@ -247,7 +248,7 @@ class Beltdrive extends CI_Controller {
 				$pheanstalk->delete($job);
 			}
 
-
+			fclose($fp);
 			$cnt++;
 
 			$memory = memory_get_usage();
@@ -293,7 +294,7 @@ class Beltdrive extends CI_Controller {
 
 				if($this->filehandlerbase->sourceFile->isArchived()) {
 					echo "Postpononing restore watch for " . $objectId . "\n";
-					$pheanstalk->release($job, NULL, 120);
+					$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 120);
 				}
 				else {
 					if($nextTask == "notify") {
@@ -380,7 +381,7 @@ class Beltdrive extends CI_Controller {
 
 			if($haveArchivedItems) {
 				echo "Have archied items, postponing collection migration for " . $objectId . "\n";
-				$pheanstalk->release($job, NULL, 900);
+				$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 900);
 			}
 			else {
 
@@ -613,8 +614,9 @@ class Beltdrive extends CI_Controller {
 			echo "Importing files for: " . $objectId . "\n";
 
 			// run the ebs-mount shell script to mount the storage
-			exec("/usr/local/bin/ebs-mount.sh");
-
+			exec("sudo /usr/local/bin/ebs-mount.sh");
+			// make sure we hold an open file on the mount while we're working
+			$fp = fopen("/scratch/hold_file", "w");
 			$assetModel = new Asset_model($objectId);
 			$assetArray = $assetModel->getAsArray();
 
@@ -761,6 +763,7 @@ class Beltdrive extends CI_Controller {
 			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 			$count++;
+			fclose($fp);
 			if($count % 10 == 0) {
 				gc_collect_cycles();
 			}
