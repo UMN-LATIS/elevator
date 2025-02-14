@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "77f3361947d3f93cb70669c528f2edd2",
+    "content-hash": "99bb341617312d83291d9a3bcb67fbc9",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -651,16 +651,16 @@
         },
         {
             "name": "doctrine/dbal",
-            "version": "2.13.9",
+            "version": "dev-maint-doctrine-2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/doctrine/dbal.git",
-                "reference": "c480849ca3ad6706a39c970cdfe6888fa8a058b8"
+                "url": "https://github.com/UMN-LATIS/dbal.git",
+                "reference": "ea8117f5cdf4953f67302ab32770abc95e654439"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/c480849ca3ad6706a39c970cdfe6888fa8a058b8",
-                "reference": "c480849ca3ad6706a39c970cdfe6888fa8a058b8",
+                "url": "https://api.github.com/repos/UMN-LATIS/dbal/zipball/ea8117f5cdf4953f67302ab32770abc95e654439",
+                "reference": "ea8117f5cdf4953f67302ab32770abc95e654439",
                 "shasum": ""
             },
             "require": {
@@ -693,7 +693,11 @@
                     "Doctrine\\DBAL\\": "lib/Doctrine/DBAL"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Doctrine\\Tests\\": "tests/Doctrine/Tests"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -739,24 +743,23 @@
                 "sqlsrv"
             ],
             "support": {
-                "issues": "https://github.com/doctrine/dbal/issues",
-                "source": "https://github.com/doctrine/dbal/tree/2.13.9"
+                "source": "https://github.com/UMN-LATIS/dbal/tree/maint-doctrine-2"
             },
             "funding": [
                 {
-                    "url": "https://www.doctrine-project.org/sponsorship.html",
-                    "type": "custom"
+                    "type": "patreon",
+                    "url": "https://www.patreon.com/phpdoctrine"
                 },
                 {
-                    "url": "https://www.patreon.com/phpdoctrine",
-                    "type": "patreon"
+                    "type": "tidelift",
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fdbal"
                 },
                 {
-                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Fdbal",
-                    "type": "tidelift"
+                    "type": "custom",
+                    "url": "https://www.doctrine-project.org/sponsorship.html"
                 }
             ],
-            "time": "2022-05-02T20:28:55+00:00"
+            "time": "2025-02-14T11:23:33+00:00"
         },
         {
             "name": "doctrine/deprecations",
@@ -5114,9 +5117,17 @@
         }
     ],
     "packages-dev": [],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "doctrine/dbal",
+            "version": "dev-maint-doctrine-2",
+            "alias": "2.13.9",
+            "alias_normalized": "2.13.9.0"
+        }
+    ],
     "minimum-stability": "dev",
     "stability-flags": {
+        "doctrine/dbal": 20,
         "smalot/pdfparser": 20,
         "buggedcom/phpvideotoolkit": 20,
         "google/apiclient": 20,
