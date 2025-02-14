@@ -14,7 +14,11 @@ RUN /root/get-docker.sh
 
 # add ldap php module
 RUN apt-get update && apt-get install -y libldap2-dev libldap-common
-RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
+RUN if [ "$(uname -m)" = "x86_64" ]; then \
+    docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/; \
+elif [ "$(uname -m)" = "aarch64" ]; then \
+    docker-php-ext-configure ldap; \
+fi
 RUN docker-php-ext-install ldap
 
 COPY docker/commands/* /usr/local/bin/

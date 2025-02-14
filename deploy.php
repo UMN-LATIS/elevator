@@ -16,12 +16,12 @@ add('writable_dirs', ['application/models/Proxies']);
 host('cla-dev')
     ->setHostname('cla-dev.elevatorapp.net')
 ->setLabels(['stage' => 'cla_dev'])
-    ->set('remote_user', 'latis_deploy_user')
+    ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('dev')
     ->setHostname('dev.elevator.umn.edu')
-    ->set('remote_user', 'latis_deploy_user')
+    ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 
@@ -60,8 +60,8 @@ task('deploy:git:submodules', function () {
 
 after('deploy:git:submodules', 'elevator:build-ui');
 task('elevator:build-ui', function () {
-    run('cd {{release_path}}/assets/elevator-ui && npm install');
-    run('cd {{release_path}}/assets/elevator-ui && npm run build:prod');
+    run('cd {{release_path}}/assets/elevator-ui && yarn install');
+    run('cd {{release_path}}/assets/elevator-ui && yarn build:prod');
 });
 
 after('elevator:build-ui', 'elevator:create_instance_assets');

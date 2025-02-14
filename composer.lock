@@ -129,16 +129,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.339.10",
+            "version": "3.339.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "85b90f70f88739f4f363c1af7c230e294af3dbd0"
+                "reference": "16b291be8ed930b87267552faeb9974aa3a2e6da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/85b90f70f88739f4f363c1af7c230e294af3dbd0",
-                "reference": "85b90f70f88739f4f363c1af7c230e294af3dbd0",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/16b291be8ed930b87267552faeb9974aa3a2e6da",
+                "reference": "16b291be8ed930b87267552faeb9974aa3a2e6da",
                 "shasum": ""
             },
             "require": {
@@ -220,9 +220,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.10"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.13"
             },
-            "time": "2025-02-10T19:24:07+00:00"
+            "time": "2025-02-13T19:07:55+00:00"
         },
         {
             "name": "buggedcom/phpvideotoolkit",
@@ -324,12 +324,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/deployphp/deployer.git",
-                "reference": "150818da9562db52c88a7b03d4767d44c7f619b8"
+                "reference": "4324b15ac3aec8a1f425039fef5b1e842f5333fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/deployphp/deployer/zipball/150818da9562db52c88a7b03d4767d44c7f619b8",
-                "reference": "150818da9562db52c88a7b03d4767d44c7f619b8",
+                "url": "https://api.github.com/repos/deployphp/deployer/zipball/4324b15ac3aec8a1f425039fef5b1e842f5333fd",
+                "reference": "4324b15ac3aec8a1f425039fef5b1e842f5333fd",
                 "shasum": ""
             },
             "require": {
@@ -370,7 +370,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-02-10T15:09:58+00:00"
+            "time": "2025-02-11T20:30:23+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -993,12 +993,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "23d5820752e39d44928d296b0c2f86b7aaed1f33"
+                "reference": "8ec66b1425f6506905f6880a8c7cd85ba8537b00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/23d5820752e39d44928d296b0c2f86b7aaed1f33",
-                "reference": "23d5820752e39d44928d296b0c2f86b7aaed1f33",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/8ec66b1425f6506905f6880a8c7cd85ba8537b00",
+                "reference": "8ec66b1425f6506905f6880a8c7cd85ba8537b00",
                 "shasum": ""
             },
             "require": {
@@ -1055,7 +1055,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-02-03T18:46:24+00:00"
+            "time": "2025-02-11T07:45:10+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -1242,12 +1242,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/persistence.git",
-                "reference": "b3642b81b0642e0cc419d81e3fee2a383061ea21"
+                "reference": "ec8c4290dc4860ab12a6e2dd655af17c0d6101c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/persistence/zipball/b3642b81b0642e0cc419d81e3fee2a383061ea21",
-                "reference": "b3642b81b0642e0cc419d81e3fee2a383061ea21",
+                "url": "https://api.github.com/repos/doctrine/persistence/zipball/ec8c4290dc4860ab12a6e2dd655af17c0d6101c3",
+                "reference": "ec8c4290dc4860ab12a6e2dd655af17c0d6101c3",
                 "shasum": ""
             },
             "require": {
@@ -1330,7 +1330,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-02-03T19:30:02+00:00"
+            "time": "2025-02-11T07:44:24+00:00"
         },
         {
             "name": "elastic/transport",

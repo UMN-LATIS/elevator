@@ -37,7 +37,7 @@ class InhibitorHook {
 	}
 	public function runtime_error_catcher() {
 		set_error_handler(array($this, 'handle_errors'));
-		set_exception_handler(array($this, 'handle_exceptions'));
+		// set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
 	/**
@@ -116,6 +116,13 @@ class InhibitorHook {
 	 */
 	public function handle_errors($errno, $errstr, $errfile, $errline)
 	{
+
+
+		// this is a hack for the deprecation in doctrine which triggers a shutdown.
+		// remove this if we ever get to doctrine3
+		
+		if(class_exists('Doctrine\DBAL\Platforms\PostgreSQL100Platform')) {
+		}
 
 		// don't log out strict stuff for now??
 

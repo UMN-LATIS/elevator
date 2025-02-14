@@ -492,7 +492,11 @@ class search_model extends CI_Model {
 
 		$query = array();
 		$i=0;
-		if(preg_match("/[*]+/u", $searchArray["searchText"])) {
+		if(isset($searchArray['useBoolean']) && $searchArray['useBoolean'] == true) {
+			$searchParams['body']['query']['bool']['should'][$i]['query_string']['query'] = $searchArray["searchText"];
+			$searchParams['body']['query']['bool']['should'][$i]['query_string']['fields'] = ["my_all", "fileSearchData^0.8"];
+		}
+		else if(preg_match("/[*]+/u", $searchArray["searchText"])) {
 			$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = ["my_all"=>strtolower($searchArray["searchText"])];
 		}
 		else if(preg_match("/.*\\.\\.\\..*/u", $searchArray["searchText"])) {
@@ -653,7 +657,7 @@ class search_model extends CI_Model {
 
     	$searchParams['body']['stored_fields'] = "_id";
 		$searchParams['body']['track_total_hits'] = true;
-    	// $this->logging->logError("params", $searchParams);
+    	$this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
     	// $this->logging->logError("queryParams", $queryResponse);
 

@@ -17,7 +17,6 @@ services:
 
   
   web:
-    platform: linux/x86_64
     image: nginx:latest
     ports:
       - '80:80'
@@ -36,12 +35,10 @@ services:
     links:
       - php-fpm
   beanstalkd:
-    platform: linux/x86_64
     image: maateen/docker-beanstalkd
     ports:
       - "11300:11300"
   php-fpm:
-    platform: linux/x86_64
     build: 
       context: .
       dockerfile: docker/Dockerfile
