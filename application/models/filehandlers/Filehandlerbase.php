@@ -205,7 +205,7 @@ class FileHandlerBase extends CI_Model {
 		$this->job = $job; //cache the job so we can touch it if necessary
 		$task = json_decode($job->getData(), true);
 		if(method_exists($this, $task["task"])) {
-			$this->logging->processingInfo("taskStart",get_class($this),"Starting Task " . $task["task"],$this->getObjectId(),$job->getId());
+			$this->logging->processingInfo("taskStart",get_class($this),"Starting Task " . $task["task"],$this->getObjectId(),0);
 			return call_user_func(array($this,$task["task"]), $task['config']);
 		}
 		else {

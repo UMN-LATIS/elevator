@@ -27,6 +27,16 @@ class Shibboleth extends MY_Controller {
         Utils::setProxyVars(true);
         $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
         $auth->processResponse();
+        $lastResponse = $auth->getLastResponseXML();
+        if(str_contains($lastResponse, "NoPassive")) {
+            if($_REQUEST['RelayState']) {
+                redirect($_REQUEST['RelayState']);
+            }
+            else {
+                redirect("/");
+            }
+            return;
+        }
         $errors = $auth->getErrors();
         if (!empty($errors)) {
             return render_json(array('error' => $errors, 'last_error_reason' => $auth->getLastErrorReason()));
@@ -56,7 +66,7 @@ class Shibboleth extends MY_Controller {
             redirect($_REQUEST['RelayState']);
         }
         else {
-            redirect("/");
+            instance_redirect("/");
         }
 
     }

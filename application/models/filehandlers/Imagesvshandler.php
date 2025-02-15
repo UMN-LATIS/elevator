@@ -146,7 +146,7 @@ class ImageSvsHandler extends FileHandlerBase {
 		}
 
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
-			$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
 
@@ -180,12 +180,12 @@ class ImageSvsHandler extends FileHandlerBase {
 					//TODO: log
 					//TODO: remove derivative
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
+					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),0);
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
+						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -193,7 +193,7 @@ class ImageSvsHandler extends FileHandlerBase {
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createDerivative","imageHandler","Error generating derivative",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","imageHandler","Error generating derivative",$this->getObjectId(),0);
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -225,7 +225,7 @@ class ImageSvsHandler extends FileHandlerBase {
 		$derivativeType = "svs";
 
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
-			$this->logging->processingInfo("createDerivative","imageSVSHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","imageSVSHandler","Local File Not Found",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
 
@@ -245,7 +245,7 @@ class ImageSvsHandler extends FileHandlerBase {
 
 		exec($extractString . " 2>/dev/null");
 		if(!file_exists($outputFile)) {
-			$this->logging->processingInfo("createDerivative","imageSVSHandler","Tiling failed",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","imageSVSHandler","Tiling failed",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
 		$this->load->helper('file');

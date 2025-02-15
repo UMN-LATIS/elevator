@@ -150,7 +150,7 @@ class AudioHandler extends FileHandlerBase {
 			return JOB_SUCCESS;
 		}
 		else {
-			$this->logging->processingInfo("createDerivative","audioHandler","Enqueuing jobs failed",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","audioHandler","Enqueuing jobs failed",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
 

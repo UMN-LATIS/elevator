@@ -163,13 +163,13 @@ class PDFHandler extends FileHandlerBase {
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
 					//TODO: remove derivative
-					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
+					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), 0);
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), 0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -177,7 +177,7 @@ class PDFHandler extends FileHandlerBase {
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not create derivative", $this->getObjectId(), 0);
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -258,7 +258,7 @@ class PDFHandler extends FileHandlerBase {
 		$derivativeContainer->ready = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
 			$success = false;
-			$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
+			$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), 0);
 			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 		}
 		else {
@@ -331,7 +331,7 @@ class PDFHandler extends FileHandlerBase {
 			$derivativeContainer->ready = true;
 			if(!$derivativeContainer->copyToRemoteStorage()) {
 				$success = false;
-				$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createDerivatives", "pdfhandler", "Could not upload derivative", $this->getObjectId(), 0);
 				echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 			}
 			else {

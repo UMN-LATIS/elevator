@@ -58,14 +58,18 @@ if(document.cookie && document.cookie.search(/_check_is_passive=/) >= 0){
           var re = new RegExp(botPattern, 'i');
           if (!re.test(navigator.userAgent)) {
 
-          document.cookie = "_check_is_passive=" + window.location + ";path=/; SameSite=None; Secure";
+            var cookieValue = "_check_is_passive=" + window.location + ";path=/; SameSite=None;";
+            if (location.protocol === 'https:') {
+            cookieValue += " Secure;";
+            }
+            document.cookie = cookieValue;
           // Redirect to Shibboleth handler
           
           if(typeof basePath == "undefined") {
 
             basePath = window.Elevator.config.instance.base.path;
           }
-          // window.location.href = "/Shibboleth/localSPLogin/true?target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?redirect=" + encodeURIComponent(window.location));
+          window.location.href = "/Shibboleth/localSPLogin/true?target=" + encodeURIComponent("https://"+window.location.hostname + basePath + "/loginManager/remoteLogin/true?redirect=" + encodeURIComponent(window.location));
 
         }
       }

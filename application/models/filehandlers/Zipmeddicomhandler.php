@@ -102,7 +102,7 @@ class ZipMedDicomHandler extends ZipHandler {
 
 		$targetPath = $this->sourceFile->getPathToLocalFile() . "_extracted";
 		if(!$res) {
-			$this->logging->processingInfo("createDerivative","dicomHandler","Coudl not extract zip",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","dicomHandler","Coudl not extract zip",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
 
@@ -206,13 +206,13 @@ class ZipMedDicomHandler extends ZipHandler {
 					if(!$derivativeContainer->copyToRemoteStorage()) {
 						//TODO: log
 						//TODO: remove derivative
-						$this->logging->processingInfo("createThumbnails", "dicomhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
+						$this->logging->processingInfo("createThumbnails", "dicomhandler", "Could not upload thumbnail", $this->getObjectId(), 0);
 						echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
 					else {
 						if(!unlink($derivativeContainer->getPathToLocalFile())) {
-							$this->logging->processingInfo("createThumbnails", "dicomhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+							$this->logging->processingInfo("createThumbnails", "dicomhandler", "Could not delete source file", $this->getObjectId(), 0);
 							echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 							$success=false;
 						}
@@ -220,7 +220,7 @@ class ZipMedDicomHandler extends ZipHandler {
 					$this->derivatives[$derivativeType] = $derivativeContainer;
 				}
 				else {
-					$this->logging->processingInfo("createThumbnails", "dicomhandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
+					$this->logging->processingInfo("createThumbnails", "dicomhandler", "Could not create derivative", $this->getObjectId(), 0);
 					echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 					$success=false;
 				}

@@ -189,7 +189,7 @@ class ImageHandler extends FileHandlerBase {
 
 
 			if(!file_exists($sourceFile->getPathToLocalFile())) {
-				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),0);
 				return JOB_FAILED;
 			}
 
@@ -209,12 +209,12 @@ class ImageHandler extends FileHandlerBase {
 					//TODO: log
 					//TODO: remove derivative
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
+					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),0);
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
+						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}

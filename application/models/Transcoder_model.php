@@ -51,7 +51,7 @@ class Transcoder_Model extends CI_Model {
 		if(!$this->fileHandler->sourceFile->isLocal()) {
 			$fileStatus = $this->fileHandler->sourceFile->makeLocal();
 			if($fileStatus === FILE_ERROR || $fileStatus == FILE_GLACIER_RESTORING) {
-				$this->logging->processingInfo("copy Local", "video","Could not copy local file", $this->fileHandler->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("copy Local", "video","Could not copy local file", $this->fileHandler->getObjectId(),0);
 				return false;
 			}
 		}
@@ -279,7 +279,7 @@ class Transcoder_Model extends CI_Model {
 		}
 		catch(Exception $e)
 		{
-			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", $this->job->getId());
+			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", 0);
 			return JOB_FAILED;
 		}
 
@@ -319,7 +319,7 @@ class Transcoder_Model extends CI_Model {
 			$output = $video->extractFrame($time)->save($derivativeContainer->getPathToLocalFile(), $outputformat, \PHPVideoToolkit\Video::OVERWRITE_EXISTING);
 		}
 		catch (PHPVideoToolkit\FfmpegProcessOutputException $e) {
-			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", $this->job->getId());
+			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", 0);
 			return JOB_FAILED;
 		}
 
@@ -339,7 +339,7 @@ class Transcoder_Model extends CI_Model {
 		}
 		catch(Exception $e)
 		{
-			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", $this->job->getId());
+			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", 0);
 			return JOB_FAILED;
 		}
 
@@ -387,7 +387,7 @@ class Transcoder_Model extends CI_Model {
 		}
 		catch(Exception $e)
 		{
-			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", $this->job->getId());
+			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", 0);
 			return JOB_FAILED;
 		}
 
@@ -504,7 +504,7 @@ class Transcoder_Model extends CI_Model {
 		}
 		catch(Exception $e)
 		{
-			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", $this->job->getId());
+			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), "", 0);
 			return JOB_FAILED;
 		}
 
@@ -695,7 +695,7 @@ class Transcoder_Model extends CI_Model {
 				$this->mungeAspect($process);
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "SD not created","", "", $this->job->getId());
+					$this->logging->processingInfo("createDerivative", "SD not created","", "", 0);
 					return JOB_FAILED;
 				}
         		echo "Uploading\n";
@@ -704,7 +704,7 @@ class Transcoder_Model extends CI_Model {
         			$derivativeContainer->ready = true;
         		}
         		else {
-        			$this->logging->processingInfo("createDerivative", "Could not upload SD","", "", $this->job->getId());
+        			$this->logging->processingInfo("createDerivative", "Could not upload SD","", "", 0);
         			return JOB_FAILED;
         		}
         		break;
@@ -751,7 +751,7 @@ class Transcoder_Model extends CI_Model {
 				}
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "HD not created","", "", $this->job->getId());
+					$this->logging->processingInfo("createDerivative", "HD not created","", "", 0);
 					return JOB_FAILED;
 				}
         		echo "Uploading";
@@ -760,7 +760,7 @@ class Transcoder_Model extends CI_Model {
         			$derivativeContainer->ready = true;
         		}
         		else {
-        			$this->logging->processingInfo("createDerivative", "could not upload HD","", "", $this->job->getId());
+        			$this->logging->processingInfo("createDerivative", "could not upload HD","", "", 0);
         			return JOB_FAILED;
         		}
         		break;
@@ -807,7 +807,7 @@ class Transcoder_Model extends CI_Model {
 				}
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "HD1080 not created","", "", $this->job->getId());
+					$this->logging->processingInfo("createDerivative", "HD1080 not created","", "", 0);
 					return JOB_FAILED;
 				}
         		echo "Uploading";
@@ -816,7 +816,7 @@ class Transcoder_Model extends CI_Model {
         			$derivativeContainer->ready = true;
         		}
         		else {
-        			$this->logging->processingInfo("createDerivative", "could not upload HD","", "", $this->job->getId());
+        			$this->logging->processingInfo("createDerivative", "could not upload HD","", "", 0);
         			return JOB_FAILED;
         		}
         		break;
@@ -828,14 +828,14 @@ class Transcoder_Model extends CI_Model {
 				$hdContainer = null;
 				$fileStatus = $sdContainer->makeLocal();
 					if($fileStatus === FILE_ERROR) {
-						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4sd file", $this->fileHandler->getObjectId(), $this->job->getId());
+						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4sd file", $this->fileHandler->getObjectId(), 0);
 						return false;
 					}
 				if(isset($this->fileHandler->derivatives["mp4hd"])) {
 					$hdContainer = $this->fileHandler->derivatives["mp4hd"];
 					$fileStatus = $hdContainer->makeLocal();
 					if($fileStatus === FILE_ERROR) {
-						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4hd file", $this->fileHandler->getObjectId(), $this->job->getId());
+						$this->logging->processingInfo("copy Local", "video","Could not copy local  mp4hd file", $this->fileHandler->getObjectId(), 0);
 						return false;
 					}
 				}
@@ -874,7 +874,7 @@ class Transcoder_Model extends CI_Model {
 					$process->addCommand("-hls_fmp4_init_filename", '2000k.mp4');
 	        		$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-2000k.m3u8", $outputFormat);
 	        		if(!$output) {
-	        			$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
+	        			$this->logging->processingInfo("createDerivative", "hls not created","", "", 0);
 						return JOB_FAILED;
 					}
 					$derivativeContainer->metadata["stream-2000k"] = file_get_contents($derivativeContainer->getPathToLocalFile() . "/stream/stream-2000k.m3u8");
@@ -900,7 +900,7 @@ class Transcoder_Model extends CI_Model {
         		
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8", $outputFormat);
 				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "hls not created","", "", $this->job->getId());
+					$this->logging->processingInfo("createDerivative", "hls not created","", "", 0);
 					return JOB_FAILED;
 				}
 				$derivativeContainer->metadata["stream-1200k"] = file_get_contents($derivativeContainer->getPathToLocalFile() . "/stream/stream-1200k.m3u8");
@@ -947,7 +947,7 @@ class Transcoder_Model extends CI_Model {
 
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "mp3 not created","", "", $this->job->getId());
+					$this->logging->processingInfo("createDerivative", "mp3 not created","", "", 0);
 					return JOB_FAILED;
 				}
         		echo "Uploading";
@@ -956,7 +956,7 @@ class Transcoder_Model extends CI_Model {
         			$derivativeContainer->ready = true;
         		}
         		else {
-        			$this->logging->processingInfo("createDerivative", "uploading MP3 failed","", "", $this->job->getId());
+        			$this->logging->processingInfo("createDerivative", "uploading MP3 failed","", "", 0);
         			return JOB_FAILED;
         		}
         		break;
@@ -977,7 +977,7 @@ class Transcoder_Model extends CI_Model {
 				$output = $this->runTask($video, $derivativeContainer->getPathToLocalFile(), $outputFormat);
 				
 				if(!$output) {
-					$this->logging->processingInfo("createDerivative", "m4a not created","", "", $this->job->getId());
+					$this->logging->processingInfo("createDerivative", "m4a not created","", "", 0);
 					return JOB_FAILED;
 				}
         		echo "Uploading";
@@ -986,7 +986,7 @@ class Transcoder_Model extends CI_Model {
         			$derivativeContainer->ready = true;
         		}
         		else {
-        			$this->logging->processingInfo("createDerivative", "uploading m4a failed","", "", $this->job->getId());
+        			$this->logging->processingInfo("createDerivative", "uploading m4a failed","", "", 0);
         			return JOB_FAILED;
         		}
         		break;
@@ -1087,7 +1087,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 			}
         	$pathToFile = $folder . "/" . $file;
         	if(!$this->fileHandler->s3model->putObject($pathToFile, $destKey . "/" . $file)) {
-        		$this->logging->processingInfo("putAllFilesInFolderToKey", "uploading file failed","", $pathToFile, $this->job->getId());
+        		$this->logging->processingInfo("putAllFilesInFolderToKey", "uploading file failed","", $pathToFile, 0);
         	}
         	if($mimeType) {
         		$this->fileHandler->s3model->setContentType($destKey . "/" . $file, $mimeType);
@@ -1122,7 +1122,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 		}
 		catch(FfmpegProcessOutputException $e)
 		{
-			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), $targetPath, $this->job->getId());
+			$this->logging->processingInfo("ffmpeg", "video",$e->getMessage(), $targetPath, 0);
 		}
 
 		// $process = $videoHandler->getProcess();
@@ -1132,7 +1132,7 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
         	$result = $progressHandler->probe(true);
 
         	if($result["error"]) {
-        		$this->logging->processingInfo("ffmpeg", "video",$result, $targetPath, $this->job->getId());
+        		$this->logging->processingInfo("ffmpeg", "video",$result, $targetPath, 0);
         		return FALSE;
         	}
         	echo $result['percentage'] . " ";

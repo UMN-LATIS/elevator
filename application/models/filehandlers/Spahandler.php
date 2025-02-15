@@ -141,7 +141,7 @@ class SPAHandler extends FileHandlerBase {
 
 
 			if(!file_exists($sourceFile->getPathToLocalFile())) {
-				$this->logging->processingInfo("createDerivative","spaHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","spaHandler","Local File Not Found",$this->getObjectId(),0);
 				return JOB_FAILED;
 			}
 
@@ -161,12 +161,12 @@ class SPAHandler extends FileHandlerBase {
 					//TODO: log
 					//TODO: remove derivative
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative","spaHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
+					$this->logging->processingInfo("createDerivative","spaHandler","Error copying to remote",$this->getObjectId(),0);
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative","spaHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
+						$this->logging->processingInfo("createDerivative","spaHandler","Error deleting source",$this->getObjectId(),0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -174,7 +174,7 @@ class SPAHandler extends FileHandlerBase {
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createDerivative","spaHandler","Error generating derivative",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","spaHandler","Error generating derivative",$this->getObjectId(),0);
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -241,7 +241,7 @@ class SPAHandler extends FileHandlerBase {
 		exec("/usr/local/bin/r-lang < " . $rScriptPath . " --no-save", $errorText);
 		unlink($rScriptPath);
 		if(!file_exists($dest)) {
-			$this->logging->processingInfo("createDerivative","spaHandler",$errorText,$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","spaHandler",$errorText,$this->getObjectId(),0);
 			return false;
 		}
 

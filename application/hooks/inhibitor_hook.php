@@ -37,7 +37,7 @@ class InhibitorHook {
 	}
 	public function runtime_error_catcher() {
 		set_error_handler(array($this, 'handle_errors'));
-		// set_exception_handler(array($this, 'handle_exceptions'));
+		set_exception_handler(array($this, 'handle_exceptions'));
 	}
 
 	/**
@@ -53,6 +53,10 @@ class InhibitorHook {
 		// bump the memory limit during spindown so we can actually log OOM errors
 		ini_set('memory_limit', '512M');
 		if(($error = error_get_last())) {
+			// only worry about real errors, no deprecated stuff
+			if($error['type'] == E_DEPRECATED || $error['type'] == E_USER_DEPRECATED) {
+				return;
+			}
 			\Sentry\captureLastError();
 			$buffer = ob_get_contents();
 			if($buffer) {

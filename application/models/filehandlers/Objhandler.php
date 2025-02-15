@@ -89,7 +89,7 @@ class ObjHandler extends FileHandlerBase {
 		}
 
 		if(!file_exists($this->sourceFile->getPathToLocalFile())) {
-			$this->logging->processingInfo("createDerivative","objHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+			$this->logging->processingInfo("createDerivative","objHandler","Local File Not Found",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
 
@@ -120,13 +120,13 @@ class ObjHandler extends FileHandlerBase {
 
 		$success = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload ply", $this->getObjectId(), $this->job->getId());
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload ply", $this->getObjectId(), 0);
 			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 			$success=false;
 		}
 		else {
 			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
 				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -150,13 +150,13 @@ class ObjHandler extends FileHandlerBase {
 
 		$success = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), $this->job->getId());
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload glb", $this->getObjectId(), 0);
 			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 			$success=false;
 		}
 		else {
 			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
 				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -230,13 +230,13 @@ class ObjHandler extends FileHandlerBase {
 
 		$success = true;
 		if(!$derivativeContainer->copyToRemoteStorage()) {
-			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload stl", $this->getObjectId(), $this->job->getId());
+			$this->logging->processingInfo("createDerivative", "objHandler", "Could not upload stl", $this->getObjectId(), 0);
 			echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 			$success=false;
 		}
 		else {
 			if(!unlink($derivativeContainer->getPathToLocalFile())) {
-				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "objHandler", "Could not delete source file", $this->getObjectId(), 0);
 				echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -356,13 +356,13 @@ class ObjHandler extends FileHandlerBase {
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
 					//TODO: remove derivative
-					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
+					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), 0);
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+						$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), 0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -370,7 +370,7 @@ class ObjHandler extends FileHandlerBase {
 				$derivativeArray[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not create derivative", $this->getObjectId(), 0);
 				echo "Error generating derivatives" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -428,13 +428,13 @@ class ObjHandler extends FileHandlerBase {
 			if(!$derivativeContainer->copyToRemoteStorage()) {
 				//TODO: log
 				//TODO: remove derivative
-				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not upload thumbnail", $this->getObjectId(), 0);
 				echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
 			else {
 				if(!unlink($derivativeContainer->getPathToLocalFile())) {
-					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+					$this->logging->processingInfo("createThumbnails", "pdfhandler", "Could not delete source file", $this->getObjectId(), 0);
 					echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 					$success=false;
 				}
@@ -442,7 +442,7 @@ class ObjHandler extends FileHandlerBase {
 			$derivativeArray['nxs'] = $derivativeContainer;
 		}
 		else {
-			$this->logging->processingInfo("createNXS", "objHandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
+			$this->logging->processingInfo("createNXS", "objHandler", "Could not create derivative", $this->getObjectId(), 0);
 			echo "Error generating derivatives" . $derivativeContainer->getPathToLocalFile();
 			$success=false;
 		}

@@ -157,13 +157,13 @@ class BoxHandler extends FileHandlerBase {
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
 					//TODO: remove derivative
-					$this->logging->processingInfo("createThumbnails", "boxhandler", "Could not upload thumbnail", $this->getObjectId(), $this->job->getId());
+					$this->logging->processingInfo("createThumbnails", "boxhandler", "Could not upload thumbnail", $this->getObjectId(), 0);
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createThumbnails", "boxhandler", "Could not delete source file", $this->getObjectId(), $this->job->getId());
+						$this->logging->processingInfo("createThumbnails", "boxhandler", "Could not delete source file", $this->getObjectId(), 0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -171,7 +171,7 @@ class BoxHandler extends FileHandlerBase {
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createThumbnails", "boxhandler", "Could not create derivative", $this->getObjectId(), $this->job->getId());
+				$this->logging->processingInfo("createThumbnails", "boxhandler", "Could not create derivative", $this->getObjectId(), 0);
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
@@ -263,7 +263,7 @@ class BoxHandler extends FileHandlerBase {
         	$pathToFile = $folder . "/" . $file;
 
         	if(!$this->s3model->putObject($pathToFile, $destKey . "/" . $file)) {
-        		$this->logging->processingInfo("putAllFilesInFolderToKey", "uploading file failed","", $pathToFile, $this->job->getId());
+        		$this->logging->processingInfo("putAllFilesInFolderToKey", "uploading file failed","", $pathToFile, 0);
         		continue;
         	}
         	if($mimeType) {

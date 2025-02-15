@@ -170,7 +170,7 @@ class RTIHandler extends FileHandlerBase {
 
 
 			if(!file_exists($targetDerivativeFile)) {
-				$this->logging->processingInfo("createDerivative","rtiHandler","Local File Not Found",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","rtiHandler","Local File Not Found",$this->getObjectId(),0);
 				return JOB_FAILED;
 			}
 
@@ -191,12 +191,12 @@ class RTIHandler extends FileHandlerBase {
 					//TODO: log
 					//TODO: remove derivative
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative","rtiHandler","Error copying to remote",$this->getObjectId(),$this->job->getId());
+					$this->logging->processingInfo("createDerivative","rtiHandler","Error copying to remote",$this->getObjectId(),0);
 					$success=false;
 				}
 				else {
 					if(!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative","rtiHandler","Error deleting source",$this->getObjectId(),$this->job->getId());
+						$this->logging->processingInfo("createDerivative","rtiHandler","Error deleting source",$this->getObjectId(),0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
 						$success=false;
 					}
@@ -204,7 +204,7 @@ class RTIHandler extends FileHandlerBase {
 				$this->derivatives[$derivativeType] = $derivativeContainer;
 			}
 			else {
-				$this->logging->processingInfo("createDerivative","rtiHandler","Error generating derivative",$this->getObjectId(),$this->job->getId());
+				$this->logging->processingInfo("createDerivative","rtiHandler","Error generating derivative",$this->getObjectId(),0);
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
 				$success=false;
 			}
