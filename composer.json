@@ -48,7 +48,7 @@
     "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2",
     "doctrine/cache": "^1.13.0",
     "pda/pheanstalk": "dev-master",
-    "onelogin/php-saml": "~3.5.1",
+    "onelogin/php-saml": "^4.0.0",
     "deployer/deployer": "^7.0"
   },
   "minimum-stability": "dev",
