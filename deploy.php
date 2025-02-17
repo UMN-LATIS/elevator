@@ -24,6 +24,12 @@ host('dev')
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
+host('umn')
+    ->setHostname('18.206.39.52')
+    ->set('stage', 'production')
+    ->set('remote_user', 'latis_deploy')
+    ->set('deploy_path', '/var/www/elevator');
+
 
 // Hooks
 
