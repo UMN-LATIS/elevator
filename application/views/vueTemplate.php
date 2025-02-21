@@ -37,6 +37,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
           'textAreaItem' => [
               'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
           ],
+          'googleAnalyticsKey' => $instance->getGoogleAnalyticsKey() ?? null, 
       ],
       'arcgis' => [
           'apiKey' => $config->item('arcgis_access_token'),
@@ -67,6 +68,18 @@ function makeJavaScriptConfig($instance, $config, $template) {
       : "Elevator");
     ?>
   </title>
+
+  <?php if ($this->instance->getGoogleAnalyticsKey()): ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= $this->instance->getGoogleAnalyticsKey()  ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '<?= $this->instance->getGoogleAnalyticsKey() ?>');
+    </script>
+  <?php endif; ?>
 
   <script>
     window.Elevator = {};
