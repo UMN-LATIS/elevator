@@ -15,11 +15,10 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  
   web:
     image: nginx:latest
     ports:
-      - '80:80'
+      - "80:80"
       - 443:443
     volumes:
       - ./certs:/etc/nginx/certs
@@ -39,7 +38,7 @@ services:
     ports:
       - "11300:11300"
   php-fpm:
-    build: 
+    build:
       context: .
       dockerfile: docker/Dockerfile
       args:
@@ -47,18 +46,19 @@ services:
         - DOCKER_ENVIRONMENT=${ENVIRONMENT}
         - ENVIRONMENT=${ENVIRONMENT}
     volumes:
+      - .:/var/www/html
       - ${DOCKER_SCRATCH_DIR}:/scratch
       - /var/run/docker.sock:/var/run/docker.sock
-    develop:
-      watch:
-        - action: sync
-          path: ./
-          target: /var/www/html/
-          ignore:
-            - vendor/
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./
+    #       target: /var/www/html/
+    #       ignore:
+    #         - vendor/
   # apache:
   #   platform: linux/x86_64
-  #   build: 
+  #   build:
   #     context: .
   #     args:
   #       - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
@@ -75,7 +75,7 @@ services:
   #     - postgres
   #     - beanstalkd
   #     - elasticsearch
-  
+
   elasticsearch:
     # platform: linux/x86_64
     image: elasticsearch:8.17.1
