@@ -4,7 +4,8 @@
     "docs:build": "cd docs; vuepress build",
     "ui:build": "(cd assets/elevator-ui && yarn build)",
     "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "cert": "rm -rf ./certs && mkdir -p ./certs && mkcert -key-file ./certs/nginx.key -cert-file ./certs/nginx.crt 'localhost' 127.0.0.1 ::1 `ipconfig getifaddr en0`"
   },
   "dependencies": {
     "@vuepress/plugin-blog": "^1.9.4",
