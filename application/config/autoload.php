@@ -64,7 +64,7 @@ $autoload['libraries'] = array('doctrine', 'filehandler_router', "widget_router"
 |	$autoload['helper'] = array('url', 'file');
 */
 
-$autoload['helper'] = array("url", "instance", "elevator_url_helper", "media");
+$autoload['helper'] = array("url", "instance", "elevator_url_helper", "media", "analytics");
 
 
 /*

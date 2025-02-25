@@ -12,9 +12,9 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 $indexFile = $manifest['src/main.ts']['file'];
 $cssFile = $manifest['src/main.css']['file'];
-
 $customCSSFile = "/assets/instanceAssets/{$this->instance->getId()}.css";
 $customCSSHash = $this->instance->getModifiedAt()->getTimestamp();
+$googleAnalyticsKey = $this->instance->getGoogleAnalyticsKey() ?? null;
 
 // Helper Function to Build JavaScript Config
 function makeJavaScriptConfig($instance, $config, $template) {
@@ -69,17 +69,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
     ?>
   </title>
 
-  <?php if ($this->instance->getGoogleAnalyticsKey()): ?>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=<?= $this->instance->getGoogleAnalyticsKey()  ?>"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', '<?= $this->instance->getGoogleAnalyticsKey() ?>');
-    </script>
-  <?php endif; ?>
+  <?= render_analytics($googleAnalyticsKey) ?>
 
   <script>
     window.Elevator = {};
@@ -99,6 +89,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
 </head>
 
 <body>
+  <?= render_gtm_body($googleAnalyticsKey) ?>
   <div id="app"></div>
 </body>
 
