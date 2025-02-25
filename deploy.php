@@ -10,7 +10,7 @@ set('update_code_strategy', 'clone');
 set('shared_files', ['.env']);
 add('shared_dirs', []);
 add('writable_dirs', ['application/models/Proxies']);
-
+set('keep_releases', 5);
 // Hosts
 
 host('cla-dev')
@@ -25,7 +25,7 @@ host('dev')
     ->set('deploy_path', '/var/www/elevator');
 
 host('umn')
-    ->setHostname('18.206.39.52')
+    ->setHostname('54.88.106.16')
     ->set('stage', 'production')
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
