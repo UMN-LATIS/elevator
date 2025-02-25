@@ -10,7 +10,7 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 RUN docker-php-ext-install sockets
 COPY docker/get-docker.sh /root/
 RUN chmod +x /root/get-docker.sh
-RUN /root/get-docker.sh
+RUN /root/get-docker.sh --version 27.5.1
 
 # add ldap php module
 RUN apt-get update && apt-get install -y libldap2-dev libldap-common
