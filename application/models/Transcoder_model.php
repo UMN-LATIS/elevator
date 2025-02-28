@@ -1116,7 +1116,6 @@ plot '<cat' binary filetype=bin format='%int16' endian=little array=1:0 " . $scr
 
 	private function runTask($videoHandler, $targetPath, $outputFormat) {
 		$progressHandler = new \PHPVideoToolkit\ProgressHandlerNative(null, $this->videoToolkitConfig);
-		var_dump($targetPath);
 		try {
 			$output = $videoHandler->saveNonBlocking($targetPath, $outputFormat, \PHPVideoToolkit\Video::OVERWRITE_EXISTING, $progressHandler);
 		}
