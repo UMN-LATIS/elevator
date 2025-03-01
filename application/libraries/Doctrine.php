@@ -1,12 +1,9 @@
 <?php
 
-use Doctrine\Common\ClassLoader,
-    Doctrine\ORM\Tools\Setup,
-    Doctrine\ORM\EntityManager,
-    Doctrine\Common\EventManager,
-    Doctrine\Common\Cache\ApcCache,
-    Doctrine\DBAL\Logging\Profiler;
-
+use    Doctrine\ORM\Tools\Setup,
+    Doctrine\ORM\EntityManager;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 
 class Doctrine
 {
@@ -61,21 +58,22 @@ class Doctrine
             
             $redis->connect($config["redis"], $config["redisPort"]);
             $this->redisHost = $redis;
-            $redisCache = new \Doctrine\Common\Cache\RedisCache();
-            $redisCache->setRedis($redis);
 
-            $doctrineConfig->setMetadataCacheImpl($redisCache);
-            $doctrineConfig->setQueryCacheImpl($redisCache);
-            $doctrineConfig->setResultCacheImpl($redisCache);
+            $cache = new RedisAdapter($redis, namespace:'doctrine');
+            
+
+            $doctrineConfig->setMetadataCache($cache);
+            $doctrineConfig->setQueryCache($cache);
+            $doctrineCache = DoctrineProvider::wrap($cache);
+            $doctrineConfig->setResultCacheImpl($doctrineCache);
         }
         
 
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
         //$config->setSQLLogger($logger);
-        $this->em = EntityManager::create($connection_options, $doctrineConfig);
-        $loader = new ClassLoader($models_namespace, $models_path);
-        $loader->register();
+        $connection = \Doctrine\DBAL\DriverManager::getConnection($connection_options);
+        $this->em = new EntityManager($connection, $doctrineConfig);
     }
 
     public function reset() {

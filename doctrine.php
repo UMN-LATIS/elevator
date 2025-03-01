@@ -6,6 +6,8 @@ define('BASEPATH', APPPATH . '/../system/');
 define('ENVIRONMENT', 'development');
 
 require_once("vendor/autoload.php");
+
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
 

@@ -118,8 +118,7 @@ class LoginManager extends Instance_Controller {
 
 		$this->session->sess_destroy();
 		if($this->config->item('enableCaching') && isset($this->user_model->userId)) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->user_model->userId);
+			$this->doctrineCache->deleteItem('userCache_' + $this->user_model->userId);
 		}
 		$this->input->set_cookie(["name"=>"ApiHandoff", "expire"=>""]);
 		$this->input->set_cookie(["name"=>"AuthKey", "expire"=>""]);

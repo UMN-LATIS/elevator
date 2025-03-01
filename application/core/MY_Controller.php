@@ -1,8 +1,13 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Psr16Cache;
 
 class MY_Controller extends CI_Controller {
 
-	public $doctrineCache = null;
+	public $userCache= null;
+	public $userGuestCache= null;
+	public $assetCache= null;
+	public $searchCache= null;
 
 	function __construct() {
 		parent::__construct();
@@ -50,9 +55,15 @@ class MY_Controller extends CI_Controller {
 		//$this->user_model->loadUser(1);
 
 		if ($this->config->item('enableCaching')) {
-			$redisCache = new \Doctrine\Common\Cache\RedisCache();
-        	$redisCache->setRedis($this->doctrine->redisHost);
-			$this->doctrineCache = $redisCache;
+			$redis = new Redis();
+            
+            $redis->connect($this->config->item("redis"),$this->config->item("redisPort"));
+			$cache = new RedisAdapter($redis, 'userCache');
+			$this->userCache = new Psr16Cache($cache);
+			$cache = new RedisAdapter($redis, 'userGuestCache');
+			$this->userGuestCache = new Psr16Cache($cache);
+			$cache = new RedisAdapter($redis, 'searchCache');
+			$this->searchCache = new Psr16Cache($cache);
 		}
 
 		$userId = $this->session->userdata('userId');
@@ -64,11 +75,10 @@ class MY_Controller extends CI_Controller {
 		if($userId) {
 			
 			if ($this->config->item('enableCaching')) {
-				$this->doctrineCache->setNamespace('userCache_');
-				if($storedObject = $this->doctrineCache->fetch($userId)) {
+				if($storedObject = $this->userCache->get($userId)) {
 					$user_model = $storedObject;
 					if(!is_object($user_model)) {
-						$this->doctrineCache->delete($userId);
+						$this->userCache->delete($userId);
 						$user_model = null;
 					}
 				 	if(!$user_model) {
@@ -81,8 +91,8 @@ class MY_Controller extends CI_Controller {
 				else {
 					$this->user_model->loadUser($userId);
 					if($this->user_model->userLoaded) {
-						$this->doctrineCache->setNamespace('userCache_');
-						$this->doctrineCache->save($userId, ($this->user_model), 14400);
+
+						$this->userCache->set($userId, $this->user_model, 14400);
 					}
 					
 				}
@@ -97,8 +107,8 @@ class MY_Controller extends CI_Controller {
 			$this->user_model = new User_model();
 			if ($this->config->item('enableCaching')) {
 				$userId = session_id();
-				$this->doctrineCache->setNamespace('userGuestCache_');
-				if($storedObject = $this->doctrineCache->fetch($userId)) {
+				// $this->doctrineCache->setNamespace('userGuestCache_');
+				if($storedObject = $this->userGuestCache->get($userId)) {
 				 	$user_model = $storedObject;
 				 	if(!$user_model) {
 				 		$this->user_model->resolvePermissions();
@@ -111,8 +121,8 @@ class MY_Controller extends CI_Controller {
 					$this->user_model->resolvePermissions();
 					$userId = session_id();
 					// reset our namespace in case the user model changed it
-					$this->doctrineCache->setNamespace('userCache_');
-					$this->doctrineCache->save($userId, ($this->user_model), 14400);
+					// $this->doctrineCache->setNamespace('userCache_');
+					$this->userGuestCache->set($userId, ($this->user_model), 14400);
 				}
 			}
 			else {
