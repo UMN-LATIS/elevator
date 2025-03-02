@@ -6,138 +6,116 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Collection
- *
- * @ORM\Table(name="collections")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'collections')]
+#[ORM\Entity]
 class Collection
 {
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="title", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'title', type: 'string', nullable: true)]
     private $title;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="bucket", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'bucket', type: 'string', nullable: true)]
     private $bucket;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="s3Key", type="string", nullable=true)
      */
+    #[ORM\Column(name: 's3Key', type: 'string', nullable: true)]
     private $s3Key;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="s3Secret", type="string", nullable=true)
      */
+    #[ORM\Column(name: 's3Secret', type: 'string', nullable: true)]
     private $s3Secret;
 
     /**
      * @var \DateTime|null
-     *
-     * @ORM\Column(name="createdAt", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
      * @var \DateTime|null
-     *
-     * @ORM\Column(name="modifiedAt", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="bucketRegion", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'bucketRegion', type: 'string', nullable: true)]
     private $bucketRegion;
 
     /**
      * @var bool|null
-     *
-     * @ORM\Column(name="showInBrowse", type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'showInBrowse', type: 'boolean', nullable: true)]
     private $showInBrowse;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="collectionDescription", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'collectionDescription', type: 'text', nullable: true)]
     private $collectionDescription;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="previewImage", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'previewImage', type: 'text', nullable: true)]
     private $previewImage;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="SEQUENCE")
-     * @ORM\SequenceGenerator(sequenceName="collections_id_seq", allocationSize=1, initialValue=1)
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
+    #[ORM\SequenceGenerator(sequenceName: 'collections_id_seq', allocationSize: 1, initialValue: 1)]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\CollectionPermission", mappedBy="collection", cascade={"remove"})
      */
+    #[ORM\OneToMany(targetEntity: \Entity\CollectionPermission::class, mappedBy: 'collection', cascade: ['remove'])]
     private $permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\RecentCollection", mappedBy="collection", cascade={"remove"})
      */
+    #[ORM\OneToMany(targetEntity: \Entity\RecentCollection::class, mappedBy: 'collection', cascade: ['remove'])]
     private $recent_collection;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\CSVBatch", mappedBy="collection")
      */
+    #[ORM\OneToMany(targetEntity: \Entity\CSVBatch::class, mappedBy: 'collection')]
     private $csv_imports;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\Collection", mappedBy="parent")
-     * @ORM\OrderBy({
-     *     "title"="ASC"
-     * })
      */
+    #[ORM\OneToMany(targetEntity: \Entity\Collection::class, mappedBy: 'parent')]
+    #[ORM\OrderBy(['title' => 'ASC'])]
     private $children;
 
     /**
      * @var \Entity\Collection
-     *
-     * @ORM\ManyToOne(targetEntity="Entity\Collection", inversedBy="children")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id")
-     * })
      */
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Collection::class, inversedBy: 'children')]
     private $parent;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Entity\Instance", mappedBy="collections")
      */
+    #[ORM\ManyToMany(targetEntity: \Entity\Instance::class, mappedBy: 'collections')]
     private $instances = array();
 
     /**

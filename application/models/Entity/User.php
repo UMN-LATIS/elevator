@@ -6,182 +6,151 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * User
- *
- * @ORM\Table(name="users", indexes={@ORM\Index(name="0", columns={"username"}), @ORM\Index(name="1", columns={"emplid"})})
- * @ORM\Entity
  */
+#[ORM\Table(name: 'users')]
+#[ORM\Index(name: 0, columns: ['username'])]
+#[ORM\Index(name: 1, columns: ['emplid'])]
+#[ORM\Entity]
 class User
 {
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="emplid", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'emplid', type: 'string', nullable: true)]
     private $emplid;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="username", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'username', type: 'string', nullable: true)]
     private $username;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="userType", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'userType', type: 'string', nullable: true)]
     private $userType;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="email", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'email', type: 'string', nullable: true)]
     private $email;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="displayName", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'displayName', type: 'string', nullable: true)]
     private $displayName;
 
     /**
      * @var bool|null
-     *
-     * @ORM\Column(name="fastUpload", type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'fastUpload', type: 'boolean', nullable: true)]
     private $fastUpload;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="password", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'password', type: 'string', nullable: true)]
     private $password;
 
     /**
      * @var bool|null
-     *
-     * @ORM\Column(name="isSuperAdmin", type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'isSuperAdmin', type: 'boolean', nullable: true)]
     private $isSuperAdmin;
 
     /**
      * @var bool|null
-     *
-     * @ORM\Column(name="hasExpiry", type="boolean", nullable=true)
      */
+    #[ORM\Column(name: 'hasExpiry', type: 'boolean', nullable: true)]
     private $hasExpiry;
 
     /**
      * @var \DateTime|null
-     *
-     * @ORM\Column(name="expires", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'expires', type: 'datetime', nullable: true)]
     private $expires;
 
     /**
      * @var \DateTime|null
-     *
-     * @ORM\Column(name="createdAt", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
      * @var \DateTime|null
-     *
-     * @ORM\Column(name="modifiedAt", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="SEQUENCE")
-     * @ORM\SequenceGenerator(sequenceName="users_id_seq", allocationSize=1, initialValue=1)
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
+    #[ORM\SequenceGenerator(sequenceName: 'users_id_seq', allocationSize: 1, initialValue: 1)]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\RecentDrawer", mappedBy="user", cascade={"persist","remove"}, orphanRemoval=true)
-     * @ORM\OrderBy({
-     *     "createdAt"="ASC"
-     * })
      */
+    #[ORM\OneToMany(targetEntity: \Entity\RecentDrawer::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private $recent_drawers;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\SearchEntry", mappedBy="user", cascade={"persist","remove"}, orphanRemoval=true)
      */
+    #[ORM\OneToMany(targetEntity: \Entity\SearchEntry::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $recent_searches;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\RecentCollection", mappedBy="user", cascade={"persist","remove"}, orphanRemoval=true)
-     * @ORM\OrderBy({
-     *     "createdAt"="ASC"
-     * })
      */
+    #[ORM\OneToMany(targetEntity: \Entity\RecentCollection::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private $recent_collections;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\CSVBatch", mappedBy="createdBy")
      */
+    #[ORM\OneToMany(targetEntity: \Entity\CSVBatch::class, mappedBy: 'createdBy')]
     private $csv_imports;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\ApiKey", mappedBy="owner", cascade={"persist","remove"}, orphanRemoval=true)
      */
+    #[ORM\OneToMany(targetEntity: \Entity\ApiKey::class, mappedBy: 'owner', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $api_keys;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\LTI13InstanceAssociation", mappedBy="user", cascade={"persist","remove"}, orphanRemoval=true)
      */
+    #[ORM\OneToMany(targetEntity: \Entity\LTI13InstanceAssociation::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $lti_courses;
 
     /**
      * @var \Entity\User
-     *
-     * @ORM\ManyToOne(targetEntity="Entity\User")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="createdBy_id", referencedColumnName="id")
-     * })
      */
+    #[ORM\JoinColumn(name: 'createdBy_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $createdBy;
 
     /**
      * @var \Entity\Instance
-     *
-     * @ORM\ManyToOne(targetEntity="Entity\Instance")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", onDelete="SET NULL")
-     * })
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
     /**
      * @var \Entity\Instance
-     *
-     * @ORM\ManyToOne(targetEntity="Entity\Instance")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="apiInstance_id", referencedColumnName="id", onDelete="SET NULL")
-     * })
      */
+    #[ORM\JoinColumn(name: 'apiInstance_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $apiInstance;
 
     /**

@@ -6,95 +6,73 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * DrawerGroup
- *
- * @ORM\Table(name="drawer_groups")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'drawer_groups')]
+#[ORM\Entity]
 class DrawerGroup
 {
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="group_type", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'group_type', type: 'string', nullable: true)]
     private $group_type;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="group_value", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'group_value', type: 'string', nullable: true)]
     private $group_value;
 
     /**
      * @var string|null
-     *
-     * @ORM\Column(name="group_label", type="string", nullable=true)
      */
+    #[ORM\Column(name: 'group_label', type: 'string', nullable: true)]
     private $group_label;
 
     /**
      * @var \DateTime|null
-     *
-     * @ORM\Column(name="expiration", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'expiration', type: 'datetime', nullable: true)]
     private $expiration;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="SEQUENCE")
-     * @ORM\SequenceGenerator(sequenceName="drawer_groups_id_seq", allocationSize=1, initialValue=1)
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
+    #[ORM\SequenceGenerator(sequenceName: 'drawer_groups_id_seq', allocationSize: 1, initialValue: 1)]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="Entity\DrawerPermission", mappedBy="group", cascade={"remove"})
      */
+    #[ORM\OneToMany(targetEntity: \Entity\DrawerPermission::class, mappedBy: 'group', cascade: ['remove'])]
     private $permissions;
 
     /**
      * @var \Entity\User
-     *
-     * @ORM\ManyToOne(targetEntity="Entity\User")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id")
-     * })
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $user;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Entity\Drawer")
-     * @ORM\JoinTable(name="drawergroup_drawer",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="drawergroup_id", referencedColumnName="id", onDelete="CASCADE")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="drawer_id", referencedColumnName="id", onDelete="CASCADE")
-     *   }
-     * )
      */
+    #[ORM\JoinTable(name: 'drawergroup_drawer')]
+    #[ORM\JoinColumn(name: 'drawergroup_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'drawer_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\ManyToMany(targetEntity: \Entity\Drawer::class)]
     private $drawer = array();
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Entity\GroupEntry", inversedBy="group", cascade={"persist"}, orphanRemoval=true)
-     * @ORM\JoinTable(name="drawergroup_groupentry",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="group_id", referencedColumnName="id", onDelete="CASCADE")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="entry_id", referencedColumnName="id", unique=true, onDelete="CASCADE")
-     *   }
-     * )
      */
+    #[ORM\JoinTable(name: 'drawergroup_groupentry')]
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'entry_id', referencedColumnName: 'id', unique: true, onDelete: 'CASCADE')]
+    #[ORM\ManyToMany(targetEntity: \Entity\GroupEntry::class, inversedBy: 'group', cascade: ['persist'], orphanRemoval: true)]
     private $group_values = array();
 
     /**
