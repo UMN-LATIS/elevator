@@ -6,190 +6,63 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * JobLog
+ *
+ * @ORM\Table(name="job_logs", indexes={@ORM\Index(name="0", columns={"asset"})})
+ * @ORM\Entity
  */
 class JobLog
 {
     /**
-     * @var \DateTime
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="createdAt", type="datetime", nullable=true)
      */
     private $createdAt;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="asset", type="string", nullable=true)
      */
     private $asset;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="type", type="string", nullable=true)
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int|null
+     *
+     * @ORM\Column(name="jobId", type="integer", nullable=true)
      */
     private $jobId;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="task", type="string", nullable=true)
      */
     private $task;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="message", type="text", nullable=true)
      */
     private $message;
 
     /**
-     * @var integer
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="job_logs_id_seq", allocationSize=1, initialValue=1)
      */
     private $id;
 
 
-    /**
-     * Set createdAt
-     *
-     * @param \DateTime $createdAt
-     * @return JobLog
-     */
-    public function setCreatedAt($createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * Get createdAt
-     *
-     * @return \DateTime 
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * Set asset
-     *
-     * @param string $asset
-     * @return JobLog
-     */
-    public function setAsset($asset)
-    {
-        $this->asset = $asset;
-
-        return $this;
-    }
-
-    /**
-     * Get asset
-     *
-     * @return string 
-     */
-    public function getAsset()
-    {
-        return $this->asset;
-    }
-
-    /**
-     * Set type
-     *
-     * @param string $type
-     * @return JobLog
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Get type
-     *
-     * @return string 
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Set jobId
-     *
-     * @param integer $jobId
-     * @return JobLog
-     */
-    public function setJobId($jobId)
-    {
-        $this->jobId = $jobId;
-
-        return $this;
-    }
-
-    /**
-     * Get jobId
-     *
-     * @return integer 
-     */
-    public function getJobId()
-    {
-        return $this->jobId;
-    }
-
-    /**
-     * Set task
-     *
-     * @param string $task
-     * @return JobLog
-     */
-    public function setTask($task)
-    {
-        $this->task = $task;
-
-        return $this;
-    }
-
-    /**
-     * Get task
-     *
-     * @return string 
-     */
-    public function getTask()
-    {
-        return $this->task;
-    }
-
-    /**
-     * Set message
-     *
-     * @param string $message
-     * @return JobLog
-     */
-    public function setMessage($message)
-    {
-        $this->message = $message;
-
-        return $this;
-    }
-
-    /**
-     * Get message
-     *
-     * @return string 
-     */
-    public function getMessage()
-    {
-        return $this->message;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 }

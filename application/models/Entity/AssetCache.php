@@ -2,227 +2,77 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * AssetCache
+ *
+ * @ORM\Table(name="asset_cache", indexes={@ORM\Index(name="0", columns={"asset_id"}), @ORM\Index(name="1", columns={"needsRebuild"}), @ORM\Index(name="2", columns={"templateId"}), @ORM\Index(name="3", columns={"needsRebuild", "rebuildTimestamp"}), @ORM\Index(name="4", columns={"needsRebuild", "templateId"}), @ORM\Index(name="5", columns={"rebuildTimestamp"})})
+ * @ORM\Entity
  */
 class AssetCache
 {
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="relatedAssetCache", type="json_array", nullable=true)
      */
     private $relatedAssetCache;
 
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="searchResultCache", type="json_array", nullable=true)
      */
     private $searchResultCache;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="primaryHandlerCache", type="string", nullable=true)
      */
     private $primaryHandlerCache;
 
     /**
-     * @var integer
+     * @var int|null
+     *
+     * @ORM\Column(name="templateId", type="integer", nullable=true)
      */
     private $templateId;
 
     /**
-     * @var boolean
+     * @var bool
+     *
+     * @ORM\Column(name="needsRebuild", type="boolean", nullable=false)
      */
     private $needsRebuild;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="rebuildTimestamp", type="datetime", nullable=true)
      */
     private $rebuildTimestamp;
 
     /**
-     * @var integer
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="asset_cache_id_seq", allocationSize=1, initialValue=1)
      */
     private $id;
 
     /**
      * @var \Entity\Asset
+     *
+     * @ORM\OneToOne(targetEntity="Entity\Asset", inversedBy="assetCache")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="id", unique=true)
+     * })
      */
     private $asset;
 
 
-    /**
-     * Set relatedAssetCache
-     *
-     * @param array $relatedAssetCache
-     *
-     * @return AssetCache
-     */
-    public function setRelatedAssetCache($relatedAssetCache)
-    {
-        $this->relatedAssetCache = $relatedAssetCache;
-
-        return $this;
-    }
-
-    /**
-     * Get relatedAssetCache
-     *
-     * @return array
-     */
-    public function getRelatedAssetCache()
-    {
-        return $this->relatedAssetCache;
-    }
-
-    /**
-     * Set searchResultCache
-     *
-     * @param array $searchResultCache
-     *
-     * @return AssetCache
-     */
-    public function setSearchResultCache($searchResultCache)
-    {
-        $this->searchResultCache = $searchResultCache;
-
-        return $this;
-    }
-
-    /**
-     * Get searchResultCache
-     *
-     * @return array
-     */
-    public function getSearchResultCache()
-    {
-        return $this->searchResultCache;
-    }
-
-    /**
-     * Set primaryHandlerCache
-     *
-     * @param string $primaryHandlerCache
-     *
-     * @return AssetCache
-     */
-    public function setPrimaryHandlerCache($primaryHandlerCache)
-    {
-        $this->primaryHandlerCache = $primaryHandlerCache;
-
-        return $this;
-    }
-
-    /**
-     * Get primaryHandlerCache
-     *
-     * @return string
-     */
-    public function getPrimaryHandlerCache()
-    {
-        return $this->primaryHandlerCache;
-    }
-
-    /**
-     * Set templateId
-     *
-     * @param integer $templateId
-     *
-     * @return AssetCache
-     */
-    public function setTemplateId($templateId)
-    {
-        $this->templateId = $templateId;
-
-        return $this;
-    }
-
-    /**
-     * Get templateId
-     *
-     * @return integer
-     */
-    public function getTemplateId()
-    {
-        return $this->templateId;
-    }
-
-    /**
-     * Set needsRebuild
-     *
-     * @param boolean $needsRebuild
-     *
-     * @return AssetCache
-     */
-    public function setNeedsRebuild($needsRebuild)
-    {
-        $this->needsRebuild = $needsRebuild;
-
-        return $this;
-    }
-
-    /**
-     * Get needsRebuild
-     *
-     * @return boolean
-     */
-    public function getNeedsRebuild()
-    {
-        return $this->needsRebuild;
-    }
-
-    /**
-     * Set rebuildTimestamp
-     *
-     * @param \DateTime $rebuildTimestamp
-     *
-     * @return AssetCache
-     */
-    public function setRebuildTimestamp($rebuildTimestamp)
-    {
-        $this->rebuildTimestamp = $rebuildTimestamp;
-
-        return $this;
-    }
-
-    /**
-     * Get rebuildTimestamp
-     *
-     * @return \DateTime
-     */
-    public function getRebuildTimestamp()
-    {
-        return $this->rebuildTimestamp;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Set asset
-     *
-     * @param \Entity\Asset $asset
-     *
-     * @return AssetCache
-     */
-    public function setAsset(? \Entity\Asset $asset = null)
-    {
-        $this->asset = $asset;
-
-        return $this;
-    }
-
-    /**
-     * Get asset
-     *
-     * @return \Entity\Asset
-     */
-    public function getAsset()
-    {
-        return $this->asset;
-    }
 }

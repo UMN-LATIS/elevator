@@ -43,7 +43,8 @@
     "onelogin/php-saml": "^4.0.0",
     "deployer/deployer": "^7.0",
     "symfony/cache": "^6.4",
-    "psr/simple-cache": "^3.0"
+    "psr/simple-cache": "^3.0",
+    "doctrine/annotations": "^2.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

@@ -2,320 +2,95 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * FileHandler
+ *
+ * @ORM\Table(name="filehandlers", indexes={@ORM\Index(name="0", columns={"fileObjectId"}), @ORM\Index(name="1", columns={"parentObjectId"})})
+ * @ORM\Entity
  */
 class FileHandler
 {
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="fileObjectId", type="string", nullable=true)
      */
     private $fileObjectId;
 
     /**
      * @var string
+     *
+     * @ORM\Column(name="fileType", type="string")
      */
     private $fileType;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="handler", type="string", nullable=true)
      */
     private $handler;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="parentObjectId", type="string", nullable=true)
      */
     private $parentObjectId;
 
     /**
-     * @var integer
+     * @var int
+     *
+     * @ORM\Column(name="collectionId", type="integer")
      */
     private $collectionId;
 
     /**
-     * @var boolean
+     * @var bool
+     *
+     * @ORM\Column(name="deleted", type="boolean")
      */
     private $deleted;
 
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="globalMetadata", type="json_array", nullable=true)
      */
     private $globalMetadata;
 
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="sourceFile", type="json_array", nullable=true)
      */
     private $sourceFile;
 
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="derivatives", type="json_array", nullable=true)
      */
     private $derivatives;
 
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="jobIdArray", type="json_array", nullable=true)
      */
     private $jobIdArray;
 
     /**
-     * @var integer
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="filehandlers_id_seq", allocationSize=1, initialValue=1)
      */
     private $id;
-
-
-    /**
-     * Set fileObjectId
-     *
-     * @param string $fileObjectId
-     *
-     * @return FileHandler
-     */
-    public function setFileObjectId($fileObjectId)
-    {
-        $this->fileObjectId = $fileObjectId;
-
-        return $this;
-    }
-
-    /**
-     * Get fileObjectId
-     *
-     * @return string
-     */
-    public function getFileObjectId()
-    {
-        return $this->fileObjectId;
-    }
-
-    /**
-     * Set fileType
-     *
-     * @param string $fileType
-     *
-     * @return FileHandler
-     */
-    public function setFileType($fileType)
-    {
-        $this->fileType = $fileType;
-
-        return $this;
-    }
-
-    /**
-     * Get fileType
-     *
-     * @return string
-     */
-    public function getFileType()
-    {
-        return $this->fileType;
-    }
-
-    /**
-     * Set handler
-     *
-     * @param string $handler
-     *
-     * @return FileHandler
-     */
-    public function setHandler($handler)
-    {
-        $this->handler = $handler;
-
-        return $this;
-    }
-
-    /**
-     * Get handler
-     *
-     * @return string
-     */
-    public function getHandler()
-    {
-        return $this->handler;
-    }
-
-    /**
-     * Set parentObjectId
-     *
-     * @param string $parentObjectId
-     *
-     * @return FileHandler
-     */
-    public function setParentObjectId($parentObjectId)
-    {
-        $this->parentObjectId = $parentObjectId;
-
-        return $this;
-    }
-
-    /**
-     * Get parentObjectId
-     *
-     * @return string
-     */
-    public function getParentObjectId()
-    {
-        return $this->parentObjectId;
-    }
-
-    /**
-     * Set collectionId
-     *
-     * @param integer $collectionId
-     *
-     * @return FileHandler
-     */
-    public function setCollectionId($collectionId)
-    {
-        $this->collectionId = $collectionId;
-
-        return $this;
-    }
-
-    /**
-     * Get collectionId
-     *
-     * @return integer
-     */
-    public function getCollectionId()
-    {
-        return $this->collectionId;
-    }
-
-    /**
-     * Set deleted
-     *
-     * @param boolean $deleted
-     *
-     * @return FileHandler
-     */
-    public function setDeleted($deleted)
-    {
-        $this->deleted = $deleted;
-
-        return $this;
-    }
-
-    /**
-     * Get deleted
-     *
-     * @return boolean
-     */
-    public function getDeleted()
-    {
-        return $this->deleted;
-    }
-
-    /**
-     * Set globalMetadata
-     *
-     * @param array $globalMetadata
-     *
-     * @return FileHandler
-     */
-    public function setGlobalMetadata($globalMetadata)
-    {
-        $this->globalMetadata = $globalMetadata;
-
-        return $this;
-    }
-
-    /**
-     * Get globalMetadata
-     *
-     * @return array
-     */
-    public function getGlobalMetadata()
-    {
-        return $this->globalMetadata;
-    }
-
-    /**
-     * Set sourceFile
-     *
-     * @param array $sourceFile
-     *
-     * @return FileHandler
-     */
-    public function setSourceFile($sourceFile)
-    {
-        $this->sourceFile = $sourceFile;
-
-        return $this;
-    }
-
-    /**
-     * Get sourceFile
-     *
-     * @return array
-     */
-    public function getSourceFile()
-    {
-        return $this->sourceFile;
-    }
-
-    /**
-     * Set derivatives
-     *
-     * @param array $derivatives
-     *
-     * @return FileHandler
-     */
-    public function setDerivatives($derivatives)
-    {
-        $this->derivatives = $derivatives;
-
-        return $this;
-    }
-
-    /**
-     * Get derivatives
-     *
-     * @return array
-     */
-    public function getDerivatives()
-    {
-        return $this->derivatives;
-    }
-
-    /**
-     * Set jobIdArray
-     *
-     * @param array $jobIdArray
-     *
-     * @return FileHandler
-     */
-    public function setJobIdArray($jobIdArray)
-    {
-        $this->jobIdArray = $jobIdArray;
-
-        return $this;
-    }
-
-    /**
-     * Get jobIdArray
-     *
-     * @return array
-     */
-    public function getJobIdArray()
-    {
-        return $this->jobIdArray;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-    /**
-     * @var string
-     */
-    private $fileobjectid;
 
 
 }

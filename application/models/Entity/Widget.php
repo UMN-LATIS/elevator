@@ -6,555 +6,160 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Widget
+ *
+ * @ORM\Table(name="widgets", indexes={@ORM\Index(name="0", columns={"directSearch"})})
+ * @ORM\Entity
  */
 class Widget
 {
     /**
-     * @var integer
+     * @var int|null
+     *
+     * @ORM\Column(name="template_order", type="integer", nullable=true)
      */
     private $template_order;
 
     /**
-     * @var integer
+     * @var int|null
+     *
+     * @ORM\Column(name="view_order", type="integer", nullable=true)
      */
     private $view_order;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="display", type="boolean", nullable=true)
      */
     private $display;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="displayInPreview", type="boolean", nullable=true)
      */
     private $displayInPreview;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="required", type="boolean", nullable=true)
      */
     private $required;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="searchable", type="boolean", nullable=true)
      */
     private $searchable;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="allow_multiple", type="boolean", nullable=true)
      */
     private $allow_multiple;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="attempt_autocomplete", type="boolean", nullable=true)
      */
     private $attempt_autocomplete;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="field_title", type="string", nullable=true)
      */
     private $field_title;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="label", type="string", nullable=true)
      */
     private $label;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="tooltip", type="string", nullable=true)
      */
     private $tooltip;
 
     /**
-     * @var array
+     * @var array|null
+     *
+     * @ORM\Column(name="field_data", type="json_array", nullable=true)
      */
     private $field_data;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="createdAt", type="datetime", nullable=true)
      */
     private $createdAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="modifiedAt", type="datetime", nullable=true)
      */
     private $modifiedAt;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="directSearch", type="boolean", nullable=true)
      */
     private $directSearch;
 
     /**
-     * @var boolean
+     * @var bool|null
+     *
+     * @ORM\Column(name="clickToSearch", type="boolean", nullable=true)
      */
     private $clickToSearch;
 
     /**
-     * @var integer
+     * @var int|null
+     *
+     * @ORM\Column(name="clickToSearchType", type="integer", nullable=true)
+     */
+    private $clickToSearchType;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="widgets_id_seq", allocationSize=1, initialValue=1)
      */
     private $id;
 
     /**
      * @var \Entity\Field_type
+     *
+     * @ORM\ManyToOne(targetEntity="Entity\Field_type")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="field_type_id", referencedColumnName="id")
+     * })
      */
     private $field_type;
 
     /**
      * @var \Entity\Template
+     *
+     * @ORM\ManyToOne(targetEntity="Entity\Template")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="template_id", referencedColumnName="id")
+     * })
      */
     private $template;
 
 
-    /**
-     * Set template_order
-     *
-     * @param integer $templateOrder
-     * @return Widget
-     */
-    public function setTemplateOrder($templateOrder)
-    {
-        $this->template_order = $templateOrder;
-
-        return $this;
-    }
-
-    /**
-     * Get template_order
-     *
-     * @return integer
-     */
-    public function getTemplateOrder()
-    {
-        return $this->template_order;
-    }
-
-    /**
-     * Set view_order
-     *
-     * @param integer $viewOrder
-     * @return Widget
-     */
-    public function setViewOrder($viewOrder)
-    {
-        $this->view_order = $viewOrder;
-
-        return $this;
-    }
-
-    /**
-     * Get view_order
-     *
-     * @return integer
-     */
-    public function getViewOrder()
-    {
-        return $this->view_order;
-    }
-
-    /**
-     * Set display
-     *
-     * @param boolean $display
-     * @return Widget
-     */
-    public function setDisplay($display)
-    {
-        $this->display = $display;
-
-        return $this;
-    }
-
-    /**
-     * Get display
-     *
-     * @return boolean
-     */
-    public function getDisplay()
-    {
-        return $this->display;
-    }
-
-    /**
-     * Set displayInPreview
-     *
-     * @param boolean $displayInPreview
-     * @return Widget
-     */
-    public function setDisplayInPreview($displayInPreview)
-    {
-        $this->displayInPreview = $displayInPreview;
-
-        return $this;
-    }
-
-    /**
-     * Get displayInPreview
-     *
-     * @return boolean
-     */
-    public function getDisplayInPreview()
-    {
-        return $this->displayInPreview;
-    }
-
-    /**
-     * Set required
-     *
-     * @param boolean $required
-     * @return Widget
-     */
-    public function setRequired($required)
-    {
-        $this->required = $required;
-
-        return $this;
-    }
-
-    /**
-     * Get required
-     *
-     * @return boolean
-     */
-    public function getRequired()
-    {
-        return $this->required;
-    }
-
-    /**
-     * Set searchable
-     *
-     * @param boolean $searchable
-     * @return Widget
-     */
-    public function setSearchable($searchable)
-    {
-        $this->searchable = $searchable;
-
-        return $this;
-    }
-
-    /**
-     * Get searchable
-     *
-     * @return boolean
-     */
-    public function getSearchable()
-    {
-        return $this->searchable;
-    }
-
-    /**
-     * Set allow_multiple
-     *
-     * @param boolean $allowMultiple
-     * @return Widget
-     */
-    public function setAllowMultiple($allowMultiple)
-    {
-        $this->allow_multiple = $allowMultiple;
-
-        return $this;
-    }
-
-    /**
-     * Get allow_multiple
-     *
-     * @return boolean
-     */
-    public function getAllowMultiple()
-    {
-        return $this->allow_multiple;
-    }
-
-    /**
-     * Set attempt_autocomplete
-     *
-     * @param boolean $attemptAutocomplete
-     * @return Widget
-     */
-    public function setAttemptAutocomplete($attemptAutocomplete)
-    {
-        $this->attempt_autocomplete = $attemptAutocomplete;
-
-        return $this;
-    }
-
-    /**
-     * Get attempt_autocomplete
-     *
-     * @return boolean
-     */
-    public function getAttemptAutocomplete()
-    {
-        return $this->attempt_autocomplete;
-    }
-
-    /**
-     * Set field_title
-     *
-     * @param string $fieldTitle
-     * @return Widget
-     */
-    public function setFieldTitle($fieldTitle)
-    {
-        $this->field_title = $fieldTitle;
-
-        return $this;
-    }
-
-    /**
-     * Get field_title
-     *
-     * @return string
-     */
-    public function getFieldTitle()
-    {
-        return $this->field_title;
-    }
-
-    /**
-     * Set label
-     *
-     * @param string $label
-     * @return Widget
-     */
-    public function setLabel($label)
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
-    /**
-     * Get label
-     *
-     * @return string
-     */
-    public function getLabel()
-    {
-        return $this->label;
-    }
-
-    /**
-     * Set tooltip
-     *
-     * @param string $tooltip
-     * @return Widget
-     */
-    public function setTooltip($tooltip)
-    {
-        $this->tooltip = $tooltip;
-
-        return $this;
-    }
-
-    /**
-     * Get tooltip
-     *
-     * @return string
-     */
-    public function getTooltip()
-    {
-        return $this->tooltip;
-    }
-
-    /**
-     * Set field_data
-     *
-     * @param array $fieldData
-     * @return Widget
-     */
-    public function setFieldData($fieldData)
-    {
-        $this->field_data = $fieldData;
-
-        return $this;
-    }
-
-    /**
-     * Get field_data
-     *
-     * @return array
-     */
-    public function getFieldData()
-    {
-        return $this->field_data;
-    }
-
-    /**
-     * Set createdAt
-     *
-     * @param \DateTime $createdAt
-     * @return Widget
-     */
-    public function setCreatedAt($createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * Get createdAt
-     *
-     * @return \DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * Set modifiedAt
-     *
-     * @param \DateTime $modifiedAt
-     * @return Widget
-     */
-    public function setModifiedAt($modifiedAt)
-    {
-        $this->modifiedAt = $modifiedAt;
-
-        return $this;
-    }
-
-    /**
-     * Get modifiedAt
-     *
-     * @return \DateTime
-     */
-    public function getModifiedAt()
-    {
-        return $this->modifiedAt;
-    }
-
-    /**
-     * Set directSearch
-     *
-     * @param boolean $directSearch
-     * @return Widget
-     */
-    public function setDirectSearch($directSearch)
-    {
-        $this->directSearch = $directSearch;
-
-        return $this;
-    }
-
-    /**
-     * Get directSearch
-     *
-     * @return boolean
-     */
-    public function getDirectSearch()
-    {
-        return $this->directSearch;
-    }
-
-    /**
-     * Set clickToSearch
-     *
-     * @param boolean $clickToSearch
-     * @return Widget
-     */
-    public function setClickToSearch($clickToSearch)
-    {
-        $this->clickToSearch = $clickToSearch;
-
-        return $this;
-    }
-
-    /**
-     * Get clickToSearch
-     *
-     * @return boolean
-     */
-    public function getClickToSearch()
-    {
-        return $this->clickToSearch;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Set field_type
-     *
-     * @param \Entity\Field_type $fieldType
-     * @return Widget
-     */
-    public function setFieldType(? \Entity\Field_type $fieldType = null)
-    {
-        $this->field_type = $fieldType;
-
-        return $this;
-    }
-
-    /**
-     * Get field_type
-     *
-     * @return \Entity\Field_type
-     */
-    public function getFieldType()
-    {
-        return $this->field_type;
-    }
-
-    /**
-     * Set template
-     *
-     * @param \Entity\Template $template
-     * @return Widget
-     */
-    public function setTemplate(? \Entity\Template $template = null)
-    {
-        $this->template = $template;
-
-        return $this;
-    }
-
-    /**
-     * Get template
-     *
-     * @return \Entity\Template
-     */
-    public function getTemplate()
-    {
-        return $this->template;
-    }
-    /**
-     * @var integer
-     */
-    private $clickToSearchType;
-
-
-    /**
-     * Set clickToSearchType
-     *
-     * @param integer $clickToSearchType
-     *
-     * @return Widget
-     */
-    public function setClickToSearchType($clickToSearchType)
-    {
-        $this->clickToSearchType = $clickToSearchType;
-
-        return $this;
-    }
-
-    /**
-     * Get clickToSearchType
-     *
-     * @return integer
-     */
-    public function getClickToSearchType()
-    {
-        return $this->clickToSearchType;
-    }
 }

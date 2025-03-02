@@ -6,53 +6,88 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * InstanceGroup
+ *
+ * @ORM\Table(name="instance_groups", indexes={@ORM\Index(name="0", columns={"group_type"}), @ORM\Index(name="1", columns={"group_value"})})
+ * @ORM\Entity
  */
 class InstanceGroup
 {
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="group_type", type="string", nullable=true)
      */
     private $group_type;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="group_value", type="string", nullable=true)
      */
     private $group_value;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="group_label", type="string", nullable=true)
      */
     private $group_label;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
+     *
+     * @ORM\Column(name="expiration", type="datetime", nullable=true)
      */
     private $expiration;
 
     /**
-     * @var integer
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="instance_groups_id_seq", allocationSize=1, initialValue=1)
      */
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="Entity\InstancePermission", mappedBy="group", cascade={"remove"})
      */
     private $instance_permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="Entity\CollectionPermission", mappedBy="group", cascade={"remove"})
      */
     private $collection_permissions;
 
     /**
      * @var \Entity\Instance
+     *
+     * @ORM\ManyToOne(targetEntity="Entity\Instance")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id")
+     * })
      */
     private $instance;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\ManyToMany(targetEntity="Entity\GroupEntry", inversedBy="group", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\JoinTable(name="instancegroup_groupentry",
+     *   joinColumns={
+     *     @ORM\JoinColumn(name="group_id", referencedColumnName="id", onDelete="CASCADE")
+     *   },
+     *   inverseJoinColumns={
+     *     @ORM\JoinColumn(name="entry_id", referencedColumnName="id", unique=true, onDelete="CASCADE")
+     *   }
+     * )
      */
-    private $group_values;
+    private $group_values = array();
 
     /**
      * Constructor
@@ -64,227 +99,4 @@ class InstanceGroup
         $this->group_values = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
-    /**
-     * Set group_type
-     *
-     * @param string $groupType
-     * @return InstanceGroup
-     */
-    public function setGroupType($groupType)
-    {
-        $this->group_type = $groupType;
-
-        return $this;
-    }
-
-    /**
-     * Get group_type
-     *
-     * @return string 
-     */
-    public function getGroupType()
-    {
-        return $this->group_type;
-    }
-
-    /**
-     * Set group_value
-     *
-     * @param string $groupValue
-     * @return InstanceGroup
-     */
-    public function setGroupValue($groupValue)
-    {
-        $this->group_value = $groupValue;
-
-        return $this;
-    }
-
-    /**
-     * Get group_value
-     *
-     * @return string 
-     */
-    public function getGroupValue()
-    {
-        return $this->group_value;
-    }
-
-    /**
-     * Set group_label
-     *
-     * @param string $groupLabel
-     * @return InstanceGroup
-     */
-    public function setGroupLabel($groupLabel)
-    {
-        $this->group_label = $groupLabel;
-
-        return $this;
-    }
-
-    /**
-     * Get group_label
-     *
-     * @return string 
-     */
-    public function getGroupLabel()
-    {
-        return $this->group_label;
-    }
-
-    /**
-     * Set expiration
-     *
-     * @param \DateTime $expiration
-     * @return InstanceGroup
-     */
-    public function setExpiration($expiration)
-    {
-        $this->expiration = $expiration;
-
-        return $this;
-    }
-
-    /**
-     * Get expiration
-     *
-     * @return \DateTime 
-     */
-    public function getExpiration()
-    {
-        return $this->expiration;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Add instance_permissions
-     *
-     * @param \Entity\InstancePermission $instancePermissions
-     * @return InstanceGroup
-     */
-    public function addInstancePermission(\Entity\InstancePermission $instancePermissions)
-    {
-        $this->instance_permissions[] = $instancePermissions;
-
-        return $this;
-    }
-
-    /**
-     * Remove instance_permissions
-     *
-     * @param \Entity\InstancePermission $instancePermissions
-     */
-    public function removeInstancePermission(\Entity\InstancePermission $instancePermissions)
-    {
-        $this->instance_permissions->removeElement($instancePermissions);
-    }
-
-    /**
-     * Get instance_permissions
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getInstancePermissions()
-    {
-        return $this->instance_permissions;
-    }
-
-    /**
-     * Add collection_permissions
-     *
-     * @param \Entity\CollectionPermission $collectionPermissions
-     * @return InstanceGroup
-     */
-    public function addCollectionPermission(\Entity\CollectionPermission $collectionPermissions)
-    {
-        $this->collection_permissions[] = $collectionPermissions;
-
-        return $this;
-    }
-
-    /**
-     * Remove collection_permissions
-     *
-     * @param \Entity\CollectionPermission $collectionPermissions
-     */
-    public function removeCollectionPermission(\Entity\CollectionPermission $collectionPermissions)
-    {
-        $this->collection_permissions->removeElement($collectionPermissions);
-    }
-
-    /**
-     * Get collection_permissions
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getCollectionPermissions()
-    {
-        return $this->collection_permissions;
-    }
-
-    /**
-     * Set instance
-     *
-     * @param \Entity\Instance $instance
-     * @return InstanceGroup
-     */
-    public function setInstance(? \Entity\Instance $instance = null)
-    {
-        $this->instance = $instance;
-
-        return $this;
-    }
-
-    /**
-     * Get instance
-     *
-     * @return \Entity\Instance 
-     */
-    public function getInstance()
-    {
-        return $this->instance;
-    }
-
-    /**
-     * Add group_values
-     *
-     * @param \Entity\GroupEntry $groupValues
-     * @return InstanceGroup
-     */
-    public function addGroupValue(\Entity\GroupEntry $groupValues)
-    {
-        $this->group_values[] = $groupValues;
-
-        return $this;
-    }
-
-    /**
-     * Remove group_values
-     *
-     * @param \Entity\GroupEntry $groupValues
-     */
-    public function removeGroupValue(\Entity\GroupEntry $groupValues)
-    {
-        $this->group_values->removeElement($groupValues);
-    }
-
-    /**
-     * Get group_values
-     *
-     * @return \Doctrine\Common\Collections\Collection 
-     */
-    public function getGroupValues()
-    {
-        return $this->group_values;
-    }
 }

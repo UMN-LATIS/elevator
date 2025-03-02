@@ -42,17 +42,17 @@ class Doctrine
         $models_namespace = 'Entity';
         $models_path = APPPATH . 'models';
         $proxies_dir = APPPATH . 'models/Proxies';
-        $metadata_paths = array(APPPATH . 'doctrine');
+        $metadata_paths = array(APPPATH . 'models/Entity');
 
         // Set $dev_mode to TRUE to disable caching while you develop
-        //$config = Setup::createAnnotationMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
-        //TODO: enable caching
+        
 
-        // TODO TODO TODO
-
-        $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
+        // $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
         require(APPPATH . 'config/config.php');
+        
+        $cache = null;
+        $doctrineCache = null;
         if($useCache && $config["redis"]) {
             $redis = new Redis();
             
@@ -60,11 +60,15 @@ class Doctrine
             $this->redisHost = $redis;
 
             $cache = new RedisAdapter($redis, namespace:'doctrine');
-            
+            $doctrineCache = DoctrineProvider::wrap($cache);
+        }
 
+        $doctrineConfig = Setup::createAnnotationMetadataConfiguration($metadata_paths, $dev_mode = $useCache, $proxies_dir, $doctrineCache, $useSimpleAnnotationReader=false);
+
+        if($cache) {
             $doctrineConfig->setMetadataCache($cache);
             $doctrineConfig->setQueryCache($cache);
-            $doctrineCache = DoctrineProvider::wrap($cache);
+            
             $doctrineConfig->setResultCacheImpl($doctrineCache);
         }
         

@@ -6,50 +6,28 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * GroupEntry
+ *
+ * @ORM\Table(name="group_entry")
+ * @ORM\Entity
  */
 class GroupEntry
 {
     /**
-     * @var integer
+     * @var string|null
+     *
+     * @ORM\Column(name="groupValue", type="string", nullable=true)
      */
     private $groupValue;
 
     /**
-     * @var integer
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="SEQUENCE")
+     * @ORM\SequenceGenerator(sequenceName="group_entry_id_seq", allocationSize=1, initialValue=1)
      */
     private $id;
 
 
-    /**
-     * Set groupValue
-     *
-     * @param integer $groupValue
-     * @return GroupEntry
-     */
-    public function setGroupValue($groupValue)
-    {
-        $this->groupValue = $groupValue;
-
-        return $this;
-    }
-
-    /**
-     * Get groupValue
-     *
-     * @return integer 
-     */
-    public function getGroupValue()
-    {
-        return $this->groupValue;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 }
