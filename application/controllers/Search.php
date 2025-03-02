@@ -1,10 +1,14 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use Symfony\Component\Cache\Psr16Cache;
+
+ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 
 class Search extends Instance_Controller {
 
 	private $searchId = null;
-
+	private ?Psr16Cache $sortCache = null;
 	public function __construct()
 	{
 		parent::__construct();
@@ -923,9 +927,9 @@ class Search extends Instance_Controller {
 	}
 
 	private function buildSortStructure() {
-		if ($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('sortCache_');
-			if ($storedObject = $this->doctrineCache->fetch($this->instance->getId())) {
+		if ($this->config->item('enableCaching') && $this->sortCache) {
+
+			if ($storedObject = $this->sortCache->get($this->instance->getId())) {
 				return $storedObject;
 			}
 		}
@@ -960,8 +964,10 @@ class Search extends Instance_Controller {
 		}
 
 		if ($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('sortCache_');
-			$this->doctrineCache->save($this->instance->getId(), $formattedReturnArray, 14400);
+			if(!$this->sortCache) {
+				$this->sortCache = $this->getCache("sortCache");
+			}
+			$this->sortCache->set($this->instance->getId(), $formattedReturnArray, 14400);
 		}
 
 		return $formattedReturnArray;

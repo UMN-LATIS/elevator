@@ -351,8 +351,7 @@ class User_model extends CI_Model {
 		$this->doctrine->em->flush();
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->userId);
+			$this->userCache->delete($this->userId);
 		}
 
 		$this->recentDrawers = null;
@@ -399,8 +398,7 @@ class User_model extends CI_Model {
 		$this->doctrine->em->flush();
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->userId);
+			$this->userCache->delete($this->userId);
 		}
 
 		$this->recentCollections= null;

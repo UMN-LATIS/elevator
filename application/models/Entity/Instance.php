@@ -11,6 +11,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class Instance
 {
+    /** 
+     * Elevator
+     * @var array|null
+     */
+    public $queryHandoff = null;
+
     /**
      * @var string
      */
@@ -164,7 +170,7 @@ class Instance
     /**
      * @var bool|null
      */
-    #[ORM\Column(name: 'showTemplateInSearchResults', type: 'boolean', nullable: true)]
+    #[ORM\Column(name: 'showTemplateInSearchResults', type: 'boolean', nullable: true, options: ["default"=> false])]
     private $showTemplateInSearchResults = '0';
 
     /**
@@ -206,7 +212,7 @@ class Instance
     /**
      * @var int
      */
-    #[ORM\Column(name: 'interfaceVersion', type: 'integer', nullable: false)]
+    #[ORM\Column(name: 'interfaceVersion', type: 'integer', nullable: false,options: ["default"=> 0])]
     private $interfaceVersion = '0';
 
     /**
@@ -218,7 +224,7 @@ class Instance
     /**
      * @var bool|null
      */
-    #[ORM\Column(name: 'enableThemes', type: 'boolean', nullable: true)]
+    #[ORM\Column(name: 'enableThemes', type: 'boolean', nullable: true, options: ["default"=> false])]
     private $enableThemes = '0';
 
     /**

@@ -435,7 +435,7 @@ class Drawers extends Instance_Controller {
 		$drawerId = $drawer->getId();
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->deleteItem('userCache_'+$this->user_model->userId);
+			$this->userCache->delete($this->user_model->userId);
 		}
 
 		return render_json(["drawerId"=>$drawer->getId(), "drawerTitle"=>$drawer->getTitle()]);

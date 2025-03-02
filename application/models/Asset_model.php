@@ -950,8 +950,7 @@ class Asset_model extends CI_Model {
 		$this->useStaleCaches = FALSE;
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('searchCache_');
-			$this->doctrineCache->delete($this->getObjectId());
+			$this->searchCache->delete($this->getObjectId());
 		}
 		else {
 			$this->flushCache();
@@ -1060,8 +1059,7 @@ class Asset_model extends CI_Model {
 				$tempAsset->loadAssetById($result);
 				$tempAsset->reindex($parentArray);
 				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->setNamespace('searchCache_');
-					$this->doctrineCache->delete($this->getObjectId());
+					$this->searchCache->delete($this->getObjectId());
 				}
 
 			}

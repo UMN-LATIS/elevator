@@ -4,6 +4,7 @@ use    Doctrine\ORM\Tools\Setup,
     Doctrine\ORM\EntityManager;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Doctrine\ORM\ORMSetup;
 
 class Doctrine
 {
@@ -11,18 +12,17 @@ class Doctrine
     public $em;
     public $redisHost;
 
-    public function __construct($useCache = true)
+    public function __construct($useCache = null)
     {
 
 //        Setup::registerAutoloadDirectory(__DIR__);
 
         // Load the database configuration from CodeIgniter
-
         $this->connect($useCache);
 
     }
 
-    public function connect($useCache = true) {
+    public function connect($useCache = null) {
         require(APPPATH . 'config/database.php');
         $connection_options = array(
             'driver'        => $db['default']['doctrineDriver'],
@@ -51,8 +51,13 @@ class Doctrine
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
         require(APPPATH . 'config/config.php');
         
+        if($useCache == null) {
+            $useCache = $config["enableCaching"];
+        }
+
         $cache = null;
         $doctrineCache = null;
+
         if($useCache && $config["redis"]) {
             $redis = new Redis();
             
@@ -63,8 +68,9 @@ class Doctrine
             $doctrineCache = DoctrineProvider::wrap($cache);
         }
 
-        $doctrineConfig = Setup::createAnnotationMetadataConfiguration($metadata_paths, $dev_mode = $useCache, $proxies_dir, $doctrineCache, $useSimpleAnnotationReader=false);
-
+        $doctrineConfig = ORMSetup::createAttributeMetadataConfiguration(paths:$metadata_paths,isDevMode: !($useCache),proxyDir: $proxies_dir,cache: $cache);
+        $doctrineConfig->setProxyDir($proxies_dir);
+        $doctrineConfig->setAutoGenerateProxyClasses(true);
         if($cache) {
             $doctrineConfig->setMetadataCache($cache);
             $doctrineConfig->setQueryCache($cache);

@@ -12,6 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
 class Collection
 {
     /**
+     * Elevator addition
+     * @var \Application\Models\Filehandlers\Filehandlerbase|null
+     */
+    public $previewImageHandler = null;
+
+
+    /**
      * @var string|null
      */
     #[ORM\Column(name: 'title', type: 'string', nullable: true)]

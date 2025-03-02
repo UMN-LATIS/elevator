@@ -412,7 +412,7 @@ $config['redisPort'] = "6379";
 
 if(defined('ENVIRONMENT') && ENVIRONMENT == "local" || $_SERVER['ENVIRONMENT'] == "development") {
     
-  $config["enableCaching"] = true;
+  $config["enableCaching"] = false;
 }
 else {
   $config["enableCaching"] = true;

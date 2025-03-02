@@ -62,25 +62,25 @@ class Template
     /**
      * @var bool
      */
-    #[ORM\Column(name: 'showCollection', type: 'boolean')]
+    #[ORM\Column(name: 'showCollection', type: 'boolean', options: ["default"=> false])]
     private $showCollection = '0';
 
     /**
      * @var bool
      */
-    #[ORM\Column(name: 'showTemplate', type: 'boolean')]
+    #[ORM\Column(name: 'showTemplate', type: 'boolean', options: ["default"=> false])]
     private $showTemplate = '0';
 
     /**
      * @var int
      */
-    #[ORM\Column(name: 'collectionPosition', type: 'integer')]
+    #[ORM\Column(name: 'collectionPosition', type: 'integer', options: ["default"=> 0])]
     private $collectionPosition = '0';
 
     /**
      * @var int
      */
-    #[ORM\Column(name: 'templatePosition', type: 'integer')]
+    #[ORM\Column(name: 'templatePosition', type: 'integer', options: ["default"=> 0])]
     private $templatePosition = '0';
 
     /**

@@ -1,6 +1,13 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use Symfony\Component\Cache\Psr16Cache;
+
+ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class AssetManager extends Admin_Controller {
+
+
+	public ?Psr16Cache $importCache = null;
 
 	public function __construct()
 	{
@@ -853,14 +860,17 @@ class AssetManager extends Admin_Controller {
 		else {
 
 			if($hash) {
-				$cachedItem = $this->doctrineCache->getItem("importCache_" + $hash);
-				if($cachedItem->isHit()) {
-					$cacheArray = $cachedItem->get();
-					$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cacheArray['importId']);
+				if($this->importCache) {
+					$cachedItem = $this->ImportCache->get($hash);
+					if($cachedItem) {
+						$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cachedItem['importId']);
+					}
 				}
 				
+				
 			}
-			else {
+
+			if(!$csvBatch) {
 				$this->logging->logError("Cachine Error");
 				$this->errorhandler_helper->callError("genericError");
 				return;
@@ -1142,10 +1152,10 @@ class AssetManager extends Admin_Controller {
 			$rowCount++;
 
 			if($rowCount % 400 == 0) {
-				$cachedItem = $this->doctrineCache->getItem("importCache_" + $hash);
-				$cachedItem->set($cacheArray);
-				$cachedItem->expiresAfter(900);
-				$this->doctrineCache->save($cachedItem);
+				if(!$this->importCache) {
+					$this->importCache = $this->getCache("importCache");
+				}
+				$this->importCache->set($hash, $cacheArray, 900);
 
 				if(isset($parentObject) && isset($targetArray)) {
 					$objectArray = $parentObject->getAsArray();

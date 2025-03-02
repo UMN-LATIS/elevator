@@ -869,14 +869,13 @@ class search_model extends CI_Model {
 			}
 			else {
 				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->setNamespace('searchCache_');
-					if($storedObject = $this->doctrineCache->fetch($match)) {
+					if($storedObject = $this->searchCache->get($match)) {
 
 					}
 					else {
 						$storedObject = $asset->getSearchResultEntry();
 						if($this->config->item('enableCaching')) {
-							$this->doctrineCache->save($match, $storedObject, 900);
+							$this->searchCache->set($match, $storedObject, 900);
 						}
 					}
 				}
