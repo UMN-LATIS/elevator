@@ -20,13 +20,13 @@ class AssetCache
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'relatedAssetCache', type: 'json_array', nullable: true)]
+    #[ORM\Column(name: 'relatedAssetCache', type: 'json', nullable: true)]
     private $relatedAssetCache;
 
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'searchResultCache', type: 'json_array', nullable: true)]
+    #[ORM\Column(name: 'searchResultCache', type: 'json', nullable: true)]
     private $searchResultCache;
 
     /**

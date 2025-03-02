@@ -31,13 +31,13 @@ class Reports extends Admin_Controller {
 		$qb = $this->doctrine->em->getRepository("Entity\Asset")->createQueryBuilder("a");
 			$qb->select("count(a.collectionId) as colCount", "a.collectionId")
 			->where("a.assetId IS NOT NULL")
-			->where("a.collectionId IS NOT NULL")
+			->andWhere("a.deletedAt IS NULL")
+			->andWhere("a.collectionId IS NOT NULL")
 			->groupBy("a.collectionId");
 
 		if($templateId) {
 			$qb->where("a.templateId = :templateId")->setParameter(":templateId", $templateId);
 		}
-
 		$results= $qb->getQuery()->execute();
 
 		$collectionInfo = array();
@@ -49,6 +49,7 @@ class Reports extends Admin_Controller {
 
 			$collectionInfo[$result["collectionId"]] = ["collection"=>$this->collection_model->getCollection($result["collectionId"]), "count"=>$result["colCount"] ];
 		}
+
 
 		$this->template->content->view("reports/collectionList", ["collections"=>$collectionInfo]);
 		$this->template->publish();

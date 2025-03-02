@@ -77,4 +77,7 @@ task('elevator:create_instance_assets', function () {
 
 after('deploy:symlink', 'elevator:restart_systemd');
 
+
+// TODO: consider logic that runs migrations and if migrations have run, flushdb for redis. or at least clear all the doctrine cachines?
+
 after('deploy:failed', 'deploy:unlock');

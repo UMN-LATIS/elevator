@@ -49,13 +49,15 @@ services:
     volumes:
       - ${DOCKER_SCRATCH_DIR}:/scratch
       - /var/run/docker.sock:/var/run/docker.sock
+      - .:/var/www/html
+      - /var/www/html/vendor
     develop:
-      watch:
-        - action: sync
-          path: ./
-          target: /var/www/html/
-          ignore:
-            - vendor/
+      # watch:
+      #   - action: sync
+      #     path: ./
+      #     target: /var/www/html/
+      #     ignore:
+      #       - vendor/
   # apache:
   #   platform: linux/x86_64
   #   build: 

@@ -13,8 +13,10 @@ $dotenv->safeLoad();
 
 require_once("application/libraries/Doctrine.php");
 
+use Doctrine\DBAL\Tools\Console\ConnectionProvider\SingleConnectionProvider;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
 
 foreach ($GLOBALS as $helperSetCandidate) {
     if ($helperSetCandidate instanceof \Symfony\Component\Console\Helper\HelperSet) {
@@ -26,9 +28,5 @@ foreach ($GLOBALS as $helperSetCandidate) {
 $doctrine = new Doctrine(false);
 $em = $doctrine->em;
 
-$helperSet = new \Symfony\Component\Console\Helper\HelperSet(array(
-    'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
-    'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
-));
-
-\Doctrine\ORM\Tools\Console\ConsoleRunner::run($helperSet);
+$commands = [];
+\Doctrine\ORM\Tools\Console\ConsoleRunner::run(new SingleManagerProvider($em), $commands);

@@ -38,7 +38,7 @@ class LTI13ResourceLink
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'endpoint', type: 'json_array', nullable: true)]
+    #[ORM\Column(name: 'endpoint', type: 'json', nullable: true)]
     private $endpoint;
 
     /**

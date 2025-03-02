@@ -81,7 +81,7 @@ class Widget
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'field_data', type: 'json_array', nullable: true)]
+    #[ORM\Column(name: 'field_data', type: 'json', nullable: true)]
     private $field_data;
 
     /**

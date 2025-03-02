@@ -4,6 +4,7 @@ use    Doctrine\ORM\Tools\Setup,
     Doctrine\ORM\EntityManager;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\ORMSetup;
 
 class Doctrine
@@ -50,8 +51,8 @@ class Doctrine
         // $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
         require(APPPATH . 'config/config.php');
-        
-        if($useCache == null) {
+    
+        if($useCache === null) {
             $useCache = $config["enableCaching"];
         }
 
@@ -71,6 +72,8 @@ class Doctrine
         $doctrineConfig = ORMSetup::createAttributeMetadataConfiguration(paths:$metadata_paths,isDevMode: !($useCache),proxyDir: $proxies_dir,cache: $cache);
         $doctrineConfig->setProxyDir($proxies_dir);
         $doctrineConfig->setAutoGenerateProxyClasses(true);
+
+
         if($cache) {
             $doctrineConfig->setMetadataCache($cache);
             $doctrineConfig->setQueryCache($cache);
@@ -83,6 +86,9 @@ class Doctrine
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
         //$config->setSQLLogger($logger);
         $connection = \Doctrine\DBAL\DriverManager::getConnection($connection_options);
+
+        Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
+
         $this->em = new EntityManager($connection, $doctrineConfig);
     }
 

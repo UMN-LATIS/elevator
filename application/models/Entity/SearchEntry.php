@@ -3,6 +3,7 @@
 namespace Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 /**
  * SearchEntry
@@ -20,7 +21,7 @@ class SearchEntry
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'searchData', type: 'json_array', nullable: true)]
+    #[ORM\Column(name: 'searchData', type: 'json', nullable: true)]
     private $searchData;
 
     /**
@@ -40,7 +41,8 @@ class SearchEntry
      */
     #[ORM\Column(name: 'id', type: 'guid')]
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'UUID')]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     private $id;
 
     /**

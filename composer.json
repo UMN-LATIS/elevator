@@ -27,7 +27,7 @@
   ],
   "require": {
     "monolog/monolog": "2.9.1",
-    "doctrine/dbal": "^2.0",
+    "doctrine/dbal": "^3.0",
     "doctrine/orm": "^2.0",
     "elasticsearch/elasticsearch": "8.17.0",
     "smalot/pdfparser": "dev-master",
@@ -43,7 +43,9 @@
     "onelogin/php-saml": "^4.0.0",
     "deployer/deployer": "^7.0",
     "symfony/cache": "^6.4",
-    "psr/simple-cache": "^3.0"
+    "psr/simple-cache": "^3.0",
+    "doctrine/migrations": "3.8.2",
+    "ramsey/uuid-doctrine": "^2.1"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
