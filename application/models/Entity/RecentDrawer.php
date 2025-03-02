@@ -60,4 +60,110 @@ class RecentDrawer
     private $instance;
 
 
+
+    /**
+     * Set createdAt.
+     *
+     * @param \DateTime|null $createdAt
+     *
+     * @return RecentDrawer
+     */
+    public function setCreatedAt($createdAt = null)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set user.
+     *
+     * @param \Entity\User|null $user
+     *
+     * @return RecentDrawer
+     */
+    public function setUser(?\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user.
+     *
+     * @return \Entity\User|null
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set drawer.
+     *
+     * @param \Entity\Drawer|null $drawer
+     *
+     * @return RecentDrawer
+     */
+    public function setDrawer(?\Entity\Drawer $drawer = null)
+    {
+        $this->drawer = $drawer;
+
+        return $this;
+    }
+
+    /**
+     * Get drawer.
+     *
+     * @return \Entity\Drawer|null
+     */
+    public function getDrawer()
+    {
+        return $this->drawer;
+    }
+
+    /**
+     * Set instance.
+     *
+     * @param \Entity\Instance|null $instance
+     *
+     * @return RecentDrawer
+     */
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
 }

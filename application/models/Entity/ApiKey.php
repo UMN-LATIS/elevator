@@ -75,4 +75,182 @@ class ApiKey
     private $owner;
 
 
+
+    /**
+     * Set label.
+     *
+     * @param string|null $label
+     *
+     * @return ApiKey
+     */
+    public function setLabel($label = null)
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
+    /**
+     * Get label.
+     *
+     * @return string|null
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
+     * Set apiKey.
+     *
+     * @param string|null $apiKey
+     *
+     * @return ApiKey
+     */
+    public function setApiKey($apiKey = null)
+    {
+        $this->apiKey = $apiKey;
+
+        return $this;
+    }
+
+    /**
+     * Get apiKey.
+     *
+     * @return string|null
+     */
+    public function getApiKey()
+    {
+        return $this->apiKey;
+    }
+
+    /**
+     * Set apiSecret.
+     *
+     * @param string|null $apiSecret
+     *
+     * @return ApiKey
+     */
+    public function setApiSecret($apiSecret = null)
+    {
+        $this->apiSecret = $apiSecret;
+
+        return $this;
+    }
+
+    /**
+     * Get apiSecret.
+     *
+     * @return string|null
+     */
+    public function getApiSecret()
+    {
+        return $this->apiSecret;
+    }
+
+    /**
+     * Set allowsRead.
+     *
+     * @param bool|null $allowsRead
+     *
+     * @return ApiKey
+     */
+    public function setAllowsRead($allowsRead = null)
+    {
+        $this->allowsRead = $allowsRead;
+
+        return $this;
+    }
+
+    /**
+     * Get allowsRead.
+     *
+     * @return bool|null
+     */
+    public function getAllowsRead()
+    {
+        return $this->allowsRead;
+    }
+
+    /**
+     * Set allowsWrite.
+     *
+     * @param bool|null $allowsWrite
+     *
+     * @return ApiKey
+     */
+    public function setAllowsWrite($allowsWrite = null)
+    {
+        $this->allowsWrite = $allowsWrite;
+
+        return $this;
+    }
+
+    /**
+     * Get allowsWrite.
+     *
+     * @return bool|null
+     */
+    public function getAllowsWrite()
+    {
+        return $this->allowsWrite;
+    }
+
+    /**
+     * Set systemAccount.
+     *
+     * @param bool|null $systemAccount
+     *
+     * @return ApiKey
+     */
+    public function setSystemAccount($systemAccount = null)
+    {
+        $this->systemAccount = $systemAccount;
+
+        return $this;
+    }
+
+    /**
+     * Get systemAccount.
+     *
+     * @return bool|null
+     */
+    public function getSystemAccount()
+    {
+        return $this->systemAccount;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set owner.
+     *
+     * @param \Entity\User|null $owner
+     *
+     * @return ApiKey
+     */
+    public function setOwner(?\Entity\User $owner = null)
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * Get owner.
+     *
+     * @return \Entity\User|null
+     */
+    public function getOwner()
+    {
+        return $this->owner;
+    }
 }

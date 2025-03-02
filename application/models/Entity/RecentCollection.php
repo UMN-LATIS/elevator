@@ -60,4 +60,110 @@ class RecentCollection
     private $instance;
 
 
+
+    /**
+     * Set createdAt.
+     *
+     * @param \DateTime|null $createdAt
+     *
+     * @return RecentCollection
+     */
+    public function setCreatedAt($createdAt = null)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set user.
+     *
+     * @param \Entity\User|null $user
+     *
+     * @return RecentCollection
+     */
+    public function setUser(?\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user.
+     *
+     * @return \Entity\User|null
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set collection.
+     *
+     * @param \Entity\Collection|null $collection
+     *
+     * @return RecentCollection
+     */
+    public function setCollection(?\Entity\Collection $collection = null)
+    {
+        $this->collection = $collection;
+
+        return $this;
+    }
+
+    /**
+     * Get collection.
+     *
+     * @return \Entity\Collection|null
+     */
+    public function getCollection()
+    {
+        return $this->collection;
+    }
+
+    /**
+     * Set instance.
+     *
+     * @param \Entity\Instance|null $instance
+     *
+     * @return RecentCollection
+     */
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
 }

@@ -57,4 +57,110 @@ class CustomSearch
     private $instance;
 
 
+
+    /**
+     * Set searchConfig.
+     *
+     * @param string|null $searchConfig
+     *
+     * @return CustomSearch
+     */
+    public function setSearchConfig($searchConfig = null)
+    {
+        $this->searchConfig = $searchConfig;
+
+        return $this;
+    }
+
+    /**
+     * Get searchConfig.
+     *
+     * @return string|null
+     */
+    public function getSearchConfig()
+    {
+        return $this->searchConfig;
+    }
+
+    /**
+     * Set searchTitle.
+     *
+     * @param string|null $searchTitle
+     *
+     * @return CustomSearch
+     */
+    public function setSearchTitle($searchTitle = null)
+    {
+        $this->searchTitle = $searchTitle;
+
+        return $this;
+    }
+
+    /**
+     * Get searchTitle.
+     *
+     * @return string|null
+     */
+    public function getSearchTitle()
+    {
+        return $this->searchTitle;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set user.
+     *
+     * @param \Entity\User|null $user
+     *
+     * @return CustomSearch
+     */
+    public function setUser(?\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user.
+     *
+     * @return \Entity\User|null
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set instance.
+     *
+     * @param \Entity\Instance|null $instance
+     *
+     * @return CustomSearch
+     */
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
 }

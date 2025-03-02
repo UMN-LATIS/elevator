@@ -47,4 +47,86 @@ class InstanceHandlerPermissions
     private $instance;
 
 
+
+    /**
+     * Set handlerName.
+     *
+     * @param string|null $handlerName
+     *
+     * @return InstanceHandlerPermissions
+     */
+    public function setHandlerName($handlerName = null)
+    {
+        $this->handler_name = $handlerName;
+
+        return $this;
+    }
+
+    /**
+     * Get handlerName.
+     *
+     * @return string|null
+     */
+    public function getHandlerName()
+    {
+        return $this->handler_name;
+    }
+
+    /**
+     * Set permissionGroup.
+     *
+     * @param int|null $permissionGroup
+     *
+     * @return InstanceHandlerPermissions
+     */
+    public function setPermissionGroup($permissionGroup = null)
+    {
+        $this->permission_group = $permissionGroup;
+
+        return $this;
+    }
+
+    /**
+     * Get permissionGroup.
+     *
+     * @return int|null
+     */
+    public function getPermissionGroup()
+    {
+        return $this->permission_group;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set instance.
+     *
+     * @param \Entity\Instance|null $instance
+     *
+     * @return InstanceHandlerPermissions
+     */
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
 }

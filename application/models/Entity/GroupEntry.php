@@ -30,4 +30,38 @@ class GroupEntry
     private $id;
 
 
+
+    /**
+     * Set groupValue.
+     *
+     * @param string|null $groupValue
+     *
+     * @return GroupEntry
+     */
+    public function setGroupValue($groupValue = null)
+    {
+        $this->groupValue = $groupValue;
+
+        return $this;
+    }
+
+    /**
+     * Get groupValue.
+     *
+     * @return string|null
+     */
+    public function getGroupValue()
+    {
+        return $this->groupValue;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 }

@@ -103,4 +103,278 @@ class Drawer
         $this->groups = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
+    /**
+     * Set title.
+     *
+     * @param string|null $title
+     *
+     * @return Drawer
+     */
+    public function setTitle($title = null)
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * Get title.
+     *
+     * @return string|null
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * Set changedSinceArchive.
+     *
+     * @param bool|null $changedSinceArchive
+     *
+     * @return Drawer
+     */
+    public function setChangedSinceArchive($changedSinceArchive = null)
+    {
+        $this->changedSinceArchive = $changedSinceArchive;
+
+        return $this;
+    }
+
+    /**
+     * Get changedSinceArchive.
+     *
+     * @return bool|null
+     */
+    public function getChangedSinceArchive()
+    {
+        return $this->changedSinceArchive;
+    }
+
+    /**
+     * Set createdAt.
+     *
+     * @param \DateTime|null $createdAt
+     *
+     * @return Drawer
+     */
+    public function setCreatedAt($createdAt = null)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Set sortBy.
+     *
+     * @param string|null $sortBy
+     *
+     * @return Drawer
+     */
+    public function setSortBy($sortBy = null)
+    {
+        $this->sortBy = $sortBy;
+
+        return $this;
+    }
+
+    /**
+     * Get sortBy.
+     *
+     * @return string|null
+     */
+    public function getSortBy()
+    {
+        return $this->sortBy;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Add permission.
+     *
+     * @param \Entity\DrawerPermission $permission
+     *
+     * @return Drawer
+     */
+    public function addPermission(\Entity\DrawerPermission $permission)
+    {
+        $this->permissions[] = $permission;
+
+        return $this;
+    }
+
+    /**
+     * Remove permission.
+     *
+     * @param \Entity\DrawerPermission $permission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removePermission(\Entity\DrawerPermission $permission)
+    {
+        return $this->permissions->removeElement($permission);
+    }
+
+    /**
+     * Get permissions.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPermissions()
+    {
+        return $this->permissions;
+    }
+
+    /**
+     * Add recentDrawer.
+     *
+     * @param \Entity\RecentDrawer $recentDrawer
+     *
+     * @return Drawer
+     */
+    public function addRecentDrawer(\Entity\RecentDrawer $recentDrawer)
+    {
+        $this->recentDrawer[] = $recentDrawer;
+
+        return $this;
+    }
+
+    /**
+     * Remove recentDrawer.
+     *
+     * @param \Entity\RecentDrawer $recentDrawer
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeRecentDrawer(\Entity\RecentDrawer $recentDrawer)
+    {
+        return $this->recentDrawer->removeElement($recentDrawer);
+    }
+
+    /**
+     * Get recentDrawer.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRecentDrawer()
+    {
+        return $this->recentDrawer;
+    }
+
+    /**
+     * Add item.
+     *
+     * @param \Entity\DrawerItem $item
+     *
+     * @return Drawer
+     */
+    public function addItem(\Entity\DrawerItem $item)
+    {
+        $this->items[] = $item;
+
+        return $this;
+    }
+
+    /**
+     * Remove item.
+     *
+     * @param \Entity\DrawerItem $item
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeItem(\Entity\DrawerItem $item)
+    {
+        return $this->items->removeElement($item);
+    }
+
+    /**
+     * Get items.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getItems()
+    {
+        return $this->items;
+    }
+
+    /**
+     * Set instance.
+     *
+     * @param \Entity\Instance|null $instance
+     *
+     * @return Drawer
+     */
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
+
+    /**
+     * Add group.
+     *
+     * @param \Entity\DrawerGroup $group
+     *
+     * @return Drawer
+     */
+    public function addGroup(\Entity\DrawerGroup $group)
+    {
+        $this->groups[] = $group;
+
+        return $this;
+    }
+
+    /**
+     * Remove group.
+     *
+     * @param \Entity\DrawerGroup $group
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeGroup(\Entity\DrawerGroup $group)
+    {
+        return $this->groups->removeElement($group);
+    }
+
+    /**
+     * Get groups.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getGroups()
+    {
+        return $this->groups;
+    }
 }

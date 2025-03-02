@@ -65,4 +65,158 @@ class JobLog
     private $id;
 
 
+
+    /**
+     * Set createdAt.
+     *
+     * @param \DateTime|null $createdAt
+     *
+     * @return JobLog
+     */
+    public function setCreatedAt($createdAt = null)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Set asset.
+     *
+     * @param string|null $asset
+     *
+     * @return JobLog
+     */
+    public function setAsset($asset = null)
+    {
+        $this->asset = $asset;
+
+        return $this;
+    }
+
+    /**
+     * Get asset.
+     *
+     * @return string|null
+     */
+    public function getAsset()
+    {
+        return $this->asset;
+    }
+
+    /**
+     * Set type.
+     *
+     * @param string|null $type
+     *
+     * @return JobLog
+     */
+    public function setType($type = null)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get type.
+     *
+     * @return string|null
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Set jobId.
+     *
+     * @param int|null $jobId
+     *
+     * @return JobLog
+     */
+    public function setJobId($jobId = null)
+    {
+        $this->jobId = $jobId;
+
+        return $this;
+    }
+
+    /**
+     * Get jobId.
+     *
+     * @return int|null
+     */
+    public function getJobId()
+    {
+        return $this->jobId;
+    }
+
+    /**
+     * Set task.
+     *
+     * @param string|null $task
+     *
+     * @return JobLog
+     */
+    public function setTask($task = null)
+    {
+        $this->task = $task;
+
+        return $this;
+    }
+
+    /**
+     * Get task.
+     *
+     * @return string|null
+     */
+    public function getTask()
+    {
+        return $this->task;
+    }
+
+    /**
+     * Set message.
+     *
+     * @param string|null $message
+     *
+     * @return JobLog
+     */
+    public function setMessage($message = null)
+    {
+        $this->message = $message;
+
+        return $this;
+    }
+
+    /**
+     * Get message.
+     *
+     * @return string|null
+     */
+    public function getMessage()
+    {
+        return $this->message;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
 }

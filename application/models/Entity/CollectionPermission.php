@@ -53,4 +53,86 @@ class CollectionPermission
     private $permission;
 
 
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set group.
+     *
+     * @param \Entity\InstanceGroup|null $group
+     *
+     * @return CollectionPermission
+     */
+    public function setGroup(?\Entity\InstanceGroup $group = null)
+    {
+        $this->group = $group;
+
+        return $this;
+    }
+
+    /**
+     * Get group.
+     *
+     * @return \Entity\InstanceGroup|null
+     */
+    public function getGroup()
+    {
+        return $this->group;
+    }
+
+    /**
+     * Set collection.
+     *
+     * @param \Entity\Collection|null $collection
+     *
+     * @return CollectionPermission
+     */
+    public function setCollection(?\Entity\Collection $collection = null)
+    {
+        $this->collection = $collection;
+
+        return $this;
+    }
+
+    /**
+     * Get collection.
+     *
+     * @return \Entity\Collection|null
+     */
+    public function getCollection()
+    {
+        return $this->collection;
+    }
+
+    /**
+     * Set permission.
+     *
+     * @param \Entity\Permission|null $permission
+     *
+     * @return CollectionPermission
+     */
+    public function setPermission(?\Entity\Permission $permission = null)
+    {
+        $this->permission = $permission;
+
+        return $this;
+    }
+
+    /**
+     * Get permission.
+     *
+     * @return \Entity\Permission|null
+     */
+    public function getPermission()
+    {
+        return $this->permission;
+    }
 }

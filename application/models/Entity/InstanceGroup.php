@@ -99,4 +99,242 @@ class InstanceGroup
         $this->group_values = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
+    /**
+     * Set groupType.
+     *
+     * @param string|null $groupType
+     *
+     * @return InstanceGroup
+     */
+    public function setGroupType($groupType = null)
+    {
+        $this->group_type = $groupType;
+
+        return $this;
+    }
+
+    /**
+     * Get groupType.
+     *
+     * @return string|null
+     */
+    public function getGroupType()
+    {
+        return $this->group_type;
+    }
+
+    /**
+     * Set groupValue.
+     *
+     * @param string|null $groupValue
+     *
+     * @return InstanceGroup
+     */
+    public function setGroupValue($groupValue = null)
+    {
+        $this->group_value = $groupValue;
+
+        return $this;
+    }
+
+    /**
+     * Get groupValue.
+     *
+     * @return string|null
+     */
+    public function getGroupValue()
+    {
+        return $this->group_value;
+    }
+
+    /**
+     * Set groupLabel.
+     *
+     * @param string|null $groupLabel
+     *
+     * @return InstanceGroup
+     */
+    public function setGroupLabel($groupLabel = null)
+    {
+        $this->group_label = $groupLabel;
+
+        return $this;
+    }
+
+    /**
+     * Get groupLabel.
+     *
+     * @return string|null
+     */
+    public function getGroupLabel()
+    {
+        return $this->group_label;
+    }
+
+    /**
+     * Set expiration.
+     *
+     * @param \DateTime|null $expiration
+     *
+     * @return InstanceGroup
+     */
+    public function setExpiration($expiration = null)
+    {
+        $this->expiration = $expiration;
+
+        return $this;
+    }
+
+    /**
+     * Get expiration.
+     *
+     * @return \DateTime|null
+     */
+    public function getExpiration()
+    {
+        return $this->expiration;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Add instancePermission.
+     *
+     * @param \Entity\InstancePermission $instancePermission
+     *
+     * @return InstanceGroup
+     */
+    public function addInstancePermission(\Entity\InstancePermission $instancePermission)
+    {
+        $this->instance_permissions[] = $instancePermission;
+
+        return $this;
+    }
+
+    /**
+     * Remove instancePermission.
+     *
+     * @param \Entity\InstancePermission $instancePermission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeInstancePermission(\Entity\InstancePermission $instancePermission)
+    {
+        return $this->instance_permissions->removeElement($instancePermission);
+    }
+
+    /**
+     * Get instancePermissions.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getInstancePermissions()
+    {
+        return $this->instance_permissions;
+    }
+
+    /**
+     * Add collectionPermission.
+     *
+     * @param \Entity\CollectionPermission $collectionPermission
+     *
+     * @return InstanceGroup
+     */
+    public function addCollectionPermission(\Entity\CollectionPermission $collectionPermission)
+    {
+        $this->collection_permissions[] = $collectionPermission;
+
+        return $this;
+    }
+
+    /**
+     * Remove collectionPermission.
+     *
+     * @param \Entity\CollectionPermission $collectionPermission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeCollectionPermission(\Entity\CollectionPermission $collectionPermission)
+    {
+        return $this->collection_permissions->removeElement($collectionPermission);
+    }
+
+    /**
+     * Get collectionPermissions.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getCollectionPermissions()
+    {
+        return $this->collection_permissions;
+    }
+
+    /**
+     * Set instance.
+     *
+     * @param \Entity\Instance|null $instance
+     *
+     * @return InstanceGroup
+     */
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
+
+    /**
+     * Add groupValue.
+     *
+     * @param \Entity\GroupEntry $groupValue
+     *
+     * @return InstanceGroup
+     */
+    public function addGroupValue(\Entity\GroupEntry $groupValue)
+    {
+        $this->group_values[] = $groupValue;
+
+        return $this;
+    }
+
+    /**
+     * Remove groupValue.
+     *
+     * @param \Entity\GroupEntry $groupValue
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeGroupValue(\Entity\GroupEntry $groupValue)
+    {
+        return $this->group_values->removeElement($groupValue);
+    }
+
+    /**
+     * Get groupValues.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getGroupValues()
+    {
+        return $this->group_values;
+    }
 }
