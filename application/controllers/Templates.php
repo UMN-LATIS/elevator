@@ -171,9 +171,9 @@ class Templates extends Instance_Controller {
 		 */
 
 		if($this->config->item('enableCaching')) {
-			$searchCache = $this->getCache("searchCache");
+			$searchCache = $this->doctrine->getCache("searchCache");
 			$searchCache->clear();
-			$sortCache = $this->getCache("sortCache");
+			$sortCache = $this->doctrine->getCache("sortCache");
 			$sortCache->clear();
 	   	}
 

@@ -6,11 +6,12 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\ORMSetup;
+use Symfony\Component\Cache\Psr16Cache;
 
 class Doctrine
 {
 
-    public $em;
+    public EntityManager $em;
     public $redisHost;
 
     public function __construct($useCache = null)
@@ -113,5 +114,13 @@ class Doctrine
     	}
 
     }
+
+    public function getCache($cacheNamespace) {
+		$redis = new Redis();
+        $CI = &get_instance();
+        $redis->connect($CI->config->item("redis"),$CI->config->item("redisPort"));
+		$cache = new RedisAdapter($redis, $cacheNamespace);
+		return new Psr16Cache($cache);
+	}
 
 }

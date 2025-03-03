@@ -1019,11 +1019,8 @@ class Asset_model extends CI_Model {
 	}
 
 	public function flushCache() {
-
-		$redisCache = new \Doctrine\Common\Cache\RedisCache();
-        $redisCache->setRedis($this->doctrine->redisHost);
-		$redisCache->setNamespace('searchCache_');
-		$redisCache->delete($this->getObjectId());
+		$searchCache = $this->doctrine->getCache("searchCache");
+		$searchCache->delete($this->getObjectId());
 
 	}
 

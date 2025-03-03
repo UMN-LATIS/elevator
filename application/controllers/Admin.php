@@ -86,12 +86,11 @@ class admin extends Admin_Controller {
 
 
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
 
 		$count = $startValue;
 		foreach($result as $entry) {
-			$entry = $entry[0];
 			$assetModel = new asset_model();
 			$searchModel = new search_model();
 			// $before = microtime(true);
@@ -159,7 +158,7 @@ class admin extends Admin_Controller {
 			$qb->setParameter(1, $lastModifiedDate);
 		}
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
 		if($wipe == "true") {
 			// echo "are you sure?"; // adding this because we had an index go missing, need to see if it's a bug in this logic.
@@ -171,7 +170,6 @@ class admin extends Admin_Controller {
 		$count = $startValue;
 		$searchModel = new search_model();
 		foreach($result as $entry) {
-			$entry = $entry[0];
 			$assetModel = new asset_model();
 			// $searchModel = new search_model();
 			// $before = microtime(true);
@@ -264,18 +262,18 @@ class admin extends Admin_Controller {
 			$qb->setFirstResult($skip);
 		}
 
-		$assets = $qb->getQuery()->iterate();
+		$assets = $qb->getQuery()->toIterable();
 		// $assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		$countStart = $skip;
 		foreach($assets as $assetRecord) {
-			if(!$assetRecord[0]->getAssetId()) {
+			if(!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
-			$asset->loadAssetFromRecord($assetRecord[0]);
+			echo "Loading Asset: " . $assetRecord->getAssetId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord);
 			echo "Recaching: " . $asset->getObjectId() . "\n";
 			$asset->buildCache();
 			$this->doctrine->em->clear();
@@ -318,12 +316,11 @@ class admin extends Admin_Controller {
 			$qb->setParameter(1, $lastModifiedDate);
 		}
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		foreach($result as $entry) {
-			$entry = $entry[0];
 			if($entry->getAssetId() === NULL) {
 				continue;
 			}
@@ -539,19 +536,19 @@ class admin extends Admin_Controller {
 			$qb->setFirstResult($skip);
 		}
 
-		$assets = $qb->getQuery()->iterate();
+		$assets = $qb->getQuery()->toIterable();
 		// $assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		$this->load->model("search_model");
 		$countStart = $skip;
 		foreach($assets as $assetRecord) {
-			if(!$assetRecord[0]->getAssetId()) {
+			if(!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
-			$asset->loadAssetFromRecord($assetRecord[0]);
+			echo "Loading Asset: " . $assetRecord->getAssetId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord);
 			$asset->delete();
 			$this->search_model->remove($asset);
 			$this->doctrine->em->clear();
@@ -693,7 +690,7 @@ class admin extends Admin_Controller {
 			$qb->setFirstResult($offset);
 		}
 		// $qb->setMaxResults(10000);
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 		$count = 0;
 		$this->load->model("filehandlerbase");
 		foreach($result as $key=>$entry) {

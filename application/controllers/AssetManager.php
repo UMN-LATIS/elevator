@@ -1153,7 +1153,7 @@ class AssetManager extends Admin_Controller {
 
 			if($rowCount % 400 == 0) {
 				if(!$this->importCache) {
-					$this->importCache = $this->getCache("importCache");
+					$this->importCache = $this->doctrine->getCache("importCache");
 				}
 				$this->importCache->set($hash, $cacheArray, 900);
 

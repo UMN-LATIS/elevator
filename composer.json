@@ -27,8 +27,8 @@
   ],
   "require": {
     "monolog/monolog": "2.9.1",
-    "doctrine/dbal": "^3.0",
-    "doctrine/orm": "^2.0",
+    "doctrine/dbal": "^4.0",
+    "doctrine/orm": "^3.0",
     "elasticsearch/elasticsearch": "8.17.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",

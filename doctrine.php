@@ -27,6 +27,7 @@ foreach ($GLOBALS as $helperSetCandidate) {
 
 $doctrine = new Doctrine(false);
 $em = $doctrine->em;
+$emProvider = new SingleManagerProvider($em);
 
 $commands = [];
 
@@ -35,7 +36,7 @@ use Doctrine\Migrations\Tools\Console\ConsoleRunner as MigrationsConsoleRunner;
 
 $cli = new \Symfony\Component\Console\Application('Doctrine Command Line Interface');
 
-ConsoleRunner::addCommands($cli);
+ConsoleRunner::addCommands($cli, $emProvider);
 
 // Add Doctrine Migration commands
 MigrationsConsoleRunner::addCommands($cli);

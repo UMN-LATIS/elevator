@@ -59,9 +59,9 @@ class MY_Controller extends CI_Controller {
 
 		if ($this->config->item('enableCaching')) {
 			
-			$this->userCache = $this->getCache('userCache');
-			$this->userGuestCache = $this->getCache('userGuestCache');
-			$this->searchCache = $this->getCache('searchCache');
+			$this->userCache = $this->doctrine->getCache('userCache');
+			$this->userGuestCache = $this->doctrine->getCache('userGuestCache');
+			$this->searchCache = $this->doctrine->getCache('searchCache');
 		}
 
 		$userId = $this->session->userdata('userId');
@@ -168,14 +168,6 @@ class MY_Controller extends CI_Controller {
 		var_dump($e->getTraceAsString());
 	}
 
-
-	public function getCache($cacheNamespace) {
-		$redis = new Redis();
-            
-        $redis->connect($this->config->item("redis"),$this->config->item("redisPort"));
-		$cache = new RedisAdapter($redis, $cacheNamespace);
-		return new Psr16Cache($cache);
-	}
 
 }
 

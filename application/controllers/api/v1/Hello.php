@@ -17,7 +17,7 @@ class Hello extends API_Controller {
 
 	public function clearCache($cacheName) {
 		if($this->config->item('enableCaching')) {
-			$searchCache = $this->getCache("searchCache");
+			$searchCache = $this->doctrine->getCache("searchCache");
 			$searchCache->clear();
 		}
 	}

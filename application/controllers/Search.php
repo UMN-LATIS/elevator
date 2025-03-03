@@ -965,7 +965,7 @@ class Search extends Instance_Controller {
 
 		if ($this->config->item('enableCaching')) {
 			if(!$this->sortCache) {
-				$this->sortCache = $this->getCache("sortCache");
+				$this->sortCache = $this->doctrine->getCache("sortCache");
 			}
 			$this->sortCache->set($this->instance->getId(), $formattedReturnArray, 14400);
 		}
