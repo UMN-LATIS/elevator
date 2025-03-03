@@ -29,4 +29,16 @@ $doctrine = new Doctrine(false);
 $em = $doctrine->em;
 
 $commands = [];
-\Doctrine\ORM\Tools\Console\ConsoleRunner::run(new SingleManagerProvider($em), $commands);
+
+use Doctrine\ORM\Tools\Console\ConsoleRunner;
+use Doctrine\Migrations\Tools\Console\ConsoleRunner as MigrationsConsoleRunner;
+
+$cli = new \Symfony\Component\Console\Application('Doctrine Command Line Interface');
+
+ConsoleRunner::addCommands($cli);
+
+// Add Doctrine Migration commands
+MigrationsConsoleRunner::addCommands($cli);
+
+$cli->run();
+
