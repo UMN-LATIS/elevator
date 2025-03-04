@@ -26,7 +26,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: elevator-registry
-          IMAGE_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || 'develop' }}
+          IMAGE_TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || github.ref == 'refs/heads/develop' && 'develop' || github.ref_name }}
         run: |
           # echo the current git commit into a file named REVISION
           echo $GITHUB_SHA > REVISION
