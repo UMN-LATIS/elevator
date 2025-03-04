@@ -31,11 +31,11 @@ class BoxHandler extends FileHandlerBase {
 
 	public function supportsType($fileType) {
 
-		if($this->instance !== NULL && $this->instance->getBoxKey() && strlen($this->instance->getBoxKey())>5) {
-			if(in_array(strtolower($fileType), $this->supportedTypes)) {
-				return TRUE;
-			}
-		}
+		// if($this->instance !== NULL && $this->instance->getBoxKey() && strlen($this->instance->getBoxKey())>5) {
+		// 	if(in_array(strtolower($fileType), $this->supportedTypes)) {
+		// 		return TRUE;
+		// 	}
+		// }
 
 		return false;
 

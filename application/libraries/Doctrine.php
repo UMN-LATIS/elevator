@@ -95,7 +95,7 @@ class Doctrine
 
     public function reset() {
         $this->em->getConnection()->close();
-        $this->em->getConnection()->connect();
+        $this->em->getConnection()->getServerVersion(); // forces a reconnect
 
     }
 

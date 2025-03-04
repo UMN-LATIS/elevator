@@ -580,7 +580,7 @@ class AssetManager extends Admin_Controller {
 			return;
 		}
 
-		$header = fgetcsv($fp, 0, ",");
+		$header = fgetcsv($fp, 0, ",", '"', '\\');
 		$data["filename"]  = $filename;
 		$data["headerRows"] = $header;
 
@@ -657,7 +657,7 @@ class AssetManager extends Admin_Controller {
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
     		header('Content-Disposition: attachment; filename="csvExport-' . $searchId . '.csv";');
-			fputcsv($out, $widgetArray);
+			fputcsv($out, $widgetArray, ',','"','\\');
 
 			foreach($matchArray['searchResults'] as $match) {
 
@@ -784,7 +784,7 @@ class AssetManager extends Admin_Controller {
 					gc_collect_cycles();
 					$i = 0;
 				}
-				fputcsv($out, $outputRow);
+				fputcsv($out, $outputRow,',' ,'"', '\\');
 			}
 			
 			
