@@ -25,7 +25,7 @@ host('dev')
     ->set('deploy_path', '/var/www/elevator');
 
 host('umn')
-    ->setHostname('52.207.134.157')
+    ->setHostname('beta.elevator.umn.edu')
     ->set('stage', 'production')
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
