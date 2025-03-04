@@ -28,6 +28,7 @@ class Shibboleth extends MY_Controller {
         $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
         $auth->processResponse();
         $lastResponse = $auth->getLastResponseXML();
+    
         if(str_contains($lastResponse, "NoPassive")) {
             if($_REQUEST['RelayState']) {
                 redirect($_REQUEST['RelayState']);

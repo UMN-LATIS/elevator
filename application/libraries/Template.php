@@ -53,10 +53,10 @@ class Template {
         }
 
         if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
-            $this->currentHash =substr(file_get_contents('REVISION'),0,7);
+            $this->currentHash =substr(file_get_contents('../REVISION'),0,7);
         }
         else {
-            $this->currentHash =substr(file_get_contents('REVISION'),0,7);    
+            $this->currentHash =substr(file_get_contents('../REVISION'),0,7);    
         }
         log_message('debug', 'Template library initialized');
     }

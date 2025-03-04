@@ -1,5 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-require_once 'beanstalk_console/lib/include.php';
+require_once '../beanstalk_console/lib/include.php';
 
 class admin extends Admin_Controller {
 	

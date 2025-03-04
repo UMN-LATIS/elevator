@@ -37,11 +37,17 @@
  * @filesource
  */
 
+// Set the current directory correctly for CLI requests
+if (defined('STDIN'))
+{
+	chdir(dirname(__FILE__));
+}
+
+
  error_reporting(-1);
  ini_set('display_errors', 1);
- include_once './vendor/autoload.php';
-
- $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+ include_once '../vendor/autoload.php';
+ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../");
  $dotenv->safeLoad();
  
 
@@ -110,7 +116,7 @@
  * This variable must contain the name of your "system" directory.
  * Set the path if it is not in the same directory as this file.
  */
-	$system_path = 'system';
+	$system_path = '../system';
 
 /*
  *---------------------------------------------------------------
@@ -127,7 +133,7 @@
  *
  * NO TRAILING SLASH!
  */
-	$application_folder = 'application';
+	$application_folder = '../application';
 
 /*
  *---------------------------------------------------------------
@@ -203,12 +209,7 @@
  * ---------------------------------------------------------------
  */
 
-	// Set the current directory correctly for CLI requests
-	if (defined('STDIN'))
-	{
-		chdir(dirname(__FILE__));
-	}
-
+	
 	if (($_temp = realpath($system_path)) !== FALSE)
 	{
 		$system_path = $_temp.DIRECTORY_SEPARATOR;
