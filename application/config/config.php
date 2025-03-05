@@ -27,7 +27,12 @@ if(isset($_SERVER['HTTP_HOST'])) {
 	$config['base_url'] = ($_SERVER['ENVIRONMENT']=='local'?'https://':'https://') .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
-	$config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
+    if(isset($_SERVER['CLI_SERVERNAME'])) {
+        $config['base_url'] = "https://" . $_SERVER['CLI_SERVERNAME'] . "/";
+    }
+    else {
+	    $config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
+    }
 }
 
 
