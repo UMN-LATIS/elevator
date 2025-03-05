@@ -10,6 +10,9 @@
 					$retina = $fileHandler->getPreviewTiny(true)->getURLForFile(true);
 					$standard = $fileHandler->getPreviewTiny(false)->getURLForFile(true);
 				}
+				else {
+					throw new Exception("no filehandler");
+				}
 			}
 			catch (Exception $e) {
 				$iconPath = getIconPath('tiny');
