@@ -26,10 +26,33 @@ host('dev')
 
 host('umn')
     ->setHostname('beta.elevator.umn.edu')
-    ->set('stage', 'production')
+    ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
+host('olaf')
+    ->setHostname('digital.stolaf.edu')
+    ->setLabels(['stage'=>'production'])
+    ->set('remote_user', 'latis_deploy')
+    ->set('deploy_path', '/var/www/elevator');
+
+    host('ou')
+    ->setHostname('3d.libraries.ou.edu')
+    ->setLabels(['stage'=>'production'])
+    ->set('remote_user', 'latis_deploy')
+    ->set('deploy_path', '/var/www/elevator');
+
+host('bennington')
+    ->setHostname('elevator.bennington.edu')
+    ->setLabels(['stage'=>'production'])
+    ->set('remote_user', 'latis_deploy')
+    ->set('deploy_path', '/var/www/elevator');
+
+host('stthomas')
+    ->setHostname('elevator.stthomas.edu')
+    ->setLabels(['stage'=>'production'])
+    ->set('remote_user', 'latis_deploy')
+    ->set('deploy_path', '/var/www/elevator');
 
 // Hooks
 
