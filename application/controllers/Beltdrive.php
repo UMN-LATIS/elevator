@@ -310,7 +310,7 @@ class Beltdrive extends CI_Controller {
 						$this->email->send();
 					}
 					else if($nextTask == "create_derivative") {
-						$this->filehandlerbase->queueBatchItem($objectId);
+						$this->filehandlerbase->queueBatchItem();
 					}
 					
 

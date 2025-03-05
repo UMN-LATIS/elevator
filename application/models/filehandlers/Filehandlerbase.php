@@ -376,7 +376,7 @@ class FileHandlerBase extends CI_Model {
 				$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
 			}
 			else {
-				$this->queueBatchItem($this->asset, $this->sourceFile);
+				$this->queueBatchItem();
 			}
 
 
@@ -397,9 +397,9 @@ class FileHandlerBase extends CI_Model {
 		return [];
 	}
 
-	public function queueBatchItem($asset, $sourceFile) {
-		$fileObjectId = $asset->getFileObjectId();
-		$fileSize = $sourceFile->getFileSize();
+	public function queueBatchItem() {
+		$fileObjectId = $this->asset->getFileObjectId();
+		$fileSize = $this->sourceFile->getFileSize();
 		$size = "";
 		if($fileSize < 50*1024*1024) { 
 			// under 100mb, we can safely use our small container
