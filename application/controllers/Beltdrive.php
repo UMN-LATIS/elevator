@@ -297,9 +297,9 @@ class Beltdrive extends CI_Controller {
 					$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 120);
 				}
 				else {
+					$pheanstalk->delete($job);
 					if($nextTask == "notify") {
 						echo "File finished". $objectId . "\n";
-						$pheanstalk->delete($job);
 						$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
 						$this->load->library('email');
 						$this->email->from('no-reply@elevatorapp.net', 'Elevator');
