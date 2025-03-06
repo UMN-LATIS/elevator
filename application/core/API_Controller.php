@@ -99,7 +99,7 @@ class API_Controller extends MY_Controller {
 
 				// extend cache (if we move to a sane caching library we can remove this)
 				if($this->config->item('enableCaching')) {
-					$this->userCache->set($this->user_model->getId(), $this->user_model, 900);
+					$this->userCache->set((string)$this->user_model->getId(), $this->user_model, 900);
 				}
 
 

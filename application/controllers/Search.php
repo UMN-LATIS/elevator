@@ -937,7 +937,7 @@ class Search extends Instance_Controller {
 	private function buildSortStructure() {
 		if ($this->config->item('enableCaching') && $this->sortCache) {
 
-			if ($storedObject = $this->sortCache->get($this->instance->getId())) {
+			if ($storedObject = $this->sortCache->get((string)$this->instance->getId())) {
 				return $storedObject;
 			}
 		}
@@ -975,7 +975,7 @@ class Search extends Instance_Controller {
 			if(!$this->sortCache) {
 				$this->sortCache = $this->doctrine->getCache("sortCache");
 			}
-			$this->sortCache->set($this->instance->getId(), $formattedReturnArray, 14400);
+			$this->sortCache->set((string)$this->instance->getId(), $formattedReturnArray, 14400);
 		}
 
 		return $formattedReturnArray;

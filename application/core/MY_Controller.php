@@ -8,7 +8,6 @@ class MY_Controller extends CI_Controller {
 
 	public ?Psr16Cache $userCache= null;
 	public ?Psr16Cache $userGuestCache= null;
-	public ?Psr16Cache $assetCache= null;
 	public ?Psr16Cache $searchCache= null;
 	
 
