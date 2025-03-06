@@ -105,21 +105,24 @@ class MY_Controller extends CI_Controller {
 			$this->user_model = new User_model();
 			if ($this->config->item('enableCaching')) {
 				$userId = session_id();
-				if($storedObject = $this->userGuestCache->get($userId)) {
-				 	$user_model = $storedObject;
-				 	if(!$user_model) {
-				 		$this->user_model->resolvePermissions();
-				 	}
-				 	else {
-						 $this->user_model = $user_model;
-				 	}
+				if($userId) {
+					if($storedObject = $this->userGuestCache->get($userId)) {
+						$user_model = $storedObject;
+						if(!$user_model) {
+							$this->user_model->resolvePermissions();
+						}
+						else {
+							$this->user_model = $user_model;
+						}
+				   }
+				   else {
+					   $this->user_model->resolvePermissions();
+					   $userId = session_id();
+					   // reset our namespace in case the user model changed it
+					   $this->userGuestCache->set($userId, ($this->user_model), 14400);
+				   }
 				}
-				else {
-					$this->user_model->resolvePermissions();
-					$userId = session_id();
-					// reset our namespace in case the user model changed it
-					$this->userGuestCache->set($userId, ($this->user_model), 14400);
-				}
+				
 			}
 			else {
 				$this->user_model->resolvePermissions();
