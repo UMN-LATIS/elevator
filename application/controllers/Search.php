@@ -282,6 +282,7 @@ class Search extends Instance_Controller {
 			instance_redirect("/search");
 		}
 
+
 		if($fieldName == "template") {
 			$searchArray["searchText"] = "";
 			$searchArray["templateId"] = [$searchString];
@@ -291,9 +292,15 @@ class Search extends Instance_Controller {
 			$searchArray["specificSearchField"] = [$fieldName];
 			$searchArray["specificSearchText"] = [rawurldecode($searchString)];
 			$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
+			
+			// elastic8 requires that we use range queries to search for content in "long" fields
+			// right now only csvBatch falls into that category. If we need to add more, we should so something more clever with this
+			if($fieldName == "csvBatch") {
+				$searchArray["specificFieldSearch"][0]["numeric"] = true;
+			}
+
 			$searchArray["sort"] = "title.raw";
 		}
-
 
 		$searchArchive = new Entity\SearchEntry;
 		$searchArchive->setUser($this->user_model->user);
@@ -637,6 +644,7 @@ class Search extends Instance_Controller {
 				$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 				$searchArray = $searchArchiveEntry->getSearchData();
 			}
+	
 		}
 
 

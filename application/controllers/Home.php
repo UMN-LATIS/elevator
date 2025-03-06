@@ -41,9 +41,13 @@ class Home extends Instance_Controller {
 		}
 
 		$pages = $this->doctrine->em->getRepository("Entity\InstancePage")->findBy(["instance"=>$this->instance, "title"=>"Home Page"]);
+		$data['homeText'] = "";
 		if($pages) {
 			$firstPage = current($pages);
-			$data['homeText'] = $firstPage->getBody();
+			if($firstPage) {
+				$data['homeText'] = $firstPage->getBody();
+			}
+			
 		}
 
 		$this->template->title = $this->instance->getName();
