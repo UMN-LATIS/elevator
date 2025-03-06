@@ -71,32 +71,32 @@ class MY_Controller extends CI_Controller {
 			session_write_close();
 		}
 		if($userId) {
-			
+			$userIdString = (string)$userId;
 			if ($this->config->item('enableCaching')) {
-				if($storedObject = $this->userCache->get($userId)) {
+				if($storedObject = $this->userCache->get($userIdString)) {
 					$user_model = $storedObject;
 					if(!is_object($user_model)) {
-						$this->userCache->delete($userId);
+						$this->userCache->delete($userIdString);
 						$user_model = null;
 					}
 				 	if(!$user_model) {
-				 		$this->user_model->loadUser($userId);
+				 		$this->user_model->loadUser($userIdString);
 				 	}
 				 	else {
 						 $this->user_model = $user_model;
 				 	}
 				}
 				else {
-					$this->user_model->loadUser($userId);
+					$this->user_model->loadUser($userIdString);
 					if($this->user_model->userLoaded) {
 
-						$this->userCache->set($userId, $this->user_model, 14400);
+						$this->userCache->set($userIdString, $this->user_model, 14400);
 					}
 					
 				}
 			}
 			else {
-				$this->user_model->loadUser($userId);
+				$this->user_model->loadUser($userIdString);
 			}
 		}
 
@@ -104,7 +104,7 @@ class MY_Controller extends CI_Controller {
 		if(!$this->user_model->userLoaded) {
 			$this->user_model = new User_model();
 			if ($this->config->item('enableCaching')) {
-				$userId = session_id();
+				$userId = (string)session_id();
 				if($userId) {
 					if($storedObject = $this->userGuestCache->get($userId)) {
 						$user_model = $storedObject;
