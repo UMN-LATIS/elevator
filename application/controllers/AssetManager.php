@@ -573,7 +573,7 @@ class AssetManager extends Admin_Controller {
 			return;
 		}
 
-		$header = fgetcsv($fp, 0, ",");
+		$header = fgetcsv($fp, 0, ",", '"', '\\');
 		$data["filename"]  = $filename;
 		$data["headerRows"] = $header;
 

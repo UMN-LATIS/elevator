@@ -62,12 +62,13 @@ class Beltdrive extends CI_Controller {
 				continue;
 			}
 			echo "Reindexing " . $objectId . "\n";
-
-			$this->asset_model->loadAssetById($objectId);
+			$assetModel = new Asset_model();
+			$assetModel->loadAssetById($objectId);
 
 			$parentArray = array();
 
-			$this->asset_model->reindex($parentArray);
+			$assetModel->reindex($parentArray);
+			$assetModel = =null;
 			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 		}
@@ -348,7 +349,7 @@ class Beltdrive extends CI_Controller {
 		$pheanstalk->watch($tube);
 		while(1) {
 			$job = $pheanstalk->reserve();
-
+			
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
@@ -384,7 +385,9 @@ class Beltdrive extends CI_Controller {
 				$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 900);
 			}
 			else {
-
+				exec("sudo /usr/local/bin/ebs-mount.sh");
+				// make sure we hold an open file on the mount while we're working
+				$fp = fopen("/scratch/hold_file", "w");
 				foreach($uploadHandlers as $uploadHandler) {
 					foreach($uploadHandler->fieldContentsArray as $key=>$uploadContents) {
 
@@ -430,7 +433,7 @@ class Beltdrive extends CI_Controller {
 
 					}
 				}
-
+				fclose($fp);
 				$assetModel->setGlobalValue("collectionMigration", false);
 				$assetModel->setGlobalValue("collectionId", $targetCollection);
 				$assetModel->forceCollection = true;

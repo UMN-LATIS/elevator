@@ -863,6 +863,9 @@ class search_model extends CI_Model {
 			if($asset->loadAssetById($match, $noHydrate=true) === false) {
 				continue;
 			}
+			if($asset->assetObject->getDeleted() == true) {
+				continue;
+			}
 
 			/**
 			 * if they searched for an object id and we found that, make sure it's the first result
