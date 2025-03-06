@@ -960,8 +960,9 @@ class Asset_model extends CI_Model {
 		if(!$this->assetObject) {
 			return FALSE;
 		}
-
+		echo "Beginnign cache creation\n";
 		if(!$assetCache = $this->assetObject->getAssetCache()) {
+			echo "No cache Object not found\n";
 			$assetCache = new Entity\AssetCache;
 			$assetCache->setAsset($this->assetObject);
 		}
@@ -1013,8 +1014,18 @@ class Asset_model extends CI_Model {
 		$assetCache->setNeedsRebuild(false);
 		$assetCache->setRebuildTimestamp(NULL);
 
-		$this->doctrine->em->persist($assetCache);
-		$this->doctrine->em->flush();
+		try {
+			$this->doctrine->em->persist($assetCache);
+			$this->doctrine->em->flush();
+		}
+		catch (Exception $e) {
+			echo "oh now";
+			// if we're trying to save an object that already exists, we'll get a unique constraint violation
+			// in that case, we'll just try again.
+			echo $assetCache->getId() . "\n";;
+			var_dump($e);
+			die();
+		}
 
 		return $assetCache;
 	}
