@@ -98,6 +98,11 @@ task('elevator:create_instance_assets', function () {
     run('cd {{release_path}}/assets/ && mkdir instanceAssets && chmod 777 instanceAssets');
 });
 
+after('elevator:create_instance_assets', 'elevator:create_revision_file');
+task('elevator:create_revision_file', function () {
+    run('cd {{release_path}} && echo "{{release_revision}}" > REVISION');
+});
+
 after('deploy:symlink', 'elevator:restart_systemd');
 
 

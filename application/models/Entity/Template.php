@@ -3,6 +3,7 @@
 namespace Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\JoinTable;
 
 /**
  * Template
@@ -116,7 +117,7 @@ class Template
      * @var \Doctrine\Common\Collections\Collection
      */
     #[ORM\ManyToMany(targetEntity: \Entity\Instance::class, mappedBy: 'templates')]
-    private $instances = array();
+    private \Doctrine\Common\Collections\Collection $instances;
 
     /**
      * Constructor
@@ -532,6 +533,7 @@ class Template
      */
     public function addInstance(\Entity\Instance $instance)
     {
+        $instance->addTemplate($this);
         $this->instances[] = $instance;
 
         return $this;

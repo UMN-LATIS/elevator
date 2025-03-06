@@ -18,7 +18,7 @@ if(isset($fileContainers['ply']) && $fileContainers['ply']->ready) {
 
 ?>
 <link type="text/css" rel="stylesheet" href="/assets/3dviewer/stylesheet/3dhop.css"/>
-<?if(defined('ENVIRONMENT') && ENVIRONMENT == "development") :?>
+<?if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) :?>
 <!--SPIDERGL-->
 <script type="text/javascript" src="/assets/3dviewer/js/spidergl.js"></script>
 <!--PRESENTER-->

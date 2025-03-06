@@ -261,6 +261,7 @@ class DrawerGroup
      */
     public function addDrawer(\Entity\Drawer $drawer)
     {
+        $drawer->addGroup($this);
         $this->drawer[] = $drawer;
 
         return $this;
@@ -297,6 +298,7 @@ class DrawerGroup
      */
     public function addGroupValue(\Entity\GroupEntry $groupValue)
     {
+
         $this->group_values[] = $groupValue;
 
         return $this;

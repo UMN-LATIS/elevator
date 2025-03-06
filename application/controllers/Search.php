@@ -45,7 +45,7 @@ class Search extends Instance_Controller {
 		}
 
 		$jsloadArray = array();
-		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+		if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) {
 			$jsLoadArray = ["search", "searchForm"];
 
 		}
@@ -118,7 +118,7 @@ class Search extends Instance_Controller {
 		}
 
 		$jsloadArray = array();
-		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+		if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) {
 			$jsLoadArray = ["search", "searchForm"];
 
 		}

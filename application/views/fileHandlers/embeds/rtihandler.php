@@ -5,7 +5,7 @@ $token = $fileObject->getSecurityToken("tiled");
 <link type="text/css" href="/assets/webViewer/css/webrtiviewer.css" rel="Stylesheet">
 <link type="text/css" href="/assets/css/jquery-ui.css" rel="Stylesheet">
 <script src="/assets/js/aws-s3.js"></script>
-<?if(defined('ENVIRONMENT') && ENVIRONMENT == "development") :?>
+<?if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) :?>
 <script type="text/javascript" src="/assets/webViewer/spidergl/spidergl.js"></script>
 <script type="text/javascript" src="/assets/webViewer/spidergl/multires.js"></script>
 

@@ -123,7 +123,7 @@ class Collection
      * @var \Doctrine\Common\Collections\Collection
      */
     #[ORM\ManyToMany(targetEntity: \Entity\Instance::class, mappedBy: 'collections')]
-    private $instances = array();
+    private \Doctrine\Common\Collections\Collection $instances;
 
     /**
      * Constructor
@@ -597,7 +597,10 @@ class Collection
      */
     public function addInstance(\Entity\Instance $instance)
     {
-        $this->instances[] = $instance;
+        if (!$this->instances->contains($instance)) {
+            $this->instances->add($instance);
+            $instance->addCollection($this); // Ensure the inverse side is updated
+        }
 
         return $this;
     }

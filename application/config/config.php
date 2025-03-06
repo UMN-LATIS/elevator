@@ -422,6 +422,7 @@ if(defined('ENVIRONMENT') && ENVIRONMENT == "local" || $_SERVER['ENVIRONMENT'] =
 else {
   $config["enableCaching"] = true;
 }
+
 /**
  * paths for external binaries
  */

@@ -52,7 +52,7 @@ class Template {
             $this->initialize($config);
         }
 
-        if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+        if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) {
             $this->currentHash =substr(file_get_contents('REVISION'),0,7);
         }
         else {
@@ -66,7 +66,7 @@ class Template {
     // New Functions for Elevator
     public function loadJavascript($javascriptArray) {
         $minified = false;
-        if(defined('ENVIRONMENT') && ENVIRONMENT != "development") {
+        if(defined('ENVIRONMENT') && ENVIRONMENT != "development" && ENVIRONMENT != "local") {
             $minified = true;
         }
         foreach($javascriptArray as $javascript) {

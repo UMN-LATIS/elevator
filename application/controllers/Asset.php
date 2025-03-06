@@ -9,7 +9,7 @@ class asset extends Instance_Controller {
 
 		$jsLoadArray = ["handlebars-v1.1.2"];
 
-		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+		if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) {
 			$jsLoadArray = array_merge($jsLoadArray, ["assetView", "drawers"]);
 		}
 		else {

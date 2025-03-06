@@ -437,7 +437,6 @@ function buildAutocomplete() {
 /**
  * related asset helpers
  */
-
 $(document).on("click", ".viewAsset", function() {
 		window.open(basePath+ "asset/viewAsset/"+$("#inputObjectId").val());
 });
