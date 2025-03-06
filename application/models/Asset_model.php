@@ -960,9 +960,8 @@ class Asset_model extends CI_Model {
 		if(!$this->assetObject) {
 			return FALSE;
 		}
-		echo "Beginnign cache creation\n";
+
 		if(!$assetCache = $this->assetObject->getAssetCache()) {
-			echo "No cache Object not found\n";
 			$assetCache = new Entity\AssetCache;
 			$assetCache->setAsset($this->assetObject);
 		}

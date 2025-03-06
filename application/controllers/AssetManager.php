@@ -1137,7 +1137,7 @@ class AssetManager extends Admin_Controller {
 			}
 			
 			
-			$assetModel->save();
+			$assetModel->save(reindex: false, saveRevision:true, noCache:true);
 
 			if(isset($targetArray)) {
 				$targetArray[]["targetAssetId"] = $assetModel->getObjectId();
