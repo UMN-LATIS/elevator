@@ -260,7 +260,7 @@ class AssetManager extends Admin_Controller {
 			}
 		}
 
-		$assetObject->save(true,false);
+		$assetObject->save(true,false, false);
 		return $restoreObject->getAssetId();
 	}
 
