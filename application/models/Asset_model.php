@@ -1018,10 +1018,9 @@ class Asset_model extends CI_Model {
 			$this->doctrine->em->flush();
 		}
 		catch (Exception $e) {
-			echo "oh now";
 			// if we're trying to save an object that already exists, we'll get a unique constraint violation
 			// in that case, we'll just try again.
-			echo $assetCache->getId() . "\n";;
+			echo $assetCache->getId() . "\n";
 			var_dump($e);
 			die();
 		}
