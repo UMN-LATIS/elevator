@@ -921,6 +921,12 @@ class Asset_model extends CI_Model {
 			}
 		}
 		
+		// move this above the cache build so we don't risk a race
+		if(!$noCache) {
+			$this->buildCache();
+		}
+
+
 
 		if($reindex && !$noIndex) {
 			$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
@@ -934,10 +940,6 @@ class Asset_model extends CI_Model {
 			$this->load->model("search_model");
 			// make sure the item isn't in the index
 			$this->search_model->remove($this);
-		}
-
-		if(!$noCache) {
-			$this->buildCache();
 		}
 
 
@@ -1019,8 +1021,8 @@ class Asset_model extends CI_Model {
 		catch (Exception $e) {
 			// if we're trying to save an object that already exists, we'll get a unique constraint violation
 			// in that case, we'll just try again.
+			echo "error saving cache\n";
 			echo $assetCache->getId() . "\n";
-			var_dump($e);
 			die();
 		}
 
