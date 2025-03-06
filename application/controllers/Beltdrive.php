@@ -534,9 +534,10 @@ class Beltdrive extends CI_Controller {
 				$qb->andWhere("a.templateId = ?1");
 				$qb->setParameter(1, $templateToReindex);
 
-				$result = $qb->getQuery()->toIterable();
+				$result = $qb->getQuery()->iterate();
 
 				foreach($result as $entry) {
+					$entry = array_pop($entry);
 					$newTask = json_encode(["objectId"=>$entry["assetId"], "instance"=>$instanceId]);
 					$tube = new Pheanstalk\Values\TubeName('reindex');
 					$pheanstalk->useTube($tube);

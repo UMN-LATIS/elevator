@@ -1,5 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-
+use Doctrine\DBAL\Logging\DebugStack;
 class Home extends Instance_Controller {
 
 	public $noAuth = true;
@@ -9,6 +9,20 @@ class Home extends Instance_Controller {
 		parent::__construct();
 	}
 	
+	public function test() {
+		$this->instance = $this->doctrine->em->getRepository("Entity\Instance")->findOneBy(["id"=>1]);
+
+		echo "Heh\n";
+		$this->load->model("asset_model");
+		$asset = new asset_model;
+		$asset->templateId = 1;
+		$asset->createObjectFromJSON(["templateId"=>1,"title"=>"Test","description"=>"Test"]);
+		$objectid = $asset->save(true,false,true);
+		echo $objectid . "\n";
+		// Later, you can inspect queries:
+	
+	}
+
 	public function index()
 	{
 

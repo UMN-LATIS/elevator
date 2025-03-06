@@ -1,12 +1,15 @@
 <?php
 
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Logging\Middleware;
 use    Doctrine\ORM\Tools\Setup,
     Doctrine\ORM\EntityManager;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Psr16Cache;
-
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 class Doctrine
 {
 
@@ -38,6 +41,10 @@ class Doctrine
             ),
         );
 
+
+
+		// $logger = new Logger('sql_logger');
+		// $logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
         // With this configuration, your model files need to be in application/models/Entity
         // e.g. Creating a new Entity\User loads the class from application/models/Entity/User.php
         $models_namespace = 'Entity';
@@ -55,7 +62,7 @@ class Doctrine
         if($useCache === null) {
             $useCache = $config["enableCaching"];
         }
-
+        // $middleware = new Middleware($logger);
         $cache = null;
         $doctrineCache = null;
 
@@ -71,7 +78,8 @@ class Doctrine
         $doctrineConfig = ORMSetup::createAttributeMetadataConfiguration(paths:$metadata_paths,isDevMode: !($useCache),proxyDir: $proxies_dir,cache: $cache);
         $doctrineConfig->setProxyDir($proxies_dir);
         $doctrineConfig->setAutoGenerateProxyClasses(true);
-
+        $config = new Configuration();
+        // $config->setMiddlewares([$middleware]);
 
         if($cache) {
             $doctrineConfig->setMetadataCache($cache);
@@ -84,7 +92,7 @@ class Doctrine
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
         //$config->setSQLLogger($logger);
-        $connection = \Doctrine\DBAL\DriverManager::getConnection($connection_options);
+        $connection = \Doctrine\DBAL\DriverManager::getConnection($connection_options, $config);
 
         Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
 
