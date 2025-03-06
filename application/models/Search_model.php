@@ -572,6 +572,9 @@ class search_model extends CI_Model {
 				if(preg_match("/[?*]+/u", $entry["text"])) {
 					$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
 				}
+				elseif(isset($entry["numeric"]) && $entry["numeric"]) {
+					$searchParams['body']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>intval($entry["text"]), "lte"=>intval($entry["text"])]];
+				}
 				else if(preg_match("/.*\\.\\.\\..*/u", $entry["text"])) {
 					list($start, $end) = explode("...", strtolower($entry["text"]));
 					$searchParams['body']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
@@ -600,7 +603,7 @@ class search_model extends CI_Model {
 				$i++;
 
 			}
-			
+	
 			if(isset($searchArray["combineSpecificSearches"]) && $searchArray["combineSpecificSearches"] == "AND")  {
 
 				$searchParams['body']['query']['bool']['minimum_should_match'] = count($searchArray["specificFieldSearch"]) + (($searchArray["searchText"] != "")?1:0) ;
@@ -657,7 +660,7 @@ class search_model extends CI_Model {
 
     	$searchParams['body']['stored_fields'] = "_id";
 		$searchParams['body']['track_total_hits'] = true;
-    	$this->logging->logError("params", $searchParams);
+    	// $this->logging->logError("params", $searchParams);
 		$queryResponse = $this->es->search($searchParams);
     	// $this->logging->logError("queryParams", $queryResponse);
 
@@ -858,6 +861,9 @@ class search_model extends CI_Model {
 			$asset = new Asset_model;
 
 			if($asset->loadAssetById($match, $noHydrate=true) === false) {
+				continue;
+			}
+			if($asset->assetObject->getDeleted() == true) {
 				continue;
 			}
 

@@ -464,7 +464,7 @@ class asset extends Instance_Controller {
 
 	public function getAllowOriginal($fileHandler) {
 		$requiredAccessLevel = PERM_NOPERM;
-		if($fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
+		if($fileHandler && $fileHandler->noDerivatives()) {  // this method implies this *type* doesn't have derivatives, not this specific asset
 			$requiredAccessLevel = $fileHandler->getPermission();
 		}
 		else {

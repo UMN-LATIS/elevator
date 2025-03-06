@@ -955,6 +955,22 @@ class AssetManager extends Admin_Controller {
 					$cacheArray['successArray'][] = "could not find asset: " . $row[$updateField];
 					continue;
 				}
+
+				// confirm that this asset is in the current instance
+				$collection = $assetModel->getGlobalValue("collectionId");
+				$loadedCollection = $this->collection_model->getCollection($collection);
+				$correctInstance = false;
+				foreach($loadedCollection->getInstances() as $instance) {
+					if($instance->getId() == $this->instance->getId()) {
+						$correctInstance = true;
+					}
+				}
+
+				if(!$correctInstance) {
+					return $this->errorhandler_helper->callError("noPermission");
+				}
+
+
 				$newEntry = $assetModel->getAsArray();
 			}
 			else {
@@ -1134,7 +1150,7 @@ class AssetManager extends Admin_Controller {
 			}
 			
 			
-			$assetModel->save();
+			$assetModel->save(reindex: true, saveRevision:true, noCache:true);
 
 			if(isset($targetArray)) {
 				$targetArray[]["targetAssetId"] = $assetModel->getObjectId();

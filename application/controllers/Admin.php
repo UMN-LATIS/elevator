@@ -43,7 +43,7 @@ class admin extends Admin_Controller {
 	}
 
 	public function clearRecordsFromSearch() {
-		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', "8c3c897f-c096-4e27-8b3e-e81fc1c66e6b");
+		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', "d28a7fe3-371f-49a2-9554-7af340cf7dff");
 		$searchArray = $searchArchiveEntry->getSearchData();
 		if(isset($searchArray['showHidden'])) {
 			// This will include items that are not yet flagged "Ready for display"
@@ -53,18 +53,23 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, 0, true);
+
 		foreach($matchArray["searchResults"] as $match) {
-			$params['index'] = $this->config->item('elasticIndex');
-    		$params['type']  = 'asset';
-    		$params['id']    = $match;
-    		if(!$params['id'] || strlen($params['id']<5)) {
-    			// if you don't pass an id, elasticsearch will eat all your data
-    			echo "crap";
-    			break;
-    		}
-    		$ret = $this->search_model->es->delete($params);
+			echo $match . "\n";
+			$asset = new Asset_model($match);
+			
+			$this->search_model->remove($asset);
+			// $params['index'] = $this->config->item('elasticIndex');
+    		// $params['id']    = $match;
+    		// if(!$params['id'] || strlen($params['id']<5)) {
+    		// 	// if you don't pass an id, elasticsearch will eat all your data
+    		// 	echo "crap";
+    		// 	break;
+    		// }
+    		// $ret = $this->search_model->es->delete($params);
 		}
 	}
+
 
 	
 	public function fixRecords() {
