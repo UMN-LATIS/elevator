@@ -1210,6 +1210,10 @@ class AssetManager extends Admin_Controller {
 		$countStart = 0;
 		foreach($assets as $assetRecord) {
 			$asset = new Asset_model();
+			if(!$$assetRecord->getAssetId()) {
+				$output .= "<li>Asset not found: " . $assetRecord->getAssetId() . "</li>";
+				continue;
+			}
 			$output .= "<li>Loading Asset: " . $assetRecord->getAssetId() . "</li>";
 			$asset->loadAssetFromRecord($assetRecord);
 

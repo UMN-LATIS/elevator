@@ -1022,8 +1022,8 @@ class Asset_model extends CI_Model {
 		catch (Exception $e) {
 			// if we're trying to save an object that already exists, we'll get a unique constraint violation
 			// in that case, we'll just try again.
+			echo "error saving cache\n";
 			echo $assetCache->getId() . "\n";
-			var_dump($e);
 			die();
 		}
 
