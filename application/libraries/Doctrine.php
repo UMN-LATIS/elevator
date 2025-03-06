@@ -3,7 +3,6 @@
 use    Doctrine\ORM\Tools\Setup,
     Doctrine\ORM\EntityManager;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
-use Doctrine\Common\Cache\Psr6\DoctrineProvider;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Psr16Cache;
@@ -67,7 +66,6 @@ class Doctrine
             $this->redisHost = $redis;
 
             $cache = new RedisAdapter($redis, namespace:'doctrine');
-            $doctrineCache = DoctrineProvider::wrap($cache);
         }
 
         $doctrineConfig = ORMSetup::createAttributeMetadataConfiguration(paths:$metadata_paths,isDevMode: !($useCache),proxyDir: $proxies_dir,cache: $cache);
@@ -79,7 +77,7 @@ class Doctrine
             $doctrineConfig->setMetadataCache($cache);
             $doctrineConfig->setQueryCache($cache);
             
-            $doctrineConfig->setResultCacheImpl($doctrineCache);
+            $doctrineConfig->setResultCache($cache);
         }
         
 

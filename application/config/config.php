@@ -415,7 +415,7 @@ $config['elasticIndex'] = $_SERVER['ELASTIC_INDEX'] ?? null;
 $config['redis'] = ($_SERVER['REDIS_HOST'] ?? null); // elastic ip:port
 $config['redisPort'] = "6379";
 
-if(defined('ENVIRONMENT') && ENVIRONMENT == "local" || $_SERVER['ENVIRONMENT'] == "development") {
+if(defined('ENVIRONMENT') && (ENVIRONMENT == "local" || $_SERVER['ENVIRONMENT'] == "development")) {
     
   $config["enableCaching"] = false;
 }
