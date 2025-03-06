@@ -68,7 +68,7 @@ class Beltdrive extends CI_Controller {
 			$parentArray = array();
 
 			$assetModel->reindex($parentArray);
-			$assetModel = =null;
+			$assetModel = null;
 			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 		}
