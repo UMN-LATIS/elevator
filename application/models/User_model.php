@@ -151,7 +151,7 @@ class User_model extends CI_Model {
 			$this->user = $this->doctrine->em->find('Entity\User', $userId);
 			if($this->user === null) {
 				$this->userLoaded = false;
-				// TOOD: if this is a real user create oned
+				// TOOD: if this is a real user create one
 				return;
 
 			}
