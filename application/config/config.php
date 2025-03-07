@@ -24,7 +24,7 @@ else{
 
 
 if(isset($_SERVER['HTTP_HOST'])) {
-	$config['base_url'] = ($_SERVER['ENVIRONMENT']=='local'?'https://':'https://') .$_SERVER['HTTP_HOST'] ."/";
+	$config['base_url'] = 'https://' .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
     if(isset($_SERVER['CLI_SERVERNAME'])) {

@@ -230,19 +230,29 @@ class AssetManager extends Admin_Controller {
 		instance_redirect("asset/viewAsset/" .$restoreObject);
 	}
 
-	private function internalRestore($objectId) {
+	private function internalRestore(string $objectId, bool $createCheckpoint = true) {
 		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
 		$currentParent = $restoreObject->getRevisionSource();
-
+		if(!$currentParent) {
+			return false;
+		}
 		$restoreObject->setAssetId($currentParent->getAssetId());
 		$restoreObject->setRevisionSource(null);
 		$restoreObject->setDeleted(false);
 		$restoreObject->setDeletedBy(null);
-		if($currentParent) {
+		
+		if($createCheckpoint) {
 			$currentParent->setAssetId(null);
 			$currentParent->setRevisionSource($restoreObject);
 			$currentParent->setDeleted(false);
 		}
+		else {
+			$currentParent->setDeleted(true);
+			$currentParent->setDeletedBy($this->user_model->user->getId());
+			$currentParent->setRevisionSource(null);
+			$currentParent->setAssetId(null);
+		}
+		
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$q = $qb->update('Entity\Asset', 'a')
@@ -1225,7 +1235,6 @@ class AssetManager extends Admin_Controller {
 		$countStart = 0;
 		foreach($assets as $assetRecord) {
 			$asset = new Asset_model();
-
 			if(!$assetRecord->getAssetId()) {
 				$output .= "<li>Asset not found: " . $assetRecord->getAssetId() . "</li>";
 				continue;
@@ -1237,7 +1246,7 @@ class AssetManager extends Admin_Controller {
 			$revisions = $asset->assetObject->getRevisions();
 			if(count($revisions) > 0) {
 				$mostRecentRevision = $revisions->last();
-				$this->internalRestore($mostRecentRevision->getId());
+				$this->internalRestore(objectId:$mostRecentRevision->getId(), createCheckpoint:false);
 			}
 			else {
 				$asset->delete();

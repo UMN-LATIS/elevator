@@ -129,7 +129,7 @@ class LoginManager extends Instance_Controller {
 		// and log into another.
 		$authHelper = $this->user_model->getAuthHelper();
 
-		if($this->user_model->getUserType() == "Remote") {
+		if($this->user_model->userLoaded && $this->user_model->getUserType() == "Remote") {
 			$authHelper->remoteLogout();
 		}
 
