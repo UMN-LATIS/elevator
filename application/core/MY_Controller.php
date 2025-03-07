@@ -111,7 +111,7 @@ class MY_Controller extends CI_Controller {
 					$this->user_model->resolvePermissions();
 					$userId = session_id();
 					// reset our namespace in case the user model changed it
-					$this->doctrineCache->setNamespace('userCache_');
+					$this->doctrineCache->setNamespace('userGuestCache_');
 					$this->doctrineCache->save($userId, ($this->user_model), 14400);
 				}
 			}
