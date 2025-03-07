@@ -14,6 +14,10 @@ $dotenv->safeLoad();
 require_once("application/libraries/Doctrine.php");
 
 use Doctrine\DBAL\Tools\Console\ConnectionProvider\SingleConnectionProvider;
+use Doctrine\Migrations\Configuration\Connection\ExistingConnection;
+use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
+use Doctrine\Migrations\Configuration\Migration\PhpFile;
+use Doctrine\Migrations\DependencyFactory;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
@@ -38,8 +42,12 @@ $cli = new \Symfony\Component\Console\Application('Doctrine Command Line Interfa
 
 ConsoleRunner::addCommands($cli, $emProvider);
 
+$config = new PhpFile('migrations.php');
+
+$dependencyFactory = DependencyFactory::fromEntityManager($config, new ExistingEntityManager($em));
+
 // Add Doctrine Migration commands
-MigrationsConsoleRunner::addCommands($cli);
+MigrationsConsoleRunner::addCommands($cli,$dependencyFactory);
 
 $cli->run();
 
