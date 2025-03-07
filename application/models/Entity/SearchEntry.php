@@ -21,7 +21,7 @@ class SearchEntry
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'searchData', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'searchData', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $searchData;
 
     /**

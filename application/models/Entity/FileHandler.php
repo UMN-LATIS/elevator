@@ -52,25 +52,25 @@ class FileHandler
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'globalMetadata', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'globalMetadata', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $globalMetadata;
 
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'sourceFile', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'sourceFile', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $sourceFile;
 
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'derivatives', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'derivatives', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $derivatives;
 
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'jobIdArray', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'jobIdArray', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $jobIdArray;
 
     /**

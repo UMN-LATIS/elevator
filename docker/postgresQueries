@@ -14,6 +14,7 @@ VALUES
 (8,E'addassets',E'Add Assets to Instance',E'50',NULL,NULL),
 (9,E'admin',E'Administer Instance',E'60',NULL,NULL),
 (10,E'originalsWithoutDerivatives',E'View Derivatives (Groups 1 & 2)',E'25',NULL,NULL);
+
 INSERT INTO "users"("id","instance_id","emplid","username","usertype","email","displayname","fastupload","password","issuperadmin","hasexpiry","expires","createdat","modifiedat","createdby_id","apiinstance_id")
 VALUES
 (1,1,NULL,E'admin',E'Local',E'',E'',FALSE,E'28579da20bee0bed0e5c3947406464c36fc74eaa',TRUE,FALSE,E'2014-01-24 00:00:00',E'2014-01-24 14:33:39',NULL,1,NULL);
@@ -34,3 +35,11 @@ VALUES
 INSERT INTO "instance_pages"("id","instance_id","parent_id","title","body","includeinheader","modifiedat","sortorder")
 VALUES
 (1,1,NULL,E'Home Page',E'<p>Welcome to the home page</p>',FALSE,NULL,NULL);
+
+
+
+SELECT setval('instances_id_seq', (SELECT MAX(id) FROM instances));
+SELECT setval('permissions_id_seq', (SELECT MAX(id) FROM permissions));
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+SELECT setval('field_types_id_seq', (SELECT MAX(id) FROM field_types));
+SELECT setval('instance_pages_id_seq', (SELECT MAX(id) FROM instance_pages));

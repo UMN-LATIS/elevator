@@ -248,7 +248,7 @@ class Instance
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'availableThemes', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'availableThemes', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $availableThemes;
 
     /**

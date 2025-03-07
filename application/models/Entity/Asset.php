@@ -75,7 +75,7 @@ class Asset
     /**
      * @var array|null
      */
-    #[ORM\Column(name: 'widgets', type: 'json', nullable: true)]
+    #[ORM\Column(name: 'widgets', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $widgets;
 
     /**
