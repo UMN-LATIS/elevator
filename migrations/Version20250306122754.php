@@ -12,45 +12,40 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20250306122754 extends AbstractMigration
 {
-    private $tables_to_migrate;
-    public function __construct()
-    {
-        $this->tables_to_migrate = [
-            'api_keys',
-            'asset_cache',
-            'assets',
-            'collection_permissions',
-            'collections',
-            'csv_batches',
-            'custom_search',
-            'drawer_groups',
-            'drawer_items',
-            'drawer_permissions',
-            'drawers',
-            'field_types',
-            'filehandlers',
-            'group_entry',
-            'instance_groups',
-            'instance_handler_permissions',
-            'instance_pages',
-            'instance_permissions',
-            'instances',
-            'job_logs',
-            'logs',
-            'lti13_deployments',
-            'lti13_instance_association',
-            'lti13_issuers',
-            'lti13_resource_links',
-            'permissions',
-            'recent_collection',
-            'recent_drawer',
-            'templates',
-            'uploads',
-            'users',
-            'widgets'
-        ];
-
-    }
+    private $tables_to_migrate = [
+        'api_keys',
+        'asset_cache',
+        'assets',
+        'collection_permissions',
+        'collections',
+        'csv_batches',
+        'custom_search',
+        'drawer_groups',
+        'drawer_items',
+        'drawer_permissions',
+        'drawers',
+        'field_types',
+        'filehandlers',
+        'group_entry',
+        'instance_groups',
+        'instance_handler_permissions',
+        'instance_pages',
+        'instance_permissions',
+        'instances',
+        'job_logs',
+        'logs',
+        'lti13_deployments',
+        'lti13_instance_association',
+        'lti13_issuers',
+        'lti13_resource_links',
+        'permissions',
+        'recent_collection',
+        'recent_drawer',
+        'templates',
+        'uploads',
+        'users',
+        'widgets'
+    ];
 
     public function getDescription(): string
     {
