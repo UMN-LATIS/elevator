@@ -21,6 +21,17 @@ elif [ "$(uname -m)" = "aarch64" ]; then \
 fi
 RUN docker-php-ext-install ldap
 
+
+RUN git clone https://github.com/NoiseByNorthwest/php-spx.git && \
+    cd php-spx  && \
+git checkout release/latest && \
+phpize && \
+./configure  && \
+make  && \
+make install && \
+    echo "extension=spx.so" >> /usr/local/etc/php/conf.d/spx.ini && \
+    cd .. && rm -rf php-spx
+
 COPY docker/commands/* /usr/local/bin/
 RUN mkdir /scratch
 RUN mkdir -p /tmp

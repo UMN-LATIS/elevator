@@ -65,8 +65,8 @@ class Doctrine
         // $middleware = new Middleware($logger);
         $cache = null;
         $doctrineCache = null;
-
-        if($useCache && $config["redis"]) {
+  
+        if($config["redis"]) {
             $redis = new Redis();
             
             $redis->connect($config["redis"], $config["redisPort"]);
@@ -87,8 +87,7 @@ class Doctrine
             
             $doctrineConfig->setResultCache($cache);
         }
-        
-
+      
 
         //$logger = new \Doctrine\DBAL\Logging\Profiler;
         //$config->setSQLLogger($logger);

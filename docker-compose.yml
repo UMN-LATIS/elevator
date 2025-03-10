@@ -51,7 +51,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/var/www/html
       - /var/www/html/vendor
-    develop:
+    # develop:
       # watch:
       #   - action: sync
       #     path: ./
