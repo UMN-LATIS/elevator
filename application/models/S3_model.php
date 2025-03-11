@@ -288,6 +288,10 @@ class S3_model extends CI_Model {
 				'Bucket' => $this->bucket,
 				'Prefix'    => $targetKey
 				]);
+			if(!isset($result['Contents'][0]['StorageClass'])) {
+				$this->logging->logError("getStorageClass", "No storage class found", $targetKey);
+				return false;
+			}
 			if($result['Contents'][0]['StorageClass'] == "GLACIER") {
 				$objectInfo = $this->objectInfo($targetKey);
 				if(strlen($objectInfo['Restore'])>0) {
