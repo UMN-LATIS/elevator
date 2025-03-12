@@ -20,7 +20,7 @@ class lti extends Instance_Controller {
 
         if($this->input->get("Instance_Name")) {
             $this->config->set_item("instance_name", $this->input->get("Instance_Name"));
-            Instance_Controller::setInstance();
+            Instance_Controller::setInstance($this);
             $this->config->set_item("instance_absolute", Instance_Controller::getAbsolutePath());
         }
 

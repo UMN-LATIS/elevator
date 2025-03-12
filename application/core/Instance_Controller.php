@@ -23,7 +23,7 @@ class Instance_Controller extends MY_Controller
 
         $this->useUnauthenticatedTemplate = false;
 
-        $this->setInstance();
+        Instance_Controller::setInstance($this);
 
         $this->writeOutAssets();
 
@@ -57,13 +57,14 @@ class Instance_Controller extends MY_Controller
 
     }
 
-    function setInstance() {
+
+    static function setInstance($selfReference) {
         
-        if(!isset($this)) {
+        if(!isset($selfReference)) {
             $CI =& get_instance();
         }
         else {
-            $CI = $this;
+            $CI = $selfReference;
         }
         $instanceName = $CI->config->item("instance_name");
         if($instanceName != FALSE) {
