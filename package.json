@@ -2,6 +2,7 @@
   "scripts": {
     "dev": "npm run development",
     "docs:build": "cd docs; vuepress build",
+    "docs:dev": "cd docs; vuepress dev",
     "ui:build": "(cd assets/elevator-ui && yarn build)",
     "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)",
     "gulp": "gulp"
@@ -17,6 +18,7 @@
     "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
     "gulp-uglifycss": "^1.1.0",
-    "vuepress": "^1.8.2"
+    "vue": "^2.7.16",
+    "vuepress": "^1.9.10"
   }
 }

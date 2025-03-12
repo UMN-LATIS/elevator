@@ -24,6 +24,22 @@ Elevator search can make suggestions for alternative spellings and uses “fuzzy
 
 By default, search results will be presented as a grid of preview images with brief descriptions. The tabs at the top allow you to toggle to other views.  The default list will be sorted based on relevance to your search, but you can use the sorting dropdown to select another sort order.
 
+### Boolean Operators
+
+The "Advanced Search" dialog provides the option of enabling boolean operators. For advanced users, boolean operators allow for very targeted and precise searches. 
+
+!["Using Boolean Search"](./boolean_search.png)
+
+Once you enable the "Use Boolean Operators" setting, you can construct a search which combines `AND`, `NOT`, `OR` and parenthesis. It's important that boolean operators are in CAPS, or they'll be treated as part of the search string. 
+
+For even more targeted searching, you can explicitly specify template fields to search. Template field internal identifiers can be viewed when editing a template. Press control-command-h (Mac) or control-alt-h (Windows) to reveal the internal identifier. 
+
+!["Show Field Title"](./field_title.png)
+
+You can use that identifier as part of your boolean operation.
+
+!["Boolean Search with Field"](./boolean_search_with_field.png)
+
 ### Using the Timeline
 
 If your assets contain “Date” fields, and those fields are indexed for searching, you will be able to view your assets on a timeline.

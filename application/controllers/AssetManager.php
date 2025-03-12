@@ -133,7 +133,7 @@ class AssetManager extends Admin_Controller {
 		$templateArray["allowedCollections"] = $allowedCollections;
 		// $templateArray["templates"] = $templates;
 
-		echo json_encode($templateArray);
+		return render_json($templateArray);
 	}
 
 

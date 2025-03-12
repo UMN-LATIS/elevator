@@ -71,12 +71,7 @@ task('deploy:assets', function () {
 after('deploy:vendors', 'deploy:assets');
 
 task('elevator:restart_systemd', function() {
-    run('sudo systemctl restart migrateCollections');
-    run('sudo systemctl restart populateCacheTube');
-    run('sudo systemctl restart prepareDrawers');
-    run('sudo systemctl restart updateIndexes');
-    run('sudo systemctl restart urlImport');
-    run('sudo systemctl restart restoreFiles');
+    run('sudo /usr/local/bin/restart_services.sh restart');
 });
 
 after('deploy:update_code', 'deploy:git:submodules');

@@ -115,7 +115,7 @@ class API_Controller extends MY_Controller {
 
 		if(!$this->instance) {
 			require_once("Instance_Controller.php");
-			Instance_Controller::setInstance();
+			Instance_Controller::setInstance($this);
 		}
 
 	}
