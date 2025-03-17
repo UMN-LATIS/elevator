@@ -52,6 +52,9 @@ class Shibboleth extends MY_Controller {
         foreach ($this->config->item('shib_user') as $local => $server) {
 
             $map[$local] = $this->getServerVariable($server, $shibAttributes);
+            if($server == 'NameID') {
+                $map[$local] = $auth->getNameId();
+            }
         }
 
 

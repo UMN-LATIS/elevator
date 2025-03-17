@@ -161,7 +161,7 @@ class StOlafOAuthHelper extends AuthHelper
 		$user = new Entity\User;	
 
 		if(!$usernameOverride) {
-			$username = $this->getUserIdFromRemote($shibHelper);
+			$username = $this->getUserIdFromRemote();
 			$user->setDisplayName($this->name);
 			$user->setEmail($this->email);
 		}
