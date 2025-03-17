@@ -121,7 +121,7 @@ class asset extends Instance_Controller {
 				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 			else {
-				$targetObject = $fileHandler->getObjectId();
+				$targetObjectId = null;
 				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 		}
@@ -157,7 +157,7 @@ class asset extends Instance_Controller {
 			
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
-			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
+			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObjectId?:$targetFileObjectId]);
 			$this->template->publish();
 			
 	
