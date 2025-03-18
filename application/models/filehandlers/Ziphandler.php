@@ -33,6 +33,7 @@ class ZipHandler extends FileHandlerBase {
 			else if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
 			}
+			$returnArray[$entry]->downloadable = true;
 		}
 		if(count($returnArray)>0) {
 			return $returnArray;

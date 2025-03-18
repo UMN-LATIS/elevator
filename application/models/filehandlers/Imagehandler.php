@@ -66,6 +66,10 @@ class ImageHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
+				if(in_array($entry, ['tiled', 'tiled-iiif', 'tiled-index'])) {
+					$returnArray[$entry]->downloadable = false;
+				}
 			}
 		}
 		if(count($returnArray)>0) {
