@@ -3,6 +3,7 @@ namespace Deployer;
 
 require 'recipe/codeigniter.php';
 
+set('cache_secret', file_get_contents('.cache_secret'));
 
 // Config
 
@@ -104,7 +105,7 @@ after('deploy:symlink', 'elevator:restart_systemd');
 
 after('deploy:symlink', 'elevator:clear_cache');
 task('elevator:clear_cache', function () {
-    runLocally('curl -s {{reset_path}}' . getenv('CACHE_SECRET'));
+    runLocally('curl -s {{reset_path}}' . get('cache_secret'));
 });
 
 after('deploy:failed', 'deploy:unlock');

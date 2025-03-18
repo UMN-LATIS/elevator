@@ -21,6 +21,7 @@ docs/.vuepress/dist
 .htaccess
 .vscode
 .env
+.cache_secret
 
 assets/elevator-ui/*
 !assets/elevator-ui/dist
