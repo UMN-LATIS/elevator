@@ -509,6 +509,8 @@ $config['awsQueueSecretKey'] = $_SERVER['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? nul
 $config['awsQueueJobDefinition'] = $_SERVER['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
 $config['awsQueueJobQueue'] = $_SERVER['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
 
+$config['cacheSecret'] = $_SERVER['CACHE_SECRET'] ?? null;
+
 $config['shib_authfield'] = $_SERVER['SHIB_AUTH_FIELD'] ?? 'email';
 $config['shib_user'] =  [
   // fillable user model attribute => server variable
