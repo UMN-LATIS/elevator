@@ -45,8 +45,8 @@ class ZipScormHandler extends ZipHandler {
 			}
 			else if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
 			}
-			$returnArray[$entry]->downloadable = true;
 		}
 
 		if(count($returnArray)>0) {
