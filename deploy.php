@@ -4,7 +4,10 @@ namespace Deployer;
 require 'recipe/codeigniter.php';
 
 set('cache_secret', file_get_contents('.cache_secret'));
-
+if(!get('cache_secret')) {
+    echo "You must set the cache secret\n";
+    die();
+}
 // Config
 
 set('repository', 'git@github.com:UMN-LATIS/elevator.git');
