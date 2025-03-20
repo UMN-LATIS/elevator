@@ -395,14 +395,14 @@ class CI_Session_redis_driver extends CI_Session_driver implements SessionHandle
 		{
 			if (($ttl = $this->_redis->ttl($lock_key)) > 0)
 			{
-				sleep(0.03);
+				usleep(30000); // 0.03 seconds in microseconds
 				continue;
 			}
 
 			if ($ttl === -2 && ! $this->_redis->set($lock_key, time(), array('nx', 'ex' => 300)))
 			{
 				// Sleep for 1s to wait for lock releases.
-				sleep(0.03);
+				usleep(30000); // 0.03 seconds in microseconds
 				continue;
 			}
 			elseif ( ! $this->_redis->setex($lock_key, 300, time()))
