@@ -63,6 +63,7 @@ host('stthomas')
     ->setHostname('elevator.stthomas.edu')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
+    ->set('reset_path', "https://elevator.stthomas.edu/home/flushCache/")
     ->set('deploy_path', '/var/www/elevator');
 
 // Hooks
