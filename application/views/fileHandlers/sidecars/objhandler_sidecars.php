@@ -6,8 +6,8 @@
 		<textarea class="form-control" id="<?=$formFieldRoot?>_svx" name="<?=$formFieldRoot?>[svx]" placeholder="SVX"><?=isset($sidecarData['svx'])?$sidecarData['svx']:null?></textarea>
 	</div>
 	<div class="col-sm-3">
-		<label for="file-upload" class="btn btn-default">Load from File</label>
-		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[svx]" />
+		<label for="<?=$formFieldRoot?>_upload" class="btn btn-default">Load from File</label>
+		<input id="<?=$formFieldRoot?>_upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[svx]" />
 	</div>
 </div>
 <?else:?>
@@ -17,8 +17,8 @@
 		<textarea class="form-control" name="<?=$formFieldRoot?>_3dpoints" id="<?=$formFieldRoot?>[3dpoints]" placeholder="3D points"><?=isset($sidecarData['3dpoints'])?$sidecarData['3dpoints']:null?></textarea>
 	</div>
 	<div class="col-sm-3">
-		<label for="file-upload" class="btn btn-default">Load from File</label>
-		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[3dpoints]" />
+		<label for="<?=$formFieldRoot?>_upload" class="btn btn-default">Load from File</label>
+		<input id="<?=$formFieldRoot?>_upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[3dpoints]" />
 	</div>
 </div>
 <?endif?>

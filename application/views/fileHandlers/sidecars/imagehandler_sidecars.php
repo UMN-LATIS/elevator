@@ -30,8 +30,8 @@ if($uploadWidget && $uploadWidget->parentWidget->enableIframe):
 		<textarea class="form-control" id="<?=$formFieldRoot?>_dendro" name="<?=$formFieldRoot?>[dendro]" placeholder=""><?=json_encode($sidecarData['dendro'])?></textarea>
 	</div>
 	<div class="col-sm-3">
-		<label for="file-upload" class="btn btn-default">Load from File</label>
-		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[dendro]" />
+		<label for="<?=$formFieldRoot?>_upload" class="btn btn-default">Load from File</label>
+		<input id="<?=$formFieldRoot?>_upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[dendro]" />
 	</div>
 </div>
 <?endif?>
@@ -44,8 +44,8 @@ if($uploadWidget && $uploadWidget->parentWidget->enableIframe):
 		<textarea class="form-control" id="<?=$formFieldRoot?>_svs" name="<?=$formFieldRoot?>[svs]" placeholder=""><?=json_encode($sidecarData['svs'])?></textarea>
 	</div>
 	<div class="col-sm-3">
-		<label for="file-upload" class="btn btn-default">Load from File</label>
-		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[svs]" />
+		<label for="<?=$formFieldRoot?>_upload" class="btn btn-default">Load from File</label>
+		<input id="<?=$formFieldRoot?>_upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[svs]" />
 	</div>
 </div>
 <?endif?>

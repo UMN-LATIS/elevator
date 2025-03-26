@@ -4,8 +4,8 @@
 		<textarea class="form-control" id="<?=$formFieldRoot?>_captions" name="<?=$formFieldRoot?>[captions]" placeholder="Captions (WebVTT or SRT)"><?=isset($sidecarData['captions'])?$sidecarData['captions']:null?></textarea>
 	</div>
 	<div class="col-sm-3">
-		<label for="file-upload" class="btn btn-default">Load from File</label>
-		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[captions]" />
+		<label for="<?=$formFieldRoot?>_upload" class="btn btn-default">Load from File</label>
+		<input id="<?=$formFieldRoot?>_upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[captions]" />
 	</div>
 </div>
 
@@ -15,8 +15,8 @@
 		<textarea class="form-control" id="<?=$formFieldRoot?>_captions"name="<?=$formFieldRoot?>[chapters]" placeholder="Chapter Markers (WebVTT)"><?=isset($sidecarData['chapters'])?$sidecarData['chapters']:null?></textarea>
 	</div>
 	<div class="col-sm-3">
-		<label for="file-upload" class="btn btn-default">Load from File</label>
-		<input id="file-upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[chapters]" />
+		<label for="<?=$formFieldRoot?>_upload" class="btn btn-default">Load from File</label>
+		<input id="<?=$formFieldRoot?>_upload" type="file" class="importTextForSidecar" style="display: none;" data-target="<?=$formFieldRoot?>[chapters]" />
 	</div>
 </div>
 
