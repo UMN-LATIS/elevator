@@ -131,6 +131,9 @@ class AssetManager extends Admin_Controller {
 
 
 	function editAsset($objectId, $inlineForm=false) {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
