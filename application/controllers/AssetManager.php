@@ -457,10 +457,12 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if(!isset($this->instance) || !$this->user_model->userLoaded) { 
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
 			instance_redirect("errorHandler/error/noPermission");
 		}
-		$this->template->javascript->add("assets/datatables/datatables.min.js");
-		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
+
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
@@ -483,6 +485,12 @@ class AssetManager extends Admin_Controller {
 			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$resultCache['title']??"", "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 
+		if ($returnJson) {
+			return render_json($hiddenAssetArray);
+		}
+
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 		if($offset>0) {
 			$this->load->view('user/hiddenAssets', ["isOffset"=>true, "hiddenAssets"=>$hiddenAssetArray]);
 		}
