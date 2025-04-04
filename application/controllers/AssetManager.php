@@ -451,7 +451,11 @@ class AssetManager extends Admin_Controller {
 	}
 
 	// List all of the assets touched by the user.  Offset specifies page number essentially.
-	public function userAssets($offset=0) {
+	public function userAssets($offset=0, $returnJson = false) {
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!isset($this->instance) || !$this->user_model->userLoaded) { 
 			instance_redirect("errorHandler/error/noPermission");
 		}
