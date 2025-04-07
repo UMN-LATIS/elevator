@@ -1157,6 +1157,7 @@ class AssetManager extends Admin_Controller {
 				$newTask = ["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems];
 				$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
 				$tube = new Pheanstalk\Values\TubeName('urlImport');
+				$pheanstalk->useTube($tube);
 				$jobId = $pheanstalk->put(json_encode($newTask), Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 0,900);
 			}
 
