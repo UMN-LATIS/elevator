@@ -56,6 +56,9 @@ class AssetManager extends Admin_Controller {
 	 */
 	public function addAsset($templateId=null, $collectionId = null, $inlineForm = false)
 	{
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
