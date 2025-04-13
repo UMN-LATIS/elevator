@@ -433,7 +433,7 @@ class AssetManager extends Admin_Controller {
 		$fileHandler->deleteFile();
 	}
 
-	public function deleteAsset($objectId) {
+	public function deleteAsset($objectId, $returnJson = false) {
 
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
@@ -443,6 +443,10 @@ class AssetManager extends Admin_Controller {
 
 		if($accessLevel < PERM_ADDASSETS) {
 			if($this->user_model->getAccessLevel("collection",$this->collection_model->getCollection($this->asset_model->getGlobalValue("collectionId"))) < PERM_ADDASSETS) {
+				if ($returnJson) {
+					return render_json(["error" => "No permission"], 403);
+				}
+
 				$this->errorhandler_helper->callError("noPermission");
 			}
 
@@ -450,6 +454,9 @@ class AssetManager extends Admin_Controller {
 
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
 		if($this->accessLevel < PERM_ADDASSETS) {
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
 			$this->errorhandler_helper->callError("noPermission");
 		}
 		$this->search_model->remove($this->asset_model);
@@ -461,6 +468,10 @@ class AssetManager extends Admin_Controller {
 		$qb->andWhere($qb->expr()->eq('s.asset', ':assetId'));
 		$qb->setParameter(':assetId', $objectId);
 		$qb->getQuery()->execute();
+
+		if ($returnJson) {
+			return render_json(["success" => true], 204);
+		}
 
 		instance_redirect("/");
 	}
