@@ -281,11 +281,17 @@ class AssetManager extends Admin_Controller {
 	}
 
 	// save an asset
-	public function submission() {
+	public function submission($returnJson = false) {
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
+			// log this
+			$this->logging->logError("no permission to add asset", $_SERVER);
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
+
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
@@ -316,9 +322,6 @@ class AssetManager extends Admin_Controller {
 		}
 
 
-		echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
-
-
 		if($firstSave) {
 			/**
 			 * BEWARE
@@ -338,6 +341,12 @@ class AssetManager extends Admin_Controller {
 			 * END HACKY STUFF
 			 */
 
+		}
+
+		if ($returnJson) {
+			return render_json(["objectId" => $objectId, "success" => true], 200);
+		} else {
+			echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
 		}
 	}
 
