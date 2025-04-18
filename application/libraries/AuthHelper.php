@@ -1,7 +1,14 @@
 <?php
 /**
-* Based class for auth helpers
+* Base class for auth helpers
 */
+
+define("COURSE_TYPE", "Class Number");
+define("DEPT_COURSE_TYPE", "Dept/Course Number");
+define("JOB_TYPE", "JobCode");
+define("UNIT_TYPE", "Unit");
+define("STATUS_TYPE", "StudentStatus");
+define("EMPLOYEE_TYPE", "EmployeeType");
 
 #[AllowDynamicProperties]
 class AuthHelper

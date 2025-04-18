@@ -4,12 +4,7 @@
 */
 
 
-define("COURSE_TYPE", "Class Number");
-define("DEPT_COURSE_TYPE", "Dept/Course Number");
-define("JOB_TYPE", "JobCode");
-define("UNIT_TYPE", "Unit");
-define("STATUS_TYPE", "StudentStatus");
-define("EMPLOYEE_TYPE", "EmployeeType");
+
 
 
 require_once("AuthHelper.php");
