@@ -12,11 +12,16 @@ class search extends API_Controller {
 	{
 		$searchText = $this->input->post("searchTerm");
 		$pageNumber = $this->input->post("pageNumber");
+		
 		$searchArray["searchText"] = $searchText;
 		$searchArray["fuzzySearch"] = false;
 		if(count($searchArray) == 0) {
 			echo json_encode([]);
 			return;
+		}
+		$sort = $this->input->post("sort");
+		if($sort) {
+			$searchArray["sort"] = $sort;
 		}
 		$this->load->model("search_model");
 		$this->load->model("asset_model");
