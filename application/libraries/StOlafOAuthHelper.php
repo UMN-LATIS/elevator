@@ -275,6 +275,14 @@ class StOlafOAuthHelper extends AuthHelper
 				$username = str_replace('@stolaf.edu', '', $email);
 				$name = $googleUser->getName()->getFullName();
 				
+
+				// check if this user already exists
+				$existingUser = $CI->doctrine->em->getRepository("Entity\User")->findOneBy(["username"=>$username]);
+				if($existingUser) {
+					// User already exists, skip creating a new one
+					continue;
+				}
+
 				// Create a new User entity
 				$user = new Entity\User;
 				$user->setUsername($username);
