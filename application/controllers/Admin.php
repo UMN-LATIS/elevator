@@ -14,6 +14,17 @@ class admin extends Admin_Controller {
 	}
 
  
+	public function sendEmailToBurnSESCounts() {
+		$this->load->library('email');
+		$this->email->from('no-reply@elevatorapp.net', 'Elevator');
+		$this->email->set_newline("\r\n");
+		$this->email->to("elvtrsvc");
+		$this->email->subject("Message to up our email count");
+		$this->email->message("This is a nothingburger");
+		$this->email->send();
+		
+	}
+
 	public function index()
 	{
 
