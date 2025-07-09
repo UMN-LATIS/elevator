@@ -6,6 +6,25 @@ class SimpleValidator
   /**
    * Validates $data against $schema (array of field => closure[])
    * Returns filtered data or throws ValidationException
+   * 
+   * @example
+   * ```php
+   * use SimpleValidator as V;
+   * 
+   * $data = [
+   *  'name' => 'John Doe',
+   *  'age' => 30,
+   * ];
+   * $schema = [
+   *  'name' => [V::required(), V::minLength(3)],
+   *  'age' => [V::required(), V::integer(), V::min(18)],
+   * ];
+   * 
+   * try {
+   *  $validatedData = V::validate($data, $schema);
+   * } catch (ValidationException $e) {
+   *  $errors = $e->getErrors();
+   * }
    */
   public static function validate(array $data, array $schema): array
   {
@@ -27,44 +46,6 @@ class SimpleValidator
     }
 
     return array_intersect_key($data, $schema);
-  }
-
-  // /**
-  //  * Converts a string-based rule array into closure array
-  //  * E.g. ['required', 'min:3'] → [closure(), closure()]
-  //  */
-  public static function rules(array $rules): array
-  {
-    return $rules;
-    // return array_map(function ($rule) {
-    //   if ($rule instanceof \Closure) return $rule;
-
-    //   var_dump($rule);
-
-    //   if (str_contains($rule, ':')) {
-    //     [$name, $param] = explode(':', $rule, 2);
-    //     return self::fromString($name, $param);
-    //   }
-
-    //   return self::fromString($rule);
-    // }, $rules);
-  }
-
-  /**
-   * Maps string rule names to closure factories
-   */
-  private static function fromString(string $rule, $param = null): \Closure
-  {
-    return match ($rule) {
-      'required'    => self::required(),
-      'integer'     => self::integer(),
-      'min'         => self::min((int) $param),
-      'max'         => self::max((int) $param),
-      'regex'       => self::regex($param),
-      'minLength', 'min_length' => self::minLength((int) $param),
-      'array' => self::array(),
-      default       => fn() => "Unknown validation rule: {$rule}"
-    };
   }
 
   // —–––– Validators —––––

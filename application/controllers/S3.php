@@ -92,10 +92,10 @@ class S3 extends Instance_Controller
 
   public function multipart($uploadId = null, $action = null)
   {
-    $schema = V::rules([
+    $schema = [
       'uploadId' => [V::regex('/^[a-zA-Z0-9\-_\.\+]+$/')],
       'action' => [V::regex('/^(complete|\d+)$/')]
-    ]);
+    ];
 
     try {
       $validated = V::validate([
@@ -138,9 +138,9 @@ class S3 extends Instance_Controller
   {
     try {
       // validate metadata
-      $schema = V::rules([
+      $schema = [
         'metadata' => [V::array()]
-      ]);
+      ];
 
       $validated = V::validate($this->input->post(), $schema);
     } catch (ValidationException $e) {
@@ -171,10 +171,10 @@ class S3 extends Instance_Controller
   private function signPart($uploadId, $partNumber)
   {
     try {
-      $schema = V::rules([
+      $schema = [
         'uploadId' => [V::required(), V::regex('/^[a-zA-Z0-9\-_\.\+]+$/')],
         'partNumber' => [V::required(), V::integer(), V::min(1), V::max(10000)]
-      ]);
+      ];
 
       $validated = V::validate([
         'uploadId' => $uploadId,
@@ -209,9 +209,9 @@ class S3 extends Instance_Controller
   private function getListOfParts($uploadId)
   {
     try {
-      $schema = V::rules([
+      $schema = [
         'uploadId' => [V::required(), V::regex('/^[a-zA-Z0-9\-_\.\+]+$/')]
-      ]);
+      ];
 
       $validated = V::validate(['uploadId' => $uploadId], $schema);
     } catch (ValidationException $e) {
@@ -229,9 +229,9 @@ class S3 extends Instance_Controller
   private function completeMultipartUpload($uploadId)
   {
     try {
-      $schema = V::rules([
+      $schema = [
         'uploadId' => [V::required(), V::regex('/^[a-zA-Z0-9\-_\.\+]+$/')]
-      ]);
+      ];
 
       $validated = V::validate(['uploadId' => $uploadId], $schema);
     } catch (ValidationException $e) {
