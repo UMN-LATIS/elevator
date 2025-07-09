@@ -46,8 +46,6 @@ class S3 extends Instance_Controller
     // get collection
     $this->collection = $this->collection_model->getCollection($this->collectionId);
 
-    var_dump($this->collection);
-
     if (!$this->collection) {
       return abort_json(['error' => 'Collection not found'], 404);
     }
@@ -256,7 +254,7 @@ class S3 extends Instance_Controller
 
       return render_json([
         'message' => 'completeMultipartUpload',
-        'Location' => $result['Location'] ?? null,
+        'location' => $result['Location'] ?? null,
       ]);
     } catch (MultipartUploadException $e) {
       return abort_json(['error' => 'Failed to complete multipart upload: ' . $e->getMessage()], 500);
