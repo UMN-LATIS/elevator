@@ -45,6 +45,7 @@ class SimpleValidator
       throw new ValidationException($errors);
     }
 
+    // return only the fields that are defined in the schema
     return array_intersect_key($data, $schema);
   }
 
