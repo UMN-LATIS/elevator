@@ -301,7 +301,9 @@ class S3 extends Instance_Controller
 
   private function buildAWSFilePath($fileObjectId)
   {
-    return "original/{$fileObjectId}-source";
+    // the REVERSED fileObjectId is used to ensure that files are evenly distributed across S3 buckets
+    $reversedId = strrev($fileObjectId);
+    return "original/{$reversedId}-source";
   }
 
 
