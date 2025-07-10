@@ -2,12 +2,13 @@
 namespace Deployer;
 
 require 'recipe/codeigniter.php';
+require 'contrib/cachetool.php';
 
-set('cache_secret', file_get_contents('.cache_secret'));
-if(!get('cache_secret')) {
-    echo "You must set the cache secret\n";
-    die();
-}
+// set('cache_secret', file_get_contents('.cache_secret'));
+// if(!get('cache_secret')) {
+//     echo "You must set the cache secret\n";
+//     die();
+// }
 // Config
 
 set('repository', 'git@github.com:UMN-LATIS/elevator.git');
@@ -27,7 +28,6 @@ host('cla-dev')
 host('dev')
     ->setHostname('dev.elevator.umn.edu')
     ->set('remote_user', 'latis_deploy')
-    ->set('reset_path', "https://dev.elevator.umn.edu/defaultinstance/home/flushCache/")
     ->set('deploy_path', '/var/www/elevator');
 
 
@@ -35,28 +35,24 @@ host('umn')
     ->setHostname('beta.elevator.umn.edu')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
-    ->set('reset_path', "https://dcl.elevator.umn.edu/home/flushCache/")
     ->set('deploy_path', '/var/www/elevator');
 
 host('olaf')
     ->setHostname('digital.stolaf.edu')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
-    ->set('reset_path', "https://digital.stolaf.edu/home/flushCache/")
     ->set('deploy_path', '/var/www/elevator');
 
     host('ou')
     ->setHostname('3d.libraries.ou.edu')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
-    ->set('reset_path', "https://3d.libraries.ou.edu/home/flushCache/")
     ->set('deploy_path', '/var/www/elevator');
 
 host('bennington')
     ->setHostname('elevator.bennington.edu')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
-    ->set('reset_path', "https://elevator.bennington.edu/home/flushCache/")
     ->set('deploy_path', '/var/www/elevator');
 
 host('stthomas')
@@ -106,9 +102,10 @@ task('elevator:create_instance_assets', function () {
 
 after('deploy:symlink', 'elevator:restart_systemd');
 
-after('deploy:symlink', 'elevator:clear_cache');
-task('elevator:clear_cache', function () {
-    runLocally('curl -s {{reset_path}}' . get('cache_secret'));
-});
+after('deploy:symlink', 'cachetool:clear:opcache');
+// after('deploy:symlink', 'elevator:clear_cache');
+// task('elevator:clear_cache', function () {
+//     runLocally('curl -s {{reset_path}}' . get('cache_secret'));
+// });
 
 after('deploy:failed', 'deploy:unlock');

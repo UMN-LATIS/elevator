@@ -733,6 +733,17 @@ class Search extends Instance_Controller {
 			$searchArray['matchType'] = "phrase_prefix"; // this is a leaky abstraction. But the whole thing is really.
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
+
+		// filter out the objectIds we passed in when doing a searchRelated
+		if($this->input->post("searchRelated") && $this->input->post("searchRelated") == true) {
+			foreach($matchArray["searchResults"] as $key=>$objectId) {
+				if(in_array($objectId, $objectIdArray)) {
+					unset($matchArray["searchResults"][$key]);
+				}
+			}
+			$matchArray["searchResults"] = array_values($matchArray["searchResults"]); // reindex
+		}
+
 		$matchArray["searchId"] = $this->searchId;
 		$matchArray["sortableWidgets"] = $this->buildSortStructure();
 		return render_json($this->search_model->processSearchResults($searchArray, $matchArray));

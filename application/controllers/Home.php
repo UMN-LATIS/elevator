@@ -8,16 +8,6 @@ class Home extends Instance_Controller {
 	{
 		parent::__construct();
 	}
-	
-	public function flushCache($secretString=null) {
-		if($secretString == $this->config->item('cacheSecret')) {
-			opcache_reset();
-			echo "Cache flushed";
-		}
-		else {
-			echo "Invalid secret";
-		}
-	}
 
 	public function index()
 	{
