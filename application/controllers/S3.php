@@ -129,6 +129,10 @@ class S3 extends Instance_Controller
       case strtolower($action) === 'complete':
         return $this->completeMultipartUpload($uploadId);
 
+      case strtolower($action) === 'abort':
+        // POST /s3/multipart/{uploadId}/abort
+        // abort the multipart upload
+        return $this->abortMultipartUpload($uploadId);
       default:
         return abort_json(['error' => 'Page not found'], 404);
     }
@@ -258,6 +262,33 @@ class S3 extends Instance_Controller
       ]);
     } catch (MultipartUploadException $e) {
       return abort_json(['error' => 'Failed to complete multipart upload: ' . $e->getMessage()], 500);
+    }
+  }
+
+  private function abortMultipartUpload($uploadId)
+  {
+    try {
+      $schema = [
+        'uploadId' => [V::required(), V::regex('/^[a-zA-Z0-9\-_\.\+]+$/')]
+      ];
+
+      $validated = V::validate(['uploadId' => $uploadId], $schema);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 400);
+    }
+
+    try {
+      $command = $this->s3Client->getCommand('AbortMultipartUpload', [
+        'Bucket' => $this->collection->getBucket(),
+        'Key' => $this->buildAWSFilePath($this->fileObjectId),
+        'UploadId' => $validated['uploadId'],
+      ]);
+
+      $this->s3Client->execute($command);
+
+      return render_json(['message' => 'Multipart upload aborted successfully']);
+    } catch (MultipartUploadException $e) {
+      return abort_json(['error' => 'Failed to abort multipart upload: ' . $e->getMessage()], 500);
     }
   }
 
