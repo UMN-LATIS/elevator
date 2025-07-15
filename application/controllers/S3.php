@@ -330,7 +330,6 @@ class S3 extends Instance_Controller
       return true;
     }
 
-    $accessLevel = $this->user_model->getAccessLevel("collection", $collection);
-    return $accessLevel >= PERM_ADDASSETS;
+    return $this->user_model->havePermForCollection(PERM_ADDASSETS, $collection->getId());
   }
 }
