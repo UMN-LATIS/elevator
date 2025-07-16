@@ -25,3 +25,5 @@ docs/.vuepress/dist
 
 assets/elevator-ui/*
 !assets/elevator-ui/dist
+certs
+REVISION
