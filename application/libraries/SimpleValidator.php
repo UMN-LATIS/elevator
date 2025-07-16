@@ -89,7 +89,7 @@ class SimpleValidator
 
   public static function minLength(int $length): \Closure
   {
-    return fn($v) => is_string($v) && mb_strlen($v) >= $length
+    return fn($v) => !isset($v) || (is_string($v) && mb_strlen($v) >= $length)
       ? true
       : "Must be at least {$length} characters long";
   }
