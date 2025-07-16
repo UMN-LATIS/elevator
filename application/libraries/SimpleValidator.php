@@ -84,7 +84,7 @@ class SimpleValidator
   {
     return fn($v) => !isset($v) || preg_match($pattern, $v)
       ? true
-      : "Value does not match pattern: {$pattern}";
+      : "Invalid format.";
   }
 
   public static function minLength(int $length): \Closure
