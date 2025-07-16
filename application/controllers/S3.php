@@ -33,7 +33,7 @@ class S3 extends Instance_Controller
       $validated = V::validate($data, [
         'collectionId' => [V::required(), V::integer()],
         'fileObjectId' => [V::required(), V::regex('/^[a-zA-Z0-9]+$/')],
-        'contentType' => [V::required(), V::regex('/^[a-zA-Z0-9\/\-\+]+$/')]
+        'contentType' => [V::required(), V::regex('/^[a-z]+\/[a-z0-9\-\+\.]+$/i')]
       ]);
 
       $this->fileObjectId = $validated['fileObjectId'];
