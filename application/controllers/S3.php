@@ -65,9 +65,7 @@ class S3 extends Instance_Controller
       ],
     ]);
 
-    if (!$this->s3Client) {
-      return abort_json(['error' => 'Failed to create S3 client'], 500);
-    }
+// Removed ineffective null check for $this->s3Client.
   }
 
   public function sign()
