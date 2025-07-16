@@ -470,7 +470,7 @@ class AssetManager extends Admin_Controller {
 		$qb->getQuery()->execute();
 
 		if ($returnJson) {
-			return render_json(["success" => true], 204);
+			return render_json(null, 204);
 		}
 
 		instance_redirect("/");
