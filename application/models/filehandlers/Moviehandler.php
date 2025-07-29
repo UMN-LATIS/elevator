@@ -17,6 +17,8 @@ class MovieHandler extends FileHandlerBase {
 						  5=>["taskType"=>"waitForCompletion", "config"=>array()],
 						];
 
+	public $gpuTaskArray = [0=>["taskType"=>"generateCaptions", "config"=>array()]];
+
 
 	public function __construct()
 	{
@@ -175,6 +177,20 @@ class MovieHandler extends FileHandlerBase {
 			}
 		}
 
+		if($this->instance) {
+		//&& $this->instance->enableAutomaticAccessibility) {
+			echo "Generating captions for " . $this->getObjectId() . "\n";
+			$uploadWidget = $this->getUploadWidget();
+			if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+				return;
+			}
+			
+			$this->queueBatchItem("gpu");
+
+		}
+
+
+
 		if($jobId) {
 			$this->queueTask(3, ["jobId"=>$jobId, "pendingDerivatives"=>$targetDerivatives, "previousTask"=>"createDerivatives"], false);
 			return JOB_SUCCESS;
@@ -184,6 +200,43 @@ class MovieHandler extends FileHandlerBase {
 		}
 
 	}
+
+
+	public function generateCaptions() {
+
+		$derivative = $this->derivatives["mp4sd"];
+		$derivative->makeLocal();
+		$localPath = $derivative->getPathToLocalFile();
+		$localPathParts = pathinfo($localPath);
+
+		$captionString = $this->config->item('whipserX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . $localPath;
+
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+		$process->run("/tmp/whisperx.log");
+		while($process->isRunning()) {
+			sleep(5);
+			echo ".";
+		}
+
+		
+		$localPathWithoutExtension = $localPathParts['dirname'] . '/' . $localPathParts['filename'];
+
+		if(file_exists($localPathWithoutExtension . ".srt")) {
+			echo "Captions found for " . $this->getObjectId() . "\n";
+			$srtContents = file_get_contents( $localPathWithoutExtension . ".srt");
+			if($srtContents && $srtContents != "") {
+				$uploadWidget = $this->getUploadWidget();
+				$uploadWidget->sidecars['captions'] = $srtContents;
+				$this->parentObject->save(true,false);
+			}
+		}
+		else {
+			echo "No captions found for " . $this->getObjectId() . "\n";
+		}
+		
+
+	}
+
 
 	public function cleanupOriginal($args) {
 

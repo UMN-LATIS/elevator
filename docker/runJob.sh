@@ -4,6 +4,7 @@
 
 # capture arguments
 targetJobID=$1
+jobType=$2
 
 # if .env exists, load it
 if [ -f .env ]; then
@@ -26,7 +27,7 @@ mkdir -p $targetPath
 
 
 # run the beltdrive command
-$command index.php beltdrive processAWSBatchJob $targetJobID
+$command index.php beltdrive processAWSBatchJob $targetJobID $jobType
 
 # delete the job directory
 rm -rf $targetPath

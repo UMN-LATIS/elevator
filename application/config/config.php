@@ -454,6 +454,7 @@ $config['convert'] = '/usr/local/bin/convert';
 $config['cziutils'] = '/usr/local/bin/cziutils';
 $config['tarrific'] = '/usr/local/bin/tarrific';
 $config['3mf2stl'] = '/usr/local/bin/3mf2stl';
+$config['whipserX'] = '/usr/local/bin/whisperx';
 
 // LDAP username and password.
 // Application should bind anonymously if not set, or set to blanks.

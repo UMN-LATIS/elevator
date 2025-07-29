@@ -16,6 +16,7 @@ class FileHandlerBase extends CI_Model {
 	protected $supportedTypes = array();
 	protected $noDerivatives = true;
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]]];
+	public $gpuTaskArray = [];
 	public $icon = "_blank.png"; // icon File to use if we don't have a thumb
 	public $collection = null;
 
@@ -397,7 +398,7 @@ class FileHandlerBase extends CI_Model {
 		return [];
 	}
 
-	public function queueBatchItem() {
+	public function queueBatchItem($jobType = "cpu") {
 		$fileObjectId = $this->asset->getFileObjectId();
 		$fileSize = $this->sourceFile->getFileSize();
 		$size = "";
@@ -411,8 +412,14 @@ class FileHandlerBase extends CI_Model {
 
 		$overrides = $this->getCustomJobOverrides();
 
+		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $jobType;
 
-		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $size;
+		if($jobType == "cpu") {
+			$jobDefinition = $jobDefinition . "-" . $size;
+		}
+		
+
+		$jobQueue = $this->config->item('awsQueueJobQueue') . "-" . $jobType;
 
 		$batchClient = new BatchClient([
 			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'
@@ -424,13 +431,13 @@ class FileHandlerBase extends CI_Model {
 		]);
 		$params = [
 			'jobName' => 'transcode_' . $fileObjectId,
-			'jobQueue' => $this->config->item('awsQueueJobQueue'),
+			'jobQueue' => $jobQueue,
 			'jobDefinition' => $jobDefinition,
 			'timeout' => [
 				"attemptDurationSeconds" => ($size=="small")? 2400 : 28800,
 			],
 			'containerOverrides' => [
-        		'command' => ['bash', 'docker/runJob.sh',  $fileObjectId],
+        		'command' => ['bash', 'docker/runJob.sh',  $fileObjectId, $jobType],
 				'resourceRequirements' => $overrides
     		],
 		];
