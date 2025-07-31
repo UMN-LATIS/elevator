@@ -209,6 +209,8 @@ class MovieHandler extends FileHandlerBase {
 		$localPath = $derivative->getPathToLocalFile();
 		$localPathParts = pathinfo($localPath);
 
+
+		chmod($localPathParts['dirname'] , 0777);
 		$captionString = $this->config->item('whipserX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . $localPath;
 
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
@@ -219,6 +221,8 @@ class MovieHandler extends FileHandlerBase {
 		}
 
 		
+		
+
 		$localPathWithoutExtension = $localPathParts['dirname'] . '/' . $localPathParts['filename'];
 
 		if(file_exists($localPathWithoutExtension . ".srt")) {
@@ -232,6 +236,19 @@ class MovieHandler extends FileHandlerBase {
 		}
 		else {
 			echo "No captions found for " . $this->getObjectId() . "\n";
+			// dump the contents of /tmp/whisperx.log
+			if(file_exists("/tmp/whisperx.log")) {
+				$logContents = file_get_contents("/tmp/whisperx.log");
+				echo "WhisperX log contents:\n" . $logContents . "\n";
+			}
+			// list all the files in the directory
+			$files = scandir($localPathParts['dirname']);
+			echo "Files in " . $localPathParts['dirname'] . ":\n";
+			foreach($files as $file) {
+				if($file != "." && $file != "..") {
+					echo " - " . $file . "\n";
+				}
+			}
 		}
 		
 

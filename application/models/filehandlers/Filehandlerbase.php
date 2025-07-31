@@ -412,14 +412,18 @@ class FileHandlerBase extends CI_Model {
 
 		$overrides = $this->getCustomJobOverrides();
 
-		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $jobType;
-
+		$jobDefinition = $this->config->item('awsQueueJobDefinition');
+		$jobQueue = $this->config->item('awsQueueJobQueue');
 		if($jobType == "cpu") {
 			$jobDefinition = $jobDefinition . "-" . $size;
 		}
+		else {
+			$jobDefinition = $jobDefinition . "-gpu";
+			$jobQueue = $jobQueue . "GPU";
+		}
 		
 
-		$jobQueue = $this->config->item('awsQueueJobQueue') . "-" . $jobType;
+		
 
 		$batchClient = new BatchClient([
 			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'

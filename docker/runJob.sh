@@ -11,6 +11,7 @@ if [ -f .env ]; then
     source .env
 fi
 
+
 # check if ENVIRONMENT variable is local
 if [ "$ENVIRONMENT" = "local" ]; then
     # run the beltdrive command
