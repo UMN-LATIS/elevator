@@ -106,6 +106,16 @@ class S3 extends Instance_Controller
 
     $uploadId = $validated['uploadId'] ?? null;
     $action = $validated['action'] ?? null;
+
+    // S3 sometimes returns upload id's that begin with dots, but we
+    // deny paths with dots for security reasons. As a workaround,
+    // we replaced a starting dot with `__DOT__` in the uploadId.
+    // so we need to transform it back to a dot.
+    $dotPrefix = '__DOT__';
+    if ($uploadId && str_starts_with($uploadId, $dotPrefix)) {
+      $uploadId = '.' . substr($uploadId, strlen($dotPrefix));
+    }
+
     switch (true) {
       case $uploadId === null:
         // POST /s3/multipart
