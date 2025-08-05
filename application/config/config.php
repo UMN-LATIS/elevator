@@ -510,6 +510,9 @@ $config['awsQueueSecretKey'] = $_SERVER['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? nul
 $config['awsQueueJobDefinition'] = $_SERVER['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
 $config['awsQueueJobQueue'] = $_SERVER['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
 
+$config['awsBedrockKey'] = $_SERVER['AWS_BEDROCK_KEY'] ?? null;
+$config['awsBedrockSecret'] = $_SERVER['AWS_BEDROCK_SECRET'] ?? null;
+
 $config['cacheSecret'] = $_SERVER['CACHE_SECRET'] ?? null;
 
 $config['shib_authfield'] = $_SERVER['SHIB_AUTH_FIELD'] ?? 'email';

@@ -14,7 +14,8 @@ class ZipObjHandler extends ZipHandler {
 						  												]
 						  												],
 	4=>["taskType"=>"createNXS", "config"=>["ttr"=>900]],
-	5=>["taskType"=>"createSTL", "config"=>[]]
+	5=>["taskType"=>"createSTL", "config"=>[]],
+	6=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
 	];
 
 	# this is our static SVX data which we'll use when rendering 3d objects that don't have baked in data
@@ -467,6 +468,33 @@ class ZipObjHandler extends ZipHandler {
 		}
 
 	}
+
+	public function generateAltText() {
+
+		$derivative = $this->derivatives["thumbnail2x"];
+		$derivative->makeLocal();
+		
+		$uploadWidget = $this->getUploadWidget();
+
+
+		$metadata = [];
+		foreach($this->parentObject->assetObjects as $widget) {
+			if($widget->getDisplay() && $widget->hasContents()) {
+				$metadata[$widget->getLabel()] = $widget->getAsText();
+			}
+		}
+
+		$metadata["type"] = "3d model";
+
+		$altText = $this->getAltTextForMedia("", $metadata, $derivative);
+
+		$uploadWidget->fileDescription = $altText;
+		$this->parentObject->save(true,false);
+
+		
+
+	}
+
 
 }
 

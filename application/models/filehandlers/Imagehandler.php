@@ -14,7 +14,8 @@ class ImageHandler extends FileHandlerBase {
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
 							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
 							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
-							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							3=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
+							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
 	public $sphericalTaskArray = [
@@ -322,6 +323,40 @@ class ImageHandler extends FileHandlerBase {
 
 	}
 
+
+	public function generateAltText() {
+
+		$screenDerivative = $this->derivatives["screen"];		
+		$screenDerivative->makeLocal();
+		if(!isset($screenDerivative)) {
+			$this->queueTask(4);
+			return JOB_SUCCESS;
+		}
+
+		$uploadWidget = $this->getUploadWidget();
+
+
+		$metadata = [];
+		foreach($this->parentObject->assetObjects as $widget) {
+			if($widget->getDisplay() && $widget->hasContents()) {
+				$metadata[$widget->getLabel()] = $widget->getAsText();
+			}
+		}
+
+		$metadata["type"] = "image";
+		if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
+		}
+		else {
+			$altText = $this->getAltTextForMedia("", $metadata, $screenDerivative);
+			$uploadWidget->fileDescription = $altText;
+			$this->parentObject->save(true,false);
+
+		}
+		
+		$this->queueTask(4);
+		
+
+	}
 
 	// public function clarifyTag($args) {
 

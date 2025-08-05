@@ -16,7 +16,8 @@ class ObjHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]],
     3=>["taskType"=>"createNXS", "config"=>["ttr"=>900]],
-    4=>["taskType"=>"createSTL", "config"=>[]]
+    4=>["taskType"=>"createSTL", "config"=>[]],
+	5=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
 	];
 
 
@@ -484,6 +485,32 @@ class ObjHandler extends FileHandlerBase {
 			echo ".";
 		}
 		return new FileContainer($dest);
+
+	}
+
+	public function generateAltText() {
+
+		$derivative = $this->derivatives["thumbnail2x"];
+		$derivative->makeLocal();
+		
+		$uploadWidget = $this->getUploadWidget();
+
+
+		$metadata = [];
+		foreach($this->parentObject->assetObjects as $widget) {
+			if($widget->getDisplay() && $widget->hasContents()) {
+				$metadata[$widget->getLabel()] = $widget->getAsText();
+			}
+		}
+
+		$metadata["type"] = "3d model";
+
+		$altText = $this->getAltTextForMedia("", $metadata, $derivative);
+
+		$uploadWidget->fileDescription = $altText;
+		$this->parentObject->save(true,false);
+
+		
 
 	}
 

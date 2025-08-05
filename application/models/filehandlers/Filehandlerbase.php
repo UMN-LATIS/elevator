@@ -2,6 +2,8 @@
 
 //use Aws\S3\S3Client;
 use Aws\Batch\BatchClient;
+use Aws\Bedrock\BedrockClient;
+use Aws\BedrockRuntime\BedrockRuntimeClient;
 use Aws\Exception\AwsException;
 
 
@@ -752,6 +754,67 @@ class FileHandlerBase extends CI_Model {
 			return null;	
 		}
 	}
+
+	protected function getAltTextForMedia($prompt, $metadata, $imagePath) {
+		$modelId = 'arn:aws:bedrock:us-east-1:269090599827:inference-profile/us.meta.llama4-maverick-17b-instruct-v1:0';
+		$bedrockClient = new BedrockRuntimeClient([
+            'region' => 'us-east-1',
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->config->item('awsBedrockKey'),
+				'secret' => $this->config->item('awsBedrockSecret'),
+			],
+        ]);
+
+
+
+		$systemPrompt = "Generate a caption appropriate for use as alt text within a digital asset management system. Just output the caption, don't add any additional context like \"here's the caption you asked for\". You can use the associated metadata json to better describe the object, but don't repeat the metadata verbatim as it'll be available to the user as well. Be sure to actually describe the object, not just the metadata, so that someone who's visually impaired would understand what the image represents. If the metadata has a 'type' field, use it to describe the object (e.g. 'a 3d object', 'a word document', etc.). Make sure you follow best practices for generating high quality alt text for images. Make sure to double check your work. Don't repeat content that's already in the metadata like dimensions, unless it's crucial to visibly describe the object.";
+
+		$combinedPrompt = $systemPrompt . "\n\n" . $prompt . "\n\n" . json_encode($metadata);
+
+
+		$tempImagePath = $this->config->item('scratchSpace') . "/temp_image_" . time() . ".jpg";
+		$tempImage = new FileContainer($tempImagePath);
+
+		compressImageAndSave($imagePath, $tempImage, 512, 512, 80);
+		$imageBytes = file_get_contents($tempImage->getPathToLocalFile());
+
+		$conversation = [
+			[
+				"text" => $combinedPrompt
+			],
+			[
+				"image"=> [
+					"format"=> "jpeg",
+					"source"=> [
+						"bytes"=> $imageBytes
+					]
+				]
+			]
+		];
+
+
+		$messages = [
+        	[
+            	"role"=> "user",
+            	"content"=> $conversation
+			]
+		];
+
+		$response = $bedrockClient->converse([
+			'modelId' => $modelId,
+			'messages' => $messages,
+			'inferenceConfig' => [
+				'maxTokens' => 512,
+				'temperature' => 0.5
+			]
+		]);
+
+		$responseText = $response['output']['message']['content'][0]['text'];
+
+        return $responseText;
+	}
+
 
 }
 
