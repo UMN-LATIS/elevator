@@ -229,7 +229,7 @@ class MovieHandler extends FileHandlerBase {
 			echo "Captions found for " . $this->getObjectId() . "\n";
 			$srtContents = file_get_contents( $localPathWithoutExtension . ".srt");
 			if($srtContents && $srtContents != "") {
-				$uploadWidget = $this->getUploadWidget();
+				$uploadWidget = $this->getUploadWidget(true);
 				$uploadWidget->sidecars['captions'] = $srtContents;
 				$this->parentObject->save(true,false);
 			}

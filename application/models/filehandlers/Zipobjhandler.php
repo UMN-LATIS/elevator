@@ -487,7 +487,7 @@ class ZipObjHandler extends ZipHandler {
 		$metadata["type"] = "3d model";
 
 		$altText = $this->getAltTextForMedia("", $metadata, $derivative);
-
+		$uploadWidget = $this->getUploadWidget(true);
 		$uploadWidget->fileDescription = $altText;
 		$this->parentObject->save(true,false);
 

@@ -347,7 +347,10 @@ class ImageHandler extends FileHandlerBase {
 		if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
 		}
 		else {
+			
 			$altText = $this->getAltTextForMedia("", $metadata, $screenDerivative);
+			// reload the asset so we mostly win the race with other compression threads
+			$uploadWidget = $this->getUploadWidget(true);
 			$uploadWidget->fileDescription = $altText;
 			$this->parentObject->save(true,false);
 
