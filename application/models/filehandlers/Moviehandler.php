@@ -229,7 +229,10 @@ class MovieHandler extends FileHandlerBase {
 			echo "Captions found for " . $this->getObjectId() . "\n";
 			$srtContents = file_get_contents( $localPathWithoutExtension . ".srt");
 			if($srtContents && $srtContents != "") {
-				$uploadWidget = $this->getUploadWidget(true);
+				// make sure we flush the entity manager so we don't have stale data
+				$this->parentObject = null;
+				$this->doctrine->em->clear();
+				$uploadWidget = $this->getUploadWidget();
 				$uploadWidget->sidecars['captions'] = $srtContents;
 				$this->parentObject->save(true,false);
 			}

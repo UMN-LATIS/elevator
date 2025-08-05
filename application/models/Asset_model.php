@@ -122,7 +122,6 @@ class Asset_model extends CI_Model {
 
 	public function loadAssetById($objectId, $noHydrate = false) {
 		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
-
 		if(!isset($asset)) {
 			return FALSE;
 		}
@@ -795,7 +794,6 @@ class Asset_model extends CI_Model {
 	 * @return [type] [description]
 	 */
 	public function save($reindex=true, $saveRevision=true, $noCache=false) {
-
 		if(!isset($this->assetObject)) {
 			return false;
 		}
@@ -909,7 +907,7 @@ class Asset_model extends CI_Model {
 			$this->doctrine->em->flush();
     	}
 
-
+		
 		// if this asset isn't supposed to be available, don't add it to the index
 		// TODO: also check template
 		$noIndex=false;

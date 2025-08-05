@@ -506,7 +506,10 @@ class ObjHandler extends FileHandlerBase {
 		$metadata["type"] = "3d model";
 
 		$altText = $this->getAltTextForMedia("", $metadata, $derivative);
-		$uploadWidget = $this->getUploadWidget(true);
+		// make sure we flush the entity manager so we don't have stale data
+		$this->parentObject = null;
+		$this->doctrine->em->clear();
+		$uploadWidget = $this->getUploadWidget();
 		$uploadWidget->fileDescription = $altText;
 		$this->parentObject->save(true,false);
 

@@ -350,7 +350,11 @@ class ImageHandler extends FileHandlerBase {
 			
 			$altText = $this->getAltTextForMedia("", $metadata, $screenDerivative);
 			// reload the asset so we mostly win the race with other compression threads
-			$uploadWidget = $this->getUploadWidget(true);
+			echo "Setting alt text to: " . $altText . "\n";
+			$this->parentObject = null;
+			$this->doctrine->em->clear();
+			$uploadWidget = $this->getUploadWidget();
+			
 			$uploadWidget->fileDescription = $altText;
 			$this->parentObject->save(true,false);
 

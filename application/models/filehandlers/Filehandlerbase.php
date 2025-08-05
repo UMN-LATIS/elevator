@@ -472,8 +472,8 @@ class FileHandlerBase extends CI_Model {
 		return $this->load->view("fileHandlers/embeds/" . strtolower(get_class($this)) . "", ["widgetObject"=>$uploadWidget, "fileObject"=>$this, "embedded"=>$embedded, "allowOriginal"=>$includeOriginal, "fileContainers"=>$fileContainerArray], true);
 	}
 
-	public function getUploadWidget($forceReload = false) {
-		if((!$this->parentObject && $this->parentObjectId) || ($forceReload && $this->parentObjectId)) {
+	public function getUploadWidget() {
+		if(!$this->parentObject && $this->parentObjectId) {
 			$this->parentObject = new Asset_model($this->parentObjectId);
 		}
 
