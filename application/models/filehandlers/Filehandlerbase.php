@@ -760,7 +760,7 @@ class FileHandlerBase extends CI_Model {
 
 	protected function getAltTextForMedia($prompt) {
 
-		if($this->instance && !$this->instance->getUseAutomaticAltText()) {
+		if($this->instance && !$this->instance->getAutomaticAltText()) {
 			return;
 		}
 
