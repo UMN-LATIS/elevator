@@ -14,7 +14,8 @@ class ImageHandler extends FileHandlerBase {
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
 							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
 							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
-							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							3=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
+							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
 	public $sphericalTaskArray = [
@@ -322,6 +323,13 @@ class ImageHandler extends FileHandlerBase {
 
 	}
 
+
+	public function generateAltText() {
+		$this->derivativeForAltText = "screen";
+		$this->metadataTypeForAltText = "image";
+		$this->getAltTextForMedia("");
+		$this->queueTask(4);
+	}
 
 	// public function clarifyTag($args) {
 

@@ -74,7 +74,7 @@ class Beltdrive extends CI_Controller {
 		}
 	}
 
-	public function processAWSBatchJob($fileObjectId) {
+	public function processAWSBatchJob($fileObjectId, $jobType="cpu") {
 
 		if(strlen($fileObjectId) != 24) {
 			return 0;
@@ -102,7 +102,17 @@ class Beltdrive extends CI_Controller {
 					$this->instance = $instance;
 				}
 			}
-			foreach($fileHandler->taskArray as $task) {
+
+			if($jobType == "cpu") {
+				$taskArray = $fileHandler->taskArray;
+			}
+			else if($jobType == "gpu") {
+				$taskArray = $fileHandler->gpuTaskArray;
+			}
+
+			
+
+			foreach($taskArray as $task) {
 				echo "Performing task " . $task["taskType"] . "\n";
 				if($task["taskType"] == "waitForCompletion") {
 					continue;

@@ -71,11 +71,15 @@ class Doctrine
         
 
 
-        //$logger = new \Doctrine\DBAL\Logging\Profiler;
-        //$config->setSQLLogger($logger);
+        $logger = new \Doctrine\DBAL\Logging\EchoSQLLogger;
+        
+
         $this->em = EntityManager::create($connection_options, $doctrineConfig);
         $loader = new ClassLoader($models_namespace, $models_path);
         $loader->register();
+
+//  $config = $this->em->getConnection()->getConfiguration();
+        // $config->setSQLLogger($logger);
     }
 
     public function reset() {
