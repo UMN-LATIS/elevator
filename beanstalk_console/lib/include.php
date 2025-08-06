@@ -166,6 +166,8 @@ class Console {
 
     public function getTubeStatValues($tube) {
         // make sure, that rapid tube disappearance (eg: anonymous tubes, don't kill the interface, as they might be missing)
+        $tube = new Pheanstalk\Values\TubeName($tube);
+        
         try {
             return $this->interface->_client->statsTube($tube);
         } catch (Pheanstalk_Exception_ServerException $ex) {
@@ -224,17 +226,21 @@ class Console {
     }
 
     protected function deleteAllFromTube($state, $tube) {
+        $tube = new Pheanstalk\Values\TubeName($tube);
         try {
             do {
                 switch ($state) {
                     case 'ready':
-                        $job = $this->interface->_client->useTube($tube)->peekReady();
+                        $this->interface->_client->useTube($tube);
+                        $job = $this->interface->_client->peekReady();
                         break;
                     case 'delayed':
-                        $job = $this->interface->_client->useTube($tube)->peekDelayed();
+                        $this->interface->_client->useTube($tube);
+                        $job = $this->interface->_client->peekDelayed();
                         break;
                     case 'buried':
-                        $job = $this->interface->_client->useTube($tube)->peekBuried();
+                        $this->interface->_client->useTube($tube);
+                        $job = $this->interface->_client->peekBuried();
                         break;
                 }
 
@@ -317,13 +323,13 @@ class Console {
 
     protected function _postDelete() {
         $arr = $this->getTubeStatValues($this->_globalVar['tube']);
-        $availableJobs = $arr['current-jobs-urgent'] + $arr['current-jobs-ready'] + $arr['current-jobs-reserved'] + $arr['current-jobs-delayed'] + $arr['current-jobs-buried'];
-        if (empty($availableJobs)) {
-            // make sure we redirect to all tubes, as this tube no longer exists
-            $this->_globalVar['tube'] = null;
-        }
-        header(
-                sprintf('Location: index.php?server=%s&tube=%s', $this->_globalVar['server'], $this->_globalVar['tube']));
+        // $availableJobs = $arr['current-jobs-urgent'] + $arr['current-jobs-ready'] + $arr['current-jobs-reserved'] + $arr['current-jobs-delayed'] + $arr['current-jobs-buried'];
+        // if (empty($availableJobs)) {
+        //     // make sure we redirect to all tubes, as this tube no longer exists
+        //     $this->_globalVar['tube'] = null;
+        // }
+        // header(
+        //         sprintf('Location: index.php?server=%s&tube=%s', $this->_globalVar['server'], $this->_globalVar['tube']));
         exit();
     }
 

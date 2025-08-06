@@ -619,7 +619,7 @@ class Beltdrive extends CI_Controller {
 			// run the ebs-mount shell script to mount the storage
 			exec("sudo /usr/local/bin/ebs-mount.sh");
 			// make sure we hold an open file on the mount while we're working
-			$fp = fopen("/scratch/hold_file", "w");
+			$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
 			$assetModel = new Asset_model($objectId);
 			$assetArray = $assetModel->getAsArray();
 

@@ -4,12 +4,7 @@
 */
 
 
-define("COURSE_TYPE", "Class Number");
-define("DEPT_COURSE_TYPE", "Dept/Course Number");
-define("JOB_TYPE", "JobCode");
-define("UNIT_TYPE", "Unit");
-define("STATUS_TYPE", "StudentStatus");
-define("EMPLOYEE_TYPE", "EmployeeType");
+
 
 
 require_once("AuthHelper.php");
@@ -350,7 +345,7 @@ class UMNHelper extends AuthHelper
 		if(!$CI->config->item('umn_bearer_token')) {
 			return [];
 		}
-       $ch = curl_init('https://cla-bandaid-prd-web.oit.umn.edu' . $apiPath); // Initialise cURL
+       $ch = curl_init('https://bandaid.cla.umn.edu' . $apiPath); // Initialise cURL
        $authorization = "Authorization: Bearer ".$CI->config->item('umn_bearer_token'); // Prepare the authorisation token
        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json' , $authorization )); // Inject the token into the header
        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

@@ -237,4 +237,95 @@ class StOlafOAuthHelper extends AuthHelper
 		return $this->CI->load->view("authHelpers/googleRedirect", ["hintableURL"=>$hintableURL, "redirectURL"=>$authURL], true);
 	}
 
+
+	public function autocompleteUsername($partialUsername) {
+		$CI =& get_instance();
+		
+		// First, get results from parent method
+		$outputArray = parent::autocompleteUsername($partialUsername);
+		
+		// Set up Google Directory API client
+		$client = new Google_Client();
+		$client->setAuthConfig($CI->config->item("oAuthDelegate"));
+		$client->setApplicationName("Elevator");
+		$client->setScopes(['https://www.googleapis.com/auth/admin.directory.user']);
+		$client->setSubject('googleadmin@stolaf.edu');
+		
+		// Create Directory service
+		$dir = new Google_Service_Directory($client);
+		
+		// Set up query parameters - using a simpler query format
+		$optParams = array(
+			'domain' => 'stolaf.edu',
+			'query' => $partialUsername,  // Simplified query
+			'maxResults' => 10,
+			'orderBy' => 'email',
+			'sortOrder' => 'ascending'
+		);
+		
+		try {
+			// Execute the API request
+			$results = $dir->users->listUsers($optParams);
+			$googleResults = $results->getUsers();
+			
+			// Log the number of results for debugging
+			// Process Google Directory results and create User models
+			foreach ($googleResults as $googleUser) {
+				$email = $googleUser->getPrimaryEmail();
+				$username = str_replace('@stolaf.edu', '', $email);
+				$name = $googleUser->getName()->getFullName();
+				
+
+				// check if this user already exists
+				$existingUser = $CI->doctrine->em->getRepository("Entity\User")->findOneBy(["username"=>$username]);
+				if($existingUser) {
+					// User already exists, skip creating a new one
+					continue;
+				}
+
+				// Create a new User entity
+				$user = new Entity\User;
+				$user->setUsername($username);
+				$user->setDisplayName($name);
+				$user->setEmail($email);
+				$user->setHasExpiry(false);
+				$user->setCreatedAt(new \DateTime("now"));
+				$user->setUserType("Remote");
+				$user->setInstance($CI->instance);
+				$user->setIsSuperAdmin(false);
+				$user->setFastUpload(false);
+				
+				// Persist the user to the database
+				$CI->doctrine->em->persist($user);
+				$CI->doctrine->em->flush();
+				
+				// Add to output array
+				$tempArray = [
+					"name" => $name,
+					"email" => $email,
+					"completionId" => $user->getId(),
+					"username" => $username
+				];
+				
+				// Check for duplicates
+				$duplicate = false;
+				foreach ($outputArray as $entry) {
+					if ($entry["username"] == $username) {
+						$duplicate = true;
+						break;
+					}
+				}
+				
+				if (!$duplicate) {
+					$outputArray[] = $tempArray;
+				}
+			}
+		} catch (Exception $e) {
+			// Log the error for debugging
+			$this->logging->logError("Google Directory API error", $e->getMessage());
+		}
+		
+		return $outputArray;
+	}
+
 }
