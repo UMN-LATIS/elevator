@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 INSERT INTO "instances"("id","name","domain","ownerhomepage","amazons3key","s3storagetype","defaultbucket","bucketregion","amazons3secret","googleanalyticskey","introtext","createdat","modifiedat","usecustomheader","usecustomcss","useheaderlogo","usecentralauth","hidevideoaudio","featuredasset","featuredassettext","customheadertext","customfootertext","customheadercss","customheaderimage","allowindexing","showcollectioninsearchresults","showtemplateinsearchresults","showpreviousnextsearchresults","enablehlsstreaming","enableinterstitial","interstitialtext","notes","interfaceversion","defaulttheme","enablethemes","customhomeredirect","maximummorelikethis","defaulttexttruncationheight","availablethemes")
 VALUES
-(1,E'defaultinstance',E'defaultinstance',E'mailto:mcfa0086@umn.edu',E'',E'STANDARD',E'',E'',E'',E'',E'',NULL,E'2024-04-05 17:55:03',0,FALSE,FALSE,TRUE,FALSE,E'575ee4ceba98a87472f3e030',E'This is text about the featured asset.',E'',E'',E'',NULL,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,E'',E'This is an instance note.',0,E'folwell',TRUE,E'',3,72,E'["folwell", "light"]');
+(1,E'defaultinstance',E'defaultinstance',E'mailto:mcfa0086@umn.edu',E'',E'STANDARD',E'',E'',E'',E'',E'',NULL,E'2024-04-05 17:55:03',0,FALSE,FALSE,TRUE,FALSE,E'',E'',E'',E'',E'',NULL,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,E'',E'This is an instance note.',0,E'folwell',TRUE,E'',3,72,E'["folwell", "light"]');
 
 INSERT INTO "permissions"("id","name","label","level","createdat","modifiedat")
 VALUES

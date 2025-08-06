@@ -11,7 +11,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 $indexFile = $manifest['src/main.ts']['file'];
-$cssFile = $manifest['src/main.css']['file'];
+$cssFile = $manifest['style.css']['file'];
 
 $customCSSFile = "/assets/instanceAssets/{$this->instance->getId()}.css";
 $customCSSHash = $this->instance->getModifiedAt()->getTimestamp();
