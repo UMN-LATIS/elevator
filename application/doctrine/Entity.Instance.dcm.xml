@@ -121,5 +121,10 @@
               <option name="jsonb">true</option>
             </options>
         </field>
+                  <field name="automaticAltText" type="boolean" nullable='true'>
+          <options>
+                <option name="default">0</option>
+              </options>
+          </field>
       </entity>
 </doctrine-mapping>

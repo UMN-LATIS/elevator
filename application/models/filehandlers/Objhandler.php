@@ -487,34 +487,12 @@ class ObjHandler extends FileHandlerBase {
 		return new FileContainer($dest);
 
 	}
-
+	
 	public function generateAltText() {
-
-		$derivative = $this->derivatives["thumbnail2x"];
-		$derivative->makeLocal();
-		
-		$uploadWidget = $this->getUploadWidget();
-
-
-		$metadata = [];
-		foreach($this->parentObject->assetObjects as $widget) {
-			if($widget->getDisplay() && $widget->hasContents()) {
-				$metadata[$widget->getLabel()] = $widget->getAsText();
-			}
-		}
-
-		$metadata["type"] = "3d model";
-
-		$altText = $this->getAltTextForMedia("", $metadata, $derivative);
-		// make sure we flush the entity manager so we don't have stale data
-		$this->parentObject = null;
-		$this->doctrine->em->clear();
-		$uploadWidget = $this->getUploadWidget();
-		$uploadWidget->fileDescription = $altText;
-		$this->parentObject->save(true,false);
-
-		
-
+		$this->derivativeForAltText = "thumbnail2x";
+		$this->metadataTypeForAltText = "3d model";
+		$this->generateAltText("");
+		$this->queueTask(4);
 	}
 
 }

@@ -325,44 +325,10 @@ class ImageHandler extends FileHandlerBase {
 
 
 	public function generateAltText() {
-
-		$screenDerivative = $this->derivatives["screen"];		
-		$screenDerivative->makeLocal();
-		if(!isset($screenDerivative)) {
-			$this->queueTask(4);
-			return JOB_SUCCESS;
-		}
-
-		$uploadWidget = $this->getUploadWidget();
-
-
-		$metadata = [];
-		foreach($this->parentObject->assetObjects as $widget) {
-			if($widget->getDisplay() && $widget->hasContents()) {
-				$metadata[$widget->getLabel()] = $widget->getAsText();
-			}
-		}
-
-		$metadata["type"] = "image";
-		if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
-		}
-		else {
-			
-			$altText = $this->getAltTextForMedia("", $metadata, $screenDerivative);
-			// reload the asset so we mostly win the race with other compression threads
-			echo "Setting alt text to: " . $altText . "\n";
-			$this->parentObject = null;
-			$this->doctrine->em->clear();
-			$uploadWidget = $this->getUploadWidget();
-			
-			$uploadWidget->fileDescription = $altText;
-			$this->parentObject->save(true,false);
-
-		}
-		
+		$this->derivativeForAltText = "screen";
+		$this->metadataTypeForAltText = "image";
+		$this->generateAltText("");
 		$this->queueTask(4);
-		
-
 	}
 
 	// public function clarifyTag($args) {

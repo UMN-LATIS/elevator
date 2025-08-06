@@ -48,6 +48,9 @@ class FileHandlerBase extends CI_Model {
 	public $nextTask = null;
 	public $taskListHasChanged = false;
 	
+	public $derivativeForAltText = null;
+	public $metadataTypeForAltText = null;
+
 
 	public function __construct()
 	{
@@ -755,7 +758,22 @@ class FileHandlerBase extends CI_Model {
 		}
 	}
 
-	protected function getAltTextForMedia($prompt, $metadata, $imagePath) {
+	protected function getAltTextForMedia($prompt) {
+
+		if($this->instance && !$this->instance->getUseAutomaticAltText()) {
+			return;
+		}
+
+		$uploadWidget = $this->getUploadWidget();
+		if(!$uploadWidget) {
+			return;
+		}
+
+		if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
+			return;
+		}
+
+
 		$modelId = 'arn:aws:bedrock:us-east-1:269090599827:inference-profile/us.meta.llama4-maverick-17b-instruct-v1:0';
 		$bedrockClient = new BedrockRuntimeClient([
             'region' => 'us-east-1',
@@ -767,6 +785,29 @@ class FileHandlerBase extends CI_Model {
         ]);
 
 
+		$metadata = [];
+		foreach($this->parentObject->assetObjects as $widget) {
+			if($widget->getDisplay() && $widget->hasContents()) {
+				$metadata[$widget->getLabel()] = $widget->getAsText();
+			}
+		}
+
+		if(isset($this->metadataTypeForAltText)) {
+			$metadata["type"] = $this->metadataTypeForAltText;
+		}
+
+		if(!isset($this->derivativeForAltText)) {
+			return;
+		}
+
+		$derivative = $this->derivatives[$this->derivativeForAltText];		
+		$derivative->makeLocal();
+		if(!isset($derivative)) {
+			return;
+		}
+
+
+
 
 		$systemPrompt = "Generate a caption appropriate for use as alt text within a digital asset management system. Just output the caption, don't add any additional context like \"here's the caption you asked for\". You can use the associated metadata json to better describe the object, but don't repeat the metadata verbatim as it'll be available to the user as well. Be sure to actually describe the object, not just the metadata, so that someone who's visually impaired would understand what the image represents. If the metadata has a 'type' field, use it to describe the object (e.g. 'a 3d object', 'a word document', etc.). Make sure you follow best practices for generating high quality alt text for images. Make sure to double check your work. Don't repeat content that's already in the metadata like dimensions, unless it's crucial to visibly describe the object.";
 
@@ -776,7 +817,7 @@ class FileHandlerBase extends CI_Model {
 		$tempImagePath = $this->config->item('scratchSpace') . "/temp_image_" . time() . ".jpg";
 		$tempImage = new FileContainer($tempImagePath);
 
-		compressImageAndSave($imagePath, $tempImage, 512, 512, 80);
+		compressImageAndSave($derivative, $tempImage, 512, 512, 80);
 		$imageBytes = file_get_contents($tempImage->getPathToLocalFile());
 
 		$conversation = [
@@ -812,7 +853,15 @@ class FileHandlerBase extends CI_Model {
 
 		$responseText = $response['output']['message']['content'][0]['text'];
 
-        return $responseText;
+		echo "Setting alt text to: " . $responseText . "\n";
+		$this->parentObject = null;
+		$this->doctrine->em->clear();
+		$uploadWidget = $this->getUploadWidget();
+		
+		$uploadWidget->fileDescription = $responseText;
+		$this->parentObject->save(true,false);
+
+        return;
 	}
 
 

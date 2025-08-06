@@ -1665,4 +1665,33 @@ class Instance
     {
         return $this->useVoyagerViewer;
     }
+    /**
+     * @var bool|null
+     */
+    private $automaticAltText = '0';
+
+
+    /**
+     * Set automaticAltText.
+     *
+     * @param bool|null $automaticAltText
+     *
+     * @return Instance
+     */
+    public function setAutomaticAltText($automaticAltText = null)
+    {
+        $this->automaticAltText = $automaticAltText;
+
+        return $this;
+    }
+
+    /**
+     * Get automaticAltText.
+     *
+     * @return bool|null
+     */
+    public function getAutomaticAltText()
+    {
+        return $this->automaticAltText;
+    }
 }

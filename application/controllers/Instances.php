@@ -71,6 +71,7 @@ class Instances extends Instance_Controller {
 		$instance->setShowTemplateInSearchResults($this->input->post('showTemplateInSearchResults')?1:0);
 		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setUseVoyagerViewer($this->input->post('useVoyagerViewer')?1:0);
+		$instance->setAutomaticAltText($this->input->post('automaticAltText')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 		$instance->setNotes($this->input->post('notes'));
