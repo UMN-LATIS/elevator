@@ -188,6 +188,12 @@ class Instance
     /**
      * @var bool|null
      */
+    #[ORM\Column(name: 'automaticAltText', type: 'boolean', nullable: true)]
+    private $automaticAltText;
+
+    /**
+     * @var bool|null
+     */
     #[ORM\Column(name: 'enableHLSStreaming', type: 'boolean', nullable: true)]
     private $enableHLSStreaming;
 
@@ -1583,5 +1589,29 @@ class Instance
     public function getCollections()
     {
         return $this->collections;
+    }
+
+    /**
+     * Set automaticAltText.
+     *
+     * @param bool|null $automaticAltText
+     *
+     * @return Instance
+     */
+    public function setAutomaticAltText($automaticAltText = null)
+    {
+        $this->automaticAltText = $automaticAltText;
+
+        return $this;
+    }
+
+    /**
+     * Get automaticAltText.
+     *
+     * @return bool|null
+     */
+    public function getAutomaticAltText()
+    {
+        return $this->automaticAltText;
     }
 }

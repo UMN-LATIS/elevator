@@ -16,6 +16,7 @@ class AudioHandler extends FileHandlerBase {
 						  5=>["taskType"=>"waitForCompletion", "config"=>array()],
 						  6=>["taskType"=>"cleanupOriginal", "config"=>array()],
 						];
+	public $gpuTaskArray = [0=>["taskType"=>"generateCaptions", "config"=>array()]];
 
 
 
@@ -154,6 +155,58 @@ class AudioHandler extends FileHandlerBase {
 			$this->logging->processingInfo("createDerivative","audioHandler","Enqueuing jobs failed",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
+
+	}
+
+	public function generateCaptions() {
+
+		$derivative = $this->derivatives["mp3"];
+		$derivative->makeLocal();
+		$localPath = $derivative->getPathToLocalFile();
+		$localPathParts = pathinfo($localPath);
+
+
+		chmod($localPathParts['dirname'] , 0777);
+		$captionString = $this->config->item('whipserX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . $localPath;
+
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+		$process->run("/tmp/whisperx.log");
+		while($process->isRunning()) {
+			sleep(5);
+			echo ".";
+		}
+
+		
+		
+
+		$localPathWithoutExtension = $localPathParts['dirname'] . '/' . $localPathParts['filename'];
+
+		if(file_exists($localPathWithoutExtension . ".srt")) {
+			echo "Captions found for " . $this->getObjectId() . "\n";
+			$srtContents = file_get_contents( $localPathWithoutExtension . ".srt");
+			if($srtContents && $srtContents != "") {
+				$uploadWidget = $this->getUploadWidget(true);
+				$uploadWidget->sidecars['captions'] = $srtContents;
+				$this->parentObject->save(true,false);
+			}
+		}
+		else {
+			echo "No captions found for " . $this->getObjectId() . "\n";
+			// dump the contents of /tmp/whisperx.log
+			if(file_exists("/tmp/whisperx.log")) {
+				$logContents = file_get_contents("/tmp/whisperx.log");
+				echo "WhisperX log contents:\n" . $logContents . "\n";
+			}
+			// list all the files in the directory
+			$files = scandir($localPathParts['dirname']);
+			echo "Files in " . $localPathParts['dirname'] . ":\n";
+			foreach($files as $file) {
+				if($file != "." && $file != "..") {
+					echo " - " . $file . "\n";
+				}
+			}
+		}
+		
 
 	}
 

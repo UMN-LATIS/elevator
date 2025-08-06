@@ -323,6 +323,17 @@
 	</div>
 </div>
 
+
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="automaticAltText" name="automaticAltText" value="On" <?=$instance->getAutomaticAltText()?"checked":null?>>
+			Automatically generate alt text and captions
+		</label>
+	</div>
+</div>
+
+
 </fieldset>
 
 

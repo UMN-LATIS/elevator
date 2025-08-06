@@ -22,7 +22,7 @@ class OfficeHandler extends FileHandlerBase {
 						  												]
 						  												],	
 							//2=>["taskType"=>"cleanupOriginal", "config"=>array()],
-							3=>["taskType"=>"updateParent", "config"=>array()]];
+							4=>["taskType"=>"updateParent", "config"=>array()]];
 
 
 

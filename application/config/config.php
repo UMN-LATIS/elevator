@@ -455,6 +455,7 @@ $config['convert'] = '/usr/local/bin/convert';
 $config['cziutils'] = '/usr/local/bin/cziutils';
 $config['tarrific'] = '/usr/local/bin/tarrific';
 $config['3mf2stl'] = '/usr/local/bin/3mf2stl';
+$config['whipserX'] = '/usr/local/bin/whisperx';
 
 // LDAP username and password.
 // Application should bind anonymously if not set, or set to blanks.
@@ -509,6 +510,9 @@ $config['awsQueueAccessKey'] = $_SERVER['AWS_QUEUEING_ACCESS_KEY_ID'] ?? null;
 $config['awsQueueSecretKey'] = $_SERVER['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? null;
 $config['awsQueueJobDefinition'] = $_SERVER['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
 $config['awsQueueJobQueue'] = $_SERVER['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
+
+$config['awsBedrockKey'] = $_SERVER['AWS_BEDROCK_KEY'] ?? null;
+$config['awsBedrockSecret'] = $_SERVER['AWS_BEDROCK_SECRET'] ?? null;
 
 $config['cacheSecret'] = $_SERVER['CACHE_SECRET'] ?? null;
 

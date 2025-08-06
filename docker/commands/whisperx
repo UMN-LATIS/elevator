@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if ! command -v nvidia-smi &> /dev/null; then
+    docker run --quiet --platform linux/x86_64 --memory=8g  --rm -i -v /scratch:/scratch ghcr.io/jim60105/whisperx:large-v3-en -- --compute_type int8 "$@"
+
+else
+    docker run --quiet --gpus all --platform linux/x86_64 --memory=8g  --rm -i -v /scratch:/scratch ghcr.io/jim60105/whisperx:large-v3-en -- "$@"
+
+fi

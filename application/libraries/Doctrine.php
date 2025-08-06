@@ -89,9 +89,12 @@ class Doctrine
         }
         
 
+// $logger = new \Doctrine\DBAL\Logging\EchoSQLLogger;
+        
 
-        //$logger = new \Doctrine\DBAL\Logging\Profiler;
-        //$config->setSQLLogger($logger);
+        
+//  $config = $this->em->getConnection()->getConfiguration();
+        // $config->setSQLLogger($logger);
         $connection = \Doctrine\DBAL\DriverManager::getConnection($connection_options, $config);
         if(!Type::hasType('uuid')) {
             Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
