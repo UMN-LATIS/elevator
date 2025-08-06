@@ -327,7 +327,7 @@ class ImageHandler extends FileHandlerBase {
 	public function generateAltText() {
 		$this->derivativeForAltText = "screen";
 		$this->metadataTypeForAltText = "image";
-		$this->generateAltText("");
+		$this->getAltTextForMedia("");
 		$this->queueTask(4);
 	}
 
