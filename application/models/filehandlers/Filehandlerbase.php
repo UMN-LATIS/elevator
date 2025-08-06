@@ -774,7 +774,7 @@ class FileHandlerBase extends CI_Model {
 		}
 
 
-		$modelId = 'arn:aws:bedrock:us-east-1:269090599827:inference-profile/us.meta.llama4-maverick-17b-instruct-v1:0';
+		$modelId = 'us.meta.llama4-maverick-17b-instruct-v1:0';
 		$bedrockClient = new BedrockRuntimeClient([
             'region' => 'us-east-1',
 			'version' => 'latest',
