@@ -380,6 +380,8 @@ class FileHandlerBase extends CI_Model {
 				$pathToFile = instance_url("");
 				$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
 				$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
+
+				$this->sourceFile->restoreFromArchive();
 			}
 			else {
 				$this->queueBatchItem();
