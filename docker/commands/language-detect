@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run --quiet  --platform linux/x86_64 --memory=8g  --rm -i -v /scratch:/scratch ghcr.io/umn-elevator/language-detect:latest "$@"

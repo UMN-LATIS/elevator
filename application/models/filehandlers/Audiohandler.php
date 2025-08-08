@@ -167,7 +167,7 @@ class AudioHandler extends FileHandlerBase {
 
 
 		chmod($localPathParts['dirname'] , 0777);
-		$captionString = $this->config->item('whipserX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . $localPath;
+		$captionString = $this->config->item('whisperX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . $localPath;
 
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
 		$process->run("/tmp/whisperx.log");
