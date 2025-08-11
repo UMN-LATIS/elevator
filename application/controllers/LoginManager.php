@@ -51,7 +51,7 @@ class LoginManager extends Instance_Controller {
 		}
 
 		// check if account is expired
-		$hasUserAccountExpired = $user->getHasExpiry() && $user->getExpires() > new \DateTime();
+		$hasUserAccountExpired = $user->getHasExpiry() && $user->getExpires() < new \DateTime();
 		if ($hasUserAccountExpired) {
 			return render_json([
 				'status' => 'error',
