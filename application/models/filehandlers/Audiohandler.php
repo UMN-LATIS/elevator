@@ -139,13 +139,57 @@ class AudioHandler extends FileHandlerBase {
 			$targetDerivatives = ["mp3", "m4a"];
 		}
 
-		$nextDerivative = array_shift($targetDerivatives);
-
-		$jobId = null;
-		if($nextDerivative) {
+		
+		foreach($targetDerivatives as $nextDerivative) {
+			echo "Starting derivative for " . $nextDerivative . "\n";
 			$jobId = $this->getTranscodeCommand()->createDerivative($this->getObjectId(), $nextDerivative);	
 		}
-	
+
+
+		if($this->instance && $this->instance->getAutomaticAltText()) {
+		//&& $this->instance->enableAutomaticAccessibility) {
+			echo "Generating captions for " . $this->getObjectId() . "\n";
+			$uploadWidget = $this->getUploadWidget();
+			if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+				return;
+			}
+
+			// let's do our best to guess the langauge
+
+			if($uploadWidget && isset($uploadWidget->sidecars['language']) && $uploadWidget->sidecars['language'] != "" && $uploadWidget->sidecars['language'] != "0") {
+				$language = $uploadWidget->sidecars['language'];
+			}
+			else {
+
+				$mp3derivative = $this->derivatives["mp3"];
+				$mp3derivative->makeLocal();
+				$localPath = $mp3derivative->getPathToLocalFile();
+				$captionString = $this->config->item('languageDetect') . " --print-json " . $localPath;
+				$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+				$process->run("/tmp/languageDetect.log");
+				while($process->isRunning()) {
+					sleep(5);
+					echo ".";
+				}
+				$content = file_get_contents("/tmp/languageDetect.log");
+				$results = json_decode($content, true);
+				if(isset($results['language_code']))
+				{
+					$language = $results['language_code'];
+					echo "Language detected: " . $language . "\n";
+				}
+				else {
+					echo "No language detected, defaulting to English\n";
+				}
+				$uploadWidget->sidecars['language'] = $language;
+				$this->parentObject->save(true,false);
+
+			}
+			
+			$this->queueBatchItem("gpu");
+
+		}
+
 
 		if($jobId) {
 			$this->queueTask(3, ["jobId"=>$jobId, "pendingDerivatives"=>$targetDerivatives, "previousTask"=>"createDerivatives"]);
