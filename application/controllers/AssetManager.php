@@ -280,6 +280,110 @@ class AssetManager extends Admin_Controller {
 		return $restoreObject->getAssetId();
 	}
 
+	/**
+	 * get the asset data with related asset cache, and primary
+	 * file hanlder info for display. From `Asset::viewAsset()`
+	 */
+	private function getAssetForView(string $objectId): array
+	{
+		$assetModel = new Asset_model;
+		$assetModel->loadAssetById($objectId);
+
+		// Determine which file handler and object should be considered "primary" for display
+		$targets = $this->resolveTargetFileHandler($assetModel, $objectId);
+
+		// Build the complete asset data structure
+		$assetObject = $assetModel->assetObject;
+		$json = $assetObject->getWidgets(); // Core widget data
+
+		// Add cached related asset data
+		$assetCache = $assetObject->getAssetCache();
+		if ($assetCache) {
+			$json['relatedAssetCache'] = $assetCache->getRelatedAssetCache();
+		}
+
+		// Add global metadata (templateId, collectionId, etc.)
+		foreach ($assetModel->globalValues as $key => $value) {
+			if ($key == "templateId" || $key == "collectionId") {
+				$json[$key] = (int)$value;
+			} else {
+				$json[$key] = $value;
+			}
+		}
+
+		// Add computed fields for API consumption
+		$json["assetId"] = $assetModel->getObjectId();
+		$json["firstFileHandlerId"] = $targets['targetFileObjectId']; // Primary file for display
+		$json["firstObjectId"] = $targets['targetObjectId']; // Primary object for display
+		$json["title"] = $assetModel->getAssetTitle();
+		$json["titleObject"] = $assetModel->getAssetTitleWidget()
+			? $assetModel->getAssetTitleWidget()->getFieldTitle()
+			: null;
+
+		return $json;
+	}
+
+	/**
+	 * Determine the primary file handler and object IDs.
+	 * 
+	 * In complex asset hierarchies, the "primary" file for 
+	 * display might belong to a related asset rather than the
+	 * current asset.
+	 */
+	private function resolveTargetFileHandler(Asset_model $assetModel, string $objectId): array
+	{
+		try {
+			$fileHandler = $assetModel->getPrimaryFilehandler();
+
+			if ($fileHandler->parentObjectId === $objectId) {
+				// Simple case: file belongs to this asset - use the file handler as target
+				return [
+					'targetObject' => $fileHandler->getObjectId(),
+					'targetObjectId' => $fileHandler->getObjectId(),
+					'targetFileObjectId' => $fileHandler->getObjectId()
+				];
+			}
+
+			// Complex case: file belongs to related asset - need to resolve which to display
+			return $this->resolveNestedFileHandler($assetModel, $fileHandler);
+		} catch (Exception $e) {
+			// No primary file handler found - this is acceptable for some asset types
+			return [
+				'targetObject' => null,
+				'targetObjectId' => null,
+				'targetFileObjectId' => null
+			];
+		}
+	}
+
+	/**
+	 * Handle complex nested asset scenarios where primary file
+	 * belongs to a related asset
+	 */
+	private function resolveNestedFileHandler(Asset_model $assetModel, $fileHandler)
+	{
+		// Check if the file handler's parent asset is referenced in current asset's data
+		$json = json_encode($assetModel->getAsArray(null, false, false));
+
+		if (!strstr($json, $fileHandler->parentObjectId)) {
+			// Parent asset not found in current asset data
+			// This might be a deeply nested reference - use the file handler itself
+			return [
+				'targetObject' => $fileHandler->getObjectId(),
+				'targetObjectId' => $fileHandler->getObjectId(),
+				'targetFileObjectId' => $fileHandler->getObjectId()
+			];
+		} else {
+			// Parent asset is referenced in current asset data
+			// Use the parent asset as the target object but keep the file handler
+			return [
+				'targetObject' => $fileHandler->parentObjectId,
+				'targetObjectId' => $fileHandler->parentObjectId,
+				'targetFileObjectId' => $fileHandler->getObjectId()
+			];
+		}
+	}
+
 	// save an asset
 	public function submission($returnJson = false) {
 
@@ -343,10 +447,20 @@ class AssetManager extends Admin_Controller {
 
 		}
 
+		$assetData = $this->getAssetForView($objectId);
+
 		if ($returnJson) {
-			return render_json(["objectId" => $objectId, "success" => true], 200);
+			return render_json([
+				"objectId" => $objectId,
+				"success" => true,
+				"asset" => $assetData
+			], 200);
 		} else {
-			echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
+			echo json_encode([
+				"objectId" => (string)$objectId,
+				"success" => true,
+				"asset" => $assetData
+			]);
 		}
 	}
 
