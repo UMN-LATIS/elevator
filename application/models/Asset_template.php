@@ -30,9 +30,9 @@ class Asset_template extends CI_Model {
 		if(is_numeric($templateId)) {
 			$this->loadTemplate($templateId);
 		}
-
     }
 
+	
     private function loadTemplate($templateId) {
     	$this->templateId = $templateId;
 

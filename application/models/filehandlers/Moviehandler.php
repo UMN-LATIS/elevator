@@ -217,7 +217,7 @@ class MovieHandler extends FileHandlerBase {
 
 			}
 			
-			$this->queueBatchItem("gpu");
+			$this->generateAltText();
 
 		}
 
@@ -233,6 +233,10 @@ class MovieHandler extends FileHandlerBase {
 
 	}
 
+
+	public function generateAltText() {
+		$this->queueBatchItem("gpu");
+	}
 
 	public function generateCaptions() {
 

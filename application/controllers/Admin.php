@@ -13,6 +13,54 @@ class admin extends Admin_Controller {
 		}
 	}
 
+	public function generateAccessibilityMaterialForCollection($collectionId) { 
+		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL")
+		->orderby("a.id", "desc");
+		$qb->andWhere("a.collectionId = ?1");
+		$qb->setParameter(1, $collectionId);
+
+		$result = $qb->getQuery()->iterate();
+		$count = 0;
+		$this->load->model("asset_model");
+		foreach($result as $entry) {
+			$entry = $entry[0];
+			$assetModel = new Asset_model();
+			echo "Processing " . $entry->getAssetId() . "\n";
+			$assetModel->loadAssetFromRecord($entry);
+
+			$uploadHandlers = $assetModel->getAllWithinAsset("Upload",null,0);
+			echo count($uploadHandlers) . " upload handlers found\n";
+			foreach ($uploadHandlers as $handler) {
+				foreach($handler->fieldContentsArray as $uploadWidget) {
+					$fileHandler = $uploadWidget->getFileHandler();
+					echo "Requesting Alt Text\n";
+					$fileHandler->generateAltText();
+					
+					$fileHandler = null;
+				}
+
+
+			}
+
+			$assetModel = null;
+			unset($assetModel);
+			$this->doctrine->em->clear();
+			if($count % 100 == 0) {
+				gc_collect_cycles();
+			}
+
+			$count++;
+		}
+
+
+	}
+
  
 	public function sendEmailToBurnSESCounts() {
 		$this->load->library('email');

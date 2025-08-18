@@ -186,7 +186,7 @@ class AudioHandler extends FileHandlerBase {
 
 			}
 			
-			$this->queueBatchItem("gpu");
+			$this->generateAltText();
 
 		}
 
@@ -200,6 +200,10 @@ class AudioHandler extends FileHandlerBase {
 			return JOB_FAILED;
 		}
 
+	}
+
+	public function generateAltText() {
+		$this->queueBatchItem("gpu");
 	}
 
 	public function generateCaptions() {
