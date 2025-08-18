@@ -28,7 +28,7 @@ class Date_contents extends Widget_contents_base {
 				"text" => $this->end["text"],
 				"numeric" => $this->end["numeric"]
 			],
-			"range" => $this->range,
+			"range" => $this->range ?? false,
 			"isPrimary" => $this->isPrimary
 		];
 	}
