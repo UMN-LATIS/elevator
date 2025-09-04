@@ -866,7 +866,9 @@ class FileHandlerBase extends CI_Model {
         return;
 	}
 
-
+	public function generateAltText() {
+		return;
+	}
 }
 
 /* End of file modelName.php */

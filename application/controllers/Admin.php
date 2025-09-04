@@ -38,6 +38,13 @@ class admin extends Admin_Controller {
 			echo count($uploadHandlers) . " upload handlers found\n";
 			foreach ($uploadHandlers as $handler) {
 				foreach($handler->fieldContentsArray as $uploadWidget) {
+					if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+						continue;
+					}
+					if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
+						continue;
+					}
+
 					$fileHandler = $uploadWidget->getFileHandler();
 					echo "Requesting Alt Text\n";
 					$fileHandler->generateAltText();
