@@ -35,6 +35,11 @@ class admin extends Admin_Controller {
 		$result = $qb->getQuery()->iterate();
 		$count = 0;
 		$this->load->model("asset_model");
+
+		exec("sudo /usr/local/bin/ebs-mount.sh");
+		// make sure we hold an open file on the mount while we're working
+		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
+
 		foreach($result as $entry) {
 			$entry = $entry[0];
 			$assetModel = new Asset_model();
