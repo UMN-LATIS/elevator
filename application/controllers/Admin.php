@@ -15,6 +15,9 @@ class admin extends Admin_Controller {
 
 	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId) { 
 		
+		// override path to config on web host
+		$this->config->set_item('convert', '/usr/bin/convert');
+
 		if(!$collectionId || !is_numeric($collectionId) || !is_numeric($instanceId) || !$instanceId) {
 			echo "need collection and instance id\n";
 			return;
