@@ -13,8 +13,15 @@ class admin extends Admin_Controller {
 		}
 	}
 
-	public function generateAccessibilityMaterialForCollection($collectionId) { 
-		$this->instance = $this->doctrine->em->find("Entity\Instance", 1);
+	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId) { 
+		
+		if(!$collectionId || !is_numeric($collectionId) || !is_numeric($instanceId) || !$instanceId) {
+			echo "need collection and instance id\n";
+			return;
+		}
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+		$this->instance->setAutomaticAltText(true);
+
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
 		->select("a")
