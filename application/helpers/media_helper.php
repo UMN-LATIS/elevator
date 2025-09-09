@@ -221,28 +221,37 @@ function getImageMetadata($sourceImage) {
 		$metadata["height"] = $tmp;
 	}
 
-	if($sourceImage->getType() == "tif") {
-		// we might have a crazy multilayer tiff. Let's get the max width/height
-		$results = null;
-		$commandline = "exiftool -a -G0:1 -api largefilesupport=1 -j " . escapeshellarg($sourceImage->getPathToLocalFile());
-		exec($commandline, $results);
-		if(isset($results) && is_array($results) && count($results)> 0) {
-			$extractedPages = json_decode(implode("\n", $results), true);
-			$extractedPages = $extractedPages[0];
-			foreach($extractedPages as $key=>$value) {
-				if(stristr($key, "ImageWidth")) {
-					if($value > $metadata["width"]) {
-						$metadata["width"] = $value;
-					}
-				}
-				if(stristr($key, "ImageHeight")) {
-					if($value > $metadata["height"]) {
-						$metadata["height"] = $value;
-					}
-				}
+	// use exiftool to pull all pages for multipage tiffs and find the biggest combo of height and width
+	$commandline = $CI->config->item("exiftoolBinary") . " -api largefilesupport=1 -j -a -G1  -ImageWidth -ImageHeight " . escapeshellarg($sourceImage->getPathToLocalFile());
+	$results = null;
+	exec($commandline, $results);
+	if(isset($results) && is_array($results) && count($results)> 0) {
+		$extractedJson = json_decode(implode("\n", $results), true);
+		$extractedJson = $extractedJson[0];
+		$regroupByPage =[];
+		foreach($extractedJson as $key=>$item) {
+			if (stristr($key, "ImageWidth") || stristr($key, "ImageHeight")) {
+				$explodedKey = explode(":", $key);
+
+				$regroupByPage[$explodedKey[0]][$explodedKey[1]] = $item;
 			}
 		}
+
+		$maxWidth = 0;
+		$maxHeight = 0;
+		foreach($regroupByPage as $page) {
+			if(isset($page["ImageWidth"]) && isset($page["ImageHeight"]) && $page["ImageWidth"] > $maxWidth && $page["ImageHeight"] > $maxHeight) {
+				$maxWidth = $page["ImageWidth"];
+				$maxHeight = $page["ImageHeight"];
+			}
+		}
+		if($maxWidth > 0 && $maxHeight > 0 && $maxWidth > $metadata["width"] && $maxHeight > $metadata["height"]) {
+			$metadata["width"] = $maxWidth;
+			$metadata["height"] = $maxHeight;
+		}
 	}
+
+
 
 	if(isset($extractedParsed["SourceFile"])) {
 		unset($extractedParsed["SourceFile"]);
