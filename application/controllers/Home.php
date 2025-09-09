@@ -241,6 +241,16 @@ class Home extends Instance_Controller {
 		$outputCollections = $this->getNestedCollections($this->collection_model->getUserCollections());
 		$headerData["collections"] = $outputCollections;
 
+		// get list of collections a user can edit
+		$editableCollections = $this->user_model->getAllowedCollections(PERM_ADDASSETS);
+		$headerData["editableCollections"] = [];
+		if(count($editableCollections) > 0) {
+			$outputEditableCollections = $this->getNestedCollections($this->instance->getCollectionsWithoutParent(), $editableCollections, false);
+			
+			$headerData["editableCollections"] = $outputEditableCollections;
+		}
+		
+
 		if($headerData["userCanManageAssets"]) {
 			$templates[] = array();
 			foreach($this->instance->getTemplates() as $template) {
@@ -268,18 +278,28 @@ class Home extends Instance_Controller {
 		return render_json($headerData);
 	}
 
-	private function getNestedCollections($collectionList)
+	private function getNestedCollections($collectionList, $enabledCollections = null, $onlyShowInBrowse = true)
 	{
 		$result = [];
 		foreach ($collectionList as $collection) {
-			if ($collection->getShowInBrowse()) {
+			if (!$onlyShowInBrowse || $collection->getShowInBrowse()) {
 
 				$collectionEntry = [];
 				$collectionEntry["id"] = $collection->getId();
 				$collectionEntry["title"] = $collection->getTitle();
-				$collectionEntry["previewImageId"] = $collection->getPreviewImage();
+				$collectionEntry["previewImageId"] = 
+				$collection->getPreviewImage();
+
+				if(isset($enabledCollections)) {
+					foreach($enabledCollections as $enabledCollection) {
+						if($enabledCollection->getId() == $collection->getId()) {
+							$collectionEntry["canEdit"] = true;
+							break;
+						}
+					}
+				}
 				if ($collection->hasChildren()) {
-					$collectionEntry["children"] = $this->getNestedCollections($collection->getChildren());
+					$collectionEntry["children"] = $this->getNestedCollections($collection->getChildren(), $enabledCollections);
 				}
 				$result[] = $collectionEntry;
 			}
