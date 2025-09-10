@@ -287,6 +287,7 @@ class Home extends Instance_Controller {
 				$collectionEntry = [];
 				$collectionEntry["id"] = $collection->getId();
 				$collectionEntry["title"] = $collection->getTitle();
+				$collectionEntry["canEdit"] = false;
 				$collectionEntry["previewImageId"] = 
 				$collection->getPreviewImage();
 
