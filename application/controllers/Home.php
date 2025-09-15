@@ -237,20 +237,12 @@ class Home extends Instance_Controller {
 		$headerData["centralAuthLabel"] = $this->config->item("remoteLoginLabel");
 		$headerData["showPreviousNext"] = $this->instance->getShowPreviousNextSearchResults();
 
-		// collection information
-		$outputCollections = $this->getNestedCollections($this->collection_model->getUserCollections());
-		$headerData["collections"] = $outputCollections;
+		$rootCollections = $this->instance->getCollectionsWithoutParent();
+		$viewableCollectionIds = array_map(fn($c) => $c->getId(), $this->collection_model->getUserCollections());
+		$editableCollectionIds = array_map(fn($c) => $c->getId(), $this->user_model->getAllowedCollections(PERM_ADDASSETS));
 
-		// get list of collections a user can edit
-		$editableCollections = $this->user_model->getAllowedCollections(PERM_ADDASSETS);
-		$headerData["editableCollections"] = [];
-		if(count($editableCollections) > 0) {
-			$outputEditableCollections = $this->getNestedCollections($this->instance->getCollectionsWithoutParent(), $editableCollections, false);
-			
-			$headerData["editableCollections"] = $outputEditableCollections;
-		}
-		
-
+		// nest and add `canView` and `canEdit` props to collections
+		$headerData['collections'] = $this->getNestedCollectionsWithPrivileges($rootCollections, $viewableCollectionIds, $editableCollectionIds);
 		if($headerData["userCanManageAssets"]) {
 			$templates[] = array();
 			foreach($this->instance->getTemplates() as $template) {
@@ -278,37 +270,42 @@ class Home extends Instance_Controller {
 		return render_json($headerData);
 	}
 
-	private function getNestedCollections($collectionList, $enabledCollections = null, $onlyShowInBrowse = true)
+	private function getNestedCollectionsWithPrivileges($rootCollections, $viewableCollectionIds, $editableCollectionIds = [])
 	{
 		$result = [];
-		foreach ($collectionList as $collection) {
-			if (!$onlyShowInBrowse || $collection->getShowInBrowse()) {
 
-				$collectionEntry = [];
-				$collectionEntry["id"] = $collection->getId();
-				$collectionEntry["title"] = $collection->getTitle();
-				$collectionEntry["canEdit"] = false;
-				$collectionEntry["previewImageId"] = 
-				$collection->getPreviewImage();
+		// if a user can edit ANY collection, show all collections
+		// with their view/edit status
+		$canEditSomeCollection = count($editableCollectionIds) > 0;
+		foreach ($rootCollections as $collection) {
+			$isBrowseable = $collection->getShowInBrowse();
 
-				if(isset($enabledCollections)) {
-					foreach($enabledCollections as $enabledCollection) {
-						if($enabledCollection->getId() == $collection->getId()) {
-							$collectionEntry["canEdit"] = true;
-							break;
-						}
-					}
-				}
-				if ($collection->hasChildren()) {
-					$collectionEntry["children"] = $this->getNestedCollections($collection->getChildren(), $enabledCollections);
-				}
-				$result[] = $collectionEntry;
+			// can a collection be browseable but not viewable?
+			$canView = $isBrowseable || in_array($collection->getId(), $viewableCollectionIds);
+			$canEdit = in_array($collection->getId(), $editableCollectionIds);
+			
+			// if the user can view this collection or
+			// they can edit SOME collection, show it
+			if (!$canView && !$canEditSomeCollection) {
+				continue;
 			}
+
+			$collectionEntry = [
+				'id' => $collection->getId(),
+				'title' => $collection->getTitle(),
+				'canView' => $canView,
+				'canEdit' => $canEdit,
+				'previewImageId' => $collection->getPreviewImage()
+			];
+
+			if ($collection->hasChildren()) {
+				$collectionEntry["children"] = $this->getNestedCollectionsWithPrivileges($collection->getChildren(), $viewableCollectionIds, $editableCollectionIds);
+			}
+			$result[] = $collectionEntry;
 		}
+
 		return $result;
-
 	}
-
 }
 
 /* End of file home.php */
