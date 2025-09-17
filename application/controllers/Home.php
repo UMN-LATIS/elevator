@@ -278,10 +278,7 @@ class Home extends Instance_Controller {
 		// with their view/edit status
 		$canEditSomeCollection = count($editableCollectionIds) > 0;
 		foreach ($rootCollections as $collection) {
-			$isBrowseable = $collection->getShowInBrowse();
-
-			// can a collection be browseable but not viewable?
-			$canView = $isBrowseable || in_array($collection->getId(), $viewableCollectionIds);
+			$canView = in_array($collection->getId(), $viewableCollectionIds);
 			$canEdit = in_array($collection->getId(), $editableCollectionIds);
 			
 			// if the user can view this collection or
@@ -293,6 +290,7 @@ class Home extends Instance_Controller {
 			$collectionEntry = [
 				'id' => $collection->getId(),
 				'title' => $collection->getTitle(),
+				'showInBrowse' => $collection->getShowInBrowse(),
 				'canView' => $canView,
 				'canEdit' => $canEdit,
 				'previewImageId' => $collection->getPreviewImage()
