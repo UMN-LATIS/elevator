@@ -238,7 +238,7 @@ class Home extends Instance_Controller {
 		$headerData["showPreviousNext"] = $this->instance->getShowPreviousNextSearchResults();
 
 		$rootCollections = $this->instance->getCollectionsWithoutParent();
-		$viewableCollectionIds = array_map(fn($c) => $c->getId(), $this->collection_model->getUserCollections());
+		$viewableCollectionIds = array_map(fn($c) => $c->getId(), $this->user_model->getAllowedCollections(PERM_SEARCH));
 		$editableCollectionIds = array_map(fn($c) => $c->getId(), $this->user_model->getAllowedCollections(PERM_ADDASSETS));
 
 		// nest and add `canView` and `canEdit` props to collections
