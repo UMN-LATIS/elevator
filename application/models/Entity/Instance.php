@@ -1694,35 +1694,7 @@ class Instance
     {
         return $this->automaticAltText;
     }
-    /**
-     * @var bool|null
-     */
-    private $autoloadAllResults = '0';
-
-
-    /**
-     * Set autoloadAllResults.
-     *
-     * @param bool|null $autoloadAllResults
-     *
-     * @return Instance
-     */
-    public function setAutoloadAllResults($autoloadAllResults = null)
-    {
-        $this->autoloadAllResults = $autoloadAllResults;
-
-        return $this;
-    }
-
-    /**
-     * Get autoloadAllResults.
-     *
-     * @return bool|null
-     */
-    public function getAutoloadAllResults()
-    {
-        return $this->autoloadAllResults;
-    }
+ 
     /**
      * @var bool|null
      */
