@@ -38,6 +38,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
               'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
           ],
           'googleAnalyticsKey' => $instance->getGoogleAnalyticsKey() ?? null, 
+          'autoloadMaxSearchResults' => $instance->getAutoloadMaxSearchResults() ?? false,
       ],
       'arcgis' => [
           'apiKey' => $config->item('arcgis_access_token'),

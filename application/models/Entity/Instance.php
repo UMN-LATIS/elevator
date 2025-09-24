@@ -1694,4 +1694,62 @@ class Instance
     {
         return $this->automaticAltText;
     }
+    /**
+     * @var bool|null
+     */
+    private $autoloadAllResults = '0';
+
+
+    /**
+     * Set autoloadAllResults.
+     *
+     * @param bool|null $autoloadAllResults
+     *
+     * @return Instance
+     */
+    public function setAutoloadAllResults($autoloadAllResults = null)
+    {
+        $this->autoloadAllResults = $autoloadAllResults;
+
+        return $this;
+    }
+
+    /**
+     * Get autoloadAllResults.
+     *
+     * @return bool|null
+     */
+    public function getAutoloadAllResults()
+    {
+        return $this->autoloadAllResults;
+    }
+    /**
+     * @var bool|null
+     */
+    private $autoloadMaxSearchResults = '0';
+
+
+    /**
+     * Set autoloadMaxSearchResults.
+     *
+     * @param bool|null $autoloadMaxSearchResults
+     *
+     * @return Instance
+     */
+    public function setAutoloadMaxSearchResults($autoloadMaxSearchResults = null)
+    {
+        $this->autoloadMaxSearchResults = $autoloadMaxSearchResults;
+
+        return $this;
+    }
+
+    /**
+     * Get autoloadMaxSearchResults.
+     *
+     * @return bool|null
+     */
+    public function getAutoloadMaxSearchResults()
+    {
+        return $this->autoloadMaxSearchResults;
+    }
 }

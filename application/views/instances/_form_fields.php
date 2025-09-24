@@ -336,7 +336,16 @@
 	</div>
 </div>
 
-
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="autoloadMaxSearchResults" name="autoloadMaxSearchResults" value="On"
+			<?= $instance->getAutoloadMaxSearchResults() ? "checked" : null ?>
+			/>
+			Autoload Max Search Results
+		</label>
+	</div>
+</div>
 </fieldset>
 
 
