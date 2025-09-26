@@ -126,5 +126,10 @@
                 <option name="default">0</option>
               </options>
           </field>
+          <field name="autoloadMaxSearchResults" type="boolean" nullable='true'>
+            <options>
+              <option name="default">0</option>
+            </options>
+          </field>
       </entity>
 </doctrine-mapping>

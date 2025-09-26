@@ -1694,4 +1694,34 @@ class Instance
     {
         return $this->automaticAltText;
     }
+ 
+    /**
+     * @var bool|null
+     */
+    private $autoloadMaxSearchResults = '0';
+
+
+    /**
+     * Set autoloadMaxSearchResults.
+     *
+     * @param bool|null $autoloadMaxSearchResults
+     *
+     * @return Instance
+     */
+    public function setAutoloadMaxSearchResults($autoloadMaxSearchResults = null)
+    {
+        $this->autoloadMaxSearchResults = $autoloadMaxSearchResults;
+
+        return $this;
+    }
+
+    /**
+     * Get autoloadMaxSearchResults.
+     *
+     * @return bool|null
+     */
+    public function getAutoloadMaxSearchResults()
+    {
+        return $this->autoloadMaxSearchResults;
+    }
 }
