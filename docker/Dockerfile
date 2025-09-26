@@ -1,6 +1,7 @@
 FROM php:8.4-fpm
 
-RUN apt update && apt install -y unzip git libpq-dev docker libzip-dev && apt clean
+
+RUN apt update && apt install -y unzip git libpq-dev  libzip-dev && apt clean
 RUN pecl install redis && docker-php-ext-enable redis
 RUN docker-php-ext-install pgsql pdo_pgsql pdo zip
 # RUN export CFLAGS="-D_DEFAULT_SOURCE"

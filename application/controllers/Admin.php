@@ -13,6 +13,76 @@ class admin extends Admin_Controller {
 		}
 	}
 
+	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId) { 
+		
+		// override path to config on web host
+		$this->config->set_item('convert', '/usr/bin/convert');
+
+		if(!$collectionId || !is_numeric($collectionId) || !is_numeric($instanceId) || !$instanceId) {
+			echo "need collection and instance id\n";
+			return;
+		}
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+		$this->instance->setAutomaticAltText(true);
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+		->select("a")
+		->where("a.deleted != TRUE")
+		->orWhere("a.deleted IS NULL")
+		->andWhere("a.assetId IS NOT NULL")
+		->orderby("a.id", "desc");
+		$qb->andWhere("a.collectionId = ?1");
+		$qb->setParameter(1, $collectionId);
+
+		$result = $qb->getQuery()->iterate();
+		$count = 0;
+		$this->load->model("asset_model");
+
+		exec("sudo /usr/local/bin/ebs-mount.sh");
+		// make sure we hold an open file on the mount while we're working
+		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
+
+		foreach($result as $entry) {
+			$entry = $entry[0];
+			$assetModel = new Asset_model();
+			echo "Processing " . $entry->getAssetId() . "\n";
+			$assetModel->loadAssetFromRecord($entry);
+
+			$uploadHandlers = $assetModel->getAllWithinAsset("Upload",null,0);
+			echo count($uploadHandlers) . " upload handlers found\n";
+			foreach ($uploadHandlers as $handler) {
+				foreach($handler->fieldContentsArray as $uploadWidget) {
+					if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+						continue;
+					}
+					if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
+						continue;
+					}
+
+					$fileHandler = $uploadWidget->getFileHandler();
+					echo "Requesting Alt Text\n";
+					$fileHandler->generateAltText();
+					
+					$fileHandler = null;
+				}
+
+
+			}
+
+			$assetModel = null;
+			unset($assetModel);
+			$this->doctrine->em->clear();
+			if($count % 100 == 0) {
+				gc_collect_cycles();
+			}
+
+			$count++;
+		}
+
+
+	}
+
  
 	public function sendEmailToBurnSESCounts() {
 		$this->load->library('email');

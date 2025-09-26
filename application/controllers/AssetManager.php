@@ -63,6 +63,9 @@ class AssetManager extends Admin_Controller {
 	 */
 	public function addAsset($templateId=null, $collectionId = null, $inlineForm = false)
 	{
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
@@ -138,6 +141,9 @@ class AssetManager extends Admin_Controller {
 
 
 	function editAsset($objectId, $inlineForm=false) {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
@@ -282,11 +288,17 @@ class AssetManager extends Admin_Controller {
 	}
 
 	// save an asset
-	public function submission() {
+	public function submission($returnJson = false) {
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
+			// log this
+			$this->logging->logError("no permission to add asset", $_SERVER);
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
+
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
@@ -317,9 +329,6 @@ class AssetManager extends Admin_Controller {
 		}
 
 
-		echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
-
-
 		if($firstSave) {
 			/**
 			 * BEWARE
@@ -339,6 +348,12 @@ class AssetManager extends Admin_Controller {
 			 * END HACKY STUFF
 			 */
 
+		}
+
+		if ($returnJson) {
+			return render_json(["objectId" => $objectId, "success" => true], 200);
+		} else {
+			echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
 		}
 	}
 
@@ -425,7 +440,7 @@ class AssetManager extends Admin_Controller {
 		$fileHandler->deleteFile();
 	}
 
-	public function deleteAsset($objectId) {
+	public function deleteAsset($objectId, $returnJson = false) {
 
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
@@ -435,6 +450,10 @@ class AssetManager extends Admin_Controller {
 
 		if($accessLevel < PERM_ADDASSETS) {
 			if($this->user_model->getAccessLevel("collection",$this->collection_model->getCollection($this->asset_model->getGlobalValue("collectionId"))) < PERM_ADDASSETS) {
+				if ($returnJson) {
+					return render_json(["error" => "No permission"], 403);
+				}
+
 				$this->errorhandler_helper->callError("noPermission");
 			}
 
@@ -442,6 +461,9 @@ class AssetManager extends Admin_Controller {
 
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
 		if($this->accessLevel < PERM_ADDASSETS) {
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
 			$this->errorhandler_helper->callError("noPermission");
 		}
 		$this->search_model->remove($this->asset_model);
@@ -454,16 +476,26 @@ class AssetManager extends Admin_Controller {
 		$qb->setParameter(':assetId', $objectId);
 		$qb->getQuery()->execute();
 
+		if ($returnJson) {
+			return render_json(null, 204);
+		}
+
 		instance_redirect("/");
 	}
 
 	// List all of the assets touched by the user.  Offset specifies page number essentially.
-	public function userAssets($offset=0) {
+	public function userAssets($offset=0, $returnJson = false) {
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!isset($this->instance) || !$this->user_model->userLoaded) { 
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
 			instance_redirect("errorHandler/error/noPermission");
 		}
-		$this->template->javascript->add("assets/datatables/datatables.min.js");
-		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
+
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
@@ -486,6 +518,12 @@ class AssetManager extends Admin_Controller {
 			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$resultCache['title']??"", "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 
+		if ($returnJson) {
+			return render_json($hiddenAssetArray);
+		}
+
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 		if($offset>0) {
 			$this->load->view('user/hiddenAssets', ["isOffset"=>true, "hiddenAssets"=>$hiddenAssetArray]);
 		}

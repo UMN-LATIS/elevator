@@ -143,23 +143,27 @@ class CI_Session {
 		session_start();
 
 		// Is session ID auto-regeneration configured? (ignoring ajax requests)
-		if ((empty($_SERVER['HTTP_X_REQUESTED_WITH']) OR strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest')
-			&& ($regenerate_time = config_item('sess_time_to_update')) > 0
-		)
-		{
-			if ( ! isset($_SESSION['__ci_last_regenerate']))
-			{
-				$_SESSION['__ci_last_regenerate'] = time();
-			}
-			elseif ($_SESSION['__ci_last_regenerate'] < (time() - $regenerate_time))
-			{
-				$this->sess_regenerate((bool) config_item('sess_regenerate_destroy'));
-			}
-		}
-		// Another work-around ... PHP doesn't seem to send the session cookie
-		// unless it is being currently created or regenerated
-		elseif (isset($_COOKIE[$this->_config['cookie_name']]) && $_COOKIE[$this->_config['cookie_name']] === session_id())
-		{
+		// if ((empty($_SERVER['HTTP_X_REQUESTED_WITH']) OR strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest')
+		// 	&& ($regenerate_time = config_item('sess_time_to_update')) > 0
+		// )
+		// {
+		// 	if ( ! isset($_SESSION['__ci_last_regenerate']))
+		// 	{
+		// 		$_SESSION['__ci_last_regenerate'] = time();
+		// 	}
+		// 	elseif ($_SESSION['__ci_last_regenerate'] < (time() - $regenerate_time))
+		// 	{
+		// 		$this->sess_regenerate((bool) config_item('sess_regenerate_destroy'));
+		// 	}
+		// }
+		// // Another work-around ... PHP doesn't seem to send the session cookie
+		// // unless it is being currently created or regenerated
+		// elseif (isset($_COOKIE[$this->_config['cookie_name']]) && $_COOKIE[$this->_config['cookie_name']] === session_id())
+		// {
+
+		// Colin changes - this code as written prevents the session from being extended. 
+		// We don't send x_requested_with, so it always falls into the previous code path, which isn't what we want.
+
 			setcookie(
 				$this->_config['cookie_name'],
 				session_id(),
@@ -169,7 +173,7 @@ class CI_Session {
 				$this->_config['cookie_secure'],
 				TRUE
 			);
-		}
+		// }
 
 		$this->_ci_init_vars();
 

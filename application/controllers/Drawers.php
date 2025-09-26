@@ -138,7 +138,10 @@ class Drawers extends Instance_Controller {
 		$this->template->publish();
 	}
 
-	public function getDrawer($drawerId) {
+	public function getDrawer($drawerId=null) {
+		if( !$drawerId || !is_numeric($drawerId) ) {
+			return render_json(["error"=>"Invalid drawer ID"], 400);
+		}
 		$drawer = $this->doctrine->em->find("Entity\Drawer", $drawerId);
 
 		$accessLevel = $this->user_model->getAccessLevel("drawer",$drawer);

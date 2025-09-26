@@ -26,7 +26,7 @@ host('cla-dev')
     ->set('deploy_path', '/var/www/elevator');
 
 host('dev')
-    ->setHostname('dev.elevator.umn.edu')
+    ->setHostname('umn-dev-ssh.elevatorapp.net')
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 

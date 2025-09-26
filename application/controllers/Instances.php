@@ -72,6 +72,7 @@ class Instances extends Instance_Controller {
 		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setUseVoyagerViewer($this->input->post('useVoyagerViewer')?1:0);
 		$instance->setAutomaticAltText($this->input->post('automaticAltText')?1:0);
+		$instance->setAutoloadMaxSearchResults($this->input->post('autoloadMaxSearchResults')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 		$instance->setNotes($this->input->post('notes'));
@@ -605,6 +606,19 @@ class Instances extends Instance_Controller {
 		}
 		session_start();
 		$this->session->set_userdata(["useVueUI"=>true]);
+		$this->session->set_userdata(["forceOldUI"=>false]);
+		instance_redirect("/");
+	}
+
+	public function forceOldInterface() {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADDASSETS) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
+		session_start();
+		$this->session->set_userdata(["forceOldUI"=>true]);
+		$this->session->set_userdata(["useVueUI"=>false]);
 		instance_redirect("/");
 	}
 }

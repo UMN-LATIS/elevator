@@ -35,7 +35,7 @@
     "cocur/background-process": "^0.5.0",
     "google/apiclient": "dev-disableCache-merge-84",
     "php-unoconv/php-unoconv": "dev-master",
-    "aws/aws-sdk-php": "^3.151",
+    "aws/aws-sdk-php": "^3.349",
     "sentry/sdk": "^4.0",
     "vlucas/phpdotenv": "^5.6",
     "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2",

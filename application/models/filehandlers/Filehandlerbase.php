@@ -380,6 +380,8 @@ class FileHandlerBase extends CI_Model {
 				$pathToFile = instance_url("");
 				$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
 				$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
+
+				$this->sourceFile->restoreFromArchive();
 			}
 			else {
 				$this->queueBatchItem();
@@ -774,7 +776,7 @@ class FileHandlerBase extends CI_Model {
 		}
 
 
-		$modelId = 'arn:aws:bedrock:us-east-1:269090599827:inference-profile/us.meta.llama4-maverick-17b-instruct-v1:0';
+		$modelId = 'us.meta.llama4-maverick-17b-instruct-v1:0';
 		$bedrockClient = new BedrockRuntimeClient([
             'region' => 'us-east-1',
 			'version' => 'latest',
@@ -864,7 +866,9 @@ class FileHandlerBase extends CI_Model {
         return;
 	}
 
-
+	public function generateAltText() {
+		return;
+	}
 }
 
 /* End of file modelName.php */

@@ -106,11 +106,26 @@ function getFinalURL($url)
 }
 
 
-function render_json($source, $status = 200) {
-	$CI =& get_instance();
+function render_json($source, $status = 200)
+{
+	$CI = &get_instance();
 	return $CI->output
-        ->set_content_type('application/json')
-        ->set_status_header($status)
-        ->set_output(json_encode($source));
+		->set_content_type('application/json')
+		->set_status_header($status)
+		->set_output(json_encode($source));
+}
 
+
+// immediately exit with a JSON response
+function abort_json($data, $status = 400)
+{
+	$CI = &get_instance();
+	$CI->output
+		->set_content_type('application/json')
+		->set_status_header($status)
+		->set_output(json_encode($data));
+
+	// Force CodeIgniter to send the response and exit
+	$CI->output->_display();
+	exit();
 }

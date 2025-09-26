@@ -147,6 +147,7 @@ class asset extends Instance_Controller {
 				}
 			}
 			
+			$json["assetId"] = $assetModel->getObjectId();
 			$json["firstFileHandlerId"] = $targetFileObjectId; // always a file
 			$json["firstObjectId"] = $targetObjectId; // always an asset
 			$json["title"] = $assetModel->getAssetTitle();
