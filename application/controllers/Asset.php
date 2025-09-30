@@ -66,7 +66,7 @@ class asset extends Instance_Controller {
 	}
 
 
-	function viewAsset($objectId = null, $returnJson = false, $parentObjectId)
+	function viewAsset($objectId = null, $returnJson = false, $parentObjectId = null)
 	{
 		if ($this->isUsingVueUI() && !$returnJson) {
 			return $this->template->publish('vueTemplate');
