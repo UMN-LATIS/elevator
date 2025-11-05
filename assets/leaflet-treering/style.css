@@ -472,39 +472,39 @@ textarea {
 /* Areas on image to initiate autoscroll */
 #AutoScroll-Right-Div {
 	width: 10%;
-	min-width: 50px;
+	min-width: 20px;
 	height: 100%;
 	float: right;
 
 	position: relative;
-	z-index: 999;
+	z-index: 99;
 }
 
 #AutoScroll-Left-Div {
 	width: 10%;
-	min-width: 50px;
+	min-width: 20px;
 	height: 100%;
 	float: left;
 
 	position: relative;
-	z-index: 999;
+	z-index: 99;
 }
 
 #AutoScroll-Up-Div {
 	height: 10%;
-	min-height: 50px;
+	min-height: 20px;
 	width: 100%;
 
 	position: relative;
-	z-index: 999;
+	z-index: 99;
 }
 
 #AutoScroll-Down-Div {
 	height: 10%;
-	min-height: 50px;
+	min-height: 20px;
 	width: 100%;
 	position: absolute;
 	bottom: 0;
 
-	z-index: 999;
+	z-index: 99;
 }

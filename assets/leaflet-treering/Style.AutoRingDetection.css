@@ -1,0 +1,110 @@
+.ard-measurement-preferences-label {
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.ard-algo-radio-label {
+    margin: 0px 0px 0px 5px;
+    font-size: 14px;
+}
+
+.auto-ring-detection-input-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    height: 22px;
+}
+
+.auto-ring-detection-placement-settings-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 22px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#auto-ring-detection-blur-input-label {
+    margin-right: 3px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.ard-button {
+	border-radius: 5px;
+	background-color: #e0e0e0;
+    border-width: 1;
+    border-color: darkgray;
+    font-size: 14px;
+    font-weight: bold;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.ard-button-ready {
+    background-color: lightgreen;
+}
+
+.ard-button-ready:hover {
+    background-color: rgb(0, 200, 60) !important;
+    border-color:black
+}
+
+.ard-options-label {
+    font-size: 14px;
+    margin: 0;
+}
+
+.ard-disabled-div {
+  pointer-events: none; /* Prevents all mouse events */
+  opacity: 0.7; /* Optional: Visually indicate it's disabled */
+}
+
+.ard-input-display {
+    margin: 0 0 0 5;
+    font-size: 12.5px;
+    font-weight: bold;
+    width: 20.85; /* Width of 3 digit number for 12.5px font */
+    display: flex;
+    justify-content: right;
+}
+
+h6 {
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 4 0 4 0;
+    /* display: flex;
+    justify-content: center; */
+}
+
+.ard-instructions-body {
+    font-size: 13px;
+    margin: 0 0 4 0;
+}
+
+.ard-icon-button {
+    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    background-color: lightgray;
+    border-style: solid;
+    border-width: 1.5px;
+    border-radius: 4px;
+    border-color: darkgrey;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.ard-icon-button:hover {
+    background-color: rgb(185, 185, 185);
+    border-color: rgb(45, 45, 45);
+}
+
+#auto-ring-detection-img-adjust-toggle {
+    width: 22px;
+    height: 22px;
+    font-size: 18px;
+}
