@@ -140,7 +140,11 @@ function AutoRingDetection(Inte) {
         //Remove visuals/event listeners from detectionAreaPlacement
         if (Inte.treering.mouseLine.active) { Inte.treering.mouseLine.disable(); }
         $(Inte.treering.viewer.getContainer()).off("click");
-        $(Inte.treering.viewer.getContainer()).off("keydown")
+
+        L.DomEvent.off(window, "keydown", this.saveBoxWithEnter, this);
+        if (this.boundEnterHandler) {
+          L.DomEvent.off(window, "keydown", this.boundEnterHandler, this);
+        }
 
         Inte.treering.imageAdjustmentInterface.imageAdjustment.loadImageSettings(this.userImageSettings);
       }
@@ -216,18 +220,17 @@ function AutoRingDetection(Inte) {
       //Start/end boundary placements
       let clickCount = 0
       $(Inte.treering.viewer.getContainer()).on("click", (e) => {
-        if (e.isTrigger) { return }
+        if (e.isTrigger) { return } //Prevent JQuerry issue when starting new measurement
         if (this.active) {
           clickCount++;
           if (clickCount == 1) {
             //If forward, first point placed is the start point
             if (Inte.treering.measurementOptions.forwardDirection) {
               this.startLatLng = Inte.treering.viewer.mouseEventToLatLng(e); //Save start boundary placement
+              let color = 'start';
+
               this.startMarker = L.marker(this.startLatLng, {
-                icon: L.icon({
-                  iconUrl: "/assets/leaflet-treering/images/Start.png",
-                  iconSize: [24, 24]
-                }),
+                icon: new MarkerIcon(color, Inte.treering.basePath),
                 draggable: true
               }).addTo(Inte.treering.viewer).on("dragend", () => { //Create marker + listener
                 for (let line of this.detectionAreaOutline) { line.remove() } //Remove outline
@@ -252,11 +255,10 @@ function AutoRingDetection(Inte) {
               if (Inte.treering.data.year === 0) { this.getYear(true); }
             }  else {
               this.endLatLng = Inte.treering.viewer.mouseEventToLatLng(e); //Save start boundary placement
+              let color = 'dark_blue'
+
               this.endMarker = L.marker(this.endLatLng, {
-                icon: L.icon({
-                  iconUrl: "/assets/leaflet-treering/images/LW_Point.png",
-                  iconSize: [24, 24]
-                }),
+                icon: new MarkerIcon(color, Inte.treering.basePath),
                 draggable: true
               }).addTo(Inte.treering.viewer).on("dragend", () => { //Create marker + listener
                 for (let line of this.detectionAreaOutline) { line.remove() } //Remove outline
@@ -285,12 +287,10 @@ function AutoRingDetection(Inte) {
           else if (clickCount == 2) {
             if (Inte.treering.measurementOptions.forwardDirection) {
               this.endLatLng = Inte.treering.viewer.mouseEventToLatLng(e); //Save end boundary placement
+              let color = 'dark_blue';
 
               this.endMarker = L.marker(this.endLatLng, {
-                icon: L.icon({
-                  iconUrl: "/assets/leaflet-treering/images/LW_Point.png",
-                  iconSize: [24, 24]
-                }),
+                icon: new MarkerIcon(color, Inte.treering.basePath),
                 draggable: true
               }).addTo(Inte.treering.viewer).on("dragend", () => {
                 for (let line of this.detectionAreaOutline) { line.remove() } //Remove outline
@@ -308,12 +308,10 @@ function AutoRingDetection(Inte) {
               });
             } else {
               this.startLatLng = Inte.treering.viewer.mouseEventToLatLng(e); //Save end boundary placement
+              let color = 'start'
 
               this.startMarker = L.marker(this.startLatLng, {
-                icon: L.icon({
-                  iconUrl: "../images/Start.png",
-                  iconSize: [24, 24]
-                }),
+                icon: new MarkerIcon(color, Inte.treering.basePath),
                 draggable: true
               }).addTo(Inte.treering.viewer).on("dragend", () => {
                 for (let line of this.detectionAreaOutline) { line.remove() } //Remove outline
@@ -405,11 +403,7 @@ function AutoRingDetection(Inte) {
       //Save area button
       $("#auto-ring-detection-area-save-button").on("click", () => {this.saveDetectionBox()});
 
-      $(Inte.treering.viewer.getContainer()).on("keydown", (e) => {
-        if (e.key === "Enter") {
-          this.saveDetectionBox();
-        }
-      })
+      L.DomEvent.on(window, "keydown", this.saveBoxWithEnter, this)
     }
 
     AutoRingDetection.prototype.saveDetectionBox = async function () {
@@ -452,17 +446,24 @@ function AutoRingDetection(Inte) {
           Inte.treering.baseLayer["GL Layer"]._map.flyTo(viewCenter, viewZoom, {animate: false}) //Return to view settings
 
           //Move on to adjust point placements
-          $(Inte.treering.viewer.getContainer()).off("keydown")
+        L.DomEvent.off(window, "keydown", this.saveBoxWithEnter, this)
           $("#auto-ring-detection-point-placement").removeClass("ard-disabled-div");
           $("#auto-ring-detection-point-placement").trigger("select");
         }
       }
     }
 
+    AutoRingDetection.prototype.saveBoxWithEnter = function(e) {
+      if (e.key === "Enter") {
+        this.saveDetectionBox();
+      }
+    }
+
     AutoRingDetection.prototype.boundaryAdjustmentListeners = function (blurredData) {
       let u = this.getUnitVector();
-      let boundarySets
-      let boundaryPlacements;
+      let boundarySets = this.findBoundaryEdges(blurredData);
+      let boundaryPlacements = this.findBoundaryPoints(blurredData, boundarySets);
+      this.boundEnterHandler = this.savePlacementsWithEnter.bind(null, boundaryPlacements, u, this)
       
       $("#auto-ring-detection-blur-input").on("change", () => {
         for (pointMarker of this.markers) { pointMarker.remove() };
@@ -572,20 +573,20 @@ function AutoRingDetection(Inte) {
         this.placePoints(u, boundaryPlacements);
       });
 
-      $(Inte.treering.viewer.getContainer()).on("keydown", (e) => {
-        if (e.key === "Enter") {
-          for (let line of this.detectionAreaOutline) {
+      L.DomEvent.on(window, "keydown", this.boundEnterHandler, this)
+    }
+
+    AutoRingDetection.prototype.savePlacementsWithEnter = function(boundaryPlacements, u, autoRingDetectionObject, e) {
+      if (e.key === "Enter" && boundaryPlacements.length > 0) {
+          for (let line of autoRingDetectionObject.detectionAreaOutline) {
             line.remove();
           }
-          for (let marker of this.markers) {
+          for (let marker of autoRingDetectionObject.markers) {
             marker.remove()
           }
 
-        boundarySets = this.findBoundaryEdges(blurredData)
-        boundaryPlacements = this.findBoundaryPoints(blurredData, boundarySets);
-        this.placePoints(u, boundaryPlacements);
-         }
-      })
+          autoRingDetectionObject.placePoints(u, boundaryPlacements);
+      }
     }
 
     AutoRingDetection.prototype.getYear = function(forward) {
@@ -597,11 +598,13 @@ function AutoRingDetection(Inte) {
 
         document.getElementById('year_input').select();
 
+        let yearSaved = false;
         $(document).on("keypress", e => {
           if (!e.originalEvent) return;
 
           var key = e.which || e.key;
-          if (key === 13) {
+          if (key === 13 && !yearSaved) {
+            yearSaved = true;
             if (Inte.treering.measurementOptions.forwardDirection == false && Inte.treering.measurementOptions.subAnnual == false) {
               // must subtract one so newest measurment is consistent with measuring forward value
               // issue only applies to meauring backwwards annually
