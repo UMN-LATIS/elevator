@@ -277,13 +277,20 @@ class Home extends Instance_Controller {
 		// if a user can edit ANY collection, show all collections
 		// with their view/edit status
 		$canEditSomeCollection = count($editableCollectionIds) > 0;
-		foreach ($rootCollections as $collection) {
+		$workingIterator = new ArrayIterator($rootCollections);
+		foreach ($workingIterator as $collection) {
 			$canView = in_array($collection->getId(), $viewableCollectionIds);
 			$canEdit = in_array($collection->getId(), $editableCollectionIds);
 			
-			// if the user can view this collection or
-			// they can edit SOME collection, show it
+			// if the user can't view this collection, or edit any collection,
+			// we don't want to include it in the json output. But we might have rights to its children,
+			// so we add them to the iterator to be checked later.
 			if (!$canView && !$canEditSomeCollection) {
+				if($collection->hasChildren()) {
+					foreach($collection->getChildren() as $child) {
+						$workingIterator->append($child);
+					}	
+				}
 				continue;
 			}
 
@@ -297,7 +304,9 @@ class Home extends Instance_Controller {
 			];
 
 			if ($collection->hasChildren()) {
-				$collectionEntry["children"] = $this->getNestedCollectionsWithPrivileges($collection->getChildren(), $viewableCollectionIds, $editableCollectionIds);
+
+				$collectionEntry["children"] = $this->getNestedCollectionsWithPrivileges($collection->getChildren()->toArray(), $viewableCollectionIds, $editableCollectionIds);
+				
 			}
 			$result[] = $collectionEntry;
 		}

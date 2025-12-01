@@ -10,6 +10,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 			attributionControl: false,
 			detectRetina: true,
 			edgeBufferTiles: 1,
+			tileType: 'tiled'
 		},
 
 		initialize: function(tileLoadFunction, options) {
@@ -25,24 +26,46 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		
 		this.on('tileload', this._adjustNonSquareTile)
 	},
-
-	getTileUrl: function(coords){
-		var url = this._loadFunction(coords);
-        return url;
+	
+	getTileUrl: function(coords, tile){
+		this._loadFunction(coords, tile);
+        return tile;
 	},
 	
 
 	createTile: function(coords, done) {
 		var error;
+		
 		var tile = L.DomUtil.create('img', 'elevatorTile');
 		coords.z = coords.z  + this.options.zoomOffset;
-		var url = this._loadFunction(coords);
+
 		tile.onload = (function(done, error, tile) {
 			return function() {
 				done(error, tile);
 			}
 		})(done, error, tile);
-		tile.src=url;
+
+		this._loadFunction(coords, tile);
+		if(this._imageSize !== undefined && this.options.tileType === 'iiif') {
+			if(this._imageSize[coords.z+1] !== undefined) {
+				console.log("Clipping tile")
+				var xPercentage = 100;
+				
+				if(coords.x* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].x) {
+					xPercentage = 100 - 100 * ((coords.x * this.options.tileSize + this.options.tileSize - this._imageSize[coords.z+1].x) / this.options.tileSize);
+				}
+				var yPercentage = 100;
+				if(coords.y* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].y) {
+					yPercentage =100 - 100*((coords.y* this.options.tileSize +  this.options.tileSize - this._imageSize[coords.z+1].y) / this.options.tileSize);
+				}
+				if(xPercentage < 1) xPercentage = 100;
+				if(yPercentage < 1) yPercentage = 100;
+				tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
+
+		}
+		}
+		
+		// tile.src=url;
 		return tile;
 	},
 
@@ -88,11 +111,11 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 	this._gridSize.reverse();
 	// Register our max supported zoom level
 	var maxNativeZoom = this._gridSize.length - 1;
-	// if(maxNativeZoom !== this.options.maxNativeZoom) {
-	// 	// our metadata and our computed disagree. Let's trust the metadata?
-	// 	console.log("Overriding computed max zoom");
-	// 	maxNativeZoom = this.options.maxNativeZoom;
-	// }
+	if(maxNativeZoom !== this.options.maxNativeZoom) {
+		// our metadata and our computed disagree. Let's trust the metadata?
+		console.log("Overriding computed max zoom");
+		maxNativeZoom = this.options.maxNativeZoom;
+	}
 
 	var maxZoomGrid = this._gridSize[maxNativeZoom],
 	maxX = maxZoomGrid.x * this.options.tileSize,
@@ -122,7 +145,7 @@ _adjustNonSquareTile: function (data) {
 	, tileSize = L.point(tile.naturalWidth, tile.naturalHeight)
 
 	if(this._adjustForRetina) tileSize = tileSize.divideBy(2)
-
+	// pad = 0;
 	tile.style.width = tileSize.x + pad + 'px';
 	tile.style.height = tileSize.y + pad + 'px';
 
@@ -163,11 +186,7 @@ fitImage: function () {
 
 	this.options.bounds = bounds // used by `GridLayer.js#_isValidTile`
 	
-	// Inital bounds view:
-	// To only allow initial view: 
-	// map.setMaxBounds(bounds) 
-	// To set inital view, but allow free movement: 
-	map.fitBounds(bounds)
+	map.setMaxBounds(bounds)
 	this.fitBoundsExactly()
 },
 
@@ -183,30 +202,26 @@ fitImage: function () {
 // entire image into the available container. Fill fills the container with a 
 // zoomed portion of the image. These two zooms are stored in `this.options.zooms`
 fitBoundsExactly: function() {
-	if (this._map == null) {
-		return
-	} else {
-		var i, c
-		, imageSize = i = this._imageSize[this._imageSize.length-1]
-		, map = this._map
-		, containerSize = c =  map.getSize()
+	var i, c
+	, imageSize = i = this._imageSize[this._imageSize.length-1]
+	, map = this._map
+	, containerSize = c =  map.getSize()
 
-		var iAR, cAR
-		, imageAspectRatio = iAR = imageSize.x/imageSize.y
-		, containerAspectRatio = cAR = containerSize.x/containerSize.y
-		, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
-		var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
-		var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
-		if(zoom > this.options.maxZoom) {
-			return;
-		}
-		this.options.minZoom = Math.floor(zoom);
-		map._addZoomLimit(this);
-		var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
-		
-		if(map.getZoom() < fill) {
-			map.setZoom(zoom);
-		}
+	var iAR, cAR
+	, imageAspectRatio = iAR = imageSize.x/imageSize.y
+	, containerAspectRatio = cAR = containerSize.x/containerSize.y
+	, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
+	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
+	var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
+	if(Math.floor(zoom) > this.options.maxZoom) {
+		return;
+	}
+	this.options.minZoom = Math.floor(zoom);
+	map._addZoomLimit(this);
+	var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
+	
+	if(map.getZoom() < fill) {
+		map.setZoom(zoom);
 	}
 },
 

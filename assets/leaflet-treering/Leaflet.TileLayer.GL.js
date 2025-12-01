@@ -16,7 +16,7 @@
  *
  */
 
- var kernels = {
+var kernels = {
     normal: [
       0, 0, 0,
       0, 1, 0,
@@ -656,7 +656,7 @@ nextHighestPowerOfTwo: function(x) {
 		if(this.options._imageSize !== undefined) {
 			if(this.options._imageSize[coords.z+1] !== undefined) {
 
-				console.log("Clipping tile")
+				// console.log("Clipping tile")
 				var xPercentage = 100;
 				
 				if(coords.x* this.options.tileSize +  this.options.tileSize > this.options._imageSize[coords.z+1].x) {
@@ -837,6 +837,277 @@ nextHighestPowerOfTwo: function(x) {
 				L.DomEvent.on(tile, "error", reject.bind(this, tile));
 			}.bind(this)
 		);
+	},
+
+	//Gets the rgb data over a given area, can be rotated by the given angle (make angle optional in future?)
+	//Input is an array with 4 latlngs, and the angle to rotate the area to be perpendicular
+	getImageData: async function(corners, angle, zoom, cssFilters) {
+		//Overall process is to find which tiles are included in the collection area, paste them to a canvas and collect the data
+		//Based on separating axis theorem https://en.wikipedia.org/wiki/Hyperplane_separation_theorem#Use_in_collision_detection
+
+		//Create diolog to back out of image data collection if needed
+		let content = document.getElementById("image-data-collection-dialog").innerHTML;
+
+		let exitDialog = L.control.dialog({
+			'size': [385, 60],
+			'maxSize': [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+			'anchor': [25, 600],
+			'initOpen': true,
+			'position': 'topleft',
+			'minSize': [0, 0]
+		}).setContent(content).addTo(this._map).lock()
+
+		//Set up variables for later
+        // let canvas = document.getElementById("ard-canvas"); //For getting canvas visually if bug testing
+		let canvas = document.createElement("canvas");
+
+        let ctx = canvas.getContext("2d");
+		let tileSize = this.getTileSize();
+		this._map.setZoom(zoom, {animate: false}) //Zoom in to desired level so projections work properly
+
+		for (let i = 0; i < 4; i++) {
+			corners[i] = this._map.project(corners[i], zoom) //change latlngs to x & y coords
+		}
+
+		//find location of points if they were rotated about origin to find location of each corner relative to each other
+		let postRotationCoords = [], xCoords = [], yCoords = [];
+		for (let i = 0; i < 4; i++) {
+			let p = corners[i];
+			let x = Math.round(p.x * Math.cos(angle) - p.y * Math.sin(angle));
+			let y = Math.round(p.x * Math.sin(angle) + p.y * Math.cos(angle));
+
+			postRotationCoords.push(L.point(x, y));
+			xCoords.push(x);
+			yCoords.push(y);
+		}
+
+		//Get around for rounding/integer overflow errors
+		xCoords.sort((a, b) => a - b);
+		yCoords.sort((a, b) => a - b);
+		xCoords = xCoords.slice(1,3)
+		yCoords = yCoords.slice(1,3)
+
+		//Assign each given point a corner of rectangle
+		let bottomLeft, bottomRight, topLeft, topRight
+		for (let i = 0; i < 4; i++) {
+			let corner = postRotationCoords[i];
+
+			if (corner.x <= Math.min(...xCoords) && corner.y >= Math.max(...yCoords)) {
+				bottomLeft = corners[i];
+			}
+			if (corner.x <= Math.min(...xCoords) && corner.y <= Math.min(...yCoords)) {
+				topLeft = corners[i];
+			}
+			if (corner.x >= Math.max(...xCoords) && corner.y <= Math.min(...yCoords)) {
+				topRight = corners[i];
+			}
+			if (corner.x >= Math.max(...xCoords) && corner.y >= Math.max(...yCoords)) {
+				bottomRight = corners[i];
+			}
+		}
+
+		//Find center coords of rectangle by finding midpoint of the diagonal
+		let xc = bottomLeft.x + 0.5 * (topRight.x - bottomLeft.x);
+		let yc = bottomLeft.y + 0.5 * (topRight.y - bottomLeft.y);
+
+		//Find width and height of rectangle
+		let w = Math.sqrt((bottomRight.x - bottomLeft.x)**2 + (bottomRight.y - bottomLeft.y)**2);
+		let h = Math.sqrt((topLeft.x - bottomLeft.x)**2 + (topLeft.y - bottomLeft.y)**2)
+
+		//half diagonals of area
+		let halfWidth = (w/2)*Math.abs(Math.cos(angle)) + (h/2)*Math.abs(Math.sin(angle));
+		let halfHeight = (w/2)*Math.abs(Math.sin(angle)) + (h/2)*Math.abs(Math.cos(angle));
+
+		//AABB Coords (axis alligned bounding box)
+		let xMinAABB = xc - halfWidth, xMaxAABB = xc + halfWidth;
+		let yMinAABB = yc - halfHeight, yMaxAABB = yc + halfHeight;
+
+		//Visualize AABB (uncomment for bug testing)
+		// let p1 = this._map.unproject(L.point(xMaxAABB, yMaxAABB), zoom);
+		// let p4 = this._map.unproject(L.point(xMinAABB, yMinAABB), zoom);
+		// let bounds = L.latLngBounds(p1, p4)
+		// L.rectangle(bounds, {color: "blue"}).addTo(this._map)
+
+		//Tile Range in AABB
+		let imin = Math.floor(xMinAABB/tileSize.x), imax = Math.ceil(xMaxAABB/tileSize.x) - 1;
+		let jmin = Math.floor(yMinAABB/tileSize.y), jmax = Math.ceil(yMaxAABB/tileSize.y) - 1;
+
+		//projections of collection area
+		let rumin = (xc*Math.cos(angle) - yc*Math.sin(angle) - w/2);
+		let rumax = (xc*Math.cos(angle) - yc*Math.sin(angle) + w/2);
+		let rvmin = (-xc*Math.sin(angle) - yc*Math.cos(angle) - h/2);
+		let rvmax = (-xc*Math.sin(angle) - yc*Math.cos(angle) + h/2);
+
+		let tileHalfExtent = tileSize.x/2 * (Math.abs(Math.cos(angle)) + Math.abs(Math.sin(angle)));
+
+		let startPoint = topLeft
+		let startTileCoords = startPoint.unscaleBy(tileSize).floor();
+		let offset = startPoint.subtract(startTileCoords.scaleBy(tileSize))
+		offset = L.point(offset.x + tileSize.x*(startTileCoords.x - imin), offset.y + tileSize.y*(startTileCoords.y - jmin))
+
+		canvas.height = h + 500; //Over estimate canvas size so no tiles are cut off
+		canvas.width = w + 500;
+		
+		//Allow for any area in future; currently just return an error
+		let sizeError = true;
+		try {
+			ctx.translate(0, -tileSize.y*(startTileCoords.y - jmin)) //Shift start upward if collection area starts below jmin
+			sizeError = !sizeError
+		} catch {
+			exitDialog.remove();
+			return "sizeError"
+		}
+
+		// if (sizeError == true) {
+		// 	return false
+		// }
+
+		// let subAreaCount = 1;
+		// while (sizeError) {
+		// 	try {
+		// 		// canvas.width = w / subAreaCount + 1000;
+		// 		ctx.translate(0, -tileSize.y*(startTileCoords.y - jmin)) //Shift start upward if collection area starts below jmin
+
+
+		// 		!sizeError;
+		// 		break;
+		// 	} catch {
+		// 		subAreaCount++;
+		// 		return false
+		// 		// continue;
+		// 	}
+		// }
+
+		//The built-in function to get image data is only over a non-rotated rectangle, so rotate tiles instead
+		ctx.translate(offset.x, offset.y)
+		ctx.rotate(angle)
+		ctx.translate(-offset.x, -offset.y)
+
+		//Break from getting image data
+		let exit = false
+		$("#image-data-collection-exit").on("click", () => {
+			exit = true;
+		})
+
+		//Recursive function to grab and paste tiles onto canvas, then collect data
+		let pasteTilesToCanvas = function(i, j, GLLayerObject, resolveCallback) {
+			$("#image-data-collection-exit").on("click", () => {
+				resolveCallback(false);
+				exit = true;
+			})
+			for (i; i <= imax; i++) {
+				for (j; j <= jmax; j++) {
+					if (exit) { return }
+					let tileCenter = L.point(tileSize.x * (i + 0.5), tileSize.y * (j + 0.5));
+
+					//Find projections of tile to check for collisions
+					let tu = tileCenter.x * Math.cos(angle) - tileCenter.y * Math.sin(angle);
+					let tv = -tileCenter.x * Math.sin(angle) - tileCenter.y * Math.cos(angle);
+
+					let tuMin = tu - tileHalfExtent, tuMax = tu + tileHalfExtent;
+					let tvMin = tv - tileHalfExtent, tvMax = tv + tileHalfExtent;
+					if ((tuMin <= rumax && rumin <= tuMax) && (tvMin <= rvmax && rvmin <= tvMax)) {
+						let coords = L.point(i, j);
+						coords.z = zoom;
+						let tile = GLLayerObject._tiles[GLLayerObject._tileCoordsToKey(coords)];
+
+						if (!tile || !tile.active) { //assume that all tiles in the AABB exist, will fail to finish function if not
+							let pt = L.point((i) * tileSize.x, j * tileSize.y);
+							let ll = GLLayerObject._map.unproject(pt, zoom)
+							GLLayerObject._map.on("moveend", function placeholder() {
+								GLLayerObject._map.removeEventListener("moveend", placeholder);
+								setTimeout(() => {
+									tile = GLLayerObject._tiles[GLLayerObject._tileCoordsToKey(coords)]
+									if (tile !== undefined && tile.loaded) {
+										pasteTilesToCanvas(i, j, GLLayerObject, resolveCallback);
+									} else {
+										GLLayerObject.addEventListener("load", function placeholder2() {
+											GLLayerObject.removeEventListener("load", placeholder2);
+											pasteTilesToCanvas(i, j, GLLayerObject, resolveCallback);
+										});
+									}
+								}, 300)
+								
+								// setTimeout(pasteTilesToCanvas, 750, i, j, GLLayerObject, resolveCallback) //Create a delay to allow tiles to load (can cause issues)
+								// pasteTilesToCanvas(i, j, GLLayerObject, resolveCallback)
+							})
+							GLLayerObject._map.flyTo(ll, zoom, {animate: false})
+							return
+						}
+						else {
+							if (cssFilters && cssFilters != "") {
+								ctx.filter = cssFilters
+							}
+							ctx.drawImage(tile.el, (i-imin)*tileSize.x,(j-jmin)*tileSize.y)
+							//visualize tiles on canvas (bug testing)
+							// ctx.beginPath()
+							// ctx.rect((i-imin)*tileSize.x, (j-jmin)*tileSize.y,tileSize.x, tileSize.y)
+							// ctx.stroke()				
+							
+							//visualize tiles on map (bug testing)
+							// let q = GLLayerObject._map.unproject(L.point(i*tileSize.x, j*tileSize.y)), r = GLLayerObject._map.unproject(L.point((i+1)*tileSize.x, (j+1)*tileSize.y));
+							// let b = L.latLngBounds(q, r);
+							// L.rectangle(b, {color: "black"}).addTo(GLLayerObject._map)
+						}
+
+					}			
+				}
+				j = jmin
+			}
+
+			// Visualize collection area
+			// ctx.resetTransform();
+			// ctx.beginPath()
+			// ctx.strokeStyle = "blue"
+			// ctx.rect(offset.x, offset.y -tileSize.x*(startTileCoords.y - jmin), w, h)
+			// ctx.stroke();
+
+			//getImageData doesn't use ctx transformations
+			resolveCallback(ctx.getImageData(offset.x, offset.y -tileSize.y*(startTileCoords.y - jmin), w, h));
+		}
+
+		//Go to top left corner
+		let pt = L.point((imin + imax)/2 * tileSize.x, (jmin + jmax)/2 * tileSize.y);
+		let ll = this._map.unproject(pt, zoom);
+		this._map.flyTo(ll, zoom, {animate: false})
+
+		let collectData = function(GLLayerObject) { //GLLayer Object is just 'this', need to input as parameter to get around scope/async issues
+			const promise = new Promise((resolve) => {
+				pasteTilesToCanvas(imin, jmin, GLLayerObject, (result) => {resolve(result)});
+			})
+			return promise;
+		}
+
+		//Get the raw data
+		let rawData = await collectData(this);
+		exitDialog.remove();
+		if (rawData === false) {
+			return "exitError";
+		}
+
+		//Organize data into a h x w matrix, with each entry [r, g, b]
+		let r,g,b;
+		let width = rawData.width;
+		let height = rawData.height;
+		let colorMatrix = [];
+
+		let index = 0;
+		let data = rawData.data;
+		for (let row = 0; row < height; row++) {
+			if (!colorMatrix[row]) { colorMatrix[row] = []};
+			for (let col = 0; col < width; col++) {
+				r = data[index];
+				g = data[index + 1];
+				b = data[index + 2];
+				index += 4;
+				colorMatrix[row].push([r,g,b])
+			}
+		}
+		
+
+		// document.getElementById("ard-canvas").append(canvas)
+		// document.getElementById("imageMap").append(canvas)
+		return colorMatrix
 	},
 });
 

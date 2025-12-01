@@ -66,7 +66,8 @@ class asset extends Instance_Controller {
 	}
 
 
-	function viewAsset($objectId=null, $returnJson=false) {
+	function viewAsset($objectId = null, $returnJson = false, $parentObjectId = null)
+	{
 		if ($this->isUsingVueUI() && !$returnJson) {
 			return $this->template->publish('vueTemplate');
 		}
@@ -84,8 +85,37 @@ class asset extends Instance_Controller {
 		if(!$this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"))) {
 			show_404();
 		}
-		
-		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+		if ($parentObjectId && $parentObjectId != "null" && $parentObjectId != $objectId) {
+			$tempAsset = new Asset_model;
+			$tempAsset->loadAssetById($parentObjectId);
+
+			$parentMatch = FALSE;
+
+			if ($assetModel->getObjectId() == $parentObjectId) {
+				$parentMatch = true;
+			} else {
+				$relatedAssets = $tempAsset->getAllWithinAsset("Related_asset");
+				foreach ($relatedAssets as $asset) {
+					foreach ($asset->fieldContentsArray as $contents) {
+						if ($contents->targetAssetId == $assetModel->getObjectId()) {
+							$parentMatch = true;
+						}
+					}
+				}
+			}
+
+			if ($parentMatch) {
+				$assetPerms = $this->user_model->getAccessLevel("asset", $assetModel);
+				$parentPerms = $this->user_model->getAccessLevel("asset", $tempAsset);
+				$this->accessLevel = max($assetPerms, $parentPerms);
+			} else {
+				// we've got a mismatch, but see if they've got access to the asset without looking at the parent.
+				$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel, true);
+			}
+		} else {
+			$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+		}
 
 		if($this->instance->getFeaturedAsset() && $this->instance->getFeaturedAsset() == $objectId) {
 			$this->accessLevel = PERM_SEARCH;

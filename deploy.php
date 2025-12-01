@@ -61,6 +61,13 @@ host('stthomas')
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
+
+host('wisc')
+    ->setHostname('wisc-ssh.elevatorapp.net')
+    ->setLabels(['stage'=>'production'])
+    ->set('remote_user', 'latis_deploy')
+    ->set('deploy_path', '/var/www/elevator');
+
 // Hooks
 
 

@@ -3,8 +3,8 @@
  * @author Malik Nusseibeh <nusse007@umn.edu>
  * @version 1.0.0
  */
-
 // 'use strict';
+
 
 /**
  * A leaflet treering object
@@ -78,13 +78,17 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
 
   // Code hosted in Leaflet.ImageAdjustment.js
   this.imageAdjustmentInterface = new ImageAdjustmentInterface(this);
-  // this.imageAdjustment = new ImageAdjustment(this);
+
+  // Code hosted in Leaflet.AutoRingDetection.js
+  this.autoRingDetectionInterface = new AutoRingDetectionInterface(this);
+
   //this.PixelAdjustment = new PixelAdjustment(this);
   this.calibration = new Calibration(this);
 
   this.createPoint = new CreatePoint(this);
   this.zeroGrowth = new CreateZeroGrowth(this);
   this.createBreak = new CreateBreak(this);
+  // this.autoRingDetection = new AutoRingDetection(this);
 
   this.deletePoint = new DeletePoint(this);
   this.cut = new Cut(this);
@@ -97,7 +101,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
 
   this.universalDelete = new UniversalDelete(this);
 
-  this.tools = [this.calibration, this.createPoint, this.createBreak, this.universalDelete, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustmentInterface.imageAdjustment, this.measurementOptions];
+  this.tools = [this.calibration, this.createPoint, this.autoRingDetectionInterface.autoRingDetection, this.createBreak, this.universalDelete, this.cut, this.insertPoint, this.convertToStartPoint, this.insertZeroGrowth, this.insertBreak, this.annotationAsset, this.imageAdjustmentInterface.imageAdjustment, this.measurementOptions];
   
   // Code hosted in Leaflet.Dating.js
   this.datingInterface = new DatingInterface(this);
@@ -108,7 +112,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
   // --- //
   // Code hosted in Leaflet.PithEstimate.js
   this.pithEstimateInterface = new PithEstimateInterface(this);
-  let createToolArr = [this.createPoint.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn];
+  let createToolArr = [this.createPoint.btn, this.autoRingDetectionInterface.autoRingDetection.btn, this.mouseLine.btn, this.zeroGrowth.btn, this.createBreak.btn];
   for (btn of this.pithEstimateInterface.btns) {
     createToolArr.push(btn);
   }
@@ -261,7 +265,7 @@ function LTreering (viewer, basePath, options, base_layer, gl_layer, fullJSON) {
       this.pithEstimateInterface.estimateData.loadJSON(data.pithEstimate);
 
       // Code hosted in Leaflet.ImageAdjustment.js
-      if (data.currentView) this.imageAdjustmentInterface.imageAdjustment.loadCurrentViewJSON(data.currentView);
+      if (data.currentView) this.imageAdjustmentInterface.imageAdjustment.loadImageSettings(data.currentView);
   }
 
   /**
@@ -393,13 +397,13 @@ function MeasurementData (dataObject, Lt) {
   * Add a new point into the measurement data
   * @function newPoint
   */
-  MeasurementData.prototype.newPoint = function(start, latLng) {
+  MeasurementData.prototype.newPoint = function(start, latLng, auto = false) {
     let direction = directionCheck();
 
     if (start) {
-      this.points[this.index] = {'start': true, 'skip': false, 'break': false, 'latLng': latLng};
+      this.points[this.index] = {'start': true, 'skip': false, 'break': false, 'latLng': latLng, 'auto': auto};
     } else {
-      this.points[this.index] = {'start': false, 'skip': false, 'break': false, 'year': this.year, 'earlywood': this.earlywood, 'latLng': latLng};
+      this.points[this.index] = {'start': false, 'skip': false, 'break': false, 'year': this.year, 'earlywood': this.earlywood, 'latLng': latLng, 'auto': auto};
       // Change year value if lw point (forward) or ew point (backwards) or annual measurements.
       if ((measurementOptions.subAnnual && ((direction == forwardInTime && !this.earlywood) ||
                                             (direction == backwardInTime && this.earlywood))) ||
@@ -484,7 +488,7 @@ function MeasurementData (dataObject, Lt) {
       this.index = this.points.length;
       let lastIndex = this.points.length - 1;
       // If only a start point exists, reset data.
-      if (!this.points[lastIndex].year) {
+      if (!this.points[lastIndex].year && this.points.length === 0) {
         this.year = 0;
         this.earlywood = true;
       } else {
@@ -1098,6 +1102,16 @@ function MarkerIcon(color, imagePath) {
                      'size': [64, 64] },
     'empty'      : { 'path': imagePath + 'images/Empty.png',
                      'size': [0, 0] },
+    'AEW_decade' : { 'path': imagePath + 'images/AutoEarlywoodDecade.png',
+                     'size': [32, 32] },
+    'AEW_point'  : { 'path': imagePath + 'images/AutoEarlywoodPoint.png',
+                     'size': [32, 32] },
+    'ALW_decade' : { 'path': imagePath + 'images/AutoLatewoodDecade.png',
+                     'size': [32, 32] },
+    'ALW_point' : {  'path': imagePath + 'images/AutoLatewoodPoint.png',
+                     'size': [32, 32] },
+    'ASP'       : {  'path': imagePath + 'images/AutoStartPoint.png',
+                     'size': [32, 32] },
   };
 
   if (!colors[color]?.path) {
@@ -1469,7 +1483,12 @@ function VisualAsset (Lt) {
         if (pts[i - 1] && pts[i - 1].break) {
           color = 'break';
         } else {
-          color = 'start';
+          if (pts[i].auto) {
+            color = 'ASP'
+          }
+          else {
+            color = 'start';
+          }
         }
       } else if (backward) {
         if (pts[i - 1] && pts[i - 1].break) {
@@ -1477,11 +1496,22 @@ function VisualAsset (Lt) {
         // Start points and measurement points swap when measuring backwards.
         } else if (pts[i - 1]) {
           if (pts[i - 1].year % 10 == 0) {
-            color = (annual) ? 'dark_red' :
-                    (pts[i - 1].earlywood) ? 'light_red' : 'dark_red';
+            if (pts[i - 1].auto) {
+              color = (annual) ? 'ALW_decade' :
+              (pts[i - 1].earlywood) ? 'AEW_decade' : 'ALW_decade'
+            }
+            else {
+              color = (annual) ? 'dark_red' :
+                    (pts[i - 1].earlywood) ? 'light_red' : 'dark_red';              
+            }
           } else {
-            color = (annual) ? 'light_blue' :
-                    (pts[i - 1].earlywood) ? 'light_blue' : 'dark_blue';
+            if (pts[i].auto) {
+              color = (annual) ? 'AEW_point' :
+              (pts[i].earlywood) ? 'AEW_point' : 'ALW_point'
+            } else {
+              color = (annual) ? 'light_blue' :
+                      (pts[i - 1].earlywood) ? 'light_blue' : 'dark_blue';
+            }
           }
         }
       }
@@ -1491,22 +1521,47 @@ function VisualAsset (Lt) {
     } else if (subAnnual) {
       if (pts[i].earlywood) {
         // Decades are colored red.
-        color = (pts[i].year % 10 == 0) ? 'light_red' : 'light_blue';
+        if (pts[i].auto) {
+          color = (pts[i].year % 10 == 0) ? 'AEW_decade' : 'AEW_point'
+        }
+        else {
+          color = (pts[i].year % 10 == 0) ? 'light_red' : 'light_blue';
+        }
       } else { // Otherwise, point is latewood.
-        color = (pts[i].year % 10 == 0) ? 'dark_red' : 'dark_blue';
+        if (pts[i].auto) {
+          color = (pts[i].year % 10 == 0) ? 'ALW_decade' : 'ALW_point'
+        }
+        else {
+          color = (pts[i].year % 10 == 0) ? 'dark_red' : 'dark_blue';
+        }
       }
 
       // Swap measurement path endings and start points.
       if (backward && pts[i + 1]?.start) {
-        color = 'start';
+        if (pts[i].auto) {
+          color = "ASP"
+        }
+        else {
+          color = 'start';
+        }
       }
     // Annual icons:
     } else {
-      color = (pts[i].year % 10 == 0) ? 'dark_red' : 'light_blue';
+      if (pts[i].auto) {
+        color = (pts[i].year % 10 == 0) ? 'ALW_decade' : 'AEW_point'
+      }
+      else {
+        color = (pts[i].year % 10 == 0) ? 'dark_red' : 'light_blue';
+      }
 
       // Swap measurement path endings and start points.
       if (backward && pts[i + 1] && pts[i + 1].start) {
-        color = 'start';
+        if (pts[i + 1].auto) {
+          color = 'ASP';
+        }
+        else {
+          color = 'start';
+        }
       }
     };
 
@@ -1518,12 +1573,27 @@ function VisualAsset (Lt) {
         if (subAnnual) {
           if (nextMeasurePt.earlywood) {
             // Decades are colored red.
-            color = (nextMeasurePt.year % 10 == 0) ? 'dark_red' : 'dark_blue';
+            if (nextMeasurePt.auto) {
+              color = (nextMeasurePt.year % 10 == 0) ? 'ALW_decade' : 'ALW_point'
+            }
+            else {
+              color = (nextMeasurePt.year % 10 == 0) ? 'dark_red' : 'dark_blue';
+            }
           } else { // Otherwise, point is latewood.
-            color = (nextMeasurePt.year % 10 == 0) ? 'light_red' : 'light_blue';
+            if (nextMeasurePt.auto) {
+              color = (nextMeasurePt.year % 10 == 0) ? 'AEW_decade' : 'AEW_point'
+            }
+            else {
+              color = (nextMeasurePt.year % 10 == 0) ? 'light_red' : 'light_blue';
+            }
           }
         } else {
-          color = ((pts[i + 1].year + 1) % 10 == 0) ? 'dark_red' : 'light_blue';
+          if (pts[i + 1].auto) {
+            color = ((pts[i + 1].year + 1) % 10 == 0) ? 'ALW_decade' : 'ALW_point';
+          }
+          else {
+            color = ((pts[i + 1].year + 1) % 10 == 0) ? 'dark_red' : 'light_blue';
+          }
         }
 
         if ((forward && pts[i - 1] && pts[i].latLng.lat == pts[i - 1].latLng.lat && pts[i].latLng.lng == pts[i - 1].latLng.lng) ||
@@ -1531,11 +1601,21 @@ function VisualAsset (Lt) {
           color = 'zero';
         }
       } else {
-        color = (annual) ? 'light_blue' : 'dark_blue';
+        if (pts[i].auto) {
+          color = (annual) ? 'AEW_point' : 'ALW_point'
+        }
+        else {
+          color = (annual) ? 'light_blue' : 'dark_blue';
+        }
       }
     // Only apply this when active measuring disabled.
     } else if (backward && i === pts.length - 1 && reload) {
+      if (pts[pts.length - 1].auto) {
+        color = 'ASP'
+      }
+      else {
         color = 'start';
+      }
     }
 
   if (!color) color = 'empty';
@@ -1586,14 +1666,51 @@ function VisualAsset (Lt) {
         else if (!this.markers[i].zero && this.markers[i + 1]?.zero) k = i + 1;
 
         if (subAnnual) {
-          if (pts[k].earlywood) color = (pts[k].year % 10 == 0) ? 'light_red' : 'light_blue';
-          else color = (pts[k].year % 10 == 0) ? 'dark_red' : 'dark_blue';
+          if (pts[k].earlywood) {
+            if (pts[k].auto) {
+              color = (pts[k].year % 10 == 0) ? 'AEW_decade' : 'AEW_point'
+            }
+            else {
+              color = (pts[k].year % 10 == 0) ? 'light_red' : 'light_blue';
+            }
+          } 
+          else {
+            if (pts[k].auto) {
+              color = (pts[k].year % 10 == 0) ? 'ALW_decade' : 'ALW_point'
+            }
+            else {
+              color = (pts[k].year % 10 == 0) ? 'dark_red' : 'dark_blue';
+            }
+          } 
         } else if (annual) {
-          color = (pts[k].year % 10 == 0) ? 'dark_red' : 'light_blue';
+          if (pts[k].auto) {
+            color = (pts[k].year % 10 == 0) ? 'ALW_decade' : 'AEW_point'
+          }
+          else {
+            color = (pts[k].year % 10 == 0) ? 'dark_red' : 'light_blue';
+          }
         }
 
         this.markers[k].setIcon(new MarkerIcon(color, "../"));
         this.markers[k].zero = false;
+      }
+
+      //If an auto-placed point is moved by the user, change it to a manually placed point
+      if (pts[i].auto) {
+        let color;
+        if (subAnnual) {
+          if (pts[i].earlywood) {
+            color = (pts[i].year % 10 == 0) ? 'light_red' : 'light_blue';
+          } 
+          else {
+            color = (pts[i].year % 10 == 0) ? 'dark_red' : 'dark_blue';
+          } 
+        } else if (annual) {
+          color = (pts[i].year % 10 == 0) ? 'dark_red' : 'light_blue';
+        }
+
+        this.markers[i].setIcon(new MarkerIcon(color, "../"));
+        pts[i].auto = false;
       }
 
       Lt.annotationAsset.reloadAssociatedYears();
@@ -4271,154 +4388,6 @@ function InsertBreak(Lt) {
   };
 }
 
-// /**
-//  * Change color properties of image
-//  * @constructor
-//  * @param {Ltreering} Lt - Leaflet treering object
-//  */
-// function ImageAdjustment(Lt) {
-//   this.open = false;
-
-//   this.btn = new Button(
-//     'brightness_6',
-//     'Adjust image appearance settings',
-//     () => { Lt.disableTools(); this.enable() },
-//     () => { this.disable() }
-//   );
-
-//   let filterList = [
-//     {
-//       filterType: "e",
-//       value: "50",
-//       inputID: "20",
-//       sliderID: "30"
-//     },
-//     { 
-//       filterType: "e",
-//       value: "50",
-//       inputID: "20",
-//       sliderID: "30"
-//     }
-//    ]
-
-//   // handlebars from templates.html
-//   let content = document.getElementById("ImageAdjustment-dialog-template").innerHTML;
-//   let template = Handlebars.compile(content);
-//   let html = template({filterList: filterList})
-
-//   this.dialog = L.control.dialog({
-//     'size': [400, 280],
-//     'anchor': [50, 5],
-//     'initOpen': false,
-//     'position': 'topleft',
-//     'minSize': [0, 0]
-//   }).setContent(html).addTo(Lt.viewer);
-
-//   /**
-//    * Update the image filter to reflect slider values
-//    * @function updateFilters
-//    */
-//   ImageAdjustment.prototype.updateFilters = function() {
-//     var brightnessSlider = document.getElementById("brightness-slider");
-//     var contrastSlider = document.getElementById("contrast-slider");
-//     var saturationSlider = document.getElementById("saturation-slider");
-//     var hueSlider = document.getElementById("hue-slider");
-//     var invert = $("#invert-checkbox").prop('checked')?1:0;
-//     var sharpnessSlider = document.getElementById("sharpness-slider").value;
-//     var embossSlider = document.getElementById("emboss-slider").value;
-//     var edgeDetect = document.getElementById("edgeDetect-slider").value;
-//     var unsharpnessSlider = document.getElementById("unsharpness-slider").value;
-//     document.getElementsByClassName("leaflet-pane")[0].style.filter =
-//       "contrast(" + contrastSlider.value + "%) " +
-//       "brightness(" + brightnessSlider.value + "%) " +
-//       "saturate(" + saturationSlider.value + "%) " +
-//       "invert(" + invert + ")" +
-//       "hue-rotate(" + hueSlider.value + "deg)";
-//     Lt.baseLayer['GL Layer'].setKernelsAndStrength([
-//       {
-// 			"name":"emboss",
-// 			"strength": embossSlider
-//       },
-//       {
-//         "name":"edgeDetect3",
-//         "strength": edgeDetect
-//       },
-//       {
-//         "name":"sharpness",
-//         "strength": sharpnessSlider
-//       },
-//       {
-//         "name":"unsharpen",
-//         "strength": unsharpnessSlider
-//       }
-//     ]);
-//   };
-
-//   /**
-//    * Open the filter sliders dialog
-//    * @function enable
-//    */
-//   ImageAdjustment.prototype.enable = function() {
-//     this.open = true;
-
-//     this.dialog.lock();
-//     this.dialog.open();
-//     var brightnessSlider = document.getElementById("brightness-slider");
-//     var contrastSlider = document.getElementById("contrast-slider");
-//     var saturationSlider = document.getElementById("saturation-slider");
-//     var hueSlider = document.getElementById("hue-slider");
-//     var sharpnessSlider = document.getElementById("sharpness-slider");
-//     var embossSlider = document.getElementById("emboss-slider");
-//     var edgeDetect = document.getElementById("edgeDetect-slider");
-//     var unsharpnessSlider = document.getElementById("unsharpness-slider");
-//     //Close view if user clicks anywhere outside of slider window
-//     $(Lt.viewer.getContainer()).click(e => {
-//       this.disable();
-//     });
-
-//     this.btn.state('active');
-//     $(".imageSlider").change(() => {
-//       this.updateFilters();
-//     });
-//     $("#invert-checkbox").change(() => {
-//       this.updateFilters();
-//     });
-//     $("#reset-button").click(() => {
-//       $(brightnessSlider).val(100);
-//       $(contrastSlider).val(100);
-//       $(saturationSlider).val(100);
-//       $(hueSlider).val(0);
-//       $(sharpnessSlider).val(0);
-//       $(embossSlider).val(0);
-//       $(edgeDetect).val(0);
-//       $(unsharpnessSlider).val(0);
-//       this.updateFilters();
-//     });
-//     $("#invert-button").click(() => {
-//       $(brightnessSlider).val(100);
-//       $(contrastSlider).val(100);
-//       $(saturationSlider).val(100);
-//       $(hueSlider).val(0);
-//       this.updateFilters();
-//     });
-//   };
-
-//   /**
-//    * Close the filter sliders dialog
-//    * @function disable
-//    */
-//   ImageAdjustment.prototype.disable = function() {
-//     if (this.open) {
-//       this.dialog.unlock();
-//       this.dialog.close();
-//     }
-    
-//     this.btn.state('inactive');
-//     this.open = false;
-//   };
-
-// }
-
 /**
 * Change measurement options (set subAnnual, previously hasLatewood, and direction)
 * @constructor
@@ -4568,7 +4537,11 @@ MeasurementOptions.prototype.displayDialog = function () {
     $("#confirm-button").click(() => {
       if (this.userSelectedPref == false) {
         this.userSelectedPref = true;
-        Lt.createPoint.enable();
+        if (Lt.autoRingDetectionInterface.autoRingDetection.active) {
+          Lt.autoRingDetectionInterface.autoRingDetection.main();
+        } else {
+          Lt.createPoint.enable();
+        }
       };
       this.disable();
     });
@@ -4854,6 +4827,10 @@ function KeyboardShortCutDialog (Lt) {
       {
        'key': 'Shift-m',
        'use': 'Create new measurement path',
+      },
+      {
+        'key': 'Shift-f',
+        'use': 'Create new auto detection swath'
       },
       {
        'key': 'Shift-k',
