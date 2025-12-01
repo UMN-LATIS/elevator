@@ -188,8 +188,14 @@ class Instance
     /**
      * @var bool|null
      */
-    #[ORM\Column(name: 'automaticAltText', type: 'boolean', nullable: true)]
-    private $automaticAltText;
+    #[ORM\Column(name: 'automaticAltText', type: 'boolean', nullable: true, options: ["default" => true])]
+    private $automaticAltText = true;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'autoloadMaxSearchResults', type: 'boolean', nullable: true, options: ["default" => false])]
+    private $autoloadMaxSearchResults = '0';
 
     /**
      * @var bool|null
@@ -1614,11 +1620,6 @@ class Instance
     {
         return $this->automaticAltText;
     }
- 
-    /**
-     * @var bool|null
-     */
-    private $autoloadMaxSearchResults = '0';
 
 
     /**
