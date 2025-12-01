@@ -37,6 +37,9 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		var error;
 		
 		var tile = L.DomUtil.create('img', 'elevatorTile');
+		
+		// Store the original coords.z BEFORE modifying it
+		var originalCoordsZ = coords.z;
 		coords.z = coords.z  + this.options.zoomOffset;
 
 		tile.onload = (function(done, error, tile) {
@@ -46,23 +49,65 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		})(done, error, tile);
 
 		this._loadFunction(coords, tile);
-		if(this._imageSize !== undefined && this.options.tileType === 'iiif') {
-			if(this._imageSize[coords.z+1] !== undefined) {
-				console.log("Clipping tile")
-				var xPercentage = 100;
-				
-				if(coords.x* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].x) {
-					xPercentage = 100 - 100 * ((coords.x * this.options.tileSize + this.options.tileSize - this._imageSize[coords.z+1].x) / this.options.tileSize);
-				}
-				var yPercentage = 100;
-				if(coords.y* this.options.tileSize +  this.options.tileSize > this._imageSize[coords.z+1].y) {
-					yPercentage =100 - 100*((coords.y* this.options.tileSize +  this.options.tileSize - this._imageSize[coords.z+1].y) / this.options.tileSize);
-				}
-				if(xPercentage < 1) xPercentage = 100;
-				if(yPercentage < 1) yPercentage = 100;
-				tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
 
-		}
+		if(this._imageSize !== undefined && this.options.tileType === 'iiif') {
+			// The _imageSize array is built from smallest (index 0) to largest (index length-1)
+			// But zoom levels don't start at 0 - they can start at any minZoom
+			// The relationship is: arrayIndex = _tileZoom + offset
+			// where offset = (array.length - 1) - maxAdjustedZoom
+			var arrayOffset = (this._imageSize.length - 1) - this.options.maxAdjustedZoom;
+			var imageSizeIndex = this._tileZoom + arrayOffset;
+			
+			var imageSizeAtZoom;
+			if(imageSizeIndex >= 0 && imageSizeIndex < this._imageSize.length) {
+				// Use the pre-computed array value
+				imageSizeAtZoom = this._imageSize[imageSizeIndex];
+			} else {
+
+				// Fallback: calculate from full resolution
+				var fullResolutionImage = this._imageSize[this._imageSize.length - 1];
+				var scaleFactor = Math.pow(2, this.options.maxAdjustedZoom - this._tileZoom);
+				imageSizeAtZoom = L.point(
+					Math.ceil(fullResolutionImage.x / scaleFactor),
+					Math.ceil(fullResolutionImage.y / scaleFactor)
+				);
+			}
+			
+			// Calculate the pixel boundaries of this tile
+			var tileLeft = coords.x * this.options.tileSize;
+			var tileRight = tileLeft + this.options.tileSize;
+			var tileTop = coords.y * this.options.tileSize;
+			var tileBottom = tileTop + this.options.tileSize;
+			
+			// If the tile starts completely outside the image bounds, hide it entirely
+			if(tileLeft >= imageSizeAtZoom.x || tileTop >= imageSizeAtZoom.y) {
+				tile.style.display = 'none';
+				return tile;
+			}
+			
+			var xPercentage = 100;
+			var yPercentage = 100;
+			
+			// Check if tile extends beyond image width (but starts inside)
+			if(tileRight > imageSizeAtZoom.x) {
+				var visibleWidth = imageSizeAtZoom.x - tileLeft;
+				xPercentage = Math.max(0, 100 * (visibleWidth / this.options.tileSize));
+			}
+			
+			// Check if tile extends beyond image height (but starts inside)
+			if(tileBottom > imageSizeAtZoom.y) {
+				var visibleHeight = imageSizeAtZoom.y - tileTop;
+				yPercentage = Math.max(0, 100 * (visibleHeight / this.options.tileSize));
+			}
+			
+			// Apply clipping if needed
+			if(xPercentage < 100 || yPercentage < 100) {
+				if(xPercentage > 0 && yPercentage > 0) {
+					tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
+				} else {
+					tile.style.display = 'none';
+				}
+			}
 		}
 		
 		// tile.src=url;
@@ -134,8 +179,13 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 },
 
 _getGridSize: function (imageSize) {
-
-	var tileSize = this.options.tileSize * 2;
+	// For retina displays, we've already adjusted the tileSize computation in _computeImageAndGridSize
+	// So use the adjusted tileSize from the computation, not this.options.tileSize
+	var tileSize = this.options.tileSize;
+	if(this._adjustForRetina) {
+		tileSize = tileSize * 2;
+	}
+	
 	return L.point(Math.ceil(imageSize.x / tileSize), Math.ceil(imageSize.y / tileSize));
 },
 
