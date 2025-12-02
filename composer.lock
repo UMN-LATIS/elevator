@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "adbaf913f6882d857445928a7a5b221f",
+    "content-hash": "fc741cccb82653173650e69f1c89148c",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -998,12 +998,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "46e1e9e76a574602f5d44a29812e114110c6d693"
+                "reference": "c2e3244a74568cffe1cdcc3ac16d3e5654c8074b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/46e1e9e76a574602f5d44a29812e114110c6d693",
-                "reference": "46e1e9e76a574602f5d44a29812e114110c6d693",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/c2e3244a74568cffe1cdcc3ac16d3e5654c8074b",
+                "reference": "c2e3244a74568cffe1cdcc3ac16d3e5654c8074b",
                 "shasum": ""
             },
             "require": {
@@ -1060,7 +1060,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-11-24T20:28:19+00:00"
+            "time": "2025-12-01T22:08:43+00:00"
         },
         {
             "name": "doctrine/lexer",
@@ -2742,16 +2742,16 @@
         },
         {
             "name": "pda/pheanstalk",
-            "version": "dev-master",
+            "version": "v7.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pheanstalk/pheanstalk.git",
-                "reference": "e915a4cad2f4d8fc9a7c9165c80785985d2571ad"
+                "reference": "b64371b3a47a3849cb5c7a46149511fe883490a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/e915a4cad2f4d8fc9a7c9165c80785985d2571ad",
-                "reference": "e915a4cad2f4d8fc9a7c9165c80785985d2571ad",
+                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/b64371b3a47a3849cb5c7a46149511fe883490a2",
+                "reference": "b64371b3a47a3849cb5c7a46149511fe883490a2",
                 "shasum": ""
             },
             "require": {
@@ -2771,7 +2771,6 @@
             "suggest": {
                 "ext-sockets": "Socket implementation works best for long running processes"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -2802,9 +2801,9 @@
             ],
             "support": {
                 "issues": "https://github.com/pheanstalk/pheanstalk/issues",
-                "source": "https://github.com/pheanstalk/pheanstalk/tree/master"
+                "source": "https://github.com/pheanstalk/pheanstalk/tree/v7.1.1"
             },
-            "time": "2025-11-11T13:49:01+00:00"
+            "time": "2025-09-22T08:51:13+00:00"
         },
         {
             "name": "php-http/discovery",
@@ -5196,7 +5195,6 @@
         "doctrine/dbal": 20,
         "google/apiclient": 20,
         "packbackbooks/lti-1p3-tool": 20,
-        "pda/pheanstalk": 20,
         "php-unoconv/php-unoconv": 20,
         "smalot/pdfparser": 20
     },
@@ -5204,5 +5202,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
