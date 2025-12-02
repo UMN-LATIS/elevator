@@ -232,6 +232,9 @@ class UMNHelper extends AuthHelper
 	public function findUser($key) {		
 		$results = $this->fetchBandaidResult("/api/names/autocomplete/" . urlencode($key));
 
+		if(!is_array($results)) {
+			return [];
+		}
 		foreach($results as $entry) {
 			log_message('error', 'UMNHelper::findUser: ' . json_encode($entry)	);
 			$user = new Entity\User;
