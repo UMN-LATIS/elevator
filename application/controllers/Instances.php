@@ -567,7 +567,7 @@ class Instances extends Instance_Controller {
 				                "sts:GetFederationToken"
 				            ],
 				            "Resource": [
-				                "arn:aws:sts::*"
+				                "*"
 				            ]
 				        }
 						]
