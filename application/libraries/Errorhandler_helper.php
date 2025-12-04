@@ -17,7 +17,7 @@ class Errorhandler_helper {
 			$view = "errors/" . $sanitizedError;
 		}
 		else {
-			$view = "errors/genericError";
+			$view = "errors/noPermission";
 		}
 		
 		if($inline) {
