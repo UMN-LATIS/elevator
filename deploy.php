@@ -32,31 +32,31 @@ host('dev')
 
 
 host('umn')
-    ->setHostname('beta.elevator.umn.edu')
+    ->setHostname('umn-prod-ssh.elevatorapp.net')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('olaf')
-    ->setHostname('digital.stolaf.edu')
+    ->setHostname('stolaf-ssh.elevatorapp.net')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
     host('ou')
-    ->setHostname('3d.libraries.ou.edu')
+    ->setHostname('ou-ssh.elevatorapp.net')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('bennington')
-    ->setHostname('elevator.bennington.edu')
+    ->setHostname('bennington-ssh.elevatorapp.net')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('stthomas')
-    ->setHostname('elevator.stthomas.edu')
+    ->setHostname('stthomas-ssh.elevatorapp.net')
     ->setLabels(['stage'=>'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
