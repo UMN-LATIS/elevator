@@ -40,3 +40,15 @@ To try processing a file, first upload it using the normal UI. Then grab the fil
 Run `./runJob.sh <fileObjectId>`
 
 By default, you won't have job queue processing running for other tasks. That's mostly fine, but you may want search indexing running. Run `./docker-php index.php beltdrive updateIndexes`
+
+## Documentation
+
+Docs use [vuepress](https://vuepress.vuejs.org/) and are found in ./docs.
+
+```
+# develop docs locally
+npm run docs:dev
+
+# deploy docs
+npm run docs:deploy
+```
