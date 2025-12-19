@@ -16,7 +16,13 @@ function matchScheme($source) {
 		return $source;
 	}
 	$stripped = str_ireplace($parsedURL["scheme"] . ":", "", $source);
-	$scheme = empty($_SERVER['HTTPS'])?"http":"https";
+	
+	$isHttps = (
+    	(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    	|| (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+	);
+
+	$scheme = $isHttps ? "https" : "http";
 	return $scheme . ":" . $stripped;
 }
 
