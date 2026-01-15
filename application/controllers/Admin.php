@@ -779,8 +779,10 @@ class admin extends Admin_Controller {
 	 * CLI tool to purge deleted filehandlers with no derivatives from S3
 	 * These are orphaned files that should be removed to save storage space
 	 * Requires MFA credentials for S3 deletion
+	 * 
+	 * Usage: php index.php admin purgeOrphanedDeletedFiles <mfa_token> <arn>
 	 */
-	public function purgeOrphanedDeletedFiles() {
+	public function purgeOrphanedDeletedFiles($mfa = null, $serial = null) {
 		if (!$this->input->is_cli_request()) {
 			echo "This command can only be invoked via CLI\n";
 			return;
@@ -799,12 +801,9 @@ class admin extends Admin_Controller {
 
 		$result = $qb->getQuery()->iterate();
 
-		$mfa = $this->input->cli_args("mfa") ? $this->input->cli_args("mfa") : null;
-		$serial = $this->input->cli_args("serial") ? $this->input->cli_args("serial") : null;
-
 		if (!$mfa || !$serial) {
 			echo "MFA and serial/ARN credentials are required\n";
-			echo "Usage: php index.php admin purgeOrphanedDeletedFiles --mfa=<token> --serial=<arn>\n";
+			echo "Usage: php index.php admin purgeOrphanedDeletedFiles <mfa_token> <arn>\n";
 			return;
 		}
 
