@@ -780,9 +780,21 @@ class admin extends Admin_Controller {
 	 * These are orphaned files that should be removed to save storage space
 	 * Requires MFA credentials for S3 deletion
 	 * 
-	 * Usage: php index.php admin purgeOrphanedDeletedFiles <mfa_token> <arn>
+	 * Environment variables required:
+	 *  - AWS_ACCESS_KEY_ID: AWS IAM user access key
+	 *  - AWS_SECRET_ACCESS_KEY: AWS IAM user secret key
+	 * 
+	 * Usage: 
+	 *   AWS_ACCESS_KEY_ID=<key> AWS_SECRET_ACCESS_KEY=<secret> \
+	 *   php index.php admin purgeOrphanedDeletedFiles <mfa_serial> <mfa_token>
+	 * 
+	 * Example:
+	 *   AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
+	 *   AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
+	 *   php index.php admin purgeOrphanedDeletedFiles \
+	 *   "arn:aws:iam::123456789:mfa/myuser" "123456"
 	 */
-	public function purgeOrphanedDeletedFiles($mfa = null, $serial = null) {
+	public function purgeOrphanedDeletedFiles($mfaSerial = null, $mfaToken = null) {
 		if (!$this->input->is_cli_request()) {
 			echo "This command can only be invoked via CLI\n";
 			return;
@@ -790,6 +802,13 @@ class admin extends Admin_Controller {
 
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
+
+		if (!$mfaSerial || !$mfaToken) {
+			echo "MFA serial and token are required\n";
+			echo "Usage: AWS_ACCESS_KEY_ID=<key> AWS_SECRET_ACCESS_KEY=<secret> php index.php admin purgeOrphanedDeletedFiles <mfa_serial> <mfa_token>\n";
+			echo "Example: AWS_ACCESS_KEY_ID=AKIA... AWS_SECRET_ACCESS_KEY=wJal... php index.php admin purgeOrphanedDeletedFiles \"arn:aws:iam::123456789:mfa/user\" \"123456\"\n";
+			return;
+		}
 
 		$this->load->model("filehandlerbase");
 
@@ -800,12 +819,6 @@ class admin extends Admin_Controller {
 			->where("f.deleted = TRUE");
 
 		$result = $qb->getQuery()->iterate();
-
-		if (!$mfa || !$serial) {
-			echo "MFA and serial/ARN credentials are required\n";
-			echo "Usage: php index.php admin purgeOrphanedDeletedFiles <mfa_token> <arn>\n";
-			return;
-		}
 
 		$count = 0;
 		$skipped = 0;
@@ -838,7 +851,7 @@ class admin extends Admin_Controller {
 			}
 
 			try {
-				if (!$fileHandler->deleteSource($serial, $mfa)) {
+				if (!$fileHandler->deleteSource($mfaSerial, $mfaToken)) {
 					echo "[ERROR] " . $fileEntry->getFileObjectId() . " - deletion failed\n";
 					$this->logging->logError("purgeOrphanedDeletedFiles", "Could not delete file: " . $fileEntry->getFileObjectId());
 				} else {

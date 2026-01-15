@@ -1,4 +1,4 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (! defined('BASEPATH')) exit('No direct script access allowed');
 
 use Aws\S3\Model\ClearBucket;
 
@@ -14,14 +14,11 @@ class S3_model extends CI_Model {
 	public $sessionToken = null;
 	public $transferCount = 0;
 
-	public function __construct($collection=null)
-	{
+	public function __construct($collection = null) {
 		parent::__construct();
-		if($collection) {
+		if ($collection) {
 			$this->loadFromCollection($collection);
 		}
-
-
 	}
 
 	/**
@@ -34,7 +31,7 @@ class S3_model extends CI_Model {
 
 	public function loadFromCollection($collection) {
 
-		if(is_numeric($collection)) {
+		if (is_numeric($collection)) {
 			$collection = $this->collection_model->getCollection($collection);
 		}
 
@@ -42,7 +39,6 @@ class S3_model extends CI_Model {
 		$this->key = $collection->getS3Key();
 		$this->bucket = $collection->getBucket();
 		$this->s3Client = $this->collection_model->getS3ClientForCollection($collection->getId());
-
 	}
 
 	public function loadFromInstance($instance) {
@@ -51,50 +47,49 @@ class S3_model extends CI_Model {
 		$this->key = $instance->getAmazonS3Key();
 		$this->bucket = $instance->getDefaultBucket();
 		$this->s3Client = $this->s3_model->s3Client =  Aws\S3\S3Client::factory(array(
-			'credentials'=> ['key'    => $this->key,
-			'secret' =>  $this->secret],
+			'credentials' => [
+				'key'    => $this->key,
+				'secret' =>  $this->secret
+			],
 			"scheme" => "https",
-			"version"=>"2006-03-01",
+			"version" => "2006-03-01",
 			"use_path_style_endpoint" => true,
 			"region" => $instance->getBucketRegion()
-			));
-
+		));
 	}
 
 	public function fixACL($sourceFile) {
-		if(strlen($this->bucket) < 5) {
+		if (strlen($this->bucket) < 5) {
 			echo "Error: bucket unknown\n";
 			throw new Exception('Bucket Error');
 		}
 
 		$command = [
-			'ACL'=>'private',
+			'ACL' => 'private',
 			'Bucket' => $this->bucket,
 			'Key' => "original/" . strrev($sourceFile) . "-source"
-			];
+		];
 		try {
 			$this->s3Client->putObjectAcl($command);
-		}
-		catch (Aws\S3\Exception\S3Exception $e) {
+		} catch (Aws\S3\Exception\S3Exception $e) {
 			var_dump($command);
 			echo $e->getAwsErrorType() . "\n";
 			echo $e->getAwsErrorCode() . "\n";
 			throw new Exception('Error setting ACL');
 		}
-		
 	}
 
 	public function putObject($sourceFile, $destKey, $storageClass = AWS_REDUCED, $targetMimeType = null, $contentEncoding = null) {
-		if(!file_exists($sourceFile)) {
+		if (!file_exists($sourceFile)) {
 			$this->logging->logError("putObject", "file no longer exists", $sourceFile);
 			return false;
 		}
 
-		if(!$targetMimeType) {
+		if (!$targetMimeType) {
 			$targetMimeType = mime_content_type($sourceFile);
 		}
-	
-		if(filesize($sourceFile) < 100*1024*1024) {
+
+		if (filesize($sourceFile) < 100 * 1024 * 1024) {
 			try {
 				$fp = fopen($sourceFile, "rb");
 				$this->s3Client->putObject(array(
@@ -104,42 +99,37 @@ class S3_model extends CI_Model {
 					'StorageClass'   => $storageClass,
 					"ContentType" => $targetMimeType,
 					"ContentEncoding" => $contentEncoding
-					));
-					fclose($fp);
-			}
-			catch (Exception $e) {
+				));
+				fclose($fp);
+			} catch (Exception $e) {
+				$this->logging->logError("putObject", $e, $sourceFile);
+				return false;
+			} catch (\Aws\S3\Exception\S3Exception $e) {
 				$this->logging->logError("putObject", $e, $sourceFile);
 				return false;
 			}
-			catch (\Aws\S3\Exception\S3Exception $e) {
-				$this->logging->logError("putObject", $e, $sourceFile);
-				return false;
-			}
-		}
-		else {
+		} else {
 
 			$this->transferCount = 0;
-			$beforeFunction = function(Aws\Command $command) {
+			$beforeFunction = function (Aws\Command $command) {
 				$this->transferCount++;
-				if($this->transferCount % 10 == 0) {
-					if(@$this->pheanstalk !== null && @$this->job !==null) {
-						$this->pheanstalk->touch($this->job);	
-						
+				if ($this->transferCount % 10 == 0) {
+					if (@$this->pheanstalk !== null && @$this->job !== null) {
+						$this->pheanstalk->touch($this->job);
 					}
 				}
-
 			};
 
 			$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
 				'bucket' => $this->bucket,
 				'key'    => $destKey,
-				'before_initiate' => function(\Aws\Command $command) use ($targetMimeType, $storageClass)  //  HERE IS THE RELEVANT CODE
+				'before_initiate' => function (\Aws\Command $command) use ($targetMimeType, $storageClass)  //  HERE IS THE RELEVANT CODE
 				{
-					$command['ContentType'] = $targetMimeType; 
-					$command['StorageClass'] = $storageClass;  
+					$command['ContentType'] = $targetMimeType;
+					$command['StorageClass'] = $storageClass;
 				},
 				"before_upload" => $beforeFunction
-				]);
+			]);
 
 			do {
 				try {
@@ -147,7 +137,7 @@ class S3_model extends CI_Model {
 				} catch (MultipartUploadException $e) {
 					$uploader = new \Aws\S3\MultipartUploader($this->s3Client, $sourceFile, [
 						'state' => $e->getState(),
-						]);
+					]);
 				}
 			} while (!isset($result));
 
@@ -159,57 +149,51 @@ class S3_model extends CI_Model {
 	}
 
 
-	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_REDUCED, $job=null) {
+	public function putDirectory($sourceDirectory, $destKey, $storageClass = AWS_REDUCED, $job = null) {
 		try {
 			$options["concurrency"] = 50;
 			$this->storageClass = $storageClass;
-			if(!$this->storageClass) {
+			if (!$this->storageClass) {
 				$this->storageClass = AWS_REDUCED;
 			}
-			
+
 			$this->transferCount = 0;
-			if($job) {
+			if ($job) {
 				$this->job = $job;
 			}
-			$beforeFunction = function(Aws\Command $command) {
+			$beforeFunction = function (Aws\Command $command) {
 				if (in_array($command->getName(), ['PutObject', 'CreateMultipartUpload'])) {
-            		// Set custom cache-control metadata
-            		// $this->logging->logError("storage class", $this->storageClass);
+					// Set custom cache-control metadata
+					// $this->logging->logError("storage class", $this->storageClass);
 					$command['StorageClass'] = $this->storageClass;
 				}
 
 				$this->transferCount++;
-				if($this->transferCount % 100 == 0) {
-					if($this->pheanstalk !== null && $this->job !==null) {
-						$this->pheanstalk->touch($this->job);	
+				if ($this->transferCount % 100 == 0) {
+					if ($this->pheanstalk !== null && $this->job !== null) {
+						$this->pheanstalk->touch($this->job);
 					}
-					
+
 					echo ".";
 				}
-
 			};
 
-			if($beforeFunction) {
+			if ($beforeFunction) {
 				$options["before"] = $beforeFunction;
-			}
-			else {
-				$options["before"] = function(Aws\Command $command) {
-
+			} else {
+				$options["before"] = function (Aws\Command $command) {
 				};
 			}
 			$destinationPath = "s3://" . $this->bucket . "/" . $destKey;
 			$manager = new \Aws\S3\Transfer($this->s3Client, $sourceDirectory, $destinationPath, $options);
 			$manager->transfer();
-		}
-		catch (Aws\Exception\AwsException $e) {
+		} catch (Aws\Exception\AwsException $e) {
 			echo $sourceDirectory . "\n";
 			echo $destKey . "\n";
 			$this->logging->logError("uploadDirectory", $e);
 			return false;
 		}
 		return true;
-
-
 	}
 
 	public function getObject($sourceKey, $destFile) {
@@ -218,15 +202,13 @@ class S3_model extends CI_Model {
 				'Bucket' => $this->bucket,
 				'Key'    => $sourceKey,
 				'SaveAs' => $destFile
-				));
-		}
-		catch (Exception $e) {
+			));
+		} catch (Exception $e) {
 			$this->logging->logError("getObject", $e, $sourceKey);
 			return false;
 		}
 
 		return true;
-
 	}
 
 	public function objectInfo($targetKey) {
@@ -234,15 +216,12 @@ class S3_model extends CI_Model {
 			$result = $this->s3Client->headObject([
 				'Bucket' => $this->bucket,
 				'Key'    => $targetKey
-				]);
+			]);
 			return $result;
-		}
-		catch(Exception $e) {
+		} catch (Exception $e) {
 			$this->logging->logError("objectInfo", $e->getMessage(), $targetKey);
 			return false;
 		}
-
-
 	}
 
 	public function getFilesAtKeyPath($targetKey) {
@@ -251,34 +230,31 @@ class S3_model extends CI_Model {
 			$truncated = true;
 			$nextMarker = null;
 			$mergedContents  = array();
-			while($truncated == true) {
+			while ($truncated == true) {
 				$result = $this->s3Client->listObjects([
 					'Bucket' => $this->bucket,
 					'Prefix'    => $targetKey,
 					'Marker' => $nextMarker
-					]);
+				]);
 
 				$mergedContents = array_merge($mergedContents, $result['Contents']);
-				if($result['IsTruncated'] == true) {
-					$lastElement = $result['Contents'][count($result['Contents'])-1];
+				if ($result['IsTruncated'] == true) {
+					$lastElement = $result['Contents'][count($result['Contents']) - 1];
 					$nextMarker = $lastElement['Key'];
-				}
-				else {
+				} else {
 					$truncated = false;
 				}
 			}
 
 			$fileList = array();
-			foreach($mergedContents as $entry) {
+			foreach ($mergedContents as $entry) {
 				$fileList[] = $entry['Key'];
 			}
 			return $fileList;
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			$this->logging->logError("getFilesAtKeyPath", $e, $targetKey);
 			return array();
 		}
-
 	}
 
 
@@ -287,23 +263,22 @@ class S3_model extends CI_Model {
 			$result = $this->s3Client->listObjects([
 				'Bucket' => $this->bucket,
 				'Prefix'    => $targetKey
-				]);
-			if(!isset($result['Contents'][0]['StorageClass'])) {
+			]);
+			if (!isset($result['Contents'][0]['StorageClass'])) {
 				$this->logging->logError("getStorageClass", "No storage class found", $targetKey);
 				return false;
 			}
-			if($result['Contents'][0]['StorageClass'] == "GLACIER") {
+			if ($result['Contents'][0]['StorageClass'] == "GLACIER") {
 				$objectInfo = $this->objectInfo($targetKey);
-				if(strlen($objectInfo['Restore'])>0) {
+				if (strlen($objectInfo['Restore']) > 0) {
 					$explodedInfo = explode(",", $objectInfo['Restore']);
-					if($explodedInfo[0] == 'ongoing-request="false"') {
+					if ($explodedInfo[0] == 'ongoing-request="false"') {
 						return "RESTORED";
 					}
 				}
 			}
 			return $result['Contents'][0]['StorageClass'];
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			$this->logging->logError("getStorageClass", $e, $targetKey);
 			return false;
 		}
@@ -318,32 +293,28 @@ class S3_model extends CI_Model {
 				'Bucket' => $this->bucket,
 				'Key'    => $targetKey,
 				'RestoreRequest' => [
-				'Days' => 15,
-				'GlacierJobParameters' => [
-					'Tier' => 'Expedited'
+					'Days' => 15,
+					'GlacierJobParameters' => [
+						'Tier' => 'Expedited'
+					]
 				]
-				]
-				]);
-		}
-		catch (Aws\S3\Exception\S3Exception $e) {
-			if($e->getAwsErrorCode() == "GlacierExpeditedRetrievalNotAvailable") {
+			]);
+		} catch (Aws\S3\Exception\S3Exception $e) {
+			if ($e->getAwsErrorCode() == "GlacierExpeditedRetrievalNotAvailable") {
 				// try again non-expedited
 				try {
 					$result = $this->s3Client->restoreObject([
 						'Bucket' => $this->bucket,
 						'Key'    => $targetKey,
 						'RestoreRequest' => [
-						'Days' => 15,
+							'Days' => 15,
 						]
-						]);
-				}
-				catch (Aws\S3\Exception\S3Exception $e) {
+					]);
+				} catch (Aws\S3\Exception\S3Exception $e) {
 					$this->logging->logError("restoreObject", $e->__toString(), $targetKey);
 					return false;
-
 				}
-			}
-			else {
+			} else {
 				$this->logging->logError("restoreObject", $e->__toString(), $targetKey);
 				return false;
 			}
@@ -351,29 +322,28 @@ class S3_model extends CI_Model {
 	}
 
 	public function getObjectURL($targetKey) {
-		if(!$this->s3Client) {
-			throw new Exception('Missing object error');		
+		if (!$this->s3Client) {
+			throw new Exception('Missing object error');
 		}
 		return $this->s3Client->getObjectUrl($this->bucket, $targetKey);
 	}
 
-	public function getProtectedURL($targetKey, $originalName=null, $timeString="+240 minutes", $forceMimeType=null) {
+	public function getProtectedURL($targetKey, $originalName = null, $timeString = "+240 minutes", $forceMimeType = null) {
 		try {
 			$options = array();
 
 			$options["Bucket"] = $this->bucket;
 			$options["Key"] = $targetKey;
 
-			if($originalName) {
+			if ($originalName) {
 				$originalName = preg_replace('/[^\x20-\x7E]/', '', $originalName);
 				$options["ResponseContentDisposition"] = 'attachment; filename="' . $originalName . '"';
-			}
-			else {
+			} else {
 				// if we don't have an explicit filename, force S3 not to serve one.
 				// we do this mostly because Flash doesn't accept files with a content disposition.
 				$options["ResponseContentDisposition"] = '';
 			}
-			if($forceMimeType) {
+			if ($forceMimeType) {
 				$options['ResponseContentType'] = $forceMimeType;
 			}
 
@@ -381,55 +351,51 @@ class S3_model extends CI_Model {
 			$request = $this->s3Client->createPresignedRequest($cmd, $timeString);
 
 			return (string)$request->getUri();
-
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			error_log($e);
 			$this->logging->logError("getProtectedURL", $e, $targetKey);
 			return false;
 		}
-
 	}
 
-	
-	public function getSecurityTokenForPath($targetKey, $timeSeconds=3600) {
-		try {
-			
-			$client = StsClient::factory(array(
-			'region'=> 'us-east-1', // TODO should not be hardcoded
-			'version'=> '2011-06-15',
-			'credentials'=> ['key'    => $this->key,
-			'secret' => $this->secret]));
-			
-			 $policy = [
-			    'Statement' => array(
-			      array(
-			        'Sid' => 'SID' . time(),
-			        'Action' => array(
-			          's3:GetObject'
-			        ),
-			        'Effect' => 'Allow',
-			        'Resource' => 'arn:aws:s3:::' . $this->bucket . "/" . $targetKey . "*"
-			      )
-			    )
-			    ];
 
-			$sessionToken = $client->getFederationToken(["Name"=>"policy_" . substr(md5($targetKey), 0, 15), "Policy"=>json_encode($policy), "DurationSeconds"=>$timeSeconds]);
+	public function getSecurityTokenForPath($targetKey, $timeSeconds = 3600) {
+		try {
+
+			$client = StsClient::factory(array(
+				'region' => 'us-east-1', // TODO should not be hardcoded
+				'version' => '2011-06-15',
+				'credentials' => [
+					'key'    => $this->key,
+					'secret' => $this->secret
+				]
+			));
+
+			$policy = [
+				'Statement' => array(
+					array(
+						'Sid' => 'SID' . time(),
+						'Action' => array(
+							's3:GetObject'
+						),
+						'Effect' => 'Allow',
+						'Resource' => 'arn:aws:s3:::' . $this->bucket . "/" . $targetKey . "*"
+					)
+				)
+			];
+
+			$sessionToken = $client->getFederationToken(["Name" => "policy_" . substr(md5($targetKey), 0, 15), "Policy" => json_encode($policy), "DurationSeconds" => $timeSeconds]);
 
 			return $sessionToken['Credentials'];
-
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
+			echo $e;
+			$this->logging->logError("getProtectedURL", $e, $targetKey);
+			return false;
+		} catch (\Aws\Sts\Exception\StsException $e) {
 			echo $e;
 			$this->logging->logError("getProtectedURL", $e, $targetKey);
 			return false;
 		}
-		catch (\Aws\Sts\Exception\StsException $e) {
-			echo $e;
-			$this->logging->logError("getProtectedURL", $e, $targetKey);
-			return false;
-		}
-
 	}
 
 
@@ -446,9 +412,9 @@ class S3_model extends CI_Model {
 		$iterator = $this->s3Client->getIterator('ListObjects', array(
 			'Bucket' => $this->bucket,
 			'Prefix' => $targetKey
-			));
+		));
 
-		foreach($iterator as $object){
+		foreach ($iterator as $object) {
 			$objectKey = $object['Key'];
 			$metadata = $this->objectInfo($object['Key']);
 			try {
@@ -456,16 +422,14 @@ class S3_model extends CI_Model {
 					'Bucket' => $this->bucket,
 					'Key'    => $objectKey,
 					'StorageClass'   => $this->getStorageClass($targetKey),
-					'ContentType' =>$contentType,
-					'ContentDisposition'=>$metadata['ContentDisposition'],
+					'ContentType' => $contentType,
+					'ContentDisposition' => $metadata['ContentDisposition'],
 					'MetadataDirective' => 'REPLACE',
-					'CopySource'=>urlencode($this->bucket . "/" . $objectKey)
-					]);
-			}
-			catch (Exception $e) {
+					'CopySource' => urlencode($this->bucket . "/" . $objectKey)
+				]);
+			} catch (Exception $e) {
 				$this->logging->logError("setContentType", $e, $objectKey);
 			}
-
 		}
 	}
 
@@ -473,9 +437,9 @@ class S3_model extends CI_Model {
 		$iterator = $this->s3Client->getIterator('ListObjects', array(
 			'Bucket' => $this->bucket,
 			'Prefix' => $targetKey
-			));
+		));
 
-		foreach($iterator as $object){
+		foreach ($iterator as $object) {
 			$objectKey = $object['Key'];
 			try {
 				$result = $this->s3Client->copyObject([
@@ -483,51 +447,52 @@ class S3_model extends CI_Model {
 					'Key'    => $objectKey,
 					'StorageClass'   => $targetClass,
 					'MetadataDirective' => 'COPY',
-					'CopySource'=>urlencode($this->bucket . "/" . $objectKey)
-					]);
-			}
-			catch (Exception $e) {
+					'CopySource' => urlencode($this->bucket . "/" . $objectKey)
+				]);
+			} catch (Exception $e) {
 				$this->logging->logError("setStorageClass", $e, $objectKey);
 			}
 		}
-
-
 	}
 
-	public function deleteObject($targetKey, $serial=null, $mfa=null) {
+	public function deleteObject($targetKey, $serial = null, $mfa = null) {
 		set_time_limit(200);
-		if(strlen($targetKey) <24) {
+		if (strlen($targetKey) < 24) {
 			$this->logging->logError("deleteObject", "Bad or invalid error key", $targetKey);
 			return false;
 		}
 
-		if(!$serial && !$mfa && $targetKey) {
+		// Allow environment variables to override stored credentials for CLI operations
+		$awsKey = getenv('AWS_ACCESS_KEY_ID') ?: $this->key;
+		$awsSecret = getenv('AWS_SECRET_ACCESS_KEY') ?: $this->secret;
+
+		if (!$serial && !$mfa && $targetKey) {
 			// try to delete the normal way
 
 			$this->s3Client = Aws\S3\S3Client::factory(array(
-				'credentials'=>[
-				'key'    => $this->key,
-				'secret' => $this->secret],
+				'credentials' => [
+					'key'    => $awsKey,
+					'secret' => $awsSecret
+				],
 				"version" => "2006-03-01",
-	    		"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
-	    		));
-			$listObjectsParams = ['Bucket' => $this->bucket, 'Prefix' => $targetKey]; 
-			$delete = Aws\S3\BatchDelete::fromListObjects($this->s3Client, $listObjectsParams); 
+				"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
+			));
+			$listObjectsParams = ['Bucket' => $this->bucket, 'Prefix' => $targetKey];
+			$delete = Aws\S3\BatchDelete::fromListObjects($this->s3Client, $listObjectsParams);
 			$delete->delete();
-
-		}
-		else {
-			if(!$this->sessionToken) {
+		} else {
+			if (!$this->sessionToken) {
 				try {
 					$client = StsClient::factory(array(
-					'region'=> 'us-east-1', // TODO should not be hardcoded
-					'version'=> '2011-06-15',
-					'credentials'=> ['key'    => "KEY GOES HERE",
-					'secret' => "SECRET GOES HERE"]));
-					$this->sessionToken = $client->getSessionToken(["DurationSeconds"=>900, "SerialNumber"=>$serial, "TokenCode"=>$mfa]);
-				}
-
-				catch (Exception $e) {
+						'region' => 'us-east-1', // TODO should not be hardcoded
+						'version' => '2011-06-15',
+						'credentials' => [
+							'key'    => $awsKey,
+							'secret' => $awsSecret
+						]
+					));
+					$this->sessionToken = $client->getSessionToken(["DurationSeconds" => 900, "SerialNumber" => $serial, "TokenCode" => $mfa]);
+				} catch (Exception $e) {
 					echo $targetKey;
 					echo $this->bucket;
 					echo "<hr>";
@@ -539,16 +504,14 @@ class S3_model extends CI_Model {
 			try {
 				$this->s3Client = Aws\S3\S3Client::factory(array(
 					'credentials' => [
-					'key'    => $this->sessionToken['Credentials']['AccessKeyId'],
-					'secret' => $this->sessionToken['Credentials']['SecretAccessKey'],
-					'token'  => $this->sessionToken['Credentials']['SessionToken']
+						'key'    => $this->sessionToken['Credentials']['AccessKeyId'],
+						'secret' => $this->sessionToken['Credentials']['SecretAccessKey'],
+						'token'  => $this->sessionToken['Credentials']['SessionToken']
 					],
 					"version" => "2006-03-01",
-	    			"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
-	    			));
-			}
-
-			catch (Exception $e) {
+					"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
+				));
+			} catch (Exception $e) {
 				echo $targetKey;
 				echo $this->bucket;
 				echo "<hr>";
@@ -559,23 +522,19 @@ class S3_model extends CI_Model {
 
 
 			try {
-				if(!$this->bucket) {
+				if (!$this->bucket) {
 					$this->logging->logError("missing bucket", "missing bucket for " . $targetKey . " " . $this->bucket);
 					return false;
 				}
 				$this->s3Client->deleteMatchingObjects($this->bucket, $targetKey);
-			}
-			catch (Exception $e) {
+			} catch (Exception $e) {
 				echo $e;
 				return false;
 			}
-
-
 		}
 
 		return true;
 	}
-
 }
 
 /* End of file  */
