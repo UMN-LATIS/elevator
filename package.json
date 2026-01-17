@@ -3,6 +3,7 @@
     "dev": "npm run development",
     "docs:build": "cd docs; vuepress build",
     "docs:dev": "cd docs; vuepress dev",
+    "docs:deploy": "npm run docs:build && npx gh-pages -d docs/.vuepress/dist",
     "ui:build": "(cd assets/elevator-ui && yarn build)",
     "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)",
     "gulp": "gulp"

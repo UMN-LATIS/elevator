@@ -7,12 +7,19 @@ class Errorhandler_helper {
 		$e = new Exception;
 		$CI->logging->logError($error, $e->getTraceAsString());
 		$CI->useUnauthenticatedTemplate = true;
-		if(file_exists("application/views/errors/". $error . ".php")) {
-			$view = "errors/" . $error;
+		
+		// Sanitize error name - only allow alphanumeric and underscores
+		$sanitizedError = preg_replace('/[^a-zA-Z0-9_]/', '', $error);
+		
+		// Use whitelist approach - only load view if sanitized name matches original
+		// This prevents path traversal attacks
+		if($sanitizedError === $error && file_exists("application/views/errors/". $sanitizedError . ".php")) {
+			$view = "errors/" . $sanitizedError;
 		}
 		else {
-			$view = "errors/genericError";
+			$view = "errors/noPermission";
 		}
+		
 		if($inline) {
 			echo $CI->load->view($view, array(), true);
 		}

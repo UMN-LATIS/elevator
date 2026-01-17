@@ -39,7 +39,7 @@
     "sentry/sdk": "^4.0",
     "vlucas/phpdotenv": "^5.6",
     "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2",
-    "pda/pheanstalk": "dev-master",
+    "pda/pheanstalk": "^7.1.0",
     "onelogin/php-saml": "^4.0.0",
     "deployer/deployer": "^7.0",
     "symfony/cache": "^6.4",

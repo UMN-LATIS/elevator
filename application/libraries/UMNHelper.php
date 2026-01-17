@@ -71,24 +71,9 @@ class UMNHelper extends AuthHelper
 		
 		$outputArray = parent::autocompleteUsername($partialUsername);
 
-		$userMatches = $this->findUserByUsername($partialUsername);
-		foreach($userMatches as $user) {
-			$tempArray = ["name"=>$user->getDisplayName(), "email"=>$user->getEmail(), "completionId"=>$user->getId(), "username"=>$user->getUsername()];
-
-			$duplicate = false;
-			foreach($outputArray as $entry) {
-				if($entry["username"] == $user->getUsername()) {
-					$duplicate = true;
-				}
-			}
-
-			if(!$duplicate) {
-				array_unshift($outputArray, $tempArray);
-			}
-		}
 
 		// now wildcard names
-		$userMatches = $this->findUserByName($partialUsername);
+		$userMatches = $this->findUser($partialUsername);
 
 		$i = 0;
 		foreach($userMatches as $user) {
@@ -233,103 +218,31 @@ class UMNHelper extends AuthHelper
 	}
 
 	public function findById($key, $createMissing=false) {
-		return $this->findUser($key, "umndid", $createMissing);
+		return $this->findUser($key);
 	}
 
 	public function findUserByUsername($key, $createMissing=false) {
-		return $this->findUser($key, "uid", $createMissing);
+		return $this->findUser($key);
 	}
 
 	public function findUserByName($key, $createMissing = false) {
-		return $this->findUser("*".str_replace(" ", "* ", $key) . "*", "displayname", $createMissing);
+		return $this->findUser($key);
 	}
 
-	public function findUser($key, $field, $createMissing = false) {
-		$CI =& get_instance();
-		$ldap_host = $CI->config->item('ldapURI');
-		$base_dn = array($CI->config->item('ldapSearchBase'),);
-		$filter = "($field=" . $key. ")";
-		$connect = ldap_connect( $ldap_host);
+	public function findUser($key) {		
+		$results = $this->fetchBandaidResult("/api/names/autocomplete/" . urlencode($key));
 
-		ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
-		ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
-
-		if($CI->config->item('ldapUsername') != "") {
-			$r=ldap_bind($connect, $CI->config->item('ldapUsername'), $CI->config->item('ldapPassword'));
+		if(!is_array($results)) {
+			return [];
 		}
-		else {
-			$r=ldap_bind($connect);
+		foreach($results as $entry) {
+			log_message('error', 'UMNHelper::findUser: ' . json_encode($entry)	);
+			$user = new Entity\User;
+			$user->setUsername($entry->UMNDID);
+			$user->setDisplayName($entry->NAME);
+			$user->setEmail($entry->INTERNET_ID . "@umn.edu");
+			$returnArray[] = $user;
 		}
-
-		$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
-		      or exit(">>Unable to search ldap server<<");
-		$returnArray = array();
-
-
-		foreach($search as $readItem) {
-
-			$info = ldap_get_entries($connect, $readItem);
-			if($info["count"] == 0) {
-				break;
-			}
-			foreach($info as $entry) {
-				if(!isset($entry["umndid"])) {
-					continue;
-				}
-				$user = new Entity\User;
-				$user->setUsername($entry["umndid"][0]);
-				if(!isset($entry["displayname"])) {
-					$user->setDisplayName(@$entry["umndisplaymail"][0]);
-				}
-				else {
-					$user->setDisplayName($entry["displayname"][0]);
-				}
-
-				$user->setEmail(@$entry["umndisplaymail"][0]);
-
-				$returnArray[] = $user;
-			}
-
-		}
-
-		// // hacky fallback temporarily
-		// if(count($returnArray) == 0) {
-		// 	ldap_unbind($connect);
-		// 	$connect = ldap_connect( $ldap_host);
-		// 	$r=ldap_bind($connect);
-		// 	$search = ldap_search([$connect], $base_dn, $filter, [], 0, 10)
-		//       or exit(">>Unable to search ldap server<<");
-			
-		// 	foreach($search as $readItem) {
-
-		// 		$info = ldap_get_entries($connect, $readItem);
-		// 		if($info["count"] == 0) {
-		// 			break;
-		// 		}
-		// 		foreach($info as $entry) {
-		// 			if(!isset($entry["umndid"])) {
-		// 				continue;
-		// 			}
-		// 			$user = new Entity\User;
-		// 			$user->setUsername($entry["umndid"][0]);
-		// 			if(!isset($entry["displayname"])) {
-		// 				$user->setDisplayName(@$entry["umndisplaymail"][0]);
-		// 			}
-		// 			else {
-		// 				$user->setDisplayName($entry["displayname"][0]);
-		// 			}
-
-		// 			$user->setEmail(@$entry["umndisplaymail"][0]);
-
-		// 			$returnArray[] = $user;
-		// 		}
-
-		// 	}
-
-		// }
-
-		
-
 
 		return $returnArray;
 	}
