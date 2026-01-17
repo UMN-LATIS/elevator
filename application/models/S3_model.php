@@ -492,7 +492,7 @@ class S3_model extends CI_Model {
 						]
 					));
 					$this->sessionToken = $client->getSessionToken(["DurationSeconds" => 900, "SerialNumber" => $serial, "TokenCode" => $mfa]);
-				} catch (Exception $e) {
+				} catch (Aws\Sts\Exception\StsException $e) {
 					echo $targetKey;
 					echo $this->bucket;
 					echo "<hr>";
@@ -511,12 +511,12 @@ class S3_model extends CI_Model {
 					"version" => "2006-03-01",
 					"region" => "us-east-1" // TODO: SHOULD NOT BE HARDCODED
 				));
-			} catch (Exception $e) {
+			} catch (Aws\S3\Exception\S3Exception $e) {
 				echo $targetKey;
 				echo $this->bucket;
 				echo "<hr>";
 				echo $e;
-				$this->logging->logError("failed creating token", $e);
+				$this->lgging->logError("failed creating token", $e);
 				return false;
 			}
 
