@@ -483,6 +483,7 @@ class S3_model extends CI_Model {
 		} else {
 			if (!$this->sessionToken) {
 				try {
+					echo "[DEBUG] About to request session token with serial: $serial\n";
 					$client = StsClient::factory(array(
 						'region' => 'us-east-1', // TODO should not be hardcoded
 						'version' => '2011-06-15',
@@ -491,13 +492,20 @@ class S3_model extends CI_Model {
 							'secret' => $awsSecret
 						]
 					));
+					echo "[DEBUG] STS Client created successfully\n";
 					$this->sessionToken = $client->getSessionToken(["DurationSeconds" => 900, "SerialNumber" => $serial, "TokenCode" => $mfa]);
-				} catch (Aws\Sts\Exception\StsException $e) {
-					echo $targetKey;
-					echo $this->bucket;
-					echo "<hr>";
-					echo $e;
-					$this->logging->logError("failed creating token", $e);
+					echo "[DEBUG] Session token obtained successfully\n";
+				} catch (\Aws\Exception\AwsException $e) {
+					echo "[CAUGHT AwsException] " . $e->getAwsErrorCode() . ": " . $e->getAwsErrorMessage() . "\n";
+					$this->logging->logError("failed creating token - AwsException", $e->getAwsErrorCode() . ": " . $e->getAwsErrorMessage());
+					return false;
+				} catch (Throwable $e) {
+					echo "[CAUGHT Throwable] " . get_class($e) . ": " . $e->getMessage() . "\n";
+					$this->logging->logError("failed creating token - Throwable", get_class($e) . ": " . $e->getMessage());
+					return false;
+				} catch (Exception $e) {
+					echo "[CAUGHT Exception] " . $e->getMessage() . "\n";
+					$this->logging->logError("failed creating token - Exception", $e->getMessage());
 					return false;
 				}
 			}

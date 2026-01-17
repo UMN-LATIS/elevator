@@ -835,8 +835,17 @@ class admin extends Admin_Controller {
 		// Query all deleted filehandlers with no derivatives
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\FileHandler", 'f')
+			->innerJoin("Entity\Collection", 'c', 'ON', 'f.collectionId = c.id')
 			->select("f")
 			->where("f.deleted = TRUE");
+
+		// Filter by bucket if provided via environment variable
+		$bucketName = getenv('AWS_BUCKET_NAME');
+		if ($bucketName) {
+			$qb->andWhere("c.bucket = ?1")
+				->setParameter(1, $bucketName);
+			echo "[INFO] Filtering by bucket: $bucketName\n";
+		}
 
 		$result = $qb->getQuery()->iterate();
 
