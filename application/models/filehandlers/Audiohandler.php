@@ -88,7 +88,13 @@ class AudioHandler extends FileHandlerBase {
 
 	public function getAltWidget() {
 		$widgetContents = $this->getUploadWidget();
-		$widget = $widgetContents->parentWidget;
+		if($widgetContents) {
+			$widget = $widgetContents;
+		}
+		else {
+			return false;
+		}
+		
 		if(isset($widget->thumbnailTarget)) {
 			$targetField = $widget->thumbnailTarget;
 			if(!isset($this->parentObject->assetObjects[$targetField])) {
