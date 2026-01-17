@@ -783,18 +783,24 @@ class admin extends Admin_Controller {
 	 * Environment variables required:
 	 *  - AWS_ACCESS_KEY_ID: AWS IAM user access key
 	 *  - AWS_SECRET_ACCESS_KEY: AWS IAM user secret key
+	 *  - AWS_MFA_SERIAL: MFA device ARN (e.g., arn:aws:iam::123456789:mfa/myuser)
+	 *  - AWS_MFA_TOKEN: 6-digit MFA token
 	 * 
 	 * Usage: 
-	 *   AWS_ACCESS_KEY_ID=<key> AWS_SECRET_ACCESS_KEY=<secret> \
-	 *   php index.php admin purgeOrphanedDeletedFiles <mfa_serial> <mfa_token>
+	 *   AWS_ACCESS_KEY_ID=<key> \
+	 *   AWS_SECRET_ACCESS_KEY=<secret> \
+	 *   AWS_MFA_SERIAL=<mfa_arn> \
+	 *   AWS_MFA_TOKEN=<token> \
+	 *   php index.php admin purgeOrphanedDeletedFiles
 	 * 
 	 * Example:
 	 *   AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
 	 *   AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
-	 *   php index.php admin purgeOrphanedDeletedFiles \
-	 *   "arn:aws:iam::123456789:mfa/myuser" "123456"
+	 *   AWS_MFA_SERIAL="arn:aws:iam::123456789:mfa/myuser" \
+	 *   AWS_MFA_TOKEN="123456" \
+	 *   php index.php admin purgeOrphanedDeletedFiles
 	 */
-	public function purgeOrphanedDeletedFiles($mfaSerial = null, $mfaToken = null) {
+	public function purgeOrphanedDeletedFiles() {
 		if (!$this->input->is_cli_request()) {
 			echo "This command can only be invoked via CLI\n";
 			return;
@@ -803,10 +809,24 @@ class admin extends Admin_Controller {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
 
+		// Read MFA credentials from environment variables
+		$mfaSerial = getenv('AWS_MFA_SERIAL');
+		$mfaToken = getenv('AWS_MFA_TOKEN');
+
 		if (!$mfaSerial || !$mfaToken) {
 			echo "MFA serial and token are required\n";
-			echo "Usage: AWS_ACCESS_KEY_ID=<key> AWS_SECRET_ACCESS_KEY=<secret> php index.php admin purgeOrphanedDeletedFiles <mfa_serial> <mfa_token>\n";
-			echo "Example: AWS_ACCESS_KEY_ID=AKIA... AWS_SECRET_ACCESS_KEY=wJal... php index.php admin purgeOrphanedDeletedFiles \"arn:aws:iam::123456789:mfa/user\" \"123456\"\n";
+			echo "Usage:\n";
+			echo "  AWS_ACCESS_KEY_ID=<key> \\\n";
+			echo "  AWS_SECRET_ACCESS_KEY=<secret> \\\n";
+			echo "  AWS_MFA_SERIAL=<mfa_arn> \\\n";
+			echo "  AWS_MFA_TOKEN=<token> \\\n";
+			echo "  php index.php admin purgeOrphanedDeletedFiles\n";
+			echo "\nExample:\n";
+			echo "  AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \\\n";
+			echo "  AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \\\n";
+			echo "  AWS_MFA_SERIAL=\"arn:aws:iam::123456789:mfa/myuser\" \\\n";
+			echo "  AWS_MFA_TOKEN=\"123456\" \\\n";
+			echo "  php index.php admin purgeOrphanedDeletedFiles\n";
 			return;
 		}
 
