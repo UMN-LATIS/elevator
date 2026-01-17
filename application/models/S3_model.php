@@ -527,7 +527,7 @@ class S3_model extends CI_Model {
 					return false;
 				}
 				$this->s3Client->deleteMatchingObjects($this->bucket, $targetKey);
-			} catch (Exception $e) {
+			} catch (Aws\S3\Exception\S3Exception $e) {
 				echo $e;
 				return false;
 			}
