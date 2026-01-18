@@ -151,7 +151,13 @@ class AudioHandler extends FileHandlerBase {
 			$jobId = $this->getTranscodeCommand()->createDerivative($this->getObjectId(), $nextDerivative);	
 		}
 
+		if(!$this->instance) {
+			echo "no instance\n";
 
+		}
+		if(!$this->instance->getAutomaticAltText()) {
+			echo "automatic alt text not enabled\n";
+		}
 		if($this->instance && $this->instance->getAutomaticAltText()) {
 		//&& $this->instance->enableAutomaticAccessibility) {
 			echo "Generating captions for " . $this->getObjectId() . "\n";

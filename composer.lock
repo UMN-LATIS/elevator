@@ -290,12 +290,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/cmcfadden/phpvideotoolkit-v2.git",
-                "reference": "d236c59bf3defe09e134bd9f225dfcd90b6637fc"
+                "reference": "17b09b7d2bd5763c7675570f503d1ae1297fa0c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cmcfadden/phpvideotoolkit-v2/zipball/d236c59bf3defe09e134bd9f225dfcd90b6637fc",
-                "reference": "d236c59bf3defe09e134bd9f225dfcd90b6637fc",
+                "url": "https://api.github.com/repos/cmcfadden/phpvideotoolkit-v2/zipball/17b09b7d2bd5763c7675570f503d1ae1297fa0c2",
+                "reference": "17b09b7d2bd5763c7675570f503d1ae1297fa0c2",
                 "shasum": ""
             },
             "require": {
@@ -338,7 +338,7 @@
             "support": {
                 "source": "https://github.com/cmcfadden/phpvideotoolkit-v2/tree/master"
             },
-            "time": "2026-01-17T23:49:31+00:00"
+            "time": "2026-01-18T00:06:49+00:00"
         },
         {
             "name": "cocur/background-process",
