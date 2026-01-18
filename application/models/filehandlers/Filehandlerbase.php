@@ -244,7 +244,7 @@ class FileHandlerBase extends CI_Model {
 				$collection = $this->collection_model->getCollection($this->collectionId);
 				if($collection) {
 					$instances = $collection->getInstances();
-					if($instances && ) {
+					if($instances && $instances->count() > 0) {
 						$instance = $instances->first();
 						$instanceId = $instance->getId();
 					}
