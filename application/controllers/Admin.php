@@ -43,7 +43,6 @@ class admin extends Admin_Controller {
 		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
 
 		foreach ($result as $entry) {
-			$entry = $entry[0];
 			$assetModel = new Asset_model();
 			echo "Processing " . $entry->getAssetId() . "\n";
 			$assetModel->loadAssetFromRecord($entry);
@@ -852,7 +851,6 @@ class admin extends Admin_Controller {
 		$lastUsedToken = null;
 
 		foreach ($result as $entry) {
-			$fileEntry = $entry[0];
 
 			// Skip if this filehandler has derivatives
 			$derivatives = $fileEntry->getDerivatives();

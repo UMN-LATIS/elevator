@@ -96,9 +96,9 @@ class Beltdrive extends CI_Controller {
 			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
 			if($collection) {
 				$instances = $collection->getInstances();
-				if(count($instances) > 0) {
-					$instance = $instances[0];
-					$instanceId = $instance->getId();
+				
+				if($instances && $instances->count() > 0) {
+					$instance = $instances->first();
 					$this->instance = $instance;
 				}
 			}

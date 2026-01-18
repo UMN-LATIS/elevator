@@ -71,9 +71,9 @@ host('wisc')
 // Hooks
 
 
-before('deploy:writable', 'elevator:create_proxies');
+before('deploy:writable', 'elevator:create_proxies_folder');
 // tasks
-task('elevator:create_proxies', function () {
+task('elevator:create_proxies_folder', function () {
     run('cd {{release_path}} && mkdir -p application/models/Proxies');
 });
 
@@ -112,7 +112,7 @@ task('elevator:create_revision_file', function () {
     run('cd {{release_path}} && echo "{{release_revision}}" > REVISION');
 });
 
-after('elevator:create_revision_file', 'elevator:create_proxies');
+after('deploy:vendors', 'elevator:create_proxies');
 task('elevator:create_proxies', function () {
     run('cd {{release_path}} && php doctrine.php orm:generate-proxies');
 });
