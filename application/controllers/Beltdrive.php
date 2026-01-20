@@ -544,10 +544,9 @@ class Beltdrive extends CI_Controller {
 				$qb->andWhere("a.templateId = ?1");
 				$qb->setParameter(1, $templateToReindex);
 
-				$result = $qb->getQuery()->iterate();
+				$result = $qb->getQuery()->toIterable();
 
 				foreach($result as $entry) {
-					$entry = array_pop($entry);
 					$newTask = json_encode(["objectId"=>$entry["assetId"], "instance"=>$instanceId]);
 					$tube = new Pheanstalk\Values\TubeName('reindex');
 					$pheanstalk->useTube($tube);
@@ -576,10 +575,14 @@ class Beltdrive extends CI_Controller {
 		
 		$manager = $this->doctrine->em->getConnection();
 
-		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
+		$sql = 'SELECT template_id FROM widgets WHERE field_data @> :defaultTemplate OR field_data @> :matchAgainst';
+		$results = $manager->executeQuery($sql, [
+			'defaultTemplate' => json_encode(['defaultTemplate' => (int)$templateId]),
+			'matchAgainst' => json_encode(['matchAgainst' => [(int)$templateId]])
+		]);
 		$foundItems = array();
 		if($results) {
-			$records = $results->fetchAll();
+			$records = $results->fetchAllAssociative();
 			
 			if(count($records)>0) {
 				foreach($records as $record) {
