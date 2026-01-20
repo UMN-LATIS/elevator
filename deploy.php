@@ -17,6 +17,7 @@ set('shared_files', ['.env']);
 add('shared_dirs', []);
 add('writable_dirs', ['application/models/Proxies']);
 set('keep_releases', 5);
+set('branch', 'main');
 // Hosts
 
 host('cla-dev')

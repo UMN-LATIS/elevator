@@ -562,7 +562,7 @@ class User_model extends CI_Model {
 		$apiKey->setApiKey(sha1($this->userId . "secretHash"));
 		$apiKey->setApiSecret(sha1($this->userId . "secretKey"));
 		$apiKey->setOwner($this->user);
-		$apiKey->setRead(true);
+		$apiKey->setAllowsRead(true);
 		$this->doctrine->em->persist($apiKey);
 
 		$this->doctrine->em->flush();
