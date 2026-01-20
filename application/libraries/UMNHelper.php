@@ -167,6 +167,9 @@ class UMNHelper extends AuthHelper
 				}
 				if($map['eduPersonAffiliation']) {
 					$employeeType = $map['eduPersonAffiliation'];
+					if(is_string($employeeType)) {
+						$employeeType = [$employeeType];
+					}
 				}
 			}
 			
