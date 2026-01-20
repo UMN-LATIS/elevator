@@ -34,7 +34,7 @@ class admin extends Admin_Controller {
 		$qb->andWhere("a.collectionId = ?1");
 		$qb->setParameter(1, $collectionId);
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 		$count = 0;
 		$this->load->model("asset_model");
 
@@ -541,7 +541,7 @@ class admin extends Admin_Controller {
 			->setParameter(":collections", $collections)
 			->orderby("a.modifiedAt", "desc");
 
-		$assets = $qb->getQuery()->execute();
+		$assets = $qb->getQuery()->getResult();
 
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
@@ -843,7 +843,7 @@ class admin extends Admin_Controller {
 			echo "[INFO] Filtering by bucket: $bucketName\n";
 		}
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
 		$count = 0;
 		$skipped = 0;
