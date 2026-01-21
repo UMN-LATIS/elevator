@@ -238,6 +238,7 @@ class UMNHelper extends AuthHelper
 		if(!is_array($results)) {
 			return [];
 		}
+		$returnArray = array();
 		foreach($results as $entry) {
 			log_message('error', 'UMNHelper::findUser: ' . json_encode($entry)	);
 			$user = new Entity\User;
