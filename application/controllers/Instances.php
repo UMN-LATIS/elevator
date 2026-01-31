@@ -136,6 +136,7 @@ class Instances extends Instance_Controller {
 		$this->doctrine->em->flush();
 
 		instance_redirect('instances/edit/' . $instance->getId());
+	}
 
 	public function getInstance($id): void
 	{
