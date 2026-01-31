@@ -137,12 +137,81 @@ class Instances extends Instance_Controller {
 
 		instance_redirect('instances/edit/' . $instance->getId());
 
-	}
-
-	public function edit($id=null)
+	public function getInstance($id): void
 	{
 
-		if($id) {
+		if (!is_numeric($id)) {
+			render_json([
+				'error' => 'Instance ID required'
+			], 400);
+			return;
+		}
+
+		$instance = $this->doctrine->em->find(Entity\Instance::class, $id);
+
+		if ($instance === null) {
+			render_json([
+				'error' => 'Instance not found'
+			], 404);
+			return;
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
+
+		if ($accessLevel < PERM_ADMIN || !$this->user_model->getIsSuperAdmin()) {
+			render_json([
+				'error' => 'No permission to access this instance'
+			], 403);
+			return;
+		}
+
+		render_json([
+			'id' => $instance->getId(),
+			'name' => $instance->getName(),
+			'domain' => $instance->getDomain(),
+			// url (https or mailto)
+			'ownerHomepage' => $instance->getOwnerHomepage(),
+			'googleAnalyticsKey' => $instance->getGoogleAnalyticsKey(),
+			'featuredAsset' => $instance->getFeaturedAsset(),
+			'featuredAssetText' => $instance->getFeaturedAssetText(),
+			'notes' => $instance->getNotes(),
+			'amazonS3Key' => $instance->getAmazonS3Key(),
+			// 'amazonS3Secret' => $instance->getAmazonS3Secret(),
+			'defaultBucket' => $instance->getDefaultBucket(),
+			'bucketRegion' => $instance->getBucketRegion(),
+			'useCustomHeader' => $instance->getUseCustomHeader(),
+			'customHeader' => $instance->getCustomHeaderText(),
+			'customFooter' => $instance->getCustomFooterText(),
+			'customCSS' => $instance->getCustomHeaderCSS(),
+			'enableInterstitial' => $instance->getEnableInterstitial(),
+			'interstitialText' => $instance->getInterstitialText(),
+			'useHeaderLogo' => $instance->getUseHeaderLogo(),
+			'interfaceVersion' => $instance->getInterfaceVersion(),
+			'useCentralAuth' => $instance->getUseCentralAuth(),
+			'hideVideoAudio' => $instance->getHideVideoAudio(),
+			'enableHLSStreaming' => $instance->getEnableHLSStreaming(),
+			'allowIndexing' => $instance->getAllowIndexing(),
+			'showCollectionInSearchResults' => $instance->getShowCollectionInSearchResults(),
+			'showTemplateInSearchResults' => $instance->getShowTemplateInSearchResults(),
+			'showPreviousNextSearchResults' => $instance->getShowPreviousNextSearchResults(),
+			'useVoyagerViewer' => $instance->getUseVoyagerViewer(),
+			'automaticAltText' => $instance->getAutomaticAltText(),
+			'autoloadMaxSearchResults' => $instance->getAutoloadMaxSearchResults(),
+			'enableTheming' => $instance->getEnableThemes(),
+			'defaultTheme' => $instance->getDefaultTheme(),
+			'availableThemes' => $instance->getAvailableThemes(),
+			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
+			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
+			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
+		]);
+	}
+
+	public function edit($id = null, $returnJson = false)
+	{
+
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
 			$data['instance'] = $this->doctrine->em->find('Entity\Instance', $id);
 			$accessLevel = $this->user_model->getAccessLevel("instance", $data['instance']);
 			if($accessLevel<PERM_ADMIN) {
