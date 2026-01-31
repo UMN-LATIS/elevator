@@ -213,6 +213,8 @@ class Instances extends Instance_Controller {
 		if ($this->isUsingVueUI() && !$returnJson) {
 			return $this->template->publish('vueTemplate');
 		}
+
+		if($id) {
 			$data['instance'] = $this->doctrine->em->find('Entity\Instance', $id);
 			$accessLevel = $this->user_model->getAccessLevel("instance", $data['instance']);
 			if($accessLevel<PERM_ADMIN) {
