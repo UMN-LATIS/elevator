@@ -177,7 +177,7 @@ class Instances extends Instance_Controller {
 			'featuredAssetText' => $instance->getFeaturedAssetText(),
 			'notes' => $instance->getNotes(),
 			'amazonS3Key' => $instance->getAmazonS3Key(),
-			// 'amazonS3Secret' => $instance->getAmazonS3Secret(),
+			'amazonS3Secret' => $instance->getAmazonS3Secret(),
 			'defaultBucket' => $instance->getDefaultBucket(),
 			'bucketRegion' => $instance->getBucketRegion(),
 			'useCustomHeader' => $instance->getUseCustomHeader(),
