@@ -75,7 +75,7 @@ class Instances extends Instance_Controller {
 		if (!$this->isUserAuthed()) {
 			return $returnJson
 				? render_json(['error' => 'Authentication required'], 401)
-				: instance_redirect("/loginManager/localLogin");
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
 
 		$instanceId = $this->input->post("instanceId");
