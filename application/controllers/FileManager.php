@@ -463,6 +463,12 @@ class FileManager extends Instance_Controller {
 		$metadata = $fileHandler->sourceFile->metadata;
 		$metadata['sourcefile'] = $fileHandler->sourceFile->originalFilename;
 		$metadata["handlerType"] = get_class($fileHandler);
+
+		$uploadWidget = $fileHandler->getUploadWidget();
+		if($uploadWidget && isset($uploadWidget->parentWidget) && isset($uploadWidget->parentWidget->extractLocation) && $uploadWidget->parentWidgetextractLocation == false) {
+			unset($metadata['coordinates']);
+		}
+
 		return render_json($metadata);
 
 	}
