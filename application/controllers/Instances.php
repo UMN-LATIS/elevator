@@ -2,6 +2,57 @@
 
 class Instances extends Instance_Controller {
 
+	private function isUserAuthed(): bool
+	{
+		return $this->user_model->userLoaded;
+	}
+
+	private function toInstanceArray(Entity\Instance $instance): array
+	{
+		return [
+			'id' => $instance->getId(),
+			'name' => $instance->getName(),
+			'domain' => $instance->getDomain(),
+			// url (https or mailto)
+			'ownerHomepage' => $instance->getOwnerHomepage(),
+			'googleAnalyticsKey' => $instance->getGoogleAnalyticsKey(),
+			'featuredAsset' => $instance->getFeaturedAsset(),
+			'featuredAssetText' => $instance->getFeaturedAssetText(),
+			'notes' => $instance->getNotes(),
+			'amazonS3Key' => $instance->getAmazonS3Key(),
+			'amazonS3Secret' => $instance->getAmazonS3Secret(),
+			'defaultBucket' => $instance->getDefaultBucket(),
+			'bucketRegion' => $instance->getBucketRegion(),
+			'useCustomHeader' => $instance->getUseCustomHeader(),
+			'customHeader' => $instance->getCustomHeaderText(),
+			'customFooter' => $instance->getCustomFooterText(),
+			'useCustomCSS' => $instance->getUseCustomCSS(),
+			'customCSS' => $instance->getCustomHeaderCSS(),
+			'enableInterstitial' => $instance->getEnableInterstitial(),
+			'interstitialText' => $instance->getInterstitialText(),
+			'useHeaderLogo' => $instance->getUseHeaderLogo(),
+			'interfaceVersion' => $instance->getInterfaceVersion(),
+			'useCentralAuth' => $instance->getUseCentralAuth(),
+			'hideVideoAudio' => $instance->getHideVideoAudio(),
+			'enableHLSStreaming' => $instance->getEnableHLSStreaming(),
+			'allowIndexing' => $instance->getAllowIndexing(),
+			'showCollectionInSearchResults' => $instance->getShowCollectionInSearchResults(),
+			'showTemplateInSearchResults' => $instance->getShowTemplateInSearchResults(),
+			'showPreviousNextSearchResults' => $instance->getShowPreviousNextSearchResults(),
+			'useVoyagerViewer' => $instance->getUseVoyagerViewer(),
+			'automaticAltText' => $instance->getAutomaticAltText(),
+			'autoloadMaxSearchResults' => $instance->getAutoloadMaxSearchResults(),
+			'enableTheming' => $instance->getEnableThemes(),
+			'defaultTheme' => $instance->getDefaultTheme(),
+			'availableThemes' => $instance->getAvailableThemes(),
+			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
+			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
+			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
+			'createdAt' => $instance->getCreatedAt()?->format('c'),
+			'modifiedAt' => $instance->getModifiedAt()?->format('c')
+		];
+	}
+
 	public function index()
 	{
 		if(!$this->user_model->getIsSuperAdmin()) {
@@ -19,28 +70,40 @@ class Instances extends Instance_Controller {
 
 	}
 
-	public function save()
+	public function save($returnJson = false)
 	{
-
-
-		//TODO Permissions checking
-
-		if(is_numeric($this->input->post("instanceId"))) {
-			$instance = $this->doctrine->em->find('Entity\Instance', $this->input->post("instanceId"));
-			$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
-			if($accessLevel<PERM_ADMIN) {
-				instance_redirect("/errorHandler/error/noPermission");
-				return;
-			}
-			$page = null;
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
-		else {
-			if(!$this->user_model->getIsSuperAdmin()) {
-				instance_redirect("errorHandler/error/noPermission");
-				return;
+
+		$instanceId = $this->input->post("instanceId");
+		$isExistingInstance = is_numeric($instanceId);
+
+		if ($isExistingInstance) {
+			$instance = $this->doctrine->em->find(Entity\Instance::class, $instanceId);
+			$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
+			if ($accessLevel < PERM_ADMIN) {
+				return $returnJson
+					? render_json(['error' => 'No permission to edit this instance'], 403)
+					: instance_redirect("/errorHandler/error/noPermission");
 			}
+		}
+
+		if (!$isExistingInstance && !$this->user_model->getIsSuperAdmin()) {
+			return $returnJson
+				? render_json(['error' => 'No permission to create instance'], 403)
+				: instance_redirect("errorHandler/error/noPermission");
+		}
+
+		if (!$isExistingInstance) {
 			$instance = new Entity\Instance();
 			$instance->setCreatedAt(new DateTime);
+		}
+
+		$page = null;
+		if (!$isExistingInstance) {
 			$page = new Entity\InstancePage();
 			$page->setTitle("Home Page");
 			$page->setInstance($instance);
@@ -135,12 +198,42 @@ class Instances extends Instance_Controller {
 		}
 		$this->doctrine->em->flush();
 
-		instance_redirect('instances/edit/' . $instance->getId());
-
+		return $returnJson
+			? render_json($this->toInstanceArray($instance), 200)
+			: instance_redirect('instances/edit/' . $instance->getId());
 	}
 
-	public function edit($id=null)
+	public function getInstance($id = null)
 	{
+		if (!is_numeric($id)) {
+			return render_json(['error' => 'Instance ID required'], 400);
+		}
+
+		if (!$this->isUserAuthed()) {
+			return render_json(['error' => 'Authentication required'], 401);
+		}
+
+		$instance = $this->doctrine->em->find(Entity\Instance::class, $id);
+
+		if ($instance === null) {
+			return render_json(['error' => 'Instance not found'], 404);
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
+
+		if ($accessLevel < PERM_ADMIN && !$this->user_model->getIsSuperAdmin()) {
+			return render_json(['error' => 'No permission to access this instance'], 403);
+		}
+
+		render_json($this->toInstanceArray($instance));
+	}
+
+	public function edit($id = null, $returnJson = false)
+	{
+
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		if($id) {
 			$data['instance'] = $this->doctrine->em->find('Entity\Instance', $id);
