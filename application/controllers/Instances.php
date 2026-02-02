@@ -48,8 +48,8 @@ class Instances extends Instance_Controller {
 			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
 			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
 			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
-			'createdAt' => $instance->getCreatedAt()->format('c'),
-			'modifiedAt' => $instance->getModifiedAt()->format('c')
+			'createdAt' => $instance->getCreatedAt()?->format('c'),
+			'modifiedAt' => $instance->getModifiedAt()?->format('c')
 		];
 	}
 
