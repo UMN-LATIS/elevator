@@ -47,7 +47,9 @@ class Instances extends Instance_Controller {
 			'availableThemes' => $instance->getAvailableThemes(),
 			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
 			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
-			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight()
+			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
+			'createdAt' => $instance->getCreatedAt()?->format('c'),
+			'modifiedAt' => $instance->getModifiedAt()?->format('c')
 		];
 	}
 
