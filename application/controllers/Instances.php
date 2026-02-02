@@ -7,6 +7,19 @@ class Instances extends Instance_Controller {
 		return $this->user_model->userLoaded;
 	}
 
+	private function toPageArray(Entity\InstancePage $page): array
+	{
+		return [
+			'id' => $page->getId(),
+			'title' => $page->getTitle(),
+			'body' => $page->getBody(),
+			'includeInHeader' => $page->getIncludeInHeader(),
+			'sortOrder' => $page->getSortOrder(),
+			'parentId' => $page->getParent()?->getId(),
+			'modifiedAt' => $page->getModifiedAt()?->format('c'),
+		];
+	}
+
 	private function toInstanceArray(Entity\Instance $instance): array
 	{
 		return [
@@ -284,15 +297,37 @@ class Instances extends Instance_Controller {
 	}
 
 
-	public function customPages() {
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+	public function customPages($returnJson = false)
+	{
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
 		}
+
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to access custom pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$pages = $this->instance->getPages();
+
+		if ($returnJson) {
+			$pagesArray = array_map(
+				fn($page) => $this->toPageArray($page),
+				$pages->toArray()
+			);
+			return render_json($pagesArray);
+		}
+
 		$this->template->title = 'Custom Pages';
-		$this->template->content->view('instances/pageList', ["pages"=>$pages]);
+		$this->template->content->view('instances/pageList', ["pages" => $pages]);
 		$this->template->publish();
 	}
 
