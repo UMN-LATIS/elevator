@@ -343,15 +343,41 @@ class Instances extends Instance_Controller {
 
 		$this->doctrine->em->flush();
 		instance_redirect("/instances/customPages");
+
 	}
-	
-	public function editPage($pageId = null)
+
+	public function getPage($pageId = null)
 	{
+		if (!is_numeric($pageId)) {
+			return render_json(['error' => 'Page ID required'], 400);
+		}
+
+		if (!$this->isUserAuthed()) {
+			return render_json(['error' => 'Authentication required'], 401);
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+
+		if ($accessLevel < PERM_ADMIN) {
+			return render_json(['error' => 'No permission to access pages'], 403);
+		}
+
+		$page = $this->doctrine->em->find(Entity\InstancePage::class, $pageId);
+
+		if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+			return render_json(['error' => 'Page not found'], 404);
+		}
+
+		render_json($this->toPageArray($page));
+	}
+
+	public function editPage($pageId=null) {
 		if ($this->isUsingVueUI()) {
 			return $this->template->publish('vueTemplate');
 		}
 
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+
 		if($accessLevel<PERM_ADMIN) {
 			instance_redirect("/errorHandler/error/noPermission");
 			return;
