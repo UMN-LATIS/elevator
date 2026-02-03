@@ -346,7 +346,10 @@ class Instances extends Instance_Controller {
 
 	}
 
-	public function editPage($pageId=null) {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
 		if($accessLevel<PERM_ADMIN) {
 			instance_redirect("/errorHandler/error/noPermission");
