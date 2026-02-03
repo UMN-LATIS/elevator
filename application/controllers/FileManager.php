@@ -465,7 +465,7 @@ class FileManager extends Instance_Controller {
 		$metadata["handlerType"] = get_class($fileHandler);
 
 		$uploadWidget = $fileHandler->getUploadWidget();
-		if($uploadWidget && isset($uploadWidget->parentWidget) && isset($uploadWidget->parentWidget->extractLocation) && $uploadWidget->parentWidgetextractLocation == false) {
+		if($uploadWidget && isset($uploadWidget->parentWidget) && isset($uploadWidget->parentWidget->extractLocation) && $uploadWidget->parentWidget->extractLocation == false) {
 			unset($metadata['coordinates']);
 		}
 
