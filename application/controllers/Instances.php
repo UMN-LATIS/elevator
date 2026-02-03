@@ -343,6 +343,8 @@ class Instances extends Instance_Controller {
 
 		$this->doctrine->em->flush();
 		instance_redirect("/instances/customPages");
+	}
+	
 	public function editPage($pageId = null)
 	{
 		if ($this->isUsingVueUI()) {
