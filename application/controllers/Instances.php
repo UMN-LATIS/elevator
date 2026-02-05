@@ -429,36 +429,53 @@ class Instances extends Instance_Controller {
 
 	}
 
-	public function savePage() {
+	public function savePage($returnJson = false)
+	{
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to edit pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
-		if($this->input->post("pageId")) {
-			$page = $this->doctrine->em->find("Entity\InstancePage", $this->input->post("pageId"));
 
-		}
-		else {
+		$pageId = $this->input->post("pageId");
+		$isExistingPage = is_numeric($pageId);
+
+		if ($isExistingPage) {
+			$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+
+			if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+				return $returnJson
+					? render_json(['error' => 'Page not found'], 404)
+					: instance_redirect("/errorHandler/error/noPermission");
+			}
+		} else {
 			$page = new Entity\InstancePage();
+			$page->setInstance($this->instance);
 		}
-
 
 		$page->setTitle($this->input->post("title"));
 		$page->setBody($this->input->post("body"));
-		$page->setIncludeInHeader($this->input->post("includeInHeader")?1:0);
-		$page->setInstance($this->instance);
-		if( $this->input->post("parent")) {
+		$page->setIncludeInHeader($this->input->post("includeInHeader") ? 1 : 0);
+		if ($this->input->post("parent")) {
 			$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
-		}
-		else {
+		} else {
 			$page->setParent(null);
 		}
+		$page->setModifiedAt(new DateTime);
 
 		$this->doctrine->em->persist($page);
 		$this->doctrine->em->flush();
-		instance_redirect("instances/customPages");
 
+		return $returnJson
+			? render_json($this->toPageArray($page), 200)
+			: instance_redirect("instances/customPages");
 	}
 
 
