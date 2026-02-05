@@ -16,6 +16,7 @@ class Instances extends Instance_Controller {
 			'includeInHeader' => $page->getIncludeInHeader(),
 			'sortOrder' => $page->getSortOrder(),
 			'parentId' => $page->getParent()?->getId(),
+			'parentTitle' => $page->getParent()?->getTitle(),
 			'modifiedAt' => $page->getModifiedAt()?->format('c'),
 		];
 	}
