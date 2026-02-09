@@ -417,17 +417,41 @@ class Instances extends Instance_Controller {
 		$this->template->publish();
 	}
 
-	public function deletePage($pageId) {
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+	public function deletePage($pageId, $returnJson = false)
+	{
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to delete pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		if (!is_numeric($pageId)) {
+			return $returnJson
+				? render_json(['error' => 'Invalid page ID'], 400)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+
+		if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+			return $returnJson
+				? render_json(['error' => 'Page not found'], 404)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$this->doctrine->em->remove($page);
 		$this->doctrine->em->flush();
-		instance_redirect("instances/customPages");
 
+		return $returnJson
+			? render_json(['success' => true, 'message' => 'Page deleted successfully'], 200)
+			: instance_redirect("instances/customPages");
 	}
 
 	public function savePage($returnJson = false)
