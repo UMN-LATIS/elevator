@@ -267,6 +267,12 @@ class Home extends Instance_Controller {
 
 		$headerData['useVoyagerViewer'] = $this->instance->getUseVoyagerViewer() ?? false;
 
+		$headerData['theming'] = [
+			'availableThemes' => $this->instance->getAvailableThemes(),
+			'enabled' => $this->instance->getEnableThemes(),
+			'defaultTheme' => $this->instance->getDefaultTheme(),
+		];
+
 		return render_json($headerData);
 	}
 
