@@ -7,6 +7,20 @@ class Instances extends Instance_Controller {
 		return $this->user_model->userLoaded;
 	}
 
+	private function toPageArray(Entity\InstancePage $page): array
+	{
+		return [
+			'id' => $page->getId(),
+			'title' => $page->getTitle(),
+			'body' => $page->getBody(),
+			'includeInHeader' => $page->getIncludeInHeader(),
+			'sortOrder' => $page->getSortOrder(),
+			'parentId' => $page->getParent()?->getId(),
+			'parentTitle' => $page->getParent()?->getTitle(),
+			'modifiedAt' => $page->getModifiedAt()?->format('c'),
+		];
+	}
+
 	private function toInstanceArray(Entity\Instance $instance): array
 	{
 		return [
@@ -284,15 +298,37 @@ class Instances extends Instance_Controller {
 	}
 
 
-	public function customPages() {
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+	public function customPages($returnJson = false)
+	{
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
 		}
+
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to access custom pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$pages = $this->instance->getPages();
+
+		if ($returnJson) {
+			$pagesArray = array_map(
+				fn($page) => $this->toPageArray($page),
+				$pages->toArray()
+			);
+			return render_json($pagesArray);
+		}
+
 		$this->template->title = 'Custom Pages';
-		$this->template->content->view('instances/pageList', ["pages"=>$pages]);
+		$this->template->content->view('instances/pageList', ["pages" => $pages]);
 		$this->template->publish();
 	}
 
@@ -311,8 +347,38 @@ class Instances extends Instance_Controller {
 
 	}
 
-	public function editPage($pageId=null) {
+	public function getPage($pageId = null)
+	{
+		if (!is_numeric($pageId)) {
+			return render_json(['error' => 'Page ID required'], 400);
+		}
+
+		if (!$this->isUserAuthed()) {
+			return render_json(['error' => 'Authentication required'], 401);
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+
+		if ($accessLevel < PERM_ADMIN) {
+			return render_json(['error' => 'No permission to access pages'], 403);
+		}
+
+		$page = $this->doctrine->em->find(Entity\InstancePage::class, $pageId);
+
+		if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+			return render_json(['error' => 'Page not found'], 404);
+		}
+
+		return render_json($this->toPageArray($page));
+	}
+
+	public function editPage($pageId=null) {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+
 		if($accessLevel<PERM_ADMIN) {
 			instance_redirect("/errorHandler/error/noPermission");
 			return;
@@ -351,49 +417,99 @@ class Instances extends Instance_Controller {
 		$this->template->publish();
 	}
 
-	public function deletePage($pageId) {
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+	public function deletePage($pageId, $returnJson = false)
+	{
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to delete pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		if (!is_numeric($pageId)) {
+			return $returnJson
+				? render_json(['error' => 'Invalid page ID'], 400)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+
+		if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+			return $returnJson
+				? render_json(['error' => 'Page not found'], 404)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$this->doctrine->em->remove($page);
 		$this->doctrine->em->flush();
-		instance_redirect("instances/customPages");
 
+		return $returnJson
+			? render_json(['success' => true, 'message' => 'Page deleted successfully'], 200)
+			: instance_redirect("instances/customPages");
 	}
 
-	public function savePage() {
+	public function savePage($returnJson = false)
+	{
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to edit pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
-		if($this->input->post("pageId")) {
-			$page = $this->doctrine->em->find("Entity\InstancePage", $this->input->post("pageId"));
 
-		}
-		else {
+		$pageId = $this->input->post("pageId");
+		$isExistingPage = is_numeric($pageId);
+
+		if ($isExistingPage) {
+			$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+
+			if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+				return $returnJson
+					? render_json(['error' => 'Page not found'], 404)
+					: instance_redirect("/errorHandler/error/noPermission");
+			}
+		} else {
 			$page = new Entity\InstancePage();
+			$page->setInstance($this->instance);
 		}
-
 
 		$page->setTitle($this->input->post("title"));
 		$page->setBody($this->input->post("body"));
-		$page->setIncludeInHeader($this->input->post("includeInHeader")?1:0);
-		$page->setInstance($this->instance);
-		if( $this->input->post("parent")) {
-			$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
-		}
-		else {
+		$page->setIncludeInHeader($this->input->post("includeInHeader") ? 1 : 0);
+		if ($this->input->post("parent")) {
+			$parentId = $this->input->post("parent");
+			$parentPage = $this->doctrine->em->find("Entity\InstancePage", $parentId);
+
+			if ($parentPage === null || $parentPage->getInstance()->getId() !== $this->instance->getId()) {
+				return $returnJson
+					? render_json(['error' => 'Parent page not found'], 404)
+					: instance_redirect("/errorHandler/error/noPermission");
+			}
+
+			$page->setParent($parentPage);
+		} else {
 			$page->setParent(null);
 		}
+		$page->setModifiedAt(new DateTime);
 
 		$this->doctrine->em->persist($page);
 		$this->doctrine->em->flush();
-		instance_redirect("instances/customPages");
 
+		return $returnJson
+			? render_json($this->toPageArray($page), 200)
+			: instance_redirect("instances/customPages");
 	}
 
 
