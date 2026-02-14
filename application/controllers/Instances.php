@@ -489,7 +489,16 @@ class Instances extends Instance_Controller {
 		$page->setBody($this->input->post("body"));
 		$page->setIncludeInHeader($this->input->post("includeInHeader") ? 1 : 0);
 		if ($this->input->post("parent")) {
-			$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
+			$parentId = $this->input->post("parent");
+			$parentPage = $this->doctrine->em->find("Entity\InstancePage", $parentId);
+
+			if ($parentPage === null || $parentPage->getInstance()->getId() !== $this->instance->getId()) {
+				return $returnJson
+					? render_json(['error' => 'Parent page not found'], 404)
+					: instance_redirect("/errorHandler/error/noPermission");
+			}
+
+			$page->setParent($parentPage);
 		} else {
 			$page->setParent(null);
 		}
