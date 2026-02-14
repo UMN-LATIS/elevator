@@ -369,7 +369,7 @@ class Instances extends Instance_Controller {
 			return render_json(['error' => 'Page not found'], 404);
 		}
 
-		render_json($this->toPageArray($page));
+		return render_json($this->toPageArray($page));
 	}
 
 	public function editPage($pageId=null) {
