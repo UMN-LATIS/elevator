@@ -41,7 +41,7 @@ class Instances extends Instance_Controller {
 			'customHeader' => $instance->getCustomHeaderText(),
 			'customFooter' => $instance->getCustomFooterText(),
 			'useCustomCSS' => $instance->getUseCustomCSS(),
-			'customCSS' => $instance->getCustomHeaderCSS(),
+			'customHeaderCSS' => $instance->getCustomHeaderCSS(),
 			'enableInterstitial' => $instance->getEnableInterstitial(),
 			'interstitialText' => $instance->getInterstitialText(),
 			'useHeaderLogo' => $instance->getUseHeaderLogo(),
