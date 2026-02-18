@@ -31,9 +31,9 @@ Elevator's Vue interface is built as a Single-Page Application (SPA), which mean
 
 To solve this, Elevator provides [**custom JavaScript events**](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent) that fire whenever page content loads. These events allow your custom code to respond to navigation and content loading in the SPA environment.
 
-### `elevator:static-page:content-loaded` Event
+### `elevator:static-content-page:content-loaded` Event
 
-The `elevator:static-page:content-loaded` event fires when the page's HTML loads. Use this event when you need to interact with page content as soon as it's available.
+The `elevator:static-content-page:content-loaded` event fires when the page's HTML loads. Use this event when you need to interact with page content as soon as it's available.
 
 **Event Detail:**
 
@@ -42,16 +42,16 @@ The event provides additional information in `event.detail`:
 
 ```javascript
 // ✅ Example
-document.addEventListener('elevator:static-page:content-loaded', (event) => {
+document.addEventListener('elevator:static-content-page:content-loaded', (event) => {
   // run your custom JavaScript here
   const pageId = event.detail.pageId;
   console.log(`Page ${pageId} content loaded`);
 });
 ```
 
-### `elevator:static-page:images-loaded` Event
+### `elevator:static-content-page:images-loaded` Event
 
-The `elevator:static-page:images-loaded` event fires when all images on the page have finished loading (or after a 10-second timeout). Use this event when you need to work with image dimensions or initialize features that depend on fully-loaded images (e.g., an image carousel).
+The `elevator:static-content-page:images-loaded` event fires when all images on the page have finished loading (or after a 10-second timeout). Use this event when you need to work with image dimensions or initialize features that depend on fully-loaded images (e.g., an image carousel).
 
 **Event Detail:**
 
@@ -61,7 +61,7 @@ The event provides additional information in `event.detail`:
 
 ```javascript
 // ✅ Example
-document.addEventListener('elevator:static-page:images-loaded', (event) => {
+document.addEventListener('elevator:static-content-page:images-loaded', (event) => {
   const pageId = event.detail.pageId;
   const images = event.detail.images;
 
@@ -95,7 +95,7 @@ initCarousel(carousel);
 ✅ **Do this instead:**
 ```javascript
 // This runs every time a page with a carousel loads
-document.addEventListener('elevator:static-page:images-loaded', (event) => {
+document.addEventListener('elevator:static-content-page:images-loaded', (event) => {
   const carousel = document.querySelector('.carousel');
   if (carousel) {
     initCarousel(carousel);
@@ -108,7 +108,7 @@ document.addEventListener('elevator:static-page:images-loaded', (event) => {
 Not all pages will have the elements your code is looking for. Always check if elements exist before trying to use them, or use the `pageId` with the event details. 
 
 ```javascript
-document.addEventListener('elevator:static-page:content-loaded', (event) => {
+document.addEventListener('elevator:static-content-page:content-loaded', (event) => {
   // Only create a gallery on pageId 6
   if (event.detail.pageId !== 6) {
     return;
@@ -132,7 +132,7 @@ If your code adds event listeners to page elements, make sure to clean up old ha
 ```javascript
 let cleanupFns = [];
 
-document.addEventListener('elevator:static-page:content-loaded', (event) => {
+document.addEventListener('elevator:static-content-page:content-loaded', (event) => {
   // Clean up old handlers
   cleanupFns.forEach(cleanup => cleanup());
   cleanupFns = [];
