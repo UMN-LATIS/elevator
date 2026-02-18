@@ -93,10 +93,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
   </script>
   <?=$this->user_model->getAuthHelper()->templateView();?>
   <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
-  <?php if (isset($this->instance) && $this->instance->getUseCustomCSS()): ?>
-    <link rel="stylesheet" href="<?= $customCSSFile ?>?hash=<?= $customCSSHash ?>">
-  <?php endif ?>
-  <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
+    <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
 </head>
 
 <body>
