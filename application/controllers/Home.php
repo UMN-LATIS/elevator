@@ -264,6 +264,7 @@ class Home extends Instance_Controller {
 		}
 
 		$headerData['useCustomCSS'] = $this->instance->getUseCustomCSS() ?? false;
+		$headerData['customHeaderCSS'] = $this->instance->getCustomHeaderCSS() ?? "";
 
 		$headerData['useVoyagerViewer'] = $this->instance->getUseVoyagerViewer() ?? false;
 
