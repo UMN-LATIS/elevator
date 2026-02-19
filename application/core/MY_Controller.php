@@ -165,6 +165,13 @@ class MY_Controller extends CI_Controller {
 		
 	}
 
+	protected function isJsonRequest(): bool
+	{
+		$accept = $this->input->get_request_header('Accept');
+		return $accept !== null && str_contains($accept, 'application/json');
+	}
+
+
 	function throwBacktrace() {
 		$e = new Exception;
 		var_dump($e->getTraceAsString());
