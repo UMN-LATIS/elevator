@@ -75,6 +75,18 @@ document.addEventListener('elevator:static-content-page:images-loaded', (event) 
 });
 ```
 
+### Custom `Guest Login` Label
+
+You can customize the label for the "Guest Login" button by setting a CSS variable in your custom CSS.
+
+```css
+/* Example: Change "Guest" to "Member" on the `Guest Login` button */
+:root {
+  --guest-auth-label: "Member";
+}
+```
+
+
 ## Best Practices
 
 ### Use a light touch
