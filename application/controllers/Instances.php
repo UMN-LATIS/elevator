@@ -1,12 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Instances extends Instance_Controller {
-
-	private function isUserAuthed(): bool
-	{
-		return $this->user_model->userLoaded;
-	}
-
+class Instances extends Instance_Controller
+{
 	private function toPageArray(Entity\InstancePage $page): array
 	{
 		return [
@@ -86,7 +81,7 @@ class Instances extends Instance_Controller {
 
 	public function save($returnJson = false)
 	{
-		if (!$this->isUserAuthed()) {
+		if (!$this->isCurrentUserAuthed()) {
 			return $returnJson
 				? render_json(['error' => 'Authentication required'], 401)
 				: instance_redirect("/errorHandler/error/noPermission");
@@ -223,7 +218,7 @@ class Instances extends Instance_Controller {
 			return render_json(['error' => 'Instance ID required'], 400);
 		}
 
-		if (!$this->isUserAuthed()) {
+		if (!$this->isCurrentUserAuthed()) {
 			return render_json(['error' => 'Authentication required'], 401);
 		}
 
@@ -304,7 +299,7 @@ class Instances extends Instance_Controller {
 			return $this->template->publish('vueTemplate');
 		}
 
-		if (!$this->isUserAuthed()) {
+		if (!$this->isCurrentUserAuthed()) {
 			return $returnJson
 				? render_json(['error' => 'Authentication required'], 401)
 				: instance_redirect("/errorHandler/error/noPermission");
@@ -353,7 +348,7 @@ class Instances extends Instance_Controller {
 			return render_json(['error' => 'Page ID required'], 400);
 		}
 
-		if (!$this->isUserAuthed()) {
+		if (!$this->isCurrentUserAuthed()) {
 			return render_json(['error' => 'Authentication required'], 401);
 		}
 
@@ -419,7 +414,7 @@ class Instances extends Instance_Controller {
 
 	public function deletePage($pageId, $returnJson = false)
 	{
-		if (!$this->isUserAuthed()) {
+		if (!$this->isCurrentUserAuthed()) {
 			return $returnJson
 				? render_json(['error' => 'Authentication required'], 401)
 				: instance_redirect("/errorHandler/error/noPermission");
@@ -456,7 +451,7 @@ class Instances extends Instance_Controller {
 
 	public function savePage($returnJson = false)
 	{
-		if (!$this->isUserAuthed()) {
+		if (!$this->isCurrentUserAuthed()) {
 			return $returnJson
 				? render_json(['error' => 'Authentication required'], 401)
 				: instance_redirect("/errorHandler/error/noPermission");
