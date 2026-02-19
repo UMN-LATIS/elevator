@@ -155,4 +155,17 @@ class Instance_Controller extends MY_Controller
             return false;
         }
         return $this->session->userdata('useVueUI') || ($this->instance && $this->instance->getInterfaceVersion() == 1); }
+
+
+    protected function isCurrentUserAuthed(): bool
+    {
+        return $this->user_model?->userLoaded ?? false;
+    }
+
+    protected function isCurrentUserAdmin(): bool
+    {
+
+        $accessLevel = $this->user_model?->getAccessLevel('instance', $this->instance) ?? 0;
+        return  $accessLevel >= PERM_ADMIN;
+    }
 }
