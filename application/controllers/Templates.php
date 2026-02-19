@@ -86,7 +86,8 @@ class Templates extends Instance_Controller {
 
 	public function edit($id=null)
 	{
-		//TODO Permissions checki
+		$isJson = $this->isJsonRequest();
+
 		if($id == null) {
 			$data['template'] = new Entity\Template;
 		}
@@ -97,7 +98,13 @@ class Templates extends Instance_Controller {
 
 		if (empty($data['template']))
 		{
-			show_404();
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
+		}
+
+		if ($isJson) {
+			return render_json($data['template']->toArray());
 		}
 
 		$this->template->title = 'Edit Template';
@@ -108,6 +115,8 @@ class Templates extends Instance_Controller {
 
 	public function update()
 	{
+$isJson = $this->isJsonRequest();
+
 		if(is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
 		}
@@ -119,7 +128,9 @@ class Templates extends Instance_Controller {
 		}
 
 		if ($template === null) {
-		    show_404();
+return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
 		}
 
 		// Question: I think the most efficient way in code to do this is to delete all the widgets and re-create them
@@ -219,6 +230,9 @@ class Templates extends Instance_Controller {
 	   		$this->reindexTemplate($template->getId());
 	   	}
 
+if ($isJson) {
+			return render_json($template->toArray());
+		}
 
 		instance_redirect('templates/');
 
