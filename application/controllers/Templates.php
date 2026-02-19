@@ -2,23 +2,60 @@
 
 class Templates extends Instance_Controller {
 
+	private function toTemplateSummary(Entity\Template $template): array
+	{
+		return [
+			'id'         => $template->getId(),
+			'name'       => $template->getName(),
+			'createdAt'  => $template->getCreatedAt()?->format('c'),
+			'modifiedAt' => $template->getModifiedAt()?->format('c'),
+		];
+	}
+
 	public function __construct()
 	{
-
 		parent::__construct();
-		$this->template->loadCSS(['template']);
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: instance_redirect('/errorHandler/error/noPermission');
+		}
+
+		if (!$this->isCurrentUserAdmin()) {
+			return $isJson
+				? abort_json(['error' => 'Forbidden'], 403)
+				: instance_redirect('/errorHandler/error/noPermission');
+		}
+
+		if (!$isJson) {
+			$this->template->loadCSS(['template']);
 		}
 	}
 
 	public function index()
 	{
+		$isJson = $this->isJsonRequest();
 
-		//TODO Permissions checking
+		if ($this->isUsingVueUI() && !$isJson) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$data['templates'] = $this->instance->getTemplates();
+
+		if ($isJson) {
+			$templatesArray = array_map(
+				fn($t) => $this->toTemplateSummary($t),
+				$data['templates']->toArray()
+			);
+
+			return render_json($templatesArray);
+		}
+
 		$this->template->title = 'Template Index';
 		$this->template->javascript->add("assets/datatables/datatables.min.js");
 		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
