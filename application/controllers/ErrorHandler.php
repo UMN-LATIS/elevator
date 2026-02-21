@@ -34,6 +34,17 @@ class errorHandler extends Instance_Controller {
 		$this->errorhandler_helper->callError($errorName);
 	}
 
+	public function notFound()
+	{
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
+		show_404();
+	}
+
 }
 
 /* End of file  */
