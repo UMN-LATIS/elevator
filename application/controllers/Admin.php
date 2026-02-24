@@ -12,7 +12,7 @@ class admin extends Admin_Controller {
 		}
 	}
 
-	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId) {
+	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null) {
 
 		// override path to config on web host
 		$this->config->set_item('convert', '/usr/bin/convert');
@@ -32,6 +32,11 @@ class admin extends Admin_Controller {
 			->andWhere("a.assetId IS NOT NULL")
 			->orderby("a.id", "desc");
 		$qb->andWhere("a.collectionId = ?1");
+		if($offsetAssetId) {
+			$qb->andWhere("a.id < ?2");
+			$qb->setParameter(2, $offsetAssetId);
+		}
+
 		$qb->setParameter(1, $collectionId);
 
 		$result = $qb->getQuery()->toIterable();
@@ -44,7 +49,7 @@ class admin extends Admin_Controller {
 
 		foreach ($result as $entry) {
 			$assetModel = new Asset_model();
-			echo "Processing " . $entry->getAssetId() . "\n";
+			echo "Processing " . $entry->getAssetId() . " (" . $entry->getId() . ")\n";
 			$assetModel->loadAssetFromRecord($entry);
 
 			$uploadHandlers = $assetModel->getAllWithinAsset("Upload", null, 0);
@@ -60,7 +65,13 @@ class admin extends Admin_Controller {
 
 					$fileHandler = $uploadWidget->getFileHandler();
 					echo "Requesting Alt Text\n";
-					$fileHandler->generateAltText();
+					if($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
+						$fileHandler->generateAltText();
+					}
+					else {
+						echo "File not ready for Alt Text generation\n";
+					}
+					
 
 					$fileHandler = null;
 				}
@@ -75,6 +86,7 @@ class admin extends Admin_Controller {
 
 			$count++;
 		}
+		echo "Done!\n";
 	}
 
 

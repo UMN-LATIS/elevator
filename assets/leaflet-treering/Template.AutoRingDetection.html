@@ -1,8 +1,8 @@
-<script id="AutoRingDetection-dialog-template" type="text/x-handlebars-template">
+<!-- <script id="AutoRingDetection-dialog-template" type="text/x-handlebars-template">
     <div style="justify-content: left; display: flex; align-items: center;">
     <h4 style="font-weight: bold; margin: 0;">Boundary Detection Tool</h4>
         <i class="fa fa-info-circle ard-icon-button" id="auto-ring-detection-directions-toggle" style="margin-left: 12px;"></i>
-        <i class="fa fa-rotate-left ard-icon-button" id="auto-ring-detection-reset" aria-hidden="true" style="margin-left: 7px;"></i>
+        <i class=" material-icons md-18 ard-icon-button" id="auto-ring-detection-reset" aria-hidden="true" style="margin-left: 7px; padding-bottom: 6px;">undo</i>
     </div>
 
     <div id="auto-ring-detection-directions-text" hidden>
@@ -34,7 +34,7 @@
                 <p style="margin-right: 5px; font-weight: bold; font-size: 14px;"> ):</p>
             </div>
 
-            <input type="range" id="auto-ring-detection-zoom-input" step=1 style="width: 36%;">
+            <input type="range" id="auto-ring-detection-zoom-input" step=1 min="0" max="20" style="width: 36%;">
             <p id="auto-ring-detection-zoom-number-display" class="ard-input-display">10</p>
         </div>
 
@@ -97,36 +97,108 @@
 
         <button id="auto-ring-detection-placements-save-button" class="ard-button" style="margin-top: 4px;" disabled>Save Automatic Placements</button>
     </div>
+</script> -->
 
-</script>
-
-
-<script id="AutoRingDetection-page-1" type="text/x-handlebars-template">
-    <h4 style="font-weight: bold; margin-bottom: 5px;">Boundary Detection Tool</h6>
-    <h6 style="font-weight: bold;">Measurement Preferences</p>
-    <div id="auto-ring-detection-measurement-direction-div">
-        <h5 style="margin: 0; font-size: 16px; text-decoration: underline;">Measurement Direction</h5>
-        <input type="radio" name="auto-ring-detection-measurement-direction" id="auto-ring-detection-forward-radio" checked>
-        <label for="auto-ring-detection-forward-radio" class="ard-measurement-preferences-label">Forward</label>
-        <br>
-
-        <input type="radio" name="auto-ring-detection-measurement-direction" id="auto-ring-detection-backward-radio">
-        <label for="auto-ring-detection-backward-radio" class="ard-measurement-preferences-label">Backward</label>
-        <br>
-
-        <h5 style="margin: 0; font-size: 16px; text-decoration: underline;">Measurement Interval</h5>
-        <input type="radio" name="auto-ring-detection-measurement-interval" id="auto-ring-detection-annual-radio" checked>
-        <label for="auto-ring-detection-annual-radio" class="ard-measurement-preferences-label">Annual</label>
-        <br>
-
-        <input type="radio" name="auto-ring-detection-measurement-interval" id="auto-ring-detection-subannual-radio">
-        <label for="auto-ring-detection-subannual-radio" class="ard-measurement-preferences-label">Subannual</label>
-        <br>
-
-        <label for="auto-ring-detection-start-year-input" style="margin: 0; font-size: 16px; font-weight: normal; text-decoration: underline;">Start Year:</label>
-        <input type="number"  id="auto-ring-detection-start-year-input" value="1900">
+<script id="AutoRingDetection-dialog-template" type="text/x-handlebars-template">
+    <div style="justify-content: space-between; display: flex; align-items: center;">
+        <h4 style="font-weight: bold; margin: 0;">Boundary Detection Tool</h4>
+        <div style="display: flex;">
+            <i class="fa fa-info-circle ard-icon-button" id="auto-ring-detection-directions-toggle" style="margin-left: 12px;"></i>
+            <i class=" material-icons md-18 ard-icon-button" id="auto-ring-detection-reset" aria-hidden="true" style="margin-left: 7px; padding-bottom: 6px;">undo</i>
+        </div>
     </div>
-    <button id="auto-ring-detection-page-turn-1" class="ard-button" style="margin-top: 6px; width: fit-content;">Save Options</button>
+
+    <div id="auto-ring-detection-directions-text" hidden>
+        <hr style="border-top: 2px solid black; margin-top: 5px; margin-bottom: 5px;">
+        <p class="ard-instructions-body"> <b>Summary:</b>
+            The automatic boundary placement tool is designed to expedite the placement of earlywood and latewood ring-width
+            boundaries on images of gymnosperm tree rings. The tool is designed to be used in tandem alongside the manual tools
+            for point placement and time series mircrometry, and mimics much of the behavior mechanics from the manual entry
+            toolset. Effective use of the automatic algorithm does assume that the end user has a basic working knowledge of and
+            capacity for evaluating tree-ring anatomy. Algorithm efficiency and results will vary based on a number of inputs
+            provided by the end user (resolution level, search box length and height, image adjustment settings, threshold level),
+            as well as factors related to wood anatomy and specimen preparation. To streamline the process and outcomes, users are
+            advised to check and (if needed) modify point placements from one search box before moving on to the next sequence.
+        </p>
+    </div>
+
+    <hr style="border-top: 2px solid black; margin-top: 5px; margin-bottom: 5px;">
+
+    <div style="display: flex;">
+        <div id="auto-ring-detection-box-placement" style="flex:55%; border-right: 2px solid black; margin-right: 4px; padding-right: 4px;">
+            <div style="justify-content: space-between; display: flex; align-items: center; margin-bottom: 0px;">
+                <p style="font-weight: bold; font-size: 14; margin: 0">Adjust Image Settings:</p>
+                <i class="fa fa-sliders ard-icon-button" id="auto-ring-detection-img-adjust-toggle" aria-hidden="true" style="margin-top: 1.5px; margin-left: 5px; padding-bottom: 1px;"></i>
+            </div>
+
+            <div class="auto-ring-detection-input-div" style="justify-content: space-between;">
+                <label for="auto-ring-detection-height-input" style="margin: 0; font-size: 14px;">Resolution Level:</label>
+                <input type="range" id="auto-ring-detection-zoom-input" step=1 min="0" max="20" style="width: 35%; margin-left: 24px;">
+                <p id="auto-ring-detection-zoom-number-display" class="ard-input-display">10</p>
+            </div>
+
+            <div class="auto-ring-detection-input-div" style="justify-content: space-between; margin-bottom: 0px;">
+                <label for="auto-ring-detection-zoom-change-check" style="margin: 0; font-size: 14px;">Match View and Resolution:</label>
+                <input type="checkbox" id="auto-ring-detection-zoom-change-check" style="margin-bottom: 12px;">
+            </div>
+
+            <div class="auto-ring-detection-input-div" style="margin-bottom: 3px; justify-content: space-between;">
+                <label for="auto-ring-detection-height-input" style="margin: 0; font-size: 14px;">Box Height (Pixels):</label>
+                <input type="range" id="auto-ring-detection-height-input" min="0" max="24" value="5" step="1" style="width: 35%; margin-left: 10px;" disabled>
+                <p id="auto-ring-detection-box-height-number-display" class="ard-input-display">30</p>
+            </div>
+
+            <input type="button" value="Save Box Placement" id="auto-ring-detection-area-save-button" class="ard-button" disabled>
+        </div>
+
+        <div id="auto-ring-detection-point-placement" style="flex:45%"  class="ard-disabled-div">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <label style="font-weight: bold; font-size: 14px; margin-top: 0; margin-bottom: 0;">Channel:</label>
+                <div>
+                    <label for="auto-ring-detection-channel-intensity">RGB</label>
+                    <input type="radio" name="ard-color-channel" class="auto-ring-detection-channel-radio" id="auto-ring-detection-channel-intensity" value="intensity" checked>
+                </div>
+
+                <div>
+                    <label for="auto-ring-detection-channel-intensity">R</label>
+                    <input type="radio" name="ard-color-channel" class="auto-ring-detection-channel-radio" id="auto-ring-detection-channel-r" value="r">
+                </div>
+
+                <div>
+                    <label for="auto-ring-detection-channel-intensity">G</label>
+                    <input type="radio" name="ard-color-channel" class="auto-ring-detection-channel-radio" id="auto-ring-detection-channel-g" value="g">             
+                </div>
+
+                <div>
+                    <label for="auto-ring-detection-channel-intensity">B</label>
+                    <input type="radio" name="ard-color-channel" class="auto-ring-detection-channel-radio" id="auto-ring-detection-channel-b" value="b">
+                </div>
+            </div>
+
+
+            <div class="auto-ring-detection-placement-settings-div">
+                <label for="auto-ring-detection-blur-input" id="auto-ring-detection-blur-input-label">Blur Level:</label>
+                <input type="range" style="width: 45%; margin-left: -2px;" id="auto-ring-detection-blur-input" min="1" max="5" step="1" value="1">
+                <p id="auto-ring-detection-blur-text" class="ard-input-display">1</p>
+            </div>
+
+            <div class="auto-ring-detection-placement-settings-div">
+                <label for="auto-ring-detection-global-threshold" class="ard-options-label">Threshold:</label>
+                <input type="range" min="0" max="255" step="1" value="50" class="auto-ring-detection-algo-settings" id="auto-ring-detection-global-threshold" style="width: 45%;">
+                <p id="auto-ring-detection-global-threshold-text" class="ard-input-display">50</p>
+            </div>
+
+            <div class="auto-ring-detection-placement-settings-div" style="display: flex; justify-content: left;">
+                <label for="auto-ring-detection-point-color" class="ard-options-label" style="margin-right: 4;">Marker:</label>
+                <input type="color" id="auto-ring-detection-point-color" style="height: 20px; width: 20px; padding: 2px;" value="#dfe615">
+
+                <label for="auto-ring-detection-edge-color" class="ard-options-label" style="margin-right: 4px; margin-left: 30px;">Edge:</label>
+                <input type="color" id="auto-ring-detection-edge-color" style="height: 20px; width: 20px; padding: 2px;" value="#02bfd1">
+            </div>
+
+            <button id="auto-ring-detection-placements-save-button" class="ard-button" style="margin-top: 4px;" disabled>Save Boundary Placements</button>
+        </div>
+    </div>
 </script>
 
 <script id="image-data-collection-dialog" type="text/x-handlebars-template">

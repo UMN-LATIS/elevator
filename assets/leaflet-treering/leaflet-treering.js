@@ -4538,7 +4538,7 @@ MeasurementOptions.prototype.displayDialog = function () {
       if (this.userSelectedPref == false) {
         this.userSelectedPref = true;
         if (Lt.autoRingDetectionInterface.autoRingDetection.active) {
-          Lt.autoRingDetectionInterface.autoRingDetection.main();
+          $("#auto-ring-detection-box-placement").trigger('finishEnable');
         } else {
           Lt.createPoint.enable();
         }
