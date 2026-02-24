@@ -240,10 +240,14 @@ if ($isJson) {
 
 	public function delete($id)
 	{
-		//TODO Permissions checking
+
+		$isJson = $this->isJsonRequest();
+
 		$template = $this->doctrine->em->find('Entity\Template', $id);
 		if ($template === null) {
-			show_404();
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
 		}
 
 
@@ -260,6 +264,13 @@ if ($isJson) {
 
 		$this->doctrine->em->remove($template);
 		$this->doctrine->em->flush();
+
+		if ($isJson) {
+			return render_json([
+				'success' => true,
+				'message' => 'Template deleted successfully'
+			], 200);
+		}
 
 		instance_redirect('templates');
 
