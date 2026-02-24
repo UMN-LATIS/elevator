@@ -2,23 +2,60 @@
 
 class Templates extends Instance_Controller {
 
+	private function toTemplateSummary(Entity\Template $template): array
+	{
+		return [
+			'id'         => $template->getId(),
+			'name'       => $template->getName(),
+			'createdAt'  => $template->getCreatedAt()?->format('c'),
+			'modifiedAt' => $template->getModifiedAt()?->format('c'),
+		];
+	}
+
 	public function __construct()
 	{
-
 		parent::__construct();
-		$this->template->loadCSS(['template']);
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: instance_redirect('/errorHandler/error/noPermission');
+		}
+
+		if (!$this->isCurrentUserAdmin()) {
+			return $isJson
+				? abort_json(['error' => 'Forbidden'], 403)
+				: instance_redirect('/errorHandler/error/noPermission');
+		}
+
+		if (!$isJson) {
+			$this->template->loadCSS(['template']);
 		}
 	}
 
 	public function index()
 	{
+		$isJson = $this->isJsonRequest();
 
-		//TODO Permissions checking
+		if ($this->isUsingVueUI() && !$isJson) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$data['templates'] = $this->instance->getTemplates();
+
+		if ($isJson) {
+			$templatesArray = array_map(
+				fn($t) => $this->toTemplateSummary($t),
+				$data['templates']->toArray()
+			);
+
+			return render_json($templatesArray);
+		}
+
 		$this->template->title = 'Template Index';
 		$this->template->javascript->add("assets/datatables/datatables.min.js");
 		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
@@ -49,7 +86,8 @@ class Templates extends Instance_Controller {
 
 	public function edit($id=null)
 	{
-		//TODO Permissions checki
+		$isJson = $this->isJsonRequest();
+
 		if($id == null) {
 			$data['template'] = new Entity\Template;
 		}
@@ -60,7 +98,13 @@ class Templates extends Instance_Controller {
 
 		if (empty($data['template']))
 		{
-			show_404();
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
+		}
+
+		if ($isJson) {
+			return render_json($this->toTemplateSummary($data['template']));
 		}
 
 		$this->template->title = 'Edit Template';
@@ -71,6 +115,8 @@ class Templates extends Instance_Controller {
 
 	public function update()
 	{
+		$isJson = $this->isJsonRequest();
+
 		if(is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
 		}
@@ -82,7 +128,9 @@ class Templates extends Instance_Controller {
 		}
 
 		if ($template === null) {
-		    show_404();
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
 		}
 
 		// Question: I think the most efficient way in code to do this is to delete all the widgets and re-create them
@@ -182,6 +230,9 @@ class Templates extends Instance_Controller {
 	   		$this->reindexTemplate($template->getId());
 	   	}
 
+		if ($isJson) {
+			return render_json($this->toTemplateSummary($template));
+		}
 
 		instance_redirect('templates/');
 
@@ -189,10 +240,14 @@ class Templates extends Instance_Controller {
 
 	public function delete($id)
 	{
-		//TODO Permissions checking
+
+		$isJson = $this->isJsonRequest();
+
 		$template = $this->doctrine->em->find('Entity\Template', $id);
 		if ($template === null) {
-			show_404();
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
 		}
 
 
@@ -209,6 +264,13 @@ class Templates extends Instance_Controller {
 
 		$this->doctrine->em->remove($template);
 		$this->doctrine->em->flush();
+
+		if ($isJson) {
+			return render_json([
+				'success' => true,
+				'message' => 'Template deleted successfully'
+			], 200);
+		}
 
 		instance_redirect('templates');
 
