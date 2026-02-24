@@ -104,7 +104,7 @@ class Templates extends Instance_Controller {
 		}
 
 		if ($isJson) {
-			return render_json($data['template']->toArray());
+			return render_json($this->toTemplateSummary($data['template']));
 		}
 
 		$this->template->title = 'Edit Template';
@@ -115,7 +115,7 @@ class Templates extends Instance_Controller {
 
 	public function update()
 	{
-$isJson = $this->isJsonRequest();
+		$isJson = $this->isJsonRequest();
 
 		if(is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
@@ -128,7 +128,7 @@ $isJson = $this->isJsonRequest();
 		}
 
 		if ($template === null) {
-return $isJson
+			return $isJson
 				? render_json(['error' => 'Template not found'], 404)
 				: show_404();
 		}
@@ -230,8 +230,8 @@ return $isJson
 	   		$this->reindexTemplate($template->getId());
 	   	}
 
-if ($isJson) {
-			return render_json($template->toArray());
+		if ($isJson) {
+			return render_json($this->toTemplateSummary($template));
 		}
 
 		instance_redirect('templates/');
