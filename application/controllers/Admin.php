@@ -12,16 +12,26 @@ class admin extends Admin_Controller {
 		}
 	}
 
-	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null) {
+	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null, $debugMode = false) {
 
 		// override path to config on web host
 		$this->config->set_item('convert', '/usr/bin/convert');
+
+		if ($offsetAssetId === "false" || $offsetAssetId === "null" || $offsetAssetId === "") {
+			$offsetAssetId = null;
+		}
+
+		$debugMode = $this->isTruthyCliValue($debugMode);
 
 		if (!$collectionId || !is_numeric($collectionId) || !is_numeric($instanceId) || !$instanceId) {
 			echo "need collection and instance id\n";
 			return;
 		}
 		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+		if(!$this->instance) {
+			echo "invalid instance id\n";
+			return;
+		}
 		$this->instance->setAutomaticAltText(true);
 
 		$qb = $this->doctrine->em->createQueryBuilder();
@@ -40,53 +50,116 @@ class admin extends Admin_Controller {
 		$qb->setParameter(1, $collectionId);
 
 		$result = $qb->getQuery()->toIterable();
-		$count = 0;
 		$this->load->model("asset_model");
 
 		exec("sudo /usr/local/bin/ebs-mount.sh");
 		// make sure we hold an open file on the mount while we're working
 		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
 
+		$count = 0;
 		foreach ($result as $entry) {
-			$assetModel = new Asset_model();
-			echo "Processing " . $entry->getAssetId() . " (" . $entry->getId() . ")\n";
-			$assetModel->loadAssetFromRecord($entry);
-
-			$uploadHandlers = $assetModel->getAllWithinAsset("Upload", null, 0);
-			echo count($uploadHandlers) . " upload handlers found\n";
-			foreach ($uploadHandlers as $handler) {
-				foreach ($handler->fieldContentsArray as $uploadWidget) {
-					if ($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
-						continue;
-					}
-					if (isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription) > 0) {
-						continue;
-					}
-
-					$fileHandler = $uploadWidget->getFileHandler();
-					echo "Requesting Alt Text\n";
-					if($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
-						$fileHandler->generateAltText();
-					}
-					else {
-						echo "File not ready for Alt Text generation\n";
-					}
-					
-
-					$fileHandler = null;
-				}
-			}
-
-			$assetModel = null;
-			unset($assetModel);
+			$this->processAccessibilityForAsset($entry, $debugMode);
 			$this->doctrine->em->clear();
 			if ($count % 100 == 0) {
 				gc_collect_cycles();
 			}
-
 			$count++;
 		}
 		echo "Done!\n";
+	}
+
+	public function generateAccessibilityMaterialForAssetInInstance($assetId, $instanceId, $debugMode = false) {
+
+		$this->config->set_item('convert', '/usr/bin/convert');
+		$debugMode = $this->isTruthyCliValue($debugMode);
+
+		if (!$assetId || !is_numeric($instanceId) || !$instanceId) {
+			echo "need asset id and instance id\n";
+			return;
+		}
+
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+		if(!$this->instance) {
+			echo "invalid instance id\n";
+			return;
+		}
+		$this->instance->setAutomaticAltText(true);
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.deleted != TRUE")
+			->orWhere("a.deleted IS NULL")
+			->andWhere("a.assetId = ?1")
+			->orderby("a.id", "desc")
+			->setMaxResults(1)
+			->setParameter(1, $assetId);
+
+		$entry = $qb->getQuery()->getOneOrNullResult();
+		if(!$entry) {
+			echo "Asset not found: " . $assetId . "\n";
+			return;
+		}
+
+		$this->load->model("asset_model");
+
+		exec("sudo /usr/local/bin/ebs-mount.sh");
+		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
+
+		$this->processAccessibilityForAsset($entry, $debugMode);
+		$this->doctrine->em->clear();
+		gc_collect_cycles();
+
+		echo "Done!\n";
+	}
+
+	private function processAccessibilityForAsset($entry, $debugMode = false) {
+		$assetModel = new Asset_model();
+		echo "Processing " . $entry->getAssetId() . " (" . $entry->getId() . ")\n";
+		$assetModel->loadAssetFromRecord($entry);
+
+		$uploadHandlers = $assetModel->getAllWithinAsset("Upload", null, 0);
+		echo count($uploadHandlers) . " upload handlers found\n";
+		foreach ($uploadHandlers as $handler) {
+			foreach ($handler->fieldContentsArray as $uploadWidget) {
+				if ($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+					continue;
+				}
+				if (isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription) > 0) {
+					continue;
+				}
+
+				$fileHandler = $uploadWidget->getFileHandler();
+				echo "Requesting Alt Text\n";
+				if($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
+					$fileHandler->generateAltText($debugMode);
+				}
+				else {
+					echo "File not ready for Alt Text generation\n";
+				}
+
+				$fileHandler = null;
+			}
+		}
+
+		$assetModel = null;
+		unset($assetModel);
+	}
+
+	private function isTruthyCliValue($value) {
+		if (is_bool($value)) {
+			return $value;
+		}
+
+		if (is_numeric($value)) {
+			return intval($value) === 1;
+		}
+
+		if (!is_string($value)) {
+			return false;
+		}
+
+		return in_array(strtolower(trim($value)), ["1", "true", "yes", "y", "on"], true);
 	}
 
 

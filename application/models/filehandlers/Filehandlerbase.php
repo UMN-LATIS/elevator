@@ -761,7 +761,7 @@ class FileHandlerBase extends CI_Model {
 		}
 	}
 
-	protected function getAltTextForMedia($prompt) {
+	protected function getAltTextForMedia($prompt, $debugMode = false) {
 
 		if($this->instance && !$this->instance->getAutomaticAltText()) {
 			return;
@@ -815,6 +815,12 @@ class FileHandlerBase extends CI_Model {
 		$systemPrompt = "Generate a caption appropriate for use as alt text within a digital asset management system. Just output the caption, don't add any additional context like \"here's the caption you asked for\". You can use the associated metadata json to better describe the object, but don't repeat the metadata verbatim as it'll be available to the user as well. Be sure to actually describe the object, not just the metadata, so that someone who's visually impaired would understand what the image represents. If the metadata has a 'type' field, use it to describe the object (e.g. 'a 3d object', 'a word document', etc.). Make sure you follow best practices for generating high quality alt text for images. Make sure to double check your work. Don't repeat content that's already in the metadata like dimensions, unless it's crucial to visibly describe the object.";
 
 		$combinedPrompt = $systemPrompt . "\n\n" . $prompt . "\n\n" . json_encode($metadata);
+
+		if($debugMode) {
+			echo "\n=== BEDROCK ALT TEXT PROMPT START (" . $this->getObjectId() . ") ===\n";
+			echo $combinedPrompt . "\n";
+			echo "=== BEDROCK ALT TEXT PROMPT END ===\n\n";
+		}
 
 
 		$tempImagePath = $this->config->item('scratchSpace') . "/temp_image_" . time() . ".jpg";
@@ -877,7 +883,7 @@ class FileHandlerBase extends CI_Model {
         return;
 	}
 
-	public function generateAltText() {
+	public function generateAltText($debugMode = false) {
 		return;
 	}
 }

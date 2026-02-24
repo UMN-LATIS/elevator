@@ -204,7 +204,7 @@ class MovieHandler extends FileHandlerBase {
 	}
 
 
-	public function generateAltText() {
+	public function generateAltText($debugMode = false) {
 		$this->queueBatchItem("gpu");
 	}
 
