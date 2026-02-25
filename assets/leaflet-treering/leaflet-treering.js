@@ -1691,7 +1691,7 @@ function VisualAsset (Lt) {
           }
         }
 
-        this.markers[k].setIcon(new MarkerIcon(color, "../"));
+        this.markers[k].setIcon(new MarkerIcon(color, Lt.basePath));
         this.markers[k].zero = false;
       }
 
@@ -1709,7 +1709,7 @@ function VisualAsset (Lt) {
           color = (pts[i].year % 10 == 0) ? 'dark_red' : 'light_blue';
         }
 
-        this.markers[i].setIcon(new MarkerIcon(color, "../"));
+        this.markers[i].setIcon(new MarkerIcon(color, Lt.basePath));
         pts[i].auto = false;
       }
 

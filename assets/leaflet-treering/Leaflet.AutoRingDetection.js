@@ -304,7 +304,7 @@ function AutoRingDetection(Inte) {
       });
 
       //If user zooms while zoom checkbox is checked, set slider to match zoom
-      L.DomEvent.on(map, "zoomend", () => {
+      Inte.treering.viewer.on("zoomend", () => {
         if (this.active && $("#auto-ring-detection-zoom-change-check").is(":checked") && $("#auto-ring-detection-point-placement").hasClass("ard-disabled-div")) {
           let newZoom = Math.floor(Inte.treering.viewer.getZoom());
           newZoom = newZoom > Inte.treering.getMaxNativeZoom() ? Inte.treering.getMaxNativeZoom() : newZoom;
@@ -443,10 +443,10 @@ function AutoRingDetection(Inte) {
 
       //Save Boundary Points
       L.DomEvent.on(window, "keydown", e => {
-        if (this.active && e.key === "Enter" && Object.keys($("#year_input")).length === 0) {
+        if (this.active && e.key === "Enter" && $("#year_input")[0] === undefined) {
           if ($("#auto-ring-detection-point-placement").hasClass("ard-disabled-div")) {
             this.saveDetectionBox();
-          } else {
+          } else if (this.boundaryPlacements > 0) {
             this.placePoints();
           }
         }
