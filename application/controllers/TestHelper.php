@@ -17,7 +17,9 @@ class TestHelper extends Instance_Controller
   // Returns 403 if ELEVATOR_TEST_RESET_ENABLED is not 'true'.
   public function resetDb(): void
   {
-    if (getenv('ELEVATOR_TEST_RESET_ENABLED') !== 'true') {
+    // Matches the $_SERVER pattern used in application/config/config.php.
+    // Dotenv::createImmutable (used in index.php) populates $_SERVER, not getenv().
+    if (($_SERVER['ELEVATOR_TEST_RESET_ENABLED'] ?? 'false') !== 'true') {
       render_json(['status' => 'error', 'message' => 'not enabled'], 403);
       return;
     }

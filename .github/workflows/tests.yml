@@ -26,7 +26,10 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Copy env file
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          # Allow the test DB reset endpoint. PHP reads this from .env via Dotenv::createImmutable.
+          echo "ELEVATOR_TEST_RESET_ENABLED=true" >> .env
 
       - name: Start Docker stack
         run: docker compose up -d
@@ -40,7 +43,6 @@ jobs:
           BASE_URL: http://localhost/defaultinstance
           ADMIN_USERNAME: admin
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          ELEVATOR_TEST_RESET_ENABLED: true
         run: npm run test:api
 
       - name: Upload test results
