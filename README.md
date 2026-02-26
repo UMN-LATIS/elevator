@@ -24,22 +24,40 @@ Elevator can store content in any format, such as images, audio, video, 3D objec
 
 ## Running locally
 
-You'll need docker and some patience.
+You'll need [Docker Desktop](https://www.docker.com/products/docker-desktop/) and [Composer](https://getcomposer.org/).
 
-1. copy .env.example to .env (no changes needed)
-2. run `docker compose up` and let it build
-3. run `./docker-php.sh composer.phar install`
-4. run `./docker-php.sh doctrine.php orm:schema-tool:update --force`
-5. connect to postgres (localhost 5432, u/p from your .env file) and run the queries in `postgresQueries`
-6. run `bash elastic_commands.sh`
-7. connect to http://localhost/defaultinstance in a browser, using admin username. Password is in bitwarden. In order to use that password, you'll need to use the same encryption key as dev
-8. Optionally add some S3 bucket credentials in the instance settings. Bonus points if you mock s3 and make that all work
+```bash
+bash scripts/bootstrap
+```
 
-To try processing a file, first upload it using the normal UI. Then grab the fileObjectId (press command-control-h when viewing the asset)
+The script handles everything: copying `.env`, generating SSL certs, starting Docker, installing PHP/Node dependencies, running the Doctrine schema, and seeding the database. It's safe to re-run — steps that are already complete are skipped.
 
-Run `./runJob.sh <fileObjectId>`
+After the script finishes:
 
-By default, you won't have job queue processing running for other tasks. That's mostly fine, but you may want search indexing running. Run `./docker-php index.php beltdrive updateIndexes`
+- **App:** http://localhost/defaultinstance
+- **Admin:** username `admin`, password is the `ADMIN_PASSWORD` value in your `.env`
+
+### Processing files
+
+Upload a file through the UI, then grab the `fileObjectId` (press Cmd+Ctrl+H when viewing the asset):
+
+```bash
+./docker/runJob.sh <fileObjectId>
+```
+
+To run search indexing:
+
+```bash
+docker compose exec php-fpm php index.php beltdrive updateIndexes
+```
+
+### Running API tests
+
+```bash
+npm run test:api
+```
+
+Requires `ADMIN_PASSWORD` to be set in `.env`. Set `ELEVATOR_TEST_RESET_ENABLED=true` in `.env` to enable the database-reset endpoint the tests use.
 
 ## Documentation
 
