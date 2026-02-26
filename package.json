@@ -6,7 +6,12 @@
     "docs:deploy": "npm run docs:build && npx gh-pages -d docs/.vuepress/dist",
     "ui:build": "(cd assets/elevator-ui && yarn build)",
     "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "test:api": "playwright test",
+    "test:api:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
   },
   "dependencies": {
     "@vuepress/plugin-blog": "^1.9.4",
