@@ -199,8 +199,9 @@ class Templates extends Instance_Controller
 					while (in_array($fieldTitle, $generatedFieldTitles)) {
 						$fieldTitle = $base . '_' . $suffix++;
 					}
-					$generatedFieldTitles[] = $fieldTitle;
 				}
+				// Seal every title (locked or generated) so subsequent new widgets can't collide with it.
+				$generatedFieldTitles[] = $fieldTitle;
 
 				// Create new widget
 				$newWidget = new Entity\Widget();
