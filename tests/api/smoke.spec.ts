@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { loginUser } from "../helpers";
+import { loginUser, baseURL } from "../helpers";
 
 test.describe("smoke", () => {
   test("default instance is reachable", async ({ page }) => {
-    const response = await page.goto("/");
+    const response = await page.goto(baseURL());
     expect(response?.status()).toBe(200);
   });
 
@@ -16,9 +16,10 @@ test.describe("smoke", () => {
 
     if (!adminPassword) {
       test.skip(true, "ADMIN_PASSWORD env var not set");
+      return;
     }
 
-    await loginUser(page, adminUsername, adminPassword!);
+    await loginUser(page, adminUsername, adminPassword);
 
     const cookies = await context.cookies();
     const sessionCookie = cookies.find((c) => c.name === "ci_session");

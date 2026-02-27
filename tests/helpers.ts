@@ -1,6 +1,6 @@
 import { type Page } from "@playwright/test";
 
-const baseURL = (): string =>
+export const baseURL = (): string =>
   process.env.BASE_URL ?? "http://localhost/defaultinstance";
 
 // POST /{instance}/loginmanager/localLoginAsync
@@ -33,7 +33,7 @@ export async function loginUser(
 
 // POST /{instance}/testhelper/resetDb
 // Truncates user-writable tables back to seed state.
-// Requires ELEVATOR_TEST_RESET_ENABLED=true on the server (returns 403 otherwise).
+// Requires CI_ENV=local or CI_ENV=testing on the server (returns 403 in production).
 export async function refreshDatabase(page: Page): Promise<void> {
   const response = await page.request.post(`${baseURL()}/testhelper/resetDb`);
 
@@ -42,7 +42,9 @@ export async function refreshDatabase(page: Page): Promise<void> {
       message?: string;
     };
     throw new Error(
-      `DB reset failed (${response.status()}): ${body.message ?? "unknown error"}`,
+      `DB reset failed (${response.status()}): ${
+        body.message ?? "unknown error"
+      }`,
     );
   }
 }
