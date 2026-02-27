@@ -63,25 +63,25 @@ class Template
     /**
      * @var bool
      */
-    #[ORM\Column(name: 'showCollection', type: 'boolean', options: ["default" => false])]
+    #[ORM\Column(name: 'showCollection', type: 'boolean', options: ["default"=> false])]
     private $showCollection = '0';
 
     /**
      * @var bool
      */
-    #[ORM\Column(name: 'showTemplate', type: 'boolean', options: ["default" => false])]
+    #[ORM\Column(name: 'showTemplate', type: 'boolean', options: ["default"=> false])]
     private $showTemplate = '0';
 
     /**
      * @var int
      */
-    #[ORM\Column(name: 'collectionPosition', type: 'integer', options: ["default" => 0])]
+    #[ORM\Column(name: 'collectionPosition', type: 'integer', options: ["default"=> 0])]
     private $collectionPosition = '0';
 
     /**
      * @var int
      */
-    #[ORM\Column(name: 'templatePosition', type: 'integer', options: ["default" => 0])]
+    #[ORM\Column(name: 'templatePosition', type: 'integer', options: ["default"=> 0])]
     private $templatePosition = '0';
 
     /**
@@ -558,28 +558,5 @@ class Template
     public function getInstances()
     {
         return $this->instances;
-    }
-
-    public function toArray(): array
-    {
-        $widgets = $this->getWidgets()->toArray();
-        usort($widgets, fn($a, $b) => $a->getTemplateOrder() <=> $b->getTemplateOrder());
-
-        return [
-            'id'                     => $this->getId(),
-            'name'                   => $this->getName(),
-            'createdAt'              => $this->getCreatedAt()?->format('c'),
-            'modifiedAt'             => $this->getModifiedAt()?->format('c'),
-            'showCollection'         => (bool) $this->getShowCollection(),
-            'showCollectionPosition' => (int)  $this->getCollectionPosition(),
-            'showTemplate'           => (bool) $this->getShowTemplate(),
-            'showTemplatePosition'   => (int)  $this->getTemplatePosition(),
-            'includeInSearch'        => (bool) $this->getIncludeInSearch(),
-            'indexForSearching'      => (bool) $this->getIndexForSearching(),
-            'isHidden'               => (bool) $this->getIsHidden(),
-            'templateColor'          => (int)  ($this->getTemplateColor() ?? 0),
-            'recursiveIndexDepth'    => (int)  ($this->getRecursiveIndexDepth() ?? 1),
-            'widgetArray'            => array_map(fn($w) => $w->toArray(), $widgets),
-        ];
     }
 }
