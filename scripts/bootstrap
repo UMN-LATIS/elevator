@@ -107,6 +107,23 @@ docker compose exec -T postgres \
     < docker/postgresQueries
 success "Seed data loaded."
 
+# ── Admin password ───────────────────────────────────────────────────────────
+
+# Sync the admin user's password hash from .env so the seed hash doesn't need
+# to match any particular ENCRYPTION_KEY / ADMIN_PASSWORD combination.
+info "Syncing admin password from .env..."
+_enc_key=$(grep -E '^ENCRYPTION_KEY=' .env | cut -d= -f2)
+_admin_pw=$(grep -E '^ADMIN_PASSWORD=' .env | cut -d= -f2)
+if [[ -n "$_enc_key" && -n "$_admin_pw" ]]; then
+    _hash=$(echo -n "${_enc_key}${_admin_pw}" | shasum -a 1 | cut -d' ' -f1)
+    docker compose exec -T postgres \
+        psql -U "${DATABASE_USER:-elevator}" -d "${DATABASE_DB:-elevator}" \
+        -c "UPDATE users SET password = '${_hash}' WHERE username = 'admin';" > /dev/null
+    success "Admin password synced."
+else
+    warn "ENCRYPTION_KEY or ADMIN_PASSWORD not set in .env — skipping password sync."
+fi
+
 # ── Node / Playwright ─────────────────────────────────────────────────────────
 
 if [[ -f package.json ]]; then

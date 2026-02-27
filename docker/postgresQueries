@@ -17,7 +17,7 @@ VALUES
 
 INSERT INTO "users"("id","instance_id","emplid","username","usertype","email","displayname","fastupload","password","issuperadmin","hasexpiry","expires","createdat","modifiedat","createdby_id","apiinstance_id")
 VALUES
-(1,1,NULL,E'admin',E'Local',E'',E'',FALSE,E'559f95494cf2519423019a7b1dbedc3bc6c8613c',TRUE,FALSE,E'2014-01-24 00:00:00',E'2014-01-24 14:33:39',NULL,1,NULL);
+(1,1,NULL,E'admin',E'Local',E'',E'',FALSE,E'28579da20bee0bed0e5c3947406464c36fc74eaa',TRUE,FALSE,E'2014-01-24 00:00:00',E'2014-01-24 14:33:39',NULL,1,NULL);
 
 INSERT INTO "field_types"("id","name","model_name","sample_field_data")
 VALUES
