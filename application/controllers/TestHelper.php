@@ -3,11 +3,9 @@
 // Test-only endpoint for resetting database state between Playwright test runs.
 //
 // This controller is intentionally unauthenticated. The security gate is CodeIgniter's
-// ENVIRONMENT constant, which is set at boot from the CI_ENV env var (index.php).
-// The endpoint is only active when CI_ENV is 'local' or 'testing' — never in production.
+// ENVIRONMENT constant, which is set at boot from the ENVIRONMENT env var (index.php).
+// The endpoint is only active when ENVIRONMENT is 'local' or 'testing' — never in production.
 //
-// Why ENVIRONMENT and not a custom flag? This mirrors Laravel's APP_ENV=testing pattern:
-// the framework's own environment concept is the gate, not a separate opt-in variable.
 // Locally, set CI_ENV=local (default in .env.example) or CI_ENV=testing.
 // In CI, set CI_ENV=testing. Production servers must have CI_ENV=production.
 class TestHelper extends Instance_Controller

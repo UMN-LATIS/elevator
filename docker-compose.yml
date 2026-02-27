@@ -43,8 +43,10 @@ services:
       dockerfile: docker/Dockerfile
       args:
         - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
-        - DOCKER_ENVIRONMENT=${ENVIRONMENT}
-        - ENVIRONMENT=${ENVIRONMENT}
+        - DOCKER_ENVIRONMENT=${CI_ENV}
+        - ENVIRONMENT=${CI_ENV}
+    environment:
+      - CI_ENV=${CI_ENV}
     volumes:
       - ./:/var/www/html
       - ${DOCKER_SCRATCH_DIR}:/scratch

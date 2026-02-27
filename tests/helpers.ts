@@ -47,7 +47,7 @@ export async function loginUser(
 
 // POST /{instance}/testhelper/resetDb
 // Truncates user-writable tables back to seed state.
-// Requires CI_ENV=local or CI_ENV=testing on the server (returns 403 in production).
+// Requires CI_ENV=local or CI_ENV=testing on the server (sets CodeIgniter's ENVIRONMENT constant); returns 403 in production.
 export async function refreshDatabase(page: Page): Promise<void> {
   const response = await page.request.post(`${baseURL()}/testhelper/resetDb`);
 

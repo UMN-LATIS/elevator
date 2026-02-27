@@ -29,7 +29,6 @@ jobs:
         run: |
           cp .env.example .env
           # CI_ENV=testing enables the /testhelper/resetDb endpoint (see index.php + TestHelper.php).
-          # This mirrors Laravel's APP_ENV=testing pattern — the framework environment is the gate.
           echo "CI_ENV=testing" >> .env
 
       - name: Start Docker stack
