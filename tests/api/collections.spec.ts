@@ -2,6 +2,12 @@ import { test, expect } from "@playwright/test";
 import { loginUser, refreshDatabase, baseURL } from "../helpers";
 
 test.describe("collections", () => {
+  // Reset DB before suite starts so stale data from previous runs doesn't
+  // interfere (bootstrap inserts base data without truncating first).
+  test.beforeAll(async ({ request }) => {
+    await request.post(`${baseURL()}/testhelper/resetDb`);
+  });
+
   test.beforeEach(async ({ page }) => {
     const adminPassword = process.env.ADMIN_PASSWORD;
     if (!adminPassword) {
