@@ -1,4 +1,5 @@
 {
+  "name": "elevator",
   "scripts": {
     "dev": "npm run development",
     "docs:build": "cd docs; vuepress build",
