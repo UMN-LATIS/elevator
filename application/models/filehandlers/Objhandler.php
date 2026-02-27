@@ -16,7 +16,8 @@ class ObjHandler extends FileHandlerBase {
 						  												["width"=>150, "height"=>75, "type"=>"tiny2x", "path"=>"thumbnail"]
 						  												]],
     3=>["taskType"=>"createNXS", "config"=>["ttr"=>900]],
-    4=>["taskType"=>"createSTL", "config"=>[]]
+    4=>["taskType"=>"createSTL", "config"=>[]],
+	5=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
 	];
 
 
@@ -53,6 +54,7 @@ class ObjHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
 			}
 		}
 		if(count($returnArray)>0) {
@@ -484,6 +486,13 @@ class ObjHandler extends FileHandlerBase {
 		}
 		return new FileContainer($dest);
 
+	}
+	
+	public function generateAltText() {
+		$this->derivativeForAltText = "thumbnail2x";
+		$this->metadataTypeForAltText = "3d model";
+		$this->getAltTextForMedia("");
+		$this->queueTask(4);
 	}
 
 }

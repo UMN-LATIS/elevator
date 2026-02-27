@@ -7,51 +7,65 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * JobLog
  */
+#[ORM\Table(name: 'job_logs')]
+#[ORM\Index(name: 0, columns: ['asset'])]
+#[ORM\Entity]
 class JobLog
 {
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'asset', type: 'string', nullable: true)]
     private $asset;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'type', type: 'string', nullable: true)]
     private $type;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'jobId', type: 'integer', nullable: true)]
     private $jobId;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'task', type: 'string', nullable: true)]
     private $task;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'message', type: 'text', nullable: true)]
     private $message;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
 
+
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
+     *
      * @return JobLog
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -59,9 +73,9 @@ class JobLog
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -69,12 +83,13 @@ class JobLog
     }
 
     /**
-     * Set asset
+     * Set asset.
      *
-     * @param string $asset
+     * @param string|null $asset
+     *
      * @return JobLog
      */
-    public function setAsset($asset)
+    public function setAsset($asset = null)
     {
         $this->asset = $asset;
 
@@ -82,9 +97,9 @@ class JobLog
     }
 
     /**
-     * Get asset
+     * Get asset.
      *
-     * @return string 
+     * @return string|null
      */
     public function getAsset()
     {
@@ -92,12 +107,13 @@ class JobLog
     }
 
     /**
-     * Set type
+     * Set type.
      *
-     * @param string $type
+     * @param string|null $type
+     *
      * @return JobLog
      */
-    public function setType($type)
+    public function setType($type = null)
     {
         $this->type = $type;
 
@@ -105,9 +121,9 @@ class JobLog
     }
 
     /**
-     * Get type
+     * Get type.
      *
-     * @return string 
+     * @return string|null
      */
     public function getType()
     {
@@ -115,12 +131,13 @@ class JobLog
     }
 
     /**
-     * Set jobId
+     * Set jobId.
      *
-     * @param integer $jobId
+     * @param int|null $jobId
+     *
      * @return JobLog
      */
-    public function setJobId($jobId)
+    public function setJobId($jobId = null)
     {
         $this->jobId = $jobId;
 
@@ -128,9 +145,9 @@ class JobLog
     }
 
     /**
-     * Get jobId
+     * Get jobId.
      *
-     * @return integer 
+     * @return int|null
      */
     public function getJobId()
     {
@@ -138,12 +155,13 @@ class JobLog
     }
 
     /**
-     * Set task
+     * Set task.
      *
-     * @param string $task
+     * @param string|null $task
+     *
      * @return JobLog
      */
-    public function setTask($task)
+    public function setTask($task = null)
     {
         $this->task = $task;
 
@@ -151,9 +169,9 @@ class JobLog
     }
 
     /**
-     * Get task
+     * Get task.
      *
-     * @return string 
+     * @return string|null
      */
     public function getTask()
     {
@@ -161,12 +179,13 @@ class JobLog
     }
 
     /**
-     * Set message
+     * Set message.
      *
-     * @param string $message
+     * @param string|null $message
+     *
      * @return JobLog
      */
-    public function setMessage($message)
+    public function setMessage($message = null)
     {
         $this->message = $message;
 
@@ -174,9 +193,9 @@ class JobLog
     }
 
     /**
-     * Get message
+     * Get message.
      *
-     * @return string 
+     * @return string|null
      */
     public function getMessage()
     {
@@ -184,9 +203,9 @@ class JobLog
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {

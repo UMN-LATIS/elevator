@@ -7,41 +7,55 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * RecentCollection
  */
+#[ORM\Table(name: 'recent_collection')]
+#[ORM\Entity]
 class RecentCollection
 {
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class, inversedBy: 'recent_collections')]
     private $user;
 
     /**
      * @var \Entity\Collection
      */
+    #[ORM\JoinColumn(name: 'collection_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Collection::class)]
     private $collection;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
 
+
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
+     *
      * @return RecentCollection
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -49,9 +63,9 @@ class RecentCollection
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -59,9 +73,9 @@ class RecentCollection
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -69,9 +83,10 @@ class RecentCollection
     }
 
     /**
-     * Set user
+     * Set user.
      *
-     * @param \Entity\User $user
+     * @param \Entity\User|null $user
+     *
      * @return RecentCollection
      */
     public function setUser(?\Entity\User $user = null)
@@ -82,9 +97,9 @@ class RecentCollection
     }
 
     /**
-     * Get user
+     * Get user.
      *
-     * @return \Entity\User 
+     * @return \Entity\User|null
      */
     public function getUser()
     {
@@ -92,9 +107,10 @@ class RecentCollection
     }
 
     /**
-     * Set collection
+     * Set collection.
      *
-     * @param \Entity\Collection $collection
+     * @param \Entity\Collection|null $collection
+     *
      * @return RecentCollection
      */
     public function setCollection(?\Entity\Collection $collection = null)
@@ -105,9 +121,9 @@ class RecentCollection
     }
 
     /**
-     * Get collection
+     * Get collection.
      *
-     * @return \Entity\Collection 
+     * @return \Entity\Collection|null
      */
     public function getCollection()
     {
@@ -115,9 +131,10 @@ class RecentCollection
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return RecentCollection
      */
     public function setInstance(?\Entity\Instance $instance = null)
@@ -128,9 +145,9 @@ class RecentCollection
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {

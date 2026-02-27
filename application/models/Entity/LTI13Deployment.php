@@ -2,35 +2,48 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * LTI13Deployment
  */
+#[ORM\Table(name: 'lti13_deployments')]
+#[ORM\Entity]
 class LTI13Deployment
 {
     /**
      * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
      * @var \DateTime|null
      */
-    private $updatedAt;
+    #[ORM\Column(name: 'updatedAt', type: 'datetime', nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private $updatedAt = 'CURRENT_TIMESTAMP';
 
     /**
      * @var string|null
      */
+    #[ORM\Column(name: 'deployment_id', type: 'string', nullable: true)]
     private $deployment_id;
 
     /**
      * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\LTI13Issuer
      */
+    #[ORM\JoinColumn(name: 'issuer_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\LTI13Issuer::class)]
     private $issuer;
+
 
 
     /**
@@ -122,7 +135,7 @@ class LTI13Deployment
      *
      * @return LTI13Deployment
      */
-    public function setIssuer(\Entity\LTI13Issuer $issuer = null)
+    public function setIssuer(?\Entity\LTI13Issuer $issuer = null)
     {
         $this->issuer = $issuer;
 

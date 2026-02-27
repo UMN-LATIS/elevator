@@ -47,15 +47,16 @@ services:
         - DOCKER_ENVIRONMENT=${ENVIRONMENT}
         - ENVIRONMENT=${ENVIRONMENT}
     volumes:
+      - ./:/var/www/html
       - ${DOCKER_SCRATCH_DIR}:/scratch
       - /var/run/docker.sock:/var/run/docker.sock
-    develop:
-      watch:
-        - action: sync
-          path: ./
-          target: /var/www/html/
-          ignore:
-            - vendor/
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./
+    #       target: /var/www/html/
+    #       ignore:
+    #         - vendor/
   # apache:
   #   platform: linux/x86_64
   #   build: 

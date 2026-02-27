@@ -3,66 +3,120 @@
 namespace Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\JoinTable;
 
 /**
  * Template
  */
+#[ORM\Table(name: 'templates')]
+#[ORM\Entity]
 class Template
 {
     /**
      * @var string
      */
+    #[ORM\Column(name: 'name', type: 'string')]
     private $name;
 
     /**
      * @var \DateTime
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime')]
     private $createdAt;
 
     /**
      * @var \DateTime
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime')]
     private $modifiedAt;
 
     /**
-     * @var boolean
+     * @var bool
      */
+    #[ORM\Column(name: 'includeInSearch', type: 'boolean', options: ['default' => '1'])]
     private $includeInSearch = true;
 
     /**
-     * @var boolean
+     * @var bool
      */
+    #[ORM\Column(name: 'indexForSearching', type: 'boolean', options: ['default' => '1'])]
     private $indexForSearching = true;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'templateColor', type: 'integer')]
     private $templateColor;
 
     /**
-     * @var boolean
+     * @var int
      */
+    #[ORM\Column(name: 'recursiveIndexDepth', type: 'integer', options: ['default' => '1'])]
+    private $recursiveIndexDepth = 1;
+
+    /**
+     * @var bool
+     */
+    #[ORM\Column(name: 'isHidden', type: 'boolean')]
     private $isHidden;
 
     /**
-     * @var integer
+     * @var bool
      */
+    #[ORM\Column(name: 'showCollection', type: 'boolean', options: ["default"=> false])]
+    private $showCollection = '0';
+
+    /**
+     * @var bool
+     */
+    #[ORM\Column(name: 'showTemplate', type: 'boolean', options: ["default"=> false])]
+    private $showTemplate = '0';
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'collectionPosition', type: 'integer', options: ["default"=> 0])]
+    private $collectionPosition = '0';
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'templatePosition', type: 'integer', options: ["default"=> 0])]
+    private $templatePosition = '0';
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\Widget::class, mappedBy: 'template', cascade: ['remove'])]
+    #[ORM\OrderBy(['id' => 'ASC'])]
     private $widgets;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\OneToMany(targetEntity: \Entity\CSVBatch::class, mappedBy: 'template')]
+    private $csv_imports;
 
     /**
      * @var \Entity\Template
      */
+    #[ORM\JoinColumn(name: 'source_template_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Template::class)]
     private $source_template;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $instances;
+    #[ORM\ManyToMany(targetEntity: \Entity\Instance::class, mappedBy: 'templates')]
+    private \Doctrine\Common\Collections\Collection $instances;
 
     /**
      * Constructor
@@ -70,13 +124,16 @@ class Template
     public function __construct()
     {
         $this->widgets = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->csv_imports = new \Doctrine\Common\Collections\ArrayCollection();
         $this->instances = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
+     *
      * @return Template
      */
     public function setName($name)
@@ -87,7 +144,7 @@ class Template
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -97,9 +154,10 @@ class Template
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param \DateTime $createdAt
+     *
      * @return Template
      */
     public function setCreatedAt($createdAt)
@@ -110,7 +168,7 @@ class Template
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return \DateTime
      */
@@ -120,9 +178,10 @@ class Template
     }
 
     /**
-     * Set modifiedAt
+     * Set modifiedAt.
      *
      * @param \DateTime $modifiedAt
+     *
      * @return Template
      */
     public function setModifiedAt($modifiedAt)
@@ -133,7 +192,7 @@ class Template
     }
 
     /**
-     * Get modifiedAt
+     * Get modifiedAt.
      *
      * @return \DateTime
      */
@@ -143,9 +202,10 @@ class Template
     }
 
     /**
-     * Set includeInSearch
+     * Set includeInSearch.
      *
-     * @param boolean $includeInSearch
+     * @param bool $includeInSearch
+     *
      * @return Template
      */
     public function setIncludeInSearch($includeInSearch)
@@ -156,9 +216,9 @@ class Template
     }
 
     /**
-     * Get includeInSearch
+     * Get includeInSearch.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIncludeInSearch()
     {
@@ -166,9 +226,10 @@ class Template
     }
 
     /**
-     * Set indexForSearching
+     * Set indexForSearching.
      *
-     * @param boolean $indexForSearching
+     * @param bool $indexForSearching
+     *
      * @return Template
      */
     public function setIndexForSearching($indexForSearching)
@@ -179,9 +240,9 @@ class Template
     }
 
     /**
-     * Get indexForSearching
+     * Get indexForSearching.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIndexForSearching()
     {
@@ -189,9 +250,10 @@ class Template
     }
 
     /**
-     * Set templateColor
+     * Set templateColor.
      *
-     * @param integer $templateColor
+     * @param int $templateColor
+     *
      * @return Template
      */
     public function setTemplateColor($templateColor)
@@ -202,9 +264,9 @@ class Template
     }
 
     /**
-     * Get templateColor
+     * Get templateColor.
      *
-     * @return integer
+     * @return int
      */
     public function getTemplateColor()
     {
@@ -212,9 +274,34 @@ class Template
     }
 
     /**
-     * Set isHidden
+     * Set recursiveIndexDepth.
      *
-     * @param boolean $isHidden
+     * @param int $recursiveIndexDepth
+     *
+     * @return Template
+     */
+    public function setRecursiveIndexDepth($recursiveIndexDepth)
+    {
+        $this->recursiveIndexDepth = $recursiveIndexDepth;
+
+        return $this;
+    }
+
+    /**
+     * Get recursiveIndexDepth.
+     *
+     * @return int
+     */
+    public function getRecursiveIndexDepth()
+    {
+        return $this->recursiveIndexDepth;
+    }
+
+    /**
+     * Set isHidden.
+     *
+     * @param bool $isHidden
+     *
      * @return Template
      */
     public function setIsHidden($isHidden)
@@ -225,9 +312,9 @@ class Template
     }
 
     /**
-     * Get isHidden
+     * Get isHidden.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsHidden()
     {
@@ -235,114 +322,9 @@ class Template
     }
 
     /**
-     * Get id
+     * Set showCollection.
      *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Add widgets
-     *
-     * @param \Entity\Widget $widgets
-     * @return Template
-     */
-    public function addWidget(\Entity\Widget $widgets)
-    {
-        $this->widgets[] = $widgets;
-
-        return $this;
-    }
-
-    /**
-     * Remove widgets
-     *
-     * @param \Entity\Widget $widgets
-     */
-    public function removeWidget(\Entity\Widget $widgets)
-    {
-        $this->widgets->removeElement($widgets);
-    }
-
-    /**
-     * Get widgets
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getWidgets()
-    {
-        return $this->widgets;
-    }
-
-    /**
-     * Set source_template
-     *
-     * @param \Entity\Template $sourceTemplate
-     * @return Template
-     */
-    public function setSourceTemplate(? \Entity\Template $sourceTemplate = null)
-    {
-        $this->source_template = $sourceTemplate;
-
-        return $this;
-    }
-
-    /**
-     * Get source_template
-     *
-     * @return \Entity\Template
-     */
-    public function getSourceTemplate()
-    {
-        return $this->source_template;
-    }
-
-    /**
-     * Add instances
-     *
-     * @param \Entity\Instance $instances
-     * @return Template
-     */
-    public function addInstance(\Entity\Instance $instances)
-    {
-        $instances->addTemplate($this);
-        $this->instances[] = $instances;
-
-        return $this;
-    }
-
-    /**
-     * Remove instances
-     *
-     * @param \Entity\Instance $instances
-     */
-    public function removeInstance(\Entity\Instance $instances)
-    {
-        $this->instances->removeElement($instances);
-    }
-
-    /**
-     * Get instances
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getInstances()
-    {
-        return $this->instances;
-    }
-    /**
-     * @var boolean
-     */
-    private $showCollection;
-
-
-    /**
-     * Set showCollection
-     *
-     * @param boolean $showCollection
+     * @param bool $showCollection
      *
      * @return Template
      */
@@ -354,24 +336,14 @@ class Template
     }
 
     /**
-     * Get showCollection
+     * Get showCollection.
      *
-     * @return boolean
+     * @return bool
      */
     public function getShowCollection()
     {
         return $this->showCollection;
     }
-    /**
-     * @var bool
-     */
-    private $showTemplate = '0';
-
-    /**
-     * @var bool
-     */
-    private $showTemplateInBrowse = '0';
-
 
     /**
      * Set showTemplate.
@@ -396,40 +368,6 @@ class Template
     {
         return $this->showTemplate;
     }
-
-    /**
-     * Set showTemplateInBrowse.
-     *
-     * @param bool $showTemplateInBrowse
-     *
-     * @return Template
-     */
-    public function setShowTemplateInBrowse($showTemplateInBrowse)
-    {
-        $this->showTemplateInBrowse = $showTemplateInBrowse;
-
-        return $this;
-    }
-
-    /**
-     * Get showTemplateInBrowse.
-     *
-     * @return bool
-     */
-    public function getShowTemplateInBrowse()
-    {
-        return $this->showTemplateInBrowse;
-    }
-    /**
-     * @var int
-     */
-    private $collectionPosition = '1';
-
-    /**
-     * @var int
-     */
-    private $templatePosition = '1';
-
 
     /**
      * Set collectionPosition.
@@ -478,40 +416,52 @@ class Template
     {
         return $this->templatePosition;
     }
-    /**
-     * @var int
-     */
-    private $recursiveIndexDepth = '1';
-
 
     /**
-     * Set recursiveIndexDepth.
+     * Get id.
      *
-     * @param int $recursiveIndexDepth
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Add widget.
+     *
+     * @param \Entity\Widget $widget
      *
      * @return Template
      */
-    public function setRecursiveIndexDepth($recursiveIndexDepth)
+    public function addWidget(\Entity\Widget $widget)
     {
-        $this->recursiveIndexDepth = $recursiveIndexDepth;
+        $this->widgets[] = $widget;
 
         return $this;
     }
 
     /**
-     * Get recursiveIndexDepth.
+     * Remove widget.
      *
-     * @return int
+     * @param \Entity\Widget $widget
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function getRecursiveIndexDepth()
+    public function removeWidget(\Entity\Widget $widget)
     {
-        return $this->recursiveIndexDepth;
+        return $this->widgets->removeElement($widget);
     }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $csv_imports;
 
+    /**
+     * Get widgets.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getWidgets()
+    {
+        return $this->widgets;
+    }
 
     /**
      * Add csvImport.
@@ -547,5 +497,66 @@ class Template
     public function getCsvImports()
     {
         return $this->csv_imports;
+    }
+
+    /**
+     * Set sourceTemplate.
+     *
+     * @param \Entity\Template|null $sourceTemplate
+     *
+     * @return Template
+     */
+    public function setSourceTemplate(?\Entity\Template $sourceTemplate = null)
+    {
+        $this->source_template = $sourceTemplate;
+
+        return $this;
+    }
+
+    /**
+     * Get sourceTemplate.
+     *
+     * @return \Entity\Template|null
+     */
+    public function getSourceTemplate()
+    {
+        return $this->source_template;
+    }
+
+    /**
+     * Add instance.
+     *
+     * @param \Entity\Instance $instance
+     *
+     * @return Template
+     */
+    public function addInstance(\Entity\Instance $instance)
+    {
+        $instance->addTemplate($this);
+        $this->instances[] = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Remove instance.
+     *
+     * @param \Entity\Instance $instance
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeInstance(\Entity\Instance $instance)
+    {
+        return $this->instances->removeElement($instance);
+    }
+
+    /**
+     * Get instances.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getInstances()
+    {
+        return $this->instances;
     }
 }

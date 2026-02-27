@@ -2,6 +2,8 @@
 
 //use Aws\S3\S3Client;
 use Aws\Batch\BatchClient;
+use Aws\Bedrock\BedrockClient;
+use Aws\BedrockRuntime\BedrockRuntimeClient;
 use Aws\Exception\AwsException;
 
 
@@ -16,6 +18,7 @@ class FileHandlerBase extends CI_Model {
 	protected $supportedTypes = array();
 	protected $noDerivatives = true;
 	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true]]];
+	public $gpuTaskArray = [];
 	public $icon = "_blank.png"; // icon File to use if we don't have a thumb
 	public $collection = null;
 
@@ -45,6 +48,9 @@ class FileHandlerBase extends CI_Model {
 	public $nextTask = null;
 	public $taskListHasChanged = false;
 	
+	public $derivativeForAltText = null;
+	public $metadataTypeForAltText = null;
+
 
 	public function __construct()
 	{
@@ -238,8 +244,8 @@ class FileHandlerBase extends CI_Model {
 				$collection = $this->collection_model->getCollection($this->collectionId);
 				if($collection) {
 					$instances = $collection->getInstances();
-					if(count($instances) > 0) {
-						$instance = $instances[0];
+					if($instances && $instances->count() > 0) {
+						$instance = $instances->first();
 						$instanceId = $instance->getId();
 					}
 				}
@@ -374,9 +380,11 @@ class FileHandlerBase extends CI_Model {
 				$pathToFile = instance_url("");
 				$newTask = json_encode(["objectId"=>$this->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"create_derivative"]);
 				$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
+
+				$this->sourceFile->restoreFromArchive();
 			}
 			else {
-				$this->queueBatchItem($this->asset, $this->sourceFile);
+				$this->queueBatchItem();
 			}
 
 
@@ -397,9 +405,9 @@ class FileHandlerBase extends CI_Model {
 		return [];
 	}
 
-	public function queueBatchItem($asset, $sourceFile) {
-		$fileObjectId = $asset->getFileObjectId();
-		$fileSize = $sourceFile->getFileSize();
+	public function queueBatchItem($jobType = "cpu") {
+		$fileObjectId = $this->asset->getFileObjectId();
+		$fileSize = $this->sourceFile->getFileSize();
 		$size = "";
 		if($fileSize < 50*1024*1024) { 
 			// under 100mb, we can safely use our small container
@@ -411,8 +419,18 @@ class FileHandlerBase extends CI_Model {
 
 		$overrides = $this->getCustomJobOverrides();
 
+		$jobDefinition = $this->config->item('awsQueueJobDefinition');
+		$jobQueue = $this->config->item('awsQueueJobQueue');
+		if($jobType == "cpu") {
+			$jobDefinition = $jobDefinition . "-" . $size;
+		}
+		else {
+			$jobDefinition = $jobDefinition . "-gpu";
+			$jobQueue = $jobQueue . "GPU";
+		}
+		
 
-		$jobDefinition = $this->config->item('awsQueueJobDefinition') . "-" . $size;
+		
 
 		$batchClient = new BatchClient([
 			'region' => $this->config->item('awsQueueRegion'), // e.g., 'us-west-2'
@@ -424,13 +442,13 @@ class FileHandlerBase extends CI_Model {
 		]);
 		$params = [
 			'jobName' => 'transcode_' . $fileObjectId,
-			'jobQueue' => $this->config->item('awsQueueJobQueue'),
+			'jobQueue' => $jobQueue,
 			'jobDefinition' => $jobDefinition,
 			'timeout' => [
 				"attemptDurationSeconds" => ($size=="small")? 2400 : 28800,
 			],
 			'containerOverrides' => [
-        		'command' => ['bash', 'docker/runJob.sh',  $fileObjectId],
+        		'command' => ['bash', 'docker/runJob.sh',  $fileObjectId, $jobType],
 				'resourceRequirements' => $overrides
     		],
 		];
@@ -742,6 +760,115 @@ class FileHandlerBase extends CI_Model {
 		}
 	}
 
+	protected function getAltTextForMedia($prompt) {
+
+		if($this->instance && !$this->instance->getAutomaticAltText()) {
+			return;
+		}
+
+		$uploadWidget = $this->getUploadWidget();
+		if(!$uploadWidget) {
+			return;
+		}
+
+		if(isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription)>0) {
+			return;
+		}
+
+
+		$modelId = 'us.meta.llama4-maverick-17b-instruct-v1:0';
+		$bedrockClient = new BedrockRuntimeClient([
+            'region' => 'us-east-1',
+			'version' => 'latest',
+			'credentials' => [
+				'key'    => $this->config->item('awsBedrockKey'),
+				'secret' => $this->config->item('awsBedrockSecret'),
+			],
+        ]);
+
+
+		$metadata = [];
+		foreach($this->parentObject->assetObjects as $widget) {
+			if($widget->getDisplay() && $widget->hasContents()) {
+				$metadata[$widget->getLabel()] = $widget->getAsText();
+			}
+		}
+
+		if(isset($this->metadataTypeForAltText)) {
+			$metadata["type"] = $this->metadataTypeForAltText;
+		}
+
+		if(!isset($this->derivativeForAltText)) {
+			return;
+		}
+
+		$derivative = $this->derivatives[$this->derivativeForAltText];		
+		$derivative->makeLocal();
+		if(!isset($derivative)) {
+			return;
+		}
+
+
+
+
+		$systemPrompt = "Generate a caption appropriate for use as alt text within a digital asset management system. Just output the caption, don't add any additional context like \"here's the caption you asked for\". You can use the associated metadata json to better describe the object, but don't repeat the metadata verbatim as it'll be available to the user as well. Be sure to actually describe the object, not just the metadata, so that someone who's visually impaired would understand what the image represents. If the metadata has a 'type' field, use it to describe the object (e.g. 'a 3d object', 'a word document', etc.). Make sure you follow best practices for generating high quality alt text for images. Make sure to double check your work. Don't repeat content that's already in the metadata like dimensions, unless it's crucial to visibly describe the object.";
+
+		$combinedPrompt = $systemPrompt . "\n\n" . $prompt . "\n\n" . json_encode($metadata);
+
+
+		$tempImagePath = $this->config->item('scratchSpace') . "/temp_image_" . time() . ".jpg";
+		$tempImage = new FileContainer($tempImagePath);
+
+		compressImageAndSave($derivative, $tempImage, 512, 512, 80);
+		$imageBytes = file_get_contents($tempImage->getPathToLocalFile());
+
+		$conversation = [
+			[
+				"text" => $combinedPrompt
+			],
+			[
+				"image"=> [
+					"format"=> "jpeg",
+					"source"=> [
+						"bytes"=> $imageBytes
+					]
+				]
+			]
+		];
+
+
+		$messages = [
+        	[
+            	"role"=> "user",
+            	"content"=> $conversation
+			]
+		];
+
+		$response = $bedrockClient->converse([
+			'modelId' => $modelId,
+			'messages' => $messages,
+			'inferenceConfig' => [
+				'maxTokens' => 512,
+				'temperature' => 0.5
+			]
+		]);
+
+		$responseText = $response['output']['message']['content'][0]['text'];
+
+		echo "Setting alt text to: " . $responseText . "\n";
+		$this->parentObject = null;
+		$this->doctrine->em->clear();
+		$uploadWidget = $this->getUploadWidget();
+		
+		$uploadWidget->fileDescription = $responseText;
+		$this->parentObject->save(true,false);
+
+        return;
+	}
+
+	public function generateAltText() {
+		return;
+	}
 }
 
 /* End of file modelName.php */

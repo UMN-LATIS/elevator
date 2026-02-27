@@ -7,41 +7,54 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CustomSearch
  */
+#[ORM\Table(name: 'custom_search')]
+#[ORM\Entity]
 class CustomSearch
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'searchConfig', type: 'text', nullable: true)]
     private $searchConfig;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'searchTitle', type: 'string', nullable: true)]
     private $searchTitle;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $user;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
 
+
     /**
-     * Set searchConfig
+     * Set searchConfig.
      *
-     * @param string $searchConfig
+     * @param string|null $searchConfig
+     *
      * @return CustomSearch
      */
-    public function setSearchConfig($searchConfig)
+    public function setSearchConfig($searchConfig = null)
     {
         $this->searchConfig = $searchConfig;
 
@@ -49,9 +62,9 @@ class CustomSearch
     }
 
     /**
-     * Get searchConfig
+     * Get searchConfig.
      *
-     * @return string 
+     * @return string|null
      */
     public function getSearchConfig()
     {
@@ -59,12 +72,13 @@ class CustomSearch
     }
 
     /**
-     * Set searchTitle
+     * Set searchTitle.
      *
-     * @param string $searchTitle
+     * @param string|null $searchTitle
+     *
      * @return CustomSearch
      */
-    public function setSearchTitle($searchTitle)
+    public function setSearchTitle($searchTitle = null)
     {
         $this->searchTitle = $searchTitle;
 
@@ -72,9 +86,9 @@ class CustomSearch
     }
 
     /**
-     * Get searchTitle
+     * Get searchTitle.
      *
-     * @return string 
+     * @return string|null
      */
     public function getSearchTitle()
     {
@@ -82,9 +96,9 @@ class CustomSearch
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -92,12 +106,13 @@ class CustomSearch
     }
 
     /**
-     * Set user
+     * Set user.
      *
-     * @param \Entity\User $user
+     * @param \Entity\User|null $user
+     *
      * @return CustomSearch
      */
-    public function setUser(\Entity\User $user = null)
+    public function setUser(?\Entity\User $user = null)
     {
         $this->user = $user;
 
@@ -105,9 +120,9 @@ class CustomSearch
     }
 
     /**
-     * Get user
+     * Get user.
      *
-     * @return \Entity\User 
+     * @return \Entity\User|null
      */
     public function getUser()
     {
@@ -115,12 +130,13 @@ class CustomSearch
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return CustomSearch
      */
-    public function setInstance(\Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -128,9 +144,9 @@ class CustomSearch
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {

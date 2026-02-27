@@ -13,7 +13,6 @@ if(isset($widgetObject->parentWidget->dendroFields)) {
 		}
 		
 	}
-
 	$latewoodField = $widgetObject->parentWidget->dendroFields["lateWood"];
 	if(isset($fileObject->parentObject->assetObjects[$latewoodField])) {
 		$result = $fileObject->parentObject->assetObjects[$latewoodField]->getAsArray();
@@ -46,6 +45,7 @@ if($tileSize == 254) {
 	<link rel="stylesheet" href="/assets/leaflet-treering/Style.DataAccess.css"> 
 	<link rel="stylesheet" href="/assets/leaflet-treering/Style.PithEstimate.css"> 
 	<link rel="stylesheet" href="/assets/leaflet-treering/Style.ImageAdjustment.css"> 
+	<link rel="stylesheet" href="/assets/leaflet-treering/Style.AutoRingDetection.css">
 	<link rel="stylesheet" href="/assets/leaflet-treering/Style.Dating.css"> 
 
 	<!-- <script src="/assets/leaflet-treering/node_modules/jquery/dist/jquery.min.js"></script> -->
@@ -69,6 +69,7 @@ if($tileSize == 254) {
 <script type = "application/javascript" src= "/assets/leaflet-treering/Leaflet.ImageAdjustment.js"></script>
 <script type = "application/javascript" src= "/assets/leaflet-treering/Leaflet.PithEstimate.js"></script>
 <script type = "application/javascript" src= "/assets/leaflet-treering/Leaflet.AreaCapture.js"></script>
+<script type = "application/javascript" src= "/assets/leaflet-treering/Leaflet.AutoRingDetection.js"></script>
 
 <script type="application/javascript" src="/assets/leaflet-treering/node_modules/leaflet-ellipse/l.ellipse.js"></script>
 <script src="https://unpkg.com/leaflet-lasso@2.2.12/dist/leaflet-lasso.umd.min.js"></script>
@@ -295,6 +296,7 @@ void main(void){
 			$.get("/assets/leaflet-treering/Template.Dating.html", (dat) => html.push(dat)),
 			$.get("/assets/leaflet-treering/Template.ImageAdjustment.html", (dat) => html.push(dat)),
 			$.get("/assets/leaflet-treering/Template.PithEstimate.html", (dat) => html.push(dat)),
+			$.get("/assets/leaflet-treering/Template.AutoRingDetection.html", (dat) => html.push(dat)),
 		).then(() => {
 			$("body").append(...html);
 			treering = new LTreering(imageMap, "/assets/leaflet-treering/",{ppm:baseLayer.options.pixelsPerMillimeter, saveURL: saveURL, savePermission:canSave, popoutUrl: popoutURL, 'initialData': sideCar, 'assetName': "<?=$fileObject->parentObject->getAssetTitle(true)?>", 'datingInner': innerYear, 'hasLatewood': <?=$haveLateWood?"true":"false"?>}, baseLayer, layer );

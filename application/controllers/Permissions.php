@@ -90,8 +90,7 @@ class Permissions extends Instance_Controller {
 	{
 		//TODO Permissions checking
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->deleteAll();
+			$this->userCache->clear();
 		}
 		$permissionTypeId = $this->input->post('permissionTypeId');
 		$permissionType = $this->input->post('permissionType');
@@ -272,8 +271,7 @@ class Permissions extends Instance_Controller {
 		}
 		else if($this->input->post("submit") == "edit") {
 			if($this->config->item('enableCaching')) {
-				$this->doctrineCache->setNamespace('userCache_');
-				$this->doctrineCache->deleteAll();
+				$this->userCache->clear();
 			}
 			$permissionType = $this->input->post("permissionType");
 			$permissionTypeId = $this->input->post("permissionTypeId");
@@ -397,8 +395,7 @@ class Permissions extends Instance_Controller {
 	public function createGroup()
 	{
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->deleteAll();
+			$this->userCache->clear();
 		}
 
 		$instance =  $this->instance;
@@ -771,13 +768,9 @@ class Permissions extends Instance_Controller {
 
 	public function saveUser()
 	{
-		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-		}
-
 		if(is_numeric($this->input->post("userId"))) {
 			if($this->config->item('enableCaching')) {
-				$this->doctrineCache->delete($this->input->post("userId"));
+				$this->userCache->delete($this->input->post("userId"));
 			}
 			$user = $this->doctrine->em->find("Entity\User", $this->input->post("userId"));
 			$this->template->content = "User Updated.";
@@ -869,8 +862,7 @@ class Permissions extends Instance_Controller {
 
 	public function instanceHandlerGroups() {
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->deleteAll();
+			$this->userCache->clear();
 		}
 
 		$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION, $this->instance);

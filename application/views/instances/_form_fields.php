@@ -250,6 +250,9 @@
 	<div class="col-sm-2">
 		<a href="<?=instance_url("instances/previewNewInterface")?>" class="btn btn-primary">Preview VueJS Interface</a>
 	</div>
+	<div class="col-sm-2">
+		<a href="<?=instance_url("instances/forceOldInterface")?>" class="btn btn-primary">Use Classic Interface</a>
+	</div>
 </div>
 <div class="form-group">
 	<div class="col-sm-offset-2 col-sm-8">
@@ -323,6 +326,26 @@
 	</div>
 </div>
 
+
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="automaticAltText" name="automaticAltText" value="On" <?=$instance->getAutomaticAltText()?"checked":null?>>
+			Automatically generate alt text and captions
+		</label>
+	</div>
+</div>
+
+<div class="form-group">
+	<div class="col-sm-offset-2 col-sm-8">
+		<label>
+			<input type="checkbox" id="autoloadMaxSearchResults" name="autoloadMaxSearchResults" value="On"
+			<?= $instance->getAutoloadMaxSearchResults() ? "checked" : null ?>
+			/>
+			Autoload Max Search Results
+		</label>
+	</div>
+</div>
 </fieldset>
 
 

@@ -7,33 +7,45 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CollectionPermission
  */
+#[ORM\Table(name: 'collection_permissions')]
+#[ORM\Entity]
 class CollectionPermission
 {
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\InstanceGroup
      */
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\InstanceGroup::class, inversedBy: 'collection_permissions')]
     private $group;
 
     /**
      * @var \Entity\Collection
      */
+    #[ORM\JoinColumn(name: 'collection_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Collection::class, inversedBy: 'collection_permissions')]
     private $collection;
 
     /**
      * @var \Entity\Permission
      */
+    #[ORM\JoinColumn(name: 'permission_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Permission::class, inversedBy: 'collection_permissions')]
     private $permission;
 
 
+
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -41,12 +53,13 @@ class CollectionPermission
     }
 
     /**
-     * Set group
+     * Set group.
      *
-     * @param \Entity\InstanceGroup $group
+     * @param \Entity\InstanceGroup|null $group
+     *
      * @return CollectionPermission
      */
-    public function setGroup(? \Entity\InstanceGroup $group = null)
+    public function setGroup(?\Entity\InstanceGroup $group = null)
     {
         $this->group = $group;
 
@@ -54,9 +67,9 @@ class CollectionPermission
     }
 
     /**
-     * Get group
+     * Get group.
      *
-     * @return \Entity\InstanceGroup 
+     * @return \Entity\InstanceGroup|null
      */
     public function getGroup()
     {
@@ -64,12 +77,13 @@ class CollectionPermission
     }
 
     /**
-     * Set collection
+     * Set collection.
      *
-     * @param \Entity\Collection $collection
+     * @param \Entity\Collection|null $collection
+     *
      * @return CollectionPermission
      */
-    public function setCollection(? \Entity\Collection $collection = null)
+    public function setCollection(?\Entity\Collection $collection = null)
     {
         $this->collection = $collection;
 
@@ -77,9 +91,9 @@ class CollectionPermission
     }
 
     /**
-     * Get collection
+     * Get collection.
      *
-     * @return \Entity\Collection 
+     * @return \Entity\Collection|null
      */
     public function getCollection()
     {
@@ -87,12 +101,13 @@ class CollectionPermission
     }
 
     /**
-     * Set permission
+     * Set permission.
      *
-     * @param \Entity\Permission $permission
+     * @param \Entity\Permission|null $permission
+     *
      * @return CollectionPermission
      */
-    public function setPermission(? \Entity\Permission $permission = null)
+    public function setPermission(?\Entity\Permission $permission = null)
     {
         $this->permission = $permission;
 
@@ -100,9 +115,9 @@ class CollectionPermission
     }
 
     /**
-     * Get permission
+     * Get permission.
      *
-     * @return \Entity\Permission 
+     * @return \Entity\Permission|null
      */
     public function getPermission()
     {

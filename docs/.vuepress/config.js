@@ -103,7 +103,9 @@ module.exports = {
                     "/permissions",
                     "/collections",
                     "/file-groups",
-                    "/importing-and-exporting"
+                    "/importing-and-exporting",
+                    "/google-analytics",
+                    "/adding-custom-code"
                 ]
             },
             ['/faq', 'Frequently Asked Questions']

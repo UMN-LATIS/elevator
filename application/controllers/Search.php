@@ -1,10 +1,14 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use Symfony\Component\Cache\Psr16Cache;
+
+ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 
 class Search extends Instance_Controller {
 
 	private $searchId = null;
-
+	private ?Psr16Cache $sortCache = null;
 	public function __construct()
 	{
 		parent::__construct();
@@ -41,7 +45,7 @@ class Search extends Instance_Controller {
 		}
 
 		$jsloadArray = array();
-		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+		if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) {
 			$jsLoadArray = ["search", "searchForm"];
 
 		}
@@ -114,7 +118,7 @@ class Search extends Instance_Controller {
 		}
 
 		$jsloadArray = array();
-		if(defined('ENVIRONMENT') && ENVIRONMENT == "development") {
+		if(defined('ENVIRONMENT') && (ENVIRONMENT == "development" || ENVIRONMENT == "local")) {
 			$jsLoadArray = ["search", "searchForm"];
 
 		}
@@ -282,6 +286,7 @@ class Search extends Instance_Controller {
 			instance_redirect("/search");
 		}
 
+
 		if($fieldName == "template") {
 			$searchArray["searchText"] = "";
 			$searchArray["templateId"] = [$searchString];
@@ -291,9 +296,15 @@ class Search extends Instance_Controller {
 			$searchArray["specificSearchField"] = [$fieldName];
 			$searchArray["specificSearchText"] = [rawurldecode($searchString)];
 			$searchArray["specificFieldSearch"] = [["field"=>$fieldName, "text"=>rawurldecode($searchString), "fuzzy"=>false]];
+			
+			// elastic8 requires that we use range queries to search for content in "long" fields
+			// right now only csvBatch falls into that category. If we need to add more, we should so something more clever with this
+			if($fieldName == "csvBatch") {
+				$searchArray["specificFieldSearch"][0]["numeric"] = true;
+			}
+
 			$searchArray["sort"] = "title.raw";
 		}
-
 
 		$searchArchive = new Entity\SearchEntry;
 		$searchArchive->setUser($this->user_model->user);
@@ -637,6 +648,7 @@ class Search extends Instance_Controller {
 				$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', $searchId);
 				$searchArray = $searchArchiveEntry->getSearchData();
 			}
+	
 		}
 
 
@@ -725,6 +737,17 @@ class Search extends Instance_Controller {
 			$searchArray['matchType'] = "phrase_prefix"; // this is a leaky abstraction. But the whole thing is really.
 			$matchArray = $this->search_model->find($searchArray, !$showHidden, $page, $loadAll);
 		}
+
+		// filter out the objectIds we passed in when doing a searchRelated
+		if($this->input->post("searchRelated") && $this->input->post("searchRelated") == true) {
+			foreach($matchArray["searchResults"] as $key=>$objectId) {
+				if(in_array($objectId, $objectIdArray)) {
+					unset($matchArray["searchResults"][$key]);
+				}
+			}
+			$matchArray["searchResults"] = array_values($matchArray["searchResults"]); // reindex
+		}
+
 		$matchArray["searchId"] = $this->searchId;
 		$matchArray["sortableWidgets"] = $this->buildSortStructure();
 		return render_json($this->search_model->processSearchResults($searchArray, $matchArray));
@@ -923,9 +946,9 @@ class Search extends Instance_Controller {
 	}
 
 	private function buildSortStructure() {
-		if ($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('sortCache_');
-			if ($storedObject = $this->doctrineCache->fetch($this->instance->getId())) {
+		if ($this->config->item('enableCaching') && $this->sortCache) {
+
+			if ($storedObject = $this->sortCache->get((string)$this->instance->getId())) {
 				return $storedObject;
 			}
 		}
@@ -960,8 +983,10 @@ class Search extends Instance_Controller {
 		}
 
 		if ($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('sortCache_');
-			$this->doctrineCache->save($this->instance->getId(), $formattedReturnArray, 14400);
+			if(!$this->sortCache) {
+				$this->sortCache = $this->doctrine->getCache("sortCache");
+			}
+			$this->sortCache->set((string)$this->instance->getId(), $formattedReturnArray, 14400);
 		}
 
 		return $formattedReturnArray;

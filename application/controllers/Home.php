@@ -1,5 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-
+use Doctrine\DBAL\Logging\DebugStack;
 class Home extends Instance_Controller {
 
 	public $noAuth = true;
@@ -8,7 +8,7 @@ class Home extends Instance_Controller {
 	{
 		parent::__construct();
 	}
-	
+
 	public function index()
 	{
 
@@ -41,9 +41,13 @@ class Home extends Instance_Controller {
 		}
 
 		$pages = $this->doctrine->em->getRepository("Entity\InstancePage")->findBy(["instance"=>$this->instance, "title"=>"Home Page"]);
+		$data['homeText'] = "";
 		if($pages) {
 			$firstPage = current($pages);
-			$data['homeText'] = $firstPage->getBody();
+			if($firstPage) {
+				$data['homeText'] = $firstPage->getBody();
+			}
+			
 		}
 
 		$this->template->title = $this->instance->getName();
@@ -233,10 +237,12 @@ class Home extends Instance_Controller {
 		$headerData["centralAuthLabel"] = $this->config->item("remoteLoginLabel");
 		$headerData["showPreviousNext"] = $this->instance->getShowPreviousNextSearchResults();
 
-		// collection information
-		$outputCollections = $this->getNestedCollections($this->collection_model->getUserCollections());
-		$headerData["collections"] = $outputCollections;
+		$rootCollections = $this->instance->getCollectionsWithoutParent();
+		$viewableCollectionIds = array_map(fn($c) => $c->getId(), $this->user_model->getAllowedCollections(PERM_SEARCH));
+		$editableCollectionIds = array_map(fn($c) => $c->getId(), $this->user_model->getAllowedCollections(PERM_ADDASSETS));
 
+		// nest and add `canView` and `canEdit` props to collections
+		$headerData['collections'] = $this->getNestedCollectionsWithPrivileges($rootCollections, $viewableCollectionIds, $editableCollectionIds);
 		if($headerData["userCanManageAssets"]) {
 			$templates[] = array();
 			foreach($this->instance->getTemplates() as $template) {
@@ -253,35 +259,67 @@ class Home extends Instance_Controller {
 		// useCustomHeader also controls whether or not to show the custom footer
 		$headerData['customHeaderMode'] = $this->instance->getUseCustomHeader();
 		if ($this->instance->getUseCustomHeader()) {
-			$headerData['customHeader'] = $this->instance->getCustomHeaderText();
-			$headerData['customFooter'] = $this->instance->getCustomFooterText();
+			$headerData['customHeaderText'] = $this->instance->getCustomHeaderText();
+			$headerData['customFooterText'] = $this->instance->getCustomFooterText();
 		}
 
 		$headerData['useCustomCSS'] = $this->instance->getUseCustomCSS() ?? false;
+		$headerData['customHeaderCSS'] = $this->instance->getCustomHeaderCSS() ?? "";
+
+		$headerData['useVoyagerViewer'] = $this->instance->getUseVoyagerViewer() ?? false;
+
+		$headerData['theming'] = [
+			'availableThemes' => $this->instance->getAvailableThemes(),
+			'enabled' => $this->instance->getEnableThemes(),
+			'defaultTheme' => $this->instance->getDefaultTheme(),
+		];
 
 		return render_json($headerData);
 	}
 
-	private function getNestedCollections($collectionList)
+	private function getNestedCollectionsWithPrivileges($rootCollections, $viewableCollectionIds, $editableCollectionIds = [])
 	{
 		$result = [];
-		foreach ($collectionList as $collection) {
-			if ($collection->getShowInBrowse()) {
 
-				$collectionEntry = [];
-				$collectionEntry["id"] = $collection->getId();
-				$collectionEntry["title"] = $collection->getTitle();
-				$collectionEntry["previewImageId"] = $collection->getPreviewImage();
-				if ($collection->hasChildren()) {
-					$collectionEntry["children"] = $this->getNestedCollections($collection->getChildren());
+		// if a user can edit ANY collection, show all collections
+		// with their view/edit status
+		$canEditSomeCollection = count($editableCollectionIds) > 0;
+		$workingIterator = new ArrayIterator($rootCollections);
+		foreach ($workingIterator as $collection) {
+			$canView = in_array($collection->getId(), $viewableCollectionIds);
+			$canEdit = in_array($collection->getId(), $editableCollectionIds);
+			
+			// if the user can't view this collection, or edit any collection,
+			// we don't want to include it in the json output. But we might have rights to its children,
+			// so we add them to the iterator to be checked later.
+			if (!$canView && !$canEditSomeCollection) {
+				if($collection->hasChildren()) {
+					foreach($collection->getChildren() as $child) {
+						$workingIterator->append($child);
+					}	
 				}
-				$result[] = $collectionEntry;
+				continue;
 			}
+
+			$collectionEntry = [
+				'id' => $collection->getId(),
+				'title' => $collection->getTitle(),
+				'showInBrowse' => $collection->getShowInBrowse(),
+				'canView' => $canView,
+				'canEdit' => $canEdit,
+				'previewImageId' => $collection->getPreviewImage()
+			];
+
+			if ($collection->hasChildren()) {
+
+				$collectionEntry["children"] = $this->getNestedCollectionsWithPrivileges($collection->getChildren()->toArray(), $viewableCollectionIds, $editableCollectionIds);
+				
+			}
+			$result[] = $collectionEntry;
 		}
+
 		return $result;
-
 	}
-
 }
 
 /* End of file home.php */

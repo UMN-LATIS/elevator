@@ -2,25 +2,69 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * CSVBatch
  */
+#[ORM\Table(name: 'csv_batches')]
+#[ORM\Entity]
 class CSVBatch
 {
     /**
      * @var string
      */
+    #[ORM\Column(name: 'filename', type: 'string', nullable: false)]
     private $filename;
 
     /**
      * @var \DateTime
      */
-    private $createdAt;
+    #[ORM\Column(name: 'createdAt', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private $createdAt = 'CURRENT_TIMESTAMP';
 
     /**
      * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\OneToMany(targetEntity: \Entity\Asset::class, mappedBy: 'csvImport', fetch: 'EXTRA_LAZY')]
+    private $assets;
+
+    /**
+     * @var \Entity\Collection
+     */
+    #[ORM\JoinColumn(name: 'collection_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Collection::class, inversedBy: 'csvImports')]
+    private $collection;
+
+    /**
+     * @var \Entity\Template
+     */
+    #[ORM\JoinColumn(name: 'template_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Template::class, inversedBy: 'csvImports')]
+    private $template;
+
+    /**
+     * @var \Entity\User
+     */
+    #[ORM\JoinColumn(name: 'createdby_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class, inversedBy: 'csvImports')]
+    private $createdBy;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->assets = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
 
     /**
@@ -81,22 +125,41 @@ class CSVBatch
         return $this->id;
     }
 
-    
     /**
-     * @var \Entity\Collection
+     * Add asset.
+     *
+     * @param \Entity\Asset $asset
+     *
+     * @return CSVBatch
      */
-    private $collection;
+    public function addAsset(\Entity\Asset $asset)
+    {
+        $this->assets[] = $asset;
+
+        return $this;
+    }
 
     /**
-     * @var \Entity\Template
+     * Remove asset.
+     *
+     * @param \Entity\Asset $asset
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    private $template;
+    public function removeAsset(\Entity\Asset $asset)
+    {
+        return $this->assets->removeElement($asset);
+    }
 
     /**
-     * @var \Entity\User
+     * Get assets.
+     *
+     * @return \Doctrine\Common\Collections\Collection
      */
-    private $createdBy;
-
+    public function getAssets()
+    {
+        return $this->assets;
+    }
 
     /**
      * Set collection.
@@ -168,54 +231,5 @@ class CSVBatch
     public function getCreatedBy()
     {
         return $this->createdBy;
-    }
-    
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $assets;
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->assets = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
-    /**
-     * Add asset.
-     *
-     * @param \Entity\Asset $asset
-     *
-     * @return CSVBatch
-     */
-    public function addAsset(\Entity\Asset $asset)
-    {
-        $this->assets[] = $asset;
-
-        return $this;
-    }
-
-    /**
-     * Remove asset.
-     *
-     * @param \Entity\Asset $asset
-     *
-     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
-     */
-    public function removeAsset(\Entity\Asset $asset)
-    {
-        return $this->assets->removeElement($asset);
-    }
-
-    /**
-     * Get assets.
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getAssets()
-    {
-        return $this->assets;
     }
 }

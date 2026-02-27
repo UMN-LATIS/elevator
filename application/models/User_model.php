@@ -151,7 +151,7 @@ class User_model extends CI_Model {
 			$this->user = $this->doctrine->em->find('Entity\User', $userId);
 			if($this->user === null) {
 				$this->userLoaded = false;
-				// TOOD: if this is a real user create oned
+				// TOOD: if this is a real user create one
 				return;
 
 			}
@@ -351,8 +351,7 @@ class User_model extends CI_Model {
 		$this->doctrine->em->flush();
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->userId);
+			$this->userCache->delete($this->userId);
 		}
 
 		$this->recentDrawers = null;
@@ -399,8 +398,7 @@ class User_model extends CI_Model {
 		$this->doctrine->em->flush();
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->userId);
+			$this->userCache->delete($this->userId);
 		}
 
 		$this->recentCollections= null;
@@ -564,7 +562,7 @@ class User_model extends CI_Model {
 		$apiKey->setApiKey(sha1($this->userId . "secretHash"));
 		$apiKey->setApiSecret(sha1($this->userId . "secretKey"));
 		$apiKey->setOwner($this->user);
-		$apiKey->setRead(true);
+		$apiKey->setAllowsRead(true);
 		$this->doctrine->em->persist($apiKey);
 
 		$this->doctrine->em->flush();

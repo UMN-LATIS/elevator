@@ -53,6 +53,9 @@ class Shibboleth extends MY_Controller {
         foreach ($this->config->item('shib_user') as $local => $server) {
 
             $map[$local] = $this->getServerVariable($server, $shibAttributes);
+            if($server == 'NameID') {
+                $map[$local] = $auth->getNameId();
+            }
         }
 
 
@@ -94,6 +97,24 @@ class Shibboleth extends MY_Controller {
                 return $shibAttributes[$variableName];
             }
             return null;
+        }
+    }
+
+
+    public function getMetadata() {
+        $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
+        $settings = $auth->getSettings();
+        $metadata = $settings->getSPMetadata();
+        $errors = $settings->validateMetadata($metadata);
+
+        if (empty($errors)) {
+            echo $metadata;
+        } else {
+
+            throw new InvalidArgumentException(
+                'Invalid SP metadata: ' . implode(', ', $errors),
+                OneLogin_Saml2_Error::METADATA_SP_INVALID
+            );
         }
     }
 }

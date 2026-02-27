@@ -122,7 +122,6 @@ class Asset_model extends CI_Model {
 
 	public function loadAssetById($objectId, $noHydrate = false) {
 		$asset = $this->doctrine->em->getRepository('Entity\Asset')->findOneBy(["assetId"=>$objectId]);
-
 		if(!isset($asset)) {
 			return FALSE;
 		}
@@ -795,7 +794,6 @@ class Asset_model extends CI_Model {
 	 * @return [type] [description]
 	 */
 	public function save($reindex=true, $saveRevision=true, $noCache=false) {
-
 		if(!isset($this->assetObject)) {
 			return false;
 		}
@@ -909,7 +907,7 @@ class Asset_model extends CI_Model {
 			$this->doctrine->em->flush();
     	}
 
-
+		
 		// if this asset isn't supposed to be available, don't add it to the index
 		// TODO: also check template
 		$noIndex=false;
@@ -921,6 +919,12 @@ class Asset_model extends CI_Model {
 			}
 		}
 		
+		// move this above the cache build so we don't risk a race
+		if(!$noCache) {
+			$this->buildCache();
+		}
+
+
 
 		if($reindex && !$noIndex) {
 			$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
@@ -936,10 +940,6 @@ class Asset_model extends CI_Model {
 			$this->search_model->remove($this);
 		}
 
-		if(!$noCache) {
-			$this->buildCache();
-		}
-
 
     	return $this->getObjectId();
 	}
@@ -950,8 +950,7 @@ class Asset_model extends CI_Model {
 		$this->useStaleCaches = FALSE;
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('searchCache_');
-			$this->doctrineCache->delete($this->getObjectId());
+			$this->searchCache->delete($this->getObjectId());
 		}
 		else {
 			$this->flushCache();
@@ -1013,18 +1012,24 @@ class Asset_model extends CI_Model {
 		$assetCache->setNeedsRebuild(false);
 		$assetCache->setRebuildTimestamp(NULL);
 
-		$this->doctrine->em->persist($assetCache);
-		$this->doctrine->em->flush();
+		try {
+			$this->doctrine->em->persist($assetCache);
+			$this->doctrine->em->flush();
+		}
+		catch (Exception $e) {
+			// if we're trying to save an object that already exists, we'll get a unique constraint violation
+			// in that case, we'll just try again.
+			echo "error saving cache\n";
+			echo $assetCache->getId() . "\n";
+			die();
+		}
 
 		return $assetCache;
 	}
 
 	public function flushCache() {
-
-		$redisCache = new \Doctrine\Common\Cache\RedisCache();
-        $redisCache->setRedis($this->doctrine->redisHost);
-		$redisCache->setNamespace('searchCache_');
-		$redisCache->delete($this->getObjectId());
+		$searchCache = $this->doctrine->getCache("searchCache");
+		$searchCache->delete($this->getObjectId());
 
 	}
 
@@ -1060,8 +1065,7 @@ class Asset_model extends CI_Model {
 				$tempAsset->loadAssetById($result);
 				$tempAsset->reindex($parentArray);
 				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->setNamespace('searchCache_');
-					$this->doctrineCache->delete($this->getObjectId());
+					$this->searchCache->delete($this->getObjectId());
 				}
 
 			}

@@ -102,7 +102,7 @@ class Transcoder_Model extends CI_Model {
 
 			if(isset($metadata["format"]["tags"]["location"])) {
 				$location = $metadata["format"]["tags"]["location"];
-				$splitGPS = preg_split( "/(\+|-|\/)/", $location, null,PREG_SPLIT_DELIM_CAPTURE );
+				$splitGPS = preg_split( "/(\+|-|\/)/", $location, 0,PREG_SPLIT_DELIM_CAPTURE );
 
 				$lat = floatval($splitGPS[1] . $splitGPS[2]);
 				$lon = floatval($splitGPS[3] . $splitGPS[4]);

@@ -10,6 +10,7 @@ if(typeof require !== "undefined") var L = require('leaflet')
 			attributionControl: false,
 			detectRetina: true,
 			edgeBufferTiles: 1,
+			tileType: 'tiled'
 		},
 
 		initialize: function(tileLoadFunction, options) {
@@ -25,24 +26,91 @@ if(typeof require !== "undefined") var L = require('leaflet')
 		
 		this.on('tileload', this._adjustNonSquareTile)
 	},
-
-	getTileUrl: function(coords){
-		var url = this._loadFunction(coords);
-        return url;
+	
+	getTileUrl: function(coords, tile){
+		this._loadFunction(coords, tile);
+        return tile;
 	},
 	
 
 	createTile: function(coords, done) {
 		var error;
+		
 		var tile = L.DomUtil.create('img', 'elevatorTile');
+		
+		// Store the original coords.z BEFORE modifying it
+		var originalCoordsZ = coords.z;
 		coords.z = coords.z  + this.options.zoomOffset;
-		var url = this._loadFunction(coords);
+
 		tile.onload = (function(done, error, tile) {
 			return function() {
 				done(error, tile);
 			}
 		})(done, error, tile);
-		tile.src=url;
+
+		this._loadFunction(coords, tile);
+
+		if(this._imageSize !== undefined && this.options.tileType === 'iiif') {
+			// The _imageSize array is built from smallest (index 0) to largest (index length-1)
+			// But zoom levels don't start at 0 - they can start at any minZoom
+			// The relationship is: arrayIndex = _tileZoom + offset
+			// where offset = (array.length - 1) - maxAdjustedZoom
+			var arrayOffset = (this._imageSize.length - 1) - this.options.maxAdjustedZoom;
+			var imageSizeIndex = this._tileZoom + arrayOffset;
+			
+			var imageSizeAtZoom;
+			if(imageSizeIndex >= 0 && imageSizeIndex < this._imageSize.length) {
+				// Use the pre-computed array value
+				imageSizeAtZoom = this._imageSize[imageSizeIndex];
+			} else {
+
+				// Fallback: calculate from full resolution
+				var fullResolutionImage = this._imageSize[this._imageSize.length - 1];
+				var scaleFactor = Math.pow(2, this.options.maxAdjustedZoom - this._tileZoom);
+				imageSizeAtZoom = L.point(
+					Math.ceil(fullResolutionImage.x / scaleFactor),
+					Math.ceil(fullResolutionImage.y / scaleFactor)
+				);
+			}
+			
+			// Calculate the pixel boundaries of this tile
+			var tileLeft = coords.x * this.options.tileSize;
+			var tileRight = tileLeft + this.options.tileSize;
+			var tileTop = coords.y * this.options.tileSize;
+			var tileBottom = tileTop + this.options.tileSize;
+			
+			// If the tile starts completely outside the image bounds, hide it entirely
+			if(tileLeft >= imageSizeAtZoom.x || tileTop >= imageSizeAtZoom.y) {
+				tile.style.display = 'none';
+				return tile;
+			}
+			
+			var xPercentage = 100;
+			var yPercentage = 100;
+			
+			// Check if tile extends beyond image width (but starts inside)
+			if(tileRight > imageSizeAtZoom.x) {
+				var visibleWidth = imageSizeAtZoom.x - tileLeft;
+				xPercentage = Math.max(0, 100 * (visibleWidth / this.options.tileSize));
+			}
+			
+			// Check if tile extends beyond image height (but starts inside)
+			if(tileBottom > imageSizeAtZoom.y) {
+				var visibleHeight = imageSizeAtZoom.y - tileTop;
+				yPercentage = Math.max(0, 100 * (visibleHeight / this.options.tileSize));
+			}
+			
+			// Apply clipping if needed
+			if(xPercentage < 100 || yPercentage < 100) {
+				if(xPercentage > 0 && yPercentage > 0) {
+					tile.style.clipPath = "polygon(0% 0%," + xPercentage  + "% 0%," + xPercentage  + "% " + yPercentage  + "%,  0% " + yPercentage  + "%)";
+				} else {
+					tile.style.display = 'none';
+				}
+			}
+		}
+		
+		// tile.src=url;
 		return tile;
 	},
 
@@ -88,11 +156,11 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 	this._gridSize.reverse();
 	// Register our max supported zoom level
 	var maxNativeZoom = this._gridSize.length - 1;
-	// if(maxNativeZoom !== this.options.maxNativeZoom) {
-	// 	// our metadata and our computed disagree. Let's trust the metadata?
-	// 	console.log("Overriding computed max zoom");
-	// 	maxNativeZoom = this.options.maxNativeZoom;
-	// }
+	if(maxNativeZoom !== this.options.maxNativeZoom) {
+		// our metadata and our computed disagree. Let's trust the metadata?
+		console.log("Overriding computed max zoom");
+		maxNativeZoom = this.options.maxNativeZoom;
+	}
 
 	var maxZoomGrid = this._gridSize[maxNativeZoom],
 	maxX = maxZoomGrid.x * this.options.tileSize,
@@ -111,8 +179,13 @@ _computeImageAndGridSize: function () { // thanks https://github.com/turban/Leaf
 },
 
 _getGridSize: function (imageSize) {
-
-	var tileSize = this.options.tileSize * 2;
+	// For retina displays, we've already adjusted the tileSize computation in _computeImageAndGridSize
+	// So use the adjusted tileSize from the computation, not this.options.tileSize
+	var tileSize = this.options.tileSize;
+	if(this._adjustForRetina) {
+		tileSize = tileSize * 2;
+	}
+	
 	return L.point(Math.ceil(imageSize.x / tileSize), Math.ceil(imageSize.y / tileSize));
 },
 
@@ -122,7 +195,7 @@ _adjustNonSquareTile: function (data) {
 	, tileSize = L.point(tile.naturalWidth, tile.naturalHeight)
 
 	if(this._adjustForRetina) tileSize = tileSize.divideBy(2)
-
+	// pad = 0;
 	tile.style.width = tileSize.x + pad + 'px';
 	tile.style.height = tileSize.y + pad + 'px';
 
@@ -163,11 +236,7 @@ fitImage: function () {
 
 	this.options.bounds = bounds // used by `GridLayer.js#_isValidTile`
 	
-	// Inital bounds view:
-	// To only allow initial view: 
-	// map.setMaxBounds(bounds) 
-	// To set inital view, but allow free movement: 
-	map.fitBounds(bounds)
+	map.setMaxBounds(bounds)
 	this.fitBoundsExactly()
 },
 
@@ -183,30 +252,26 @@ fitImage: function () {
 // entire image into the available container. Fill fills the container with a 
 // zoomed portion of the image. These two zooms are stored in `this.options.zooms`
 fitBoundsExactly: function() {
-	if (this._map == null) {
-		return
-	} else {
-		var i, c
-		, imageSize = i = this._imageSize[this._imageSize.length-1]
-		, map = this._map
-		, containerSize = c =  map.getSize()
+	var i, c
+	, imageSize = i = this._imageSize[this._imageSize.length-1]
+	, map = this._map
+	, containerSize = c =  map.getSize()
 
-		var iAR, cAR
-		, imageAspectRatio = iAR = imageSize.x/imageSize.y
-		, containerAspectRatio = cAR = containerSize.x/containerSize.y
-		, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
-		var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
-		var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
-		if(zoom > this.options.maxZoom) {
-			return;
-		}
-		this.options.minZoom = Math.floor(zoom);
-		map._addZoomLimit(this);
-		var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
-		
-		if(map.getZoom() < fill) {
-			map.setZoom(zoom);
-		}
+	var iAR, cAR
+	, imageAspectRatio = iAR = imageSize.x/imageSize.y
+	, containerAspectRatio = cAR = containerSize.x/containerSize.y
+	, imageDimensions = ['container is', cAR <= 1, 'image is', iAR <= 1].join(' ').replace(/true/g, 'tall').replace(/false/g, 'wide');
+	var zooms = this.options.zooms = iAR < cAR ?{fit: c.y/i.y, fill: c.x/i.x} : {fit: c.x/i.x, fill: c.y/i.y};
+	var zoom = map.getScaleZoom(zooms.fit, this.options.maxAdjustedZoom) ;
+	if(Math.floor(zoom) > this.options.maxZoom) {
+		return;
+	}
+	this.options.minZoom = Math.floor(zoom);
+	map._addZoomLimit(this);
+	var fill = map.getScaleZoom(zooms.fill, this.options.maxAdjustedZoom);
+	
+	if(map.getZoom() < fill) {
+		map.setZoom(zoom);
 	}
 },
 

@@ -7,26 +7,34 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * GroupEntry
  */
+#[ORM\Table(name: 'group_entry')]
+#[ORM\Entity]
 class GroupEntry
 {
     /**
-     * @var integer
+     * @var string|null
      */
+    #[ORM\Column(name: 'groupValue', type: 'string', nullable: true)]
     private $groupValue;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
 
+
     /**
-     * Set groupValue
+     * Set groupValue.
      *
-     * @param integer $groupValue
+     * @param string|null $groupValue
+     *
      * @return GroupEntry
      */
-    public function setGroupValue($groupValue)
+    public function setGroupValue($groupValue = null)
     {
         $this->groupValue = $groupValue;
 
@@ -34,9 +42,9 @@ class GroupEntry
     }
 
     /**
-     * Get groupValue
+     * Get groupValue.
      *
-     * @return integer 
+     * @return string|null
      */
     public function getGroupValue()
     {
@@ -44,9 +52,9 @@ class GroupEntry
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {

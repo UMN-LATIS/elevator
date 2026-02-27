@@ -171,10 +171,10 @@ class Templates extends Instance_Controller {
 		 */
 
 		if($this->config->item('enableCaching')) {
-			$this->doctrineCache->setNamespace('searchCache_');
-			$this->doctrineCache->deleteAll();
-			$this->doctrineCache->setNamespace('sortCache_');
-			$this->doctrineCache->deleteAll();
+			$searchCache = $this->doctrine->getCache("searchCache");
+			$searchCache->clear();
+			$sortCache = $this->doctrine->getCache("sortCache");
+			$sortCache->clear();
 	   	}
 
 

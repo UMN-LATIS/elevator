@@ -7,33 +7,45 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * InstancePermission
  */
+#[ORM\Table(name: 'instance_permissions')]
+#[ORM\Entity]
 class InstancePermission
 {
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\InstanceGroup
      */
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\InstanceGroup::class)]
     private $group;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
     /**
      * @var \Entity\Permission
      */
+    #[ORM\JoinColumn(name: 'permission_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Permission::class)]
     private $permission;
 
 
+
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -41,12 +53,13 @@ class InstancePermission
     }
 
     /**
-     * Set group
+     * Set group.
      *
-     * @param \Entity\InstanceGroup $group
+     * @param \Entity\InstanceGroup|null $group
+     *
      * @return InstancePermission
      */
-    public function setGroup(? \Entity\InstanceGroup $group = null)
+    public function setGroup(?\Entity\InstanceGroup $group = null)
     {
         $this->group = $group;
 
@@ -54,9 +67,9 @@ class InstancePermission
     }
 
     /**
-     * Get group
+     * Get group.
      *
-     * @return \Entity\InstanceGroup 
+     * @return \Entity\InstanceGroup|null
      */
     public function getGroup()
     {
@@ -64,12 +77,13 @@ class InstancePermission
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return InstancePermission
      */
-    public function setInstance(? \Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -77,9 +91,9 @@ class InstancePermission
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {
@@ -87,12 +101,13 @@ class InstancePermission
     }
 
     /**
-     * Set permission
+     * Set permission.
      *
-     * @param \Entity\Permission $permission
+     * @param \Entity\Permission|null $permission
+     *
      * @return InstancePermission
      */
-    public function setPermission(? \Entity\Permission $permission = null)
+    public function setPermission(?\Entity\Permission $permission = null)
     {
         $this->permission = $permission;
 
@@ -100,9 +115,9 @@ class InstancePermission
     }
 
     /**
-     * Get permission
+     * Get permission.
      *
-     * @return \Entity\Permission 
+     * @return \Entity\Permission|null
      */
     public function getPermission()
     {

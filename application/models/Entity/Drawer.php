@@ -7,52 +7,73 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Drawer
  */
+#[ORM\Table(name: 'drawers')]
+#[ORM\Entity]
 class Drawer
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'title', type: 'string', nullable: true)]
     private $title;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'changedSinceArchive', type: 'boolean', nullable: true)]
     private $changedSinceArchive;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var integer
+     * @var string|null
      */
+    #[ORM\Column(name: 'sortBy', type: 'string', nullable: true)]
+    private $sortBy;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\DrawerPermission::class, mappedBy: 'drawer', cascade: ['remove'])]
     private $permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\RecentDrawer::class, mappedBy: 'drawer', cascade: ['remove'])]
     private $recentDrawer;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\DrawerItem::class, mappedBy: 'drawer', cascade: ['remove'])]
+    #[ORM\OrderBy(['sortOrder' => 'ASC', 'id' => 'ASC'])]
     private $items;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $groups;
+    #[ORM\ManyToMany(targetEntity: \Entity\DrawerGroup::class, mappedBy: 'drawer')]
+    private $groups = array();
 
     /**
      * Constructor
@@ -65,13 +86,15 @@ class Drawer
         $this->groups = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
     /**
-     * Set title
+     * Set title.
      *
-     * @param string $title
+     * @param string|null $title
+     *
      * @return Drawer
      */
-    public function setTitle($title)
+    public function setTitle($title = null)
     {
         $this->title = $title;
 
@@ -79,9 +102,9 @@ class Drawer
     }
 
     /**
-     * Get title
+     * Get title.
      *
-     * @return string 
+     * @return string|null
      */
     public function getTitle()
     {
@@ -89,12 +112,13 @@ class Drawer
     }
 
     /**
-     * Set changedSinceArchive
+     * Set changedSinceArchive.
      *
-     * @param boolean $changedSinceArchive
+     * @param bool|null $changedSinceArchive
+     *
      * @return Drawer
      */
-    public function setChangedSinceArchive($changedSinceArchive)
+    public function setChangedSinceArchive($changedSinceArchive = null)
     {
         $this->changedSinceArchive = $changedSinceArchive;
 
@@ -102,9 +126,9 @@ class Drawer
     }
 
     /**
-     * Get changedSinceArchive
+     * Get changedSinceArchive.
      *
-     * @return boolean 
+     * @return bool|null
      */
     public function getChangedSinceArchive()
     {
@@ -112,12 +136,13 @@ class Drawer
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
+     *
      * @return Drawer
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -125,9 +150,9 @@ class Drawer
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -135,9 +160,33 @@ class Drawer
     }
 
     /**
-     * Get id
+     * Set sortBy.
      *
-     * @return integer 
+     * @param string|null $sortBy
+     *
+     * @return Drawer
+     */
+    public function setSortBy($sortBy = null)
+    {
+        $this->sortBy = $sortBy;
+
+        return $this;
+    }
+
+    /**
+     * Get sortBy.
+     *
+     * @return string|null
+     */
+    public function getSortBy()
+    {
+        return $this->sortBy;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
      */
     public function getId()
     {
@@ -145,32 +194,35 @@ class Drawer
     }
 
     /**
-     * Add permissions
+     * Add permission.
      *
-     * @param \Entity\DrawerPermission $permissions
+     * @param \Entity\DrawerPermission $permission
+     *
      * @return Drawer
      */
-    public function addPermission(\Entity\DrawerPermission $permissions)
+    public function addPermission(\Entity\DrawerPermission $permission)
     {
-        $this->permissions[] = $permissions;
+        $this->permissions[] = $permission;
 
         return $this;
     }
 
     /**
-     * Remove permissions
+     * Remove permission.
      *
-     * @param \Entity\DrawerPermission $permissions
+     * @param \Entity\DrawerPermission $permission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removePermission(\Entity\DrawerPermission $permissions)
+    public function removePermission(\Entity\DrawerPermission $permission)
     {
-        $this->permissions->removeElement($permissions);
+        return $this->permissions->removeElement($permission);
     }
 
     /**
-     * Get permissions
+     * Get permissions.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getPermissions()
     {
@@ -178,9 +230,10 @@ class Drawer
     }
 
     /**
-     * Add recentDrawer
+     * Add recentDrawer.
      *
      * @param \Entity\RecentDrawer $recentDrawer
+     *
      * @return Drawer
      */
     public function addRecentDrawer(\Entity\RecentDrawer $recentDrawer)
@@ -191,19 +244,21 @@ class Drawer
     }
 
     /**
-     * Remove recentDrawer
+     * Remove recentDrawer.
      *
      * @param \Entity\RecentDrawer $recentDrawer
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
     public function removeRecentDrawer(\Entity\RecentDrawer $recentDrawer)
     {
-        $this->recentDrawer->removeElement($recentDrawer);
+        return $this->recentDrawer->removeElement($recentDrawer);
     }
 
     /**
-     * Get recentDrawer
+     * Get recentDrawer.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getRecentDrawer()
     {
@@ -211,32 +266,35 @@ class Drawer
     }
 
     /**
-     * Add items
+     * Add item.
      *
-     * @param \Entity\DrawerItem $items
+     * @param \Entity\DrawerItem $item
+     *
      * @return Drawer
      */
-    public function addItem(\Entity\DrawerItem $items)
+    public function addItem(\Entity\DrawerItem $item)
     {
-        $this->items[] = $items;
+        $this->items[] = $item;
 
         return $this;
     }
 
     /**
-     * Remove items
+     * Remove item.
      *
-     * @param \Entity\DrawerItem $items
+     * @param \Entity\DrawerItem $item
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeItem(\Entity\DrawerItem $items)
+    public function removeItem(\Entity\DrawerItem $item)
     {
-        $this->items->removeElement($items);
+        return $this->items->removeElement($item);
     }
 
     /**
-     * Get items
+     * Get items.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getItems()
     {
@@ -244,12 +302,13 @@ class Drawer
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return Drawer
      */
-    public function setInstance(? \Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -257,9 +316,9 @@ class Drawer
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {
@@ -267,64 +326,38 @@ class Drawer
     }
 
     /**
-     * Add groups
+     * Add group.
      *
-     * @param \Entity\DrawerGroup $groups
+     * @param \Entity\DrawerGroup $group
+     *
      * @return Drawer
      */
-    public function addGroup(\Entity\DrawerGroup $groups)
+    public function addGroup(\Entity\DrawerGroup $group)
     {
-        $this->groups[] = $groups;
+        $this->groups[] = $group;
 
         return $this;
     }
 
     /**
-     * Remove groups
+     * Remove group.
      *
-     * @param \Entity\DrawerGroup $groups
+     * @param \Entity\DrawerGroup $group
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeGroup(\Entity\DrawerGroup $groups)
+    public function removeGroup(\Entity\DrawerGroup $group)
     {
-        $this->groups->removeElement($groups);
+        return $this->groups->removeElement($group);
     }
 
     /**
-     * Get groups
+     * Get groups.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getGroups()
     {
         return $this->groups;
-    }
-    /**
-     * @var string
-     */
-    private $sortBy;
-
-
-    /**
-     * Set sortBy
-     *
-     * @param string $sortBy
-     *
-     * @return Drawer
-     */
-    public function setSortBy($sortBy)
-    {
-        $this->sortBy = $sortBy;
-
-        return $this;
-    }
-
-    /**
-     * Get sortBy
-     *
-     * @return string
-     */
-    public function getSortBy()
-    {
-        return $this->sortBy;
     }
 }

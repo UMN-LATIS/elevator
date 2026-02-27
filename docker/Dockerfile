@@ -1,6 +1,7 @@
 FROM php:8.4-fpm
 
-RUN apt update && apt install -y unzip git libpq-dev docker libzip-dev && apt clean
+
+RUN apt update && apt install -y unzip git libpq-dev  libzip-dev && apt clean
 RUN pecl install redis && docker-php-ext-enable redis
 RUN docker-php-ext-install pgsql pdo_pgsql pdo zip
 # RUN export CFLAGS="-D_DEFAULT_SOURCE"
@@ -36,6 +37,7 @@ ARG DOCKER_SCRATCH_DIR
 ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 
 COPY . /var/www/html/
+RUN composer dump-autoload
 WORKDIR /var/www/html
 RUN mkdir -p /var/www/html/application/models/Proxies
 RUN chmod -R 777 /var/www/html/application/models/Proxies

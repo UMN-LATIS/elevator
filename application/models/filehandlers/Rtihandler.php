@@ -42,6 +42,10 @@ class RTIHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
+				if(in_array($entry, ['tiled'])) {
+					$returnArray[$entry]->downloadable = false;
+				}
 			}
 		}
 		if(count($returnArray)>0) {

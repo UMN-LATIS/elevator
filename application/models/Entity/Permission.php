@@ -7,41 +7,52 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Permission
  */
+#[ORM\Table(name: 'permissions')]
+#[ORM\Entity]
 class Permission
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'name', type: 'string', nullable: true)]
     private $name;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'label', type: 'string', nullable: true)]
     private $label;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'level', type: 'string', nullable: true)]
     private $level;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\InstancePermission::class, mappedBy: 'permission')]
     private $instances;
 
     /**
@@ -52,13 +63,15 @@ class Permission
         $this->instances = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
     /**
-     * Set name
+     * Set name.
      *
-     * @param string $name
+     * @param string|null $name
+     *
      * @return Permission
      */
-    public function setName($name)
+    public function setName($name = null)
     {
         $this->name = $name;
 
@@ -66,9 +79,9 @@ class Permission
     }
 
     /**
-     * Get name
+     * Get name.
      *
-     * @return string 
+     * @return string|null
      */
     public function getName()
     {
@@ -76,12 +89,13 @@ class Permission
     }
 
     /**
-     * Set label
+     * Set label.
      *
-     * @param string $label
+     * @param string|null $label
+     *
      * @return Permission
      */
-    public function setLabel($label)
+    public function setLabel($label = null)
     {
         $this->label = $label;
 
@@ -89,9 +103,9 @@ class Permission
     }
 
     /**
-     * Get label
+     * Get label.
      *
-     * @return string 
+     * @return string|null
      */
     public function getLabel()
     {
@@ -99,12 +113,13 @@ class Permission
     }
 
     /**
-     * Set level
+     * Set level.
      *
-     * @param string $level
+     * @param string|null $level
+     *
      * @return Permission
      */
-    public function setLevel($level)
+    public function setLevel($level = null)
     {
         $this->level = $level;
 
@@ -112,9 +127,9 @@ class Permission
     }
 
     /**
-     * Get level
+     * Get level.
      *
-     * @return string 
+     * @return string|null
      */
     public function getLevel()
     {
@@ -122,12 +137,13 @@ class Permission
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
+     *
      * @return Permission
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -135,9 +151,9 @@ class Permission
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -145,12 +161,13 @@ class Permission
     }
 
     /**
-     * Set modifiedAt
+     * Set modifiedAt.
      *
-     * @param \DateTime $modifiedAt
+     * @param \DateTime|null $modifiedAt
+     *
      * @return Permission
      */
-    public function setModifiedAt($modifiedAt)
+    public function setModifiedAt($modifiedAt = null)
     {
         $this->modifiedAt = $modifiedAt;
 
@@ -158,9 +175,9 @@ class Permission
     }
 
     /**
-     * Get modifiedAt
+     * Get modifiedAt.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getModifiedAt()
     {
@@ -168,9 +185,9 @@ class Permission
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -178,32 +195,35 @@ class Permission
     }
 
     /**
-     * Add instances
+     * Add instance.
      *
-     * @param \Entity\InstancePermission $instances
+     * @param \Entity\InstancePermission $instance
+     *
      * @return Permission
      */
-    public function addInstance(\Entity\InstancePermission $instances)
+    public function addInstance(\Entity\InstancePermission $instance)
     {
-        $this->instances[] = $instances;
+        $this->instances[] = $instance;
 
         return $this;
     }
 
     /**
-     * Remove instances
+     * Remove instance.
      *
-     * @param \Entity\InstancePermission $instances
+     * @param \Entity\InstancePermission $instance
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeInstance(\Entity\InstancePermission $instances)
+    public function removeInstance(\Entity\InstancePermission $instance)
     {
-        $this->instances->removeElement($instances);
+        return $this->instances->removeElement($instance);
     }
 
     /**
-     * Get instances
+     * Get instances.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getInstances()
     {

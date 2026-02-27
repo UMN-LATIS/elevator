@@ -24,10 +24,15 @@ else{
 
 
 if(isset($_SERVER['HTTP_HOST'])) {
-	$config['base_url'] = ($_SERVER['ENVIRONMENT']=='local'?'http://':'https://') .$_SERVER['HTTP_HOST'] ."/";
+	$config['base_url'] = 'https://' .$_SERVER['HTTP_HOST'] ."/";
 }
 else {
-	$config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
+    if(isset($_SERVER['CLI_SERVERNAME'])) {
+        $config['base_url'] = "https://" . $_SERVER['CLI_SERVERNAME'] . "/";
+    }
+    else {
+	    $config['base_url'] = "http://localhost" . "/"; // full address http://www.test.com/
+    }
 }
 
 
@@ -410,13 +415,14 @@ $config['elasticIndex'] = $_SERVER['ELASTIC_INDEX'] ?? null;
 $config['redis'] = ($_SERVER['REDIS_HOST'] ?? null); // elastic ip:port
 $config['redisPort'] = "6379";
 
-if(defined('ENVIRONMENT') && ENVIRONMENT == "local" || $_SERVER['ENVIRONMENT'] == "development") {
+if(defined('ENVIRONMENT') && (ENVIRONMENT == "local" || $_SERVER['ENVIRONMENT'] == "development")) {
     
   $config["enableCaching"] = false;
 }
 else {
   $config["enableCaching"] = true;
 }
+
 /**
  * paths for external binaries
  */
@@ -449,6 +455,8 @@ $config['convert'] = '/usr/local/bin/convert';
 $config['cziutils'] = '/usr/local/bin/cziutils';
 $config['tarrific'] = '/usr/local/bin/tarrific';
 $config['3mf2stl'] = '/usr/local/bin/3mf2stl';
+$config['whisperX'] = '/usr/local/bin/whisperx';
+$config['languageDetect'] = '/usr/local/bin/language-detect';
 
 // LDAP username and password.
 // Application should bind anonymously if not set, or set to blanks.
@@ -503,6 +511,11 @@ $config['awsQueueAccessKey'] = $_SERVER['AWS_QUEUEING_ACCESS_KEY_ID'] ?? null;
 $config['awsQueueSecretKey'] = $_SERVER['AWS_QUEUEING_SECRET_ACCESS_KEY'] ?? null;
 $config['awsQueueJobDefinition'] = $_SERVER['AWS_QUEUEING_JOB_DEFINITION'] ?? 'elevator';
 $config['awsQueueJobQueue'] = $_SERVER['AWS_QUEUEING_JOB_QUEUE'] ?? 'PrimaryJobQueue';
+
+$config['awsBedrockKey'] = $_SERVER['AWS_BEDROCK_KEY'] ?? null;
+$config['awsBedrockSecret'] = $_SERVER['AWS_BEDROCK_SECRET'] ?? null;
+
+$config['cacheSecret'] = $_SERVER['CACHE_SECRET'] ?? null;
 
 $config['shib_authfield'] = $_SERVER['SHIB_AUTH_FIELD'] ?? 'email';
 $config['shib_user'] =  [

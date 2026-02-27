@@ -7,33 +7,43 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Field_type
  */
+#[ORM\Table(name: 'field_types')]
+#[ORM\Entity]
 class Field_type
 {
     /**
      * @var string
      */
+    #[ORM\Column(name: 'name', type: 'string')]
     private $name;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'model_name', type: 'string', nullable: true)]
     private $model_name;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'sample_field_data', type: 'text', nullable: true)]
     private $sample_field_data;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
 
+
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
+     *
      * @return Field_type
      */
     public function setName($name)
@@ -44,9 +54,9 @@ class Field_type
     }
 
     /**
-     * Get name
+     * Get name.
      *
-     * @return string 
+     * @return string
      */
     public function getName()
     {
@@ -54,12 +64,13 @@ class Field_type
     }
 
     /**
-     * Set model_name
+     * Set modelName.
      *
-     * @param string $modelName
+     * @param string|null $modelName
+     *
      * @return Field_type
      */
-    public function setModelName($modelName)
+    public function setModelName($modelName = null)
     {
         $this->model_name = $modelName;
 
@@ -67,9 +78,9 @@ class Field_type
     }
 
     /**
-     * Get model_name
+     * Get modelName.
      *
-     * @return string 
+     * @return string|null
      */
     public function getModelName()
     {
@@ -77,12 +88,13 @@ class Field_type
     }
 
     /**
-     * Set sample_field_data
+     * Set sampleFieldData.
      *
-     * @param string $sampleFieldData
+     * @param string|null $sampleFieldData
+     *
      * @return Field_type
      */
-    public function setSampleFieldData($sampleFieldData)
+    public function setSampleFieldData($sampleFieldData = null)
     {
         $this->sample_field_data = $sampleFieldData;
 
@@ -90,9 +102,9 @@ class Field_type
     }
 
     /**
-     * Get sample_field_data
+     * Get sampleFieldData.
      *
-     * @return string 
+     * @return string|null
      */
     public function getSampleFieldData()
     {
@@ -100,9 +112,9 @@ class Field_type
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {

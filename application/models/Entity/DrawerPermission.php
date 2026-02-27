@@ -7,33 +7,45 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DrawerPermission
  */
+#[ORM\Table(name: 'drawer_permissions')]
+#[ORM\Entity]
 class DrawerPermission
 {
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\DrawerGroup
      */
+    #[ORM\JoinColumn(name: 'drawer_group_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\DrawerGroup::class)]
     private $group;
 
     /**
      * @var \Entity\Drawer
      */
+    #[ORM\JoinColumn(name: 'drawer_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Drawer::class)]
     private $drawer;
 
     /**
      * @var \Entity\Permission
      */
+    #[ORM\JoinColumn(name: 'permission_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Permission::class)]
     private $permission;
 
 
+
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -41,12 +53,13 @@ class DrawerPermission
     }
 
     /**
-     * Set group
+     * Set group.
      *
-     * @param \Entity\DrawerGroup $group
+     * @param \Entity\DrawerGroup|null $group
+     *
      * @return DrawerPermission
      */
-    public function setGroup(? \Entity\DrawerGroup $group = null)
+    public function setGroup(?\Entity\DrawerGroup $group = null)
     {
         $this->group = $group;
 
@@ -54,9 +67,9 @@ class DrawerPermission
     }
 
     /**
-     * Get group
+     * Get group.
      *
-     * @return \Entity\DrawerGroup 
+     * @return \Entity\DrawerGroup|null
      */
     public function getGroup()
     {
@@ -64,12 +77,13 @@ class DrawerPermission
     }
 
     /**
-     * Set drawer
+     * Set drawer.
      *
-     * @param \Entity\Drawer $drawer
+     * @param \Entity\Drawer|null $drawer
+     *
      * @return DrawerPermission
      */
-    public function setDrawer(? \Entity\Drawer $drawer = null)
+    public function setDrawer(?\Entity\Drawer $drawer = null)
     {
         $this->drawer = $drawer;
 
@@ -77,9 +91,9 @@ class DrawerPermission
     }
 
     /**
-     * Get drawer
+     * Get drawer.
      *
-     * @return \Entity\Drawer 
+     * @return \Entity\Drawer|null
      */
     public function getDrawer()
     {
@@ -87,12 +101,13 @@ class DrawerPermission
     }
 
     /**
-     * Set permission
+     * Set permission.
      *
-     * @param \Entity\Permission $permission
+     * @param \Entity\Permission|null $permission
+     *
      * @return DrawerPermission
      */
-    public function setPermission(? \Entity\Permission $permission = null)
+    public function setPermission(?\Entity\Permission $permission = null)
     {
         $this->permission = $permission;
 
@@ -100,9 +115,9 @@ class DrawerPermission
     }
 
     /**
-     * Get permission
+     * Get permission.
      *
-     * @return \Entity\Permission 
+     * @return \Entity\Permission|null
      */
     public function getPermission()
     {

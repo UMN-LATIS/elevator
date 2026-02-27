@@ -572,6 +572,9 @@ class search_model extends CI_Model {
 				if(preg_match("/[?*]+/u", $entry["text"])) {
 					$searchParams['body']['query']['bool']['should'][$i]['wildcard'] = [$entry["field"]=>strtolower($entry["text"])];
 				}
+				elseif(isset($entry["numeric"]) && $entry["numeric"]) {
+					$searchParams['body']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>intval($entry["text"]), "lte"=>intval($entry["text"])]];
+				}
 				else if(preg_match("/.*\\.\\.\\..*/u", $entry["text"])) {
 					list($start, $end) = explode("...", strtolower($entry["text"]));
 					$searchParams['body']['query']['bool']['should'][$i]['range'] = [$entry["field"] => ["gte"=>trim($start), "lte"=>trim($end)]];
@@ -600,7 +603,7 @@ class search_model extends CI_Model {
 				$i++;
 
 			}
-			
+	
 			if(isset($searchArray["combineSpecificSearches"]) && $searchArray["combineSpecificSearches"] == "AND")  {
 
 				$searchParams['body']['query']['bool']['minimum_should_match'] = count($searchArray["specificFieldSearch"]) + (($searchArray["searchText"] != "")?1:0) ;
@@ -860,6 +863,9 @@ class search_model extends CI_Model {
 			if($asset->loadAssetById($match, $noHydrate=true) === false) {
 				continue;
 			}
+			if($asset->assetObject->getDeleted() == true) {
+				continue;
+			}
 
 			/**
 			 * if they searched for an object id and we found that, make sure it's the first result
@@ -869,14 +875,13 @@ class search_model extends CI_Model {
 			}
 			else {
 				if($this->config->item('enableCaching')) {
-					$this->doctrineCache->setNamespace('searchCache_');
-					if($storedObject = $this->doctrineCache->fetch($match)) {
+					if($storedObject = $this->searchCache->get($match)) {
 
 					}
 					else {
 						$storedObject = $asset->getSearchResultEntry();
 						if($this->config->item('enableCaching')) {
-							$this->doctrineCache->save($match, $storedObject, 900);
+							$this->searchCache->set($match, $storedObject, 900);
 						}
 					}
 				}

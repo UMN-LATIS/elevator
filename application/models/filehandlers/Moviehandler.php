@@ -17,6 +17,8 @@ class MovieHandler extends FileHandlerBase {
 						  5=>["taskType"=>"waitForCompletion", "config"=>array()],
 						];
 
+	public $gpuTaskArray = [0=>["taskType"=>"generateCaptions", "config"=>array()]];
+
 
 	public function __construct()
 	{
@@ -69,6 +71,10 @@ class MovieHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
+				if(in_array($entry, ['imageSequence', 'stream'])) {
+					$returnArray[$entry]->downloadable = false;
+				}
 			}
 		}
 		if(count($returnArray)>0) {
@@ -171,6 +177,22 @@ class MovieHandler extends FileHandlerBase {
 			}
 		}
 
+		if($this->instance && $this->instance->getAutomaticAltText()) {
+		//&& $this->instance->enableAutomaticAccessibility) {
+			echo "Generating captions for " . $this->getObjectId() . "\n";
+			$uploadWidget = $this->getUploadWidget();
+			if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+				return;
+			}
+
+			
+			
+			$this->generateAltText();
+
+		}
+
+
+
 		if($jobId) {
 			$this->queueTask(3, ["jobId"=>$jobId, "pendingDerivatives"=>$targetDerivatives, "previousTask"=>"createDerivatives"], false);
 			return JOB_SUCCESS;
@@ -180,6 +202,96 @@ class MovieHandler extends FileHandlerBase {
 		}
 
 	}
+
+
+	public function generateAltText() {
+		$this->queueBatchItem("gpu");
+	}
+
+	public function generateCaptions() {
+
+		// let's do our best to guess the langauge
+		$derivative = $this->derivatives["mp4sd"];
+		$derivative->makeLocal();
+		$localPath = $derivative->getPathToLocalFile();
+		$localPathParts = pathinfo($localPath);
+
+		$uploadWidget = $this->getUploadWidget();
+		
+		if($uploadWidget && isset($uploadWidget->sidecars['language']) && $uploadWidget->sidecars['language'] != "" && $uploadWidget->sidecars['language'] != "0") {
+			$language = $uploadWidget->sidecars['language'];
+		}
+		else {
+
+			$captionString = $this->config->item('languageDetect') . " --print-json " . $localPath;
+			$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+			$process->run("/tmp/languageDetect.log");
+			while($process->isRunning()) {
+				sleep(5);
+				echo ".";
+			}
+			$content = file_get_contents("/tmp/languageDetect.log");
+			$results = json_decode($content, true);
+			if(isset($results['language_code']))
+			{
+				$language = $results['language_code'];
+				echo "Language detected: " . $language . "\n";
+			}
+			else {
+				echo "No language detected, defaulting to English\n";
+			}
+			$uploadWidget->sidecars['language'] = $language;
+			$this->parentObject->save(true,false);
+		}
+		
+		
+		chmod($localPathParts['dirname'] , 0777);
+		$captionString = $this->config->item('whisperX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . ($language ? ("--language " . $language) : "") . " " . $localPath;
+
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+		$process->run("/tmp/whisperx.log");
+		while($process->isRunning()) {
+			sleep(5);
+			echo ".";
+		}
+
+		
+		
+
+		$localPathWithoutExtension = $localPathParts['dirname'] . '/' . $localPathParts['filename'];
+
+		if(file_exists($localPathWithoutExtension . ".srt")) {
+			echo "Captions found for " . $this->getObjectId() . "\n";
+			$srtContents = file_get_contents( $localPathWithoutExtension . ".srt");
+			if($srtContents && $srtContents != "") {
+				// make sure we flush the entity manager so we don't have stale data
+				$this->parentObject = null;
+				$this->doctrine->em->clear();
+				$uploadWidget = $this->getUploadWidget();
+				$uploadWidget->sidecars['captions'] = $srtContents;
+				$this->parentObject->save(true,false);
+			}
+		}
+		else {
+			echo "No captions found for " . $this->getObjectId() . "\n";
+			// dump the contents of /tmp/whisperx.log
+			if(file_exists("/tmp/whisperx.log")) {
+				$logContents = file_get_contents("/tmp/whisperx.log");
+				echo "WhisperX log contents:\n" . $logContents . "\n";
+			}
+			// list all the files in the directory
+			$files = scandir($localPathParts['dirname']);
+			echo "Files in " . $localPathParts['dirname'] . ":\n";
+			foreach($files as $file) {
+				if($file != "." && $file != "..") {
+					echo " - " . $file . "\n";
+				}
+			}
+		}
+		
+
+	}
+
 
 	public function cleanupOriginal($args) {
 

@@ -7,52 +7,72 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DrawerGroup
  */
+#[ORM\Table(name: 'drawer_groups')]
+#[ORM\Entity]
 class DrawerGroup
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'group_type', type: 'string', nullable: true)]
     private $group_type;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'group_value', type: 'string', nullable: true)]
     private $group_value;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'group_label', type: 'string', nullable: true)]
     private $group_label;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'expiration', type: 'datetime', nullable: true)]
     private $expiration;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\DrawerPermission::class, mappedBy: 'group', cascade: ['remove'])]
     private $permissions;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $user;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $drawer;
+    #[ORM\JoinTable(name: 'drawergroup_drawer')]
+    #[ORM\JoinColumn(name: 'drawergroup_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'drawer_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\ManyToMany(targetEntity: \Entity\Drawer::class)]
+    private $drawer = array();
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $group_values;
+    #[ORM\JoinTable(name: 'drawergroup_groupentry')]
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'entry_id', referencedColumnName: 'id', unique: true, onDelete: 'CASCADE')]
+    #[ORM\ManyToMany(targetEntity: \Entity\GroupEntry::class, inversedBy: 'group', cascade: ['persist'], orphanRemoval: true)]
+    private $group_values = array();
 
     /**
      * Constructor
@@ -64,13 +84,15 @@ class DrawerGroup
         $this->group_values = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
     /**
-     * Set group_type
+     * Set groupType.
      *
-     * @param string $groupType
+     * @param string|null $groupType
+     *
      * @return DrawerGroup
      */
-    public function setGroupType($groupType)
+    public function setGroupType($groupType = null)
     {
         $this->group_type = $groupType;
 
@@ -78,9 +100,9 @@ class DrawerGroup
     }
 
     /**
-     * Get group_type
+     * Get groupType.
      *
-     * @return string 
+     * @return string|null
      */
     public function getGroupType()
     {
@@ -88,12 +110,13 @@ class DrawerGroup
     }
 
     /**
-     * Set group_value
+     * Set groupValue.
      *
-     * @param string $groupValue
+     * @param string|null $groupValue
+     *
      * @return DrawerGroup
      */
-    public function setGroupValue($groupValue)
+    public function setGroupValue($groupValue = null)
     {
         $this->group_value = $groupValue;
 
@@ -101,9 +124,9 @@ class DrawerGroup
     }
 
     /**
-     * Get group_value
+     * Get groupValue.
      *
-     * @return string 
+     * @return string|null
      */
     public function getGroupValue()
     {
@@ -111,12 +134,13 @@ class DrawerGroup
     }
 
     /**
-     * Set group_label
+     * Set groupLabel.
      *
-     * @param string $groupLabel
+     * @param string|null $groupLabel
+     *
      * @return DrawerGroup
      */
-    public function setGroupLabel($groupLabel)
+    public function setGroupLabel($groupLabel = null)
     {
         $this->group_label = $groupLabel;
 
@@ -124,9 +148,9 @@ class DrawerGroup
     }
 
     /**
-     * Get group_label
+     * Get groupLabel.
      *
-     * @return string 
+     * @return string|null
      */
     public function getGroupLabel()
     {
@@ -134,12 +158,13 @@ class DrawerGroup
     }
 
     /**
-     * Set expiration
+     * Set expiration.
      *
-     * @param \DateTime $expiration
+     * @param \DateTime|null $expiration
+     *
      * @return DrawerGroup
      */
-    public function setExpiration($expiration)
+    public function setExpiration($expiration = null)
     {
         $this->expiration = $expiration;
 
@@ -147,9 +172,9 @@ class DrawerGroup
     }
 
     /**
-     * Get expiration
+     * Get expiration.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getExpiration()
     {
@@ -157,9 +182,9 @@ class DrawerGroup
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -167,32 +192,35 @@ class DrawerGroup
     }
 
     /**
-     * Add permissions
+     * Add permission.
      *
-     * @param \Entity\DrawerPermission $permissions
+     * @param \Entity\DrawerPermission $permission
+     *
      * @return DrawerGroup
      */
-    public function addPermission(\Entity\DrawerPermission $permissions)
+    public function addPermission(\Entity\DrawerPermission $permission)
     {
-        $this->permissions[] = $permissions;
+        $this->permissions[] = $permission;
 
         return $this;
     }
 
     /**
-     * Remove permissions
+     * Remove permission.
      *
-     * @param \Entity\DrawerPermission $permissions
+     * @param \Entity\DrawerPermission $permission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removePermission(\Entity\DrawerPermission $permissions)
+    public function removePermission(\Entity\DrawerPermission $permission)
     {
-        $this->permissions->removeElement($permissions);
+        return $this->permissions->removeElement($permission);
     }
 
     /**
-     * Get permissions
+     * Get permissions.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getPermissions()
     {
@@ -200,12 +228,13 @@ class DrawerGroup
     }
 
     /**
-     * Set user
+     * Set user.
      *
-     * @param \Entity\User $user
+     * @param \Entity\User|null $user
+     *
      * @return DrawerGroup
      */
-    public function setUser(? \Entity\User $user = null)
+    public function setUser(?\Entity\User $user = null)
     {
         $this->user = $user;
 
@@ -213,9 +242,9 @@ class DrawerGroup
     }
 
     /**
-     * Get user
+     * Get user.
      *
-     * @return \Entity\User 
+     * @return \Entity\User|null
      */
     public function getUser()
     {
@@ -223,32 +252,36 @@ class DrawerGroup
     }
 
     /**
-     * Add drawer
+     * Add drawer.
      *
      * @param \Entity\Drawer $drawer
+     *
      * @return DrawerGroup
      */
     public function addDrawer(\Entity\Drawer $drawer)
     {
+        $drawer->addGroup($this);
         $this->drawer[] = $drawer;
 
         return $this;
     }
 
     /**
-     * Remove drawer
+     * Remove drawer.
      *
      * @param \Entity\Drawer $drawer
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
     public function removeDrawer(\Entity\Drawer $drawer)
     {
-        $this->drawer->removeElement($drawer);
+        return $this->drawer->removeElement($drawer);
     }
 
     /**
-     * Get drawer
+     * Get drawer.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getDrawer()
     {
@@ -256,32 +289,36 @@ class DrawerGroup
     }
 
     /**
-     * Add group_values
+     * Add groupValue.
      *
-     * @param \Entity\GroupEntry $groupValues
+     * @param \Entity\GroupEntry $groupValue
+     *
      * @return DrawerGroup
      */
-    public function addGroupValue(\Entity\GroupEntry $groupValues)
+    public function addGroupValue(\Entity\GroupEntry $groupValue)
     {
-        $this->group_values[] = $groupValues;
+
+        $this->group_values[] = $groupValue;
 
         return $this;
     }
 
     /**
-     * Remove group_values
+     * Remove groupValue.
      *
-     * @param \Entity\GroupEntry $groupValues
+     * @param \Entity\GroupEntry $groupValue
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeGroupValue(\Entity\GroupEntry $groupValues)
+    public function removeGroupValue(\Entity\GroupEntry $groupValue)
     {
-        $this->group_values->removeElement($groupValues);
+        return $this->group_values->removeElement($groupValue);
     }
 
     /**
-     * Get group_values
+     * Get groupValues.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getGroupValues()
     {

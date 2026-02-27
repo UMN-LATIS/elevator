@@ -66,7 +66,7 @@ class Template {
     // New Functions for Elevator
     public function loadJavascript($javascriptArray) {
         $minified = false;
-        if(defined('ENVIRONMENT') && ENVIRONMENT != "development") {
+        if(defined('ENVIRONMENT') && ENVIRONMENT != "development" && ENVIRONMENT != "local") {
             $minified = true;
         }
         foreach($javascriptArray as $javascript) {

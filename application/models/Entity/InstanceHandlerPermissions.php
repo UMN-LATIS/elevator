@@ -7,36 +7,47 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * InstanceHandlerPermissions
  */
+#[ORM\Table(name: 'instance_handler_permissions')]
+#[ORM\Entity]
 class InstanceHandlerPermissions
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'handler_name', type: 'string', nullable: true)]
     private $handler_name;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'permission_group', type: 'integer', nullable: true)]
     private $permission_group;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class, inversedBy: 'handler_permissions')]
     private $instance;
 
 
+
     /**
-     * Set handler_name
+     * Set handlerName.
      *
-     * @param string $handlerName
+     * @param string|null $handlerName
+     *
      * @return InstanceHandlerPermissions
      */
-    public function setHandlerName($handlerName)
+    public function setHandlerName($handlerName = null)
     {
         $this->handler_name = $handlerName;
 
@@ -44,9 +55,9 @@ class InstanceHandlerPermissions
     }
 
     /**
-     * Get handler_name
+     * Get handlerName.
      *
-     * @return string 
+     * @return string|null
      */
     public function getHandlerName()
     {
@@ -54,12 +65,13 @@ class InstanceHandlerPermissions
     }
 
     /**
-     * Set permission_group
+     * Set permissionGroup.
      *
-     * @param integer $permissionGroup
+     * @param int|null $permissionGroup
+     *
      * @return InstanceHandlerPermissions
      */
-    public function setPermissionGroup($permissionGroup)
+    public function setPermissionGroup($permissionGroup = null)
     {
         $this->permission_group = $permissionGroup;
 
@@ -67,9 +79,9 @@ class InstanceHandlerPermissions
     }
 
     /**
-     * Get permission_group
+     * Get permissionGroup.
      *
-     * @return integer 
+     * @return int|null
      */
     public function getPermissionGroup()
     {
@@ -77,9 +89,9 @@ class InstanceHandlerPermissions
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -87,12 +99,13 @@ class InstanceHandlerPermissions
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return InstanceHandlerPermissions
      */
-    public function setInstance(? \Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -100,9 +113,9 @@ class InstanceHandlerPermissions
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {

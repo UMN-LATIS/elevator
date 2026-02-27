@@ -7,111 +7,145 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Widget
  */
+#[ORM\Table(name: 'widgets')]
+#[ORM\Index(name: 0, columns: ['directSearch'])]
+#[ORM\Entity]
 class Widget
 {
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'template_order', type: 'integer', nullable: true)]
     private $template_order;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'view_order', type: 'integer', nullable: true)]
     private $view_order;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'display', type: 'boolean', nullable: true)]
     private $display;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'displayInPreview', type: 'boolean', nullable: true)]
     private $displayInPreview;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'required', type: 'boolean', nullable: true)]
     private $required;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'searchable', type: 'boolean', nullable: true)]
     private $searchable;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'allow_multiple', type: 'boolean', nullable: true)]
     private $allow_multiple;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'attempt_autocomplete', type: 'boolean', nullable: true)]
     private $attempt_autocomplete;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'field_title', type: 'string', nullable: true)]
     private $field_title;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'label', type: 'string', nullable: true)]
     private $label;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'tooltip', type: 'string', nullable: true)]
     private $tooltip;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'field_data', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $field_data;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'directSearch', type: 'boolean', nullable: true)]
     private $directSearch;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'clickToSearch', type: 'boolean', nullable: true)]
     private $clickToSearch;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'clickToSearchType', type: 'integer', nullable: true)]
+    private $clickToSearchType;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\Field_type
      */
+    #[ORM\JoinColumn(name: 'field_type_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Field_type::class)]
     private $field_type;
 
     /**
      * @var \Entity\Template
      */
+    #[ORM\JoinColumn(name: 'template_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Template::class)]
     private $template;
 
 
+
     /**
-     * Set template_order
+     * Set templateOrder.
      *
-     * @param integer $templateOrder
+     * @param int|null $templateOrder
+     *
      * @return Widget
      */
-    public function setTemplateOrder($templateOrder)
+    public function setTemplateOrder($templateOrder = null)
     {
         $this->template_order = $templateOrder;
 
@@ -119,9 +153,9 @@ class Widget
     }
 
     /**
-     * Get template_order
+     * Get templateOrder.
      *
-     * @return integer
+     * @return int|null
      */
     public function getTemplateOrder()
     {
@@ -129,12 +163,13 @@ class Widget
     }
 
     /**
-     * Set view_order
+     * Set viewOrder.
      *
-     * @param integer $viewOrder
+     * @param int|null $viewOrder
+     *
      * @return Widget
      */
-    public function setViewOrder($viewOrder)
+    public function setViewOrder($viewOrder = null)
     {
         $this->view_order = $viewOrder;
 
@@ -142,9 +177,9 @@ class Widget
     }
 
     /**
-     * Get view_order
+     * Get viewOrder.
      *
-     * @return integer
+     * @return int|null
      */
     public function getViewOrder()
     {
@@ -152,12 +187,13 @@ class Widget
     }
 
     /**
-     * Set display
+     * Set display.
      *
-     * @param boolean $display
+     * @param bool|null $display
+     *
      * @return Widget
      */
-    public function setDisplay($display)
+    public function setDisplay($display = null)
     {
         $this->display = $display;
 
@@ -165,9 +201,9 @@ class Widget
     }
 
     /**
-     * Get display
+     * Get display.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getDisplay()
     {
@@ -175,12 +211,13 @@ class Widget
     }
 
     /**
-     * Set displayInPreview
+     * Set displayInPreview.
      *
-     * @param boolean $displayInPreview
+     * @param bool|null $displayInPreview
+     *
      * @return Widget
      */
-    public function setDisplayInPreview($displayInPreview)
+    public function setDisplayInPreview($displayInPreview = null)
     {
         $this->displayInPreview = $displayInPreview;
 
@@ -188,9 +225,9 @@ class Widget
     }
 
     /**
-     * Get displayInPreview
+     * Get displayInPreview.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getDisplayInPreview()
     {
@@ -198,12 +235,13 @@ class Widget
     }
 
     /**
-     * Set required
+     * Set required.
      *
-     * @param boolean $required
+     * @param bool|null $required
+     *
      * @return Widget
      */
-    public function setRequired($required)
+    public function setRequired($required = null)
     {
         $this->required = $required;
 
@@ -211,9 +249,9 @@ class Widget
     }
 
     /**
-     * Get required
+     * Get required.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getRequired()
     {
@@ -221,12 +259,13 @@ class Widget
     }
 
     /**
-     * Set searchable
+     * Set searchable.
      *
-     * @param boolean $searchable
+     * @param bool|null $searchable
+     *
      * @return Widget
      */
-    public function setSearchable($searchable)
+    public function setSearchable($searchable = null)
     {
         $this->searchable = $searchable;
 
@@ -234,9 +273,9 @@ class Widget
     }
 
     /**
-     * Get searchable
+     * Get searchable.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getSearchable()
     {
@@ -244,12 +283,13 @@ class Widget
     }
 
     /**
-     * Set allow_multiple
+     * Set allowMultiple.
      *
-     * @param boolean $allowMultiple
+     * @param bool|null $allowMultiple
+     *
      * @return Widget
      */
-    public function setAllowMultiple($allowMultiple)
+    public function setAllowMultiple($allowMultiple = null)
     {
         $this->allow_multiple = $allowMultiple;
 
@@ -257,9 +297,9 @@ class Widget
     }
 
     /**
-     * Get allow_multiple
+     * Get allowMultiple.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getAllowMultiple()
     {
@@ -267,12 +307,13 @@ class Widget
     }
 
     /**
-     * Set attempt_autocomplete
+     * Set attemptAutocomplete.
      *
-     * @param boolean $attemptAutocomplete
+     * @param bool|null $attemptAutocomplete
+     *
      * @return Widget
      */
-    public function setAttemptAutocomplete($attemptAutocomplete)
+    public function setAttemptAutocomplete($attemptAutocomplete = null)
     {
         $this->attempt_autocomplete = $attemptAutocomplete;
 
@@ -280,9 +321,9 @@ class Widget
     }
 
     /**
-     * Get attempt_autocomplete
+     * Get attemptAutocomplete.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getAttemptAutocomplete()
     {
@@ -290,12 +331,13 @@ class Widget
     }
 
     /**
-     * Set field_title
+     * Set fieldTitle.
      *
-     * @param string $fieldTitle
+     * @param string|null $fieldTitle
+     *
      * @return Widget
      */
-    public function setFieldTitle($fieldTitle)
+    public function setFieldTitle($fieldTitle = null)
     {
         $this->field_title = $fieldTitle;
 
@@ -303,9 +345,9 @@ class Widget
     }
 
     /**
-     * Get field_title
+     * Get fieldTitle.
      *
-     * @return string
+     * @return string|null
      */
     public function getFieldTitle()
     {
@@ -313,12 +355,13 @@ class Widget
     }
 
     /**
-     * Set label
+     * Set label.
      *
-     * @param string $label
+     * @param string|null $label
+     *
      * @return Widget
      */
-    public function setLabel($label)
+    public function setLabel($label = null)
     {
         $this->label = $label;
 
@@ -326,9 +369,9 @@ class Widget
     }
 
     /**
-     * Get label
+     * Get label.
      *
-     * @return string
+     * @return string|null
      */
     public function getLabel()
     {
@@ -336,12 +379,13 @@ class Widget
     }
 
     /**
-     * Set tooltip
+     * Set tooltip.
      *
-     * @param string $tooltip
+     * @param string|null $tooltip
+     *
      * @return Widget
      */
-    public function setTooltip($tooltip)
+    public function setTooltip($tooltip = null)
     {
         $this->tooltip = $tooltip;
 
@@ -349,9 +393,9 @@ class Widget
     }
 
     /**
-     * Get tooltip
+     * Get tooltip.
      *
-     * @return string
+     * @return string|null
      */
     public function getTooltip()
     {
@@ -359,12 +403,13 @@ class Widget
     }
 
     /**
-     * Set field_data
+     * Set fieldData.
      *
-     * @param array $fieldData
+     * @param array|null $fieldData
+     *
      * @return Widget
      */
-    public function setFieldData($fieldData)
+    public function setFieldData($fieldData = null)
     {
         $this->field_data = $fieldData;
 
@@ -372,9 +417,9 @@ class Widget
     }
 
     /**
-     * Get field_data
+     * Get fieldData.
      *
-     * @return array
+     * @return array|null
      */
     public function getFieldData()
     {
@@ -382,12 +427,13 @@ class Widget
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
+     *
      * @return Widget
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -395,9 +441,9 @@ class Widget
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -405,12 +451,13 @@ class Widget
     }
 
     /**
-     * Set modifiedAt
+     * Set modifiedAt.
      *
-     * @param \DateTime $modifiedAt
+     * @param \DateTime|null $modifiedAt
+     *
      * @return Widget
      */
-    public function setModifiedAt($modifiedAt)
+    public function setModifiedAt($modifiedAt = null)
     {
         $this->modifiedAt = $modifiedAt;
 
@@ -418,9 +465,9 @@ class Widget
     }
 
     /**
-     * Get modifiedAt
+     * Get modifiedAt.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getModifiedAt()
     {
@@ -428,12 +475,13 @@ class Widget
     }
 
     /**
-     * Set directSearch
+     * Set directSearch.
      *
-     * @param boolean $directSearch
+     * @param bool|null $directSearch
+     *
      * @return Widget
      */
-    public function setDirectSearch($directSearch)
+    public function setDirectSearch($directSearch = null)
     {
         $this->directSearch = $directSearch;
 
@@ -441,9 +489,9 @@ class Widget
     }
 
     /**
-     * Get directSearch
+     * Get directSearch.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getDirectSearch()
     {
@@ -451,12 +499,13 @@ class Widget
     }
 
     /**
-     * Set clickToSearch
+     * Set clickToSearch.
      *
-     * @param boolean $clickToSearch
+     * @param bool|null $clickToSearch
+     *
      * @return Widget
      */
-    public function setClickToSearch($clickToSearch)
+    public function setClickToSearch($clickToSearch = null)
     {
         $this->clickToSearch = $clickToSearch;
 
@@ -464,9 +513,9 @@ class Widget
     }
 
     /**
-     * Get clickToSearch
+     * Get clickToSearch.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getClickToSearch()
     {
@@ -474,74 +523,13 @@ class Widget
     }
 
     /**
-     * Get id
+     * Set clickToSearchType.
      *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Set field_type
-     *
-     * @param \Entity\Field_type $fieldType
-     * @return Widget
-     */
-    public function setFieldType(? \Entity\Field_type $fieldType = null)
-    {
-        $this->field_type = $fieldType;
-
-        return $this;
-    }
-
-    /**
-     * Get field_type
-     *
-     * @return \Entity\Field_type
-     */
-    public function getFieldType()
-    {
-        return $this->field_type;
-    }
-
-    /**
-     * Set template
-     *
-     * @param \Entity\Template $template
-     * @return Widget
-     */
-    public function setTemplate(? \Entity\Template $template = null)
-    {
-        $this->template = $template;
-
-        return $this;
-    }
-
-    /**
-     * Get template
-     *
-     * @return \Entity\Template
-     */
-    public function getTemplate()
-    {
-        return $this->template;
-    }
-    /**
-     * @var integer
-     */
-    private $clickToSearchType;
-
-
-    /**
-     * Set clickToSearchType
-     *
-     * @param integer $clickToSearchType
+     * @param int|null $clickToSearchType
      *
      * @return Widget
      */
-    public function setClickToSearchType($clickToSearchType)
+    public function setClickToSearchType($clickToSearchType = null)
     {
         $this->clickToSearchType = $clickToSearchType;
 
@@ -549,12 +537,70 @@ class Widget
     }
 
     /**
-     * Get clickToSearchType
+     * Get clickToSearchType.
      *
-     * @return integer
+     * @return int|null
      */
     public function getClickToSearchType()
     {
         return $this->clickToSearchType;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set fieldType.
+     *
+     * @param \Entity\Field_type|null $fieldType
+     *
+     * @return Widget
+     */
+    public function setFieldType(?\Entity\Field_type $fieldType = null)
+    {
+        $this->field_type = $fieldType;
+
+        return $this;
+    }
+
+    /**
+     * Get fieldType.
+     *
+     * @return \Entity\Field_type|null
+     */
+    public function getFieldType()
+    {
+        return $this->field_type;
+    }
+
+    /**
+     * Set template.
+     *
+     * @param \Entity\Template|null $template
+     *
+     * @return Widget
+     */
+    public function setTemplate(?\Entity\Template $template = null)
+    {
+        $this->template = $template;
+
+        return $this;
+    }
+
+    /**
+     * Get template.
+     *
+     * @return \Entity\Template|null
+     */
+    public function getTemplate()
+    {
+        return $this->template;
     }
 }

@@ -11,7 +11,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 $indexFile = $manifest['src/main.ts']['file'];
-$cssFile = $manifest['src/main.css']['file'];
+$cssFile = $manifest['style.css']['file'];
 
 $customCSSFile = "/assets/instanceAssets/{$this->instance->getId()}.css";
 $customCSSHash = $this->instance->getModifiedAt()->getTimestamp();
@@ -38,6 +38,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
               'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
           ],
           'googleAnalyticsKey' => $instance->getGoogleAnalyticsKey() ?? null, 
+          'autoloadMaxSearchResults' => $instance->getAutoloadMaxSearchResults() ?? false,
       ],
       'arcgis' => [
           'apiKey' => $config->item('arcgis_access_token'),
@@ -92,10 +93,7 @@ function makeJavaScriptConfig($instance, $config, $template) {
   </script>
   <?=$this->user_model->getAuthHelper()->templateView();?>
   <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
-  <?php if (isset($this->instance) && $this->instance->getUseCustomCSS()): ?>
-    <link rel="stylesheet" href="<?= $customCSSFile ?>?hash=<?= $customCSSHash ?>">
-  <?php endif ?>
-  <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
+    <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
 </head>
 
 <body>

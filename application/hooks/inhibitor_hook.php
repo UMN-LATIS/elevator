@@ -75,7 +75,7 @@ class InhibitorHook {
 				$message .= "\nEND\n";
 		
 			// xdebug_break();
-			
+
 			$this->_forward_error($message);
 
 		}
@@ -207,8 +207,7 @@ class InhibitorHook {
 		
 		if(session_status() !== PHP_SESSION_ACTIVE && !$CI->input->is_cli_request()) {
 			session_start();
-		}
-		
+		}		
 		if($CI && !$CI->input->is_cli_request()) {
 			$CI->load->helper('url');
 			$CI->load->library('session');

@@ -26,8 +26,16 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: elevator-registry
-          IMAGE_TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || github.ref == 'refs/heads/develop' && 'develop' || github.ref_name }}
         run: |
+          # Create a clean image tag by replacing / with -
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            IMAGE_TAG="latest"
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            IMAGE_TAG="develop"
+          else
+            IMAGE_TAG=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+          fi
+          
           # echo the current git commit into a file named REVISION
           echo $GITHUB_SHA > REVISION
           

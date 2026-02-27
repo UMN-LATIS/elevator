@@ -7,52 +7,70 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * InstanceGroup
  */
+#[ORM\Table(name: 'instance_groups')]
+#[ORM\Index(name: 0, columns: ['group_type'])]
+#[ORM\Index(name: 1, columns: ['group_value'])]
+#[ORM\Entity]
 class InstanceGroup
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'group_type', type: 'string', nullable: true)]
     private $group_type;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'group_value', type: 'string', nullable: true)]
     private $group_value;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'group_label', type: 'string', nullable: true)]
     private $group_label;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'expiration', type: 'datetime', nullable: true)]
     private $expiration;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
-
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\InstancePermission::class, mappedBy: 'group', cascade: ['remove'])]
     private $instance_permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\CollectionPermission::class, mappedBy: 'group', cascade: ['remove'])]
     private $collection_permissions;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $group_values;
+    #[ORM\JoinTable(name: 'instancegroup_groupentry')]
+    #[ORM\JoinColumn(name: 'group_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'entry_id', referencedColumnName: 'id', unique: true, onDelete: 'CASCADE')]
+    #[ORM\ManyToMany(targetEntity: \Entity\GroupEntry::class, inversedBy: 'group', cascade: ['persist'], orphanRemoval: true)]
+    private $group_values = array();
 
     /**
      * Constructor
@@ -64,13 +82,15 @@ class InstanceGroup
         $this->group_values = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
     /**
-     * Set group_type
+     * Set groupType.
      *
-     * @param string $groupType
+     * @param string|null $groupType
+     *
      * @return InstanceGroup
      */
-    public function setGroupType($groupType)
+    public function setGroupType($groupType = null)
     {
         $this->group_type = $groupType;
 
@@ -78,9 +98,9 @@ class InstanceGroup
     }
 
     /**
-     * Get group_type
+     * Get groupType.
      *
-     * @return string 
+     * @return string|null
      */
     public function getGroupType()
     {
@@ -88,12 +108,13 @@ class InstanceGroup
     }
 
     /**
-     * Set group_value
+     * Set groupValue.
      *
-     * @param string $groupValue
+     * @param string|null $groupValue
+     *
      * @return InstanceGroup
      */
-    public function setGroupValue($groupValue)
+    public function setGroupValue($groupValue = null)
     {
         $this->group_value = $groupValue;
 
@@ -101,9 +122,9 @@ class InstanceGroup
     }
 
     /**
-     * Get group_value
+     * Get groupValue.
      *
-     * @return string 
+     * @return string|null
      */
     public function getGroupValue()
     {
@@ -111,12 +132,13 @@ class InstanceGroup
     }
 
     /**
-     * Set group_label
+     * Set groupLabel.
      *
-     * @param string $groupLabel
+     * @param string|null $groupLabel
+     *
      * @return InstanceGroup
      */
-    public function setGroupLabel($groupLabel)
+    public function setGroupLabel($groupLabel = null)
     {
         $this->group_label = $groupLabel;
 
@@ -124,9 +146,9 @@ class InstanceGroup
     }
 
     /**
-     * Get group_label
+     * Get groupLabel.
      *
-     * @return string 
+     * @return string|null
      */
     public function getGroupLabel()
     {
@@ -134,12 +156,13 @@ class InstanceGroup
     }
 
     /**
-     * Set expiration
+     * Set expiration.
      *
-     * @param \DateTime $expiration
+     * @param \DateTime|null $expiration
+     *
      * @return InstanceGroup
      */
-    public function setExpiration($expiration)
+    public function setExpiration($expiration = null)
     {
         $this->expiration = $expiration;
 
@@ -147,9 +170,9 @@ class InstanceGroup
     }
 
     /**
-     * Get expiration
+     * Get expiration.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getExpiration()
     {
@@ -157,9 +180,9 @@ class InstanceGroup
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -167,32 +190,35 @@ class InstanceGroup
     }
 
     /**
-     * Add instance_permissions
+     * Add instancePermission.
      *
-     * @param \Entity\InstancePermission $instancePermissions
+     * @param \Entity\InstancePermission $instancePermission
+     *
      * @return InstanceGroup
      */
-    public function addInstancePermission(\Entity\InstancePermission $instancePermissions)
+    public function addInstancePermission(\Entity\InstancePermission $instancePermission)
     {
-        $this->instance_permissions[] = $instancePermissions;
+        $this->instance_permissions[] = $instancePermission;
 
         return $this;
     }
 
     /**
-     * Remove instance_permissions
+     * Remove instancePermission.
      *
-     * @param \Entity\InstancePermission $instancePermissions
+     * @param \Entity\InstancePermission $instancePermission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeInstancePermission(\Entity\InstancePermission $instancePermissions)
+    public function removeInstancePermission(\Entity\InstancePermission $instancePermission)
     {
-        $this->instance_permissions->removeElement($instancePermissions);
+        return $this->instance_permissions->removeElement($instancePermission);
     }
 
     /**
-     * Get instance_permissions
+     * Get instancePermissions.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getInstancePermissions()
     {
@@ -200,32 +226,35 @@ class InstanceGroup
     }
 
     /**
-     * Add collection_permissions
+     * Add collectionPermission.
      *
-     * @param \Entity\CollectionPermission $collectionPermissions
+     * @param \Entity\CollectionPermission $collectionPermission
+     *
      * @return InstanceGroup
      */
-    public function addCollectionPermission(\Entity\CollectionPermission $collectionPermissions)
+    public function addCollectionPermission(\Entity\CollectionPermission $collectionPermission)
     {
-        $this->collection_permissions[] = $collectionPermissions;
+        $this->collection_permissions[] = $collectionPermission;
 
         return $this;
     }
 
     /**
-     * Remove collection_permissions
+     * Remove collectionPermission.
      *
-     * @param \Entity\CollectionPermission $collectionPermissions
+     * @param \Entity\CollectionPermission $collectionPermission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeCollectionPermission(\Entity\CollectionPermission $collectionPermissions)
+    public function removeCollectionPermission(\Entity\CollectionPermission $collectionPermission)
     {
-        $this->collection_permissions->removeElement($collectionPermissions);
+        return $this->collection_permissions->removeElement($collectionPermission);
     }
 
     /**
-     * Get collection_permissions
+     * Get collectionPermissions.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getCollectionPermissions()
     {
@@ -233,12 +262,13 @@ class InstanceGroup
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return InstanceGroup
      */
-    public function setInstance(? \Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -246,9 +276,9 @@ class InstanceGroup
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {
@@ -256,32 +286,35 @@ class InstanceGroup
     }
 
     /**
-     * Add group_values
+     * Add groupValue.
      *
-     * @param \Entity\GroupEntry $groupValues
+     * @param \Entity\GroupEntry $groupValue
+     *
      * @return InstanceGroup
      */
-    public function addGroupValue(\Entity\GroupEntry $groupValues)
+    public function addGroupValue(\Entity\GroupEntry $groupValue)
     {
-        $this->group_values[] = $groupValues;
+        $this->group_values[] = $groupValue;
 
         return $this;
     }
 
     /**
-     * Remove group_values
+     * Remove groupValue.
      *
-     * @param \Entity\GroupEntry $groupValues
+     * @param \Entity\GroupEntry $groupValue
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
-    public function removeGroupValue(\Entity\GroupEntry $groupValues)
+    public function removeGroupValue(\Entity\GroupEntry $groupValue)
     {
-        $this->group_values->removeElement($groupValues);
+        return $this->group_values->removeElement($groupValue);
     }
 
     /**
-     * Get group_values
+     * Get groupValues.
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getGroupValues()
     {

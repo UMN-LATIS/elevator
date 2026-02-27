@@ -62,18 +62,19 @@ class Beltdrive extends CI_Controller {
 				continue;
 			}
 			echo "Reindexing " . $objectId . "\n";
-
-			$this->asset_model->loadAssetById($objectId);
+			$assetModel = new Asset_model();
+			$assetModel->loadAssetById($objectId);
 
 			$parentArray = array();
 
-			$this->asset_model->reindex($parentArray);
+			$assetModel->reindex($parentArray);
+			$assetModel = null;
 			$pheanstalk->delete($job);
 			$this->doctrine->em->clear();
 		}
 	}
 
-	public function processAWSBatchJob($fileObjectId) {
+	public function processAWSBatchJob($fileObjectId, $jobType="cpu") {
 
 		if(strlen($fileObjectId) != 24) {
 			return 0;
@@ -95,13 +96,23 @@ class Beltdrive extends CI_Controller {
 			$collection = $this->collection_model->getCollection($fileHandler->collectionId);
 			if($collection) {
 				$instances = $collection->getInstances();
-				if(count($instances) > 0) {
-					$instance = $instances[0];
-					$instanceId = $instance->getId();
+				
+				if($instances && $instances->count() > 0) {
+					$instance = $instances->first();
 					$this->instance = $instance;
 				}
 			}
-			foreach($fileHandler->taskArray as $task) {
+
+			if($jobType == "cpu") {
+				$taskArray = $fileHandler->taskArray;
+			}
+			else if($jobType == "gpu") {
+				$taskArray = $fileHandler->gpuTaskArray;
+			}
+
+			
+
+			foreach($taskArray as $task) {
 				echo "Performing task " . $task["taskType"] . "\n";
 				if($task["taskType"] == "waitForCompletion") {
 					continue;
@@ -297,9 +308,9 @@ class Beltdrive extends CI_Controller {
 					$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 120);
 				}
 				else {
+					$pheanstalk->delete($job);
 					if($nextTask == "notify") {
 						echo "File finished". $objectId . "\n";
-						$pheanstalk->delete($job);
 						$fileContent = $this->load->view("email/fileReady", ["pathToFile"=>$pathToFile], true);
 						$this->load->library('email');
 						$this->email->from('no-reply@elevatorapp.net', 'Elevator');
@@ -310,7 +321,7 @@ class Beltdrive extends CI_Controller {
 						$this->email->send();
 					}
 					else if($nextTask == "create_derivative") {
-						$this->filehandlerbase->queueBatchItem($objectId);
+						$this->filehandlerbase->queueBatchItem();
 					}
 					
 
@@ -348,7 +359,7 @@ class Beltdrive extends CI_Controller {
 		$pheanstalk->watch($tube);
 		while(1) {
 			$job = $pheanstalk->reserve();
-
+			
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
@@ -384,7 +395,9 @@ class Beltdrive extends CI_Controller {
 				$pheanstalk->release($job, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 900);
 			}
 			else {
-
+				exec("sudo /usr/local/bin/ebs-mount.sh");
+				// make sure we hold an open file on the mount while we're working
+				$fp = fopen("/scratch/hold_file", "w");
 				foreach($uploadHandlers as $uploadHandler) {
 					foreach($uploadHandler->fieldContentsArray as $key=>$uploadContents) {
 
@@ -430,7 +443,7 @@ class Beltdrive extends CI_Controller {
 
 					}
 				}
-
+				fclose($fp);
 				$assetModel->setGlobalValue("collectionMigration", false);
 				$assetModel->setGlobalValue("collectionId", $targetCollection);
 				$assetModel->forceCollection = true;
@@ -531,10 +544,9 @@ class Beltdrive extends CI_Controller {
 				$qb->andWhere("a.templateId = ?1");
 				$qb->setParameter(1, $templateToReindex);
 
-				$result = $qb->getQuery()->iterate();
+				$result = $qb->getQuery()->toIterable();
 
 				foreach($result as $entry) {
-					$entry = array_pop($entry);
 					$newTask = json_encode(["objectId"=>$entry["assetId"], "instance"=>$instanceId]);
 					$tube = new Pheanstalk\Values\TubeName('reindex');
 					$pheanstalk->useTube($tube);
@@ -563,10 +575,14 @@ class Beltdrive extends CI_Controller {
 		
 		$manager = $this->doctrine->em->getConnection();
 
-		$results = $manager->query('select template_id from widgets where field_data @> \'{"defaultTemplate": ' . $templateId . '}\' OR field_data @> \'{"matchAgainst": [' . $templateId . ']}\'');
+		$sql = 'SELECT template_id FROM widgets WHERE field_data @> :defaultTemplate OR field_data @> :matchAgainst';
+		$results = $manager->executeQuery($sql, [
+			'defaultTemplate' => json_encode(['defaultTemplate' => (int)$templateId]),
+			'matchAgainst' => json_encode(['matchAgainst' => [(int)$templateId]])
+		]);
 		$foundItems = array();
 		if($results) {
-			$records = $results->fetchAll();
+			$records = $results->fetchAllAssociative();
 			
 			if(count($records)>0) {
 				foreach($records as $record) {
@@ -616,7 +632,7 @@ class Beltdrive extends CI_Controller {
 			// run the ebs-mount shell script to mount the storage
 			exec("sudo /usr/local/bin/ebs-mount.sh");
 			// make sure we hold an open file on the mount while we're working
-			$fp = fopen("/scratch/hold_file", "w");
+			$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
 			$assetModel = new Asset_model($objectId);
 			$assetArray = $assetModel->getAsArray();
 

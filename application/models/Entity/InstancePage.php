@@ -7,176 +7,66 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * InstancePage
  */
+#[ORM\Table(name: 'instance_pages')]
+#[ORM\Entity]
 class InstancePage
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'title', type: 'string', nullable: true)]
     private $title;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'body', type: 'text', nullable: true)]
     private $body;
 
     /**
-     * @var \DateTime
+     * @var bool|null
      */
+    #[ORM\Column(name: 'includeInHeader', type: 'boolean', nullable: true)]
+    private $includeInHeader;
+
+    /**
+     * @var \DateTime|null
+     */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'sortOrder', type: 'integer', nullable: true)]
+    private $sortOrder;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\OneToMany(targetEntity: \Entity\InstancePage::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
+    private $children;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class, inversedBy: 'pages')]
     private $instance;
-
-
-    /**
-     * Set title
-     *
-     * @param string $title
-     * @return InstancePage
-     */
-    public function setTitle($title)
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    /**
-     * Get title
-     *
-     * @return string 
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    /**
-     * Set body
-     *
-     * @param string $body
-     * @return InstancePage
-     */
-    public function setBody($body)
-    {
-        $this->body = $body;
-
-        return $this;
-    }
-
-    /**
-     * Get body
-     *
-     * @return string 
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-
-    /**
-     * Set modifiedAt
-     *
-     * @param \DateTime $modifiedAt
-     * @return InstancePage
-     */
-    public function setModifiedAt($modifiedAt)
-    {
-        $this->modifiedAt = $modifiedAt;
-
-        return $this;
-    }
-
-    /**
-     * Get modifiedAt
-     *
-     * @return \DateTime 
-     */
-    public function getModifiedAt()
-    {
-        return $this->modifiedAt;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Set instance
-     *
-     * @param \Entity\Instance $instance
-     * @return InstancePage
-     */
-    public function setInstance(? \Entity\Instance $instance = null)
-    {
-        $this->instance = $instance;
-
-        return $this;
-    }
-
-    /**
-     * Get instance
-     *
-     * @return \Entity\Instance 
-     */
-    public function getInstance()
-    {
-        return $this->instance;
-    }
-    /**
-     * @var boolean
-     */
-    private $includeInHeader;
-
-
-    /**
-     * Set includeInHeader
-     *
-     * @param boolean $includeInHeader
-     * @return InstancePage
-     */
-    public function setIncludeInHeader($includeInHeader)
-    {
-        $this->includeInHeader = $includeInHeader;
-
-        return $this;
-    }
-
-    /**
-     * Get includeInHeader
-     *
-     * @return boolean 
-     */
-    public function getIncludeInHeader()
-    {
-        return $this->includeInHeader;
-    }
-    /**
-     * @var integer
-     */
-    private $sortOrder;
-
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $children;
 
     /**
      * @var \Entity\InstancePage
      */
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\InstancePage::class, inversedBy: 'children')]
     private $parent;
 
     /**
@@ -187,14 +77,111 @@ class InstancePage
         $this->children = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+
     /**
-     * Set sortOrder
+     * Set title.
      *
-     * @param integer $sortOrder
+     * @param string|null $title
      *
      * @return InstancePage
      */
-    public function setSortOrder($sortOrder)
+    public function setTitle($title = null)
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * Get title.
+     *
+     * @return string|null
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * Set body.
+     *
+     * @param string|null $body
+     *
+     * @return InstancePage
+     */
+    public function setBody($body = null)
+    {
+        $this->body = $body;
+
+        return $this;
+    }
+
+    /**
+     * Get body.
+     *
+     * @return string|null
+     */
+    public function getBody()
+    {
+        return $this->body;
+    }
+
+    /**
+     * Set includeInHeader.
+     *
+     * @param bool|null $includeInHeader
+     *
+     * @return InstancePage
+     */
+    public function setIncludeInHeader($includeInHeader = null)
+    {
+        $this->includeInHeader = $includeInHeader;
+
+        return $this;
+    }
+
+    /**
+     * Get includeInHeader.
+     *
+     * @return bool|null
+     */
+    public function getIncludeInHeader()
+    {
+        return $this->includeInHeader;
+    }
+
+    /**
+     * Set modifiedAt.
+     *
+     * @param \DateTime|null $modifiedAt
+     *
+     * @return InstancePage
+     */
+    public function setModifiedAt($modifiedAt = null)
+    {
+        $this->modifiedAt = $modifiedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get modifiedAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getModifiedAt()
+    {
+        return $this->modifiedAt;
+    }
+
+    /**
+     * Set sortOrder.
+     *
+     * @param int|null $sortOrder
+     *
+     * @return InstancePage
+     */
+    public function setSortOrder($sortOrder = null)
     {
         $this->sortOrder = $sortOrder;
 
@@ -202,9 +189,9 @@ class InstancePage
     }
 
     /**
-     * Get sortOrder
+     * Get sortOrder.
      *
-     * @return integer
+     * @return int|null
      */
     public function getSortOrder()
     {
@@ -212,7 +199,17 @@ class InstancePage
     }
 
     /**
-     * Add child
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Add child.
      *
      * @param \Entity\InstancePage $child
      *
@@ -226,17 +223,19 @@ class InstancePage
     }
 
     /**
-     * Remove child
+     * Remove child.
      *
      * @param \Entity\InstancePage $child
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
      */
     public function removeChild(\Entity\InstancePage $child)
     {
-        $this->children->removeElement($child);
+        return $this->children->removeElement($child);
     }
 
     /**
-     * Get children
+     * Get children.
      *
      * @return \Doctrine\Common\Collections\Collection
      */
@@ -246,13 +245,37 @@ class InstancePage
     }
 
     /**
-     * Set parent
+     * Set instance.
      *
-     * @param \Entity\InstancePage $parent
+     * @param \Entity\Instance|null $instance
      *
      * @return InstancePage
      */
-    public function setParent(? \Entity\InstancePage $parent = null)
+    public function setInstance(?\Entity\Instance $instance = null)
+    {
+        $this->instance = $instance;
+
+        return $this;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return \Entity\Instance|null
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
+
+    /**
+     * Set parent.
+     *
+     * @param \Entity\InstancePage|null $parent
+     *
+     * @return InstancePage
+     */
+    public function setParent(?\Entity\InstancePage $parent = null)
     {
         $this->parent = $parent;
 
@@ -260,9 +283,9 @@ class InstancePage
     }
 
     /**
-     * Get parent
+     * Get parent.
      *
-     * @return \Entity\InstancePage
+     * @return \Entity\InstancePage|null
      */
     public function getParent()
     {

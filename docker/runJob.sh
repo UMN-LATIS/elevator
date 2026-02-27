@@ -4,11 +4,13 @@
 
 # capture arguments
 targetJobID=$1
+jobType=$2
 
 # if .env exists, load it
 if [ -f .env ]; then
     source .env
 fi
+
 
 # check if ENVIRONMENT variable is local
 if [ "$ENVIRONMENT" = "local" ]; then

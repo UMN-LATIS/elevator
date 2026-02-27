@@ -16,6 +16,7 @@ class AudioHandler extends FileHandlerBase {
 						  5=>["taskType"=>"waitForCompletion", "config"=>array()],
 						  6=>["taskType"=>"cleanupOriginal", "config"=>array()],
 						];
+	public $gpuTaskArray = [0=>["taskType"=>"generateCaptions", "config"=>array()]];
 
 
 
@@ -53,6 +54,7 @@ class AudioHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
 			}
 		}
 		if(count($returnArray)>0) {
@@ -86,7 +88,13 @@ class AudioHandler extends FileHandlerBase {
 
 	public function getAltWidget() {
 		$widgetContents = $this->getUploadWidget();
-		$widget = $widgetContents->parentWidget;
+		if($widgetContents) {
+			$widget = $widgetContents;
+		}
+		else {
+			return false;
+		}
+		
 		if(isset($widget->thumbnailTarget)) {
 			$targetField = $widget->thumbnailTarget;
 			if(!isset($this->parentObject->assetObjects[$targetField])) {
@@ -137,13 +145,57 @@ class AudioHandler extends FileHandlerBase {
 			$targetDerivatives = ["mp3", "m4a"];
 		}
 
-		$nextDerivative = array_shift($targetDerivatives);
-
-		$jobId = null;
-		if($nextDerivative) {
+		
+		foreach($targetDerivatives as $nextDerivative) {
+			echo "Starting derivative for " . $nextDerivative . "\n";
 			$jobId = $this->getTranscodeCommand()->createDerivative($this->getObjectId(), $nextDerivative);	
 		}
+
 	
+		if($this->instance && $this->instance->getAutomaticAltText()) {
+		//&& $this->instance->enableAutomaticAccessibility) {
+			echo "Generating captions for " . $this->getObjectId() . "\n";
+			$uploadWidget = $this->getUploadWidget();
+			if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+				return;
+			}
+
+			// let's do our best to guess the langauge
+
+			if($uploadWidget && isset($uploadWidget->sidecars['language']) && $uploadWidget->sidecars['language'] != "" && $uploadWidget->sidecars['language'] != "0") {
+				$language = $uploadWidget->sidecars['language'];
+			}
+			else {
+
+				$mp3derivative = $this->derivatives["mp3"];
+				$mp3derivative->makeLocal();
+				$localPath = $mp3derivative->getPathToLocalFile();
+				$captionString = $this->config->item('languageDetect') . " --print-json " . $localPath;
+				$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+				$process->run("/tmp/languageDetect.log");
+				while($process->isRunning()) {
+					sleep(5);
+					echo ".";
+				}
+				$content = file_get_contents("/tmp/languageDetect.log");
+				$results = json_decode($content, true);
+				if(isset($results['language_code']))
+				{
+					$language = $results['language_code'];
+					echo "Language detected: " . $language . "\n";
+				}
+				else {
+					echo "No language detected, defaulting to English\n";
+				}
+				$uploadWidget->sidecars['language'] = $language;
+				$this->parentObject->save(true,false);
+
+			}
+			
+			$this->generateAltText();
+
+		}
+
 
 		if($jobId) {
 			$this->queueTask(3, ["jobId"=>$jobId, "pendingDerivatives"=>$targetDerivatives, "previousTask"=>"createDerivatives"]);
@@ -153,6 +205,62 @@ class AudioHandler extends FileHandlerBase {
 			$this->logging->processingInfo("createDerivative","audioHandler","Enqueuing jobs failed",$this->getObjectId(),0);
 			return JOB_FAILED;
 		}
+
+	}
+
+	public function generateAltText() {
+		$this->queueBatchItem("gpu");
+	}
+
+	public function generateCaptions() {
+
+		$derivative = $this->derivatives["mp3"];
+		$derivative->makeLocal();
+		$localPath = $derivative->getPathToLocalFile();
+		$localPathParts = pathinfo($localPath);
+
+
+		chmod($localPathParts['dirname'] , 0777);
+		$captionString = $this->config->item('whisperX') . " --model large-v3 --align_model WAV2VEC2_ASR_LARGE_LV60K_960H --batch_size 4 --output_format srt --output_dir=" . $localPathParts['dirname'] . " " . $localPath;
+
+		$process = new Cocur\BackgroundProcess\BackgroundProcess($captionString);
+		$process->run("/tmp/whisperx.log");
+		while($process->isRunning()) {
+			sleep(5);
+			echo ".";
+		}
+
+		
+		
+
+		$localPathWithoutExtension = $localPathParts['dirname'] . '/' . $localPathParts['filename'];
+
+		if(file_exists($localPathWithoutExtension . ".srt")) {
+			echo "Captions found for " . $this->getObjectId() . "\n";
+			$srtContents = file_get_contents( $localPathWithoutExtension . ".srt");
+			if($srtContents && $srtContents != "") {
+				$uploadWidget = $this->getUploadWidget(true);
+				$uploadWidget->sidecars['captions'] = $srtContents;
+				$this->parentObject->save(true,false);
+			}
+		}
+		else {
+			echo "No captions found for " . $this->getObjectId() . "\n";
+			// dump the contents of /tmp/whisperx.log
+			if(file_exists("/tmp/whisperx.log")) {
+				$logContents = file_get_contents("/tmp/whisperx.log");
+				echo "WhisperX log contents:\n" . $logContents . "\n";
+			}
+			// list all the files in the directory
+			$files = scandir($localPathParts['dirname']);
+			echo "Files in " . $localPathParts['dirname'] . ":\n";
+			foreach($files as $file) {
+				if($file != "." && $file != "..") {
+					echo " - " . $file . "\n";
+				}
+			}
+		}
+		
 
 	}
 

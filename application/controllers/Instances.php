@@ -2,6 +2,71 @@
 
 class Instances extends Instance_Controller {
 
+	private function isUserAuthed(): bool
+	{
+		return $this->user_model->userLoaded;
+	}
+
+	private function toPageArray(Entity\InstancePage $page): array
+	{
+		return [
+			'id' => $page->getId(),
+			'title' => $page->getTitle(),
+			'body' => $page->getBody(),
+			'includeInHeader' => $page->getIncludeInHeader(),
+			'sortOrder' => $page->getSortOrder(),
+			'parentId' => $page->getParent()?->getId(),
+			'parentTitle' => $page->getParent()?->getTitle(),
+			'modifiedAt' => $page->getModifiedAt()?->format('c'),
+		];
+	}
+
+	private function toInstanceArray(Entity\Instance $instance): array
+	{
+		return [
+			'id' => $instance->getId(),
+			'name' => $instance->getName(),
+			'domain' => $instance->getDomain(),
+			// url (https or mailto)
+			'ownerHomepage' => $instance->getOwnerHomepage(),
+			'googleAnalyticsKey' => $instance->getGoogleAnalyticsKey(),
+			'featuredAsset' => $instance->getFeaturedAsset(),
+			'featuredAssetText' => $instance->getFeaturedAssetText(),
+			'notes' => $instance->getNotes(),
+			'amazonS3Key' => $instance->getAmazonS3Key(),
+			'amazonS3Secret' => $instance->getAmazonS3Secret(),
+			'defaultBucket' => $instance->getDefaultBucket(),
+			'bucketRegion' => $instance->getBucketRegion(),
+			'useCustomHeader' => $instance->getUseCustomHeader(),
+			'customHeaderText' => $instance->getCustomHeaderText(),
+			'customFooterText' => $instance->getCustomFooterText(),
+			'useCustomCSS' => $instance->getUseCustomCSS(),
+			'customHeaderCSS' => $instance->getCustomHeaderCSS(),
+			'enableInterstitial' => $instance->getEnableInterstitial(),
+			'interstitialText' => $instance->getInterstitialText(),
+			'useHeaderLogo' => $instance->getUseHeaderLogo(),
+			'interfaceVersion' => $instance->getInterfaceVersion(),
+			'useCentralAuth' => $instance->getUseCentralAuth(),
+			'hideVideoAudio' => $instance->getHideVideoAudio(),
+			'enableHLSStreaming' => $instance->getEnableHLSStreaming(),
+			'allowIndexing' => $instance->getAllowIndexing(),
+			'showCollectionInSearchResults' => $instance->getShowCollectionInSearchResults(),
+			'showTemplateInSearchResults' => $instance->getShowTemplateInSearchResults(),
+			'showPreviousNextSearchResults' => $instance->getShowPreviousNextSearchResults(),
+			'useVoyagerViewer' => $instance->getUseVoyagerViewer(),
+			'automaticAltText' => $instance->getAutomaticAltText(),
+			'autoloadMaxSearchResults' => $instance->getAutoloadMaxSearchResults(),
+			'enableTheming' => $instance->getEnableThemes(),
+			'defaultTheme' => $instance->getDefaultTheme(),
+			'availableThemes' => $instance->getAvailableThemes(),
+			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
+			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
+			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
+			'createdAt' => $instance->getCreatedAt()?->format('c'),
+			'modifiedAt' => $instance->getModifiedAt()?->format('c')
+		];
+	}
+
 	public function index()
 	{
 		if(!$this->user_model->getIsSuperAdmin()) {
@@ -19,28 +84,40 @@ class Instances extends Instance_Controller {
 
 	}
 
-	public function save()
+	public function save($returnJson = false)
 	{
-
-
-		//TODO Permissions checking
-
-		if(is_numeric($this->input->post("instanceId"))) {
-			$instance = $this->doctrine->em->find('Entity\Instance', $this->input->post("instanceId"));
-			$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
-			if($accessLevel<PERM_ADMIN) {
-				instance_redirect("/errorHandler/error/noPermission");
-				return;
-			}
-			$page = null;
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
-		else {
-			if(!$this->user_model->getIsSuperAdmin()) {
-				instance_redirect("errorHandler/error/noPermission");
-				return;
+
+		$instanceId = $this->input->post("instanceId");
+		$isExistingInstance = is_numeric($instanceId);
+
+		if ($isExistingInstance) {
+			$instance = $this->doctrine->em->find(Entity\Instance::class, $instanceId);
+			$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
+			if ($accessLevel < PERM_ADMIN) {
+				return $returnJson
+					? render_json(['error' => 'No permission to edit this instance'], 403)
+					: instance_redirect("/errorHandler/error/noPermission");
 			}
+		}
+
+		if (!$isExistingInstance && !$this->user_model->getIsSuperAdmin()) {
+			return $returnJson
+				? render_json(['error' => 'No permission to create instance'], 403)
+				: instance_redirect("errorHandler/error/noPermission");
+		}
+
+		if (!$isExistingInstance) {
 			$instance = new Entity\Instance();
 			$instance->setCreatedAt(new DateTime);
+		}
+
+		$page = null;
+		if (!$isExistingInstance) {
 			$page = new Entity\InstancePage();
 			$page->setTitle("Home Page");
 			$page->setInstance($instance);
@@ -71,6 +148,8 @@ class Instances extends Instance_Controller {
 		$instance->setShowTemplateInSearchResults($this->input->post('showTemplateInSearchResults')?1:0);
 		$instance->setShowPreviousNextSearchResults($this->input->post('showPreviousNextSearchResults')?1:0);
 		$instance->setUseVoyagerViewer($this->input->post('useVoyagerViewer')?1:0);
+		$instance->setAutomaticAltText($this->input->post('automaticAltText')?1:0);
+		$instance->setAutoloadMaxSearchResults($this->input->post('autoloadMaxSearchResults')?1:0);
 		$instance->setFeaturedAsset($this->input->post('featuredAsset'));
 		$instance->setFeaturedAssetText($this->input->post('featuredAssetText'));
 		$instance->setNotes($this->input->post('notes'));
@@ -133,12 +212,42 @@ class Instances extends Instance_Controller {
 		}
 		$this->doctrine->em->flush();
 
-		instance_redirect('instances/edit/' . $instance->getId());
-
+		return $returnJson
+			? render_json($this->toInstanceArray($instance), 200)
+			: instance_redirect('instances/edit/' . $instance->getId());
 	}
 
-	public function edit($id=null)
+	public function getInstance($id = null)
 	{
+		if (!is_numeric($id)) {
+			return render_json(['error' => 'Instance ID required'], 400);
+		}
+
+		if (!$this->isUserAuthed()) {
+			return render_json(['error' => 'Authentication required'], 401);
+		}
+
+		$instance = $this->doctrine->em->find(Entity\Instance::class, $id);
+
+		if ($instance === null) {
+			return render_json(['error' => 'Instance not found'], 404);
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $instance);
+
+		if ($accessLevel < PERM_ADMIN && !$this->user_model->getIsSuperAdmin()) {
+			return render_json(['error' => 'No permission to access this instance'], 403);
+		}
+
+		render_json($this->toInstanceArray($instance));
+	}
+
+	public function edit($id = null, $returnJson = false)
+	{
+
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		if($id) {
 			$data['instance'] = $this->doctrine->em->find('Entity\Instance', $id);
@@ -189,15 +298,37 @@ class Instances extends Instance_Controller {
 	}
 
 
-	public function customPages() {
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+	public function customPages($returnJson = false)
+	{
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
 		}
+
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to access custom pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$pages = $this->instance->getPages();
+
+		if ($returnJson) {
+			$pagesArray = array_map(
+				fn($page) => $this->toPageArray($page),
+				$pages->toArray()
+			);
+			return render_json($pagesArray);
+		}
+
 		$this->template->title = 'Custom Pages';
-		$this->template->content->view('instances/pageList', ["pages"=>$pages]);
+		$this->template->content->view('instances/pageList', ["pages" => $pages]);
 		$this->template->publish();
 	}
 
@@ -216,8 +347,38 @@ class Instances extends Instance_Controller {
 
 	}
 
-	public function editPage($pageId=null) {
+	public function getPage($pageId = null)
+	{
+		if (!is_numeric($pageId)) {
+			return render_json(['error' => 'Page ID required'], 400);
+		}
+
+		if (!$this->isUserAuthed()) {
+			return render_json(['error' => 'Authentication required'], 401);
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+
+		if ($accessLevel < PERM_ADMIN) {
+			return render_json(['error' => 'No permission to access pages'], 403);
+		}
+
+		$page = $this->doctrine->em->find(Entity\InstancePage::class, $pageId);
+
+		if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+			return render_json(['error' => 'Page not found'], 404);
+		}
+
+		return render_json($this->toPageArray($page));
+	}
+
+	public function editPage($pageId=null) {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+
 		if($accessLevel<PERM_ADMIN) {
 			instance_redirect("/errorHandler/error/noPermission");
 			return;
@@ -256,49 +417,99 @@ class Instances extends Instance_Controller {
 		$this->template->publish();
 	}
 
-	public function deletePage($pageId) {
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+	public function deletePage($pageId, $returnJson = false)
+	{
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
+
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to delete pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
+		if (!is_numeric($pageId)) {
+			return $returnJson
+				? render_json(['error' => 'Invalid page ID'], 400)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+
+		if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+			return $returnJson
+				? render_json(['error' => 'Page not found'], 404)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$this->doctrine->em->remove($page);
 		$this->doctrine->em->flush();
-		instance_redirect("instances/customPages");
 
+		return $returnJson
+			? render_json(['success' => true, 'message' => 'Page deleted successfully'], 200)
+			: instance_redirect("instances/customPages");
 	}
 
-	public function savePage() {
+	public function savePage($returnJson = false)
+	{
+		if (!$this->isUserAuthed()) {
+			return $returnJson
+				? render_json(['error' => 'Authentication required'], 401)
+				: instance_redirect("/errorHandler/error/noPermission");
+		}
+
 		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+		if ($accessLevel < PERM_ADMIN) {
+			return $returnJson
+				? render_json(['error' => 'No permission to edit pages'], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
-		if($this->input->post("pageId")) {
-			$page = $this->doctrine->em->find("Entity\InstancePage", $this->input->post("pageId"));
 
-		}
-		else {
+		$pageId = $this->input->post("pageId");
+		$isExistingPage = is_numeric($pageId);
+
+		if ($isExistingPage) {
+			$page = $this->doctrine->em->find("Entity\InstancePage", $pageId);
+
+			if ($page === null || $page->getInstance()->getId() !== $this->instance->getId()) {
+				return $returnJson
+					? render_json(['error' => 'Page not found'], 404)
+					: instance_redirect("/errorHandler/error/noPermission");
+			}
+		} else {
 			$page = new Entity\InstancePage();
+			$page->setInstance($this->instance);
 		}
-
 
 		$page->setTitle($this->input->post("title"));
 		$page->setBody($this->input->post("body"));
-		$page->setIncludeInHeader($this->input->post("includeInHeader")?1:0);
-		$page->setInstance($this->instance);
-		if( $this->input->post("parent")) {
-			$page->setParent($this->doctrine->em->getReference("Entity\InstancePage", $this->input->post("parent")));
-		}
-		else {
+		$page->setIncludeInHeader($this->input->post("includeInHeader") ? 1 : 0);
+		if ($this->input->post("parent")) {
+			$parentId = $this->input->post("parent");
+			$parentPage = $this->doctrine->em->find("Entity\InstancePage", $parentId);
+
+			if ($parentPage === null || $parentPage->getInstance()->getId() !== $this->instance->getId()) {
+				return $returnJson
+					? render_json(['error' => 'Parent page not found'], 404)
+					: instance_redirect("/errorHandler/error/noPermission");
+			}
+
+			$page->setParent($parentPage);
+		} else {
 			$page->setParent(null);
 		}
+		$page->setModifiedAt(new DateTime);
 
 		$this->doctrine->em->persist($page);
 		$this->doctrine->em->flush();
-		instance_redirect("instances/customPages");
 
+		return $returnJson
+			? render_json($this->toPageArray($page), 200)
+			: instance_redirect("instances/customPages");
 	}
 
 
@@ -565,7 +776,7 @@ class Instances extends Instance_Controller {
 				                "sts:GetFederationToken"
 				            ],
 				            "Resource": [
-				                "arn:aws:sts::*"
+				                "*"
 				            ]
 				        }
 						]
@@ -604,6 +815,19 @@ class Instances extends Instance_Controller {
 		}
 		session_start();
 		$this->session->set_userdata(["useVueUI"=>true]);
+		$this->session->set_userdata(["forceOldUI"=>false]);
+		instance_redirect("/");
+	}
+
+	public function forceOldInterface() {
+		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
+		if($accessLevel<PERM_ADDASSETS) {
+			instance_redirect("/errorHandler/error/noPermission");
+			return;
+		}
+		session_start();
+		$this->session->set_userdata(["forceOldUI"=>true]);
+		$this->session->set_userdata(["useVueUI"=>false]);
 		instance_redirect("/");
 	}
 }

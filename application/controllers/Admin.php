@@ -2,27 +2,129 @@
 require_once '../beanstalk_console/lib/include.php';
 
 class admin extends Admin_Controller {
-	
-	public function __construct()
-	{
+
+	public function __construct() {
 		parent::__construct();
 
-		if(!$this->input->is_cli_request() && (!$this->user_model->user || !$this->user_model->getIsSuperAdmin())) {
+		if (!$this->input->is_cli_request() && (!$this->user_model->user || !$this->user_model->getIsSuperAdmin())) {
 			instance_redirect("errorHandler/error/noPermission");
 			return;
 		}
 	}
 
- 
-	public function index()
-	{
+
+		public function createdSignedLinksForOriginals($filename) { 
+			$fp = fopen($filename, "r");
+			$haveSomeGlacierFiles = false;
+			while (($line = fgets($fp)) !== false) {
+					$line = trim($line);
+					if ($line) {
+							$fileHandler = $this->filehandler_router->getHandledObject($line);
+							if ($fileHandler) {
+									if($fileHandler->sourceFile->isArchived()) {
+
+											echo "File is archived, initiating restore: " . $line. "\n";
+											$fileHandler->sourceFile->restoreFromArchive();
+											$haveSomeGlacierFiles = true;
+									}
+									else  {
+										echo $fileHandler->sourceFile->getProtectedURLForFile() . "\n";
+									}
+							} else {
+									echo "no handler for " . $line . "\n";
+							}
+					}
+			}
+			if($haveSomeGlacierFiles) {
+					echo "Some files were in Glacier, you may need to run this again in a few hours to get signed links for those files\n";
+			}
+
+        }
+
+
+	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId) {
+
+		// override path to config on web host
+		$this->config->set_item('convert', '/usr/bin/convert');
+
+		if (!$collectionId || !is_numeric($collectionId) || !is_numeric($instanceId) || !$instanceId) {
+			echo "need collection and instance id\n";
+			return;
+		}
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+		$this->instance->setAutomaticAltText(true);
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.deleted != TRUE")
+			->orWhere("a.deleted IS NULL")
+			->andWhere("a.assetId IS NOT NULL")
+			->orderby("a.id", "desc");
+		$qb->andWhere("a.collectionId = ?1");
+		$qb->setParameter(1, $collectionId);
+
+		$result = $qb->getQuery()->toIterable();
+		$count = 0;
+		$this->load->model("asset_model");
+
+		exec("sudo /usr/local/bin/ebs-mount.sh");
+		// make sure we hold an open file on the mount while we're working
+		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
+
+		foreach ($result as $entry) {
+			$assetModel = new Asset_model();
+			echo "Processing " . $entry->getAssetId() . "\n";
+			$assetModel->loadAssetFromRecord($entry);
+
+			$uploadHandlers = $assetModel->getAllWithinAsset("Upload", null, 0);
+			echo count($uploadHandlers) . " upload handlers found\n";
+			foreach ($uploadHandlers as $handler) {
+				foreach ($handler->fieldContentsArray as $uploadWidget) {
+					if ($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
+						continue;
+					}
+					if (isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription) > 0) {
+						continue;
+					}
+
+					$fileHandler = $uploadWidget->getFileHandler();
+					echo "Requesting Alt Text\n";
+					$fileHandler->generateAltText();
+
+					$fileHandler = null;
+				}
+			}
+
+			$assetModel = null;
+			unset($assetModel);
+			$this->doctrine->em->clear();
+			if ($count % 100 == 0) {
+				gc_collect_cycles();
+			}
+
+			$count++;
+		}
+	}
+
+
+	public function sendEmailToBurnSESCounts() {
+		$this->load->library('email');
+		$this->email->from('no-reply@elevatorapp.net', 'Elevator');
+		$this->email->set_newline("\r\n");
+		$this->email->to("elvtrsvc@umn.edu");
+		$this->email->subject("Message to up our email count");
+		$this->email->message("This is a nothingburger");
+		$this->email->send();
+	}
+
+	public function index() {
 
 		$this->template->javascript->add("/assets/js/handlebars-v1.1.2.js");
 		$this->template->javascript->add('assets/js/groupCreation.js');
 		$this->template->content->view('handlebarsTemplates');
 		$this->template->content->view('admin/index');
 		$this->template->publish();
-
 	}
 
 	public function userLookup() {
@@ -43,9 +145,9 @@ class admin extends Admin_Controller {
 	}
 
 	public function clearRecordsFromSearch() {
-		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', "8c3c897f-c096-4e27-8b3e-e81fc1c66e6b");
+		$searchArchiveEntry = $this->doctrine->em->find('Entity\SearchEntry', "d28a7fe3-371f-49a2-9554-7af340cf7dff");
 		$searchArray = $searchArchiveEntry->getSearchData();
-		if(isset($searchArray['showHidden'])) {
+		if (isset($searchArray['showHidden'])) {
 			// This will include items that are not yet flagged "Ready for display"
 			$showHidden = true;
 		}
@@ -53,75 +155,76 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 		$matchArray = $this->search_model->find($searchArray, !$showHidden, 0, true);
-		foreach($matchArray["searchResults"] as $match) {
-			$params['index'] = $this->config->item('elasticIndex');
-    		$params['type']  = 'asset';
-    		$params['id']    = $match;
-    		if(!$params['id'] || strlen($params['id']<5)) {
-    			// if you don't pass an id, elasticsearch will eat all your data
-    			echo "crap";
-    			break;
-    		}
-    		$ret = $this->search_model->es->delete($params);
+
+		foreach ($matchArray["searchResults"] as $match) {
+			echo $match . "\n";
+			$asset = new Asset_model($match);
+
+			$this->search_model->remove($asset);
+			// $params['index'] = $this->config->item('elasticIndex');
+			// $params['id']    = $match;
+			// if(!$params['id'] || strlen($params['id']<5)) {
+			// 	// if you don't pass an id, elasticsearch will eat all your data
+			// 	echo "crap";
+			// 	break;
+			// }
+			// $ret = $this->search_model->es->delete($params);
 		}
 	}
 
-	
+
+
 	public function fixRecords() {
 		return;
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
-		
+
 		$this->instance = $this->doctrine->em->find("Entity\Instance", 12);
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
-		->select("a")
-		->where("a.deleted != TRUE")
-		->orWhere("a.deleted IS NULL")
-		->andWhere("a.assetId IS NOT NULL");
+			->select("a")
+			->where("a.deleted != TRUE")
+			->orWhere("a.deleted IS NULL")
+			->andWhere("a.assetId IS NOT NULL");
 
 		$qb->andWhere("a.collectionId = ?1");
 		$qb->setParameter(1, 113);
 
 
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
 
 		$count = $startValue;
 		foreach($result as $entry) {
-			$entry = $entry[0];
 			$assetModel = new asset_model();
 			$searchModel = new search_model();
 			// $before = microtime(true);
-			if($assetModel->loadAssetFromRecord($entry)) {
+			if ($assetModel->loadAssetFromRecord($entry)) {
 
 				$json = $assetModel->getAsArray();
 
 				$changed = false;
-				if(array_key_exists("location_12", $json) && stristr($json["location_12"][0]["fieldContents"], "Dittman")) {
+				if (array_key_exists("location_12", $json) && stristr($json["location_12"][0]["fieldContents"], "Dittman")) {
 					$changed = true;
 					$json["location_12"][0]["fieldContents"] = str_replace("Dittmann", "Center for Art and Dance", $json["location_12"][0]["fieldContents"]);
-
 				}
-				if(array_key_exists("loc_12", $json) && strstr($json["loc_12"][0]["fieldContents"], "DC")) {
+				if (array_key_exists("loc_12", $json) && strstr($json["loc_12"][0]["fieldContents"], "DC")) {
 					$changed = true;
 					$json["loc_12"][0]["fieldContents"] = str_replace("DC", "CAD", $json["loc_12"][0]["fieldContents"]);
-					
 				}
-				if($changed) {
+				if ($changed) {
 					echo "Saving" . $assetModel->getObjectId();
 					$assetModel->loadWidgetsFromArray($json);
 					$assetModel->save();
 				}
 			}
 		}
-
 	}
 
 
-	public function reindex($targetIndex=null, $wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null, $lastModifiedDate=null) {
+	public function reindex($targetIndex = null, $wipe = null, $startValue = 0, $maxValue = 0, $searchKey = null, $searchValue = null, $lastModifiedDate = null) {
 		set_time_limit(0);
 		ini_set('max_execution_time', 0);
 		$this->doctrine->extendTimeout();
@@ -129,39 +232,39 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("search_model");
 
-		if($targetIndex !== "false" && $targetIndex) {
+		if ($targetIndex !== "false" && $targetIndex) {
 			$this->config->set_item('elasticIndex', $targetIndex);
 		}
 
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
-		->select("a")
-		->where("a.deleted != TRUE")
-		->orWhere("a.deleted IS NULL")
-		->andWhere("a.assetId IS NOT NULL")
-		->orderby("a.id", "desc");
+			->select("a")
+			->where("a.deleted != TRUE")
+			->orWhere("a.deleted IS NULL")
+			->andWhere("a.assetId IS NOT NULL")
+			->orderby("a.id", "desc");
 
-		if($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
-			$qb->andWhere("a." . $searchKey ." = ?1");
+		if ($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
+			$qb->andWhere("a." . $searchKey . " = ?1");
 			$qb->setParameter(1, $searchValue);
 		}
 
-		if($startValue > 0) {
+		if ($startValue > 0) {
 			$qb->setFirstResult($startValue);
 		}
-		if($maxValue > 0) {
+		if ($maxValue > 0) {
 			$qb->setMaxResults($maxValue);
 		}
 
-		if($lastModifiedDate !== "false" && $lastModifiedDate) {
+		if ($lastModifiedDate !== "false" && $lastModifiedDate) {
 			$qb->andWhere("a.modifiedAt > ?1");
 			$qb->setParameter(1, $lastModifiedDate);
 		}
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
-		if($wipe == "true") {
+		if ($wipe == "true") {
 			// echo "are you sure?"; // adding this because we had an index go missing, need to see if it's a bug in this logic.
 			// die;
 			$this->search_model->wipeIndex();
@@ -171,40 +274,38 @@ class admin extends Admin_Controller {
 		$count = $startValue;
 		$searchModel = new search_model();
 		foreach($result as $entry) {
-			$entry = $entry[0];
 			$assetModel = new asset_model();
 			// $searchModel = new search_model();
 			// $before = microtime(true);
-			if($assetModel->loadAssetFromRecord($entry)) {
+			if ($assetModel->loadAssetFromRecord($entry)) {
 				// $after = microtime(true);
 				// echo "Load Took:" . ($after - $before) . "\n";
 				$noIndex = false;
-				if($assetModel->getGlobalValue('availableAfter')) {
+				if ($assetModel->getGlobalValue('availableAfter')) {
 					date_default_timezone_set('UTC');
 					$afterDate = $assetModel->getGlobalValue('availableAfter');
-					if($afterDate > new DateTime()) {
-						$noIndex=true;
+					if ($afterDate > new DateTime()) {
+						$noIndex = true;
 					}
 				}
 
-				if($assetModel->asset_template && !$noIndex) {
-					echo "updating: " . $assetModel->getObjectId(). " (".$count.")\n";
+				if ($assetModel->asset_template && !$noIndex) {
+					echo "updating: " . $assetModel->getObjectId() . " (" . $count . ")\n";
 					$searchModel->addOrUpdate($assetModel, true);
 					$count++;
 				}
-
 			}
 			// unset($searchModel);
 			unset($assetModel);
 			$this->doctrine->em->clear();
-			if($count % 100 == 0) {
+			if ($count % 100 == 0) {
 				gc_collect_cycles();
 			}
-			if($count % 500 == 0) {
+			if ($count % 500 == 0) {
 				echo "Flushing bulk update\n";
 				$searchModel->flushBulkUpdates();
 			}
-			if($count % 10000 == 0) {
+			if ($count % 10000 == 0) {
 				$this->doctrine->reset();
 				$this->doctrine->extendTimeout();
 			}
@@ -218,17 +319,17 @@ class admin extends Admin_Controller {
 	}
 
 	public function regenerateFilesOfType($handlerClass, $inCollection = null) {
-		$collections = [495,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,595,596,597,598,599,600,601,602,603,604,605,606,607,614,615,620,621,624,625,630,633,635,636,637,638,639,643,644,645,652,653,657,658,660,661,662,665,667,704,705,715,755,756,757,770,771];
-		foreach($collections as $inCollection) {
+		$collections = [495, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 614, 615, 620, 621, 624, 625, 630, 633, 635, 636, 637, 638, 639, 643, 644, 645, 652, 653, 657, 658, 660, 661, 662, 665, 667, 704, 705, 715, 755, 756, 757, 770, 771];
+		foreach ($collections as $inCollection) {
 			echo "starting " . $inCollection . "\n";
-			$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler"=>$handlerClass, "deleted"=>false, "collectionId"=>$inCollection]);
-			foreach($handlers as $handler) {
+			$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler" => $handlerClass, "deleted" => false, "collectionId" => $inCollection]);
+			foreach ($handlers as $handler) {
 				$collection = $this->collection_model->getCollection($handler->getCollectionId());
-				if(!$collection) {
+				if (!$collection) {
 					echo "Bad Item: " . $handler->getFileObjectId() . "\n";
 					continue;
 				}
-				if($inCollection != $collection->getId()) {
+				if ($inCollection != $collection->getId()) {
 					continue;
 				}
 
@@ -236,7 +337,7 @@ class admin extends Admin_Controller {
 				$this->instance = $instance[0];
 				echo "Regenerating " . $handler->getFileObjectId() . "\n";
 				$fileHandler = $this->filehandler_router->getHandledObject($handler->getFileObjectId());
-				if(isWholeSlideImage($fileHandler->sourceFile)) {
+				if (isWholeSlideImage($fileHandler->sourceFile)) {
 					echo "skipping\n";
 					continue;
 				}
@@ -244,38 +345,37 @@ class admin extends Admin_Controller {
 				$fileHandler->save();
 			}
 		}
-		
-		echo "done.\n";
 
+		echo "done.\n";
 	}
 
-	public function recacheFilesFromCollection($collectionId, $skip=0) {
+	public function recacheFilesFromCollection($collectionId, $skip = 0) {
 		$saveArray["collectionId"] = $collectionId;
-		if($templateId) {
+		if ($templateId) {
 			$saveArray["templateId"] = $templateId;
 		}
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
-		->select("a")
-		->where("a.collectionId = ?1")
-		->setParameter(1, $collectionId);
+			->select("a")
+			->where("a.collectionId = ?1")
+			->setParameter(1, $collectionId);
 
-		if($skip>0) {
+		if ($skip > 0) {
 			$qb->setFirstResult($skip);
 		}
 
-		$assets = $qb->getQuery()->iterate();
+		$assets = $qb->getQuery()->toIterable();
 		// $assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		$countStart = $skip;
 		foreach($assets as $assetRecord) {
-			if(!$assetRecord[0]->getAssetId()) {
+			if(!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
-			$asset->loadAssetFromRecord($assetRecord[0]);
+			echo "Loading Asset: " . $assetRecord->getAssetId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord);
 			echo "Recaching: " . $asset->getObjectId() . "\n";
 			$asset->buildCache();
 			$this->doctrine->em->clear();
@@ -283,47 +383,45 @@ class admin extends Admin_Controller {
 			$countStart++;
 		}
 		echo "done.\n";
-
 	}
 
-	public function resaveAll($targetIndex=null, $wipe=null, $startValue=0, $maxValue=0, $searchKey = null, $searchValue = null, $lastModifiedDate=null) {
-		
-		if($targetIndex !== "false" && $targetIndex) {
+	public function resaveAll($targetIndex = null, $wipe = null, $startValue = 0, $maxValue = 0, $searchKey = null, $searchValue = null, $lastModifiedDate = null) {
+
+		if ($targetIndex !== "false" && $targetIndex) {
 			$this->config->set_item('elasticIndex', $targetIndex);
 		}
 
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
-		->select("a")
-		->where("a.deleted != TRUE")
-		->orWhere("a.deleted IS NULL")
-		->andWhere("a.assetId IS NOT NULL")
-		->orderby("a.id", "desc");
+			->select("a")
+			->where("a.deleted != TRUE")
+			->orWhere("a.deleted IS NULL")
+			->andWhere("a.assetId IS NOT NULL")
+			->orderby("a.id", "desc");
 
-		if($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
-			$qb->andWhere("a." . $searchKey ." = ?1");
+		if ($searchKey && $searchValue && $searchKey !== "false" && $searchValue !== "false") {
+			$qb->andWhere("a." . $searchKey . " = ?1");
 			$qb->setParameter(1, $searchValue);
 		}
 
-		if($startValue > 0) {
+		if ($startValue > 0) {
 			$qb->setFirstResult($startValue);
 		}
-		if($maxValue > 0) {
+		if ($maxValue > 0) {
 			$qb->setMaxResults($maxValue);
 		}
 
-		if($lastModifiedDate !== "false" && $lastModifiedDate) {
+		if ($lastModifiedDate !== "false" && $lastModifiedDate) {
 			$qb->andWhere("a.modifiedAt > ?1");
 			$qb->setParameter(1, $lastModifiedDate);
 		}
 
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		foreach($result as $entry) {
-			$entry = $entry[0];
 			if($entry->getAssetId() === NULL) {
 				continue;
 			}
@@ -333,23 +431,19 @@ class admin extends Admin_Controller {
 			echo "Resaving: " . $asset->getObjectId() . "\n";
 			// $asset->save(false, false);
 			$this->doctrine->em->clear();
-
-
 		}
 		echo "done.\n";
-
 	}
 
 	public function logs() {
 
-		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\Log")->findBy([], ["id"=>"desc"],50);
+		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\Log")->findBy([], ["id" => "desc"], 50);
 		$this->template->content->view("admin/logs", $data);
 		$this->template->publish();
-
 	}
 
 	public function processingLogs() {
-		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy([], ["id"=>"desc"],30);
+		$data['lastErrors'] = $this->doctrine->em->getRepository("Entity\JobLog")->findBy([], ["id" => "desc"], 30);
 		$this->template->content->view("admin/jobLogs", $data);
 		$this->template->publish();
 	}
@@ -361,20 +455,19 @@ class admin extends Admin_Controller {
 		$tplVars = $console->getTplVars();
 		$tplVars['servers'] = [$tplVars['server']];
 		$tplVars['console'] = $console;
-		if($tplVars['tube']) {
+		if ($tplVars['tube']) {
 			$tplVars['tube'] = new \Pheanstalk\Values\TubeName($tplVars['tube']);
 		}
-		if($tplVars['tubes']) {
+		if ($tplVars['tubes']) {
 			$newArray = [];
-			foreach($tplVars['tubes'] as $key=>$tube) {
-				
+			foreach ($tplVars['tubes'] as $key => $tube) {
+
 				$newArray[] = $tube;
 			}
 			$tplVars['tubes'] = $newArray;
 		}
 		$this->template->content->view('beanstalk/index', $tplVars);
 		$this->template->publish();
-
 	}
 
 
@@ -388,16 +481,16 @@ class admin extends Admin_Controller {
 		$fileList = $this->filehandlerbase->findDeletedItems();
 
 		$deletionArray = array();
-		foreach($fileList as $fileEntry) {
+		foreach ($fileList as $fileEntry) {
 			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry->getFileObjectId());
-			if($fileHandler) {
+			if ($fileHandler) {
 
 				$fileHandler->loadFromObject($fileEntry);
-				$deletionArray[] = ["objectId"=>$fileHandler->getObjectId(), "filename"=>$fileHandler->sourceFile->originalFilename];	
+				$deletionArray[] = ["objectId" => $fileHandler->getObjectId(), "filename" => $fileHandler->sourceFile->originalFilename];
 			}
 		}
 
-		$this->template->content->view('admin/purgeDeletions', ["objectArray"=>$deletionArray]);
+		$this->template->content->view('admin/purgeDeletions', ["objectArray" => $deletionArray]);
 		$this->template->publish();
 	}
 
@@ -416,30 +509,28 @@ class admin extends Admin_Controller {
 		 * we need to cache this because MFA is only good once
 		 */
 		$lastUsedToken = null;
-		foreach($fileList as $fileEntry) {
+		foreach ($fileList as $fileEntry) {
 			$fileHandler = $this->filehandler_router->getHandlerForObject($fileEntry->getFileObjectId());
-			if(!$fileHandler) { 
+			if (!$fileHandler) {
 				continue;
 			}
-			
-			if(!$fileHandler->loadFromObject($fileEntry)) {
+
+			if (!$fileHandler->loadFromObject($fileEntry)) {
 				continue;
 			}
-			
-			if(isset($lastUsedToken)) {
+
+			if (isset($lastUsedToken)) {
 				$fileHandler->s3model->sessionToken = $lastUsedToken;
 			}
 			try {
-				if(!$fileHandler->deleteSource($serial,$mfa)) {
-					$this->logging->logError("purgeAll","Could not delete asset with key" . $fileEntry->getFileObjectId());
+				if (!$fileHandler->deleteSource($serial, $mfa)) {
+					$this->logging->logError("purgeAll", "Could not delete asset with key" . $fileEntry->getFileObjectId());
 				}
 				$lastUsedToken = $fileHandler->s3model->sessionToken;
-			}
-			catch (Exception $e) {
+			} catch (Exception $e) {
 				echo $e;
 				echo "Deletion fail";
 			}
-
 		}
 
 		instance_redirect("/admin");
@@ -461,16 +552,15 @@ class admin extends Admin_Controller {
 			->andWhere("a.deleted = FALSE");
 
 		$assets = $qb->getQuery()->execute();
-		foreach($assets as $entry) {
+		foreach ($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
 			$this->search_model->addOrUpdate($this->asset_model);
 			echo $this->asset_model->getAssetTitle(true) . "\n";
 		}
-
 	}
 
 	public function hiddenAssets() {
-		foreach($this->instance->getCollections() as $collection) {
+		foreach ($this->instance->getCollections() as $collection) {
 			$collections[] = $collection->getId();
 		}
 		$qb = $this->doctrine->em->createQueryBuilder();
@@ -481,23 +571,22 @@ class admin extends Admin_Controller {
 			->setParameter(":collections", $collections)
 			->orderby("a.modifiedAt", "desc");
 
-		$assets = $qb->getQuery()->execute();
+		$assets = $qb->getQuery()->getResult();
 
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
-		foreach($assets as $entry) {
+		foreach ($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
-
+			$hiddenAssetArray[] = ["objectId" => $this->asset_model->getObjectId(), "title" => $this->asset_model->getAssetTitle(true), "readyForDisplay" => $this->asset_model->getGlobalValue("readyForDisplay"), "templateId" => $this->asset_model->getGlobalValue("templateId"), "modifiedDate" => $this->asset_model->getGlobalValue("modified")];
 		}
 
-		$this->template->content->view('user/hiddenAssets', ["isOffset"=>false, "hiddenAssets"=>$hiddenAssetArray]);
+		$this->template->content->view('user/hiddenAssets', ["isOffset" => false, "hiddenAssets" => $hiddenAssetArray]);
 		$this->template->publish();
 	}
 
 
 	public function recentAssets() {
-		foreach($this->instance->getCollections() as $collection) {
+		foreach ($this->instance->getCollections() as $collection) {
 			$collections[] = $collection->getId();
 		}
 
@@ -513,45 +602,44 @@ class admin extends Admin_Controller {
 
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
-		foreach($assets as $entry) {
+		foreach ($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
-
+			$hiddenAssetArray[] = ["objectId" => $this->asset_model->getObjectId(), "title" => $this->asset_model->getAssetTitle(true), "readyForDisplay" => $this->asset_model->getGlobalValue("readyForDisplay"), "templateId" => $this->asset_model->getGlobalValue("templateId"), "modifiedDate" => $this->asset_model->getGlobalValue("modified")];
 		}
 
-		$this->template->content->view('user/hiddenAssets', ["isOffset"=>false, "hiddenAssets"=>$hiddenAssetArray]);
+		$this->template->content->view('user/hiddenAssets', ["isOffset" => false, "hiddenAssets" => $hiddenAssetArray]);
 		$this->template->publish();
 	}
 
-	
-	public function deleteFilesFromCollection($collectionId, $skip=0) {
+
+	public function deleteFilesFromCollection($collectionId, $skip = 0) {
 		$saveArray["collectionId"] = $collectionId;
-		if($templateId) {
+		if ($templateId) {
 			$saveArray["templateId"] = $templateId;
 		}
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
-		->select("a")
-		->where("a.collectionId = ?1")
-		->setParameter(1, $collectionId);
+			->select("a")
+			->where("a.collectionId = ?1")
+			->setParameter(1, $collectionId);
 
-		if($skip>0) {
+		if ($skip > 0) {
 			$qb->setFirstResult($skip);
 		}
 
-		$assets = $qb->getQuery()->iterate();
+		$assets = $qb->getQuery()->toIterable();
 		// $assets = $this->doctrine->em->getRepository("Entity\Asset")->findBy($saveArray);
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		$this->load->model("search_model");
 		$countStart = $skip;
 		foreach($assets as $assetRecord) {
-			if(!$assetRecord[0]->getAssetId()) {
+			if(!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
-			echo "Loading Asset: " . $assetRecord[0]->getAssetId() . "\n";
-			$asset->loadAssetFromRecord($assetRecord[0]);
+			echo "Loading Asset: " . $assetRecord->getAssetId() . "\n";
+			$asset->loadAssetFromRecord($assetRecord);
 			$asset->delete();
 			$this->search_model->remove($asset);
 			$this->doctrine->em->clear();
@@ -559,11 +647,10 @@ class admin extends Admin_Controller {
 			$countStart++;
 		}
 		echo "done.\n";
-
 	}
 
 	public function deletedAssets() {
-		foreach($this->instance->getCollections() as $collection) {
+		foreach ($this->instance->getCollections() as $collection) {
 			$collections[] = $collection->getId();
 		}
 
@@ -578,24 +665,23 @@ class admin extends Admin_Controller {
 
 		$this->load->model("asset_model");
 		$hiddenAssetArray = array();
-		foreach($assets as $entry) {
+		foreach ($assets as $entry) {
 			$this->asset_model->loadAssetFromRecord($entry);
-			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$this->asset_model->getAssetTitle(true), "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
-
+			$hiddenAssetArray[] = ["objectId" => $this->asset_model->getObjectId(), "title" => $this->asset_model->getAssetTitle(true), "readyForDisplay" => $this->asset_model->getGlobalValue("readyForDisplay"), "templateId" => $this->asset_model->getGlobalValue("templateId"), "modifiedDate" => $this->asset_model->getGlobalValue("modified")];
 		}
 
-		$this->template->content->view('user/hiddenAssets', ["isOffset"=>false, "hiddenAssets"=>$hiddenAssetArray]);
+		$this->template->content->view('user/hiddenAssets', ["isOffset" => false, "hiddenAssets" => $hiddenAssetArray]);
 		$this->template->publish();
 	}
 
 	public function listAPIkeys() {
 		$keys = $this->doctrine->em->getRepository("Entity\ApiKey")->findAll();
-		$this->template->content->view("admin/listAPIkeys", ["keys"=>$keys]);
+		$this->template->content->view("admin/listAPIkeys", ["keys" => $keys]);
 		$this->template->publish();
 	}
 
-	public function removeAPIkey($apiKey=null) {
-		if(!$apiKey) {
+	public function removeAPIkey($apiKey = null) {
+		if (!$apiKey) {
 			instance_redirect("admin/listAPIkeys");
 		}
 
@@ -605,37 +691,33 @@ class admin extends Admin_Controller {
 		instance_redirect("admin/listAPIkeys");
 	}
 
-	public function editAPIkey($apiKey=null) {
+	public function editAPIkey($apiKey = null) {
 
-		if($apiKey) {
+		if ($apiKey) {
 			$key = $this->doctrine->em->getRepository("Entity\ApiKey")->find($apiKey);
-		}
-		else {
+		} else {
 			$key = new Entity\ApiKey;
 		}
-		$this->template->content->view("admin/editKey", ["key"=>$key]);
+		$this->template->content->view("admin/editKey", ["key" => $key]);
 		$this->template->publish();
-
 	}
 
 	public function saveKey() {
-		if($this->input->post("keyId")) {
+		if ($this->input->post("keyId")) {
 			$key = $this->doctrine->em->getRepository("Entity\ApiKey")->find($this->input->post("keyId"));
-		}
-		else {
+		} else {
 			$key = new Entity\ApiKey();
 		}
 
 		$key->setApiKey($this->input->post("apiKey"));
 		$key->setApiSecret($this->input->post("apiSecret"));
 		$key->setLabel($this->input->post("label"));
-		$key->setAllowsRead($this->input->post("read")?1:0);
-		$key->setAllowsWrite($this->input->post("write")?1:0);
+		$key->setAllowsRead($this->input->post("read") ? 1 : 0);
+		$key->setAllowsWrite($this->input->post("write") ? 1 : 0);
 		$key->setOwner($this->user_model->user);
 		$this->doctrine->em->persist($key);
 		$this->doctrine->em->flush();
 		instance_redirect("admin/listAPIkeys");
-
 	}
 
 	public function importAsset($instanceId, $collectionId, $templateId, $file) {
@@ -645,7 +727,7 @@ class admin extends Admin_Controller {
 		$assetArray = $decoded["asset"];
 
 		$files = $decoded["files"];
-		foreach($files as $file) {
+		foreach ($files as $file) {
 
 			$fileHandler = new Entity\FileHandler;
 			$fileHandler->setFileObjectId($file["_id"]["\$id"]);
@@ -676,54 +758,182 @@ class admin extends Admin_Controller {
 		$asset->setGlobalValue("collectionId", $collectionId);
 		$asset->setGlobalValue("readyForDisplay", true);
 
-		$asset->save(true,false);
+		$asset->save(true, false);
 		var_dump($asset->getObjectId());
-
-
 	}
 
-	public function fixACL($offset=0)  {
+	public function fixACL($offset = 0) {
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\FileHandler", 'f')
-		->select("f.id", 'f.fileObjectId')
-		->where("f.deleted != TRUE")
-		->orderby("f.id", "desc");
+			->select("f.id", 'f.fileObjectId')
+			->where("f.deleted != TRUE")
+			->orderby("f.id", "desc");
 
-		if($offset > 0) {
+		if ($offset > 0) {
 			$qb->setFirstResult($offset);
 		}
 		// $qb->setMaxResults(10000);
-		$result = $qb->getQuery()->iterate();
+		$result = $qb->getQuery()->toIterable();
 		$count = 0;
 		$this->load->model("filehandlerbase");
-		foreach($result as $key=>$entry) {
-			if($entry[$key]["fileObjectId"] === NULL) {
+		foreach ($result as $key => $entry) {
+			if ($entry[$key]["fileObjectId"] === NULL) {
 				continue;
 			}
 			$asset = new Filehandlerbase();
 			try {
-				$asset->loadByObjectId($entry[$key]["fileObjectId"]);	
-			}
-			catch (Exception $e) {
+				$asset->loadByObjectId($entry[$key]["fileObjectId"]);
+			} catch (Exception $e) {
 				echo "Error loading record\n";
 				continue;
 			}
 			try {
 				$asset->s3model->fixACL($asset->getObjectId());
-			}
-			catch (Exception $e) {
-				echo "ERROR: " . $count .": " . $asset->getObjectId() . ", " . $asset->s3model->bucket . "\n";
+			} catch (Exception $e) {
+				echo "ERROR: " . $count . ": " . $asset->getObjectId() . ", " . $asset->s3model->bucket . "\n";
 			}
 			$this->doctrine->em->clear();
-			if($count % 100 == 0) {
+			if ($count % 100 == 0) {
 				gc_collect_cycles();
 			}
-			echo $count .": " . $asset->getObjectId() . ", " . $asset->s3model->bucket . "\n";
+			echo $count . ": " . $asset->getObjectId() . ", " . $asset->s3model->bucket . "\n";
 			$count++;
 		}
 	}
 
+	/**
+	 * CLI tool to purge deleted filehandlers with no derivatives from S3
+	 * These are orphaned files that should be removed to save storage space
+	 * Requires MFA credentials for S3 deletion
+	 * 
+	 * Environment variables required:
+	 *  - AWS_ACCESS_KEY_ID: AWS IAM user access key
+	 *  - AWS_SECRET_ACCESS_KEY: AWS IAM user secret key
+	 *  - AWS_MFA_SERIAL: MFA device ARN (e.g., arn:aws:iam::123456789:mfa/myuser)
+	 *  - AWS_MFA_TOKEN: 6-digit MFA token
+	 * 
+	 * Usage: 
+	 *   AWS_ACCESS_KEY_ID=<key> \
+	 *   AWS_SECRET_ACCESS_KEY=<secret> \
+	 *   AWS_MFA_SERIAL=<mfa_arn> \
+	 *   AWS_MFA_TOKEN=<token> \
+	 *   php index.php admin purgeOrphanedDeletedFiles
+	 * 
+	 * Example:
+	 *   AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
+	 *   AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
+	 *   AWS_MFA_SERIAL="arn:aws:iam::123456789:mfa/myuser" \
+	 *   AWS_MFA_TOKEN="123456" \
+	 *   php index.php admin purgeOrphanedDeletedFiles
+	 */
+	public function purgeOrphanedDeletedFiles() {
+		if (!$this->input->is_cli_request()) {
+			echo "This command can only be invoked via CLI\n";
+			return;
+		}
 
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+
+		// Read MFA credentials from environment variables
+		$mfaSerial = getenv('AWS_MFA_SERIAL');
+		$mfaToken = getenv('AWS_MFA_TOKEN');
+
+		if (!$mfaSerial || !$mfaToken) {
+			echo "MFA serial and token are required\n";
+			echo "Usage:\n";
+			echo "  AWS_ACCESS_KEY_ID=<key> \\\n";
+			echo "  AWS_SECRET_ACCESS_KEY=<secret> \\\n";
+			echo "  AWS_MFA_SERIAL=<mfa_arn> \\\n";
+			echo "  AWS_MFA_TOKEN=<token> \\\n";
+			echo "  php index.php admin purgeOrphanedDeletedFiles\n";
+			echo "\nExample:\n";
+			echo "  AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \\\n";
+			echo "  AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \\\n";
+			echo "  AWS_MFA_SERIAL=\"arn:aws:iam::123456789:mfa/myuser\" \\\n";
+			echo "  AWS_MFA_TOKEN=\"123456\" \\\n";
+			echo "  php index.php admin purgeOrphanedDeletedFiles\n";
+			return;
+		}
+
+		$this->load->model("filehandlerbase");
+
+		// Query all deleted filehandlers with no derivatives
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\FileHandler", 'f')
+			->innerJoin("Entity\Collection", 'c', 'ON', 'f.collectionId = c.id')
+			->select("f")
+			->where("f.deleted = TRUE");
+
+		// Filter by bucket if provided via environment variable
+		$bucketName = getenv('AWS_BUCKET_NAME');
+		if ($bucketName) {
+			$qb->andWhere("c.bucket = ?1")
+				->setParameter(1, $bucketName);
+			echo "[INFO] Filtering by bucket: $bucketName\n";
+		}
+
+		$result = $qb->getQuery()->toIterable();
+
+		$count = 0;
+		$skipped = 0;
+		$deleted = 0;
+		$lastUsedToken = null;
+
+		foreach ($result as $entry) {
+
+			// Skip if this filehandler has derivatives
+			$derivatives = $fileEntry->getDerivatives();
+			if ($derivatives && is_array($derivatives) && count($derivatives) > 0) {
+				echo "[SKIP] " . $fileEntry->getFileObjectId() . " - has " . count($derivatives) . " derivatives\n";
+				$skipped++;
+				$count++;
+				continue;
+			}
+
+			// Use getHandlerForDeletedObject since we're loading deleted items
+			$fileHandler = $this->filehandler_router->getHandlerForDeletedObject($fileEntry->getFileObjectId());
+			if (!$fileHandler) {
+				echo "[FAIL] " . $fileEntry->getFileObjectId() . " - could not load handler\n";
+				$count++;
+				continue;
+			}
+
+			// Reuse cached session token to minimize MFA calls
+			if (isset($lastUsedToken)) {
+				$fileHandler->s3model->sessionToken = $lastUsedToken;
+			}
+
+			try {
+				if (!$fileHandler->deleteSource($mfaSerial, $mfaToken)) {
+					echo "[ERROR] " . $fileEntry->getFileObjectId() . " - deletion failed\n";
+					$this->logging->logError("purgeOrphanedDeletedFiles", "Could not delete file: " . $fileEntry->getFileObjectId());
+				} else {
+					echo "[DELETED] " . $fileEntry->getFileObjectId() . "\n";
+					$deleted++;
+					// Cache the session token for next iteration
+					$lastUsedToken = $fileHandler->s3model->sessionToken;
+				}
+			} catch (Exception $e) {
+				echo "[ERROR] " . $fileEntry->getFileObjectId() . " - " . $e->getMessage() . "\n";
+				$this->logging->logError("purgeOrphanedDeletedFiles", "Exception deleting file: " . $fileEntry->getFileObjectId() . " - " . $e->getMessage());
+			}
+
+			$count++;
+
+			// Clear entity manager periodically
+			if ($count % 10 == 0) {
+				$this->doctrine->em->clear();
+				gc_collect_cycles();
+			}
+		}
+
+		echo "\n=== SUMMARY ===\n";
+		echo "Total processed: " . $count . "\n";
+		echo "Successfully deleted: " . $deleted . "\n";
+		echo "Skipped (has derivatives): " . $skipped . "\n";
+		echo "Failed: " . ($count - $deleted - $skipped) . "\n";
+	}
 }
 
 /* End of file  */

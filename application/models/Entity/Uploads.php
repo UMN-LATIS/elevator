@@ -7,61 +7,76 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Uploads
  */
+#[ORM\Table(name: 'uploads')]
+#[ORM\Entity]
 class Uploads
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'filename', type: 'string', nullable: true)]
     private $filename;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'filesize', type: 'string', nullable: true)]
     private $filesize;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'last_modified', type: 'string', nullable: true)]
     private $last_modified;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'chunks_uploaded', type: 'text', nullable: true)]
     private $chunks_uploaded;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'upload_id', type: 'string', nullable: true)]
     private $upload_id;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'uploadKey', type: 'string', nullable: true)]
     private $uploadKey;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'upload_start', type: 'datetime', nullable: true)]
     private $upload_start;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'last_information', type: 'datetime', nullable: true)]
     private $last_information;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
 
+
     /**
-     * Set filename
+     * Set filename.
      *
-     * @param string $filename
+     * @param string|null $filename
+     *
      * @return Uploads
      */
-    public function setFilename($filename)
+    public function setFilename($filename = null)
     {
         $this->filename = $filename;
 
@@ -69,9 +84,9 @@ class Uploads
     }
 
     /**
-     * Get filename
+     * Get filename.
      *
-     * @return string 
+     * @return string|null
      */
     public function getFilename()
     {
@@ -79,12 +94,13 @@ class Uploads
     }
 
     /**
-     * Set filesize
+     * Set filesize.
      *
-     * @param string $filesize
+     * @param string|null $filesize
+     *
      * @return Uploads
      */
-    public function setFilesize($filesize)
+    public function setFilesize($filesize = null)
     {
         $this->filesize = $filesize;
 
@@ -92,9 +108,9 @@ class Uploads
     }
 
     /**
-     * Get filesize
+     * Get filesize.
      *
-     * @return string 
+     * @return string|null
      */
     public function getFilesize()
     {
@@ -102,12 +118,13 @@ class Uploads
     }
 
     /**
-     * Set last_modified
+     * Set lastModified.
      *
-     * @param string $lastModified
+     * @param string|null $lastModified
+     *
      * @return Uploads
      */
-    public function setLastModified($lastModified)
+    public function setLastModified($lastModified = null)
     {
         $this->last_modified = $lastModified;
 
@@ -115,9 +132,9 @@ class Uploads
     }
 
     /**
-     * Get last_modified
+     * Get lastModified.
      *
-     * @return string 
+     * @return string|null
      */
     public function getLastModified()
     {
@@ -125,12 +142,13 @@ class Uploads
     }
 
     /**
-     * Set chunks_uploaded
+     * Set chunksUploaded.
      *
-     * @param string $chunksUploaded
+     * @param string|null $chunksUploaded
+     *
      * @return Uploads
      */
-    public function setChunksUploaded($chunksUploaded)
+    public function setChunksUploaded($chunksUploaded = null)
     {
         $this->chunks_uploaded = $chunksUploaded;
 
@@ -138,9 +156,9 @@ class Uploads
     }
 
     /**
-     * Get chunks_uploaded
+     * Get chunksUploaded.
      *
-     * @return string 
+     * @return string|null
      */
     public function getChunksUploaded()
     {
@@ -148,12 +166,13 @@ class Uploads
     }
 
     /**
-     * Set upload_id
+     * Set uploadId.
      *
-     * @param string $uploadId
+     * @param string|null $uploadId
+     *
      * @return Uploads
      */
-    public function setUploadId($uploadId)
+    public function setUploadId($uploadId = null)
     {
         $this->upload_id = $uploadId;
 
@@ -161,9 +180,9 @@ class Uploads
     }
 
     /**
-     * Get upload_id
+     * Get uploadId.
      *
-     * @return string 
+     * @return string|null
      */
     public function getUploadId()
     {
@@ -171,12 +190,13 @@ class Uploads
     }
 
     /**
-     * Set uploadKey
+     * Set uploadKey.
      *
-     * @param string $uploadKey
+     * @param string|null $uploadKey
+     *
      * @return Uploads
      */
-    public function setUploadKey($uploadKey)
+    public function setUploadKey($uploadKey = null)
     {
         $this->uploadKey = $uploadKey;
 
@@ -184,9 +204,9 @@ class Uploads
     }
 
     /**
-     * Get uploadKey
+     * Get uploadKey.
      *
-     * @return string 
+     * @return string|null
      */
     public function getUploadKey()
     {
@@ -194,12 +214,13 @@ class Uploads
     }
 
     /**
-     * Set upload_start
+     * Set uploadStart.
      *
-     * @param \DateTime $uploadStart
+     * @param \DateTime|null $uploadStart
+     *
      * @return Uploads
      */
-    public function setUploadStart($uploadStart)
+    public function setUploadStart($uploadStart = null)
     {
         $this->upload_start = $uploadStart;
 
@@ -207,9 +228,9 @@ class Uploads
     }
 
     /**
-     * Get upload_start
+     * Get uploadStart.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getUploadStart()
     {
@@ -217,12 +238,13 @@ class Uploads
     }
 
     /**
-     * Set last_information
+     * Set lastInformation.
      *
-     * @param \DateTime $lastInformation
+     * @param \DateTime|null $lastInformation
+     *
      * @return Uploads
      */
-    public function setLastInformation($lastInformation)
+    public function setLastInformation($lastInformation = null)
     {
         $this->last_information = $lastInformation;
 
@@ -230,9 +252,9 @@ class Uploads
     }
 
     /**
-     * Get last_information
+     * Get lastInformation.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getLastInformation()
     {
@@ -240,9 +262,9 @@ class Uploads
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {

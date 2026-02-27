@@ -2,132 +2,331 @@
 
 namespace Entity;
 
-
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * Instance
  */
+#[ORM\Table(name: 'instances')]
+#[ORM\Entity]
 class Instance
 {
-    // adding to deal with deprecation warning
+    /** 
+     * Elevator
+     * @var array|null
+     */
     public $queryHandoff = null;
 
     /**
      * @var string
      */
+    #[ORM\Column(name: 'name', type: 'string')]
     private $name;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'domain', type: 'string', nullable: true)]
     private $domain;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'ownerHomepage', type: 'string', nullable: true)]
     private $ownerHomepage;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'amazonS3Key', type: 'string', nullable: true)]
     private $amazonS3Key;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 's3StorageType', type: 'string', nullable: true)]
+    private $s3StorageType;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'defaultBucket', type: 'string', nullable: true)]
     private $defaultBucket;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'bucketRegion', type: 'string', nullable: true)]
     private $bucketRegion;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'amazonS3Secret', type: 'string', nullable: true)]
     private $amazonS3Secret;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private $encodingcomKey;
-
-    /**
-     * @var string
-     */
-    private $encodingcomUser;
-
-    /**
-     * @var string
-     */
+    #[ORM\Column(name: 'googleAnalyticsKey', type: 'string', nullable: true)]
     private $googleAnalyticsKey;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'introText', type: 'text', nullable: true)]
     private $introText;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'useCustomHeader', type: 'integer', nullable: true)]
     private $useCustomHeader;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'useCustomCSS', type: 'boolean', nullable: true)]
     private $useCustomCSS;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
+    #[ORM\Column(name: 'useHeaderLogo', type: 'boolean', nullable: true)]
     private $useHeaderLogo;
 
     /**
-     * @var string
+     * @var bool|null
      */
+    #[ORM\Column(name: 'useCentralAuth', type: 'boolean', nullable: true)]
+    private $useCentralAuth;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'hideVideoAudio', type: 'boolean', nullable: true)]
+    private $hideVideoAudio;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'featuredAsset', type: 'string', nullable: true)]
     private $featuredAsset;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'featuredAssetText', type: 'text', nullable: true)]
     private $featuredAssetText;
 
     /**
-     * @var integer
+     * @var string|null
      */
+    #[ORM\Column(name: 'customHeaderText', type: 'text', nullable: true)]
+    private $customHeaderText;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'customFooterText', type: 'text', nullable: true)]
+    private $customFooterText;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'customHeaderCSS', type: 'text', nullable: true)]
+    private $customHeaderCSS;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'customHeaderImage', type: 'blob', nullable: true)]
+    private $customHeaderImage;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'allowIndexing', type: 'boolean', nullable: true)]
+    private $allowIndexing;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'showCollectionInSearchResults', type: 'boolean', nullable: true)]
+    private $showCollectionInSearchResults;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'showTemplateInSearchResults', type: 'boolean', nullable: true, options: ["default"=> false])]
+    private $showTemplateInSearchResults = '0';
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'showPreviousNextSearchResults', type: 'boolean', nullable: true)]
+    private $showPreviousNextSearchResults;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'useVoyagerViewer', type: 'boolean', nullable: true)]
+    private $useVoyagerViewer;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'automaticAltText', type: 'boolean', nullable: true, options: ["default" => true])]
+    private $automaticAltText = true;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'autoloadMaxSearchResults', type: 'boolean', nullable: true, options: ["default" => false])]
+    private $autoloadMaxSearchResults = '0';
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'enableHLSStreaming', type: 'boolean', nullable: true)]
+    private $enableHLSStreaming;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'enableInterstitial', type: 'boolean', nullable: true)]
+    private $enableInterstitial;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'interstitialText', type: 'text', nullable: true)]
+    private $interstitialText;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'notes', type: 'text', nullable: true)]
+    private $notes;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'interfaceVersion', type: 'integer', nullable: false,options: ["default"=> 0])]
+    private $interfaceVersion = '0';
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'defaultTheme', type: 'text', nullable: true)]
+    private $defaultTheme;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'enableThemes', type: 'boolean', nullable: true, options: ["default"=> false])]
+    private $enableThemes = '0';
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'customHomeRedirect', type: 'string', nullable: true)]
+    private $customHomeRedirect;
+
+    /**
+     * @var int|null
+     */
+    #[ORM\Column(name: 'maximumMoreLikeThis', type: 'integer', nullable: true, options: ['default' => '3'])]
+    private $maximumMoreLikeThis = 3;
+
+    /**
+     * @var int|null
+     */
+    #[ORM\Column(name: 'defaultTextTruncationHeight', type: 'integer', nullable: true, options: ['default' => '72'])]
+    private $defaultTextTruncationHeight = 72;
+
+    /**
+     * @var array|null
+     */
+    #[ORM\Column(name: 'availableThemes', type: 'json', nullable: true, options: ['jsonb' => true])]
+    private $availableThemes;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\InstancePermission::class, mappedBy: 'instance', cascade: ['remove'])]
     private $permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\RecentCollection::class, mappedBy: 'instance', cascade: ['remove'])]
+    private $recentcollections;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\OneToMany(targetEntity: \Entity\InstanceGroup::class, mappedBy: 'instance', cascade: ['remove'])]
     private $groups;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $templates;
+    #[ORM\OneToMany(targetEntity: \Entity\InstanceHandlerPermissions::class, mappedBy: 'instance', cascade: ['persist', 'remove'])]
+    private $handler_permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $collections;
+    #[ORM\OneToMany(targetEntity: \Entity\InstancePage::class, mappedBy: 'instance', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
+    private $pages;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\OneToMany(targetEntity: \Entity\Log::class, mappedBy: 'instance')]
+    private $logs;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\JoinTable(name: 'instance_templates')]
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'template_id', referencedColumnName: 'id')]
+    #[ORM\ManyToMany(targetEntity: \Entity\Template::class, inversedBy: 'instances')]
+    #[ORM\OrderBy(['name' => 'ASC'])]
+    private $templates = array();
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\JoinTable(name: 'instance_collection')]
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'collection_id', referencedColumnName: 'id')]
+    #[ORM\ManyToMany(targetEntity: \Entity\Collection::class, inversedBy: 'instances')]
+    #[ORM\OrderBy(['title' => 'ASC'])]
+    private $collections = array();
 
     /**
      * Constructor
@@ -135,566 +334,15 @@ class Instance
     public function __construct()
     {
         $this->permissions = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->recentcollections = new \Doctrine\Common\Collections\ArrayCollection();
         $this->groups = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->handler_permissions = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->pages = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->logs = new \Doctrine\Common\Collections\ArrayCollection();
         $this->templates = new \Doctrine\Common\Collections\ArrayCollection();
         $this->collections = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
-    /**
-     * Set name
-     *
-     * @param string $name
-     * @return Instance
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get name
-     *
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Set domain
-     *
-     * @param string $domain
-     * @return Instance
-     */
-    public function setDomain($domain)
-    {
-        $this->domain = $domain;
-
-        return $this;
-    }
-
-    /**
-     * Get domain
-     *
-     * @return string
-     */
-    public function getDomain()
-    {
-        return $this->domain;
-    }
-
-    /**
-     * Set ownerHomepage
-     *
-     * @param string $ownerHomepage
-     * @return Instance
-     */
-    public function setOwnerHomepage($ownerHomepage)
-    {
-        $this->ownerHomepage = $ownerHomepage;
-
-        return $this;
-    }
-
-    /**
-     * Get ownerHomepage
-     *
-     * @return string
-     */
-    public function getOwnerHomepage()
-    {
-        return $this->ownerHomepage;
-    }
-
-    /**
-     * Set amazonS3Key
-     *
-     * @param string $amazonS3Key
-     * @return Instance
-     */
-    public function setAmazonS3Key($amazonS3Key)
-    {
-        $this->amazonS3Key = $amazonS3Key;
-
-        return $this;
-    }
-
-    /**
-     * Get amazonS3Key
-     *
-     * @return string
-     */
-    public function getAmazonS3Key()
-    {
-        return $this->amazonS3Key;
-    }
-
-    /**
-     * Set defaultBucket
-     *
-     * @param string $defaultBucket
-     * @return Instance
-     */
-    public function setDefaultBucket($defaultBucket)
-    {
-        $this->defaultBucket = $defaultBucket;
-
-        return $this;
-    }
-
-    /**
-     * Get defaultBucket
-     *
-     * @return string
-     */
-    public function getDefaultBucket()
-    {
-        return $this->defaultBucket;
-    }
-
-    /**
-     * Set bucketRegion
-     *
-     * @param string $bucketRegion
-     * @return Instance
-     */
-    public function setBucketRegion($bucketRegion)
-    {
-        $this->bucketRegion = $bucketRegion;
-
-        return $this;
-    }
-
-    /**
-     * Get bucketRegion
-     *
-     * @return string
-     */
-    public function getBucketRegion()
-    {
-        return $this->bucketRegion;
-    }
-
-    /**
-     * Set amazonS3Secret
-     *
-     * @param string $amazonS3Secret
-     * @return Instance
-     */
-    public function setAmazonS3Secret($amazonS3Secret)
-    {
-        $this->amazonS3Secret = $amazonS3Secret;
-
-        return $this;
-    }
-
-    /**
-     * Get amazonS3Secret
-     *
-     * @return string
-     */
-    public function getAmazonS3Secret()
-    {
-        return $this->amazonS3Secret;
-    }
-
-    /**
-     * Set encodingcomKey
-     *
-     * @param string $encodingcomKey
-     * @return Instance
-     */
-    public function setEncodingcomKey($encodingcomKey)
-    {
-        $this->encodingcomKey = $encodingcomKey;
-
-        return $this;
-    }
-
-    /**
-     * Get encodingcomKey
-     *
-     * @return string
-     */
-    public function getEncodingcomKey()
-    {
-        return $this->encodingcomKey;
-    }
-
-    /**
-     * Set encodingcomUser
-     *
-     * @param string $encodingcomUser
-     * @return Instance
-     */
-    public function setEncodingcomUser($encodingcomUser)
-    {
-        $this->encodingcomUser = $encodingcomUser;
-
-        return $this;
-    }
-
-    /**
-     * Get encodingcomUser
-     *
-     * @return string
-     */
-    public function getEncodingcomUser()
-    {
-        return $this->encodingcomUser;
-    }
-
-    /**
-     * Set googleAnalyticsKey
-     *
-     * @param string $googleAnalyticsKey
-     * @return Instance
-     */
-    public function setGoogleAnalyticsKey($googleAnalyticsKey)
-    {
-        $this->googleAnalyticsKey = $googleAnalyticsKey;
-
-        return $this;
-    }
-
-    /**
-     * Get googleAnalyticsKey
-     *
-     * @return string
-     */
-    public function getGoogleAnalyticsKey()
-    {
-        return $this->googleAnalyticsKey;
-    }
-
-    /**
-     * Set introText
-     *
-     * @param string $introText
-     * @return Instance
-     */
-    public function setIntroText($introText)
-    {
-        $this->introText = $introText;
-
-        return $this;
-    }
-
-    /**
-     * Get introText
-     *
-     * @return string
-     */
-    public function getIntroText()
-    {
-        return $this->introText;
-    }
-
-    /**
-     * Set createdAt
-     *
-     * @param \DateTime $createdAt
-     * @return Instance
-     */
-    public function setCreatedAt($createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * Get createdAt
-     *
-     * @return \DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * Set modifiedAt
-     *
-     * @param \DateTime $modifiedAt
-     * @return Instance
-     */
-    public function setModifiedAt($modifiedAt)
-    {
-        $this->modifiedAt = $modifiedAt;
-
-        return $this;
-    }
-
-    /**
-     * Get modifiedAt
-     *
-     * @return \DateTime
-     */
-    public function getModifiedAt()
-    {
-        return $this->modifiedAt;
-    }
-
-    /**
-     * Set useCustomHeader
-     *
-     * @param integer $useCustomHeader
-     * @return Instance
-     */
-    public function setUseCustomHeader($useCustomHeader)
-    {
-        $this->useCustomHeader = $useCustomHeader;
-
-        return $this;
-    }
-
-    /**
-     * Get useCustomHeader
-     *
-     * @return integer
-     */
-    public function getUseCustomHeader()
-    {
-        return $this->useCustomHeader;
-    }
-
-    /**
-     * Set useCustomCSS
-     *
-     * @param boolean $useCustomCSS
-     * @return Instance
-     */
-    public function setUseCustomCSS($useCustomCSS)
-    {
-        $this->useCustomCSS = $useCustomCSS;
-
-        return $this;
-    }
-
-    /**
-     * Get useCustomCSS
-     *
-     * @return boolean
-     */
-    public function getUseCustomCSS()
-    {
-        return $this->useCustomCSS;
-    }
-
-    /**
-     * Set useHeaderLogo
-     *
-     * @param boolean $useHeaderLogo
-     * @return Instance
-     */
-    public function setUseHeaderLogo($useHeaderLogo)
-    {
-        $this->useHeaderLogo = $useHeaderLogo;
-
-        return $this;
-    }
-
-    /**
-     * Get useHeaderLogo
-     *
-     * @return boolean
-     */
-    public function getUseHeaderLogo()
-    {
-        return $this->useHeaderLogo;
-    }
-
-    /**
-     * Set featuredAsset
-     *
-     * @param string $featuredAsset
-     * @return Instance
-     */
-    public function setFeaturedAsset($featuredAsset)
-    {
-        $this->featuredAsset = $featuredAsset;
-
-        return $this;
-    }
-
-    /**
-     * Get featuredAsset
-     *
-     * @return string
-     */
-    public function getFeaturedAsset()
-    {
-        return $this->featuredAsset;
-    }
-
-    /**
-     * Set featuredAssetText
-     *
-     * @param string $featuredAssetText
-     * @return Instance
-     */
-    public function setFeaturedAssetText($featuredAssetText)
-    {
-        $this->featuredAssetText = $featuredAssetText;
-
-        return $this;
-    }
-
-    /**
-     * Get featuredAssetText
-     *
-     * @return string
-     */
-    public function getFeaturedAssetText()
-    {
-        return $this->featuredAssetText;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Add permissions
-     *
-     * @param \Entity\InstancePermission $permissions
-     * @return Instance
-     */
-    public function addPermission(\Entity\InstancePermission $permissions)
-    {
-        $this->permissions[] = $permissions;
-
-        return $this;
-    }
-
-    /**
-     * Remove permissions
-     *
-     * @param \Entity\InstancePermission $permissions
-     */
-    public function removePermission(\Entity\InstancePermission $permissions)
-    {
-        $this->permissions->removeElement($permissions);
-    }
-
-    /**
-     * Get permissions
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getPermissions()
-    {
-        return $this->permissions;
-    }
-
-    /**
-     * Add groups
-     *
-     * @param \Entity\InstanceGroup $groups
-     * @return Instance
-     */
-    public function addGroup(\Entity\InstanceGroup $groups)
-    {
-        $this->groups[] = $groups;
-
-        return $this;
-    }
-
-    /**
-     * Remove groups
-     *
-     * @param \Entity\InstanceGroup $groups
-     */
-    public function removeGroup(\Entity\InstanceGroup $groups)
-    {
-        $this->groups->removeElement($groups);
-    }
-
-    /**
-     * Get groups
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getGroups()
-    {
-        return $this->groups;
-    }
-
-    /**
-     * Add templates
-     *
-     * @param \Entity\Template $templates
-     * @return Instance
-     */
-    public function addTemplate(\Entity\Template $templates)
-    {
-        $this->templates[] = $templates;
-
-        return $this;
-    }
-
-    /**
-     * Remove templates
-     *
-     * @param \Entity\Template $templates
-     */
-    public function removeTemplate(\Entity\Template $templates)
-    {
-        $this->templates->removeElement($templates);
-    }
-
-    /**
-     * Get templates
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getTemplates()
-    {
-        return $this->templates;
-    }
-
-    /**
-     * Add collections
-     *
-     * @param \Entity\Collection $collections
-     * @return Instance
-     */
-    public function addCollection(\Entity\Collection $collections)
-    {
-        $this->collections[] = $collections;
-
-        return $this;
-    }
-
-    /**
-     * Remove collections
-     *
-     * @param \Entity\Collection $collections
-     */
-    public function removeCollection(\Entity\Collection $collections)
-    {
-        $this->collections->removeElement($collections);
-    }
-
-    /**
-     * Get collections
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getCollections()
-    {
-        return $this->collections;
-    }
 
     public function getCollectionsWithoutParent() {
 
@@ -710,127 +358,115 @@ class Instance
 
 //   $criteria = Criteria::create()->where(Criteria::expr()->in("id", $ids);
 
-    //return $this->getComments()->matching($criteria);
+    // return $this->getComments()->matching($criteria);
 
     }
 
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $handler_permissions;
-
 
     /**
-     * Add handler_permissions
+     * Set name.
      *
-     * @param \Entity\InstanceHandlerPermissions $handlerPermissions
+     * @param string $name
+     *
      * @return Instance
      */
-    public function addHandlerPermission(\Entity\InstanceHandlerPermissions $handlerPermissions)
+    public function setName($name)
     {
-        $this->handler_permissions[] = $handlerPermissions;
+        $this->name = $name;
 
         return $this;
     }
 
     /**
-     * Remove handler_permissions
+     * Get name.
      *
-     * @param \Entity\InstanceHandlerPermissions $handlerPermissions
+     * @return string
      */
-    public function removeHandlerPermission(\Entity\InstanceHandlerPermissions $handlerPermissions)
+    public function getName()
     {
-        $this->handler_permissions->removeElement($handlerPermissions);
+        return $this->name;
     }
 
     /**
-     * Get handler_permissions
+     * Set domain.
      *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getHandlerPermissions()
-    {
-        return $this->handler_permissions;
-    }
-    /**
-     * @var boolean
-     */
-    private $useCentralAuth;
-
-
-    /**
-     * Set useCentralAuth
+     * @param string|null $domain
      *
-     * @param boolean $useCentralAuth
      * @return Instance
      */
-    public function setUseCentralAuth($useCentralAuth)
+    public function setDomain($domain = null)
     {
-        $this->useCentralAuth = $useCentralAuth;
+        $this->domain = $domain;
 
         return $this;
     }
 
     /**
-     * Get useCentralAuth
+     * Get domain.
      *
-     * @return boolean
+     * @return string|null
      */
-    public function getUseCentralAuth()
+    public function getDomain()
     {
-        return $this->useCentralAuth;
+        return $this->domain;
     }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $pages;
-
 
     /**
-     * Add pages
+     * Set ownerHomepage.
      *
-     * @param \Entity\InstancePage $pages
+     * @param string|null $ownerHomepage
+     *
      * @return Instance
      */
-    public function addPage(\Entity\InstancePage $pages)
+    public function setOwnerHomepage($ownerHomepage = null)
     {
-        $this->pages[] = $pages;
+        $this->ownerHomepage = $ownerHomepage;
 
         return $this;
     }
 
     /**
-     * Remove pages
+     * Get ownerHomepage.
      *
-     * @param \Entity\InstancePage $pages
+     * @return string|null
      */
-    public function removePage(\Entity\InstancePage $pages)
+    public function getOwnerHomepage()
     {
-        $this->pages->removeElement($pages);
+        return $this->ownerHomepage;
     }
 
     /**
-     * Get pages
+     * Set amazonS3Key.
      *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getPages()
-    {
-        return $this->pages;
-    }
-    /**
-     * @var string
-     */
-    private $s3StorageType;
-
-
-    /**
-     * Set s3StorageType
+     * @param string|null $amazonS3Key
      *
-     * @param string $s3StorageType
      * @return Instance
      */
-    public function setS3StorageType($s3StorageType)
+    public function setAmazonS3Key($amazonS3Key = null)
+    {
+        $this->amazonS3Key = $amazonS3Key;
+
+        return $this;
+    }
+
+    /**
+     * Get amazonS3Key.
+     *
+     * @return string|null
+     */
+    public function getAmazonS3Key()
+    {
+        return $this->amazonS3Key;
+    }
+
+    /**
+     * Set s3StorageType.
+     *
+     * @param string|null $s3StorageType
+     *
+     * @return Instance
+     */
+    public function setS3StorageType($s3StorageType = null)
     {
         $this->s3StorageType = $s3StorageType;
 
@@ -838,115 +474,287 @@ class Instance
     }
 
     /**
-     * Get s3StorageType
+     * Get s3StorageType.
      *
-     * @return string
+     * @return string|null
      */
     public function getS3StorageType()
     {
         return $this->s3StorageType;
     }
-    /**
-     * @var string
-     */
-    private $clarifaiId;
 
     /**
-     * @var string
-     */
-    private $clarifaiSecret;
-
-    /**
-     * @var string
-     */
-    private $boxKey;
-
-
-    /**
-     * Set clarifaiId
+     * Set defaultBucket.
      *
-     * @param string $clarifaiId
+     * @param string|null $defaultBucket
      *
      * @return Instance
      */
-    public function setClarifaiId($clarifaiId)
+    public function setDefaultBucket($defaultBucket = null)
     {
-        $this->clarifaiId = $clarifaiId;
+        $this->defaultBucket = $defaultBucket;
 
         return $this;
     }
 
     /**
-     * Get clarifaiId
+     * Get defaultBucket.
      *
-     * @return string
+     * @return string|null
      */
-    public function getClarifaiId()
+    public function getDefaultBucket()
     {
-        return $this->clarifaiId;
+        return $this->defaultBucket;
     }
 
     /**
-     * Set clarifaiSecret
+     * Set bucketRegion.
      *
-     * @param string $clarifaiSecret
+     * @param string|null $bucketRegion
      *
      * @return Instance
      */
-    public function setClarifaiSecret($clarifaiSecret)
+    public function setBucketRegion($bucketRegion = null)
     {
-        $this->clarifaiSecret = $clarifaiSecret;
+        $this->bucketRegion = $bucketRegion;
 
         return $this;
     }
 
     /**
-     * Get clarifaiSecret
+     * Get bucketRegion.
      *
-     * @return string
+     * @return string|null
      */
-    public function getClarifaiSecret()
+    public function getBucketRegion()
     {
-        return $this->clarifaiSecret;
+        return $this->bucketRegion;
     }
 
     /**
-     * Set boxKey
+     * Set amazonS3Secret.
      *
-     * @param string $boxKey
+     * @param string|null $amazonS3Secret
      *
      * @return Instance
      */
-    public function setBoxKey($boxKey)
+    public function setAmazonS3Secret($amazonS3Secret = null)
     {
-        $this->boxKey = $boxKey;
+        $this->amazonS3Secret = $amazonS3Secret;
 
         return $this;
     }
 
     /**
-     * Get boxKey
+     * Get amazonS3Secret.
      *
-     * @return string
+     * @return string|null
      */
-    public function getBoxKey()
+    public function getAmazonS3Secret()
     {
-        return $this->boxKey;
+        return $this->amazonS3Secret;
     }
-    /**
-     * @var boolean
-     */
-    private $hideVideoAudio;
-
 
     /**
-     * Set hideVideoAudio
+     * Set googleAnalyticsKey.
      *
-     * @param boolean $hideVideoAudio
+     * @param string|null $googleAnalyticsKey
      *
      * @return Instance
      */
-    public function setHideVideoAudio($hideVideoAudio)
+    public function setGoogleAnalyticsKey($googleAnalyticsKey = null)
+    {
+        $this->googleAnalyticsKey = $googleAnalyticsKey;
+
+        return $this;
+    }
+
+    /**
+     * Get googleAnalyticsKey.
+     *
+     * @return string|null
+     */
+    public function getGoogleAnalyticsKey()
+    {
+        return $this->googleAnalyticsKey;
+    }
+
+    /**
+     * Set introText.
+     *
+     * @param string|null $introText
+     *
+     * @return Instance
+     */
+    public function setIntroText($introText = null)
+    {
+        $this->introText = $introText;
+
+        return $this;
+    }
+
+    /**
+     * Get introText.
+     *
+     * @return string|null
+     */
+    public function getIntroText()
+    {
+        return $this->introText;
+    }
+
+    /**
+     * Set createdAt.
+     *
+     * @param \DateTime|null $createdAt
+     *
+     * @return Instance
+     */
+    public function setCreatedAt($createdAt = null)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Set modifiedAt.
+     *
+     * @param \DateTime|null $modifiedAt
+     *
+     * @return Instance
+     */
+    public function setModifiedAt($modifiedAt = null)
+    {
+        $this->modifiedAt = $modifiedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get modifiedAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getModifiedAt()
+    {
+        return $this->modifiedAt;
+    }
+
+    /**
+     * Set useCustomHeader.
+     *
+     * @param int|null $useCustomHeader
+     *
+     * @return Instance
+     */
+    public function setUseCustomHeader($useCustomHeader = null)
+    {
+        $this->useCustomHeader = $useCustomHeader;
+
+        return $this;
+    }
+
+    /**
+     * Get useCustomHeader.
+     *
+     * @return int|null
+     */
+    public function getUseCustomHeader()
+    {
+        return $this->useCustomHeader;
+    }
+
+    /**
+     * Set useCustomCSS.
+     *
+     * @param bool|null $useCustomCSS
+     *
+     * @return Instance
+     */
+    public function setUseCustomCSS($useCustomCSS = null)
+    {
+        $this->useCustomCSS = $useCustomCSS;
+
+        return $this;
+    }
+
+    /**
+     * Get useCustomCSS.
+     *
+     * @return bool|null
+     */
+    public function getUseCustomCSS()
+    {
+        return $this->useCustomCSS;
+    }
+
+    /**
+     * Set useHeaderLogo.
+     *
+     * @param bool|null $useHeaderLogo
+     *
+     * @return Instance
+     */
+    public function setUseHeaderLogo($useHeaderLogo = null)
+    {
+        $this->useHeaderLogo = $useHeaderLogo;
+
+        return $this;
+    }
+
+    /**
+     * Get useHeaderLogo.
+     *
+     * @return bool|null
+     */
+    public function getUseHeaderLogo()
+    {
+        return $this->useHeaderLogo;
+    }
+
+    /**
+     * Set useCentralAuth.
+     *
+     * @param bool|null $useCentralAuth
+     *
+     * @return Instance
+     */
+    public function setUseCentralAuth($useCentralAuth = null)
+    {
+        $this->useCentralAuth = $useCentralAuth;
+
+        return $this;
+    }
+
+    /**
+     * Get useCentralAuth.
+     *
+     * @return bool|null
+     */
+    public function getUseCentralAuth()
+    {
+        return $this->useCentralAuth;
+    }
+
+    /**
+     * Set hideVideoAudio.
+     *
+     * @param bool|null $hideVideoAudio
+     *
+     * @return Instance
+     */
+    public function setHideVideoAudio($hideVideoAudio = null)
     {
         $this->hideVideoAudio = $hideVideoAudio;
 
@@ -954,120 +762,71 @@ class Instance
     }
 
     /**
-     * Get hideVideoAudio
+     * Get hideVideoAudio.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getHideVideoAudio()
     {
         return $this->hideVideoAudio;
     }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $logs;
-
 
     /**
-     * Add log
+     * Set featuredAsset.
      *
-     * @param \Entity\Log $log
+     * @param string|null $featuredAsset
      *
      * @return Instance
      */
-    public function addLog(\Entity\Log $log)
+    public function setFeaturedAsset($featuredAsset = null)
     {
-        $this->logs[] = $log;
+        $this->featuredAsset = $featuredAsset;
 
         return $this;
     }
 
     /**
-     * Remove log
+     * Get featuredAsset.
      *
-     * @param \Entity\Log $log
-     *
-     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     * @return string|null
      */
-    public function removeLog(\Entity\Log $log)
+    public function getFeaturedAsset()
     {
-        return $this->logs->removeElement($log);
+        return $this->featuredAsset;
     }
 
     /**
-     * Get logs
+     * Set featuredAssetText.
      *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getLogs()
-    {
-        return $this->logs;
-    }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $users;
-
-
-    /**
-     * Add user
-     *
-     * @param \Entity\User $user
+     * @param string|null $featuredAssetText
      *
      * @return Instance
      */
-    public function addUser(\Entity\User $user)
+    public function setFeaturedAssetText($featuredAssetText = null)
     {
-        $this->users[] = $user;
+        $this->featuredAssetText = $featuredAssetText;
 
         return $this;
     }
 
     /**
-     * Remove user
+     * Get featuredAssetText.
      *
-     * @param \Entity\User $user
-     *
-     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     * @return string|null
      */
-    public function removeUser(\Entity\User $user)
+    public function getFeaturedAssetText()
     {
-        return $this->users->removeElement($user);
+        return $this->featuredAssetText;
     }
 
     /**
-     * Get users
+     * Set customHeaderText.
      *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getUsers()
-    {
-        return $this->users;
-    }
-    /**
-     * @var string
-     */
-    private $customHeaderText;
-
-    /**
-     * @var string
-     */
-    private $customHeaderCSS;
-
-    /**
-     * @var string
-     */
-    private $customHeaderImage;
-
-
-    /**
-     * Set customHeaderText
-     *
-     * @param string $customHeaderText
+     * @param string|null $customHeaderText
      *
      * @return Instance
      */
-    public function setCustomHeaderText($customHeaderText)
+    public function setCustomHeaderText($customHeaderText = null)
     {
         $this->customHeaderText = $customHeaderText;
 
@@ -1075,9 +834,9 @@ class Instance
     }
 
     /**
-     * Get customHeaderText
+     * Get customHeaderText.
      *
-     * @return string
+     * @return string|null
      */
     public function getCustomHeaderText()
     {
@@ -1085,153 +844,13 @@ class Instance
     }
 
     /**
-     * Set customHeaderCSS
+     * Set customFooterText.
      *
-     * @param string $customHeaderCSS
-     *
-     * @return Instance
-     */
-    public function setCustomHeaderCSS($customHeaderCSS)
-    {
-        $this->customHeaderCSS = $customHeaderCSS;
-
-        return $this;
-    }
-
-    /**
-     * Get customHeaderCSS
-     *
-     * @return string
-     */
-    public function getCustomHeaderCSS()
-    {
-        return $this->customHeaderCSS;
-    }
-
-    /**
-     * Set customHeaderImage
-     *
-     * @param string $customHeaderImage
+     * @param string|null $customFooterText
      *
      * @return Instance
      */
-    public function setCustomHeaderImage($customHeaderImage)
-    {
-        $this->customHeaderImage = $customHeaderImage;
-
-        return $this;
-    }
-
-    /**
-     * Get customHeaderImage
-     *
-     * @return string
-     */
-    public function getCustomHeaderImage()
-    {
-        return $this->customHeaderImage;
-    }
-    /**
-     * @var boolean
-     */
-    private $allowIndexing;
-
-
-    /**
-     * Set allowIndexing
-     *
-     * @param boolean $allowIndexing
-     *
-     * @return Instance
-     */
-    public function setAllowIndexing($allowIndexing)
-    {
-        $this->allowIndexing = $allowIndexing;
-
-        return $this;
-    }
-
-    /**
-     * Get allowIndexing
-     *
-     * @return boolean
-     */
-    public function getAllowIndexing()
-    {
-        return $this->allowIndexing;
-    }
-    /**
-     * @var boolean
-     */
-    private $showCollectionInSearchResults;
-
-
-    /**
-     * Set showCollectionInSearchResults
-     *
-     * @param boolean $showCollectionInSearchResults
-     *
-     * @return Instance
-     */
-    public function setShowCollectionInSearchResults($showCollectionInSearchResults)
-    {
-        $this->showCollectionInSearchResults = $showCollectionInSearchResults;
-
-        return $this;
-    }
-
-    /**
-     * Get showCollectionInSearchResults
-     *
-     * @return boolean
-     */
-    public function getShowCollectionInSearchResults()
-    {
-        return $this->showCollectionInSearchResults;
-    }
-    /**
-     * @var boolean
-     */
-    private $showPreviousNextSearchResults;
-
-
-    /**
-     * Set showPreviousNextSearchResults
-     *
-     * @param boolean $showPreviousNextSearchResults
-     *
-     * @return Instance
-     */
-    public function setShowPreviousNextSearchResults($showPreviousNextSearchResults)
-    {
-        $this->showPreviousNextSearchResults = $showPreviousNextSearchResults;
-
-        return $this;
-    }
-
-    /**
-     * Get showPreviousNextSearchResults
-     *
-     * @return boolean
-     */
-    public function getShowPreviousNextSearchResults()
-    {
-        return $this->showPreviousNextSearchResults;
-    }
-    /**
-     * @var string
-     */
-    private $customFooterText;
-
-
-    /**
-     * Set customFooterText
-     *
-     * @param string $customFooterText
-     *
-     * @return Instance
-     */
-    public function setCustomFooterText($customFooterText)
+    public function setCustomFooterText($customFooterText = null)
     {
         $this->customFooterText = $customFooterText;
 
@@ -1239,145 +858,110 @@ class Instance
     }
 
     /**
-     * Get customFooterText
+     * Get customFooterText.
      *
-     * @return string
+     * @return string|null
      */
     public function getCustomFooterText()
     {
         return $this->customFooterText;
     }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $recentcollections;
-
 
     /**
-     * Add recentcollection
+     * Set customHeaderCSS.
      *
-     * @param \Entity\RecentCollection $recentcollection
+     * @param string|null $customHeaderCSS
      *
      * @return Instance
      */
-    public function addRecentcollection(\Entity\RecentCollection $recentcollection)
+    public function setCustomHeaderCSS($customHeaderCSS = null)
     {
-        $this->recentcollections[] = $recentcollection;
+        $this->customHeaderCSS = $customHeaderCSS;
 
         return $this;
     }
 
     /**
-     * Remove recentcollection
+     * Get customHeaderCSS.
      *
-     * @param \Entity\RecentCollection $recentcollection
+     * @return string|null
      */
-    public function removeRecentcollection(\Entity\RecentCollection $recentcollection)
+    public function getCustomHeaderCSS()
     {
-        $this->recentcollections->removeElement($recentcollection);
+        return $this->customHeaderCSS;
     }
 
     /**
-     * Get recentcollections
+     * Set customHeaderImage.
      *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getRecentcollections()
-    {
-        return $this->recentcollections;
-    }
-    /**
-     * @var boolean
-     */
-    private $enableHLSStreaming;
-
-    /**
-     * @var boolean
-     */
-    private $enableInterstitial;
-
-    /**
-     * @var string
-     */
-    private $interstitialText;
-
-
-    /**
-     * Set enableHLSStreaming
-     *
-     * @param boolean $enableHLSStreaming
+     * @param string|null $customHeaderImage
      *
      * @return Instance
      */
-    public function setEnableHLSStreaming($enableHLSStreaming)
+    public function setCustomHeaderImage($customHeaderImage = null)
     {
-        $this->enableHLSStreaming = $enableHLSStreaming;
+        $this->customHeaderImage = $customHeaderImage;
 
         return $this;
     }
 
     /**
-     * Get enableHLSStreaming
+     * Get customHeaderImage.
      *
-     * @return boolean
+     * @return string|null
      */
-    public function getEnableHLSStreaming()
+    public function getCustomHeaderImage()
     {
-        return $this->enableHLSStreaming;
+        return $this->customHeaderImage;
     }
 
     /**
-     * Set enableInterstitial
+     * Set allowIndexing.
      *
-     * @param boolean $enableInterstitial
+     * @param bool|null $allowIndexing
      *
      * @return Instance
      */
-    public function setEnableInterstitial($enableInterstitial)
+    public function setAllowIndexing($allowIndexing = null)
     {
-        $this->enableInterstitial = $enableInterstitial;
+        $this->allowIndexing = $allowIndexing;
 
         return $this;
     }
 
     /**
-     * Get enableInterstitial
+     * Get allowIndexing.
      *
-     * @return boolean
+     * @return bool|null
      */
-    public function getEnableInterstitial()
+    public function getAllowIndexing()
     {
-        return $this->enableInterstitial;
+        return $this->allowIndexing;
     }
 
     /**
-     * Set interstitialText
+     * Set showCollectionInSearchResults.
      *
-     * @param string $interstitialText
+     * @param bool|null $showCollectionInSearchResults
      *
      * @return Instance
      */
-    public function setInterstitialText($interstitialText)
+    public function setShowCollectionInSearchResults($showCollectionInSearchResults = null)
     {
-        $this->interstitialText = $interstitialText;
+        $this->showCollectionInSearchResults = $showCollectionInSearchResults;
 
         return $this;
     }
 
     /**
-     * Get interstitialText
+     * Get showCollectionInSearchResults.
      *
-     * @return string
+     * @return bool|null
      */
-    public function getInterstitialText()
+    public function getShowCollectionInSearchResults()
     {
-        return $this->interstitialText;
+        return $this->showCollectionInSearchResults;
     }
-    /**
-     * @var bool|null
-     */
-    private $showTemplateInSearchResults = '0';
-
 
     /**
      * Set showTemplateInSearchResults.
@@ -1404,10 +988,124 @@ class Instance
     }
 
     /**
-     * @var string|null
+     * Set showPreviousNextSearchResults.
+     *
+     * @param bool|null $showPreviousNextSearchResults
+     *
+     * @return Instance
      */
-    private $notes;
+    public function setShowPreviousNextSearchResults($showPreviousNextSearchResults = null)
+    {
+        $this->showPreviousNextSearchResults = $showPreviousNextSearchResults;
 
+        return $this;
+    }
+
+    /**
+     * Get showPreviousNextSearchResults.
+     *
+     * @return bool|null
+     */
+    public function getShowPreviousNextSearchResults()
+    {
+        return $this->showPreviousNextSearchResults;
+    }
+
+    /**
+     * Set useVoyagerViewer.
+     *
+     * @param bool|null $useVoyagerViewer
+     *
+     * @return Instance
+     */
+    public function setUseVoyagerViewer($useVoyagerViewer = null)
+    {
+        $this->useVoyagerViewer = $useVoyagerViewer;
+
+        return $this;
+    }
+
+    /**
+     * Get useVoyagerViewer.
+     *
+     * @return bool|null
+     */
+    public function getUseVoyagerViewer()
+    {
+        return $this->useVoyagerViewer;
+    }
+
+    /**
+     * Set enableHLSStreaming.
+     *
+     * @param bool|null $enableHLSStreaming
+     *
+     * @return Instance
+     */
+    public function setEnableHLSStreaming($enableHLSStreaming = null)
+    {
+        $this->enableHLSStreaming = $enableHLSStreaming;
+
+        return $this;
+    }
+
+    /**
+     * Get enableHLSStreaming.
+     *
+     * @return bool|null
+     */
+    public function getEnableHLSStreaming()
+    {
+        return $this->enableHLSStreaming;
+    }
+
+    /**
+     * Set enableInterstitial.
+     *
+     * @param bool|null $enableInterstitial
+     *
+     * @return Instance
+     */
+    public function setEnableInterstitial($enableInterstitial = null)
+    {
+        $this->enableInterstitial = $enableInterstitial;
+
+        return $this;
+    }
+
+    /**
+     * Get enableInterstitial.
+     *
+     * @return bool|null
+     */
+    public function getEnableInterstitial()
+    {
+        return $this->enableInterstitial;
+    }
+
+    /**
+     * Set interstitialText.
+     *
+     * @param string|null $interstitialText
+     *
+     * @return Instance
+     */
+    public function setInterstitialText($interstitialText = null)
+    {
+        $this->interstitialText = $interstitialText;
+
+        return $this;
+    }
+
+    /**
+     * Get interstitialText.
+     *
+     * @return string|null
+     */
+    public function getInterstitialText()
+    {
+        return $this->interstitialText;
+    }
 
     /**
      * Set notes.
@@ -1432,11 +1130,6 @@ class Instance
     {
         return $this->notes;
     }
-    /**
-     * @var int
-     */
-    private $interfaceVersion = '0';
-
 
     /**
      * Set interfaceVersion.
@@ -1461,28 +1154,6 @@ class Instance
     {
         return $this->interfaceVersion;
     }
-    /**
-     * @var string|null
-     */
-    private $defaultTheme;
-
-    /**
-     * @var bool|null
-     */
-    private $enableThemes = '0';
-
-    /**
-     * @var int|null
-     */
-    private $maximumMoreLikeThis = '3';
-
-    /**
-     * height of collapsed text area widget in pixels
-     * @var int|null
-     */
-    private $defaultTextTruncationHeight = 72;
-
-
 
     /**
      * Set defaultTheme.
@@ -1533,6 +1204,30 @@ class Instance
     }
 
     /**
+     * Set customHomeRedirect.
+     *
+     * @param string|null $customHomeRedirect
+     *
+     * @return Instance
+     */
+    public function setCustomHomeRedirect($customHomeRedirect = null)
+    {
+        $this->customHomeRedirect = $customHomeRedirect;
+
+        return $this;
+    }
+
+    /**
+     * Get customHomeRedirect.
+     *
+     * @return string|null
+     */
+    public function getCustomHomeRedirect()
+    {
+        return $this->customHomeRedirect;
+    }
+
+    /**
      * Set maximumMoreLikeThis.
      *
      * @param int|null $maximumMoreLikeThis
@@ -1558,32 +1253,27 @@ class Instance
 
     /**
      * Set defaultTextTruncationHeight.
-     * 
+     *
      * @param int|null $defaultTextTruncationHeight
-     * 
+     *
      * @return Instance
      */
-    public function setDefaultTextTruncationHeight($defaultTextTruncationHeight = null) {
+    public function setDefaultTextTruncationHeight($defaultTextTruncationHeight = null)
+    {
         $this->defaultTextTruncationHeight = $defaultTextTruncationHeight;
 
         return $this;
     }
 
-
     /**
-     * Get the height of the collapsed text area widget in pixels.
-     * 
+     * Get defaultTextTruncationHeight.
+     *
      * @return int|null
      */
-    public function getDefaultTextTruncationHeight() {
+    public function getDefaultTextTruncationHeight()
+    {
         return $this->defaultTextTruncationHeight;
     }
-
-    /**
-     * @var array|null
-     */
-    private $availableThemes;
-
 
     /**
      * Set availableThemes.
@@ -1608,61 +1298,351 @@ class Instance
     {
         return $this->availableThemes;
     }
-    /**
-     * @var string|null
-     */
-    private $customHomeRedirect;
-
 
     /**
-     * Set customHomeRedirect.
+     * Get id.
      *
-     * @param string|null $customHomeRedirect
-     *
-     * @return Instance
+     * @return int
      */
-    public function setCustomHomeRedirect($customHomeRedirect = null)
+    public function getId()
     {
-        $this->customHomeRedirect = $customHomeRedirect;
-        return $this;
+        return $this->id;
     }
 
     /**
-     * Get customHomeRedirect.
+     * Add permission.
      *
-     * @return string|null
-     */
-    public function getCustomHomeRedirect()
-    {
-        return $this->customHomeRedirect;
-    }
-    /**
-     * @var bool|null
-     */
-    private $useVoyagerViewer;
-
-
-    /**
-     * Set useVoyagerViewer.
-     *
-     * @param bool|null $useVoyagerViewer
+     * @param \Entity\InstancePermission $permission
      *
      * @return Instance
      */
-    public function setUseVoyagerViewer($useVoyagerViewer = null)
+    public function addPermission(\Entity\InstancePermission $permission)
     {
-        $this->useVoyagerViewer = $useVoyagerViewer;
+        $this->permissions[] = $permission;
 
         return $this;
     }
 
     /**
-     * Get useVoyagerViewer.
+     * Remove permission.
+     *
+     * @param \Entity\InstancePermission $permission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removePermission(\Entity\InstancePermission $permission)
+    {
+        return $this->permissions->removeElement($permission);
+    }
+
+    /**
+     * Get permissions.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPermissions()
+    {
+        return $this->permissions;
+    }
+
+    /**
+     * Add recentcollection.
+     *
+     * @param \Entity\RecentCollection $recentcollection
+     *
+     * @return Instance
+     */
+    public function addRecentcollection(\Entity\RecentCollection $recentcollection)
+    {
+        $this->recentcollections[] = $recentcollection;
+
+        return $this;
+    }
+
+    /**
+     * Remove recentcollection.
+     *
+     * @param \Entity\RecentCollection $recentcollection
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeRecentcollection(\Entity\RecentCollection $recentcollection)
+    {
+        return $this->recentcollections->removeElement($recentcollection);
+    }
+
+    /**
+     * Get recentcollections.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRecentcollections()
+    {
+        return $this->recentcollections;
+    }
+
+    /**
+     * Add group.
+     *
+     * @param \Entity\InstanceGroup $group
+     *
+     * @return Instance
+     */
+    public function addGroup(\Entity\InstanceGroup $group)
+    {
+        $this->groups[] = $group;
+
+        return $this;
+    }
+
+    /**
+     * Remove group.
+     *
+     * @param \Entity\InstanceGroup $group
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeGroup(\Entity\InstanceGroup $group)
+    {
+        return $this->groups->removeElement($group);
+    }
+
+    /**
+     * Get groups.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getGroups()
+    {
+        return $this->groups;
+    }
+
+    /**
+     * Add handlerPermission.
+     *
+     * @param \Entity\InstanceHandlerPermissions $handlerPermission
+     *
+     * @return Instance
+     */
+    public function addHandlerPermission(\Entity\InstanceHandlerPermissions $handlerPermission)
+    {
+        $this->handler_permissions[] = $handlerPermission;
+
+        return $this;
+    }
+
+    /**
+     * Remove handlerPermission.
+     *
+     * @param \Entity\InstanceHandlerPermissions $handlerPermission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeHandlerPermission(\Entity\InstanceHandlerPermissions $handlerPermission)
+    {
+        return $this->handler_permissions->removeElement($handlerPermission);
+    }
+
+    /**
+     * Get handlerPermissions.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getHandlerPermissions()
+    {
+        return $this->handler_permissions;
+    }
+
+    /**
+     * Add page.
+     *
+     * @param \Entity\InstancePage $page
+     *
+     * @return Instance
+     */
+    public function addPage(\Entity\InstancePage $page)
+    {
+        $this->pages[] = $page;
+
+        return $this;
+    }
+
+    /**
+     * Remove page.
+     *
+     * @param \Entity\InstancePage $page
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removePage(\Entity\InstancePage $page)
+    {
+        return $this->pages->removeElement($page);
+    }
+
+    /**
+     * Get pages.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPages()
+    {
+        return $this->pages;
+    }
+
+    /**
+     * Add log.
+     *
+     * @param \Entity\Log $log
+     *
+     * @return Instance
+     */
+    public function addLog(\Entity\Log $log)
+    {
+        $this->logs[] = $log;
+
+        return $this;
+    }
+
+    /**
+     * Remove log.
+     *
+     * @param \Entity\Log $log
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeLog(\Entity\Log $log)
+    {
+        return $this->logs->removeElement($log);
+    }
+
+    /**
+     * Get logs.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getLogs()
+    {
+        return $this->logs;
+    }
+
+    /**
+     * Add template.
+     *
+     * @param \Entity\Template $template
+     *
+     * @return Instance
+     */
+    public function addTemplate(\Entity\Template $template)
+    {
+        $this->templates[] = $template;
+
+        return $this;
+    }
+
+    /**
+     * Remove template.
+     *
+     * @param \Entity\Template $template
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeTemplate(\Entity\Template $template)
+    {
+        return $this->templates->removeElement($template);
+    }
+
+    /**
+     * Get templates.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getTemplates()
+    {
+        return $this->templates;
+    }
+
+    /**
+     * Add collection.
+     *
+     * @param \Entity\Collection $collection
+     *
+     * @return Instance
+     */
+    public function addCollection(\Entity\Collection $collection)
+    {
+        $this->collections[] = $collection;
+
+        return $this;
+    }
+
+    /**
+     * Remove collection.
+     *
+     * @param \Entity\Collection $collection
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeCollection(\Entity\Collection $collection)
+    {
+        return $this->collections->removeElement($collection);
+    }
+
+    /**
+     * Get collections.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getCollections()
+    {
+        return $this->collections;
+    }
+
+    /**
+     * Set automaticAltText.
+     *
+     * @param bool|null $automaticAltText
+     *
+     * @return Instance
+     */
+    public function setAutomaticAltText($automaticAltText = null)
+    {
+        $this->automaticAltText = $automaticAltText;
+
+        return $this;
+    }
+
+    /**
+     * Get automaticAltText.
      *
      * @return bool|null
      */
-    public function getUseVoyagerViewer()
+    public function getAutomaticAltText()
     {
-        return $this->useVoyagerViewer;
+        return $this->automaticAltText;
+    }
+
+
+    /**
+     * Set autoloadMaxSearchResults.
+     *
+     * @param bool|null $autoloadMaxSearchResults
+     *
+     * @return Instance
+     */
+    public function setAutoloadMaxSearchResults($autoloadMaxSearchResults = null)
+    {
+        $this->autoloadMaxSearchResults = $autoloadMaxSearchResults;
+
+        return $this;
+    }
+
+    /**
+     * Get autoloadMaxSearchResults.
+     *
+     * @return bool|null
+     */
+    public function getAutoloadMaxSearchResults()
+    {
+        return $this->autoloadMaxSearchResults;
     }
 }

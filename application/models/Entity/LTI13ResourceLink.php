@@ -2,45 +2,60 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * LTI13ResourceLink
  */
+#[ORM\Table(name: 'lti13_resource_links')]
+#[ORM\Entity]
 class LTI13ResourceLink
 {
     /**
      * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
      * @var \DateTime|null
      */
-    private $updatedAt;
+    #[ORM\Column(name: 'updatedAt', type: 'datetime', nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private $updatedAt = 'CURRENT_TIMESTAMP';
 
     /**
      * @var string|null
      */
+    #[ORM\Column(name: 'resource_link', type: 'string', nullable: true)]
     private $resource_link;
 
     /**
      * @var string|null
      */
+    #[ORM\Column(name: 'created_line_item', type: 'string', nullable: true)]
     private $created_line_item;
 
     /**
      * @var array|null
      */
+    #[ORM\Column(name: 'endpoint', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $endpoint;
 
     /**
      * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\LTI13Deployment
      */
+    #[ORM\JoinColumn(name: 'deployment_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\LTI13Deployment::class)]
     private $deployment;
+
 
 
     /**
@@ -180,7 +195,7 @@ class LTI13ResourceLink
      *
      * @return LTI13ResourceLink
      */
-    public function setDeployment(\Entity\LTI13Deployment $deployment = null)
+    public function setDeployment(?\Entity\LTI13Deployment $deployment = null)
     {
         $this->deployment = $deployment;
 

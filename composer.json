@@ -24,38 +24,40 @@
       "type": "vcs",
       "url": "https://github.com/cmcfadden/lti-1-3-php-library"
     }
-    ,
-    {
-      "type": "vcs",
-      "url": "https://github.com/UMN-LATIS/dbal.git"
-    }
   ],
   "require": {
-    "doctrine/common": "^3.0",
     "monolog/monolog": "2.9.1",
-    "doctrine/dbal": "dev-maint-doctrine-2 as 2.13.9",
-    "doctrine/orm": "2.20.1",
+    "doctrine/dbal": "^4.0",
+    "doctrine/orm": "^3.0",
     "elasticsearch/elasticsearch": "8.17.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
-    "tedivm/stash": "~0.17.6",
     "cocur/background-process": "^0.5.0",
     "google/apiclient": "dev-disableCache-merge-84",
     "php-unoconv/php-unoconv": "dev-master",
-    "aws/aws-sdk-php": "^3.151",
+    "aws/aws-sdk-php": "^3.349",
     "sentry/sdk": "^4.0",
     "vlucas/phpdotenv": "^5.6",
     "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2",
-    "doctrine/cache": "^1.13.0",
-    "pda/pheanstalk": "dev-master",
+    "pda/pheanstalk": "^7.1.0",
     "onelogin/php-saml": "^4.0.0",
-    "deployer/deployer": "^7.0"
+    "deployer/deployer": "^7.0",
+    "symfony/cache": "^6.4",
+    "psr/simple-cache": "^3.0",
+    "doctrine/migrations": "3.8.2",
+    "ramsey/uuid-doctrine": "^2.1"
   },
   "minimum-stability": "dev",
+  "prefer-stable": true,
   "config": {
     "platform-check": false,
     "allow-plugins": {
       "php-http/discovery": true
     }
-  }
+  },
+  "autoload": {
+      "psr-4": {
+        "Entity\\": "application/models/Entity/"
+      }
+    }
 }

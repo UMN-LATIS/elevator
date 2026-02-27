@@ -2,51 +2,77 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * ApiKey
  */
+#[ORM\Table(name: 'api_keys')]
+#[ORM\Index(name: 0, columns: ['apiKey'])]
+#[ORM\Entity]
 class ApiKey
 {
-
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'label', type: 'string', nullable: true)]
     private $label;
 
     /**
-     * @var string
+     * @var string|null
      */
-    private $key;
+    #[ORM\Column(name: 'apiKey', type: 'string', nullable: true)]
+    private $apiKey;
 
     /**
-     * @var boolean
+     * @var string|null
      */
-    private $read;
+    #[ORM\Column(name: 'apiSecret', type: 'string', nullable: true)]
+    private $apiSecret;
 
     /**
-     * @var boolean
+     * @var bool|null
      */
-    private $write;
+    #[ORM\Column(name: 'allowsRead', type: 'boolean', nullable: true)]
+    private $allowsRead;
 
     /**
-     * @var integer
+     * @var bool|null
      */
+    #[ORM\Column(name: 'allowsWrite', type: 'boolean', nullable: true)]
+    private $allowsWrite;
+
+    /**
+     * @var bool|null
+     */
+    #[ORM\Column(name: 'systemAccount', type: 'boolean', nullable: true)]
+    private $systemAccount;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'owner', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $owner;
 
 
+
     /**
-     * Set label
+     * Set label.
      *
-     * @param string $label
+     * @param string|null $label
      *
      * @return ApiKey
      */
-    public function setLabel($label)
+    public function setLabel($label = null)
     {
         $this->label = $label;
 
@@ -54,9 +80,9 @@ class ApiKey
     }
 
     /**
-     * Get label
+     * Get label.
      *
-     * @return string
+     * @return string|null
      */
     public function getLabel()
     {
@@ -64,81 +90,129 @@ class ApiKey
     }
 
     /**
-     * Set key
+     * Set apiKey.
      *
-     * @param string $key
+     * @param string|null $apiKey
      *
      * @return ApiKey
      */
-    public function setKey($key)
+    public function setApiKey($apiKey = null)
     {
-        $this->key = $key;
+        $this->apiKey = $apiKey;
 
         return $this;
     }
 
     /**
-     * Get key
+     * Get apiKey.
      *
-     * @return string
+     * @return string|null
      */
-    public function getKey()
+    public function getApiKey()
     {
-        return $this->key;
+        return $this->apiKey;
     }
 
     /**
-     * Set read
+     * Set apiSecret.
      *
-     * @param boolean $read
+     * @param string|null $apiSecret
      *
      * @return ApiKey
      */
-    public function setRead($read)
+    public function setApiSecret($apiSecret = null)
     {
-        $this->read = $read;
+        $this->apiSecret = $apiSecret;
 
         return $this;
     }
 
     /**
-     * Get read
+     * Get apiSecret.
      *
-     * @return boolean
+     * @return string|null
      */
-    public function getRead()
+    public function getApiSecret()
     {
-        return $this->read;
+        return $this->apiSecret;
     }
 
     /**
-     * Set write
+     * Set allowsRead.
      *
-     * @param boolean $write
+     * @param bool|null $allowsRead
      *
      * @return ApiKey
      */
-    public function setWrite($write)
+    public function setAllowsRead($allowsRead = null)
     {
-        $this->write = $write;
+        $this->allowsRead = $allowsRead;
 
         return $this;
     }
 
     /**
-     * Get write
+     * Get allowsRead.
      *
-     * @return boolean
+     * @return bool|null
      */
-    public function getWrite()
+    public function getAllowsRead()
     {
-        return $this->write;
+        return $this->allowsRead;
     }
 
     /**
-     * Get id
+     * Set allowsWrite.
      *
-     * @return integer
+     * @param bool|null $allowsWrite
+     *
+     * @return ApiKey
+     */
+    public function setAllowsWrite($allowsWrite = null)
+    {
+        $this->allowsWrite = $allowsWrite;
+
+        return $this;
+    }
+
+    /**
+     * Get allowsWrite.
+     *
+     * @return bool|null
+     */
+    public function getAllowsWrite()
+    {
+        return $this->allowsWrite;
+    }
+
+    /**
+     * Set systemAccount.
+     *
+     * @param bool|null $systemAccount
+     *
+     * @return ApiKey
+     */
+    public function setSystemAccount($systemAccount = null)
+    {
+        $this->systemAccount = $systemAccount;
+
+        return $this;
+    }
+
+    /**
+     * Get systemAccount.
+     *
+     * @return bool|null
+     */
+    public function getSystemAccount()
+    {
+        return $this->systemAccount;
+    }
+
+    /**
+     * Get id.
+     *
+     * @return int
      */
     public function getId()
     {
@@ -146,9 +220,9 @@ class ApiKey
     }
 
     /**
-     * Set owner
+     * Set owner.
      *
-     * @param \Entity\User $owner
+     * @param \Entity\User|null $owner
      *
      * @return ApiKey
      */
@@ -160,215 +234,12 @@ class ApiKey
     }
 
     /**
-     * Get owner
+     * Get owner.
      *
-     * @return \Entity\User
+     * @return \Entity\User|null
      */
     public function getOwner()
     {
         return $this->owner;
-    }
-    /**
-     * @var string
-     */
-    private $apiKey;
-
-
-    /**
-     * Set apiKey
-     *
-     * @param string $apiKey
-     *
-     * @return ApiKey
-     */
-    public function setApiKey($apiKey)
-    {
-        $this->apiKey = $apiKey;
-
-        return $this;
-    }
-
-    /**
-     * Get apiKey
-     *
-     * @return string
-     */
-    public function getApiKey()
-    {
-        return $this->apiKey;
-    }
-    /**
-     * @var boolean
-     */
-    private $readable;
-
-    /**
-     * @var boolean
-     */
-    private $writable;
-
-
-    /**
-     * Set readable
-     *
-     * @param boolean $readable
-     *
-     * @return ApiKey
-     */
-    public function setReadable($readable)
-    {
-        $this->readable = $readable;
-
-        return $this;
-    }
-
-    /**
-     * Get readable
-     *
-     * @return boolean
-     */
-    public function getReadable()
-    {
-        return $this->readable;
-    }
-
-    /**
-     * Set writable
-     *
-     * @param boolean $writable
-     *
-     * @return ApiKey
-     */
-    public function setWritable($writable)
-    {
-        $this->writable = $writable;
-
-        return $this;
-    }
-
-    /**
-     * Get writable
-     *
-     * @return boolean
-     */
-    public function getWritable()
-    {
-        return $this->writable;
-    }
-    /**
-     * @var boolean
-     */
-    private $allowsRead;
-
-    /**
-     * @var boolean
-     */
-    private $allowsWrite;
-
-
-    /**
-     * Set allowsRead
-     *
-     * @param boolean $allowsRead
-     *
-     * @return ApiKey
-     */
-    public function setAllowsRead($allowsRead)
-    {
-        $this->allowsRead = $allowsRead;
-
-        return $this;
-    }
-
-    /**
-     * Get allowsRead
-     *
-     * @return boolean
-     */
-    public function getAllowsRead()
-    {
-        return $this->allowsRead;
-    }
-
-    /**
-     * Set allowsWrite
-     *
-     * @param boolean $allowsWrite
-     *
-     * @return ApiKey
-     */
-    public function setAllowsWrite($allowsWrite)
-    {
-        $this->allowsWrite = $allowsWrite;
-
-        return $this;
-    }
-
-    /**
-     * Get allowsWrite
-     *
-     * @return boolean
-     */
-    public function getAllowsWrite()
-    {
-        return $this->allowsWrite;
-    }
-    /**
-     * @var string
-     */
-    private $apiSecret;
-
-
-    /**
-     * Set apiSecret
-     *
-     * @param string $apiSecret
-     *
-     * @return ApiKey
-     */
-    public function setApiSecret($apiSecret)
-    {
-        $this->apiSecret = $apiSecret;
-
-        return $this;
-    }
-
-    /**
-     * Get apiSecret
-     *
-     * @return string
-     */
-    public function getApiSecret()
-    {
-        return $this->apiSecret;
-    }
-    /**
-     * @var boolean
-     */
-    private $systemAccount;
-
-
-    /**
-     * Set systemAccount
-     *
-     * @param boolean $systemAccount
-     *
-     * @return ApiKey
-     */
-    public function setSystemAccount($systemAccount)
-    {
-        $this->systemAccount = $systemAccount;
-
-        return $this;
-    }
-
-    /**
-     * Get systemAccount
-     *
-     * @return boolean
-     */
-    public function getSystemAccount()
-    {
-        return $this->systemAccount;
     }
 }

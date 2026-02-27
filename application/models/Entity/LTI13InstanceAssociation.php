@@ -2,30 +2,43 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * LTI13InstanceAssociation
  */
+#[ORM\Table(name: 'lti13_instance_association')]
+#[ORM\Entity]
 class LTI13InstanceAssociation
 {
     /**
      * @var string|null
      */
+    #[ORM\Column(name: 'lms_course', type: 'string', nullable: true)]
     private $lms_course;
 
     /**
      * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class, inversedBy: 'lti_courses')]
     private $user;
+
 
 
     /**
@@ -69,7 +82,7 @@ class LTI13InstanceAssociation
      *
      * @return LTI13InstanceAssociation
      */
-    public function setInstance(? \Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -93,7 +106,7 @@ class LTI13InstanceAssociation
      *
      * @return LTI13InstanceAssociation
      */
-    public function setUser(? \Entity\User $user = null)
+    public function setUser(?\Entity\User $user = null)
     {
         $this->user = $user;
 

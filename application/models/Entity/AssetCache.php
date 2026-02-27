@@ -2,60 +2,82 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * AssetCache
  */
+#[ORM\Table(name: 'asset_cache')]
+#[ORM\Index(name: 0, columns: ['asset_id'])]
+#[ORM\Index(name: 1, columns: ['needsRebuild'])]
+#[ORM\Index(name: 2, columns: ['templateId'])]
+#[ORM\Index(name: 3, columns: ['needsRebuild', 'rebuildTimestamp'])]
+#[ORM\Index(name: 4, columns: ['needsRebuild', 'templateId'])]
+#[ORM\Index(name: 5, columns: ['rebuildTimestamp'])]
+#[ORM\Entity]
 class AssetCache
 {
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'relatedAssetCache', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $relatedAssetCache;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'searchResultCache', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $searchResultCache;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'primaryHandlerCache', type: 'string', nullable: true)]
     private $primaryHandlerCache;
 
     /**
-     * @var integer
+     * @var int|null
      */
+    #[ORM\Column(name: 'templateId', type: 'integer', nullable: true)]
     private $templateId;
 
     /**
-     * @var boolean
+     * @var bool
      */
+    #[ORM\Column(name: 'needsRebuild', type: 'boolean', nullable: false)]
     private $needsRebuild;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'rebuildTimestamp', type: 'datetime', nullable: true)]
     private $rebuildTimestamp;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\Asset
      */
+    #[ORM\JoinColumn(name: 'asset_id', referencedColumnName: 'id', unique: true)]
+    #[ORM\OneToOne(targetEntity: \Entity\Asset::class, inversedBy: 'assetCache')]
     private $asset;
 
 
+
     /**
-     * Set relatedAssetCache
+     * Set relatedAssetCache.
      *
-     * @param array $relatedAssetCache
+     * @param array|null $relatedAssetCache
      *
      * @return AssetCache
      */
-    public function setRelatedAssetCache($relatedAssetCache)
+    public function setRelatedAssetCache($relatedAssetCache = null)
     {
         $this->relatedAssetCache = $relatedAssetCache;
 
@@ -63,9 +85,9 @@ class AssetCache
     }
 
     /**
-     * Get relatedAssetCache
+     * Get relatedAssetCache.
      *
-     * @return array
+     * @return array|null
      */
     public function getRelatedAssetCache()
     {
@@ -73,13 +95,13 @@ class AssetCache
     }
 
     /**
-     * Set searchResultCache
+     * Set searchResultCache.
      *
-     * @param array $searchResultCache
+     * @param array|null $searchResultCache
      *
      * @return AssetCache
      */
-    public function setSearchResultCache($searchResultCache)
+    public function setSearchResultCache($searchResultCache = null)
     {
         $this->searchResultCache = $searchResultCache;
 
@@ -87,9 +109,9 @@ class AssetCache
     }
 
     /**
-     * Get searchResultCache
+     * Get searchResultCache.
      *
-     * @return array
+     * @return array|null
      */
     public function getSearchResultCache()
     {
@@ -97,13 +119,13 @@ class AssetCache
     }
 
     /**
-     * Set primaryHandlerCache
+     * Set primaryHandlerCache.
      *
-     * @param string $primaryHandlerCache
+     * @param string|null $primaryHandlerCache
      *
      * @return AssetCache
      */
-    public function setPrimaryHandlerCache($primaryHandlerCache)
+    public function setPrimaryHandlerCache($primaryHandlerCache = null)
     {
         $this->primaryHandlerCache = $primaryHandlerCache;
 
@@ -111,9 +133,9 @@ class AssetCache
     }
 
     /**
-     * Get primaryHandlerCache
+     * Get primaryHandlerCache.
      *
-     * @return string
+     * @return string|null
      */
     public function getPrimaryHandlerCache()
     {
@@ -121,13 +143,13 @@ class AssetCache
     }
 
     /**
-     * Set templateId
+     * Set templateId.
      *
-     * @param integer $templateId
+     * @param int|null $templateId
      *
      * @return AssetCache
      */
-    public function setTemplateId($templateId)
+    public function setTemplateId($templateId = null)
     {
         $this->templateId = $templateId;
 
@@ -135,9 +157,9 @@ class AssetCache
     }
 
     /**
-     * Get templateId
+     * Get templateId.
      *
-     * @return integer
+     * @return int|null
      */
     public function getTemplateId()
     {
@@ -145,9 +167,9 @@ class AssetCache
     }
 
     /**
-     * Set needsRebuild
+     * Set needsRebuild.
      *
-     * @param boolean $needsRebuild
+     * @param bool $needsRebuild
      *
      * @return AssetCache
      */
@@ -159,9 +181,9 @@ class AssetCache
     }
 
     /**
-     * Get needsRebuild
+     * Get needsRebuild.
      *
-     * @return boolean
+     * @return bool
      */
     public function getNeedsRebuild()
     {
@@ -169,13 +191,13 @@ class AssetCache
     }
 
     /**
-     * Set rebuildTimestamp
+     * Set rebuildTimestamp.
      *
-     * @param \DateTime $rebuildTimestamp
+     * @param \DateTime|null $rebuildTimestamp
      *
      * @return AssetCache
      */
-    public function setRebuildTimestamp($rebuildTimestamp)
+    public function setRebuildTimestamp($rebuildTimestamp = null)
     {
         $this->rebuildTimestamp = $rebuildTimestamp;
 
@@ -183,9 +205,9 @@ class AssetCache
     }
 
     /**
-     * Get rebuildTimestamp
+     * Get rebuildTimestamp.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getRebuildTimestamp()
     {
@@ -193,9 +215,9 @@ class AssetCache
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
@@ -203,13 +225,13 @@ class AssetCache
     }
 
     /**
-     * Set asset
+     * Set asset.
      *
-     * @param \Entity\Asset $asset
+     * @param \Entity\Asset|null $asset
      *
      * @return AssetCache
      */
-    public function setAsset(? \Entity\Asset $asset = null)
+    public function setAsset(?\Entity\Asset $asset = null)
     {
         $this->asset = $asset;
 
@@ -217,9 +239,9 @@ class AssetCache
     }
 
     /**
-     * Get asset
+     * Get asset.
      *
-     * @return \Entity\Asset
+     * @return \Entity\Asset|null
      */
     public function getAsset()
     {

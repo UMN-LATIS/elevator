@@ -14,7 +14,8 @@ class ImageHandler extends FileHandlerBase {
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
 							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
 							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
-							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							3=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
+							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
 							];
 
 	public $sphericalTaskArray = [
@@ -66,6 +67,10 @@ class ImageHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
+				if(in_array($entry, ['tiled', 'tiled-iiif', 'tiled-index'])) {
+					$returnArray[$entry]->downloadable = false;
+				}
 			}
 		}
 		if(count($returnArray)>0) {
@@ -318,6 +323,17 @@ class ImageHandler extends FileHandlerBase {
 
 	}
 
+
+	public function generateAltText() {
+		$this->derivativeForAltText = "screen";
+		$this->metadataTypeForAltText = "image";
+		$uploadWidget = $this->getUploadWidget();
+		if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro == true) {
+			$this->metadataTypeForAltText = "tree core";
+		}
+		$this->getAltTextForMedia("");
+		$this->queueTask(4);
+	}
 
 	// public function clarifyTag($args) {
 

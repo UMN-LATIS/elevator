@@ -16,13 +16,14 @@ function ImageAdjustmentInterface(Lt) {
  * @param {object} Inte - ImageAdjustment Interface object. Allows access to all other tools.
  */
 function ImageAdjustment(Inte) {
+  this.active = false;
   this.open = false;
   this.eventListenersEnabled = false;
 
   this.btn = new Button(
     'brightness_6',
     'Adjust image appearance settings',
-    () => { Inte.treering.disableTools(); this.enable() },
+    () => { this.enable() },
     () => { this.disable() }
   );
 
@@ -97,90 +98,6 @@ function ImageAdjustment(Inte) {
       CSSFilter: false,
       GLName: "edgeDetect3"
     },
-    // {
-    //   filterType: "gaussianBlur",
-    //   defaultValue: "0",
-    //   inputID: "gaussianBlur-input",
-    //   sliderID: "gaussianBlur-slider",
-    //   min: "0",
-    //   max: "10",
-    //   step: "0.5",
-    //   label: "Gausian Blur (0-10)",
-    //   CSSFilter: false,
-    //   GLName: "gaussianBlur"
-    // },
-    // {
-    //   filterType: "triangleBlur",
-    //   defaultValue: "0",
-    //   inputID: "triangleBlur-input",
-    //   sliderID: "triangleBlur-slider",
-    //   min: "0",
-    //   max: "10",
-    //   step: "0.5",
-    //   label: "Triangle Blur (0-10)",
-    //   CSSFilter: false,
-    //   GLName: "triangleBlur"
-    // },
-    // {
-    //   filterType: "boxBlur",
-    //   defaultValue: "0",
-    //   inputID: "boxBlur-input",
-    //   sliderID: "boxBlur-slider",
-    //   min: "0",
-    //   max: "10",
-    //   step: "0.5",
-    //   label: "Box Blur (0-10)",
-    //   CSSFilter: false,
-    //   GLName: "boxBlur"
-    // },
-    // {
-    //   filterType: "sobelHorizontal",
-    //   defaultValue: "0",
-    //   inputID: "sobelHorizontal-input",
-    //   sliderID: "sobelHorizontal-slider",
-    //   min: "0",
-    //   max: "1",
-    //   step: "0.05",
-    //   label: "Sobel Horizontal",
-    //   CSSFilter: false,
-    //   GLName: "sobelHorizontal"
-    // },
-    // {
-    //   filterType: "sobelVertical",
-    //   defaultValue: "0",
-    //   inputID: "sobelVertical-input",
-    //   sliderID: "sobelVertical-slider",
-    //   min: "0",
-    //   max: "1",
-    //   step: "0.05",
-    //   label: "Sobel Vertical",
-    //   CSSFilter: false,
-    //   GLName: "sobelVertical"
-    // },
-    // {
-    //   filterType: "previtHorizontal",
-    //   defaultValue: "0",
-    //   inputID: "previtHorizontal-input",
-    //   sliderID: "previtHorizontal-slider",
-    //   min: "0",
-    //   max: "1",
-    //   step: "0.05",
-    //   label: "previt Horizontal",
-    //   CSSFilter: false,
-    //   GLName: "previtHorizontal"
-    // },
-    // {
-    //   filterType: "previtVertical",
-    //   defaultValue: "0",
-    //   inputID: "previtVertical-input",
-    //   sliderID: "previtVertical-slider",
-    //   min: "0",
-    //   max: "1",
-    //   step: "0.05",
-    //   label: "previt Vertical",
-    //   CSSFilter: false,
-    //   GLName: "previtVertical"
-    // },
     ];
 
   // Stores info of whether or not image is inverted
@@ -205,6 +122,7 @@ function ImageAdjustment(Inte) {
     'minSize': [0, 0],
     'className': 'image-adjust-custom'
   }).setContent(html).addTo(Inte.treering.viewer);
+  this.dialog._container.style.zIndex = 900;
   
   /**
    * Open the filter sliders dialog
@@ -213,8 +131,8 @@ function ImageAdjustment(Inte) {
   ImageAdjustment.prototype.enable = function() {
     this.open = true;
 
-    this.dialog.lock();
     this.dialog.open();
+    $(this.dialog._closeNode).hide()
 
     this.btn.state('active');
     if(!this.eventListenersEnabled) {
@@ -242,7 +160,7 @@ function ImageAdjustment(Inte) {
    * @function
    */
   ImageAdjustment.prototype.updateFilters = function() {
-    updateCSSFilterString = "";
+    let updateCSSFilterString = "";
     let invertValue = (this.invert) ? "1" : "0";
     updateCSSFilterString += "invert(" + invertValue + ")";
 
@@ -316,7 +234,9 @@ function ImageAdjustment(Inte) {
   ImageAdjustment.prototype.createEventListeners = function() {
     //Close view if user clicks anywhere outside of slider window
     $(Inte.treering.viewer.getContainer()).on("click",() => {
-      this.disable();
+      if (!Inte.treering.autoRingDetectionInterface.autoRingDetection.active) {
+        this.disable();
+      }
     });
 
     //Inverts image
@@ -399,19 +319,62 @@ function ImageAdjustment(Inte) {
 
   /**
    * 
-   * @param {object} JSONdata - object containing current image settings
+   * @param {object} imageSettingsData - object containing current image settings
    */
-  ImageAdjustment.prototype.loadCurrentViewJSON = function(JSONdata) {
+  ImageAdjustment.prototype.loadImageSettings = function(imageSettingsData) {
+    for (let filter of filterList) {
+      let sliderID = filter.filterType + "-slider";
+      let inputID = filter.filterType + "-input";
+      let slider = document.getElementById(sliderID);
+      let input = document.getElementById(inputID);
+
+      slider.value = imageSettingsData[filter.filterType] ? imageSettingsData[filter.filterType] : filter.defaultValue;
+      input.value = imageSettingsData[filter.filterType] ? imageSettingsData[filter.filterType] : filter.defaultValue;
+    }
+    this.invert = imageSettingsData["invert"];
+    this.updateFilters();
+    }
+
+  ImageAdjustment.prototype.setDetectionSettings = function(detectionSettings) {
+    // let detectionSettings;
+    // if (!savedSettings) {
+    //   detectionSettings = {
+    //     brightness: 100,
+    //     contrast: 250,
+    //     sharpness: 0,
+    //     emboss: 0,
+    //     saturate: 100,
+    //     edgeDetect: 0.05,
+    //   }
+    // } else {
+    //   detectionSettings = savedSettings;
+    // }
+
     for (filter of filterList) {
       let sliderID = filter.filterType + "-slider";
       let inputID = filter.filterType + "-input";
       let slider = document.getElementById(sliderID);
       let input = document.getElementById(inputID);
 
-      slider.value = JSONdata[filter.filterType];
-      input.value = JSONdata[filter.filterType];
+      slider.value = detectionSettings[filter.filterType]
+      input.value = slider.value;
     }
-    this.invert = JSONdata["invert"];
+    this.invert = detectionSettings["invert"] ? detectionSettings["invert"] : this.invert;
+
     this.updateFilters();
+  }
+
+  ImageAdjustment.prototype.getCSSAdjustments = function () {
+    let invert = (this.invert) ? "1" : "0";
+    let cssString = "invert(" + invert + ") ";
+
+    for (let filter of filterList) {
+      let slider = $("#"+filter.sliderID);
+      if (filter.CSSFilter && slider.val() != filter.defaultValue) {
+        cssString += filter.filterType + "(" + slider.val()/100 + ") ";
+      }
     }
+
+    return cssString
+  }
   }

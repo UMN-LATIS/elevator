@@ -51,7 +51,7 @@ class LoginManager extends Instance_Controller {
 		}
 
 		// check if account is expired
-		$hasUserAccountExpired = $user->getHasExpiry() && $user->getExpires() > new \DateTime();
+		$hasUserAccountExpired = $user->getHasExpiry() && $user->getExpires() < new \DateTime();
 		if ($hasUserAccountExpired) {
 			return render_json([
 				'status' => 'error',
@@ -118,8 +118,7 @@ class LoginManager extends Instance_Controller {
 
 		$this->session->sess_destroy();
 		if($this->config->item('enableCaching') && isset($this->user_model->userId)) {
-			$this->doctrineCache->setNamespace('userCache_');
-			$this->doctrineCache->delete($this->user_model->userId);
+			$this->userCache->delete($this->user_model->userId);
 		}
 		$this->input->set_cookie(["name"=>"ApiHandoff", "expire"=>""]);
 		$this->input->set_cookie(["name"=>"AuthKey", "expire"=>""]);
@@ -130,7 +129,7 @@ class LoginManager extends Instance_Controller {
 		// and log into another.
 		$authHelper = $this->user_model->getAuthHelper();
 
-		if($this->user_model->getUserType() == "Remote") {
+		if($this->user_model->userLoaded && $this->user_model->getUserType() == "Remote") {
 			$authHelper->remoteLogout();
 		}
 

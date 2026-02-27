@@ -31,11 +31,11 @@ class BoxHandler extends FileHandlerBase {
 
 	public function supportsType($fileType) {
 
-		if($this->instance !== NULL && $this->instance->getBoxKey() && strlen($this->instance->getBoxKey())>5) {
-			if(in_array(strtolower($fileType), $this->supportedTypes)) {
-				return TRUE;
-			}
-		}
+		// if($this->instance !== NULL && $this->instance->getBoxKey() && strlen($this->instance->getBoxKey())>5) {
+		// 	if(in_array(strtolower($fileType), $this->supportedTypes)) {
+		// 		return TRUE;
+		// 	}
+		// }
 
 		return false;
 
@@ -60,6 +60,10 @@ class BoxHandler extends FileHandlerBase {
 		foreach($derivative as $entry) {
 			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
+				$returnArray[$entry]->downloadable = true;
+				if(in_array($entry, ['boxView'])) {
+					$returnArray[$entry]->downloadable = false;
+				}
 			}
 		}
 		if(count($returnArray)>0) {

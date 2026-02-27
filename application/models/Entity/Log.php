@@ -7,61 +7,79 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Log
  */
+#[ORM\Table(name: 'logs')]
+#[ORM\Entity]
 class Log
 {
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'asset', type: 'string', nullable: true)]
     private $asset;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'task', type: 'string', nullable: true)]
     private $task;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'message', type: 'text', nullable: true)]
     private $message;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'url', type: 'text', nullable: true)]
     private $url;
 
-    /**
-     * @var integer
+     /**
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
     /**
      * @var \Entity\Collection
      */
+    #[ORM\JoinColumn(name: 'collection_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Collection::class)]
     private $collection;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $user;
 
 
+
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
+     *
      * @return Log
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -69,9 +87,9 @@ class Log
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime 
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -79,12 +97,13 @@ class Log
     }
 
     /**
-     * Set asset
+     * Set asset.
      *
-     * @param string $asset
+     * @param string|null $asset
+     *
      * @return Log
      */
-    public function setAsset($asset)
+    public function setAsset($asset = null)
     {
         $this->asset = $asset;
 
@@ -92,9 +111,9 @@ class Log
     }
 
     /**
-     * Get asset
+     * Get asset.
      *
-     * @return string 
+     * @return string|null
      */
     public function getAsset()
     {
@@ -102,12 +121,13 @@ class Log
     }
 
     /**
-     * Set task
+     * Set task.
      *
-     * @param string $task
+     * @param string|null $task
+     *
      * @return Log
      */
-    public function setTask($task)
+    public function setTask($task = null)
     {
         $this->task = $task;
 
@@ -115,9 +135,9 @@ class Log
     }
 
     /**
-     * Get task
+     * Get task.
      *
-     * @return string 
+     * @return string|null
      */
     public function getTask()
     {
@@ -125,12 +145,13 @@ class Log
     }
 
     /**
-     * Set message
+     * Set message.
      *
-     * @param string $message
+     * @param string|null $message
+     *
      * @return Log
      */
-    public function setMessage($message)
+    public function setMessage($message = null)
     {
         $this->message = $message;
 
@@ -138,9 +159,9 @@ class Log
     }
 
     /**
-     * Get message
+     * Get message.
      *
-     * @return string 
+     * @return string|null
      */
     public function getMessage()
     {
@@ -148,12 +169,13 @@ class Log
     }
 
     /**
-     * Set url
+     * Set url.
      *
-     * @param string $url
+     * @param string|null $url
+     *
      * @return Log
      */
-    public function setUrl($url)
+    public function setUrl($url = null)
     {
         $this->url = $url;
 
@@ -161,9 +183,9 @@ class Log
     }
 
     /**
-     * Get url
+     * Get url.
      *
-     * @return string 
+     * @return string|null
      */
     public function getUrl()
     {
@@ -171,9 +193,9 @@ class Log
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer 
+     * @return int
      */
     public function getId()
     {
@@ -181,12 +203,13 @@ class Log
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
+     *
      * @return Log
      */
-    public function setInstance(? \Entity\Instance $instance = null)
+    public function setInstance(?\Entity\Instance $instance = null)
     {
         $this->instance = $instance;
 
@@ -194,9 +217,9 @@ class Log
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance 
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {
@@ -204,12 +227,13 @@ class Log
     }
 
     /**
-     * Set collection
+     * Set collection.
      *
-     * @param \Entity\Collection $collection
+     * @param \Entity\Collection|null $collection
+     *
      * @return Log
      */
-    public function setCollection(? \Entity\Collection $collection = null)
+    public function setCollection(?\Entity\Collection $collection = null)
     {
         $this->collection = $collection;
 
@@ -217,9 +241,9 @@ class Log
     }
 
     /**
-     * Get collection
+     * Get collection.
      *
-     * @return \Entity\Collection 
+     * @return \Entity\Collection|null
      */
     public function getCollection()
     {
@@ -227,12 +251,13 @@ class Log
     }
 
     /**
-     * Set user
+     * Set user.
      *
-     * @param \Entity\User $user
+     * @param \Entity\User|null $user
+     *
      * @return Log
      */
-    public function setUser(? \Entity\User $user = null)
+    public function setUser(?\Entity\User $user = null)
     {
         $this->user = $user;
 
@@ -240,9 +265,9 @@ class Log
     }
 
     /**
-     * Get user
+     * Get user.
      *
-     * @return \Entity\User 
+     * @return \Entity\User|null
      */
     public function getUser()
     {

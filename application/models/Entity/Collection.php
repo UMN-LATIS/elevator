@@ -7,66 +7,122 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Collection
  */
+#[ORM\Table(name: 'collections')]
+#[ORM\Entity]
 class Collection
 {
-
-    /** colin modification for deprecation warning */
+    /**
+     * Elevator addition
+     * @var \Application\Models\Filehandlers\Filehandlerbase|null
+     */
     public $previewImageHandler = null;
 
+
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'title', type: 'string', nullable: true)]
     private $title;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'bucket', type: 'string', nullable: true)]
     private $bucket;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 's3Key', type: 'string', nullable: true)]
     private $s3Key;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 's3Secret', type: 'string', nullable: true)]
     private $s3Secret;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'modifiedAt', type: 'datetime', nullable: true)]
     private $modifiedAt;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'bucketRegion', type: 'string', nullable: true)]
     private $bucketRegion;
 
     /**
-     * @var integer
+     * @var bool|null
      */
+    #[ORM\Column(name: 'showInBrowse', type: 'boolean', nullable: true)]
+    private $showInBrowse;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'collectionDescription', type: 'text', nullable: true)]
+    private $collectionDescription;
+
+    /**
+     * @var string|null
+     */
+    #[ORM\Column(name: 'previewImage', type: 'text', nullable: true)]
+    private $previewImage;
+
+    /**
+     * @var int
+     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\CollectionPermission::class, mappedBy: 'collection', cascade: ['remove'])]
     private $permissions;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
+    #[ORM\OneToMany(targetEntity: \Entity\RecentCollection::class, mappedBy: 'collection', cascade: ['remove'])]
     private $recent_collection;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
      */
-    private $instances;
+    #[ORM\OneToMany(targetEntity: \Entity\CSVBatch::class, mappedBy: 'collection')]
+    private $csv_imports;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\OneToMany(targetEntity: \Entity\Collection::class, mappedBy: 'parent')]
+    #[ORM\OrderBy(['title' => 'ASC'])]
+    private $children;
+
+    /**
+     * @var \Entity\Collection
+     */
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Collection::class, inversedBy: 'children')]
+    private $parent;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    #[ORM\ManyToMany(targetEntity: \Entity\Instance::class, mappedBy: 'collections')]
+    private \Doctrine\Common\Collections\Collection $instances;
 
     /**
      * Constructor
@@ -75,324 +131,13 @@ class Collection
     {
         $this->permissions = new \Doctrine\Common\Collections\ArrayCollection();
         $this->recent_collection = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->csv_imports = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->children = new \Doctrine\Common\Collections\ArrayCollection();
         $this->instances = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
-    /**
-     * Set title
-     *
-     * @param string $title
-     * @return Collection
-     */
-    public function setTitle($title)
-    {
-        $this->title = $title;
 
-        return $this;
-    }
-
-    /**
-     * Get title
-     *
-     * @return string
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    /**
-     * Set bucket
-     *
-     * @param string $bucket
-     * @return Collection
-     */
-    public function setBucket($bucket)
-    {
-        $this->bucket = $bucket;
-
-        return $this;
-    }
-
-    /**
-     * Get bucket
-     *
-     * @return string
-     */
-    public function getBucket()
-    {
-        return $this->bucket;
-    }
-
-    /**
-     * Set s3Key
-     *
-     * @param string $s3Key
-     * @return Collection
-     */
-    public function setS3Key($s3Key)
-    {
-        $this->s3Key = $s3Key;
-
-        return $this;
-    }
-
-    /**
-     * Get s3Key
-     *
-     * @return string
-     */
-    public function getS3Key()
-    {
-        return $this->s3Key;
-    }
-
-    /**
-     * Set s3Secret
-     *
-     * @param string $s3Secret
-     * @return Collection
-     */
-    public function setS3Secret($s3Secret)
-    {
-        $this->s3Secret = $s3Secret;
-
-        return $this;
-    }
-
-    /**
-     * Get s3Secret
-     *
-     * @return string
-     */
-    public function getS3Secret()
-    {
-        return $this->s3Secret;
-    }
-
-    /**
-     * Set createdAt
-     *
-     * @param \DateTime $createdAt
-     * @return Collection
-     */
-    public function setCreatedAt($createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * Get createdAt
-     *
-     * @return \DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * Set modifiedAt
-     *
-     * @param \DateTime $modifiedAt
-     * @return Collection
-     */
-    public function setModifiedAt($modifiedAt)
-    {
-        $this->modifiedAt = $modifiedAt;
-
-        return $this;
-    }
-
-    /**
-     * Get modifiedAt
-     *
-     * @return \DateTime
-     */
-    public function getModifiedAt()
-    {
-        return $this->modifiedAt;
-    }
-
-    /**
-     * Set bucketRegion
-     *
-     * @param string $bucketRegion
-     * @return Collection
-     */
-    public function setBucketRegion($bucketRegion)
-    {
-        $this->bucketRegion = $bucketRegion;
-
-        return $this;
-    }
-
-    /**
-     * Get bucketRegion
-     *
-     * @return string
-     */
-    public function getBucketRegion()
-    {
-        return $this->bucketRegion;
-    }
-
-    /**
-     * Get id
-     *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * Add permissions
-     *
-     * @param \Entity\CollectionPermission $permissions
-     * @return Collection
-     */
-    public function addPermission(\Entity\CollectionPermission $permissions)
-    {
-        $this->permissions[] = $permissions;
-
-        return $this;
-    }
-
-    /**
-     * Remove permissions
-     *
-     * @param \Entity\CollectionPermission $permissions
-     */
-    public function removePermission(\Entity\CollectionPermission $permissions)
-    {
-        $this->permissions->removeElement($permissions);
-    }
-
-    /**
-     * Get permissions
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getPermissions()
-    {
-        return $this->permissions;
-    }
-
-    /**
-     * Add recent_collection
-     *
-     * @param \Entity\RecentCollection $recentCollection
-     * @return Collection
-     */
-    public function addRecentCollection(\Entity\RecentCollection $recentCollection)
-    {
-        $this->recent_collection[] = $recentCollection;
-
-        return $this;
-    }
-
-    /**
-     * Remove recent_collection
-     *
-     * @param \Entity\RecentCollection $recentCollection
-     */
-    public function removeRecentCollection(\Entity\RecentCollection $recentCollection)
-    {
-        $this->recent_collection->removeElement($recentCollection);
-    }
-
-    /**
-     * Get recent_collection
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getRecentCollection()
-    {
-        return $this->recent_collection;
-    }
-
-    /**
-     * Add instances
-     *
-     * @param \Entity\Instance $instances
-     * @return Collection
-     */
-    public function addInstance(\Entity\Instance $instances)
-    {
-        $instances->addCollection($this);
-        $this->instances[] = $instances;
-
-        return $this;
-    }
-
-    /**
-     * Remove instances
-     *
-     * @param \Entity\Instance $instances
-     */
-    public function removeInstance(\Entity\Instance $instances)
-    {
-        $this->instances->removeElement($instances);
-    }
-
-    /**
-     * Get instances
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getInstances()
-    {
-        return $this->instances;
-    }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $children;
-
-    /**
-     * @var \Entity\Collection
-     */
-    private $parent;
-
-
-    /**
-     * Add children
-     *
-     * @param \Entity\Collection $children
-     * @return Collection
-     */
-    public function addChild(\Entity\Collection $children)
-    {
-        $this->children[] = $children;
-
-        return $this;
-    }
-
-    /**
-     * Remove children
-     *
-     * @param \Entity\Collection $children
-     */
-    public function removeChild(\Entity\Collection $children)
-    {
-        $this->children->removeElement($children);
-    }
-
-    /**
-     * Get children
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getChildren()
-    {
-        return $this->children;
-    }
-
-
+    
     /**
      * Has Children
      * @return boolean
@@ -423,42 +168,183 @@ class Collection
         return $outputArray;
     }
 
+
     /**
-     * Set parent
+     * Set title.
      *
-     * @param \Entity\Collection $parent
+     * @param string|null $title
+     *
      * @return Collection
      */
-    public function setParent(? \Entity\Collection $parent = null)
+    public function setTitle($title = null)
     {
-        $this->parent = $parent;
+        $this->title = $title;
 
         return $this;
     }
 
     /**
-     * Get parent
+     * Get title.
      *
-     * @return \Entity\Collection
+     * @return string|null
      */
-    public function getParent()
+    public function getTitle()
     {
-        return $this->parent;
+        return $this->title;
     }
-    /**
-     * @var boolean
-     */
-    private $showInBrowse;
-
 
     /**
-     * Set showInBrowse
+     * Set bucket.
      *
-     * @param boolean $showInBrowse
+     * @param string|null $bucket
      *
      * @return Collection
      */
-    public function setShowInBrowse($showInBrowse)
+    public function setBucket($bucket = null)
+    {
+        $this->bucket = $bucket;
+
+        return $this;
+    }
+
+    /**
+     * Get bucket.
+     *
+     * @return string|null
+     */
+    public function getBucket()
+    {
+        return $this->bucket;
+    }
+
+    /**
+     * Set s3Key.
+     *
+     * @param string|null $s3Key
+     *
+     * @return Collection
+     */
+    public function setS3Key($s3Key = null)
+    {
+        $this->s3Key = $s3Key;
+
+        return $this;
+    }
+
+    /**
+     * Get s3Key.
+     *
+     * @return string|null
+     */
+    public function getS3Key()
+    {
+        return $this->s3Key;
+    }
+
+    /**
+     * Set s3Secret.
+     *
+     * @param string|null $s3Secret
+     *
+     * @return Collection
+     */
+    public function setS3Secret($s3Secret = null)
+    {
+        $this->s3Secret = $s3Secret;
+
+        return $this;
+    }
+
+    /**
+     * Get s3Secret.
+     *
+     * @return string|null
+     */
+    public function getS3Secret()
+    {
+        return $this->s3Secret;
+    }
+
+    /**
+     * Set createdAt.
+     *
+     * @param \DateTime|null $createdAt
+     *
+     * @return Collection
+     */
+    public function setCreatedAt($createdAt = null)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Set modifiedAt.
+     *
+     * @param \DateTime|null $modifiedAt
+     *
+     * @return Collection
+     */
+    public function setModifiedAt($modifiedAt = null)
+    {
+        $this->modifiedAt = $modifiedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get modifiedAt.
+     *
+     * @return \DateTime|null
+     */
+    public function getModifiedAt()
+    {
+        return $this->modifiedAt;
+    }
+
+    /**
+     * Set bucketRegion.
+     *
+     * @param string|null $bucketRegion
+     *
+     * @return Collection
+     */
+    public function setBucketRegion($bucketRegion = null)
+    {
+        $this->bucketRegion = $bucketRegion;
+
+        return $this;
+    }
+
+    /**
+     * Get bucketRegion.
+     *
+     * @return string|null
+     */
+    public function getBucketRegion()
+    {
+        return $this->bucketRegion;
+    }
+
+    /**
+     * Set showInBrowse.
+     *
+     * @param bool|null $showInBrowse
+     *
+     * @return Collection
+     */
+    public function setShowInBrowse($showInBrowse = null)
     {
         $this->showInBrowse = $showInBrowse;
 
@@ -466,28 +352,23 @@ class Collection
     }
 
     /**
-     * Get showInBrowse
+     * Get showInBrowse.
      *
-     * @return boolean
+     * @return bool|null
      */
     public function getShowInBrowse()
     {
         return $this->showInBrowse;
     }
-    /**
-     * @var string
-     */
-    private $collectionDescription;
-
 
     /**
-     * Set collectionDescription
+     * Set collectionDescription.
      *
-     * @param string $collectionDescription
+     * @param string|null $collectionDescription
      *
      * @return Collection
      */
-    public function setCollectionDescription($collectionDescription)
+    public function setCollectionDescription($collectionDescription = null)
     {
         $this->collectionDescription = $collectionDescription;
 
@@ -495,28 +376,23 @@ class Collection
     }
 
     /**
-     * Get collectionDescription
+     * Get collectionDescription.
      *
-     * @return string
+     * @return string|null
      */
     public function getCollectionDescription()
     {
         return $this->collectionDescription;
     }
-    /**
-     * @var string
-     */
-    private $previewImage;
-
 
     /**
-     * Set previewImage
+     * Set previewImage.
      *
-     * @param string $previewImage
+     * @param string|null $previewImage
      *
      * @return Collection
      */
-    public function setPreviewImage($previewImage)
+    public function setPreviewImage($previewImage = null)
     {
         $this->previewImage = $previewImage;
 
@@ -524,19 +400,96 @@ class Collection
     }
 
     /**
-     * Get previewImage
+     * Get previewImage.
      *
-     * @return string
+     * @return string|null
      */
     public function getPreviewImage()
     {
         return $this->previewImage;
     }
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
-    private $csv_imports;
 
+    /**
+     * Get id.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Add permission.
+     *
+     * @param \Entity\CollectionPermission $permission
+     *
+     * @return Collection
+     */
+    public function addPermission(\Entity\CollectionPermission $permission)
+    {
+        $this->permissions[] = $permission;
+
+        return $this;
+    }
+
+    /**
+     * Remove permission.
+     *
+     * @param \Entity\CollectionPermission $permission
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removePermission(\Entity\CollectionPermission $permission)
+    {
+        return $this->permissions->removeElement($permission);
+    }
+
+    /**
+     * Get permissions.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPermissions()
+    {
+        return $this->permissions;
+    }
+
+    /**
+     * Add recentCollection.
+     *
+     * @param \Entity\RecentCollection $recentCollection
+     *
+     * @return Collection
+     */
+    public function addRecentCollection(\Entity\RecentCollection $recentCollection)
+    {
+        $this->recent_collection[] = $recentCollection;
+
+        return $this;
+    }
+
+    /**
+     * Remove recentCollection.
+     *
+     * @param \Entity\RecentCollection $recentCollection
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeRecentCollection(\Entity\RecentCollection $recentCollection)
+    {
+        return $this->recent_collection->removeElement($recentCollection);
+    }
+
+    /**
+     * Get recentCollection.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRecentCollection()
+    {
+        return $this->recent_collection;
+    }
 
     /**
      * Add csvImport.
@@ -572,5 +525,104 @@ class Collection
     public function getCsvImports()
     {
         return $this->csv_imports;
+    }
+
+    /**
+     * Add child.
+     *
+     * @param \Entity\Collection $child
+     *
+     * @return Collection
+     */
+    public function addChild(\Entity\Collection $child)
+    {
+        $this->children[] = $child;
+
+        return $this;
+    }
+
+    /**
+     * Remove child.
+     *
+     * @param \Entity\Collection $child
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeChild(\Entity\Collection $child)
+    {
+        return $this->children->removeElement($child);
+    }
+
+    /**
+     * Get children.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    /**
+     * Set parent.
+     *
+     * @param \Entity\Collection|null $parent
+     *
+     * @return Collection
+     */
+    public function setParent(?\Entity\Collection $parent = null)
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    /**
+     * Get parent.
+     *
+     * @return \Entity\Collection|null
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * Add instance.
+     *
+     * @param \Entity\Instance $instance
+     *
+     * @return Collection
+     */
+    public function addInstance(\Entity\Instance $instance)
+    {
+        if (!$this->instances->contains($instance)) {
+            $this->instances->add($instance);
+            $instance->addCollection($this); // Ensure the inverse side is updated
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove instance.
+     *
+     * @param \Entity\Instance $instance
+     *
+     * @return boolean TRUE if this collection contained the specified element, FALSE otherwise.
+     */
+    public function removeInstance(\Entity\Instance $instance)
+    {
+        return $this->instances->removeElement($instance);
+    }
+
+    /**
+     * Get instances.
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getInstances()
+    {
+        return $this->instances;
     }
 }

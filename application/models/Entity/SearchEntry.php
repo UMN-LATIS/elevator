@@ -2,55 +2,73 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
+
 /**
  * SearchEntry
  */
+#[ORM\Table(name: 'searches')]
+#[ORM\Entity]
 class SearchEntry
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'searchText', type: 'text', nullable: true)]
     private $searchText;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'searchData', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $searchData;
 
     /**
-     * @var boolean
+     * @var bool
      */
+    #[ORM\Column(name: 'userInitiated', type: 'boolean', nullable: false)]
     private $userInitiated;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      */
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: true)]
     private $createdAt;
 
     /**
-     * @var integer
+     * @var string
      */
+    #[ORM\Column(name: 'id', type: 'guid')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     private $id;
 
     /**
      * @var \Entity\User
      */
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
+    #[ORM\ManyToOne(targetEntity: \Entity\User::class)]
     private $user;
 
     /**
      * @var \Entity\Instance
      */
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+    #[ORM\ManyToOne(targetEntity: \Entity\Instance::class)]
     private $instance;
 
 
+
     /**
-     * Set searchText
+     * Set searchText.
      *
-     * @param string $searchText
+     * @param string|null $searchText
      *
      * @return SearchEntry
      */
-    public function setSearchText($searchText)
+    public function setSearchText($searchText = null)
     {
         $this->searchText = $searchText;
 
@@ -58,9 +76,9 @@ class SearchEntry
     }
 
     /**
-     * Get searchText
+     * Get searchText.
      *
-     * @return string
+     * @return string|null
      */
     public function getSearchText()
     {
@@ -68,13 +86,13 @@ class SearchEntry
     }
 
     /**
-     * Set searchData
+     * Set searchData.
      *
-     * @param array $searchData
+     * @param array|null $searchData
      *
      * @return SearchEntry
      */
-    public function setSearchData($searchData)
+    public function setSearchData($searchData = null)
     {
         $this->searchData = $searchData;
 
@@ -82,9 +100,9 @@ class SearchEntry
     }
 
     /**
-     * Get searchData
+     * Get searchData.
      *
-     * @return array
+     * @return array|null
      */
     public function getSearchData()
     {
@@ -92,9 +110,9 @@ class SearchEntry
     }
 
     /**
-     * Set userInitiated
+     * Set userInitiated.
      *
-     * @param boolean $userInitiated
+     * @param bool $userInitiated
      *
      * @return SearchEntry
      */
@@ -106,9 +124,9 @@ class SearchEntry
     }
 
     /**
-     * Get userInitiated
+     * Get userInitiated.
      *
-     * @return boolean
+     * @return bool
      */
     public function getUserInitiated()
     {
@@ -116,13 +134,13 @@ class SearchEntry
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
-     * @param \DateTime $createdAt
+     * @param \DateTime|null $createdAt
      *
      * @return SearchEntry
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt($createdAt = null)
     {
         $this->createdAt = $createdAt;
 
@@ -130,9 +148,9 @@ class SearchEntry
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getCreatedAt()
     {
@@ -140,9 +158,9 @@ class SearchEntry
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return string
      */
     public function getId()
     {
@@ -150,9 +168,9 @@ class SearchEntry
     }
 
     /**
-     * Set user
+     * Set user.
      *
-     * @param \Entity\User $user
+     * @param \Entity\User|null $user
      *
      * @return SearchEntry
      */
@@ -164,9 +182,9 @@ class SearchEntry
     }
 
     /**
-     * Get user
+     * Get user.
      *
-     * @return \Entity\User
+     * @return \Entity\User|null
      */
     public function getUser()
     {
@@ -174,9 +192,9 @@ class SearchEntry
     }
 
     /**
-     * Set instance
+     * Set instance.
      *
-     * @param \Entity\Instance $instance
+     * @param \Entity\Instance|null $instance
      *
      * @return SearchEntry
      */
@@ -188,55 +206,12 @@ class SearchEntry
     }
 
     /**
-     * Get instance
+     * Get instance.
      *
-     * @return \Entity\Instance
+     * @return \Entity\Instance|null
      */
     public function getInstance()
     {
         return $this->instance;
-    }
-
-    /**
-     * Set id
-     *
-     * @param guid $id
-     *
-     * @return SearchEntry
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-    /**
-     * @var guid
-     */
-    private $searchId;
-
-
-    /**
-     * Set searchId
-     *
-     * @param guid $searchId
-     *
-     * @return SearchEntry
-     */
-    public function setSearchId($searchId)
-    {
-        $this->searchId = $searchId;
-
-        return $this;
-    }
-
-    /**
-     * Get searchId
-     *
-     * @return guid
-     */
-    public function getSearchId()
-    {
-        return $this->searchId;
     }
 }

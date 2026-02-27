@@ -2,75 +2,95 @@
 
 namespace Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
  * FileHandler
  */
+#[ORM\Table(name: 'filehandlers')]
+#[ORM\Index(name: 0, columns: ['fileObjectId'])]
+#[ORM\Index(name: 1, columns: ['parentObjectId'])]
+#[ORM\Entity]
 class FileHandler
 {
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'fileObjectId', type: 'string', nullable: true)]
     private $fileObjectId;
 
     /**
      * @var string
      */
+    #[ORM\Column(name: 'fileType', type: 'string')]
     private $fileType;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'handler', type: 'string', nullable: true)]
     private $handler;
 
     /**
-     * @var string
+     * @var string|null
      */
+    #[ORM\Column(name: 'parentObjectId', type: 'string', nullable: true)]
     private $parentObjectId;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'collectionId', type: 'integer')]
     private $collectionId;
 
     /**
-     * @var boolean
+     * @var bool
      */
+    #[ORM\Column(name: 'deleted', type: 'boolean')]
     private $deleted;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'globalMetadata', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $globalMetadata;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'sourceFile', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $sourceFile;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'derivatives', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $derivatives;
 
     /**
-     * @var array
+     * @var array|null
      */
+    #[ORM\Column(name: 'jobIdArray', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $jobIdArray;
 
     /**
-     * @var integer
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
 
+
     /**
-     * Set fileObjectId
+     * Set fileObjectId.
      *
-     * @param string $fileObjectId
+     * @param string|null $fileObjectId
      *
      * @return FileHandler
      */
-    public function setFileObjectId($fileObjectId)
+    public function setFileObjectId($fileObjectId = null)
     {
         $this->fileObjectId = $fileObjectId;
 
@@ -78,9 +98,9 @@ class FileHandler
     }
 
     /**
-     * Get fileObjectId
+     * Get fileObjectId.
      *
-     * @return string
+     * @return string|null
      */
     public function getFileObjectId()
     {
@@ -88,7 +108,7 @@ class FileHandler
     }
 
     /**
-     * Set fileType
+     * Set fileType.
      *
      * @param string $fileType
      *
@@ -102,7 +122,7 @@ class FileHandler
     }
 
     /**
-     * Get fileType
+     * Get fileType.
      *
      * @return string
      */
@@ -112,13 +132,13 @@ class FileHandler
     }
 
     /**
-     * Set handler
+     * Set handler.
      *
-     * @param string $handler
+     * @param string|null $handler
      *
      * @return FileHandler
      */
-    public function setHandler($handler)
+    public function setHandler($handler = null)
     {
         $this->handler = $handler;
 
@@ -126,9 +146,9 @@ class FileHandler
     }
 
     /**
-     * Get handler
+     * Get handler.
      *
-     * @return string
+     * @return string|null
      */
     public function getHandler()
     {
@@ -136,13 +156,13 @@ class FileHandler
     }
 
     /**
-     * Set parentObjectId
+     * Set parentObjectId.
      *
-     * @param string $parentObjectId
+     * @param string|null $parentObjectId
      *
      * @return FileHandler
      */
-    public function setParentObjectId($parentObjectId)
+    public function setParentObjectId($parentObjectId = null)
     {
         $this->parentObjectId = $parentObjectId;
 
@@ -150,9 +170,9 @@ class FileHandler
     }
 
     /**
-     * Get parentObjectId
+     * Get parentObjectId.
      *
-     * @return string
+     * @return string|null
      */
     public function getParentObjectId()
     {
@@ -160,9 +180,9 @@ class FileHandler
     }
 
     /**
-     * Set collectionId
+     * Set collectionId.
      *
-     * @param integer $collectionId
+     * @param int $collectionId
      *
      * @return FileHandler
      */
@@ -174,9 +194,9 @@ class FileHandler
     }
 
     /**
-     * Get collectionId
+     * Get collectionId.
      *
-     * @return integer
+     * @return int
      */
     public function getCollectionId()
     {
@@ -184,9 +204,9 @@ class FileHandler
     }
 
     /**
-     * Set deleted
+     * Set deleted.
      *
-     * @param boolean $deleted
+     * @param bool $deleted
      *
      * @return FileHandler
      */
@@ -198,9 +218,9 @@ class FileHandler
     }
 
     /**
-     * Get deleted
+     * Get deleted.
      *
-     * @return boolean
+     * @return bool
      */
     public function getDeleted()
     {
@@ -208,13 +228,13 @@ class FileHandler
     }
 
     /**
-     * Set globalMetadata
+     * Set globalMetadata.
      *
-     * @param array $globalMetadata
+     * @param array|null $globalMetadata
      *
      * @return FileHandler
      */
-    public function setGlobalMetadata($globalMetadata)
+    public function setGlobalMetadata($globalMetadata = null)
     {
         $this->globalMetadata = $globalMetadata;
 
@@ -222,9 +242,9 @@ class FileHandler
     }
 
     /**
-     * Get globalMetadata
+     * Get globalMetadata.
      *
-     * @return array
+     * @return array|null
      */
     public function getGlobalMetadata()
     {
@@ -232,13 +252,13 @@ class FileHandler
     }
 
     /**
-     * Set sourceFile
+     * Set sourceFile.
      *
-     * @param array $sourceFile
+     * @param array|null $sourceFile
      *
      * @return FileHandler
      */
-    public function setSourceFile($sourceFile)
+    public function setSourceFile($sourceFile = null)
     {
         $this->sourceFile = $sourceFile;
 
@@ -246,9 +266,9 @@ class FileHandler
     }
 
     /**
-     * Get sourceFile
+     * Get sourceFile.
      *
-     * @return array
+     * @return array|null
      */
     public function getSourceFile()
     {
@@ -256,13 +276,13 @@ class FileHandler
     }
 
     /**
-     * Set derivatives
+     * Set derivatives.
      *
-     * @param array $derivatives
+     * @param array|null $derivatives
      *
      * @return FileHandler
      */
-    public function setDerivatives($derivatives)
+    public function setDerivatives($derivatives = null)
     {
         $this->derivatives = $derivatives;
 
@@ -270,9 +290,9 @@ class FileHandler
     }
 
     /**
-     * Get derivatives
+     * Get derivatives.
      *
-     * @return array
+     * @return array|null
      */
     public function getDerivatives()
     {
@@ -280,13 +300,13 @@ class FileHandler
     }
 
     /**
-     * Set jobIdArray
+     * Set jobIdArray.
      *
-     * @param array $jobIdArray
+     * @param array|null $jobIdArray
      *
      * @return FileHandler
      */
-    public function setJobIdArray($jobIdArray)
+    public function setJobIdArray($jobIdArray = null)
     {
         $this->jobIdArray = $jobIdArray;
 
@@ -294,9 +314,9 @@ class FileHandler
     }
 
     /**
-     * Get jobIdArray
+     * Get jobIdArray.
      *
-     * @return array
+     * @return array|null
      */
     public function getJobIdArray()
     {
@@ -304,18 +324,12 @@ class FileHandler
     }
 
     /**
-     * Get id
+     * Get id.
      *
-     * @return integer
+     * @return int
      */
     public function getId()
     {
         return $this->id;
     }
-    /**
-     * @var string
-     */
-    private $fileobjectid;
-
-
 }

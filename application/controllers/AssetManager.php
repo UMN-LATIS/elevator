@@ -1,6 +1,13 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use Symfony\Component\Cache\Psr16Cache;
+
+ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class AssetManager extends Admin_Controller {
+
+
+	public ?Psr16Cache $importCache = null;
 
 	public function __construct()
 	{
@@ -56,6 +63,9 @@ class AssetManager extends Admin_Controller {
 	 */
 	public function addAsset($templateId=null, $collectionId = null, $inlineForm = false)
 	{
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
@@ -126,11 +136,14 @@ class AssetManager extends Admin_Controller {
 		$templateArray["allowedCollections"] = $allowedCollections;
 		// $templateArray["templates"] = $templates;
 
-		echo json_encode($templateArray);
+		return render_json($templateArray);
 	}
 
 
 	function editAsset($objectId, $inlineForm=false) {
+		if ($this->isUsingVueUI()) {
+			return $this->template->publish('vueTemplate');
+		}
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
 
@@ -223,19 +236,29 @@ class AssetManager extends Admin_Controller {
 		instance_redirect("asset/viewAsset/" .$restoreObject);
 	}
 
-	private function internalRestore($objectId) {
+	private function internalRestore(string $objectId, bool $createCheckpoint = true) {
 		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
 		$currentParent = $restoreObject->getRevisionSource();
-
+		if(!$currentParent) {
+			return false;
+		}
 		$restoreObject->setAssetId($currentParent->getAssetId());
 		$restoreObject->setRevisionSource(null);
 		$restoreObject->setDeleted(false);
 		$restoreObject->setDeletedBy(null);
-		if($currentParent) {
+		
+		if($createCheckpoint) {
 			$currentParent->setAssetId(null);
 			$currentParent->setRevisionSource($restoreObject);
 			$currentParent->setDeleted(false);
 		}
+		else {
+			$currentParent->setDeleted(true);
+			$currentParent->setDeletedBy($this->user_model->user->getId());
+			$currentParent->setRevisionSource(null);
+			$currentParent->setAssetId(null);
+		}
+		
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$q = $qb->update('Entity\Asset', 'a')
@@ -260,16 +283,22 @@ class AssetManager extends Admin_Controller {
 			}
 		}
 
-		$assetObject->save(true,false);
+		$assetObject->save(true,false, false);
 		return $restoreObject->getAssetId();
 	}
 
 	// save an asset
-	public function submission() {
+	public function submission($returnJson = false) {
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance",$this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if($accessLevel < PERM_ADDASSETS) {
+			// log this
+			$this->logging->logError("no permission to add asset", $_SERVER);
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
+
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
@@ -300,9 +329,6 @@ class AssetManager extends Admin_Controller {
 		}
 
 
-		echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
-
-
 		if($firstSave) {
 			/**
 			 * BEWARE
@@ -322,6 +348,12 @@ class AssetManager extends Admin_Controller {
 			 * END HACKY STUFF
 			 */
 
+		}
+
+		if ($returnJson) {
+			return render_json(["objectId" => $objectId, "success" => true], 200);
+		} else {
+			echo json_encode(["objectId"=>(string)$objectId, "success"=>true]);
 		}
 	}
 
@@ -408,7 +440,7 @@ class AssetManager extends Admin_Controller {
 		$fileHandler->deleteFile();
 	}
 
-	public function deleteAsset($objectId) {
+	public function deleteAsset($objectId, $returnJson = false) {
 
 
 		$accessLevel = $this->user_model->getAccessLevel("instance",$this->instance);
@@ -418,6 +450,10 @@ class AssetManager extends Admin_Controller {
 
 		if($accessLevel < PERM_ADDASSETS) {
 			if($this->user_model->getAccessLevel("collection",$this->collection_model->getCollection($this->asset_model->getGlobalValue("collectionId"))) < PERM_ADDASSETS) {
+				if ($returnJson) {
+					return render_json(["error" => "No permission"], 403);
+				}
+
 				$this->errorhandler_helper->callError("noPermission");
 			}
 
@@ -425,6 +461,9 @@ class AssetManager extends Admin_Controller {
 
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
 		if($this->accessLevel < PERM_ADDASSETS) {
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
 			$this->errorhandler_helper->callError("noPermission");
 		}
 		$this->search_model->remove($this->asset_model);
@@ -437,16 +476,26 @@ class AssetManager extends Admin_Controller {
 		$qb->setParameter(':assetId', $objectId);
 		$qb->getQuery()->execute();
 
+		if ($returnJson) {
+			return render_json(null, 204);
+		}
+
 		instance_redirect("/");
 	}
 
 	// List all of the assets touched by the user.  Offset specifies page number essentially.
-	public function userAssets($offset=0) {
+	public function userAssets($offset=0, $returnJson = false) {
+		if ($this->isUsingVueUI() && !$returnJson) {
+			return $this->template->publish('vueTemplate');
+		}
+
 		if(!isset($this->instance) || !$this->user_model->userLoaded) { 
+			if ($returnJson) {
+				return render_json(["error" => "No permission"], 403);
+			}
 			instance_redirect("errorHandler/error/noPermission");
 		}
-		$this->template->javascript->add("assets/datatables/datatables.min.js");
-		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
+
 
 		$qb = $this->doctrine->em->createQueryBuilder();
 		$qb->from("Entity\Asset", 'a')
@@ -469,6 +518,12 @@ class AssetManager extends Admin_Controller {
 			$hiddenAssetArray[] = ["objectId"=>$this->asset_model->getObjectId(), "title"=>$resultCache['title']??"", "readyForDisplay"=>$this->asset_model->getGlobalValue("readyForDisplay"), "templateId"=>$this->asset_model->getGlobalValue("templateId"), "modifiedDate"=>$this->asset_model->getGlobalValue("modified")];
 		}
 
+		if ($returnJson) {
+			return render_json($hiddenAssetArray);
+		}
+
+		$this->template->javascript->add("assets/datatables/datatables.min.js");
+		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
 		if($offset>0) {
 			$this->load->view('user/hiddenAssets', ["isOffset"=>true, "hiddenAssets"=>$hiddenAssetArray]);
 		}
@@ -573,7 +628,7 @@ class AssetManager extends Admin_Controller {
 			return;
 		}
 
-		$header = fgetcsv($fp, 0, ",");
+		$header = fgetcsv($fp, 0, ",", '"', '\\');
 		$data["filename"]  = $filename;
 		$data["headerRows"] = $header;
 
@@ -650,7 +705,7 @@ class AssetManager extends Admin_Controller {
 			header('Content-Type: application/csv');
     		// tell the browser we want to save it instead of displaying it
     		header('Content-Disposition: attachment; filename="csvExport-' . $searchId . '.csv";');
-			fputcsv($out, $widgetArray);
+			fputcsv($out, $widgetArray, ',','"','\\');
 
 			foreach($matchArray['searchResults'] as $match) {
 
@@ -777,7 +832,7 @@ class AssetManager extends Admin_Controller {
 					gc_collect_cycles();
 					$i = 0;
 				}
-				fputcsv($out, $outputRow);
+				fputcsv($out, $outputRow,',' ,'"', '\\');
 			}
 			
 			
@@ -853,11 +908,17 @@ class AssetManager extends Admin_Controller {
 		else {
 
 			if($hash) {
-				$this->doctrineCache->setNamespace('importCache_');
-				$cacheArray = $this->doctrineCache->fetch($hash);
-				$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cacheArray['importId']);
+				if($this->importCache) {
+					$cachedItem = $this->ImportCache->get($hash);
+					if($cachedItem) {
+						$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cachedItem['importId']);
+					}
+				}
+				
+				
 			}
-			else {
+
+			if(!$csvBatch) {
 				$this->logging->logError("Cachine Error");
 				$this->errorhandler_helper->callError("genericError");
 				return;
@@ -942,6 +1003,22 @@ class AssetManager extends Admin_Controller {
 					$cacheArray['successArray'][] = "could not find asset: " . $row[$updateField];
 					continue;
 				}
+
+				// confirm that this asset is in the current instance
+				$collection = $assetModel->getGlobalValue("collectionId");
+				$loadedCollection = $this->collection_model->getCollection($collection);
+				$correctInstance = false;
+				foreach($loadedCollection->getInstances() as $instance) {
+					if($instance->getId() == $this->instance->getId()) {
+						$correctInstance = true;
+					}
+				}
+
+				if(!$correctInstance) {
+					return $this->errorhandler_helper->callError("noPermission");
+				}
+
+
 				$newEntry = $assetModel->getAsArray();
 			}
 			else {
@@ -1121,7 +1198,7 @@ class AssetManager extends Admin_Controller {
 			}
 			
 			
-			$assetModel->save();
+			$assetModel->save(reindex: true, saveRevision:true, noCache:true);
 
 			if(isset($targetArray)) {
 				$targetArray[]["targetAssetId"] = $assetModel->getObjectId();
@@ -1131,6 +1208,7 @@ class AssetManager extends Admin_Controller {
 				$newTask = ["objectId"=>$assetModel->getObjectId(),"instance"=>$this->instance->getId(), "importItems"=>$uploadItems];
 				$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
 				$tube = new Pheanstalk\Values\TubeName('urlImport');
+				$pheanstalk->useTube($tube);
 				$jobId = $pheanstalk->put(json_encode($newTask), Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 0,900);
 			}
 
@@ -1139,8 +1217,10 @@ class AssetManager extends Admin_Controller {
 			$rowCount++;
 
 			if($rowCount % 400 == 0) {
-				$this->doctrineCache->setNamespace('importCache_');
-				$this->doctrineCache->save($hash, $cacheArray, 900);
+				if(!$this->importCache) {
+					$this->importCache = $this->doctrine->getCache("importCache");
+				}
+				$this->importCache->set($hash, $cacheArray, 900);
 
 				if(isset($parentObject) && isset($targetArray)) {
 					$objectArray = $parentObject->getAsArray();
@@ -1194,13 +1274,18 @@ class AssetManager extends Admin_Controller {
 		$countStart = 0;
 		foreach($assets as $assetRecord) {
 			$asset = new Asset_model();
+			if(!$assetRecord->getAssetId()) {
+				$output .= "<li>Asset not found: " . $assetRecord->getAssetId() . "</li>";
+				continue;
+			}
+
 			$output .= "<li>Loading Asset: " . $assetRecord->getAssetId() . "</li>";
 			$asset->loadAssetFromRecord($assetRecord);
 
 			$revisions = $asset->assetObject->getRevisions();
 			if(count($revisions) > 0) {
 				$mostRecentRevision = $revisions->last();
-				$this->internalRestore($mostRecentRevision->getId());
+				$this->internalRestore(objectId:$mostRecentRevision->getId(), createCheckpoint:false);
 			}
 			else {
 				$asset->delete();

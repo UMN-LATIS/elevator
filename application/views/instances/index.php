@@ -6,7 +6,7 @@
 			<thead>
 				<th>Instance Name</th>
 				<th>Domain</th>
-				<th>Owner Homepage</th>
+				<th>Notes</th>
 
 				<th></th>
 				<th></th>
@@ -15,28 +15,31 @@
 			<tbody>
 
 				<?php foreach ($instances as $instance) : ?>
-				<tr>
-    			<td><?= $instance->getName(); ?></td>
-    			<td><a href="/<?=$instance->getDomain()?>"><?= $instance->getDomain(); ?></a></td>
+					<tr>
+						<td><?= $instance->getName(); ?></td>
+						<td><a href="/<?= $instance->getDomain() ?>"><?= $instance->getDomain(); ?></a></td>
 
-    			<td><?= $instance->getIntroText(); ?></td>
-    			<td><a href="<?= instance_url("permissions/edit/instance/{$instance->getId()}"); ?>">Edit Permissions</a></td>
-    			<td> <a href="<?= instance_url("instances/edit/{$instance->getId()}"); ?>">Edit</a></td>
-    			<td> <a href="<?= instance_url("instances/delete/{$instance->getId()}"); ?>" onclick="return confirm('Are you sure you want to delete this instance?');">Delete</a></td>
-   			</tr>
-			<?php	endforeach; ?>
+						<td><?= $instance->getNotes(); ?></td>
+						<td><a href="<?= instance_url("permissions/edit/instance/{$instance->getId()}"); ?>">Edit Permissions</a></td>
+						<td> <a href="<?= instance_url("instances/edit/{$instance->getId()}"); ?>">Edit</a></td>
+						<td> <a href="<?= instance_url("instances/delete/{$instance->getId()}"); ?>" onclick="return confirm('Are you sure you want to delete this instance?');">Delete</a></td>
+					</tr>
+				<?php endforeach; ?>
 
 			</tbody>
 		</table>
 		<p><a href="<?= instance_url("instances/edit"); ?>">Create New Instance</a></p>
 		<script>
 			$(document).ready(function() {
-    $('#instanceList').DataTable( {
-    	"paging":   false,
-    	"ordering": true,
-    	"info": false,
-        "order": [[ 0, "asc" ]]
-    } );
-} );	</script>
+				$('#instanceList').DataTable({
+					"paging": false,
+					"ordering": true,
+					"info": false,
+					"order": [
+						[0, "asc"]
+					]
+				});
+			});
+		</script>
 	</div>
 </div>
