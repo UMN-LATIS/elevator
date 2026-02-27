@@ -13,9 +13,8 @@ import {
 // getTemplate() endpoint and widgetArray shape live in feat-update-template-api-for-editor.
 
 test.describe("templates", () => {
-  test.beforeAll(async ({ request }) => {
-    const response = await request.post(`${baseURL()}/testhelper/resetDb`);
-    expect(response.ok()).toBe(true);
+  test.beforeAll(() => {
+    refreshDatabase();
   });
 
   test.beforeEach(async ({ page }) => {
@@ -27,8 +26,8 @@ test.describe("templates", () => {
     await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
   });
 
-  test.afterEach(async ({ page }) => {
-    await refreshDatabase(page);
+  test.afterEach(() => {
+    refreshDatabase();
   });
 
   // --- auth ---

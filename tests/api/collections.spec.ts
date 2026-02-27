@@ -4,9 +4,8 @@ import { loginUser, refreshDatabase, baseURL } from "../helpers";
 test.describe("collections", () => {
   // Reset DB before suite starts so stale data from previous runs doesn't
   // interfere (bootstrap inserts base data without truncating first).
-  test.beforeAll(async ({ request }) => {
-    const response = await request.post(`${baseURL()}/testhelper/resetDb`);
-    expect(response.ok()).toBeTruthy();
+  test.beforeAll(() => {
+    refreshDatabase();
   });
 
   test.beforeEach(async ({ page }) => {
@@ -18,9 +17,9 @@ test.describe("collections", () => {
     await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
   });
 
-  test.afterEach(async ({ page }) => {
+  test.afterEach(() => {
     // Ensure DB is clean even if the test fails before the in-test reset.
-    await refreshDatabase(page);
+    refreshDatabase();
   });
 
   test("db reset removes created collection", async ({ page }) => {
@@ -53,7 +52,7 @@ test.describe("collections", () => {
     );
 
     // Reset DB.
-    await refreshDatabase(page);
+    refreshDatabase();
 
     // Verify it is gone.
     const afterReset = await page.request.get(

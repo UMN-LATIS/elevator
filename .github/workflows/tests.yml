@@ -29,7 +29,6 @@ jobs:
         run: |
           cp .env.example .env
           # Replace values in-place to avoid duplicate keys in .env.
-          sed -i "s/^CI_ENV=.*/CI_ENV=testing/" .env
           sed -i "s/^DEFAULT_ADMIN_PASSWORD=.*/DEFAULT_ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}/" .env
 
       - name: Generate SSL certs

@@ -1,3 +1,5 @@
+import { execSync } from "child_process";
+import path from "path";
 import { type Page } from "@playwright/test";
 
 export interface CreateTemplateOptions {
@@ -45,22 +47,12 @@ export async function loginUser(
   // Subsequent page.goto() calls in the same context will include it.
 }
 
-// POST /{instance}/testhelper/resetDb
-// Truncates user-writable tables back to seed state.
-// Requires CI_ENV=local or CI_ENV=testing on the server (sets CodeIgniter's ENVIRONMENT constant); returns 403 in production.
-export async function refreshDatabase(page: Page): Promise<void> {
-  const response = await page.request.post(`${baseURL()}/testhelper/resetDb`);
-
-  if (!response.ok()) {
-    const body = (await response.json().catch(() => ({}))) as {
-      message?: string;
-    };
-    throw new Error(
-      `DB reset failed (${response.status()}): ${
-        body.message ?? "unknown error"
-      }`,
-    );
-  }
+// Truncates user-writable tables and resets sequences to seed state by running
+// scripts/reset-test-db.sh, which talks to postgres directly via psql inside
+// the running docker compose postgres container.
+export function refreshDatabase(): void {
+  const projectRoot = path.resolve(__dirname, "..");
+  execSync("./scripts/reset-test-db.sh", { cwd: projectRoot, stdio: "pipe" });
 }
 
 // POST /{instance}/templates/update (no templateId = create)
