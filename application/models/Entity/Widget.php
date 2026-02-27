@@ -621,7 +621,7 @@ class Widget
             'attemptAutocomplete' => (bool) $this->getAttemptAutocomplete(),
             'directSearch'        => (bool) $this->getDirectSearch(),
             'clickToSearch'       => (bool) $this->getClickToSearch(),
-            'clickToSearchType'   => $this->getClickToSearchType() ?? 0, // 0 = no type
+            'clickToSearchType'   => (int) ($this->getClickToSearchType() ?? 0), // 0 = no type
             'fieldData'           => $this->getFieldData(),
             // Both are included: fieldType (name string) is for display; fieldTypeId (int)
             // is the ID update() expects when posting back via setFieldType().
