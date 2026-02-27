@@ -12,10 +12,10 @@ test.describe("smoke", () => {
     context,
   }) => {
     const adminUsername = process.env.ADMIN_USERNAME ?? "admin";
-    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
 
     if (!adminPassword) {
-      test.skip(true, "ADMIN_PASSWORD env var not set");
+      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
       return;
     }
 
