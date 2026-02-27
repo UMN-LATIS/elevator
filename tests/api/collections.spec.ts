@@ -9,9 +9,9 @@ test.describe("collections", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
     if (!adminPassword) {
-      test.skip(true, "ADMIN_PASSWORD env var not set");
+      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
       return;
     }
     await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);

@@ -40,7 +40,7 @@ The script handles everything: copying `.env`, generating SSL certs, starting Do
 After the script finishes:
 
 - **App:** `https://localhost/defaultinstance`
-- **Admin:** username `admin`, password is the `ADMIN_PASSWORD` value in your `.env`
+- **Admin:** username `admin`, password is `DEFAULT_ADMIN_PASSWORD` from your `.env` (default: `admin`). To change it, update `DEFAULT_ADMIN_PASSWORD` in `.env` and re-run `./scripts/bootstrap`.
 
 ### Set up Elasticsearch indices
 
@@ -96,7 +96,7 @@ bash scripts/update-admin-password
 npm test
 ```
 
-Requires `ADMIN_PASSWORD` to be set in `.env`. `CI_ENV=local` (the default) is sufficient to enable the database-reset endpoint the tests use.
+Requires `DEFAULT_ADMIN_PASSWORD` to be set in `.env`. `CI_ENV=local` (the default) is sufficient to enable the database-reset endpoint the tests use.
 
 ---
 

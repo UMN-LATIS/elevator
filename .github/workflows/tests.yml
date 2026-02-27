@@ -31,7 +31,7 @@ jobs:
           # CI_ENV=testing enables the /testhelper/resetDb endpoint (see index.php + TestHelper.php).
           echo "CI_ENV=testing" >> .env
           # Append the admin password so the password-sync step and tests can read it.
-          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+          echo "DEFAULT_ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
 
       - name: Start Docker stack
         run: docker compose up -d
@@ -47,7 +47,7 @@ jobs:
           docker compose exec -T postgres psql -U elevator -d elevator < docker/postgresQueries
           # Sync admin password hash from .env so seed hash doesn't need to match.
           _enc_key=$(grep -E '^ENCRYPTION_KEY=' .env | cut -d= -f2)
-          _admin_pw=$(grep -E '^ADMIN_PASSWORD=' .env | cut -d= -f2)
+          _admin_pw=$(grep -E '^DEFAULT_ADMIN_PASSWORD=' .env | cut -d= -f2)
           _hash=$(echo -n "${_enc_key}${_admin_pw}" | shasum -a 1 | cut -d' ' -f1)
           docker compose exec -T postgres psql -U elevator -d elevator \
             -c "UPDATE users SET password = '${_hash}' WHERE username = 'admin';"
@@ -56,7 +56,7 @@ jobs:
         env:
           BASE_URL: http://localhost/defaultinstance
           ADMIN_USERNAME: admin
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          DEFAULT_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:api
 
       - name: Upload test results
