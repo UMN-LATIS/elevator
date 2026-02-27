@@ -57,7 +57,7 @@ docker compose exec php-fpm php index.php beltdrive updateIndexes
 npm run test:api
 ```
 
-Requires `ADMIN_PASSWORD` to be set in `.env`. Set `ELEVATOR_TEST_RESET_ENABLED=true` in `.env` to enable the database-reset endpoint the tests use.
+Requires `ADMIN_PASSWORD` to be set in `.env`. Set `CI_ENV=testing` in `.env` to enable the database-reset endpoint the tests use (the default `CI_ENV=local` also works).
 
 ## Documentation
 
