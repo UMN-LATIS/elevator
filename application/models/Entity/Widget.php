@@ -603,4 +603,27 @@ class Widget
     {
         return $this->template;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'widgetId'            => $this->getId(),
+            'fieldTitle'          => $this->getFieldTitle(),
+            'label'               => $this->getLabel(),
+            'tooltip'             => $this->getTooltip(),
+            'templateOrder'       => $this->getTemplateOrder(),
+            'viewOrder'           => $this->getViewOrder(),
+            'display'             => (bool) $this->getDisplay(),
+            'displayInPreview'    => (bool) $this->getDisplayInPreview(),
+            'required'            => (bool) $this->getRequired(),
+            'searchable'          => (bool) $this->getSearchable(),
+            'allowMultiple'       => (bool) $this->getAllowMultiple(),
+            'attemptAutocomplete' => (bool) $this->getAttemptAutocomplete(),
+            'directSearch'        => (bool) $this->getDirectSearch(),
+            'clickToSearch'       => (bool) $this->getClickToSearch(),
+            'clickToSearchType'   => $this->getClickToSearchType() ?? 0,
+            'fieldData'           => $this->getFieldData(),
+            'fieldType'           => $this->field_type?->getName(),
+        ];
+    }
 }
