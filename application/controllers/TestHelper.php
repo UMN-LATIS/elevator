@@ -32,6 +32,10 @@ class TestHelper extends Instance_Controller
     try {
       // Truncate in dependency order. CASCADE handles FK children automatically.
       // Extend this list as new test types are added (e.g. assets, drawers).
+      $conn->executeStatement('TRUNCATE TABLE widgets CASCADE');
+      $conn->executeStatement("SELECT setval('widgets_id_seq', 1, false)");
+      $conn->executeStatement('TRUNCATE TABLE templates CASCADE');
+      $conn->executeStatement("SELECT setval('templates_id_seq', 1, false)");
       $conn->executeStatement('TRUNCATE TABLE collections CASCADE');
       $conn->executeStatement("SELECT setval('collections_id_seq', 1, false)");
     } catch (\Throwable $e) {
