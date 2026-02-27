@@ -126,13 +126,13 @@ Elevator uses Doctrine for schema management. The entity PHP files are generated
 
 ---
 
-## Optional: S3 storage
+## S3 storage
 
-By default Elevator stores files locally. To use AWS S3:
+Elevator requires S3 for file storage — there is no local storage fallback. File uploads and processing will fail until an S3 bucket is configured.
 
-1. Create an S3 bucket and an IAM user with access to it
-2. Set `AWS_QUEUEING_ACCESS_KEY_ID`, `AWS_QUEUEING_SECRET_ACCESS_KEY`, and related vars in `.env`
-3. Configure the bucket CORS policy to allow `GET` on derivative/thumbnail/vtt paths
+S3 credentials are set **per instance** in the admin UI (Instance settings), not in `.env`. You'll need an S3 bucket and an IAM user with read/write access to it.
+
+The `AWS_QUEUEING_*` vars in `.env` are separate — they're for the AWS Batch job queue used for background file processing, and are only needed if you're not using the local Beanstalkd queue.
 
 ---
 
