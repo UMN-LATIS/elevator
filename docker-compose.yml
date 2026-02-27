@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
 
   postgres:
     image: postgres:16
@@ -11,16 +11,15 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  
   web:
     image: nginx:latest
     ports:
-      - '80:80'
-      - 443:443
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./certs:/etc/nginx/certs
       - ./docker/default.conf:/etc/nginx/conf.d/default.conf
@@ -37,9 +36,9 @@ services:
   beanstalkd:
     image: maateen/docker-beanstalkd
     ports:
-      - "11300:11300"
+      - "${BEANSTALKD_PORT:-11300}:11300"
   php-fpm:
-    build: 
+    build:
       context: .
       dockerfile: docker/Dockerfile
       args:
@@ -59,7 +58,7 @@ services:
     #         - vendor/
   # apache:
   #   platform: linux/x86_64
-  #   build: 
+  #   build:
   #     context: .
   #     args:
   #       - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
@@ -76,7 +75,7 @@ services:
   #     - postgres
   #     - beanstalkd
   #     - elasticsearch
-  
+
   elasticsearch:
     # platform: linux/x86_64
     image: elasticsearch:8.17.1
@@ -89,8 +88,8 @@ services:
       - xpack.security.enrollment.enabled=false
       # - bootstrap.system_call_filter=false
     ports:
-      - "9200:9200"
-      - "9300:9300"
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+      - "${ELASTICSEARCH_TRANSPORT_PORT:-9300}:9300"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
 

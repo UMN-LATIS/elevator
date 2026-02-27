@@ -128,7 +128,14 @@ echo "╔═══════════════════════�
 echo "║           Bootstrap complete!            ║"
 echo "╚══════════════════════════════════════════╝"
 echo
-echo "  App:   http://localhost/defaultinstance"
+_http_port=$(grep -E '^HTTP_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '"' || true)
+_http_port="${_http_port:-80}"
+if [[ "$_http_port" == "80" ]]; then
+    _app_url="http://localhost/defaultinstance"
+else
+    _app_url="http://localhost:${_http_port}/defaultinstance"
+fi
+echo "  App:   ${_app_url}"
 echo "  Admin: username=admin, password=<ADMIN_PASSWORD in .env>"
 echo
 echo "  Run tests:      npm run test:api"
