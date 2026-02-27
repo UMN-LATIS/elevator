@@ -1,6 +1,6 @@
 {
-  "name": "elevator",
   "scripts": {
+    "test": "node --env-file=.env ./node_modules/.bin/playwright test",
     "dev": "npm run development",
     "docs:build": "cd docs; vuepress build",
     "docs:dev": "cd docs; vuepress dev",
