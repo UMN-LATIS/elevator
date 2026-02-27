@@ -47,6 +47,7 @@ services:
         - ENVIRONMENT=${CI_ENV}
     environment:
       - CI_ENV=${CI_ENV}
+      - ENVIRONMENT=${CI_ENV}
     volumes:
       - ./:/var/www/html
       - ${DOCKER_SCRATCH_DIR}:/scratch

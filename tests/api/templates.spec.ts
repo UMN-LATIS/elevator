@@ -14,7 +14,8 @@ import {
 
 test.describe("templates", () => {
   test.beforeAll(async ({ request }) => {
-    await request.post(`${baseURL()}/testhelper/resetDb`);
+    const response = await request.post(`${baseURL()}/testhelper/resetDb`);
+    expect(response.ok()).toBe(true);
   });
 
   test.beforeEach(async ({ page }) => {

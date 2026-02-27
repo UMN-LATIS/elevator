@@ -12,7 +12,8 @@
     "test:api:ui": "node --env-file=.env node_modules/.bin/playwright test --ui"
   },
   "devDependencies": {
-    "@playwright/test": "^1.54.1"
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^22.19.13"
   },
   "dependencies": {
     "@vuepress/plugin-blog": "^1.9.4",

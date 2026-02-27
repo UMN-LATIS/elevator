@@ -3,11 +3,11 @@
 // Test-only endpoint for resetting database state between Playwright test runs.
 //
 // This controller is intentionally unauthenticated. The security gate is CodeIgniter's
-// ENVIRONMENT constant, which is set at boot from the ENVIRONMENT env var (index.php).
+// ENVIRONMENT constant, which is set at boot from $_SERVER['CI_ENV'] in index.php.
 // The endpoint is only active when ENVIRONMENT is 'local' or 'testing' — never in production.
 //
-// Locally, set CI_ENV=local (default in .env.example) or CI_ENV=testing.
-// In CI, set CI_ENV=testing. Production servers must have CI_ENV=production.
+// Locally, CI_ENV defaults to 'local' in .env.example — no change needed.
+// In CI, set CI_ENV=testing. Production servers must not have CI_ENV set to 'local' or 'testing'.
 class TestHelper extends Instance_Controller
 {
   // POST /{instance}/testhelper/resetDb
@@ -37,7 +37,8 @@ class TestHelper extends Instance_Controller
       $conn->executeStatement('TRUNCATE TABLE collections CASCADE');
       $conn->executeStatement("SELECT setval('collections_id_seq', 1, false)");
     } catch (\Throwable $e) {
-      render_json(['status' => 'error', 'message' => $e->getMessage()], 500);
+      log_message('error', 'TestHelper::resetDb failed: ' . $e->getMessage());
+      render_json(['status' => 'error', 'message' => 'internal error'], 500);
       return;
     }
 

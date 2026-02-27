@@ -5,7 +5,8 @@ test.describe("collections", () => {
   // Reset DB before suite starts so stale data from previous runs doesn't
   // interfere (bootstrap inserts base data without truncating first).
   test.beforeAll(async ({ request }) => {
-    await request.post(`${baseURL()}/testhelper/resetDb`);
+    const response = await request.post(`${baseURL()}/testhelper/resetDb`);
+    expect(response.ok()).toBeTruthy();
   });
 
   test.beforeEach(async ({ page }) => {

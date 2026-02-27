@@ -28,10 +28,9 @@ jobs:
       - name: Copy env file
         run: |
           cp .env.example .env
-          # CI_ENV=testing enables the /testhelper/resetDb endpoint (see index.php + TestHelper.php).
-          echo "CI_ENV=testing" >> .env
-          # Append the admin password so the password-sync step and tests can read it.
-          echo "DEFAULT_ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+          # Replace values in-place to avoid duplicate keys in .env.
+          sed -i "s/^CI_ENV=.*/CI_ENV=testing/" .env
+          sed -i "s/^DEFAULT_ADMIN_PASSWORD=.*/DEFAULT_ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}/" .env
 
       - name: Generate SSL certs
         run: |
@@ -63,7 +62,7 @@ jobs:
 
       - name: Run API tests
         env:
-          BASE_URL: http://localhost/defaultinstance
+          BASE_URL: https://localhost/defaultinstance
           ADMIN_USERNAME: admin
           DEFAULT_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:api

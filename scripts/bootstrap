@@ -145,12 +145,12 @@ echo "╔═══════════════════════�
 echo "║           Bootstrap complete!            ║"
 echo "╚══════════════════════════════════════════╝"
 echo
-_http_port=$(grep -E '^HTTP_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '"' || true)
-_http_port="${_http_port:-80}"
-if [[ "$_http_port" == "80" ]]; then
-    _app_url="http://localhost/defaultinstance"
+_https_port=$(grep -E '^HTTPS_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '"' || true)
+_https_port="${_https_port:-443}"
+if [[ "$_https_port" == "443" ]]; then
+    _app_url="https://localhost/defaultinstance"
 else
-    _app_url="http://localhost:${_http_port}/defaultinstance"
+    _app_url="https://localhost:${_https_port}/defaultinstance"
 fi
 echo "  App:   ${_app_url}"
 echo "  Admin: username=admin, password=<DEFAULT_ADMIN_PASSWORD in .env>"

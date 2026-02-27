@@ -82,11 +82,7 @@ Upload a file through the UI, then grab the `fileObjectId` (press Cmd+Ctrl+H whe
 
 ### Override admin password
 
-To change the local admin password at any time:
-
-```bash
-bash scripts/update-admin-password
-```
+Update `DEFAULT_ADMIN_PASSWORD` in `.env` and re-run `./scripts/bootstrap`.
 
 ---
 
