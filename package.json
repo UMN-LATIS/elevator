@@ -7,8 +7,8 @@
     "ui:build": "(cd assets/elevator-ui && yarn build)",
     "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)",
     "gulp": "gulp",
-    "test:api": "playwright test",
-    "test:api:ui": "playwright test --ui"
+    "test:api": "node --env-file=.env node_modules/.bin/playwright test",
+    "test:api:ui": "node --env-file=.env node_modules/.bin/playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1"

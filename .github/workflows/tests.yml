@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -28,8 +28,9 @@ jobs:
       - name: Copy env file
         run: |
           cp .env.example .env
-          # Allow the test DB reset endpoint. PHP reads this from .env via Dotenv::createImmutable.
-          echo "ELEVATOR_TEST_RESET_ENABLED=true" >> .env
+          # CI_ENV=testing enables the /testhelper/resetDb endpoint (see index.php + TestHelper.php).
+          # This mirrors Laravel's APP_ENV=testing pattern — the framework environment is the gate.
+          echo "CI_ENV=testing" >> .env
 
       - name: Start Docker stack
         run: docker compose up -d
@@ -37,6 +38,12 @@ jobs:
       - name: Wait for app to be ready
         run: |
           timeout 120 bash -c 'until curl -sf http://localhost/defaultinstance > /dev/null; do sleep 2; done'
+
+      - name: Initialize application
+        run: |
+          docker compose exec -T php-fpm composer install --no-interaction --no-progress
+          docker compose exec -T php-fpm php doctrine.php orm:schema-tool:update --force
+          docker compose exec -T postgres psql -U elevator -d elevator < docker/postgresQueries
 
       - name: Run API tests
         env:
@@ -50,5 +57,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 30
