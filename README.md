@@ -130,7 +130,50 @@ Elevator uses Doctrine for schema management. The entity PHP files are generated
 
 Elevator requires S3 for file storage — there is no local storage fallback. File uploads and processing will fail until an S3 bucket is configured.
 
-S3 credentials are set **per instance** in the admin UI (Instance settings), not in `.env`. You'll need an S3 bucket and an IAM user with read/write access to it.
+S3 credentials are set **per instance** in the admin UI (Instance settings → Amazon S3 Key / Secret / Bucket), not in `.env`.
+
+**Preferred:** ask the team for dev server S3 credentials and use those. This skips bucket setup and lets you process real files immediately.
+
+**Optional — set up your own bucket:**
+
+1. Create an S3 bucket (e.g. `elevator-local-yourname`)
+2. In IAM, create a new user with a policy granting `s3:*` on that bucket
+3. Generate an access key for the user — save the key and secret (shown once)
+4. Apply the following bucket policy (replace the bucket name):
+
+```json
+{
+  "Version": "2008-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "AWS": "*" },
+      "Action": "s3:GetObject",
+      "Resource": [
+        "arn:aws:s3:::YOUR-BUCKET/derivative/*streaming/*",
+        "arn:aws:s3:::YOUR-BUCKET/thumbnail/*",
+        "arn:aws:s3:::YOUR-BUCKET/vtt/*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Principal": { "AWS": "*" },
+      "Action": ["s3:DeleteObject", "s3:DeleteObjectVersion"],
+      "Resource": "arn:aws:s3:::YOUR-BUCKET/original/*",
+      "Condition": { "Null": { "aws:MultiFactorAuthAge": true } }
+    },
+    {
+      "Effect": "Deny",
+      "Principal": { "AWS": "*" },
+      "Action": "s3:PutLifecycleConfiguration",
+      "Resource": "arn:aws:s3:::YOUR-BUCKET",
+      "Condition": { "Null": { "aws:MultiFactorAuthAge": true } }
+    }
+  ]
+}
+```
+
+5. Enter the key, secret, bucket name, and region in the admin UI under Instance settings
 
 The `AWS_QUEUEING_*` vars in `.env` are separate — they're for the AWS Batch job queue used for background file processing, and are only needed if you're not using the local Beanstalkd queue.
 
