@@ -1,0 +1,93 @@
+name: API Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false   # elevator-ui not needed for PHP API tests
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Copy env file
+        run: |
+          cp .env.example .env
+          # Replace values in-place to avoid duplicate keys in .env.
+          sed -i "s/^DEFAULT_ADMIN_PASSWORD=.*/DEFAULT_ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}/" .env
+
+      - name: Generate SSL certs
+        run: |
+          mkdir -p certs
+          openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout certs/nginx.key \
+            -out    certs/nginx.crt \
+            -subj   "/CN=localhost" \
+            -addext "subjectAltName=IP:127.0.0.1,DNS:localhost" 2>/dev/null
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build PHP image (with layer cache)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: elevator-php-fpm:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DOCKER_SCRATCH_DIR=/scratch
+            DOCKER_ENVIRONMENT=testing
+
+      - name: Start Docker stack
+        run: docker compose up -d --no-build
+
+      - name: Wait for app to be ready
+        run: |
+          timeout 120 bash -c 'until curl -sf http://localhost/defaultinstance > /dev/null; do sleep 2; done'
+
+      - name: Initialize application
+        run: |
+          docker compose exec -T php-fpm composer install --no-interaction --no-progress
+          docker compose exec -T php-fpm php doctrine.php orm:schema-tool:update --force
+          docker compose exec -T postgres psql -U elevator -d elevator < docker/postgresQueries
+          # Sync admin password hash from .env so seed hash doesn't need to match.
+          _enc_key=$(grep -E '^ENCRYPTION_KEY=' .env | cut -d= -f2)
+          _admin_pw=$(grep -E '^DEFAULT_ADMIN_PASSWORD=' .env | cut -d= -f2)
+          _hash=$(echo -n "${_enc_key}${_admin_pw}" | shasum -a 1 | cut -d' ' -f1)
+          docker compose exec -T postgres psql -U elevator -d elevator \
+            -c "UPDATE users SET password = '${_hash}' WHERE username = 'admin';"
+
+      - name: Run API tests
+        env:
+          BASE_URL: https://localhost/defaultinstance
+          ADMIN_USERNAME: admin
+          DEFAULT_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: npm run test:api
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30

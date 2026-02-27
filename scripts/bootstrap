@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# scripts/bootstrap — one-time setup for a new worktree or fresh clone.
+#
+# Run from the repo root: bash scripts/bootstrap
+# Safe to re-run; most steps skip if already complete.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+# ── helpers ──────────────────────────────────────────────────────────────────
+
+info()    { echo "  [info]  $*"; }
+success() { echo "  [ok]    $*"; }
+warn()    { echo "  [warn]  $*" >&2; }
+fatal()   { echo "  [error] $*" >&2; exit 1; }
+
+require() {
+    command -v "$1" &>/dev/null || fatal "'$1' is required but not installed."
+}
+
+# ── prerequisites ─────────────────────────────────────────────────────────────
+
+echo
+echo "╔══════════════════════════════════════════╗"
+echo "║         Elevator bootstrap setup         ║"
+echo "╚══════════════════════════════════════════╝"
+echo
+
+require docker
+require composer
+
+if ! docker info &>/dev/null; then
+    fatal "Docker is not running. Start Docker Desktop and try again."
+fi
+
+# ── .env ─────────────────────────────────────────────────────────────────────
+
+if [[ -f .env ]]; then
+    info ".env already exists — skipping copy."
+else
+    cp .env.example .env
+    success "Copied .env.example → .env"
+    warn "Review .env and set DEFAULT_ADMIN_PASSWORD, S3 credentials, etc. before continuing."
+    echo
+    read -r -p "  Press enter to continue after editing .env, or Ctrl-C to stop..."
+    echo
+fi
+
+# ── SSL certs ─────────────────────────────────────────────────────────────────
+# Nginx needs certs/nginx.crt and certs/nginx.key for the HTTPS vhost.
+
+mkdir -p certs
+
+if [[ -f certs/nginx.crt && -f certs/nginx.key ]]; then
+    info "SSL certs already exist — skipping."
+elif command -v mkcert &>/dev/null; then
+    info "Generating locally-trusted certs with mkcert..."
+    mkcert -install 2>/dev/null || true
+    mkcert -key-file certs/nginx.key -cert-file certs/nginx.crt localhost 127.0.0.1 ::1
+    success "SSL certs created with mkcert."
+else
+    info "mkcert not found — generating self-signed certs with openssl..."
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout certs/nginx.key \
+        -out    certs/nginx.crt \
+        -subj   "/CN=localhost" \
+        -addext "subjectAltName=IP:127.0.0.1,DNS:localhost" \
+        2>/dev/null
+    success "Self-signed SSL certs created. Add certs/nginx.crt to your system trust store for HTTPS to work in the browser."
+fi
+
+# ── required filesystem artifacts ─────────────────────────────────────────────
+
+mkdir -p application/logs
+touch REVISION
+success "application/logs/ and REVISION file ready."
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+
+info "Starting Docker services..."
+docker compose up -d --build
+success "Docker services started."
+
+# ── PHP dependencies ──────────────────────────────────────────────────────────
+
+info "Installing PHP dependencies..."
+docker compose exec php-fpm composer install --no-interaction
+success "Composer dependencies installed."
+
+# ── Database schema ───────────────────────────────────────────────────────────
+
+info "Updating Doctrine schema..."
+docker compose exec php-fpm php doctrine.php orm:schema-tool:update --force
+success "Doctrine schema updated."
+
+# ── Seed data ─────────────────────────────────────────────────────────────────
+
+info "Loading seed data into PostgreSQL..."
+# Load from .env for connection details
+# shellcheck source=/dev/null
+source <(grep -E '^(DATABASE_USER|DATABASE_DB|DATABASE_PASSWORD)=' .env | sed 's/^/export /')
+
+docker compose exec -T postgres \
+    psql -U "${DATABASE_USER:-elevator}" -d "${DATABASE_DB:-elevator}" \
+    < docker/postgresQueries
+success "Seed data loaded."
+
+# ── Admin password ───────────────────────────────────────────────────────────
+
+# Sync the admin user's password hash from .env so the seed hash doesn't need
+# to match any particular ENCRYPTION_KEY / DEFAULT_ADMIN_PASSWORD combination.
+info "Syncing admin password from .env..."
+_enc_key=$(grep -E '^ENCRYPTION_KEY=' .env | cut -d= -f2)
+_admin_pw=$(grep -E '^DEFAULT_ADMIN_PASSWORD=' .env | cut -d= -f2)
+if [[ -n "$_enc_key" && -n "$_admin_pw" ]]; then
+    _hash=$(echo -n "${_enc_key}${_admin_pw}" | shasum -a 1 | cut -d' ' -f1)
+    docker compose exec -T postgres \
+        psql -U "${DATABASE_USER:-elevator}" -d "${DATABASE_DB:-elevator}" \
+        -c "UPDATE users SET password = '${_hash}' WHERE username = 'admin';" > /dev/null
+    success "Admin password synced."
+else
+    warn "ENCRYPTION_KEY or DEFAULT_ADMIN_PASSWORD not set in .env — skipping password sync."
+fi
+
+# ── Node / Playwright ─────────────────────────────────────────────────────────
+
+if [[ -f package.json ]]; then
+    info "Installing Node.js dependencies..."
+    npm install --no-fund --no-audit
+    success "npm install complete."
+
+    if grep -q '"@playwright/test"' package.json; then
+        info "Installing Playwright browsers..."
+        npx playwright install chromium
+        success "Playwright browsers installed."
+    fi
+fi
+
+# ── done ──────────────────────────────────────────────────────────────────────
+
+echo
+echo "╔══════════════════════════════════════════╗"
+echo "║           Bootstrap complete!            ║"
+echo "╚══════════════════════════════════════════╝"
+echo
+_https_port=$(grep -E '^HTTPS_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '"' || true)
+_https_port="${_https_port:-443}"
+if [[ "$_https_port" == "443" ]]; then
+    _app_url="https://localhost/defaultinstance"
+else
+    _app_url="https://localhost:${_https_port}/defaultinstance"
+fi
+echo "  App:   ${_app_url}"
+echo "  Admin: username=admin, password=<DEFAULT_ADMIN_PASSWORD in .env>"
+echo
+echo "  Run tests:      npm run test:api"
+echo "  Dev UI:         cd assets/elevator-ui && yarn dev"
+echo "  Process a file: ./docker/runJob.sh <fileObjectId>"
+echo

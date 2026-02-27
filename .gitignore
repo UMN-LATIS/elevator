@@ -27,3 +27,7 @@ assets/elevator-ui/*
 !assets/elevator-ui/dist
 certs
 REVISION
+
+# Playwright output
+/test-results/
+/playwright-report/
