@@ -41,8 +41,24 @@ jobs:
             -subj   "/CN=localhost" \
             -addext "subjectAltName=IP:127.0.0.1,DNS:localhost" 2>/dev/null
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build PHP image (with layer cache)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: elevator-php-fpm:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DOCKER_SCRATCH_DIR=/scratch
+            DOCKER_ENVIRONMENT=testing
+
       - name: Start Docker stack
-        run: docker compose up -d
+        run: docker compose up -d --no-build
 
       - name: Wait for app to be ready
         run: |

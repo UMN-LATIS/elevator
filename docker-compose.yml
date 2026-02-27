@@ -38,6 +38,7 @@ services:
     ports:
       - "${BEANSTALKD_PORT:-11300}:11300"
   php-fpm:
+    image: elevator-php-fpm:latest
     build:
       context: .
       dockerfile: docker/Dockerfile
