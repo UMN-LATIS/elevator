@@ -1,16 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Templates extends Instance_Controller {
-
-	private function toTemplateSummary(Entity\Template $template): array
-	{
-		return [
-			'id'         => $template->getId(),
-			'name'       => $template->getName(),
-			'createdAt'  => $template->getCreatedAt()?->format('c'),
-			'modifiedAt' => $template->getModifiedAt()?->format('c'),
-		];
-	}
+class Templates extends Instance_Controller
+{
 
 	public function __construct()
 	{
@@ -33,6 +24,32 @@ class Templates extends Instance_Controller {
 		if (!$isJson) {
 			$this->template->loadCSS(['template']);
 		}
+	}
+
+	private function toTemplateSummary(Entity\Template $template): array
+	{
+		return [
+			'id'         => $template->getId(),
+			'name'       => $template->getName(),
+			'createdAt'  => $template->getCreatedAt()?->format('c'),
+			'modifiedAt' => $template->getModifiedAt()?->format('c'),
+		];
+	}
+
+	public function getTemplate($id = null)
+	{
+		if ($id === null) {
+			return render_json(['error' => 'Template ID required'], 400);
+		}
+
+		$template = $this->doctrine->em->find('Entity\Template', $id);
+
+		// 404 (not 403) to avoid leaking template IDs across instances.
+		if ($template === null || !$template->getInstances()->contains($this->instance)) {
+			return render_json(['error' => 'Template not found'], 404);
+		}
+
+		return render_json($template->toArray());
 	}
 
 	public function index()
