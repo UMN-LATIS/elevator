@@ -101,27 +101,23 @@ class Templates extends Instance_Controller
 		instance_redirect("templates/");
 	}
 
-	public function edit($id=null)
+	public function edit($id = null)
 	{
-		$isJson = $this->isJsonRequest();
-
-		if($id == null) {
-			$data['template'] = new Entity\Template;
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
 		}
-		else {
+
+		if ($id == null) {
+			$data['template'] = new Entity\Template;
+		} else {
 			$data['template'] = $this->doctrine->em->find('Entity\Template', $id);
 		}
 		$data['field_types'] = $this->doctrine->em->getRepository("Entity\Field_type")->findBy([], ['name' => 'ASC']);;
 
-		if (empty($data['template']))
-		{
-			return $isJson
-				? render_json(['error' => 'Template not found'], 404)
-				: show_404();
-		}
-
-		if ($isJson) {
-			return render_json($this->toTemplateSummary($data['template']));
+		if (empty($data['template'])) {
+			show_404();
 		}
 
 		$this->template->title = 'Edit Template';
