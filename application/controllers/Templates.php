@@ -263,6 +263,8 @@ class Templates extends Instance_Controller {
 	   	}
 
 		if ($isJson) {
+// Refresh to load the persisted widgetArray into the in-memory collection.
+			$this->doctrine->em->refresh($template);
 			return render_json($template->toArray());
 		}
 
