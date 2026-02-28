@@ -12,22 +12,6 @@ class Templates extends Instance_Controller {
 		];
 	}
 
-	public function getTemplate($id = null)
-	{
-		if ($id === null) {
-			return render_json(['error' => 'Template ID required'], 400);
-		}
-
-		$template = $this->doctrine->em->find('Entity\Template', $id);
-
-		// 404 (not 403) to avoid leaking template IDs across instances.
-		if ($template === null || !$template->getInstances()->contains($this->instance)) {
-			return render_json(['error' => 'Template not found'], 404);
-		}
-
-		return render_json($template->toArray());
-	}
-
 	public function __construct()
 	{
 		parent::__construct();
@@ -174,7 +158,6 @@ class Templates extends Instance_Controller {
 		$this->doctrine->em->flush();
 
 		$orderIndex = 0;
-		$generatedFieldTitles = []; // track within this POST to avoid collision between new widgets
 		if(is_array($this->input->post('widget'))) {
 			foreach ($this->input->post('widget') as $key => $widget) {
 				$display = $orderIndex + 1;
@@ -186,24 +169,9 @@ class Templates extends Instance_Controller {
 					$widget["templateOrder"] = $display;
 				}
 
-				if (strlen(trim($widget['label'])) == 0) {
+				if(strlen(trim($widget['fieldTitle'])) == 0 || strlen(trim($widget['label'])) == 0) {
 					continue;
 				}
-
-				// Existing widgets send their locked fieldTitle; new widgets send empty → generate.
-				$fieldTitle = trim($widget['fieldTitle'] ?? '');
-				if ($fieldTitle === '') {
-					$label = preg_replace('/[^a-z0-9_]/i', '', $widget['label']);
-					// Fall back to 'field' if the label is entirely non-alphanumeric.
-					$base = strtolower($label !== '' ? $label : 'field') . '_' . $this->instance->getId();
-					$fieldTitle = $base;
-					$suffix = 2;
-					while (in_array($fieldTitle, $generatedFieldTitles)) {
-						$fieldTitle = $base . '_' . $suffix++;
-					}
-				}
-				// Seal every title (locked or generated) so subsequent new widgets can't collide with it.
-				$generatedFieldTitles[] = $fieldTitle;
 
 				// Create new widget
 				$newWidget = new Entity\Widget();
@@ -212,9 +180,9 @@ class Templates extends Instance_Controller {
 				$newWidget->setDisplay(isset($widget['display'])?1:0);
 				$newWidget->setRequired(isset($widget['required'])?1:0);
 				$newWidget->setAllowMultiple(isset($widget['allowMultiple'])?1:0);
-				$newWidget->setFieldTitle($fieldTitle);
+				$newWidget->setFieldTitle($widget['fieldTitle']);
 				$newWidget->setLabel($widget['label']);
-				$newWidget->setTooltip($widget['tooltip'] ?? null);
+				$newWidget->setTooltip($widget['tooltip']);
 
 				$fieldData = json_decode($widget['fieldData']);
 
@@ -231,7 +199,7 @@ class Templates extends Instance_Controller {
 				$newWidget->setFieldType($this->doctrine->em->find('Entity\Field_type', $widget['fieldType']));
 				$newWidget->setDirectSearch(isset($widget['directSearch'])?1:0);
 				$newWidget->setClickToSearch(isset($widget['clickToSearch'])?1:0);
-				$newWidget->setClickToSearchType($widget['clickToSearchType'] ?? 0);
+				$newWidget->setClickToSearchType($widget['clickToSearchType']??1);
 
 
 				// Persist
@@ -263,9 +231,7 @@ class Templates extends Instance_Controller {
 	   	}
 
 		if ($isJson) {
-// Refresh to load the persisted widgetArray into the in-memory collection.
-			$this->doctrine->em->refresh($template);
-			return render_json($template->toArray());
+			return render_json($this->toTemplateSummary($template));
 		}
 
 		instance_redirect('templates/');
