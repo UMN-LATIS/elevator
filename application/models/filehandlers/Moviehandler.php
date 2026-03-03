@@ -182,7 +182,7 @@ class MovieHandler extends FileHandlerBase {
 			echo "Generating captions for " . $this->getObjectId() . "\n";
 			$uploadWidget = $this->getUploadWidget();
 			if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
-				return;
+				return JOB_SUCCESS;
 			}
 
 			
