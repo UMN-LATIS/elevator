@@ -234,7 +234,7 @@ class Instances extends Instance_Controller
 			return render_json(['error' => 'No permission to access this instance'], 403);
 		}
 
-		render_json($this->toInstanceArray($instance));
+		return render_json($this->toInstanceArray($instance));
 	}
 
 	public function edit($id = null, $returnJson = false)
