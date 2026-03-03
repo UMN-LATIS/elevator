@@ -81,7 +81,7 @@ class Doctrine
 		// AUTOGENERATE_ALWAYS deletes + recreates on every request, so a second worker
 		// can fail to find the file between the delete and the write.
 		$doctrineConfig->setAutoGenerateProxyClasses(\Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
-			$config = new Configuration();
+		$config = new Configuration();
         // $config->setMiddlewares([$middleware]);
 
         if($cache) {
