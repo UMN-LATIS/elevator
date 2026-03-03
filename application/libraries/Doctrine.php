@@ -53,12 +53,12 @@ class Doctrine
         $metadata_paths = array(APPPATH . 'models/Entity');
 
         // Set $dev_mode to TRUE to disable caching while you develop
-        
+
 
         // $doctrineConfig = Setup::createXMLMetadataConfiguration($metadata_paths, $dev_mode = true, $proxies_dir);
         // $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
         require(APPPATH . 'config/config.php');
-    
+
         if($useCache === null) {
             $useCache = $config["enableCaching"];
         }
@@ -68,7 +68,7 @@ class Doctrine
 
         if($useCache && $config["redis"]) {
             $redis = new Redis();
-            
+
             $redis->connect($config["redis"], $config["redisPort"]);
             $this->redisHost = $redis;
 
@@ -77,29 +77,32 @@ class Doctrine
 
         $doctrineConfig = ORMSetup::createAttributeMetadataConfiguration(paths:$metadata_paths,isDevMode: !($useCache),proxyDir: $proxies_dir,cache: $cache);
         $doctrineConfig->setProxyDir($proxies_dir);
-        $doctrineConfig->setAutoGenerateProxyClasses(true);
-        $config = new Configuration();
+		// AUTOGENERATE_FILE_NOT_EXISTS avoids a race condition between PHP-FPM workers:
+		// AUTOGENERATE_ALWAYS deletes + recreates on every request, so a second worker
+		// can fail to find the file between the delete and the write.
+		$doctrineConfig->setAutoGenerateProxyClasses(\Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
+			$config = new Configuration();
         // $config->setMiddlewares([$middleware]);
 
         if($cache) {
             $doctrineConfig->setMetadataCache($cache);
             $doctrineConfig->setQueryCache($cache);
-            
+
             $doctrineConfig->setResultCache($cache);
         }
-        
+
 
 // $logger = new \Doctrine\DBAL\Logging\EchoSQLLogger;
-        
 
-        
+
+
 //  $config = $this->em->getConnection()->getConfiguration();
         // $config->setSQLLogger($logger);
         $connection = \Doctrine\DBAL\DriverManager::getConnection($connection_options, $config);
         if(!Type::hasType('uuid')) {
             Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
         }
-        
+
 
         $this->em = new EntityManager($connection, $doctrineConfig);
     }
