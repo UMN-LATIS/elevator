@@ -244,6 +244,73 @@ test.describe("templates", () => {
   });
 });
 
+// ─── GET /templates/getFieldTypes ────────────────────────────────────────────
+
+test.describe("GET getFieldTypes", () => {
+  test.beforeEach(async ({ page }) => {
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
+    if (!adminPassword) {
+      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
+      return;
+    }
+    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+  });
+
+  // F1: returns a non-empty array of field types with the expected shape
+  test("returns an array of field type objects", async ({ page }) => {
+    const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
+      headers: { Accept: "application/json" },
+    });
+
+    expect(res.status()).toBe(200);
+    const body = (await res.json()) as unknown[];
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.length).toBeGreaterThan(0);
+  });
+
+  // F2: each entry has id, name, modelName, sampleFieldData keys
+  test("each field type has the expected shape", async ({ page }) => {
+    const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
+      headers: { Accept: "application/json" },
+    });
+
+    const body = (await res.json()) as Array<{
+      id: unknown;
+      name: unknown;
+      modelName: unknown;
+      sampleFieldData: unknown;
+    }>;
+
+    for (const ft of body) {
+      expect(ft).toMatchObject({
+        id: expect.any(Number),
+        name: expect.any(String),
+      });
+      expect("modelName" in ft).toBe(true);
+      expect("sampleFieldData" in ft).toBe(true);
+    }
+  });
+
+  // F3: results are sorted alphabetically by name
+  test("returns field types sorted by name", async ({ page }) => {
+    const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
+      headers: { Accept: "application/json" },
+    });
+
+    const body = (await res.json()) as Array<{ name: string }>;
+    const names = body.map((ft) => ft.name);
+    expect(names).toEqual([...names].sort());
+  });
+
+  // F4: unauthenticated — returns 401
+  test("returns 401 for unauthenticated requests", async ({ request }) => {
+    const res = await request.get(`${baseURL()}/templates/getFieldTypes`, {
+      headers: { Accept: "application/json" },
+    });
+    expect(res.status()).toBe(401);
+  });
+});
+
 // ─── Richer API tests (feat-update-template-api-for-editor) ──────────────────
 //
 // Tests for the getTemplate() endpoint and widgetArray / fieldTitle behaviour
