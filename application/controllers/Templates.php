@@ -130,14 +130,19 @@ class Templates extends Instance_Controller
 	{
 		$isJson = $this->isJsonRequest();
 
-		if(is_numeric($this->input->post('templateId'))) {
+		if (is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
-		}
-		else {
+		
+			// 404 (not 403) to avoid leaking template IDs across instances.
+			if ($template !== null && !$template->getInstances()->contains($this->instance)) {
+				return $isJson
+					? render_json(['error' => 'Template not found'], 404)
+					: show_404();
+			}
+		} 		else {
 			$template = new Entity\Template();
 			$template->setCreatedAt(new \DateTime('now'));
 			$template->addInstance($this->instance);
-
 		}
 
 		if ($template === null) {
@@ -223,7 +228,17 @@ class Templates extends Instance_Controller
 		}
 		$this->doctrine->em->flush();
 
-
+// The bulk DQL DELETE above runs a raw SQL DELETE that bypasses
+		// Doctrine's Unit of Work. Doctrine never updates its in-memory identity map,
+		// so $template->getWidgets() still returns the old (now-deleted) widget
+		// collection even though the new widgets were just flushed to the database.
+		// Calling refresh() discards Doctrine's cached state for $template and reloads
+		// it from the DB, so the JSON response contains the correct widget list.
+		// The non-JSON path redirects away and reloads data independently, so it
+		// doesn't need this.
+		if ($isJson) {
+			$this->doctrine->em->refresh($template);
+		}
 
 		/**
 		 * HACK HACK HACK
@@ -244,7 +259,7 @@ class Templates extends Instance_Controller
 	   	}
 
 		if ($isJson) {
-			return render_json($this->toTemplateSummary($template));
+			return render_json($template->toArray());
 		}
 
 		instance_redirect('templates/');
@@ -257,7 +272,9 @@ class Templates extends Instance_Controller
 		$isJson = $this->isJsonRequest();
 
 		$template = $this->doctrine->em->find('Entity\Template', $id);
-		if ($template === null) {
+
+		// 404 (not 403) to avoid leaking template IDs across instances.
+		if ($template === null || !$template->getInstances()->contains($this->instance)) {
 			return $isJson
 				? render_json(['error' => 'Template not found'], 404)
 				: show_404();
@@ -297,13 +314,13 @@ class Templates extends Instance_Controller
 		// This seems like the easiest way to get the widgets in their display order
 		$data['widgetsViewOrder'] = $this->doctrine->em->getRepository('Entity\Widget')
           ->findBy(
-             array('template'=> $data['template']),
+             array('template' => $data['template']),
              array('view_order' => 'ASC')
            );
 
     $data['widgetsTemplateOrder'] = $this->doctrine->em->getRepository('Entity\Widget')
           ->findBy(
-             array('template'=> $data['template']),
+             array('template' => $data['template']),
              array('template_order' => 'ASC')
            );
 
