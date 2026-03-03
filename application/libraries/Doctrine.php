@@ -77,11 +77,11 @@ class Doctrine
 
         $doctrineConfig = ORMSetup::createAttributeMetadataConfiguration(paths:$metadata_paths,isDevMode: !($useCache),proxyDir: $proxies_dir,cache: $cache);
         $doctrineConfig->setProxyDir($proxies_dir);
-		// AUTOGENERATE_FILE_NOT_EXISTS avoids a race condition between PHP-FPM workers:
-		// AUTOGENERATE_ALWAYS deletes + recreates on every request, so a second worker
-		// can fail to find the file between the delete and the write.
-		$doctrineConfig->setAutoGenerateProxyClasses(\Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
-		$config = new Configuration();
+        // AUTOGENERATE_FILE_NOT_EXISTS avoids a race condition between PHP-FPM workers:
+        // AUTOGENERATE_ALWAYS deletes + recreates on every request, so a second worker
+        // can fail to find the file between the delete and the write.
+        $doctrineConfig->setAutoGenerateProxyClasses(\Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
+        $config = new Configuration();
         // $config->setMiddlewares([$middleware]);
 
         if($cache) {
