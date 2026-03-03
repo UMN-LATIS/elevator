@@ -36,6 +36,20 @@ class Templates extends Instance_Controller
 		];
 	}
 
+	public function getFieldTypes()
+	{
+		$fieldTypes = $this->doctrine->em->getRepository('Entity\Field_type')->findBy([], ['name' => 'ASC']);
+
+		return render_json(array_map(fn($ft) => [
+			'id'              => $ft->getId(),
+			'name'            => $ft->getName(),
+			'modelName'       => $ft->getModelName(),
+			'sampleFieldData' => $ft->getSampleFieldData() !== null
+				? json_decode($ft->getSampleFieldData())
+				: null,
+		], $fieldTypes));
+	}
+
 	public function getTemplate($id = null)
 	{
 		if ($id === null) {
@@ -139,7 +153,7 @@ class Templates extends Instance_Controller
 					? render_json(['error' => 'Template not found'], 404)
 					: show_404();
 			}
-		} 		else {
+		} else {
 			$template = new Entity\Template();
 			$template->setCreatedAt(new \DateTime('now'));
 			$template->addInstance($this->instance);
