@@ -1,16 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Templates extends Instance_Controller {
-
-	private function toTemplateSummary(Entity\Template $template): array
-	{
-		return [
-			'id'         => $template->getId(),
-			'name'       => $template->getName(),
-			'createdAt'  => $template->getCreatedAt()?->format('c'),
-			'modifiedAt' => $template->getModifiedAt()?->format('c'),
-		];
-	}
+class Templates extends Instance_Controller
+{
 
 	public function __construct()
 	{
@@ -33,6 +24,46 @@ class Templates extends Instance_Controller {
 		if (!$isJson) {
 			$this->template->loadCSS(['template']);
 		}
+	}
+
+	private function toTemplateSummary(Entity\Template $template): array
+	{
+		return [
+			'id'         => $template->getId(),
+			'name'       => $template->getName(),
+			'createdAt'  => $template->getCreatedAt()?->format('c'),
+			'modifiedAt' => $template->getModifiedAt()?->format('c'),
+		];
+	}
+
+	public function getFieldTypes()
+	{
+		$fieldTypes = $this->doctrine->em->getRepository('Entity\Field_type')->findBy([], ['name' => 'ASC']);
+
+		return render_json(array_map(fn($ft) => [
+			'id'              => $ft->getId(),
+			'name'            => $ft->getName(),
+			'modelName'       => $ft->getModelName(),
+			'sampleFieldData' => $ft->getSampleFieldData() !== null
+				? json_decode($ft->getSampleFieldData())
+				: null,
+		], $fieldTypes));
+	}
+
+	public function getTemplate($id = null)
+	{
+		if ($id === null) {
+			return render_json(['error' => 'Template ID required'], 400);
+		}
+
+		$template = $this->doctrine->em->find('Entity\Template', $id);
+
+		// 404 (not 403) to avoid leaking template IDs across instances.
+		if ($template === null || !$template->getInstances()->contains($this->instance)) {
+			return render_json(['error' => 'Template not found'], 404);
+		}
+
+		return render_json($template->toArray());
 	}
 
 	public function index()
@@ -84,27 +115,23 @@ class Templates extends Instance_Controller {
 		instance_redirect("templates/");
 	}
 
-	public function edit($id=null)
+	public function edit($id = null)
 	{
-		$isJson = $this->isJsonRequest();
-
-		if($id == null) {
-			$data['template'] = new Entity\Template;
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
 		}
-		else {
+
+		if ($id == null) {
+			$data['template'] = new Entity\Template;
+		} else {
 			$data['template'] = $this->doctrine->em->find('Entity\Template', $id);
 		}
 		$data['field_types'] = $this->doctrine->em->getRepository("Entity\Field_type")->findBy([], ['name' => 'ASC']);;
 
-		if (empty($data['template']))
-		{
-			return $isJson
-				? render_json(['error' => 'Template not found'], 404)
-				: show_404();
-		}
-
-		if ($isJson) {
-			return render_json($this->toTemplateSummary($data['template']));
+		if (empty($data['template'])) {
+			show_404();
 		}
 
 		$this->template->title = 'Edit Template';
@@ -117,14 +144,19 @@ class Templates extends Instance_Controller {
 	{
 		$isJson = $this->isJsonRequest();
 
-		if(is_numeric($this->input->post('templateId'))) {
+		if (is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
-		}
-		else {
+		
+			// 404 (not 403) to avoid leaking template IDs across instances.
+			if ($template !== null && !$template->getInstances()->contains($this->instance)) {
+				return $isJson
+					? render_json(['error' => 'Template not found'], 404)
+					: show_404();
+			}
+		} else {
 			$template = new Entity\Template();
 			$template->setCreatedAt(new \DateTime('now'));
 			$template->addInstance($this->instance);
-
 		}
 
 		if ($template === null) {
@@ -210,7 +242,17 @@ class Templates extends Instance_Controller {
 		}
 		$this->doctrine->em->flush();
 
-
+// The bulk DQL DELETE above runs a raw SQL DELETE that bypasses
+		// Doctrine's Unit of Work. Doctrine never updates its in-memory identity map,
+		// so $template->getWidgets() still returns the old (now-deleted) widget
+		// collection even though the new widgets were just flushed to the database.
+		// Calling refresh() discards Doctrine's cached state for $template and reloads
+		// it from the DB, so the JSON response contains the correct widget list.
+		// The non-JSON path redirects away and reloads data independently, so it
+		// doesn't need this.
+		if ($isJson) {
+			$this->doctrine->em->refresh($template);
+		}
 
 		/**
 		 * HACK HACK HACK
@@ -231,7 +273,7 @@ class Templates extends Instance_Controller {
 	   	}
 
 		if ($isJson) {
-			return render_json($this->toTemplateSummary($template));
+			return render_json($template->toArray());
 		}
 
 		instance_redirect('templates/');
@@ -244,7 +286,9 @@ class Templates extends Instance_Controller {
 		$isJson = $this->isJsonRequest();
 
 		$template = $this->doctrine->em->find('Entity\Template', $id);
-		if ($template === null) {
+
+		// 404 (not 403) to avoid leaking template IDs across instances.
+		if ($template === null || !$template->getInstances()->contains($this->instance)) {
 			return $isJson
 				? render_json(['error' => 'Template not found'], 404)
 				: show_404();
@@ -284,13 +328,13 @@ class Templates extends Instance_Controller {
 		// This seems like the easiest way to get the widgets in their display order
 		$data['widgetsViewOrder'] = $this->doctrine->em->getRepository('Entity\Widget')
           ->findBy(
-             array('template'=> $data['template']),
+             array('template' => $data['template']),
              array('view_order' => 'ASC')
            );
 
     $data['widgetsTemplateOrder'] = $this->doctrine->em->getRepository('Entity\Widget')
           ->findBy(
-             array('template'=> $data['template']),
+             array('template' => $data['template']),
              array('template_order' => 'ASC')
            );
 

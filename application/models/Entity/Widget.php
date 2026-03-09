@@ -603,4 +603,30 @@ class Widget
     {
         return $this->template;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'widgetId'            => $this->getId(),
+            'fieldTitle'          => $this->getFieldTitle(),
+            'label'               => $this->getLabel(),
+            'tooltip'             => $this->getTooltip(),
+            'templateOrder'       => $this->getTemplateOrder(),
+            'viewOrder'           => $this->getViewOrder(),
+            'display'             => (bool) $this->getDisplay(),
+            'displayInPreview'    => (bool) $this->getDisplayInPreview(),
+            'required'            => (bool) $this->getRequired(),
+            'searchable'          => (bool) $this->getSearchable(),
+            'allowMultiple'       => (bool) $this->getAllowMultiple(),
+            'attemptAutocomplete' => (bool) $this->getAttemptAutocomplete(),
+            'directSearch'        => (bool) $this->getDirectSearch(),
+            'clickToSearch'       => (bool) $this->getClickToSearch(),
+            'clickToSearchType'   => (int) ($this->getClickToSearchType() ?? 0), // 0 = no type
+            'fieldData'           => $this->getFieldData(),
+            // Both are included: fieldType (name string) is for display; fieldTypeId (int)
+            // is the ID update() expects when posting back via setFieldType().
+            'fieldType'           => $this->field_type?->getName(),
+            'fieldTypeId'         => $this->field_type?->getId(),
+        ];
+    }
 }

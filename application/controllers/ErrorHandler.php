@@ -37,6 +37,7 @@ class errorHandler extends Instance_Controller {
 	public function notFound()
 	{
 		if ($this->isUsingVueUI()) {
+			$this->output->set_status_header(404);
 			$this->template->set_template("vueTemplate");
 			$this->template->publish();
 			return;
