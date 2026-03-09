@@ -816,8 +816,10 @@ class Asset_model extends CI_Model {
 			}
 		}
 		else {
-			$this->assetObject->setCreatedBy(0);
-			$this->assetObject->setModifiedBy(0);
+			if(!$this->assetObject->getCreatedBy()) {
+				$this->assetObject->setCreatedBy(0);
+				$this->assetObject->setModifiedBy(0);
+			}
 		}
 
 		$this->assetObject->setReadyForDisplay($this->getGlobalValue("readyForDisplay")?true:false);
