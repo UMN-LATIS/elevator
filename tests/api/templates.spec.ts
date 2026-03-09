@@ -80,7 +80,7 @@ function newWidgetFields(
 ): Record<string, string> {
   return {
     [`widget[${index}][label]`]: label,
-    [`widget[${index}][fieldTitle]`]: "",
+    [`widget[${index}][fieldTitle]`]: `field_${index}`, // both label and fieldTitle are required
     [`widget[${index}][fieldType]`]: "1", // field type 1 = "text" (always in seed data)
     [`widget[${index}][viewOrder]`]: String(index + 1),
     [`widget[${index}][templateOrder]`]: String(index + 1),
@@ -414,24 +414,20 @@ test.describe("templates API", () => {
       expect(body.name).toBe("Updated Name");
     });
 
-    // U3: new widget with empty fieldTitle gets a server-generated fieldTitle
-    test("generates fieldTitle server-side for new widgets", async ({
-      page,
-    }) => {
+    // U3: widget with empty fieldTitle is rejected — fieldTitle is required
+    test("returns 422 when a widget fieldTitle is empty", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
         form: {
           name: "Widget FieldTitle Test",
           ...templateBaseFields,
-          ...newWidgetFields(0, "Title"),
+          ...newWidgetFields(0, "Title", { "widget[0][fieldTitle]": "" }),
         },
       });
 
-      expect(res.status()).toBe(200);
-      const body = (await res.json()) as TemplateShape;
-      expect(body.widgetArray).toHaveLength(1);
-      // Pattern: <lowercased_label>_<instanceId>  (instance 1 in seed data)
-      expect(body.widgetArray[0].fieldTitle).toBe("title_1");
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.details.some((d) => d.includes("fieldTitle"))).toBe(true);
     });
 
     // U4: existing widget fieldTitle is round-tripped unchanged
@@ -542,7 +538,7 @@ test.describe("templates API", () => {
           ...templateBaseFields,
           // Intentionally omit clickToSearchType
           "widget[0][label]": "Some Field",
-          "widget[0][fieldTitle]": "",
+          "widget[0][fieldTitle]": "some_field",
           "widget[0][fieldType]": "1",
           "widget[0][viewOrder]": "1",
           "widget[0][templateOrder]": "1",
@@ -553,26 +549,204 @@ test.describe("templates API", () => {
 
       expect(res.status()).toBe(200);
       const body = (await res.json()) as TemplateShape;
-      expect(body.widgetArray[0].clickToSearchType).toBe(0);
+      expect(body.widgetArray[0].clickToSearchType).toBe(1); // controller defaults to 1 via ??1
     });
 
-    // U9: widget with a blank label is skipped and not saved
-    test("skips widgets with blank labels", async ({ page }) => {
+    // U9: widget with a blank label is rejected — label is required
+    test("returns 422 when a widget label is blank", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
         form: {
-          name: "Skip Blank Label Test",
+          name: "Blank Label Test",
           ...templateBaseFields,
           ...newWidgetFields(0, "Real Field"),
-          ...newWidgetFields(1, ""), // blank label — should be skipped
-          ...newWidgetFields(2, "  "), // whitespace-only label — also skipped
+          ...newWidgetFields(1, ""), // blank label — now a validation error
         },
       });
 
-      expect(res.status()).toBe(200);
-      const body = (await res.json()) as TemplateShape;
-      expect(body.widgetArray).toHaveLength(1);
-      expect(body.widgetArray[0].label).toBe("Real Field");
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.details.some((d) => d.includes("label"))).toBe(true);
+    });
+  });
+
+  // ── POST /templates/update – validation ──────────────────────────────────────
+
+  test.describe("POST update – validation", () => {
+    const TOO_LONG = "x".repeat(256);
+
+    // V1: missing name → 422
+    test("returns 422 when name is missing", async ({ page }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: { ...templateBaseFields },
+      });
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string };
+      expect(body.error).toBe("Validation failed");
+    });
+
+    // V2: name > 255 chars → 422
+    test("returns 422 when name exceeds 255 characters", async ({ page }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: { name: TOO_LONG, ...templateBaseFields },
+      });
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.error).toBe("Validation failed");
+      expect(body.details.some((d) => d.includes("name"))).toBe(true);
+    });
+
+    // V3: non-integer templateColor → 422
+    test("returns 422 when templateColor is not an integer", async ({
+      page,
+    }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: { name: "Test", ...templateBaseFields, templateColor: "red" },
+      });
+      expect(res.status()).toBe(422);
+    });
+
+    // V4: non-integer recursiveIndexDepth → 422
+    test("returns 422 when recursiveIndexDepth is not an integer", async ({
+      page,
+    }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: {
+          name: "Test",
+          ...templateBaseFields,
+          recursiveIndexDepth: "deep",
+        },
+      });
+      expect(res.status()).toBe(422);
+    });
+
+    // V5: widget tooltip > 255 chars → 422
+    test("returns 422 when a widget tooltip exceeds 255 characters", async ({
+      page,
+    }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: {
+          name: "Tooltip Overflow",
+          ...templateBaseFields,
+          ...newWidgetFields(0, "My Field", {
+            "widget[0][tooltip]": TOO_LONG,
+          }),
+        },
+      });
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.details.some((d) => d.includes("tooltip"))).toBe(true);
+    });
+
+    // V6: widget label > 255 chars → 422
+    test("returns 422 when a widget label exceeds 255 characters", async ({
+      page,
+    }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: {
+          name: "Label Overflow",
+          ...templateBaseFields,
+          ...newWidgetFields(0, TOO_LONG),
+        },
+      });
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.details.some((d) => d.includes("label"))).toBe(true);
+    });
+
+    // V7: widget fieldData is not valid JSON → 422
+    test("returns 422 when a widget fieldData is invalid JSON", async ({
+      page,
+    }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: {
+          name: "Bad FieldData",
+          ...templateBaseFields,
+          ...newWidgetFields(0, "My Field", {
+            "widget[0][fieldData]": "{not: valid json",
+          }),
+        },
+      });
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.details.some((d) => d.includes("fieldData"))).toBe(true);
+    });
+
+    // V8: widget fieldType missing → 422
+    test("returns 422 when a widget fieldType is missing", async ({ page }) => {
+      const res = await page.request.post(`${baseURL()}/templates/update`, {
+        headers: { Accept: "application/json" },
+        form: {
+          name: "Missing FieldType",
+          ...templateBaseFields,
+          "widget[0][label]": "My Field",
+          "widget[0][fieldTitle]": "my_field",
+          "widget[0][viewOrder]": "1",
+          "widget[0][templateOrder]": "1",
+          "widget[0][fieldData]": "",
+          "widget[0][tooltip]": "",
+          // fieldType intentionally omitted
+        },
+      });
+      expect(res.status()).toBe(422);
+      const body = (await res.json()) as { error: string; details: string[] };
+      expect(body.details.some((d) => d.includes("fieldType"))).toBe(true);
+    });
+
+    // V9: validation fires before any DB writes — existing widgets are preserved
+    test("does not destroy existing widgets when validation fails", async ({
+      page,
+    }) => {
+      // Create a template with one valid widget (explicit fieldTitle so it isn't skipped).
+      const created = await(async () => {
+        const res = await page.request.post(`${baseURL()}/templates/update`, {
+          headers: { Accept: "application/json" },
+          form: {
+            name: "Stable Template",
+            ...templateBaseFields,
+            ...newWidgetFields(0, "Original Field", {
+              "widget[0][fieldTitle]": "original_field",
+            }),
+          },
+        });
+        return res.json() as Promise<TemplateShape>;
+      })();
+      expect(created.widgetArray).toHaveLength(1);
+
+      // Attempt an update with an invalid tooltip (too long).
+      const updateRes = await page.request.post(
+        `${baseURL()}/templates/update`,
+        {
+          headers: { Accept: "application/json" },
+          form: {
+            templateId: String(created.id),
+            name: "Stable Template",
+            ...templateBaseFields,
+            ...newWidgetFields(0, "Original Field", {
+              "widget[0][fieldTitle]": "original_field",
+              "widget[0][tooltip]": TOO_LONG,
+            }),
+          },
+        },
+      );
+      expect(updateRes.status()).toBe(422);
+
+      // Fetch the template and confirm the original widget is still there.
+      const fetchRes = await page.request.get(
+        `${baseURL()}/templates/getTemplate/${created.id}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(fetchRes.status()).toBe(200);
+      const fetched = (await fetchRes.json()) as TemplateShape;
+      expect(fetched.widgetArray).toHaveLength(1);
+      expect(fetched.widgetArray[0].label).toBe("Original Field");
     });
   });
 });
