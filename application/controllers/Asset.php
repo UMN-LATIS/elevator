@@ -130,9 +130,9 @@ class asset extends Instance_Controller {
 		
 		// Try to find the primary file handler, which might be another asset.  Return the hosting asset, not the filehandler directly
 
-		$targetObject = null;
 		$targetObjectId = null;
 		$targetFileObjectId = null;
+		$firstObjectIsAFile = false;
 		try {
 			$fileHandler = $assetModel->getPrimaryFilehandler();
 
@@ -142,17 +142,19 @@ class asset extends Instance_Controller {
 				// of depth, we might not actually know what this asset is.  let's check to see if we have record of this object
 				$json = json_encode($assetModel->getAsArray(null,false, false)); 
 				if(!strstr($json, $fileHandler->parentObjectId)) {
-					$targetObject = $fileHandler->getObjectId();
+					$firstObjectIsAFile = true;
+					$targetObjectId = $fileHandler->getObjectId();
 				}
 				else {
-					$targetObject = $fileHandler->parentObjectId;
+					$targetObjectId = $fileHandler->parentObjectId;
 				}
-				$targetObjectId = $targetObject;
+				$targetObjectId = $targetObjectId;
 				$targetFileObjectId = $fileHandler->getObjectId();
 			}
 			else {
-				$targetObject = $fileHandler->getObjectId();
+				$targetObjectId = $fileHandler->getObjectId();
 				$targetFileObjectId = $fileHandler->getObjectId();
+				$firstObjectIsAFile = true;
 			}
 		}
 		catch (Exception $e) {
@@ -160,6 +162,13 @@ class asset extends Instance_Controller {
 		}
 
 		if($returnJson == "true") {
+			// the old UI could handle a targetObject that was either a file or a related asset.
+			// with the JS ui, we need to be more clear about which is which. So in the case where
+			// the we've actually found a file, we want to nill that out.
+			if($firstObjectIsAFile) {
+				$targetObjectId = null;
+			}
+
 			// $json = $assetModel->getAsArray(null,false, $includeRelatedAssetCache= true); // include related assets
 			$assetObject = $assetModel->assetObject;
 			$json = $assetObject->getWidgets();
@@ -188,7 +197,7 @@ class asset extends Instance_Controller {
 			
 			$assetTitle = $assetModel->getAssetTitle();
 			$this->template->title = reset($assetTitle);
-			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObject]);
+			$this->template->content->view('asset/fullPage', ['assetModel'=>$assetModel, "firstAsset"=>$targetObjectId]);
 			$this->template->publish();
 			
 	
