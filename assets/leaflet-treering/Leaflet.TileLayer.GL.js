@@ -863,7 +863,9 @@ nextHighestPowerOfTwo: function(x) {
 
         let ctx = canvas.getContext("2d");
 		let tileSize = this.getTileSize();
-		this._map.setZoom(zoom, {animate: false}) //Zoom in to desired level so projections work properly
+		if (Math.floor(this._map.getZoom()) !== zoom) {
+			this._map.setZoom(zoom, {animate: false}) //Zoom in to desired level so projections work properly
+		}
 
 		for (let i = 0; i < 4; i++) {
 			corners[i] = this._map.project(corners[i], zoom) //change latlngs to x & y coords
@@ -1069,7 +1071,13 @@ nextHighestPowerOfTwo: function(x) {
 		//Go to top left corner
 		let pt = L.point((imin + imax)/2 * tileSize.x, (jmin + jmax)/2 * tileSize.y);
 		let ll = this._map.unproject(pt, zoom);
-		this._map.flyTo(ll, zoom, {animate: false})
+
+		// this._map.flyTo(ll, zoom, {animate: false});
+		if (Math.floor(this._map.getZoom()) !== zoom) {
+			this._map.flyTo(ll, zoom, {animate: false}); //Zoom in to desired level so projections work properly
+		} else {
+			this._map.flyTo(ll, this._map.getZoom(), {animate: false});
+		}
 
 		let collectData = function(GLLayerObject) { //GLLayer Object is just 'this', need to input as parameter to get around scope/async issues
 			const promise = new Promise((resolve) => {

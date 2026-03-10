@@ -4,6 +4,7 @@
 use Aws\Batch\BatchClient;
 use Aws\Bedrock\BedrockClient;
 use Aws\BedrockRuntime\BedrockRuntimeClient;
+use Aws\BedrockRuntime\Exception\BedrockRuntimeException;
 use Aws\Exception\AwsException;
 
 
@@ -760,7 +761,7 @@ class FileHandlerBase extends CI_Model {
 		}
 	}
 
-	protected function getAltTextForMedia($prompt) {
+	protected function getAltTextForMedia($prompt, $debugMode = false) {
 
 		if($this->instance && !$this->instance->getAutomaticAltText()) {
 			return;
@@ -815,6 +816,12 @@ class FileHandlerBase extends CI_Model {
 
 		$combinedPrompt = $systemPrompt . "\n\n" . $prompt . "\n\n" . json_encode($metadata);
 
+		if($debugMode) {
+			echo "\n=== BEDROCK ALT TEXT PROMPT START (" . $this->getObjectId() . ") ===\n";
+			echo $combinedPrompt . "\n";
+			echo "=== BEDROCK ALT TEXT PROMPT END ===\n\n";
+		}
+
 
 		$tempImagePath = $this->config->item('scratchSpace') . "/temp_image_" . time() . ".jpg";
 		$tempImage = new FileContainer($tempImagePath);
@@ -844,15 +851,25 @@ class FileHandlerBase extends CI_Model {
 			]
 		];
 
-		$response = $bedrockClient->converse([
-			'modelId' => $modelId,
-			'messages' => $messages,
-			'inferenceConfig' => [
-				'maxTokens' => 512,
-				'temperature' => 0.5
-			]
-		]);
-
+		try {
+	$response = $bedrockClient->converse([
+				'modelId' => $modelId,
+				'messages' => $messages,
+				'inferenceConfig' => [
+					'maxTokens' => 512,
+					'temperature' => 0.5
+				]
+			]);
+		}
+		catch (BedrockRuntimeException $e) {
+			$this->logging->logError("alt text generation error", "BedrockRuntimeException generating alt text for file " . $this->getObjectId() . ": " . $e->getMessage());
+			return;
+		}
+		catch (AwsException $e) {
+			$this->logging->logError("alt text generation error", "Error generating alt text for file " . $this->getObjectId() . ": " . $e->getMessage());
+			return;
+		}
+		
 		$responseText = $response['output']['message']['content'][0]['text'];
 
 		echo "Setting alt text to: " . $responseText . "\n";
@@ -866,7 +883,7 @@ class FileHandlerBase extends CI_Model {
         return;
 	}
 
-	public function generateAltText() {
+	public function generateAltText($debugMode = false) {
 		return;
 	}
 }

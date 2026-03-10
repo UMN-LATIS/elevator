@@ -324,14 +324,14 @@ class ImageHandler extends FileHandlerBase {
 	}
 
 
-	public function generateAltText() {
+	public function generateAltText($debugMode = false) {
 		$this->derivativeForAltText = "screen";
 		$this->metadataTypeForAltText = "image";
 		$uploadWidget = $this->getUploadWidget();
 		if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro == true) {
 			$this->metadataTypeForAltText = "tree core";
 		}
-		$this->getAltTextForMedia("");
+		$this->getAltTextForMedia("", $debugMode);
 		$this->queueTask(4);
 	}
 

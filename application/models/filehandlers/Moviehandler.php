@@ -182,13 +182,11 @@ class MovieHandler extends FileHandlerBase {
 			echo "Generating captions for " . $this->getObjectId() . "\n";
 			$uploadWidget = $this->getUploadWidget();
 			if($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
-				return;
+
 			}
-
-			
-			
-			$this->generateAltText();
-
+			else {
+				$this->generateAltText();
+			}
 		}
 
 
@@ -204,7 +202,7 @@ class MovieHandler extends FileHandlerBase {
 	}
 
 
-	public function generateAltText() {
+	public function generateAltText($debugMode = false) {
 		$this->queueBatchItem("gpu");
 	}
 

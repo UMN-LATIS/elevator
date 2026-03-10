@@ -78,6 +78,10 @@ class FileManager extends Instance_Controller {
 	}
 
 	function tinyImageByFileId($fileId, $retina=false) {
+		
+		if(!$fileId) {
+			show_404();
+		}
 		if($retina === "false") {
 			$retina = false;
 		}
@@ -85,6 +89,10 @@ class FileManager extends Instance_Controller {
 		//TODO : CHECK PERMS - should be able to pull the collection at this stage?
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+		
+		if(!$fileHandler) {
+			show_404();
+		}
 		$fileHandler->loadByObjectId($fileId);
 		
 
@@ -463,6 +471,12 @@ class FileManager extends Instance_Controller {
 		$metadata = $fileHandler->sourceFile->metadata;
 		$metadata['sourcefile'] = $fileHandler->sourceFile->originalFilename;
 		$metadata["handlerType"] = get_class($fileHandler);
+
+		$uploadWidget = $fileHandler->getUploadWidget();
+		if($uploadWidget && isset($uploadWidget->parentWidget) && isset($uploadWidget->parentWidget->extractLocation) && $uploadWidget->parentWidget->extractLocation == false) {
+			unset($metadata['coordinates']);
+		}
+
 		return render_json($metadata);
 
 	}

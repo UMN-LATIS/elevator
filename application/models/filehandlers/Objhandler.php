@@ -488,10 +488,10 @@ class ObjHandler extends FileHandlerBase {
 
 	}
 	
-	public function generateAltText() {
+	public function generateAltText($debugMode = false) {
 		$this->derivativeForAltText = "thumbnail2x";
 		$this->metadataTypeForAltText = "3d model";
-		$this->getAltTextForMedia("");
+		$this->getAltTextForMedia("", $debugMode);
 		$this->queueTask(4);
 	}
 

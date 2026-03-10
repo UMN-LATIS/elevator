@@ -13,15 +13,19 @@
     justify-content: space-between;
     align-items: start;
     height: 22px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .auto-ring-detection-placement-settings-div {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 22px;
+    height: 20px;
     font-size: 14px;
     font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 #auto-ring-detection-blur-input-label {
@@ -61,7 +65,7 @@
 }
 
 .ard-input-display {
-    margin: 0px 0px 0px 5px;
+    margin: 0px;
     font-size: 12.5px;
     font-weight: bold;
     width: 20.85px; /* Width of 3 digit number for 12.5px font */
@@ -107,4 +111,8 @@ h6 {
     width: 22px;
     height: 22px;
     font-size: 18px;
+}
+
+#auto-ring-detection-reset {
+    cursor: pointer !important;
 }
