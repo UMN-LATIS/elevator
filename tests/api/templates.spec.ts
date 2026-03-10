@@ -529,8 +529,8 @@ test.describe("templates API", () => {
       expect(widget.fieldTypeId).toBe(1);
     });
 
-    // U8: clickToSearchType defaults to 0 when not supplied
-    test("clickToSearchType defaults to 0 when omitted", async ({ page }) => {
+    // U8: clickToSearchType defaults to 1 when not supplied (controller uses ?? 1)
+    test("clickToSearchType defaults to 1 when omitted", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
         form: {

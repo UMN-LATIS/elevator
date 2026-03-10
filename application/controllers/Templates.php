@@ -45,6 +45,12 @@ class Templates extends Instance_Controller
 		if (($widget['fieldData'] ?? null) === '') {
 			$widget['fieldData'] = null;
 		}
+		if (($widget['templateOrder'] ?? null) === '') {
+			$widget['templateOrder'] = null;
+		}
+		if (($widget['viewOrder'] ?? null) === '') {
+			$widget['viewOrder'] = null;
+		}
 		return $widget;
 	}
 
@@ -247,7 +253,9 @@ class Templates extends Instance_Controller
 			// It could probably be done better but this is fine for development, at least.
 
 			if($template->getId()) {
-				$em->createQuery("delete from Entity\Widget w where w.template = " . $template->getId())->execute();
+				$em->createQuery('delete from Entity\Widget w where w.template = :templateId')
+					->setParameter('templateId', $template->getId())
+					->execute();
 			}
 
 			$template->setName($this->input->post('name'));
@@ -290,12 +298,14 @@ class Templates extends Instance_Controller
 					$newWidget->setAllowMultiple(isset($widget['allowMultiple'])?1:0);
 					$newWidget->setFieldTitle($widget['fieldTitle']);
 					$newWidget->setLabel($widget['label']);
-					$newWidget->setTooltip($widget['tooltip']);
+					$newWidget->setTooltip($widget['tooltip'] ?? '');
 
-					$fieldData = json_decode($widget['fieldData']);
-
-					if($fieldData) {
-						$newWidget->setFieldData($fieldData);
+					$rawFieldData = $widget['fieldData'] ?? null;
+					if ($rawFieldData !== null && $rawFieldData !== '') {
+						$decoded = json_decode($rawFieldData, true);
+						if (json_last_error() === JSON_ERROR_NONE) {
+							$newWidget->setFieldData($decoded);
+						}
 					}
 
 					$newWidget->setTemplate($template);
@@ -316,7 +326,7 @@ class Templates extends Instance_Controller
 			}
 			$em->flush();
 			$em->commit();
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			$em->rollback();
 			return $isJson
 				? render_json(['error' => 'Failed to save template. No changes were made.'], 500)

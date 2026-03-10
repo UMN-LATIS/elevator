@@ -105,6 +105,7 @@ class SimpleValidator
   {
     return function ($v) {
       if (!isset($v)) return true;
+      if (!is_string($v)) return 'Must be valid JSON';
       json_decode($v);
       return json_last_error() === JSON_ERROR_NONE ? true : 'Must be valid JSON';
     };
