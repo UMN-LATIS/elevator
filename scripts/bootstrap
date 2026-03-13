@@ -126,9 +126,31 @@ fi
 
 # ── Elasticsearch index ───────────────────────────────────────────────────────
 
-info "Creating Elasticsearch index..."
-docker compose exec php-fpm php index.php admin reindex false true
-success "Elasticsearch index created."
+require gh
+
+info "Fetching Elasticsearch setup script from ansible-elevator-v2..."
+gh api repos/umn-cla/ansible-elevator-v2/contents/files/elastic_commands.sh --jq '.content' \
+    | base64 -d > scripts/elastic_setup.sh \
+    || fatal "Could not fetch elastic_commands.sh — make sure you are authenticated with 'gh auth login' and have access to umn-cla/ansible-elevator-v2."
+chmod +x scripts/elastic_setup.sh
+success "Elasticsearch setup script fetched."
+
+_elastic_index=$(grep -E '^ELASTIC_INDEX=' .env 2>/dev/null | cut -d= -f2 | tr -d '"' || true)
+_elastic_index="${_elastic_index:-elevator}"
+_elastic_internal="${_elastic_index}_1"
+
+info "Wiping existing Elasticsearch index (if any)..."
+curl -sf -XDELETE "http://localhost:9200/${_elastic_internal}" > /dev/null 2>&1 || true
+curl -sf -XDELETE "http://localhost:9200/${_elastic_index}" > /dev/null 2>&1 || true
+
+info "Creating Elasticsearch index and applying mapping..."
+bash scripts/elastic_setup.sh localhost "$_elastic_internal" "$_elastic_index" \
+    || fatal "Elasticsearch setup failed — is Elasticsearch running?"
+success "Elasticsearch index and mapping created."
+
+info "Indexing assets into Elasticsearch..."
+docker compose exec php-fpm php index.php admin reindex
+success "Elasticsearch index populated."
 
 # ── Node / Playwright ─────────────────────────────────────────────────────────
 
