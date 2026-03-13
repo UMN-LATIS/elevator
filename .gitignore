@@ -31,3 +31,4 @@ REVISION
 # Playwright output
 /test-results/
 /playwright-report/
+scripts/elastic_setup.sh
