@@ -139,6 +139,12 @@ _elastic_index=$(grep -E '^ELASTIC_INDEX=' .env 2>/dev/null | cut -d= -f2 | tr -
 _elastic_index="${_elastic_index:-elevator}"
 _elastic_internal="${_elastic_index}_1"
 
+info "Waiting for Elasticsearch to be ready..."
+until curl -sf "http://localhost:9200/_cluster/health" > /dev/null 2>&1; do
+    sleep 2
+done
+success "Elasticsearch is ready."
+
 info "Wiping existing Elasticsearch index (if any)..."
 curl -sf -XDELETE "http://localhost:9200/${_elastic_internal}" > /dev/null 2>&1 || true
 curl -sf -XDELETE "http://localhost:9200/${_elastic_index}" > /dev/null 2>&1 || true
