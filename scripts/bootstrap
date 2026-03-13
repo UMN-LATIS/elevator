@@ -124,6 +124,12 @@ else
     warn "ENCRYPTION_KEY or DEFAULT_ADMIN_PASSWORD not set in .env — skipping password sync."
 fi
 
+# ── Elasticsearch index ───────────────────────────────────────────────────────
+
+info "Creating Elasticsearch index..."
+docker compose exec php-fpm php index.php admin reindex false true
+success "Elasticsearch index created."
+
 # ── Node / Playwright ─────────────────────────────────────────────────────────
 
 if [[ -f package.json ]]; then
