@@ -92,7 +92,7 @@ class S3 extends Instance_Controller
   {
     $schema = [
       'uploadId' => [V::regex('/^[a-zA-Z0-9\-_\.\+]+$/')],
-      'action' => [V::regex('/^(complete|\d+)$/')]
+			'action' => [V::regex('/^(complete|abort|\d+)$/')]
     ];
 
     try {
