@@ -149,7 +149,7 @@ bash scripts/elastic_setup.sh localhost "$_elastic_internal" "$_elastic_index" \
 success "Elasticsearch index and mapping created."
 
 info "Indexing assets into Elasticsearch..."
-docker compose exec php-fpm php index.php admin reindex
+docker compose exec -T php-fpm php index.php admin reindex
 success "Elasticsearch index populated."
 
 # ── Node / Playwright ─────────────────────────────────────────────────────────
