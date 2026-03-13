@@ -41,6 +41,7 @@ services:
   reindex-worker:
     image: elevator-php-fpm:latest
     command: php index.php beltdrive updateIndexes
+    restart: unless-stopped
     volumes:
       - ./:/var/www/html
       - ${DOCKER_SCRATCH_DIR}:/scratch
