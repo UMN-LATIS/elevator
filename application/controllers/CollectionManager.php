@@ -110,6 +110,10 @@ class CollectionManager extends Instance_Controller {
 		$this->doctrine->em->persist($collection);
 		$this->doctrine->em->flush();
 
+		if($this->isJsonRequest()) {
+			return render_json(["id" => $collection->getId(), "title" => $collection->getTitle()], 201);
+		}
+
 		instance_redirect("collectionManager/");
 	}
 
