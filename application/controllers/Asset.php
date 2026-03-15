@@ -38,6 +38,10 @@ class asset extends Instance_Controller {
 			show_404();
 		}
 
+		if($assetModel->assetObject->getDeleted() === true) {
+			show_404();
+		}
+
 		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
 			show_404();
 		}
@@ -80,6 +84,12 @@ class asset extends Instance_Controller {
 		
 		if(!$assetModel->loadAssetById($objectId)) {
 			show_404();
+		}
+
+		if($assetModel->assetObject->getDeleted() === true) {
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if(!$this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"))) {
@@ -565,7 +575,9 @@ class asset extends Instance_Controller {
 
 	public function getAssetPreview($objectId) {
 		$assetModel = new Asset_model();
-		$assetModel->loadAssetById($objectId);
+		if(!$assetModel->loadAssetById($objectId) || $assetModel->assetObject->getDeleted() === true) {
+			show_404();
+		}
 		$result = $assetModel->getSearchResultEntry();
 		echo json_encode($result);
 	}
