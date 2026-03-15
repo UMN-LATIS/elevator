@@ -33,7 +33,7 @@ class asset extends Instance_Controller {
 			show_404();
 		}
 
-		
+
 		if(!$assetModel->loadAssetById($objectId, $noHydrate = true)) {
 			show_404();
 		}
