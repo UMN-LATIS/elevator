@@ -6,6 +6,7 @@
 set -euo pipefail
 
 docker compose exec -T postgres psql -U elevator -d elevator <<'SQL'
+TRUNCATE TABLE assets CASCADE;
 TRUNCATE TABLE widgets CASCADE;
 SELECT setval('widgets_id_seq', 1, false);
 TRUNCATE TABLE templates CASCADE;

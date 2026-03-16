@@ -59,4 +59,51 @@ test.describe("assets", () => {
     );
     expect(viewRes.status()).toBe(404);
   });
+
+  // Regression test for issue #218: Asset_model::save() unconditionally sets
+  // deleted=false (line 837), so re-saving a deleted asset via the submission
+  // endpoint silently resurrects it. This also corrupts upload widget data
+  // because deleted file handlers serialize as empty arrays.
+  //
+  // The fix: save() should refuse to save a deleted asset, and submission()
+  // should return 404 when the target asset is deleted.
+  test("re-saving a deleted asset does not un-delete it", async ({ page }) => {
+    const collectionId = await createCollection(page, "Test Collection #218");
+    const template = await createTemplate(page, {
+      name: "Test Template #218",
+    });
+    const assetId = await createAsset(page, template.id, collectionId);
+
+    // Delete the asset.
+    const deleteRes = await page.request.get(
+      `${baseURL()}/assetmanager/deleteAsset/${assetId}/true`,
+    );
+    expect(deleteRes.status()).toBe(204);
+
+    // Confirm it's deleted (relies on #216 fix).
+    const afterDelete = await page.request.get(
+      `${baseURL()}/asset/getAsset/${assetId}`,
+    );
+    expect(afterDelete.status()).toBe(404);
+
+    // Re-save the deleted asset via the submission endpoint.
+    const formData = JSON.stringify({
+      objectId: assetId,
+      templateId: template.id,
+      collectionId,
+    });
+    const resubmit = await page.request.post(
+      `${baseURL()}/assetmanager/submission/true`,
+      { form: { formData } },
+    );
+
+    // submission() should reject saving a deleted asset.
+    expect(resubmit.status()).toBe(404);
+
+    // The asset must still be deleted — getAsset should still return 404.
+    const afterResave = await page.request.get(
+      `${baseURL()}/asset/getAsset/${assetId}`,
+    );
+    expect(afterResave.status()).toBe(404);
+  });
 });
