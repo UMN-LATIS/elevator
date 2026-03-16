@@ -78,12 +78,15 @@ class asset extends Instance_Controller {
 
 		$assetModel = new Asset_model;
 		if(!$objectId) {
-			show_404();
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
-		
 		if(!$assetModel->loadAssetById($objectId)) {
-			show_404();
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if($assetModel->assetObject->getDeleted() === true) {
@@ -93,7 +96,9 @@ class asset extends Instance_Controller {
 		}
 
 		if(!$this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"))) {
-			show_404();
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if ($parentObjectId && $parentObjectId != "null" && $parentObjectId != $objectId) {
