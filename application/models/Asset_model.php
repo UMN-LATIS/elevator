@@ -797,6 +797,11 @@ class Asset_model extends CI_Model {
 		if(!isset($this->assetObject)) {
 			return false;
 		}
+
+		if($this->assetObject->getDeleted() === true) {
+			log_message('warning', 'Asset_model::save() blocked on deleted asset ' . $this->getObjectId());
+			return false;
+		}
 		$oldAsset = null;
 		if($this->getObjectId() && $this->assetObject->getId()) {
 			$oldAsset = new Asset_model;
@@ -834,9 +839,8 @@ class Asset_model extends CI_Model {
 			$this->assetObject->setAvailableAfter(null);
 		}
 
-		$this->assetObject->setDeleted(false);
-
 		if(!$this->getObjectId()) {
+			$this->assetObject->setDeleted(false);
 			try {
 				$this->assetObject->setAssetId((string)new MongoDB\BSON\ObjectId());
 				

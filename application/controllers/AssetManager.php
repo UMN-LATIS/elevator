@@ -313,6 +313,12 @@ class AssetManager extends Admin_Controller {
 
 		if(isset($objectArray["objectId"]) && strlen(($objectArray["objectId"])) == 24) {
 			$asset->loadAssetById($objectArray["objectId"]);
+			if($asset->assetObject && $asset->assetObject->getDeleted() === true) {
+				if ($returnJson) {
+					return render_json(["error" => "Asset not found"], 404);
+				}
+				show_404();
+			}
 			$firstSave = FALSE;
 		}
 
