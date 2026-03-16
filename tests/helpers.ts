@@ -89,3 +89,69 @@ export async function createTemplate(
 
   return response.json() as Promise<TemplateResponse>;
 }
+
+// POST /{instance}/collectionManager/save
+// Returns the new collection's id and title.
+// Sends Accept: application/json so the endpoint returns JSON instead of redirecting.
+export async function createCollection(
+  page: Page,
+  title = "Test Collection",
+): Promise<number> {
+  const response = await page.request.post(
+    `${baseURL()}/collectionManager/save`,
+    {
+      headers: { Accept: "application/json" },
+      form: {
+        title,
+        bucket: "",
+        bucketRegion: "",
+        S3Key: "",
+        S3Secret: "",
+        showInBrowse: "on",
+        collectionDescription: "",
+        previewImage: "",
+        parent: "0",
+      },
+    },
+  );
+
+  if (!response.ok()) {
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
+    throw new Error(
+      `createCollection failed (${response.status()}): ${body.error ?? "unknown"}`,
+    );
+  }
+
+  const body = (await response.json()) as { id: number; title: string };
+  return body.id;
+}
+
+// POST /{instance}/assetmanager/submission/true
+// formData is a JSON string containing at minimum templateId and collectionId.
+// Returns the new asset's objectId (a 24-char hex MongoDB-style ID).
+export async function createAsset(
+  page: Page,
+  templateId: number,
+  collectionId: number,
+): Promise<string> {
+  const formData = JSON.stringify({ templateId, collectionId });
+
+  const response = await page.request.post(
+    `${baseURL()}/assetmanager/submission/true`,
+    { form: { formData } },
+  );
+
+  if (!response.ok()) {
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
+    throw new Error(
+      `createAsset failed (${response.status()}): ${body.error ?? "unknown"}`,
+    );
+  }
+
+  const body = (await response.json()) as { objectId: string; success: boolean };
+  return body.objectId;
+}
