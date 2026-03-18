@@ -158,6 +158,13 @@ info "Indexing assets into Elasticsearch..."
 docker compose exec -T php-fpm php index.php admin reindex
 success "Elasticsearch index populated."
 
+# ── Git config ────────────────────────────────────────────────────────────
+
+if [[ -f .git-blame-ignore-revs ]]; then
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
+    success "git blame configured to ignore formatting commits."
+fi
+
 # ── Node / Playwright ─────────────────────────────────────────────────────────
 
 if [[ -f package.json ]]; then
