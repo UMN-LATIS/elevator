@@ -1,0 +1,15 @@
+{
+  "name": "elevator-docs",
+  "version": "0.0.0",
+  "description": "Elevator project docs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "vuepress dev ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vuepress": "^1.9.10"
+  }
+}
