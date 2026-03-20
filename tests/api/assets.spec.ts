@@ -59,4 +59,60 @@ test.describe("assets", () => {
     );
     expect(viewRes.status()).toBe(404);
   });
+  test.describe("deletedAssets", () => {
+    test("returns 401 when not authenticated", async ({ browser }) => {
+      const ctx = await browser.newContext();
+      const req = ctx.request;
+      const res = await req.get(`${baseURL()}/assetManager/deletedAssets`, {
+        headers: { Accept: "application/json" },
+      });
+      expect(res.status()).toBe(401);
+      const body = await res.json();
+      expect(body).toHaveProperty("error");
+      await ctx.close();
+    });
+
+    test("returns empty array when no assets are deleted", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/assetManager/deletedAssets`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+      const body = await res.json();
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toHaveLength(0);
+    });
+
+    test("returns deleted assets as JSON", async ({ page }) => {
+      const collectionId = await createCollection(
+        page,
+        "Deleted Assets Collection",
+      );
+      const template = await createTemplate(page, {
+        name: "Deleted Assets Template",
+      });
+      const assetId = await createAsset(page, template.id, collectionId);
+
+      // Soft-delete the asset.
+      const deleteRes = await page.request.get(
+        `${baseURL()}/assetManager/deleteAsset/${assetId}/true`,
+      );
+      expect(deleteRes.status()).toBe(204);
+
+      const res = await page.request.get(
+        `${baseURL()}/assetManager/deletedAssets`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+      const body = await res.json();
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThan(0);
+      expect(body[0]).toHaveProperty("objectId");
+      expect(body[0]).toHaveProperty("title");
+      expect(body[0]).toHaveProperty("templateId");
+      expect(body[0]).toHaveProperty("deletedAt");
+      expect(body[0]).toHaveProperty("deletedBy");
+      expect(body[0]).toHaveProperty("modifiedDate");
+    });
+  });
 });
