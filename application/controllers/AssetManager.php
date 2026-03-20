@@ -260,6 +260,48 @@ class AssetManager extends Admin_Controller {
 		return $restoreObject->getAssetId();
 	}
 
+	public function deletedAssets() {
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if ($accessLevel < PERM_ADDASSETS) {
+			return $isJson
+				? render_json(['error' => 'No permission'], 403)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$assets = $qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.deleted = true")
+			->andWhere("a.assetId IS NOT NULL")
+			->orderBy("a.modifiedAt", "DESC")
+			->getQuery()
+			->execute();
+
+		$result = array_map(function ($asset) {
+			$this->asset_model->loadAssetFromRecord($asset, true);
+			$title = $this->asset_model->getAssetTitle(true);
+			return [
+				'objectId' => $asset->getAssetId(),
+				'title' => $title,
+				'templateId' => $asset->getTemplateId(),
+				'deletedAt' => $asset->getDeletedAt()?->format('c'),
+				'deletedBy' => $asset->getDeletedBy(),
+				'modifiedDate' => $asset->getModifiedAt()?->format('c'),
+			];
+		}, $assets);
+
+		return render_json($result);
+	}
+
 	// save an asset
 	public function submission($returnJson = false) {
 
