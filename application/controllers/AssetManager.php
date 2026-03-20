@@ -282,6 +282,8 @@ class AssetManager extends Admin_Controller {
 			->select("a")
 			->where("a.deleted = true")
 			->andWhere("a.assetId IS NOT NULL")
+			->andWhere("a.deletedBy = :userId")
+			->setParameter(":userId", (int)$this->user_model->userId)
 			->orderBy("a.modifiedAt", "DESC")
 			->getQuery()
 			->execute();
