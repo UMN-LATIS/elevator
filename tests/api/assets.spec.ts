@@ -6,6 +6,7 @@ import {
   createTemplate,
   createCollection,
   createAsset,
+  createUser,
 } from "../helpers";
 
 test.describe("assets", () => {
@@ -128,6 +129,56 @@ test.describe("assets", () => {
       const body = await res.json();
       expect(Array.isArray(body)).toBe(true);
       expect(body).toHaveLength(0);
+    });
+
+    test("only returns assets deleted by the current user", async ({
+      page,
+      browser,
+    }) => {
+      const collectionId = await createCollection(
+        page,
+        "Scoping Test Collection",
+      );
+      const template = await createTemplate(page, {
+        name: "Scoping Test Template",
+      });
+      const assetId = await createAsset(page, template.id, collectionId);
+
+      // Admin deletes the asset.
+      const deleteRes = await page.request.get(
+        `${baseURL()}/assetManager/deleteAsset/${assetId}/true`,
+      );
+      expect(deleteRes.status()).toBe(204);
+
+      // Sanity: admin sees the deleted asset.
+      const adminRes = await page.request.get(
+        `${baseURL()}/assetManager/deletedAssets`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(adminRes.status()).toBe(200);
+      const adminBody = await adminRes.json();
+      expect(adminBody.length).toBeGreaterThan(0);
+
+      // Create a second superadmin user.
+      await createUser(page, "testuser2", "testpass2", {
+        isSuperAdmin: true,
+      });
+
+      // Log in as the second user in a fresh context.
+      const ctx = await browser.newContext();
+      const user2Page = await ctx.newPage();
+      await loginUser(user2Page, "testuser2", "testpass2");
+
+      // Second user should see no deleted assets (they didn't delete any).
+      const user2Res = await user2Page.request.get(
+        `${baseURL()}/assetManager/deletedAssets`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(user2Res.status()).toBe(200);
+      const user2Body = await user2Res.json();
+      expect(user2Body).toHaveLength(0);
+
+      await ctx.close();
     });
 
     test("returns deleted assets as JSON", async ({ page }) => {
