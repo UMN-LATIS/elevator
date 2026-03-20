@@ -128,7 +128,7 @@ export async function createCollection(
   return body.id;
 }
 
-// POST /{instance}/assetmanager/submission/true
+// POST /{instance}/assetManager/submission/true
 // formData is a JSON string containing at minimum templateId and collectionId.
 // Returns the new asset's objectId (a 24-char hex MongoDB-style ID).
 export async function createAsset(
@@ -139,7 +139,7 @@ export async function createAsset(
   const formData = JSON.stringify({ templateId, collectionId });
 
   const response = await page.request.post(
-    `${baseURL()}/assetmanager/submission/true`,
+    `${baseURL()}/assetManager/submission/true`,
     { form: { formData } },
   );
 
