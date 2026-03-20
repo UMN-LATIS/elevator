@@ -303,6 +303,44 @@ class AssetManager extends Admin_Controller {
 		return render_json($result);
 	}
 
+	public function undeleteAsset($assetId) {
+		if (!$this->isCurrentUserAuthed()) {
+			return abort_json(['error' => 'Unauthorized'], 401);
+		}
+
+		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if ($accessLevel < PERM_ADDASSETS) {
+			return render_json(['error' => 'No permission'], 403);
+		}
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$asset = $qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.assetId = :assetId")
+			->andWhere("a.deleted = true")
+			->setParameter("assetId", $assetId)
+			->setMaxResults(1)
+			->getQuery()
+			->getOneOrNullResult();
+
+		if (!$asset) {
+			return render_json(['error' => 'Asset not found'], 404);
+		}
+
+		$asset->setDeleted(false);
+		$asset->setDeletedBy(null);
+		$asset->setDeletedAt(null);
+		$this->doctrine->em->flush();
+
+		$assetModel = new Asset_model();
+		$assetModel->loadAssetById($assetId);
+		$this->load->model("search_model");
+		$this->search_model->addOrUpdate($assetModel);
+
+		return render_json(['objectId' => $assetId]);
+	}
+
 	// save an asset
 	public function submission($returnJson = false) {
 
