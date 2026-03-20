@@ -288,14 +288,15 @@ class AssetManager extends Admin_Controller {
 
 		$result = array_map(function ($asset) {
 			$this->asset_model->loadAssetFromRecord($asset, true);
-			$title = $this->asset_model->getAssetTitle(true);
+			$resultCache = $this->asset_model->getSearchResultEntry();
 			return [
-				'objectId' => $asset->getAssetId(),
-				'title' => $title,
-				'templateId' => $asset->getTemplateId(),
+				'objectId' => $this->asset_model->getObjectId(),
+				'title' => $resultCache['title'] ?? "",
+				'readyForDisplay' => $this->asset_model->getGlobalValue("readyForDisplay"),
+				'templateId' => $this->asset_model->getGlobalValue("templateId"),
+				'modifiedDate' => $this->asset_model->getGlobalValue("modified"),
 				'deletedAt' => $asset->getDeletedAt()?->format('c'),
 				'deletedBy' => $asset->getDeletedBy(),
-				'modifiedDate' => $asset->getModifiedAt()?->format('c'),
 			];
 		}, $assets);
 
