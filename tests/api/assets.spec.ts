@@ -216,10 +216,18 @@ test.describe("assets", () => {
   });
 
   test.describe("undeleteAsset", () => {
+    test("returns 405 for GET requests", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/assetManager/undeleteAsset/000000000000000000000000`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(405);
+    });
+
     test("returns 401 when not authenticated", async ({ browser }) => {
       const ctx = await browser.newContext();
       const req = ctx.request;
-      const res = await req.get(
+      const res = await req.post(
         `${baseURL()}/assetManager/undeleteAsset/000000000000000000000000`,
         { headers: { Accept: "application/json" } },
       );
@@ -230,7 +238,7 @@ test.describe("assets", () => {
     });
 
     test("returns 404 for non-existent asset", async ({ page }) => {
-      const res = await page.request.get(
+      const res = await page.request.post(
         `${baseURL()}/assetManager/undeleteAsset/000000000000000000000000`,
         { headers: { Accept: "application/json" } },
       );
@@ -264,7 +272,7 @@ test.describe("assets", () => {
       expect(gone.status()).toBe(404);
 
       // Undelete the asset.
-      const undeleteRes = await page.request.get(
+      const undeleteRes = await page.request.post(
         `${baseURL()}/assetManager/undeleteAsset/${assetId}`,
         { headers: { Accept: "application/json" } },
       );
