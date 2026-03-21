@@ -177,10 +177,20 @@ class AssetManager extends Admin_Controller {
 	// Used for restoring an asset state from our history table.  We copy it out of the history and save it with the
 	// existing object id
 	function restoreAsset($objectId) {
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
 		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if ($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $isJson
+				? render_json(['error' => 'No permission'], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$asset = new Asset_model();
@@ -196,25 +206,55 @@ class AssetManager extends Admin_Controller {
 			$assetArray[] = $tempAsset;
 		}
 
+		if ($isJson) {
+			$result = array_map(fn($a) => [
+				'indexId' => $a->getIndexId(),
+				'modifiedDate' => $a->getGlobalValue("modified"),
+			], $assetArray);
+			return render_json($result);
+		}
+
 		$this->template->content->view('assetManager/restore', ['assetArray' => $assetArray]);
 		$this->template->publish();
 	}
 
 	function restore($objectId) {
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if ($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $isJson
+				? render_json(['error' => 'No permission'], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$restoreObject = $this->internalRestore($objectId);
+
+		if ($restoreObject === false) {
+			return $isJson
+				? render_json(['error' => 'Revision not found'], 404)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		if ($isJson) {
+			return render_json(['objectId' => $restoreObject]);
+		}
 
 		instance_redirect("asset/viewAsset/" . $restoreObject);
 	}
 
 	private function internalRestore(string $objectId, bool $createCheckpoint = true) {
 		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
+		if (!$restoreObject) {
+			return false;
+		}
 		$currentParent = $restoreObject->getRevisionSource();
 		if (!$currentParent) {
 			return false;
@@ -306,6 +346,10 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function undeleteAsset($assetId) {
+		if ($this->input->method() !== 'post') {
+			return abort_json(['error' => 'Method not allowed'], 405);
+		}
+
 		if (!$this->isCurrentUserAuthed()) {
 			return abort_json(['error' => 'Unauthorized'], 401);
 		}
