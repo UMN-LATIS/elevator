@@ -177,10 +177,20 @@ class AssetManager extends Admin_Controller {
 	// Used for restoring an asset state from our history table.  We copy it out of the history and save it with the
 	// existing object id
 	function restoreAsset($objectId) {
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
 		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if ($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $isJson
+				? render_json(['error' => 'No permission'], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$asset = new Asset_model();
@@ -196,25 +206,55 @@ class AssetManager extends Admin_Controller {
 			$assetArray[] = $tempAsset;
 		}
 
+		if ($isJson) {
+			$result = array_map(fn($a) => [
+				'indexId' => $a->getIndexId(),
+				'modifiedDate' => $a->getGlobalValue("modified"),
+			], $assetArray);
+			return render_json($result);
+		}
+
 		$this->template->content->view('assetManager/restore', ['assetArray' => $assetArray]);
 		$this->template->publish();
 	}
 
 	function restore($objectId) {
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
 
 		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
 
 		if ($accessLevel < PERM_ADDASSETS) {
-			$this->errorhandler_helper->callError("noPermission");
+			return $isJson
+				? render_json(['error' => 'No permission'], 403)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$restoreObject = $this->internalRestore($objectId);
+
+		if ($restoreObject === false) {
+			return $isJson
+				? render_json(['error' => 'Revision not found'], 404)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		if ($isJson) {
+			return render_json(['objectId' => $restoreObject]);
+		}
 
 		instance_redirect("asset/viewAsset/" . $restoreObject);
 	}
 
 	private function internalRestore(string $objectId, bool $createCheckpoint = true) {
 		$restoreObject = $this->doctrine->em->find("Entity\Asset", $objectId);
+		if (!$restoreObject) {
+			return false;
+		}
 		$currentParent = $restoreObject->getRevisionSource();
 		if (!$currentParent) {
 			return false;
@@ -258,6 +298,93 @@ class AssetManager extends Admin_Controller {
 
 		$assetObject->save(true, false, false);
 		return $restoreObject->getAssetId();
+	}
+
+	public function deletedAssets() {
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if ($accessLevel < PERM_ADDASSETS) {
+			return $isJson
+				? render_json(['error' => 'No permission'], 403)
+				: $this->errorhandler_helper->callError("noPermission");
+		}
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$assets = $qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.deleted = true")
+			->andWhere("a.assetId IS NOT NULL")
+			->andWhere("a.deletedBy = :userId")
+			->setParameter(":userId", (int)$this->user_model->userId)
+			->orderBy("a.modifiedAt", "DESC")
+			->getQuery()
+			->execute();
+
+		$result = array_map(function ($asset) {
+			$this->asset_model->loadAssetFromRecord($asset, true);
+			$resultCache = $this->asset_model->getSearchResultEntry();
+			return [
+				'objectId' => $this->asset_model->getObjectId(),
+				'title' => $resultCache['title'] ?? "",
+				'readyForDisplay' => $this->asset_model->getGlobalValue("readyForDisplay"),
+				'templateId' => $this->asset_model->getGlobalValue("templateId"),
+				'modifiedDate' => $this->asset_model->getGlobalValue("modified"),
+				'deletedAt' => $asset->getDeletedAt()?->format('c'),
+				'deletedBy' => $asset->getDeletedBy(),
+			];
+		}, $assets);
+
+		return render_json($result);
+	}
+
+	public function undeleteAsset($assetId) {
+		if ($this->input->method() !== 'post') {
+			return abort_json(['error' => 'Method not allowed'], 405);
+		}
+
+		if (!$this->isCurrentUserAuthed()) {
+			return abort_json(['error' => 'Unauthorized'], 401);
+		}
+
+		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
+
+		if ($accessLevel < PERM_ADDASSETS) {
+			return render_json(['error' => 'No permission'], 403);
+		}
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$asset = $qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.assetId = :assetId")
+			->andWhere("a.deleted = true")
+			->setParameter("assetId", $assetId)
+			->setMaxResults(1)
+			->getQuery()
+			->getOneOrNullResult();
+
+		if (!$asset) {
+			return render_json(['error' => 'Asset not found'], 404);
+		}
+
+		$asset->setDeleted(false);
+		$asset->setDeletedBy(null);
+		$asset->setDeletedAt(null);
+		$this->doctrine->em->flush();
+
+		$assetModel = new Asset_model();
+		$assetModel->loadAssetById($assetId);
+		$this->load->model("search_model");
+		$this->search_model->addOrUpdate($assetModel);
+
+		return render_json(['objectId' => $assetId]);
 	}
 
 	// save an asset
@@ -447,11 +574,10 @@ class AssetManager extends Admin_Controller {
 			return $this->template->publish('vueTemplate');
 		}
 
-		if (!isset($this->instance) || !$this->user_model->userLoaded) {
-			if ($returnJson) {
-				return render_json(["error" => "No permission"], 403);
-			}
-			instance_redirect("errorHandler/error/noPermission");
+		if (!isset($this->instance) || !$this->isCurrentUserAuthed()) {
+			return $returnJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$qb = $this->doctrine->em->createQueryBuilder();
