@@ -574,11 +574,10 @@ class AssetManager extends Admin_Controller {
 			return $this->template->publish('vueTemplate');
 		}
 
-		if (!isset($this->instance) || !$this->user_model->userLoaded) {
-			if ($returnJson) {
-				return render_json(["error" => "No permission"], 403);
-			}
-			instance_redirect("errorHandler/error/noPermission");
+		if (!isset($this->instance) || !$this->isCurrentUserAuthed()) {
+			return $returnJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: $this->errorhandler_helper->callError("noPermission");
 		}
 
 		$qb = $this->doctrine->em->createQueryBuilder();
