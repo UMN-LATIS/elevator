@@ -713,6 +713,9 @@ class AssetManager extends Admin_Controller {
 				if($assetModel->templateId != $templateId) {
 					continue;
 				}
+				if($assetModel->getGlobalValue("deleted")) {
+					continue;
+				}
 				$outputRow = [];
 				$outputRow[] = $assetModel->getObjectId();
 				$collection =  $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
