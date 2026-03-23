@@ -706,6 +706,7 @@ class admin extends Admin_Controller {
 		$qb->from("Entity\Asset", 'a')
 			->select("a")
 			->where("a.collectionId = ?1")
+			->orderBy("a.id", "desc")
 			->setParameter(1, $collectionId);
 
 		if ($skip > 0) {
