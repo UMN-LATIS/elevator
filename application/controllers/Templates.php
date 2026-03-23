@@ -1,11 +1,14 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+use SimpleValidator as V;
+
 class Templates extends Instance_Controller
 {
 
 	public function __construct()
 	{
 		parent::__construct();
+		$this->load->library('SimpleValidator');
 
 		$isJson = $this->isJsonRequest();
 
@@ -23,6 +26,72 @@ class Templates extends Instance_Controller
 
 		if (!$isJson) {
 			$this->template->loadCSS(['template']);
+		}
+	}
+
+	private static function flattenErrors(array $errors, string $prefix): array
+	{
+		$flat = [];
+		foreach ($errors as $field => $messages) {
+			foreach ($messages as $msg) {
+				$flat[] = "{$prefix} {$field}: {$msg}";
+			}
+		}
+		return $flat;
+	}
+
+	private function normalizeWidget(array $widget): array
+	{
+		if (($widget['fieldData'] ?? null) === '') {
+			$widget['fieldData'] = null;
+		}
+		if (($widget['templateOrder'] ?? null) === '') {
+			$widget['templateOrder'] = null;
+		}
+		if (($widget['viewOrder'] ?? null) === '') {
+			$widget['viewOrder'] = null;
+		}
+		return $widget;
+	}
+
+	private function validateTemplate(array $post): array
+	{
+		$errors = [];
+		try {
+			V::validate($post, [
+				'name'                => [V::required(), V::maxLength(255)],
+				'templateColor'       => [V::integer()],
+				'recursiveIndexDepth' => [V::integer()],
+				'collectionPosition'  => [V::integer()],
+				'templatePosition'    => [V::integer()],
+			]);
+		} catch (ValidationException $e) {
+			$errors = self::flattenErrors($e->getErrors(), 'Template');
+		}
+
+		foreach ($post['widget'] ?? [] as $i => $widget) {
+			$errors = array_merge($errors, $this->validateWidget($widget, $i + 1));
+		}
+
+		return $errors;
+	}
+
+	private function validateWidget(array $widget, int $position): array
+	{
+		try {
+			V::validate($this->normalizeWidget($widget), [
+				'fieldTitle'        => [V::required(), V::maxLength(255)],
+				'label'             => [V::required(), V::maxLength(255)],
+				'tooltip'           => [V::maxLength(255)],
+				'fieldData'         => [V::json()],
+				'fieldType'         => [V::required(), V::integer()],
+				'templateOrder'     => [V::integer()],
+				'viewOrder'         => [V::integer()],
+				'clickToSearchType' => [V::integer()],
+			]);
+			return [];
+		} catch (ValidationException $e) {
+			return self::flattenErrors($e->getErrors(), "Widget {$position}");
 		}
 	}
 
@@ -144,6 +213,14 @@ class Templates extends Instance_Controller
 	{
 		$isJson = $this->isJsonRequest();
 
+		$errors = $this->validateTemplate($this->input->post());
+
+		if (!empty($errors)) {
+			return $isJson
+				? render_json(['error' => 'Validation failed', 'details' => $errors], 422)
+				: show_error(implode('<br>', $errors), 422);
+		}
+
 		if (is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
 		
@@ -165,82 +242,96 @@ class Templates extends Instance_Controller
 				: show_404();
 		}
 
-		// Question: I think the most efficient way in code to do this is to delete all the widgets and re-create them
-		// It seems like the easist way to handle the order of things, at least, rather than trying to place something in the middle.
-		// It could probably be done better but this is fine for development, at least.
+		// Widgets are deleted and re-created on every save. The transaction ensures
+		// that if anything fails mid-write, the DELETE is rolled back along with the
+		// failed inserts — leaving the template in its previous state.
+		$em = $this->doctrine->em;
+		$em->beginTransaction();
+		try {
+			// Question: I think the most efficient way in code to do this is to delete all the widgets and re-create them
+			// It seems like the easist way to handle the order of things, at least, rather than trying to place something in the middle.
+			// It could probably be done better but this is fine for development, at least.
 
-		if($template->getId()) {
-			$deleteQuery = $this->doctrine->em->createQuery("delete from Entity\Widget w where w.template = " . $template->getId());
-			$deleteQuery->execute();
-		}
-
-		$template->setName($this->input->post('name'));
-		$template->setModifiedAt(new \DateTime('now'));
-		$template->setIncludeInSearch(($this->input->post("includeInSearch")=="On")?1:0);
-		$template->setIndexForSearching(($this->input->post("indexforSearching")=="On")?1:0);
-		$template->setIsHidden(($this->input->post("isHidden")=="On")?1:0);
-		$template->setShowCollection(($this->input->post("showCollection")=="On")?1:0);
-		$template->setShowTemplate(($this->input->post("showTemplate")=="On")?1:0);
-		$template->setCollectionPosition($this->input->post("collectionPosition"));
-		$template->setTemplatePosition($this->input->post("templatePosition"));
-		
-		$template->setTemplateColor($this->input->post("templateColor"));
-		$template->setRecursiveIndexDepth($this->input->post("recursiveIndexDepth"));
-		$this->doctrine->em->persist($template);
-		$this->doctrine->em->flush();
-
-		$orderIndex = 0;
-		if(is_array($this->input->post('widget'))) {
-			foreach ($this->input->post('widget') as $key => $widget) {
-				$display = $orderIndex + 1;
-
-				if($widget["viewOrder"] == "") {
-					$widget["viewOrder"] = $display;
-				}
-				if($widget["templateOrder"] == "") {
-					$widget["templateOrder"] = $display;
-				}
-
-				if(strlen(trim($widget['fieldTitle'])) == 0 || strlen(trim($widget['label'])) == 0) {
-					continue;
-				}
-
-				// Create new widget
-				$newWidget = new Entity\Widget();
-
-				// Set parameters
-				$newWidget->setDisplay(isset($widget['display'])?1:0);
-				$newWidget->setRequired(isset($widget['required'])?1:0);
-				$newWidget->setAllowMultiple(isset($widget['allowMultiple'])?1:0);
-				$newWidget->setFieldTitle($widget['fieldTitle']);
-				$newWidget->setLabel($widget['label']);
-				$newWidget->setTooltip($widget['tooltip']);
-
-				$fieldData = json_decode($widget['fieldData']);
-
-				if($fieldData) {
-					$newWidget->setFieldData($fieldData);
-				}
-
-				$newWidget->setTemplate($template);
-				$newWidget->setTemplateOrder($widget["templateOrder"]);
-				$newWidget->setViewOrder($widget["viewOrder"]);
-				$newWidget->setDisplayInPreview(isset($widget['displayInPreview'])?1:0);
-				$newWidget->setSearchable(isset($widget['searchable'])?1:0);
-				$newWidget->setAttemptAutocomplete(isset($widget['attemptAutocomplete'])?1:0);
-				$newWidget->setFieldType($this->doctrine->em->find('Entity\Field_type', $widget['fieldType']));
-				$newWidget->setDirectSearch(isset($widget['directSearch'])?1:0);
-				$newWidget->setClickToSearch(isset($widget['clickToSearch'])?1:0);
-				$newWidget->setClickToSearchType($widget['clickToSearchType']??1);
-
-
-				// Persist
-				$this->doctrine->em->persist($newWidget);
-
-				$orderIndex++;
+			if($template->getId()) {
+				$em->createQuery('delete from Entity\Widget w where w.template = :templateId')
+					->setParameter('templateId', $template->getId())
+					->execute();
 			}
+
+			$template->setName($this->input->post('name'));
+			$template->setModifiedAt(new \DateTime('now'));
+			$template->setIncludeInSearch(($this->input->post("includeInSearch")=="On")?1:0);
+			$template->setIndexForSearching(($this->input->post("indexforSearching")=="On")?1:0);
+			$template->setIsHidden(($this->input->post("isHidden")=="On")?1:0);
+			$template->setShowCollection(($this->input->post("showCollection")=="On")?1:0);
+			$template->setShowTemplate(($this->input->post("showTemplate")=="On")?1:0);
+			$template->setCollectionPosition($this->input->post("collectionPosition"));
+			$template->setTemplatePosition($this->input->post("templatePosition"));
+
+			$template->setTemplateColor($this->input->post("templateColor"));
+			$template->setRecursiveIndexDepth($this->input->post("recursiveIndexDepth"));
+			$em->persist($template);
+			$em->flush();
+
+			$orderIndex = 0;
+			if(is_array($this->input->post('widget'))) {
+				foreach ($this->input->post('widget') as $key => $widget) {
+					$display = $orderIndex + 1;
+
+					if($widget["viewOrder"] == "") {
+						$widget["viewOrder"] = $display;
+					}
+					if($widget["templateOrder"] == "") {
+						$widget["templateOrder"] = $display;
+					}
+
+					if(strlen(trim($widget['fieldTitle'])) == 0 || strlen(trim($widget['label'])) == 0) {
+						continue;
+					}
+
+					// Create new widget
+					$newWidget = new Entity\Widget();
+
+					// Set parameters
+					$newWidget->setDisplay(isset($widget['display'])?1:0);
+					$newWidget->setRequired(isset($widget['required'])?1:0);
+					$newWidget->setAllowMultiple(isset($widget['allowMultiple'])?1:0);
+					$newWidget->setFieldTitle($widget['fieldTitle']);
+					$newWidget->setLabel($widget['label']);
+					$newWidget->setTooltip($widget['tooltip'] ?? '');
+
+					$rawFieldData = $widget['fieldData'] ?? null;
+					if ($rawFieldData !== null && $rawFieldData !== '') {
+						$decoded = json_decode($rawFieldData, true);
+						if (json_last_error() === JSON_ERROR_NONE) {
+							$newWidget->setFieldData($decoded);
+						}
+					}
+
+					$newWidget->setTemplate($template);
+					$newWidget->setTemplateOrder($widget["templateOrder"]);
+					$newWidget->setViewOrder($widget["viewOrder"]);
+					$newWidget->setDisplayInPreview(isset($widget['displayInPreview'])?1:0);
+					$newWidget->setSearchable(isset($widget['searchable'])?1:0);
+					$newWidget->setAttemptAutocomplete(isset($widget['attemptAutocomplete'])?1:0);
+					$newWidget->setFieldType($em->find('Entity\Field_type', $widget['fieldType']));
+					$newWidget->setDirectSearch(isset($widget['directSearch'])?1:0);
+					$newWidget->setClickToSearch(isset($widget['clickToSearch'])?1:0);
+					$newWidget->setClickToSearchType($widget['clickToSearchType']??1);
+
+					$em->persist($newWidget);
+
+					$orderIndex++;
+				}
+			}
+			$em->flush();
+			$em->commit();
+		} catch (\Throwable $e) {
+			$em->rollback();
+			return $isJson
+				? render_json(['error' => 'Failed to save template. No changes were made.'], 500)
+				: show_error('Failed to save template. No changes were made.', 500);
 		}
-		$this->doctrine->em->flush();
 
 // The bulk DQL DELETE above runs a raw SQL DELETE that bypasses
 		// Doctrine's Unit of Work. Doctrine never updates its in-memory identity map,

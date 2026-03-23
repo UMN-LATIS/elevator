@@ -1,4 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
+import { config } from "dotenv";
+
+config(); // load .env into process.env
 
 export default defineConfig({
   testDir: "./tests/api",

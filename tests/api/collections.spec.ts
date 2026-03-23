@@ -24,9 +24,9 @@ test.describe("collections", () => {
 
   test("db reset removes created collection", async ({ page }) => {
     // Create a collection via the admin form endpoint.
-    // POST /{instance}/collectionmanager/save — redirects to collectionmanager/ on success.
+    // POST /{instance}/collectionManager/save — redirects to collectionManager/ on success.
     const createResponse = await page.request.post(
-      `${baseURL()}/collectionmanager/save`,
+      `${baseURL()}/collectionManager/save`,
       {
         form: {
           title: "Test Collection (should be reset)",
@@ -45,7 +45,7 @@ test.describe("collections", () => {
 
     // Verify it exists via the admin collection manager page (session-auth HTML).
     const beforeReset = await page.request.get(
-      `${baseURL()}/collectionmanager/`,
+      `${baseURL()}/collectionManager/`,
     );
     expect(await beforeReset.text()).toContain(
       "Test Collection (should be reset)",
@@ -56,7 +56,7 @@ test.describe("collections", () => {
 
     // Verify it is gone.
     const afterReset = await page.request.get(
-      `${baseURL()}/collectionmanager/`,
+      `${baseURL()}/collectionManager/`,
     );
     expect(await afterReset.text()).not.toContain(
       "Test Collection (should be reset)",

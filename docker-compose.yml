@@ -37,6 +37,20 @@ services:
     image: maateen/docker-beanstalkd
     ports:
       - "${BEANSTALKD_PORT:-11300}:11300"
+
+  reindex-worker:
+    image: elevator-php-fpm:latest
+    command: php index.php beltdrive updateIndexes
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html
+      - ${DOCKER_SCRATCH_DIR}:/scratch
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - beanstalkd
+      - elasticsearch
+      - postgres
+
   php-fpm:
     image: elevator-php-fpm:latest
     build:

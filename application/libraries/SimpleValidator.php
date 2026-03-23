@@ -93,4 +93,21 @@ class SimpleValidator
       ? true
       : "Must be at least {$length} characters long";
   }
+
+  public static function maxLength(int $length): \Closure
+  {
+    return fn($v) => !isset($v) || (is_string($v) && mb_strlen($v) <= $length)
+      ? true
+      : "Must be {$length} characters or fewer";
+  }
+
+  public static function json(): \Closure
+  {
+    return function ($v) {
+      if (!isset($v)) return true;
+      if (!is_string($v)) return 'Must be valid JSON';
+      json_decode($v);
+      return json_last_error() === JSON_ERROR_NONE ? true : 'Must be valid JSON';
+    };
+  }
 }

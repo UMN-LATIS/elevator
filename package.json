@@ -14,7 +14,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",
-    "@types/node": "^22.19.13"
+    "@types/node": "^22.19.13",
+    "dotenv": "^17.3.1"
   },
   "dependencies": {
     "@vuepress/plugin-blog": "^1.9.4",

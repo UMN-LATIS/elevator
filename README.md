@@ -27,6 +27,7 @@ Elevator can store content in any format, such as images, audio, video, 3D objec
 ### Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [`gh`](https://cli.github.com/) — GitHub CLI, authenticated with `gh auth login`. Required to fetch the Elasticsearch setup script from the private ansible repo.
 - [`mkcert`](https://github.com/FiloSottile/mkcert) *(optional but recommended)* — generates locally-trusted SSL certs. Without it, bootstrap falls back to a self-signed cert that will show browser warnings.
 
 ### First-time setup
@@ -35,22 +36,14 @@ Elevator can store content in any format, such as images, audio, video, 3D objec
 bash scripts/bootstrap
 ```
 
-The script handles everything: copying `.env`, generating SSL certs, starting Docker, installing PHP and Node dependencies, running the Doctrine schema, seeding the database, and syncing the admin password. It's safe to re-run — steps that are already complete are skipped.
+The script handles everything: copying `.env`, generating SSL certs, starting Docker, installing PHP and Node dependencies, running the Doctrine schema, seeding the database, syncing the admin password, and setting up the Elasticsearch index with the correct mapping. It's safe to re-run — steps that are already complete are skipped.
+
+The Elasticsearch step fetches the canonical index setup script from [ansible-elevator-v2](https://github.com/umn-cla/ansible-elevator-v2) via `gh`, so you'll need the `gh` CLI installed and authenticated (`gh auth login`) with access to that repo.
 
 After the script finishes:
 
 - **App:** `https://localhost/defaultinstance`
 - **Admin:** username `admin`, password is `DEFAULT_ADMIN_PASSWORD` from your `.env` (default: `admin`). To change it, update `DEFAULT_ADMIN_PASSWORD` in `.env` and re-run `./scripts/bootstrap`.
-
-### Set up Elasticsearch indices
-
-After bootstrap, initialise the search indices (this only needs to be done once):
-
-```bash
-docker compose exec php-fpm php index.php beltdrive updateIndexes
-```
-
-> **Tip:** If search isn't working, make sure `ELASTIC_HOST=elasticsearch:9200` (with port) in your `.env`.
 
 ### Multiple worktrees / port conflicts
 
@@ -188,7 +181,26 @@ This typically frees 20–40 GB and clears the error.
 
 ### Elasticsearch not returning results
 
-Make sure your `.env` has `ELASTIC_HOST=elasticsearch:9200` (the `:9200` port suffix is required). Re-run `updateIndexes` after fixing it.
+Make sure your `.env` has `ELASTIC_HOST=elasticsearch:9200` (the `:9200` port suffix is required).
+
+If the index exists but search returns nothing, the index mapping is likely missing or stale. Do a full reset:
+
+```bash
+# Re-fetch the setup script and rebuild the index from scratch
+bash scripts/bootstrap
+```
+
+Or manually, if you want to avoid re-running the full bootstrap:
+
+```bash
+_idx="elevator"  # match ELASTIC_INDEX in .env
+curl -XDELETE "http://localhost:9200/${_idx}_1"
+curl -XDELETE "http://localhost:9200/${_idx}"
+bash scripts/elastic_setup.sh localhost "${_idx}_1" "${_idx}"
+docker compose exec php-fpm php index.php admin reindex
+```
+
+Assets are automatically re-indexed on save, so a full reindex is only needed after a mapping change or bulk data import.
 
 ---
 
