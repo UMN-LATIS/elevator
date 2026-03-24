@@ -907,10 +907,14 @@ class AssetManager extends Admin_Controller {
 		}
 		else {
 
-			if($hash) {
-				if($this->importCache) {
-					$cachedItem = $this->ImportCache->get($hash);
-					if($cachedItem) {
+			if ($hash) {
+				if (!$this->importCache) {
+					$this->importCache = $this->doctrine->getCache("importCache");
+				}
+				if ($this->importCache) {
+					$cachedItem = $this->importCache->get($hash);
+					$cacheArray = $cachedItem;
+					if ($cachedItem) {
 						$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cachedItem['importId']);
 					}
 				}
@@ -918,7 +922,7 @@ class AssetManager extends Admin_Controller {
 				
 			}
 
-			if(!$csvBatch) {
+			if (!isset($csvBatch)) {
 				$this->logging->logError("Cachine Error");
 				$this->errorhandler_helper->callError("genericError");
 				return;
