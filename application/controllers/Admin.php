@@ -244,8 +244,13 @@ class admin extends Admin_Controller {
 		foreach ($matchArray["searchResults"] as $match) {
 			echo $match . "\n";
 			$asset = new Asset_model($match);
-
-			$this->search_model->remove($asset);
+			if($asset->getGlobalValue("deleted") == true) {
+				$this->search_model->remove($asset);
+			}
+			else {
+				continue;
+			}
+			
 			// $params['index'] = $this->config->item('elasticIndex');
 			// $params['id']    = $match;
 			// if(!$params['id'] || strlen($params['id']<5)) {
