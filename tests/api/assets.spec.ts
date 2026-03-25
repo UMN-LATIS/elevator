@@ -277,7 +277,13 @@ test.describe("assets", () => {
         { headers: { Accept: "application/json" } },
       );
       expect(undeleteRes.status()).toBe(200);
-      const body = await undeleteRes.json();
+
+      // Response must be clean JSON with no PHP errors mixed in.
+      const rawBody = await undeleteRes.text();
+      expect(rawBody).not.toContain("A PHP Error was encountered");
+      expect(rawBody).not.toContain("<div");
+
+      const body = JSON.parse(rawBody);
       expect(body).toHaveProperty("objectId", assetId);
 
       // Verify the asset is accessible again.
