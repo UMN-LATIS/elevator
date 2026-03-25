@@ -11,6 +11,12 @@ class AssetManager extends Admin_Controller {
 	public function __construct() {
 		parent::__construct();
 
+		$this->load->model("asset_model");
+
+		if ($this->isJsonRequest()) {
+			return;
+		}
+
 		$this->template->javascript->add("//maps.google.com/maps/api/js?key=" . $this->config->item("googleApi") . "&sensor=false");
 		$jsLoadArray = ["handlebars-v1.1.2", "formSubmission", "serializeForm", "interWindow", "mapWidget", "dateWidget", "mule2", "uploadWidget", "multiselectWidget", "parsley", "bootstrap-datepicker", "bootstrap-tagsinput", "typeahead.jquery", "assetAutocompleter"];
 		$this->template->loadJavascript($jsLoadArray);
@@ -20,8 +26,6 @@ class AssetManager extends Admin_Controller {
 		$cssLoadArray = ["datepicker", "bootstrap-tagsinput"];
 		$this->template->loadCSS($cssLoadArray);
 		$this->template->javascript->add("assets/tinymce/tinymce.min.js");
-
-		$this->load->model("asset_model");
 	}
 
 	public function addAssetModal() {
@@ -194,7 +198,11 @@ class AssetManager extends Admin_Controller {
 		}
 
 		$asset = new Asset_model();
-		$asset->loadAssetById($objectId);
+		if (!$asset->loadAssetById($objectId)) {
+			return $isJson
+				? render_json(['error' => 'Asset not found'], 404)
+				: $this->errorhandler_helper->callError("unknownAsset");
+		}
 
 		$entries = $asset->assetObject->getRevisions();
 
@@ -207,10 +215,13 @@ class AssetManager extends Admin_Controller {
 		}
 
 		if ($isJson) {
-			$result = array_map(fn($a) => [
-				'indexId' => $a->getIndexId(),
-				'modifiedDate' => $a->getGlobalValue("modified"),
-			], $assetArray);
+			$result = array_map(function ($a) {
+				$modified = $a->getGlobalValue("modified");
+				return [
+					'indexId' => $a->getIndexId(),
+					'modifiedDate' => $modified instanceof \DateTime ? $modified->format('c') : $modified,
+				];
+			}, $assetArray);
 			return render_json($result);
 		}
 
@@ -240,7 +251,7 @@ class AssetManager extends Admin_Controller {
 		if ($restoreObject === false) {
 			return $isJson
 				? render_json(['error' => 'Revision not found'], 404)
-				: $this->errorhandler_helper->callError("noPermission");
+				: $this->errorhandler_helper->callError("unknownAsset");
 		}
 
 		if ($isJson) {
@@ -289,7 +300,7 @@ class AssetManager extends Admin_Controller {
 		$files = $assetObject->getAllWithinAsset("Upload");
 		foreach ($files as $file) {
 			foreach ($file->fieldContentsArray as $entry) {
-				if ($entry->fileHandler->deleted == true) {
+				if ($entry->fileHandler && $entry->fileHandler->deleted == true) {
 					$entry->fileHandler->regenerate = true;
 					$entry->fileHandler->undeleteFile();
 				}
@@ -325,18 +336,20 @@ class AssetManager extends Admin_Controller {
 			->andWhere("a.deletedBy = :userId")
 			->setParameter(":userId", (int)$this->user_model->userId)
 			->orderBy("a.modifiedAt", "DESC")
+			->setMaxResults(200)
 			->getQuery()
 			->execute();
 
 		$result = array_map(function ($asset) {
 			$this->asset_model->loadAssetFromRecord($asset, true);
 			$resultCache = $this->asset_model->getSearchResultEntry();
+			$modifiedDate = $this->asset_model->getGlobalValue("modified");
 			return [
 				'objectId' => $this->asset_model->getObjectId(),
 				'title' => $resultCache['title'] ?? "",
 				'readyForDisplay' => $this->asset_model->getGlobalValue("readyForDisplay"),
 				'templateId' => $this->asset_model->getGlobalValue("templateId"),
-				'modifiedDate' => $this->asset_model->getGlobalValue("modified"),
+				'modifiedDate' => $modifiedDate instanceof \DateTime ? $modifiedDate->format('c') : $modifiedDate,
 				'deletedAt' => $asset->getDeletedAt()?->format('c'),
 				'deletedBy' => $asset->getDeletedBy(),
 			];
@@ -381,8 +394,18 @@ class AssetManager extends Admin_Controller {
 
 		$assetModel = new Asset_model();
 		$assetModel->loadAssetById($assetId);
-		$this->load->model("search_model");
-		$this->search_model->addOrUpdate($assetModel);
+
+		$files = $assetModel->getAllWithinAsset("Upload");
+		foreach ($files as $file) {
+			foreach ($file->fieldContentsArray as $entry) {
+				if ($entry->fileHandler && $entry->fileHandler->deleted == true) {
+					$entry->fileHandler->regenerate = true;
+					$entry->fileHandler->undeleteFile();
+				}
+			}
+		}
+
+		$assetModel->save(true, false, false);
 
 		return render_json(['objectId' => $assetId]);
 	}
