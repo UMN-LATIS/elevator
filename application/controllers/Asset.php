@@ -51,16 +51,22 @@ class asset extends Instance_Controller {
 			if (!$isJson) {
 				return show_404();
 			}
-			// if user can add assets, we want to return a 410 with the deleted
-			// status so that the UI can offer the option to restore
-			return $this->accessLevel >= PERM_ADDASSETS
-				? render_json([
+
+			$canRestore = $this->accessLevel >= PERM_ADDASSETS;
+			if (!$canRestore) {
+				return abort_json(["error" => "not found"], 404);
+			}
+
+			// if user can restore, send a 410 with some info about the
+			// deleted asset so the frontend can offer restore options.
+			// set cache-control to no-store to prevent aggressive browsercaching
+			// of deleted status, which could interfere with restore/undelete actions.
+			return render_json([
 					'error' => 'deleted',
 					'objectId' => $objectId,
 					'deletedAt' => $assetModel->assetObject->getDeletedAt()?->format('c'),
 					'deletedBy' => $assetModel->assetObject->getDeletedBy(),
-				], 410)
-				: render_json(["error" => "not found"], 404);
+				], 410, ['Cache-Control' => 'no-store']);
 		}
 
 		if($this->accessLevel == PERM_NOPERM) {
@@ -146,17 +152,25 @@ class asset extends Instance_Controller {
 		}
 
 		if ($assetModel->assetObject->getDeleted()) {
-			if ($returnJson == "true" && $this->accessLevel >= PERM_ADDASSETS) {
-				return render_json([
+			if ($returnJson != "true") {
+				return show_404();
+			}
+
+			$canRestore = $this->accessLevel >= PERM_ADDASSETS;
+			if (!$canRestore) {
+				return abort_json(["error" => "not found"], 404);
+			}
+
+			// if user can restore, send a 410 with some info about the
+			// deleted asset so the frontend can offer restore options.
+			// set cache-control to no-store to prevent aggressive browser caching
+			// of deleted status, which could interfere with restore/undelete actions.
+			return render_json([
 					'error' => 'deleted',
 					'objectId' => $objectId,
 					'deletedAt' => $assetModel->assetObject->getDeletedAt()?->format('c'),
 					'deletedBy' => $assetModel->assetObject->getDeletedBy(),
-				], 410);
-			}
-			return $returnJson == "true"
-				? render_json(["error" => "not found"], 404)
-				: show_404();
+				], 410, ['Cache-Control' => 'no-store']);
 		}
 
 		if($this->accessLevel == PERM_NOPERM) {
