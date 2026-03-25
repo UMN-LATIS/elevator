@@ -28,9 +28,13 @@ class asset extends Instance_Controller {
 	}
 
 	function getAsset($objectId) {
+		$isJson = $this->isJsonRequest();
+
 		$assetModel = new Asset_model;
 		if(!$objectId) {
-			show_404();
+			return $isJson
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 
@@ -38,15 +42,26 @@ class asset extends Instance_Controller {
 			show_404();
 		}
 
-		if($assetModel->assetObject->getDeleted() === true) {
-			show_404();
-		}
-
 		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
 			show_404();
 		}
-		
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+		if ($assetModel->assetObject->getDeleted()) {
+			if (!$isJson) {
+				return show_404();
+			}
+			// if user can add assets, we want to return a 410 with the deleted
+			// status so that the UI can offer the option to restore
+			return $this->accessLevel >= PERM_ADDASSETS
+				? render_json([
+					'error' => 'deleted',
+					'objectId' => $objectId,
+					'deletedAt' => $assetModel->assetObject->getDeletedAt()?->format('c'),
+					'deletedBy' => $assetModel->assetObject->getDeletedBy(),
+				], 410)
+				: render_json(["error" => "not found"], 404);
+		}
 
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callJsonError("noPermission");
@@ -84,12 +99,6 @@ class asset extends Instance_Controller {
 		}
 
 		if(!$assetModel->loadAssetById($objectId)) {
-			return $returnJson == "true"
-				? render_json(["error" => "not found"], 404)
-				: show_404();
-		}
-
-		if($assetModel->assetObject->getDeleted() === true) {
 			return $returnJson == "true"
 				? render_json(["error" => "not found"], 404)
 				: show_404();
@@ -134,6 +143,20 @@ class asset extends Instance_Controller {
 
 		if($this->instance->getFeaturedAsset() && $this->instance->getFeaturedAsset() == $objectId) {
 			$this->accessLevel = PERM_SEARCH;
+		}
+
+		if ($assetModel->assetObject->getDeleted()) {
+			if ($returnJson == "true" && $this->accessLevel >= PERM_ADDASSETS) {
+				return render_json([
+					'error' => 'deleted',
+					'objectId' => $objectId,
+					'deletedAt' => $assetModel->assetObject->getDeletedAt()?->format('c'),
+					'deletedBy' => $assetModel->assetObject->getDeletedBy(),
+				], 410);
+			}
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if($this->accessLevel == PERM_NOPERM) {

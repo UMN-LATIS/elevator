@@ -31,7 +31,7 @@ test.describe("assets", () => {
   // its URL caused a 500 (for assets with uploads) or returned stale data
   // (bare assets). The fix adds a deleted check in Asset::getAsset() and
   // Asset::viewAsset() after loadAssetById() succeeds.
-  test("deleted asset returns 404, not 200", async ({ page }) => {
+  test("deleted asset returns 410 with metadata, not 200", async ({ page }) => {
     const collectionId = await createCollection(page, "Test Collection #467");
     const template = await createTemplate(page, { name: "Test Template #467" });
     const assetId = await createAsset(page, template.id, collectionId);
@@ -48,17 +48,62 @@ test.describe("assets", () => {
     );
     expect(deleteRes.status()).toBe(204);
 
-    // getAsset must return 404 for a soft-deleted asset.
+    // getAsset must return 410 Gone for a soft-deleted asset.
     const getRes = await page.request.get(
       `${baseURL()}/asset/getAsset/${assetId}`,
+      { headers: { Accept: "application/json" } },
     );
-    expect(getRes.status()).toBe(404);
+    expect(getRes.status()).toBe(410);
+    const getBody = await getRes.json();
+    expect(getBody).toHaveProperty("error", "deleted");
+    expect(getBody).toHaveProperty("objectId", assetId);
+    expect(getBody).toHaveProperty("deletedAt");
+    expect(getBody).toHaveProperty("deletedBy");
 
-    // viewAsset must also return 404.
+    // viewAsset must also return 410 Gone.
     const viewRes = await page.request.get(
       `${baseURL()}/asset/viewAsset/${assetId}/true`,
     );
+    expect(viewRes.status()).toBe(410);
+    const viewBody = await viewRes.json();
+    expect(viewBody).toHaveProperty("error", "deleted");
+    expect(viewBody).toHaveProperty("objectId", assetId);
+  });
+
+  test("deleted asset returns 404 (not 410) for users without manage permission", async ({
+    page,
+    browser,
+  }) => {
+    const collectionId = await createCollection(page, "Permission Gate Collection");
+    const template = await createTemplate(page, { name: "Permission Gate Template" });
+    const assetId = await createAsset(page, template.id, collectionId);
+
+    // Admin deletes the asset.
+    const deleteRes = await page.request.get(
+      `${baseURL()}/assetManager/deleteAsset/${assetId}/true`,
+    );
+    expect(deleteRes.status()).toBe(204);
+
+    // Create a non-admin user (no asset management permission).
+    await createUser(page, "viewer", "viewerpass");
+
+    const ctx = await browser.newContext();
+    const viewerPage = await ctx.newPage();
+    await loginUser(viewerPage, "viewer", "viewerpass");
+
+    // Non-admin must get 404, not 410 — no leak that the asset was deleted.
+    const getRes = await viewerPage.request.get(
+      `${baseURL()}/asset/getAsset/${assetId}`,
+      { headers: { Accept: "application/json" } },
+    );
+    expect(getRes.status()).toBe(404);
+
+    const viewRes = await viewerPage.request.get(
+      `${baseURL()}/asset/viewAsset/${assetId}/true`,
+    );
     expect(viewRes.status()).toBe(404);
+
+    await ctx.close();
   });
 
   test.describe("restoreAsset (list revisions) JSON", () => {
@@ -265,11 +310,11 @@ test.describe("assets", () => {
       );
       expect(deleteRes.status()).toBe(204);
 
-      // Confirm it's gone.
+      // Confirm it's gone (410 = deleted).
       const gone = await page.request.get(
         `${baseURL()}/asset/viewAsset/${assetId}/true`,
       );
-      expect(gone.status()).toBe(404);
+      expect(gone.status()).toBe(410);
 
       // Undelete the asset.
       const undeleteRes = await page.request.post(
