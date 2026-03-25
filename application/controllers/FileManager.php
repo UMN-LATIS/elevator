@@ -446,18 +446,21 @@ class FileManager extends Instance_Controller {
 	}
 
 	function getMetadataForObject($fileId) {
+		$isJson = $this->isJsonRequest();
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		$fileHandler->loadByObjectId($fileId);
-		if(!($fileHandler)) {
-			instance_redirect("errorHandler/error/unknownFile");
-			return;
+		if(!$fileHandler) {
+			return $isJson
+				? render_json(["error" => "unknownFile"], 404)
+				: instance_redirect("errorHandler/error/unknownFile");
 		}
+		$fileHandler->loadByObjectId($fileId);
 
 		if(!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
 			$this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
-			instance_redirect("errorHandler/error/unknownFile");
-			return;
+			return $isJson
+				? render_json(["error" => "unknownFile"], 404)
+				: instance_redirect("errorHandler/error/unknownFile");
 		}
 
 		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
@@ -465,7 +468,9 @@ class FileManager extends Instance_Controller {
 		$requiredAccessLevel = PERM_SEARCH;
 
 		if($accessLevel < $requiredAccessLevel) {
-			instance_redirect("/errorHandler/error/noPermission");
+			return $isJson
+				? render_json(["error" => "noPermission"], 403)
+				: instance_redirect("/errorHandler/error/noPermission");
 		}
 
 		$metadata = $fileHandler->sourceFile->metadata;
