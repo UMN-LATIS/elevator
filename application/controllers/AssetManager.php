@@ -294,60 +294,54 @@ class AssetManager extends Admin_Controller {
 			->getQuery();
 		$p = $q->execute();
 
-		$this->undeleteFileHandlers($restoreObject);
 		$this->doctrine->em->flush();
 
 		$assetObject = new Asset_model;
 		$assetObject->loadAssetById($restoreObject->getAssetId());
-		$this->queueUploadRegeneration($assetObject);
+		$this->restoreUploadHandlers($assetObject);
 		$assetObject->save(true, false, false);
 		return $restoreObject->getAssetId();
 	}
 
-	/**
-	 * Extract file IDs from an asset's widget JSON and undelete only the
-	 * FileHandler records still referenced by the widget data. Handlers
-	 * the user removed before deletion stay deleted.
-	 *
-	 * Must be called BEFORE loadAssetById, because getHandledObject
-	 * filters out deleted handlers.
-	 */
-	private function undeleteFileHandlers(\Entity\Asset $asset): void {
-		$activeFileIds = [];
-		$widgets = $asset->getWidgets();
-		if (!is_array($widgets)) return;
 
-		foreach ($widgets as $widget) {
-			if (!is_array($widget)) continue;
-			foreach ($widget as $entry) {
-				if (isset($entry['fileId'])) {
-					$activeFileIds[] = $entry['fileId'];
+	/**
+	 * Undelete file handlers referenced by Upload widgets, then mark them
+	 * for derivative regeneration.
+	 */
+	private function restoreUploadHandlers(Asset_model $assetModel): void {
+		$files = $assetModel->getAllWithinAsset("Upload");
+
+		$fileIds = [];
+		foreach ($files as $file) {
+			foreach ($file->fieldContentsArray as $entry) {
+				if ($entry->fileId) {
+					$fileIds[] = $entry->fileId;
 				}
 			}
 		}
 
-		if (empty($activeFileIds)) return;
+		if (empty($fileIds)) {
+			return;
+		}
 
 		$deletedHandlers = $this->doctrine->em->getRepository('Entity\FileHandler')
-			->findBy(['fileObjectId' => $activeFileIds, 'deleted' => true]);
+			->findBy(['fileObjectId' => $fileIds, 'deleted' => true]);
 
 		foreach ($deletedHandlers as $handler) {
 			$handler->setDeleted(false);
 		}
-	}
 
-	/**
-	 * Mark all upload file handlers on the asset for derivative regeneration.
-	 * The actual regeneration happens asynchronously via background jobs
-	 * when the file handler is saved.
-	 */
-	private function queueUploadRegeneration(Asset_model $assetModel): void {
-		$files = $assetModel->getAllWithinAsset("Upload");
+		// flush here so delete status is written to db
+		$this->doctrine->em->flush();
+
+		// getFileHandler() queries the DB for non-deleted handlers,
+		// so the flush above must happen first
 		foreach ($files as $file) {
 			foreach ($file->fieldContentsArray as $entry) {
-				if ($entry->fileHandler) {
-					$entry->fileHandler->regenerate = true;
-					$entry->fileHandler->save();
+				$fileHandler = $entry->getFileHandler();
+				if ($fileHandler) {
+					$fileHandler->regenerate = true;
+					$fileHandler->save();
 				}
 			}
 		}
@@ -433,12 +427,11 @@ class AssetManager extends Admin_Controller {
 		$asset->setDeletedBy(null);
 		$asset->setDeletedAt(null);
 
-		$this->undeleteFileHandlers($asset);
 		$this->doctrine->em->flush();
 
 		$assetModel = new Asset_model();
 		$assetModel->loadAssetById($assetId);
-		$this->queueUploadRegeneration($assetModel);
+		$this->restoreUploadHandlers($assetModel);
 		$assetModel->save(true, false, false);
 
 		return render_json(['objectId' => $assetId]);
