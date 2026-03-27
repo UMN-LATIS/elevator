@@ -833,6 +833,9 @@ class AssetManager extends Admin_Controller {
 				if($assetModel->getGlobalValue("deleted")) {
 					continue;
 				}
+				if($assetModel->getGlobalValue("deleted")) {
+					continue;
+				}
 				$outputRow = [];
 				$outputRow[] = $assetModel->getObjectId();
 				$collection =  $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
@@ -1015,15 +1018,19 @@ class AssetManager extends Admin_Controller {
 		} else {
 
 			if ($hash) {
+				if (!$this->importCache) {
+					$this->importCache = $this->doctrine->getCache("importCache");
+				}
 				if ($this->importCache) {
-					$cachedItem = $this->ImportCache->get($hash);
+					$cachedItem = $this->importCache->get($hash);
+					$cacheArray = $cachedItem;
 					if ($cachedItem) {
 						$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cachedItem['importId']);
 					}
 				}
 			}
 
-			if (!$csvBatch) {
+			if (!isset($csvBatch)) {
 				$this->logging->logError("Cachine Error");
 				$this->errorhandler_helper->callError("genericError");
 				return;
