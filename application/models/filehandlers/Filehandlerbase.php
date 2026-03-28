@@ -711,7 +711,7 @@ class FileHandlerBase extends CI_Model {
 	}
 
 	function undeleteFile() {
-		$this->deleted = true;
+		$this->deleted = false;
 		$this->save();
 		return true;
 	}

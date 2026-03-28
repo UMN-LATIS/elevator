@@ -44,8 +44,6 @@ class admin extends Admin_Controller {
 
 	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null, $debugMode = false) {
 
-		// override path to config on web host
-		$this->config->set_item('convert', '/usr/bin/convert');
 
 		if ($offsetAssetId === "false" || $offsetAssetId === "null" || $offsetAssetId === "") {
 			$offsetAssetId = null;
@@ -82,10 +80,6 @@ class admin extends Admin_Controller {
 		$result = $qb->getQuery()->toIterable();
 		$this->load->model("asset_model");
 
-		exec("sudo /usr/local/bin/ebs-mount.sh");
-		// make sure we hold an open file on the mount while we're working
-		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
-
 		$count = 0;
 		foreach ($result as $entry) {
 			$this->processAccessibilityForAsset($entry, $debugMode);
@@ -100,7 +94,6 @@ class admin extends Admin_Controller {
 
 	public function generateAccessibilityMaterialForAssetInInstance($assetId, $instanceId, $debugMode = false) {
 
-		$this->config->set_item('convert', '/usr/bin/convert');
 		$debugMode = $this->isTruthyCliValue($debugMode);
 
 		if (!$assetId || !is_numeric($instanceId) || !$instanceId) {
@@ -133,15 +126,14 @@ class admin extends Admin_Controller {
 
 		$this->load->model("asset_model");
 
-		exec("sudo /usr/local/bin/ebs-mount.sh");
-		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
-
 		$this->processAccessibilityForAsset($entry, $debugMode);
 		$this->doctrine->em->clear();
 		gc_collect_cycles();
 
 		echo "Done!\n";
 	}
+
+
 
 	private function processAccessibilityForAsset($entry, $debugMode = false) {
 		$assetModel = new Asset_model();
@@ -155,11 +147,15 @@ class admin extends Admin_Controller {
 				if ($uploadWidget && isset($uploadWidget->sidecars['captions']) && $uploadWidget->sidecars['captions'] != "") {
 					continue;
 				}
-				if (isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription) > 0) {
+
+				$fileHandler = $uploadWidget->getFileHandler();
+
+
+				if (get_class($fileHandler) !== "MovieHandler" && isset($uploadWidget->fileDescription) && strlen($uploadWidget->fileDescription) > 0) {
 					continue;
 				}
 
-				$fileHandler = $uploadWidget->getFileHandler();
+
 				echo "Requesting Alt Text\n";
 				if($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
 					$fileHandler->generateAltText($debugMode);

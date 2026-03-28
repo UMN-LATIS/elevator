@@ -128,9 +128,37 @@ export async function createCollection(
   return body.id;
 }
 
-// POST /{instance}/assetmanager/submission/true
+// POST /{instance}/assetManager/submission/true
 // formData is a JSON string containing at minimum templateId and collectionId.
 // Returns the new asset's objectId (a 24-char hex MongoDB-style ID).
+// POST /{instance}/permissions/saveUser
+// Creates a local user via the admin permissions controller.
+// The caller must be logged in as an admin.
+export async function createUser(
+  page: Page,
+  username: string,
+  password: string,
+  options: { isSuperAdmin?: boolean; displayName?: string; email?: string } = {},
+): Promise<void> {
+  const response = await page.request.post(
+    `${baseURL()}/permissions/saveUser`,
+    {
+      form: {
+        username,
+        password,
+        label: options.displayName ?? username,
+        email: options.email ?? `${username}@test.local`,
+        isSuperAdmin: options.isSuperAdmin ? "1" : "0",
+      },
+    },
+  );
+
+  if (!response.ok()) {
+    const text = await response.text().catch(() => "unknown");
+    throw new Error(`createUser failed (${response.status()}): ${text}`);
+  }
+}
+
 export async function createAsset(
   page: Page,
   templateId: number,
@@ -139,7 +167,7 @@ export async function createAsset(
   const formData = JSON.stringify({ templateId, collectionId });
 
   const response = await page.request.post(
-    `${baseURL()}/assetmanager/submission/true`,
+    `${baseURL()}/assetManager/submission/true`,
     { form: { formData } },
   );
 
