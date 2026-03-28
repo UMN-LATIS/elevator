@@ -27,7 +27,7 @@ class LTI13Database implements IDatabase {
         return $result[0] ?? null;
     }
 
-    public function findRegistrationByIssuer($issuer_id, $client_id=null) {
+    public function findRegistrationByIssuer($issuer_id, $client_id=null): LtiRegistration {
 
         $issuer = self::findIssuer($issuer_id, $client_id);
         if (!$issuer) {
