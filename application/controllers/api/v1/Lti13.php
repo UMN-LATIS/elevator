@@ -2,11 +2,9 @@
 
 use Packback\Lti1p3\LtiOidcLogin;
 use Packback\Lti1p3\LtiMessageLaunch;
-use Packback\Lti1p3\ImsStorage\ImsCache;
-use Packback\Lti1p3\ImsStorage\ImsCookie;
 use Packback\Lti1p3\LtiException;
-use Packback\Lti1p3\LtiDeepLinkResource;
-use Packback\Lti1p3\LtiDeepLinkResourceIframe;
+use Packback\Lti1p3\DeepLinkResources\Resource as LtiDeepLinkResource;
+use Packback\Lti1p3\DeepLinkResources\Iframe as LtiDeepLinkResourceIframe;
 
 class lti13 extends Instance_Controller {
 
@@ -21,31 +19,39 @@ class lti13 extends Instance_Controller {
 
   public function login() {
     $this->load->library("LTI13Database");
-    return LtiOidcLogin::new(new LTI13Database, new ImsCache, new ImsCookie)
-        ->doOidcLoginRedirect(instance_url("api/v1/lti13/launch"))
-        ->doRedirect();
+    $this->load->library("LTI13Cache");
+    $this->load->library("LTI13Cookie");
+
+    $redirectUrl = LtiOidcLogin::new(new LTI13Database, new LTI13Cache, new LTI13Cookie)
+        ->getRedirectUrl(instance_url("api/v1/lti13/launch"), $_REQUEST);
+
+    header('Location: '.$redirectUrl, true, 302);
+    exit;
 }
 
 
   public function launch() {
+    $this->load->library("LTI13Database");
     if(isset($_REQUEST['error']) && $_REQUEST['error'] == 'launch_no_longer_valid') {
       $exception = new \Exception($_REQUEST['error_description']);
       echo "fail";
   }
 
    try {
+      $this->load->library("LTI13Cache");
+      $this->load->library("LTI13Cookie");
       $launch = LtiMessageLaunch::new(
           new LTI13Database, 
-          new ImsCache, 
-          new ImsCookie, 
+        new LTI13Cache, 
+        new LTI13Cookie, 
           new \Packback\Lti1p3\LtiServiceConnector(
-              new ImsCache, 
+          new LTI13Cache, 
               new \GuzzleHttp\Client([
                   'timeout' => 30,
               ])
           )
       )
-      ->validate();
+      ->initialize($_REQUEST);
   }
   catch (LtiException $e) {
 
@@ -241,8 +247,12 @@ class lti13 extends Instance_Controller {
           return;
         }
 
-        $launch = LtiMessageLaunch::fromCache($launchId, new LTI13Database, new ImsCache,  new \Packback\Lti1p3\LtiServiceConnector(
-          new ImsCache, 
+        $this->load->library("LTI13Database");
+        $this->load->library("LTI13Cache");
+        $this->load->library("LTI13Cookie");
+
+        $launch = LtiMessageLaunch::fromCache($launchId, new LTI13Database, new LTI13Cache, new LTI13Cookie, new \Packback\Lti1p3\LtiServiceConnector(
+          new LTI13Cache, 
           new \GuzzleHttp\Client([
               'timeout' => 30,
           ])
@@ -253,9 +263,17 @@ class lti13 extends Instance_Controller {
         $deepLinkResource->setType("link");
         $deepLinkResource->setUrl($embedLink);
         $deepLinkResource->setTitle("test");
-        $deepLinkResource->setIframe(new LtiDeepLinkResourceIframe(640,480, $embedLink));
+        $deepLinkResource->setIframe(new LtiDeepLinkResourceIframe($embedLink, 640, 480));
 
-        echo $deepLink->outputResponseForm([$deepLinkResource]);
+        $jwt = $deepLink->getResponseJwt([$deepLinkResource]);
+        $returnUrl = htmlspecialchars($deepLink->returnUrl(), ENT_QUOTES, 'UTF-8');
+        $jwtValue = htmlspecialchars($jwt, ENT_QUOTES, 'UTF-8');
+
+        echo '<form id="lti13DeepLinkResponse" action="'.$returnUrl.'" method="POST">';
+        echo '<input type="hidden" name="JWT" value="'.$jwtValue.'" />';
+        echo '<input type="submit" value="Return to LMS" />';
+        echo '</form>';
+        echo '<script>document.getElementById("lti13DeepLinkResponse").submit();</script>';
         return;
     }
 }
