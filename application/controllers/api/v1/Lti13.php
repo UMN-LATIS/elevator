@@ -35,6 +35,7 @@ class lti13 extends Instance_Controller {
     if(isset($_REQUEST['error']) && $_REQUEST['error'] == 'launch_no_longer_valid') {
       $exception = new \Exception($_REQUEST['error_description']);
       echo "fail";
+      return;
   }
 
    try {
