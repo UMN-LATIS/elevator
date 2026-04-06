@@ -104,8 +104,11 @@ if (isset($fileContainers['tiled-tar'])) {
                 let offset;
                 let byteCount;
                 // do this with our own fetch instead of geotiff so that we can get parallel requests
-                offset = subimage.fileDirectory.TileOffsets[index];
-                byteCount = subimage.fileDirectory.TileByteCounts[index];
+                offset = Number(subimage.fileDirectory.TileOffsets[index]);
+                byteCount = Number(subimage.fileDirectory.TileByteCounts[index]);
+                if (!Number.isFinite(offset) || !Number.isFinite(byteCount) || offset < 0 || byteCount <= 0) {
+                    return;
+                }
                 var params = {
                     Bucket: '<?= $fileObject->collection->getBucket() ?>',
                     Key: "derivative/<?= $fileContainers['tiled-iiif']->getCompositeName() ?>",
