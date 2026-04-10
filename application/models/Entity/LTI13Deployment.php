@@ -21,7 +21,7 @@ class LTI13Deployment
      * @var \DateTime|null
      */
     #[ORM\Column(name: 'updatedAt', type: 'datetime', nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private $updatedAt = 'CURRENT_TIMESTAMP';
+    private $updatedAt;
 
     /**
      * @var string|null
