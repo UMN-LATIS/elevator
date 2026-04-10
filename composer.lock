@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ab2b1bf1d2859350f513a039ca6920c",
+    "content-hash": "05c9193d9996e8d2c69fd8fafd2adbad",
     "packages": [
         {
             "name": "alchemy/binary-driver",
@@ -2684,16 +2684,16 @@
         },
         {
             "name": "pda/pheanstalk",
-            "version": "v7.1.1",
+            "version": "v8.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pheanstalk/pheanstalk.git",
-                "reference": "b64371b3a47a3849cb5c7a46149511fe883490a2"
+                "reference": "e915a4cad2f4d8fc9a7c9165c80785985d2571ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/b64371b3a47a3849cb5c7a46149511fe883490a2",
-                "reference": "b64371b3a47a3849cb5c7a46149511fe883490a2",
+                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/e915a4cad2f4d8fc9a7c9165c80785985d2571ad",
+                "reference": "e915a4cad2f4d8fc9a7c9165c80785985d2571ad",
                 "shasum": ""
             },
             "require": {
@@ -2743,9 +2743,9 @@
             ],
             "support": {
                 "issues": "https://github.com/pheanstalk/pheanstalk/issues",
-                "source": "https://github.com/pheanstalk/pheanstalk/tree/v7.1.1"
+                "source": "https://github.com/pheanstalk/pheanstalk/tree/v8.0.2"
             },
-            "time": "2025-09-22T08:51:13+00:00"
+            "time": "2025-11-11T13:49:01+00:00"
         },
         {
             "name": "php-http/discovery",
