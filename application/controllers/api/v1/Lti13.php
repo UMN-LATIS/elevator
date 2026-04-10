@@ -1,10 +1,11 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 use Packback\Lti1p3\LtiOidcLogin;
-use Packback\Lti1p3\LtiMessageLaunch;
 use Packback\Lti1p3\LtiException;
+use Packback\Lti1p3\Factories\MessageFactory;
 use Packback\Lti1p3\DeepLinkResources\Resource as LtiDeepLinkResource;
 use Packback\Lti1p3\DeepLinkResources\Iframe as LtiDeepLinkResourceIframe;
+use Packback\Lti1p3\Messages\DeepLinkingRequest;
 
 class lti13 extends Instance_Controller {
 
@@ -23,7 +24,7 @@ class lti13 extends Instance_Controller {
     $this->load->library("LTI13Cookie");
 
     $redirectUrl = LtiOidcLogin::new(new LTI13Database, new LTI13Cache, new LTI13Cookie)
-        ->getRedirectUrl(instance_url("api/v1/lti13/launch"), $_REQUEST);
+      ->getRedirectUrl(instance_url("api/v1/lti13/launch"), $_REQUEST);
 
     header('Location: '.$redirectUrl, true, 302);
     exit;
@@ -41,18 +42,18 @@ class lti13 extends Instance_Controller {
    try {
       $this->load->library("LTI13Cache");
       $this->load->library("LTI13Cookie");
-      $launch = LtiMessageLaunch::new(
-          new LTI13Database, 
-        new LTI13Cache, 
-        new LTI13Cookie, 
-          new \Packback\Lti1p3\LtiServiceConnector(
-          new LTI13Cache, 
-              new \GuzzleHttp\Client([
-                  'timeout' => 30,
-              ])
-          )
-      )
-      ->initialize($_REQUEST);
+      $database = new LTI13Database;
+      $cache = new LTI13Cache;
+      $cookie = new LTI13Cookie;
+      $serviceConnector = new \Packback\Lti1p3\LtiServiceConnector(
+        $cache,
+        new \GuzzleHttp\Client([
+          'timeout' => 30,
+        ])
+      );
+
+      $messageFactory = new MessageFactory($database, $serviceConnector, $cache, $cookie);
+      $launch = $messageFactory->create($_REQUEST);
   }
   catch (LtiException $e) {
 
@@ -85,21 +86,20 @@ class lti13 extends Instance_Controller {
 //       <p>' . $e->getMessage() . "</p>";
       return;
   }
-  $launchData = $launch->getLaunchData();
-
-  $customData = $launchData['https://purl.imsglobal.org/spec/lti/claim/custom'];
-  $userEmail = $launchData["email"];
-  $context = $launchData["https://purl.imsglobal.org/spec/lti/claim/context"];
-  $courseId = $context["id"];
-  $user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(['email' => $userEmail]);
-
-
-  if($launchData["https://purl.imsglobal.org/spec/lti/claim/message_type"] != "LtiDeepLinkingRequest")  {
+  if (!($launch instanceof DeepLinkingRequest)) {
     echo "fail";
     return;
   }
-  $deepLinkSettings = $launchData["https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"];
-  $returnURL = $deepLinkSettings["deep_link_return_url"];;
+
+  $launchData = $launch->getBody();
+
+  $customData = $launchData['https://purl.imsglobal.org/spec/lti/claim/custom'];
+  $userEmail = $launchData["email"];
+  $courseId = $launch->contextClaim()->id();
+  $user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(['email' => $userEmail]);
+
+
+  $returnURL = $launch->deepLinkSettingsClaim()->deepLinkReturnUrl();
   
 
   if($user) {
@@ -250,14 +250,40 @@ class lti13 extends Instance_Controller {
 
         $this->load->library("LTI13Database");
         $this->load->library("LTI13Cache");
-        $this->load->library("LTI13Cookie");
+        $database = new LTI13Database;
+        $cache = new LTI13Cache;
 
-        $launch = LtiMessageLaunch::fromCache($launchId, new LTI13Database, new LTI13Cache, new LTI13Cookie, new \Packback\Lti1p3\LtiServiceConnector(
-          new LTI13Cache, 
+        $launchData = $cache->getLaunchData($launchId);
+        if (!$launchData) {
+          return;
+        }
+
+        $clientId = $launchData['aud'] ?? null;
+        if (is_array($clientId)) {
+          $clientId = $clientId[0] ?? null;
+        }
+
+        $issuer = $launchData['iss'] ?? null;
+        if (!$issuer || !$clientId) {
+          return;
+        }
+
+        $registration = $database->findRegistrationByIssuer($issuer, $clientId);
+        if (!$registration) {
+          return;
+        }
+
+        $serviceConnector = new \Packback\Lti1p3\LtiServiceConnector(
+          $cache,
           new \GuzzleHttp\Client([
               'timeout' => 30,
           ])
-      ));
+      );
+        $messageFactory = new MessageFactory($database, $serviceConnector, $cache, new LTI13Cookie);
+        $launch = $messageFactory->createMessage($registration, ['body' => $launchData]);
+        if (!($launch instanceof DeepLinkingRequest)) {
+          return;
+        }
       
         $deepLink = $launch->getDeepLink();
         $deepLinkResource = new LtiDeepLinkResource();
