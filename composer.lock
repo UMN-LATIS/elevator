@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9c37f972d8446fb8bfc8eaa672e73980",
+    "content-hash": "bc326dbc7ea8067dd9b18d2a925da25f",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.376.2",
+            "version": "3.378.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "ff2f61f280fc46081a1fbb7ae201a09f431d436d"
+                "reference": "c7a07701703e95c888a24959d5ea426c3d374240"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ff2f61f280fc46081a1fbb7ae201a09f431d436d",
-                "reference": "ff2f61f280fc46081a1fbb7ae201a09f431d436d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c7a07701703e95c888a24959d5ea426c3d374240",
+                "reference": "c7a07701703e95c888a24959d5ea426c3d374240",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.376.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.378.1"
             },
-            "time": "2026-04-02T18:09:03+00:00"
+            "time": "2026-04-09T18:16:50+00:00"
         },
         {
             "name": "brick/math",
@@ -1338,12 +1338,12 @@
             "version": "v7.0.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/firebase/php-jwt.git",
+                "url": "https://github.com/googleapis/php-jwt.git",
                 "reference": "47ad26bab5e7c70ae8a6f08ed25ff83631121380"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/47ad26bab5e7c70ae8a6f08ed25ff83631121380",
+                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/47ad26bab5e7c70ae8a6f08ed25ff83631121380",
                 "reference": "47ad26bab5e7c70ae8a6f08ed25ff83631121380",
                 "shasum": ""
             },
@@ -1392,8 +1392,8 @@
                 "php"
             ],
             "support": {
-                "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v7.0.5"
+                "issues": "https://github.com/googleapis/php-jwt/issues",
+                "source": "https://github.com/googleapis/php-jwt/tree/v7.0.5"
             },
             "time": "2026-04-01T20:38:03+00:00"
         },
@@ -1471,16 +1471,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.435.0",
+            "version": "v0.436.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "1edf0f5f2876945c372366107b4d7a387b17a6b9"
+                "reference": "42493f9565963a0456b1edace1eb5f1cc53f2f73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/1edf0f5f2876945c372366107b4d7a387b17a6b9",
-                "reference": "1edf0f5f2876945c372366107b4d7a387b17a6b9",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/42493f9565963a0456b1edace1eb5f1cc53f2f73",
+                "reference": "42493f9565963a0456b1edace1eb5f1cc53f2f73",
                 "shasum": ""
             },
             "require": {
@@ -1509,9 +1509,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.435.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.436.0"
             },
-            "time": "2026-03-01T01:14:26+00:00"
+            "time": "2026-04-06T01:28:26+00:00"
         },
         {
             "name": "google/auth",
@@ -2567,16 +2567,16 @@
         },
         {
             "name": "pda/pheanstalk",
-            "version": "v7.1.1",
+            "version": "v8.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pheanstalk/pheanstalk.git",
-                "reference": "b64371b3a47a3849cb5c7a46149511fe883490a2"
+                "reference": "e915a4cad2f4d8fc9a7c9165c80785985d2571ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/b64371b3a47a3849cb5c7a46149511fe883490a2",
-                "reference": "b64371b3a47a3849cb5c7a46149511fe883490a2",
+                "url": "https://api.github.com/repos/pheanstalk/pheanstalk/zipball/e915a4cad2f4d8fc9a7c9165c80785985d2571ad",
+                "reference": "e915a4cad2f4d8fc9a7c9165c80785985d2571ad",
                 "shasum": ""
             },
             "require": {
@@ -2626,9 +2626,9 @@
             ],
             "support": {
                 "issues": "https://github.com/pheanstalk/pheanstalk/issues",
-                "source": "https://github.com/pheanstalk/pheanstalk/tree/v7.1.1"
+                "source": "https://github.com/pheanstalk/pheanstalk/tree/v8.0.2"
             },
-            "time": "2025-09-22T08:51:13+00:00"
+            "time": "2025-11-11T13:49:01+00:00"
         },
         {
             "name": "php-http/discovery",
@@ -2895,16 +2895,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "3.0.50",
+            "version": "3.0.51",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "aa6ad8321ed103dc3624fb600a25b66ebf78ec7b"
+                "reference": "d59c94077f9c9915abb51ddb52ce85188ece1748"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/aa6ad8321ed103dc3624fb600a25b66ebf78ec7b",
-                "reference": "aa6ad8321ed103dc3624fb600a25b66ebf78ec7b",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/d59c94077f9c9915abb51ddb52ce85188ece1748",
+                "reference": "d59c94077f9c9915abb51ddb52ce85188ece1748",
                 "shasum": ""
             },
             "require": {
@@ -2985,7 +2985,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.50"
+                "source": "https://github.com/phpseclib/phpseclib/tree/3.0.51"
             },
             "funding": [
                 {
@@ -3001,7 +3001,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-19T02:57:58+00:00"
+            "time": "2026-04-10T01:33:53+00:00"
         },
         {
             "name": "phpstan/phpstan",
@@ -3703,21 +3703,21 @@
         },
         {
             "name": "rector/rector",
-            "version": "2.3.9",
+            "version": "2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "917842143fd9f5331a2adefc214b8d7143bd32c4"
+                "reference": "000b7050b9e4fe98db2192971e56eb0b302b3feb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/917842143fd9f5331a2adefc214b8d7143bd32c4",
-                "reference": "917842143fd9f5331a2adefc214b8d7143bd32c4",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/000b7050b9e4fe98db2192971e56eb0b302b3feb",
+                "reference": "000b7050b9e4fe98db2192971e56eb0b302b3feb",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4|^8.0",
-                "phpstan/phpstan": "^2.1.40"
+                "phpstan/phpstan": "^2.1.41"
             },
             "conflict": {
                 "rector/rector-doctrine": "*",
@@ -3751,7 +3751,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.3.9"
+                "source": "https://github.com/rectorphp/rector/tree/2.4.1"
             },
             "funding": [
                 {
@@ -3759,7 +3759,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-16T09:43:55+00:00"
+            "time": "2026-04-08T08:43:56+00:00"
         },
         {
             "name": "robrichards/xmlseclibs",
@@ -5533,5 +5533,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

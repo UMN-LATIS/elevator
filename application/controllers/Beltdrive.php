@@ -42,9 +42,15 @@ class Beltdrive extends CI_Controller {
 		
 		while(1) {
 			$pheanstalk->watch($tube);
-			$job = $pheanstalk->reserve();
+			try {
+				$job = $pheanstalk->reserveWithTimeout(50);
+			}
+			catch (\Pheanstalk\Exception\ConnectionException $e) {
+				usleep(250000);
+				continue;
+			}
 			if(!is_object($job)) {
-				usleep(5);
+				usleep(250000);
 				continue;
 			}
 			//reset doctrine in case we've lost the DB
@@ -147,7 +153,16 @@ class Beltdrive extends CI_Controller {
 		$cnt=0;
 		while(1) {
 			$pheanstalk->watch($tube);
-			$job = $pheanstalk->reserve();
+			try {
+				$job = $pheanstalk->reserveWithTimeout(50);
+			}
+			catch (\Pheanstalk\Exception\ConnectionException $e) {
+				usleep(250000);
+				continue;
+			}
+			if(!is_object($job)) {
+				continue;
+			}
 
 			$stats = $pheanstalk->statsJob($job);
 			if($stats->reserves > 200) {
@@ -282,7 +297,16 @@ class Beltdrive extends CI_Controller {
 		$cnt=0;
 		$pheanstalk->watch($tube);
 		while(1) {
-			$job = $pheanstalk->reserve();
+			try {
+				$job = $pheanstalk->reserveWithTimeout(50);
+			}
+			catch (\Pheanstalk\Exception\ConnectionException $e) {
+				usleep(250000);
+				continue;
+			}
+			if(!is_object($job)) {
+				continue;
+			}
 
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -358,7 +382,16 @@ class Beltdrive extends CI_Controller {
 		$cnt=0;
 		$pheanstalk->watch($tube);
 		while(1) {
-			$job = $pheanstalk->reserve();
+			try {
+				$job = $pheanstalk->reserveWithTimeout(50);
+			}
+			catch (\Pheanstalk\Exception\ConnectionException $e) {
+				usleep(250000);
+				continue;
+			}
+			if(!is_object($job)) {
+				continue;
+			}
 			
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -508,7 +541,16 @@ class Beltdrive extends CI_Controller {
 		while(1) {
 			$tube = new Pheanstalk\Values\TubeName('cacheRebuild');
 			$pheanstalk->watch($tube);
-			$job = $pheanstalk->reserve();
+			try {
+				$job = $pheanstalk->reserveWithTimeout(50);
+			}
+			catch (\Pheanstalk\Exception\ConnectionException $e) {
+				usleep(250000);
+				continue;
+			}
+			if(!is_object($job)) {
+				continue;
+			}
 
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
@@ -610,7 +652,16 @@ class Beltdrive extends CI_Controller {
 		$count=0;
 		while(1) {
 			$pheanstalk->watch($tube);
-			$job = $pheanstalk->reserve();
+			try {
+				$job = $pheanstalk->reserveWithTimeout(50);
+			}
+			catch (\Pheanstalk\Exception\ConnectionException $e) {
+				usleep(250000);
+				continue;
+			}
+			if(!is_object($job)) {
+				continue;
+			}
 			//reset doctrine in case we've lost the DB
 			// TODO: doctrine 2.5 should let us move to pingable and avoid this?
 			$this->doctrine->reset();
