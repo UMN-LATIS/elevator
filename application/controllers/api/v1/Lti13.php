@@ -1,12 +1,11 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 use Packback\Lti1p3\LtiOidcLogin;
-use Packback\Lti1p3\LtiMessageLaunch;
-use Packback\Lti1p3\ImsStorage\ImsCache;
-use Packback\Lti1p3\ImsStorage\ImsCookie;
 use Packback\Lti1p3\LtiException;
-use Packback\Lti1p3\LtiDeepLinkResource;
-use Packback\Lti1p3\LtiDeepLinkResourceIframe;
+use Packback\Lti1p3\Factories\MessageFactory;
+use Packback\Lti1p3\DeepLinkResources\Resource as LtiDeepLinkResource;
+use Packback\Lti1p3\DeepLinkResources\Iframe as LtiDeepLinkResourceIframe;
+use Packback\Lti1p3\Messages\DeepLinkingRequest;
 
 class lti13 extends Instance_Controller {
 
@@ -21,31 +20,40 @@ class lti13 extends Instance_Controller {
 
   public function login() {
     $this->load->library("LTI13Database");
-    return LtiOidcLogin::new(new LTI13Database, new ImsCache, new ImsCookie)
-        ->doOidcLoginRedirect(instance_url("api/v1/lti13/launch"))
-        ->doRedirect();
+    $this->load->library("LTI13Cache");
+    $this->load->library("LTI13Cookie");
+
+    $redirectUrl = LtiOidcLogin::new(new LTI13Database, new LTI13Cache, new LTI13Cookie)
+      ->getRedirectUrl(instance_url("api/v1/lti13/launch"), $_REQUEST);
+
+    header('Location: '.$redirectUrl, true, 302);
+    exit;
 }
 
 
   public function launch() {
+    $this->load->library("LTI13Database");
     if(isset($_REQUEST['error']) && $_REQUEST['error'] == 'launch_no_longer_valid') {
       $exception = new \Exception($_REQUEST['error_description']);
       echo "fail";
+      return;
   }
 
    try {
-      $launch = LtiMessageLaunch::new(
-          new LTI13Database, 
-          new ImsCache, 
-          new ImsCookie, 
-          new \Packback\Lti1p3\LtiServiceConnector(
-              new ImsCache, 
-              new \GuzzleHttp\Client([
-                  'timeout' => 30,
-              ])
-          )
-      )
-      ->validate();
+      $this->load->library("LTI13Cache");
+      $this->load->library("LTI13Cookie");
+      $database = new LTI13Database;
+      $cache = new LTI13Cache;
+      $cookie = new LTI13Cookie;
+      $serviceConnector = new \Packback\Lti1p3\LtiServiceConnector(
+        $cache,
+        new \GuzzleHttp\Client([
+          'timeout' => 30,
+        ])
+      );
+
+      $messageFactory = new MessageFactory($database, $serviceConnector, $cache, $cookie);
+      $launch = $messageFactory->create($_REQUEST);
   }
   catch (LtiException $e) {
 
@@ -78,21 +86,20 @@ class lti13 extends Instance_Controller {
 //       <p>' . $e->getMessage() . "</p>";
       return;
   }
-  $launchData = $launch->getLaunchData();
-
-  $customData = $launchData['https://purl.imsglobal.org/spec/lti/claim/custom'];
-  $userEmail = $launchData["email"];
-  $context = $launchData["https://purl.imsglobal.org/spec/lti/claim/context"];
-  $courseId = $context["id"];
-  $user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(['email' => $userEmail]);
-
-
-  if($launchData["https://purl.imsglobal.org/spec/lti/claim/message_type"] != "LtiDeepLinkingRequest")  {
+  if (!($launch instanceof DeepLinkingRequest)) {
     echo "fail";
     return;
   }
-  $deepLinkSettings = $launchData["https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"];
-  $returnURL = $deepLinkSettings["deep_link_return_url"];;
+
+  $launchData = $launch->getBody();
+
+  $customData = $launchData['https://purl.imsglobal.org/spec/lti/claim/custom'];
+  $userEmail = $launchData["email"];
+  $courseId = $launch->contextClaim()->id();
+  $user = $this->doctrine->em->getRepository("Entity\User")->findOneBy(['email' => $userEmail]);
+
+
+  $returnURL = $launch->deepLinkSettingsClaim()->deepLinkReturnUrl();
   
 
   if($user) {
@@ -241,21 +248,59 @@ class lti13 extends Instance_Controller {
           return;
         }
 
-        $launch = LtiMessageLaunch::fromCache($launchId, new LTI13Database, new ImsCache,  new \Packback\Lti1p3\LtiServiceConnector(
-          new ImsCache, 
+        $this->load->library("LTI13Database");
+        $this->load->library("LTI13Cache");
+        $database = new LTI13Database;
+        $cache = new LTI13Cache;
+
+        $launchData = $cache->getLaunchData($launchId);
+        if (!$launchData) {
+          return;
+        }
+
+        $clientId = $launchData['aud'] ?? null;
+        if (is_array($clientId)) {
+          $clientId = $clientId[0] ?? null;
+        }
+
+        $issuer = $launchData['iss'] ?? null;
+        if (!$issuer || !$clientId) {
+          return;
+        }
+
+        $registration = $database->findRegistrationByIssuer($issuer, $clientId);
+        if (!$registration) {
+          return;
+        }
+
+        $serviceConnector = new \Packback\Lti1p3\LtiServiceConnector(
+          $cache,
           new \GuzzleHttp\Client([
               'timeout' => 30,
           ])
-      ));
+      );
+        $messageFactory = new MessageFactory($database, $serviceConnector, $cache, new LTI13Cookie);
+        $launch = $messageFactory->createMessage($registration, ['body' => $launchData]);
+        if (!($launch instanceof DeepLinkingRequest)) {
+          return;
+        }
       
         $deepLink = $launch->getDeepLink();
         $deepLinkResource = new LtiDeepLinkResource();
         $deepLinkResource->setType("link");
         $deepLinkResource->setUrl($embedLink);
         $deepLinkResource->setTitle("test");
-        $deepLinkResource->setIframe(new LtiDeepLinkResourceIframe(640,480, $embedLink));
+        $deepLinkResource->setIframe(new LtiDeepLinkResourceIframe($embedLink, 640, 480));
 
-        echo $deepLink->outputResponseForm([$deepLinkResource]);
+        $jwt = $deepLink->getResponseJwt([$deepLinkResource]);
+        $returnUrl = htmlspecialchars($deepLink->returnUrl(), ENT_QUOTES, 'UTF-8');
+        $jwtValue = htmlspecialchars($jwt, ENT_QUOTES, 'UTF-8');
+
+        echo '<form id="lti13DeepLinkResponse" action="'.$returnUrl.'" method="POST">';
+        echo '<input type="hidden" name="JWT" value="'.$jwtValue.'" />';
+        echo '<input type="submit" value="Return to LMS" />';
+        echo '</form>';
+        echo '<script>document.getElementById("lti13DeepLinkResponse").submit();</script>';
         return;
     }
 }

@@ -15,37 +15,28 @@
      {
       "type": "vcs",
       "url": "https://github.com/UMNLibraries/umn-shib-php.git"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/cmcfadden/google-api-php-client.git"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/cmcfadden/lti-1-3-php-library"
     }
   ],
   "require": {
-    "monolog/monolog": "2.9.1",
     "doctrine/dbal": "^4.0",
     "doctrine/orm": "^3.0",
     "elasticsearch/elasticsearch": "8.17.0",
     "smalot/pdfparser": "dev-master",
     "buggedcom/phpvideotoolkit": "dev-master",
     "cocur/background-process": "^0.5.0",
-    "google/apiclient": "dev-disableCache-merge-84",
-    "php-unoconv/php-unoconv": "dev-master",
+    "google/apiclient": "^2.19.0",
     "aws/aws-sdk-php": "^3.349",
     "sentry/sdk": "^4.0",
     "vlucas/phpdotenv": "^5.6",
-    "packbackbooks/lti-1p3-tool": "dev-upstream-merge-2",
     "pda/pheanstalk": "^8.0",
+    "packbackbooks/lti-1p3-tool": "^6.4",
     "onelogin/php-saml": "^4.0.0",
     "deployer/deployer": "^7.0",
     "symfony/cache": "^6.4",
     "psr/simple-cache": "^3.0",
     "doctrine/migrations": "3.8.2",
-    "ramsey/uuid-doctrine": "^2.1"
+    "ramsey/uuid-doctrine": "^2.1",
+    "monolog/monolog": "^3.10"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

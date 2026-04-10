@@ -1,6 +1,8 @@
 <?php
 // define("TOOL_HOST", "https://sith.knowfear.net/lti/src/web");
 use Packback\Lti1p3\Interfaces\IDatabase;
+use Packback\Lti1p3\Interfaces\ILtiDeployment;
+use Packback\Lti1p3\Interfaces\ILtiRegistration;
 use Packback\Lti1p3\LtiRegistration;
 use Packback\Lti1p3\LtiDeployment;
 use Packback\Lti1p3\OidcException;
@@ -8,7 +10,7 @@ use Packback\Lti1p3\OidcException;
 
 class LTI13Database implements IDatabase {
     
-      public static function findIssuer($issuer_url, $client_id = null)
+    public static function findIssuer(string $issuer_url, ?string $client_id = null)
     {
         $CI =& get_instance();
 
@@ -27,11 +29,11 @@ class LTI13Database implements IDatabase {
         return $result[0] ?? null;
     }
 
-    public function findRegistrationByIssuer($issuer_id, $client_id=null) {
+    public function findRegistrationByIssuer(string $issuer_id, ?string $client_id = null): ?ILtiRegistration {
 
         $issuer = self::findIssuer($issuer_id, $client_id);
         if (!$issuer) {
-            return false;
+            return null;
         }
 
         return LtiRegistration::new()
@@ -45,21 +47,22 @@ class LTI13Database implements IDatabase {
             ->setToolPrivateKey($issuer->getPrivateKey());
     }
 
-    public function findDeployment($iss, $deployment_id, $client_id = null) {
+    public function findDeployment(string $iss, string $deployment_id, ?string $client_id = null): ?ILtiDeployment {
         $CI =& get_instance();
         $deployment = $CI->doctrine->em->getRepository("Entity\LTI13Deployment")->findOneBy(["deployment_id"=>$deployment_id]);
         if($deployment) {
-            return LtiDeployment::new()
-                ->setDeploymentId($deployment->getDeploymentId());
+            return LtiDeployment::new($deployment->getDeploymentId());
         } else {
             $deployment = new Entity\LTI13Deployment();
             $deployment->setDeploymentId($deployment_id);
             $issuer = self::findIssuer($iss, $client_id);
+            if (!$issuer) {
+                return null;
+            }
             $deployment->setIssuer($issuer);
             $CI->doctrine->em->persist($deployment);
             $CI->doctrine->em->flush();
-            return LtiDeployment::new()
-                ->setDeploymentId($deployment->getDeploymentId());
+            return LtiDeployment::new($deployment->getDeploymentId());
         }
         
     }
