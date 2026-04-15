@@ -92,9 +92,9 @@ function makeJavaScriptConfig($instance, $config, $template) {
     window.Elevator.config.instance.base.url = `${window.location.origin}${window.Elevator.config.instance.base.path}`;
   </script>
   <?=$this->user_model->getAuthHelper()->templateView();?>
-	<?php foreach ($entryCssFiles as $cssFile): ?>
-		<link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
-	<?php endforeach; ?>
+  <?php foreach ($entryCssFiles as $cssFile): ?>
+    <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
+  <?php endforeach; ?>
     <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
 </head>
 
