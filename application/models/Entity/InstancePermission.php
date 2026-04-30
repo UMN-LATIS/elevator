@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Table(name: 'instance_permissions')]
 #[ORM\Entity]
-class InstancePermission
+class InstancePermission implements \JsonSerializable
 {
     /**
      * @var int
@@ -122,5 +122,14 @@ class InstancePermission
     public function getPermission()
     {
         return $this->permission;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id'                => $this->id,
+            'groupId'           => $this->group?->getId(),
+            'permissionLevelId' => $this->permission?->getId(),
+        ];
     }
 }

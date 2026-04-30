@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Table(name: 'permissions')]
 #[ORM\Entity]
-class Permission
+class Permission implements \JsonSerializable
 {
     /**
      * @var string|null
@@ -228,5 +228,19 @@ class Permission
     public function getInstances()
     {
         return $this->instances;
+    }
+
+    /**
+     * JSON shape consumed by the admin UI. `level` is stored as a nullable
+     * string column on the entity for historical reasons; cast to int on the
+     * way out so the frontend doesn't need to reparse it.
+     */
+    public function jsonSerialize(): array {
+        return [
+            'id'    => $this->id,
+            'level' => (int) ($this->level ?? 0),
+            'name'  => $this->name,
+            'label' => $this->label,
+        ];
     }
 }

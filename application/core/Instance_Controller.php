@@ -168,4 +168,25 @@ class Instance_Controller extends MY_Controller
         $accessLevel = $this->user_model?->getAccessLevel('instance', $this->instance) ?? 0;
         return  $accessLevel >= PERM_ADMIN;
     }
+
+    /**
+     * Abort a JSON request with 401 if the session user isn't authenticated.
+     * Use at the top of controller actions that require authentication.
+     */
+    protected function abortUnlessAuthed(): void {
+        if (!$this->isCurrentUserAuthed()) {
+            abort_json(['error' => 'Unauthorized'], 401);
+        }
+    }
+
+    /**
+     * Abort a JSON request with 401/403 unless the session user is an
+     * instance admin. Implies `abortUnlessAuthed()`.
+     */
+    protected function abortUnlessAdmin(): void {
+        $this->abortUnlessAuthed();
+        if (!$this->isCurrentUserAdmin()) {
+            abort_json(['error' => 'Forbidden'], 403);
+        }
+    }
 }
