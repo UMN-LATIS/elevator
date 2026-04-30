@@ -181,7 +181,7 @@ class Instance_Controller extends MY_Controller
 
     /**
      * Abort a JSON request with 401/403 unless the session user is an
-     * instance admin. Implies `requireAuthed()`.
+     * instance admin. Implies `abortUnlessAuthed()`.
      */
     protected function abortUnlessAdmin(): void {
         $this->abortUnlessAuthed();
