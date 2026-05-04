@@ -42,7 +42,7 @@ The event provides additional information in `event.detail`:
 
 ```javascript
 // ✅ Example
-document.addEventListener('elevator:static-content-page:content-loaded', (event) => {
+window.addEventListener('elevator:static-content-page:content-loaded', (event) => {
   // run your custom JavaScript here
   const pageId = event.detail.pageId;
   console.log(`Page ${pageId} content loaded`);
@@ -61,7 +61,7 @@ The event provides additional information in `event.detail`:
 
 ```javascript
 // ✅ Example
-document.addEventListener('elevator:static-content-page:images-loaded', (event) => {
+window.addEventListener('elevator:static-content-page:images-loaded', (event) => {
   const pageId = event.detail.pageId;
   const images = event.detail.images;
 
@@ -107,7 +107,7 @@ initCarousel(carousel);
 ✅ **Do this instead:**
 ```javascript
 // This runs every time a page with a carousel loads
-document.addEventListener('elevator:static-content-page:images-loaded', (event) => {
+window.addEventListener('elevator:static-content-page:images-loaded', (event) => {
   const carousel = document.querySelector('.carousel');
   if (carousel) {
     initCarousel(carousel);
@@ -120,7 +120,7 @@ document.addEventListener('elevator:static-content-page:images-loaded', (event) 
 Not all pages will have the elements your code is looking for. Always check if elements exist before trying to use them, or use the `pageId` with the event details. 
 
 ```javascript
-document.addEventListener('elevator:static-content-page:content-loaded', (event) => {
+window.addEventListener('elevator:static-content-page:content-loaded', (event) => {
   // Only create a gallery on pageId 6
   if (event.detail.pageId !== 6) {
     return;
@@ -144,7 +144,7 @@ If your code adds event listeners to page elements, make sure to clean up old ha
 ```javascript
 let cleanupFns = [];
 
-document.addEventListener('elevator:static-content-page:content-loaded', (event) => {
+window.addEventListener('elevator:static-content-page:content-loaded', (event) => {
   // Clean up old handlers
   cleanupFns.forEach(cleanup => cleanup());
   cleanupFns = [];

@@ -11,7 +11,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 $indexFile = $manifest['src/main.ts']['file'];
-$cssFile = $manifest['style.css']['file'];
+$entryCssFiles = $manifest['src/main.ts']['css'];
 
 $customCSSFile = "/assets/instanceAssets/{$this->instance->getId()}.css";
 $customCSSHash = $this->instance->getModifiedAt()->getTimestamp();
@@ -92,7 +92,9 @@ function makeJavaScriptConfig($instance, $config, $template) {
     window.Elevator.config.instance.base.url = `${window.location.origin}${window.Elevator.config.instance.base.path}`;
   </script>
   <?=$this->user_model->getAuthHelper()->templateView();?>
-  <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
+  <?php foreach ($entryCssFiles as $cssFile): ?>
+    <link rel="stylesheet" href="/assets/elevator-ui/dist/<?= $cssFile ?>">
+  <?php endforeach; ?>
     <script type="module" crossorigin src="/assets/elevator-ui/dist/<?= $indexFile ?>"></script>
 </head>
 
