@@ -1159,6 +1159,7 @@ class AssetManager extends Admin_Controller {
 				}
 				$firstLoop = true;
 				foreach ($rowArray as $rowEntry) {
+					$rowEntry = trim($rowEntry);
 					if ($cacheArray['mapping'][$key] !== "ignore" && $cacheArray['mapping'][$key] !== "objectId" && $cacheArray['mapping'][$key] !== "readyForDisplay") {
 						$widget = clone $template->widgetArray[$cacheArray['mapping'][$key]];
 						$widgetContainer = $widget->getContentContainer();
