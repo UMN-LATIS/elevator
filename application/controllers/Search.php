@@ -428,6 +428,10 @@ class Search extends Instance_Controller {
 	}
 
 	public function getSuggestion() {
+		// bingbot loves to turn calls to getSuggestion into a GET with a body which breaks everything. So let's just ignore non-POST requests here.
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
+			return;
+		}
 		$searchTerm = $this->input->post("searchTerm");
 
 		$this->load->model("search_model");
