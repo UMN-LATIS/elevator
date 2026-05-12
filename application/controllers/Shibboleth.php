@@ -23,6 +23,9 @@ class Shibboleth extends MY_Controller {
     }
 
     public function localSPACS() {
+        if ($this->input->method() !== 'post') {
+            instance_redirect("/");
+        }
         
         Utils::setProxyVars(true);
         $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
