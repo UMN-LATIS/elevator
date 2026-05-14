@@ -29,7 +29,11 @@ class Shibboleth extends MY_Controller {
         
         Utils::setProxyVars(true);
         $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
-        $auth->processResponse();
+        try {
+            $auth->processResponse();
+        } catch (Exception $e) {
+            return render_json(array('error' => 'Error processing SAML response'));
+        }
         $lastResponse = $auth->getLastResponseXML();
         if(str_contains($lastResponse, "NoPassive")) {
             if($_REQUEST['RelayState']) {
