@@ -24,7 +24,7 @@ class Shibboleth extends MY_Controller {
 
     public function localSPACS() {
         if ($this->input->method() !== 'post') {
-            instance_redirect("/");
+            return show_error('Invalid request method', 405);
         }
         
         Utils::setProxyVars(true);
