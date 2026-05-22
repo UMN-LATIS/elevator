@@ -1,7 +1,7 @@
 FROM php:8.4-fpm
 
 
-RUN apt update && apt install -y unzip git libpq-dev  libzip-dev && apt clean
+RUN apt update && apt install -y unzip git libpq-dev libzstd-dev libzip-dev && apt clean
 RUN pecl install redis && docker-php-ext-enable redis
 RUN docker-php-ext-install pgsql pdo_pgsql pdo zip
 # RUN export CFLAGS="-D_DEFAULT_SOURCE"
@@ -11,7 +11,7 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 RUN docker-php-ext-install sockets
 COPY docker/get-docker.sh /root/
 RUN chmod +x /root/get-docker.sh
-RUN /root/get-docker.sh 
+RUN /root/get-docker.sh
 
 # add ldap php module
 RUN apt-get update && apt-get install -y libldap2-dev libldap-common
