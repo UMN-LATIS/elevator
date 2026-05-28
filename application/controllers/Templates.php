@@ -82,7 +82,7 @@ class Templates extends Instance_Controller
 			V::validate($this->normalizeWidget($widget), [
 				'fieldTitle'        => [V::required(), V::maxLength(255)],
 				'label'             => [V::required(), V::maxLength(255)],
-				'tooltip'           => [V::maxLength(255)],
+				'tooltip'           => [V::maxLength(2000)],
 				'fieldData'         => [V::json()],
 				'fieldType'         => [V::required(), V::integer()],
 				'templateOrder'     => [V::integer()],

@@ -75,7 +75,7 @@ class Widget
     /**
      * @var string|null
      */
-    #[ORM\Column(name: 'tooltip', type: 'string', nullable: true)]
+    #[ORM\Column(name: 'tooltip', type: 'string', nullable: true, length: 2000)]
     private $tooltip;
 
     /**
