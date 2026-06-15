@@ -9,6 +9,19 @@
  **
 */
 require_once("Filecontainer.php");
+
+/**
+ * S3-backed file container — stores and retrieves a file (and its derivatives)
+ * on S3, including Glacier archive/restore handling.
+ *
+ * The @property tags cover CodeIgniter's magic loader properties so that
+ * command-click and autocomplete resolve on them.
+ *
+ * @property CI_Loader $load
+ * @property CI_Config $config
+ * @property Logging $logging
+ * @property \Entity\Instance $instance
+ */
 class FileContainerS3 extends FileContainer {
 
 	private $client;
@@ -92,6 +105,29 @@ class FileContainerS3 extends FileContainer {
 		$this->parent->s3model->restoreObject($this->storageKey);
 		return true;
 	}
+
+	/**
+	 * Archival status as a single discriminant, with no side effects:
+	 *   'downloadable' - hot, or a completed restore (temp copy available now).
+	 *   'restoring' - a Glacier restore is in progress.
+	 *   'archived' - cold in Glacier, no restore in flight.
+	 *
+	 * Unlike isArchived(true), this never kicks off a restore, so it's safe to
+	 * poll. getStorageClass() reports both cold and in-progress as "GLACIER", so
+	 * we read the Restore header to separate the two.
+   *
+   * @return "downloadable"|"restoring"|"archived"
+	 */
+  public function getArchiveStatus() {
+    if (!$this->isArchived()) {
+      return "downloadable";
+    }
+    $objectInfo = $this->parent->s3model->objectInfo($this->storageKey);
+    if (isset($objectInfo['Restore']) && $objectInfo['Restore'] == 'ongoing-request="true"') {
+      return "restoring";
+    }
+    return "archived";
+  }
 
 	public function removeLocalFile() {
 		if(unlink($this->getPathToLocalFile())) {

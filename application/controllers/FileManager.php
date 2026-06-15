@@ -5,6 +5,18 @@
  * Handles serving any digital asset, via redirects to S3
  * This class could use some cleanup - it has some convenience methods that probably don't need to be around anymore.
  * It has a lot of anti-DRY code too
+ *
+ * The @property tags cover CodeIgniter's magic loader properties.
+ *
+ * @property Filehandler_router $filehandler_router
+ * @property Asset_model $asset_model
+ * @property User_model $user_model
+ * @property Errorhandler_helper $errorhandler_helper
+ * @property Logging $logging
+ * @property Template $template
+ * @property CI_Loader $load
+ * @property CI_Config $config
+ * @property CI_Input $input
  */
 class FileManager extends Instance_Controller {
 
@@ -383,20 +395,37 @@ class FileManager extends Instance_Controller {
 
 	}
 
-
-	function getOriginal($fileId) {
+	/**
+	 * Get a file's original. Behavior depends on $action:
+	 *
+	 *   'download' (default) - redirect (307) when downloadable; otherwise queue
+	 *       a restore and render the "restoring" page. Legacy path.
+	 *   'status'  - return JSON archival status ('downloadable' | 'archived' |
+	 *       'restoring'); never restores or redirects, so it's safe to poll.
+	 *   'restore' - queue a Glacier restore. POST only; returns 202.
+	 *
+	 * Requires PERM_ORIGINALS, or the file handler's getPermission() level when
+	 * the file has no derivatives.
+	 *
+	 * @param string $fileId - File handler object id to load.
+	 * @param 'download'|'status'|'restore' $action
+	 */
+	function getOriginal(?string $fileId, string $action = 'download') {
+    $isJson = $this->isJsonRequest();
 
 		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
 		$fileHandler->loadByObjectId($fileId);
 		if(!($fileHandler)) {
-			instance_redirect("errorHandler/error/unknownFile");
-			return;
+      return $isJson
+        ? abort_json(["error" => "unknownFile"], 404)
+        : instance_redirect("errorHandler/error/unknownFile");
 		}
 
 		if(!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
 			$this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
-			instance_redirect("errorHandler/error/unknownFile");
-			return;
+      return $isJson
+        ? abort_json(["error" => "unknownFile"], 404)
+        : instance_redirect("errorHandler/error/unknownFile");
 		}
 
 		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
@@ -413,24 +442,37 @@ class FileManager extends Instance_Controller {
 		}
 
 		if($accessLevel < $requiredAccessLevel) {
-			instance_redirect("/errorHandler/error/noPermission");
+      return $isJson
+        ? abort_json([ "error" => "noPermission" ], 403)
+			  : instance_redirect("/errorHandler/error/noPermission");
 		}
 
+    // status: idempotent, no side effects — safe to poll.
+    if ($action == "status") {
+      return render_json([
+        "status" => $fileHandler->sourceFile->getArchiveStatus()
+  ]);
+    }
+
+    // restore: an explicit mutation, so POST only — also keeps link prefetchers
+    // from kicking off expensive Glacier restores.
+    if($action == "restore") {
+      if($this->input->method() !== 'post') {
+        return abort_json(["error" => "methodNotAllowed"], 405);
+      }
+      $this->queueRestore($fileHandler, $fileId);
+      return render_json([
+        "status" => "restoring",
+        "message" => "file is being restored, you will be notified when it's ready"], 202);
+    }
+
+    // download (default): redirect when downloadable, otherwise restore + show
+    // the restoring page. Legacy frontend (no action) lands here.
 		if($fileHandler->sourceFile->isArchived(true)) {
-
-			$pheanstalk =  Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
-			$tube = new Pheanstalk\Values\TubeName('restoreTube');
-			// run a 15 minute TTR because zipping all these could take a while
-			$pheanstalk->useTube($tube);
-
-
-			$pathToFile = instance_url("/fileManager/getOriginal/".$fileId);
-			$newTask = json_encode(["objectId"=>$fileHandler->getObjectId(), "userContact"=>$this->user_model->getEmail(), "instance"=>$this->instance->getId(), "pathToFile"=>$pathToFile, "nextTask"=>"notify"]);
-			$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
+			$this->queueRestore($fileHandler, $fileId);
 
 			$this->template->content->view('restoringFile');
 			$this->template->publish();
-			$fileHandler->sourceFile->restoreFromArchive();
 			return;
 		}
 
@@ -438,11 +480,36 @@ class FileManager extends Instance_Controller {
 			$targetURL = $fileHandler->sourceFile->getProtectedURLForFile();
 		}
 		catch (Exception $e) {
-			instance_redirect("/errorHandler/error/originalNotAvailable");
+      return $isJson
+        ? abort_json(["error" => "originalNotAvailable"], 404)
+        : instance_redirect("/errorHandler/error/originalNotAvailable");
 		}
 
-		redirect(matchScheme($targetURL), 307);
+    return redirect(matchScheme($targetURL), 307);
+	}
 
+  /**
+   * Queue a Glacier restore for a file: enqueue a beanstalkd job to notify the
+   * user once the thaw finishes, then kick off the S3 restore itself.
+   * restoreFromArchive() is a no-op on S3 when a restore is already in flight.
+   */
+  private function queueRestore(FileHandlerBase $fileHandler, string $fileId) {
+    $pheanstalk = Pheanstalk\Pheanstalk::create($this->config->item("beanstalkd"));
+    $tube = new Pheanstalk\Values\TubeName('restoreTube');
+    // run a 15 minute TTR because zipping all these could take a while
+    $pheanstalk->useTube($tube);
+
+    $pathToFile = instance_url("/fileManager/getOriginal/" . $fileId);
+    $newTask = json_encode([
+      "objectId" => $fileHandler->getObjectId(),
+      "userContact" => $this->user_model->getEmail(),
+      "instance" => $this->instance->getId(),
+      "pathToFile" => $pathToFile,
+      "nextTask" => "notify"
+    ]);
+    $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
+
+    $fileHandler->sourceFile->restoreFromArchive();
 	}
 
 	function getMetadataForObject($fileId) {

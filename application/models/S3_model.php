@@ -7,7 +7,7 @@ use Aws\Exception\MultipartUploadException;
 
 class S3_model extends CI_Model {
 
-	public $s3Client;
+	public \Aws\S3\S3Client $s3Client;
 	private $secret;
 	private $key;
 	public $bucket;
