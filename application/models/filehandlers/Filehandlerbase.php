@@ -11,6 +11,24 @@ use Aws\Exception\AwsException;
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 
+/**
+ * Base class for file handlers — wraps an asset's source file, manages its
+ * derivatives, and queues the processing tasks that build them.
+ *
+ * The @property tags cover CodeIgniter's magic loader properties so that
+ * command-click and autocomplete resolve on them.
+ *
+ * @property CI_Loader $load
+ * @property CI_Config $config
+ * @property CI_Cache $cache
+ * @property Doctrine $doctrine
+ * @property Logging $logging
+ * @property \Entity\Instance $instance
+ * @property Filehandler_router $filehandler_router
+ * @property Asset_model $asset_model
+ * @property User_model $user_model
+ * @property collection_model $collection_model
+ */
 class FileHandlerBase extends CI_Model {
 
 	/**
@@ -30,13 +48,13 @@ class FileHandlerBase extends CI_Model {
 	 */
 	public $metadata;
 
-	public $sourceFile = NULL; // an object of type fileContainer
+	public ?FileContainer $sourceFile = NULL; // an object of type fileContainer
 	public $jobIdArray = array(); //beanstalk jobIds
 	public $regenerate = false; // regenerate derivatives
 	public $collectionId = null;
 	public $parentObjectId = null;
 	public $parentObject = null;
-	public $s3model = null;
+	public ?S3_model $s3model = null;
 	public $deleted = false;
 	public $derivatives = array(); // array of fileContainers
 	public $job; // beanstalkd current job
