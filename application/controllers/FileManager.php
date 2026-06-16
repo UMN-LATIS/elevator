@@ -395,98 +395,109 @@ class FileManager extends Instance_Controller {
 
 	}
 
-	/**
-	 * Get a file's original. Behavior depends on $action:
-	 *
-	 *   'download' (default) - redirect (307) when downloadable; otherwise queue
-	 *       a restore and render the "restoring" page. Legacy path.
-	 *   'status'  - return JSON archival status ('downloadable' | 'archived' |
-	 *       'restoring'); never restores or redirects, so it's safe to poll.
-	 *   'restore' - queue a Glacier restore. POST only; returns 202.
-	 *
-	 * Requires PERM_ORIGINALS, or the file handler's getPermission() level when
-	 * the file has no derivatives.
-	 *
-	 * @param string $fileId - File handler object id to load.
-	 * @param 'download'|'status'|'restore' $action
-	 */
-	function getOriginal(?string $fileId, string $action = 'download') {
+  /**
+   * Get a file's original. Behavior depends on $action:
+   *
+   * @param string $fileId - File handler object id to load.
+   * @param 'legacyDownload'|'download'|'status'|'restore' $action
+   *  'legacyDownload' (default) - Download or kick off restore if archived, then show "Give us a moment" page. This is the old behavior and is still used by the legacy UI.
+   * 'download' - Download, only if available. Does NOT kick
+   * off a restore. Returns error if the requested file isn't
+   * available.
+   * 'restore' - POST-only endpoint to kick off a restore.
+   * .'status' - Check storage status of the original. Returns
+   *  {"status": "archived"|"restoring"|"available"}
+   */
+  function getOriginal(?string $fileId, string $action = 'legacyDownload') {
     $isJson = $this->isJsonRequest();
 
-		$fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
-		$fileHandler->loadByObjectId($fileId);
-		if(!($fileHandler)) {
+    $fileHandler = $this->filehandler_router->getHandlerForObject($fileId);
+    $fileHandler->loadByObjectId($fileId);
+    if (!($fileHandler)) {
       return $isJson
         ? abort_json(["error" => "unknownFile"], 404)
         : instance_redirect("errorHandler/error/unknownFile");
-		}
+    }
 
-		if(!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
-			$this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
+    if (!$this->asset_model->loadAssetById($fileHandler->parentObjectId)) {
+      $this->logging->logError("getOriginal", "could not load asset from fileHandler" . $fileId);
       return $isJson
         ? abort_json(["error" => "unknownFile"], 404)
         : instance_redirect("errorHandler/error/unknownFile");
-		}
+    }
 
-		$accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
+    $accessLevel = $this->user_model->getAccessLevel("asset", $this->asset_model);
 
-		/**
-		 * if this file type specifies that it doesn't have derivatives, users need lower
-		 * permission levels to get to the original.
-		 */
-		if($fileHandler->noDerivatives()) {
-			$requiredAccessLevel = $fileHandler->getPermission();
-		}
-		else {
-			$requiredAccessLevel = PERM_ORIGINALS;
-		}
+    /**
+     * if this file type specifies that it doesn't have derivatives, users need lower
+     * permission levels to get to the original.
+     */
+    if ($fileHandler->noDerivatives()) {
+      $requiredAccessLevel = $fileHandler->getPermission();
+    } else {
+      $requiredAccessLevel = PERM_ORIGINALS;
+    }
 
-		if($accessLevel < $requiredAccessLevel) {
+    if ($accessLevel < $requiredAccessLevel) {
       return $isJson
-        ? abort_json([ "error" => "noPermission" ], 403)
-			  : instance_redirect("/errorHandler/error/noPermission");
-		}
+        ? abort_json(["error" => "noPermission"], 403)
+        : instance_redirect("/errorHandler/error/noPermission");
+    }
 
     // status: idempotent, no side effects — safe to poll.
     if ($action == "status") {
       return render_json([
         "status" => $fileHandler->sourceFile->getArchiveStatus()
-  ]);
+      ]);
     }
 
     // restore: an explicit mutation, so POST only — also keeps link prefetchers
     // from kicking off expensive Glacier restores.
-    if($action == "restore") {
-      if($this->input->method() !== 'post') {
+    if ($action == "restore") {
+      if ($this->input->method() !== 'post') {
         return abort_json(["error" => "methodNotAllowed"], 405);
       }
       $this->queueRestore($fileHandler, $fileId);
       return render_json([
         "status" => "restoring",
-        "message" => "file is being restored, you will be notified when it's ready"], 202);
+        "message" => "file is being restored, you will be notified when it's ready"
+      ], 202);
     }
 
-    // download (default): redirect when downloadable, otherwise restore + show
-    // the restoring page. Legacy frontend (no action) lands here.
-		if($fileHandler->sourceFile->isArchived(true)) {
-			$this->queueRestore($fileHandler, $fileId);
+    // if we're trying to download an archived file
+    $isArchived = $fileHandler->sourceFile->isArchived(true);
+    if ($isArchived && $action == "download") {
+      // the new ui gets an error when requesting
+      // a download when the archived file is not ready.
+      // this prevents downloading the response page
+      // as if it were the original. See #546.
+        return abort_json([
+          "error" => "fileArchived",
+          "message" => "Cannot download an archived file. Please wait for restore to complete before downloading."
+        ], 409);
+    }
 
-			$this->template->content->view('restoringFile');
-			$this->template->publish();
-			return;
-		}
+    if ($isArchived && $action == "legacyDownload") {
+        // legacy behavior: kick off restore + show "Give us a moment" page
+        $this->queueRestore($fileHandler, $fileId);
+        $this->template->content->view('restoringFile');
+        $this->template->publish();
+        return;
+    }
 
-		try {
-			$targetURL = $fileHandler->sourceFile->getProtectedURLForFile();
-		}
-		catch (Exception $e) {
+    try {
+      /** @var FilecontainerS3 */
+      $sourceFile = $fileHandler->sourceFile;
+      $targetURL = $sourceFile->getProtectedURLForFile();
+    } catch (Exception $e) {
       return $isJson
         ? abort_json(["error" => "originalNotAvailable"], 404)
         : instance_redirect("/errorHandler/error/originalNotAvailable");
-		}
+    }
 
+    // happy path: redirect to the original file on S3.
     return redirect(matchScheme($targetURL), 307);
-	}
+  }
 
   /**
    * Queue a Glacier restore for a file: enqueue a beanstalkd job to notify the
