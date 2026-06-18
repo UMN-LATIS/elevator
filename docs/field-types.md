@@ -119,7 +119,8 @@ A file-attachment field.  This allows users to upload a file their computer.  JS
     "enableIframe":false, 
     "enableAnnotation":false,
     "forceTiling": false,
-    "interactiveTranscript": false
+    "interactiveTranscript": false,
+    "rotationValue": 0
 }
 ```
 
@@ -146,6 +147,9 @@ Normally, Elevator only generates tiles for images greater than 30 megapixels, o
 
 ### interactiveTranscript
 When this is enabled, video assets with attached captions will have an interactive transcript displayed below the movie. This allows users to search and navigate based on the caption text. If you also add chapter markers to the file, these will be used to add formatting to the transcript sections. 
+
+### rotationValue
+A numeric value in degrees to visually rotate SVS (whole-slide) images on display. Positive values rotate clockwise. The image tiles are rotated while zoom/pan/fullscreen controls remain upright. Set to `0` (default) for no rotation.
 
 ### Sidecar Data
 Some file formats (movies, 3d objects) will present an additional field when being uploaded.  In this case of movies, this is where you can add SRT or WebVTT subtitles, or WebVTT chapter markers.  For 3d Objects, a custom JSON attachment can describe points of interest.  

@@ -8,6 +8,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-annotation/tooltip.css">
 <script src="/assets/js/aws-s3.js"></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/leaflet-rotate.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet.draw.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js?cachebust=99999'></script>
@@ -107,6 +108,22 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             display:none;
         }
         <?endif?>
+
+        /* Leaflet 1.9 sets font-size: 0.75rem on .leaflet-container.
+           bootstrap_stthomas.css sets html { font-size: 10px }, which causes
+           0.75rem to resolve to 7.5px instead of 12px, shrinking all controls.
+           Override with an absolute value to restore correct sizing. */
+        #imageMap.leaflet-container {
+            font-size: 12px;
+        }
+
+        /* Leaflet 1.9 added mix-blend-mode: plus-lighter to img.leaflet-tile
+           to fix a Chrome translucency bug (crbug.com/600120). For opaque
+           tiled images with overlap, the additive blending makes tile edges
+           appear as bright seams. Reset to normal for this viewer. */
+        #imageMap img.leaflet-tile {
+            mix-blend-mode: normal;
+        }
     </style>
 
 
@@ -122,6 +139,7 @@ elseif(isset($fileContainers['tiled-iiif'])) {
     var s3;
     var AWS;
     var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
+    var rotationValue = <?=(isset($widgetObject->parentWidget->rotationValue) && is_numeric($widgetObject->parentWidget->rotationValue)) ? (float)$widgetObject->parentWidget->rotationValue : 0?>;
     var layer;
 
     var saveURL = null;
@@ -158,6 +176,9 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             layers: [],
             keyboard: false,
             detectRetina: false,
+            rotate: rotationValue !== 0,
+            bearing: rotationValue,
+            rotateControl: false,
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 
@@ -198,9 +219,20 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                         toggleDisplay: true,
                         zoomAnimation: false,
                         zoomLevelOffset: -3,
-                        zoomLevelFixed: -3
+                        zoomLevelFixed: -3,
+                        mapOptions: { rotateControl: false }
                     });
         miniMap.addTo(imageMap);
+
+        // CSS-rotate the minimap container. The minimap is a passive thumbnail so
+        // coordinate accuracy isn't needed — CSS rotation is sufficient and avoids
+        // the rendering conflicts that occur when leaflet-rotate restructures panes
+        // inside the minimap's own internal L.Map instance.
+        if (rotationValue !== 0) {
+            var miniMapEl = miniMap.getContainer();
+            miniMapEl.style.transform = 'rotate(' + rotationValue + 'deg)';
+            miniMapEl.style.transformOrigin = 'center center';
+        }
 
         if(pixelsPerMillimeter > 10) {
 
@@ -242,6 +274,9 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         
         leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
 
+        if (rotationValue !== 0) {
+            imageMap.setBearing(rotationValue);
+        }
 
     };
 
