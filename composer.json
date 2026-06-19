@@ -48,8 +48,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Entity\\": "application/models/Entity/",
-      "App\\Enums\\": "application/Enums/"
+      "Entity\\": "application/models/Entity/"
     }
   }
 }
