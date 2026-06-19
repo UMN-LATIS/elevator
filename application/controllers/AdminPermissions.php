@@ -49,19 +49,16 @@ class AdminPermissions extends Instance_Controller {
   public function permissionLevels() {
     $this->abortUnlessAdmin();
 
+    $permissions = $this->doctrine->em
+      ->getRepository("Entity\Permission")
+      ->findAll();
+
+    // level is a string column, so cast to int
+    // and then sort by level ascending
+    usort($permissions, fn($a, $b) => (int) $a->getLevel() <=> (int) $b->getLevel());
+
     return render_json([
-      "permissionLevels" => array_values([
-        PERM_NOPERM => "No Permissions",
-        PERM_SEARCH => "Search Only",
-        PERM_VIEWDERIVATIVES => "View Derivatives",
-        PERM_DERIVATIVES_GROUP_1 => "Derivatives Group 1",
-        PERM_DERIVATIVES_GROUP_2 => "Derivatives Group 2",
-        PERM_ORIGINALSWITHOUTDERIVATIVES => "Originals without Derivatives",
-        PERM_CREATEDRAWERS => "Create Drawers",
-        PERM_ORIGINALS => "Originals",
-        PERM_ADDASSETS => "Add Assets",
-        PERM_ADMIN => "Admin"
-      ])
+      "permissionLevels" => $permissions,
     ]);
   }
 }
