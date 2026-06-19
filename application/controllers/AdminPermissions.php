@@ -1,8 +1,6 @@
 <?php
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
-use App\Enums\GroupType;
-
 /**
  * pure json api for new ui
  */
@@ -15,26 +13,55 @@ class AdminPermissions extends Instance_Controller {
       "label" => "All",
       "helpText" => "Matches everyone, including signed-out visitors."
     ],
-     AUTHED_TYPE => [
+    AUTHED_TYPE => [
       "name" => AUTHED_TYPE,
       "label" => "Authenticated Users"
     ],
-     REMOTE_TYPE => [
+    REMOTE_TYPE => [
       "name" => REMOTE_TYPE,
       "label" => "Centrally Authenticated Users"
     ],
-     USER_TYPE => [
+    USER_TYPE => [
       "name" => USER_TYPE,
       "label" => "Specific People"
     ],
-   ];
+  ];
+
+  private AuthHelper $authHelper;
+
+  public function __construct() {
+    parent::__construct();
+    $this->authHelper = $this->user_model->getAuthHelper();
+  }
 
 
   public function groupTypes() {
     $this->abortUnlessAdmin();
 
-    $groupTypes = array_map(fn($type) => $type->toArray(), GroupType::cases());
+    return render_json([
+      "groupTypes" => array_values([
+        ...self::GLOBAL_GROUPS,
+        ...$this->authHelper->authTypes
+      ]),
+    ]);
+  }
 
-    return render_json(["groupTypes" => $groupTypes]);
+  public function permissionLevels() {
+    $this->abortUnlessAdmin();
+
+    return render_json([
+      "permissionLevels" => array_values([
+        PERM_NOPERM => "No Permissions",
+        PERM_SEARCH => "Search Only",
+        PERM_VIEWDERIVATIVES => "View Derivatives",
+        PERM_DERIVATIVES_GROUP_1 => "Derivatives Group 1",
+        PERM_DERIVATIVES_GROUP_2 => "Derivatives Group 2",
+        PERM_ORIGINALSWITHOUTDERIVATIVES => "Originals without Derivatives",
+        PERM_CREATEDRAWERS => "Create Drawers",
+        PERM_ORIGINALS => "Originals",
+        PERM_ADDASSETS => "Add Assets",
+        PERM_ADMIN => "Admin"
+      ])
+    ]);
   }
 }
