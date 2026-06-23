@@ -46,9 +46,18 @@ class AdminPermissions extends Instance_Controller {
   public function groupTypes() {
     $this->abortUnlessAdmin();
 
-    return render_json([
-      "groupTypes" => array_values($this->getGroupTypes()),
-    ]);
+    // map the internal authTypes shape (name/helpText) to the public API
+    // contract the UI consumes (type/description)
+    $groupTypes = array_map(
+      fn($t) => [
+        "type" => $t["name"],
+        "label" => $t["label"],
+        "description" => $t["helpText"] ?? "",
+      ],
+      array_values($this->getGroupTypes())
+    );
+
+    return render_json(["groupTypes" => $groupTypes]);
   }
 
   public function permissionLevels() {
