@@ -67,6 +67,37 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
+   * GET /adminPermissions/userAutocomplete?q=... — suggest existing or
+   * directory-known people for a "Specific People" group member field.
+   *
+   * Read-only: it never persists. Delegates to the AuthHelper seam, so
+   * what comes back depends on the institution — local rows everywhere,
+   * plus a live directory at API schools (UMN, St. Olaf-OAuth). No-API
+   * schools can only echo people already in the local DB.
+   */
+  public function userAutocomplete() {
+    $this->abortUnlessAdmin();
+
+    if ($this->input->server('REQUEST_METHOD') !== 'GET') {
+      return abort_json(['error' => 'Method Not Allowed'], 405);
+    }
+
+    $query = trim((string) $this->input->get('q'));
+
+    // skip the lookup for trivial input — at API schools each call is a
+    // real network request, so don't fire one on the first keystroke
+    if (mb_strlen($query) < 2) {
+      return render_json(['matches' => []]);
+    }
+
+    // helpers key the result by user id; re-index to a plain list so the
+    // payload is always a JSON array, never an object
+    $matches = array_values($this->authHelper->autocompleteUsername($query));
+
+    return render_json(['matches' => $matches]);
+  }
+
+  /**
    * REST entry point for /adminPermissions/groups[/{id}].
    *
    * Trailing URL segments arrive as method args, so a request to
