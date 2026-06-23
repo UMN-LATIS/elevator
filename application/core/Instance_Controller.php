@@ -189,4 +189,18 @@ class Instance_Controller extends MY_Controller
             abort_json(['error' => 'Forbidden'], 403);
         }
     }
+
+    /**
+     * Read a form-encoded request body regardless of HTTP verb.
+     *
+     * POST populates $_POST, but PUT/PATCH/DELETE bodies live unparsed
+     * in php://input.
+     * Clients MUST send "application/x-www-form-urlencoded".
+     */
+    protected function requestBody(): array {
+        $method = $this->input->server('REQUEST_METHOD');
+        return ($method === 'POST'
+            ? $this->input->post()
+            : $this->input->input_stream()) ?? [];
+    }
 }
