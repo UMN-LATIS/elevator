@@ -61,4 +61,37 @@ class AdminPermissions extends Instance_Controller {
       "permissionLevels" => $permissions,
     ]);
   }
+
+  /**
+   * /adminPermissions/groups — single REST entry point. The custom
+   * router has no route table, so we dispatch on the HTTP verb here
+   * rather than mapping each verb to its own URL.
+   */
+  public function groups() {
+    $this->abortUnlessAdmin();
+
+    switch ($this->input->server('REQUEST_METHOD')) {
+      case 'GET':
+        return $this->listGroups();
+      case 'POST':
+        return $this->createGroup();
+      default:
+        return abort_json(['error' => 'Method Not Allowed'], 405);
+    }
+  }
+
+  private function listGroups() {
+    $groups = $this->doctrine->em
+      ->getRepository("Entity\InstanceGroup")
+      ->findBy(['instance' => $this->instance]);
+
+    return render_json([
+      "groups" => $groups,
+    ]);
+  }
+
+  private function createGroup() {
+    // TODO: persist a new InstanceGroup from the posted payload.
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
 }
