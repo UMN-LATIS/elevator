@@ -1,6 +1,8 @@
 <?php
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
+use Entity\InstanceGroup;
+use Entity\Permission;
 use SimpleValidator as V;
 
 /**
@@ -9,13 +11,12 @@ use SimpleValidator as V;
 class AdminPermissions extends Instance_Controller {
   // mirrors the structure of AuthHelpers::$authTypes,
   // @see UMNHelper:$authTypes for an example
-  const GLOBAL_GROUPS = [
+  const GLOBAL_GROUP_TYPES = [
     ALL_TYPE => [
       "name" => ALL_TYPE,
       "label" => "All",
       "helpText" => "Matches everyone, including signed-out visitors.",
-      // matches a whole population: no group_values list, just the
-      // vestigial scalar group_value
+      // vestigial group_value
       "ignoresGroupValues" => true,
     ],
     AUTHED_TYPE => [
@@ -46,7 +47,7 @@ class AdminPermissions extends Instance_Controller {
     $this->abortUnlessAdmin();
 
     return render_json([
-      "groupTypes" => $this->getValidGroupTypes(),
+      "groupTypes" => array_values($this->getGroupTypes()),
     ]);
   }
 
@@ -54,7 +55,7 @@ class AdminPermissions extends Instance_Controller {
     $this->abortUnlessAdmin();
 
     $permissions = $this->doctrine->em
-      ->getRepository("Entity\Permission")
+      ->getRepository(Permission::class)
       ->findAll();
 
     // level is a string column; sort numerically, ascending
@@ -66,17 +67,44 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * REST entry point for /adminPermissions/groups.
+   * REST entry point for /adminPermissions/groups[/{id}].
+   *
+   * Trailing URL segments arrive as method args, so a request to
+   * /adminPermissions/groups/5 calls this with $groupId = "5".
    */
-  public function groups() {
+  public function groups($groupId = null) {
     $this->abortUnlessAdmin();
 
-    // the custom router has no route table, so dispatch on verb here
-    switch ($this->input->server('REQUEST_METHOD')) {
+    // use HTTP verb to determine action
+    $method = $this->input->server('REQUEST_METHOD');
+
+
+    // /adminPermissions/groups
+    if ($groupId === null) {
+      switch ($method) {
+        case 'GET':
+          return $this->listGroups();
+        case 'POST':
+          return $this->createGroup();
+        default:
+          return abort_json(['error' => 'Method Not Allowed'], 405);
+      }
+    }
+
+    // /adminPermissions/groups/{id}
+    $groupId = filter_var($groupId, FILTER_VALIDATE_INT);
+    if ($groupId === false) {
+      return abort_json(['error' => 'Invalid group ID'], 400);
+    }
+
+    switch ($method) {
       case 'GET':
-        return $this->listGroups();
-      case 'POST':
-        return $this->createGroup();
+        return $this->showGroup($groupId);
+      case 'PUT':
+      case 'PATCH':
+        return $this->updateGroup($groupId);
+      case 'DELETE':
+        return $this->deleteGroup($groupId);
       default:
         return abort_json(['error' => 'Method Not Allowed'], 405);
     }
@@ -92,11 +120,45 @@ class AdminPermissions extends Instance_Controller {
     ]);
   }
 
-  private function getValidGroupTypes(): array {
-    return array_keys([
-      ...self::GLOBAL_GROUPS,
+  /**
+   * GET /adminPermissions/groups/{id} — the full group record.
+   */
+  private function showGroup(int $groupId) {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      abort_json(['error' => 'Group not found'], 404);
+    }
+
+    return render_json(['group' => $group]);
+  }
+
+  /**
+   * PUT|PATCH /adminPermissions/groups/{id} — edit a group.
+   *
+   * TODO: validate the payload (reusing createGroup's rules) and apply
+   * label/value changes, then clearUserCache().
+   */
+  private function updateGroup(int $groupId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  /**
+   * DELETE /adminPermissions/groups/{id} — remove a group.
+   *
+   * TODO: remove the group (and its GroupEntry rows) and clearUserCache().
+   */
+  private function deleteGroup(int $groupId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function getGroupTypes(): array {
+    return [
+      ...self::GLOBAL_GROUP_TYPES,
       ...$this->authHelper->authTypes,
-    ]);
+    ];
   }
 
   /**
@@ -105,7 +167,7 @@ class AdminPermissions extends Instance_Controller {
   private function createGroup() {
     $post = $this->input->post() ?? [];
 
-    $validTypes = $this->getValidGroupTypes();
+    $validTypes = array_keys($this->getGroupTypes());
 
     try {
       $validated = V::validate($post, [
@@ -184,9 +246,7 @@ class AdminPermissions extends Instance_Controller {
           : 'This group type does not accept values';
       }
 
-      return count($entries) > 0
-        ? true
-        : 'This group type requires at least one value';
+      return true;
     };
   }
 
@@ -196,7 +256,7 @@ class AdminPermissions extends Instance_Controller {
    */
   private function ignoresGroupValues(string $type): bool {
     // auth-helper types always carry values, so absence means false
-    return self::GLOBAL_GROUPS[$type]['ignoresGroupValues'] ?? false;
+    return self::GLOBAL_GROUP_TYPES[$type]['ignoresGroupValues'] ?? false;
   }
 
   /**
