@@ -46,8 +46,6 @@ class AdminPermissions extends Instance_Controller {
   public function groupTypes() {
     $this->abortUnlessAdmin();
 
-    // map the internal authTypes shape (name/helpText) to the public API
-    // contract the UI consumes (type/description)
     $groupTypes = array_map(
       fn($t) => [
         "type" => $t["name"],
@@ -76,13 +74,11 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /adminPermissions/userAutocomplete?q=... — suggest existing or
-   * directory-known people for a "Specific People" group member field.
+   * GET /adminPermissions/userAutocomplete?q=... suggests people for a
+   * "Specific People" group's member field. Read only.
    *
-   * Read-only: it never persists. Delegates to the AuthHelper seam, so
-   * what comes back depends on the institution — local rows everywhere,
-   * plus a live directory at API schools (UMN, St. Olaf-OAuth). No-API
-   * schools can only echo people already in the local DB.
+   * Every school searches local users. Schools with an external directory
+   * (UMN, St. Olaf) also return matches from central auth.
    */
   public function userAutocomplete() {
     $this->abortUnlessAdmin();
@@ -93,14 +89,12 @@ class AdminPermissions extends Instance_Controller {
 
     $query = trim((string) $this->input->get('q'));
 
-    // skip the lookup for trivial input — at API schools each call is a
-    // real network request, so don't fire one on the first keystroke
+    // ignore trivial input to avoid expensive autocompleteUsername calls
     if (mb_strlen($query) < 2) {
       return render_json(['matches' => []]);
     }
 
-    // helpers key the result by user id; re-index to a plain list so the
-    // payload is always a JSON array, never an object
+    // autocompleteUsername returns an associative array, so convert to a plain array
     $matches = array_values($this->authHelper->autocompleteUsername($query));
 
     return render_json(['matches' => $matches]);
@@ -176,13 +170,49 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /adminPermissions/groups/{id} — edit a group.
+   * PUT|PATCH /adminPermissions/groups/{id} — edit a group's label and type.
    *
-   * TODO: validate the payload (reusing createGroup's rules) and apply
-   * label/value changes, then clearUserCache().
+   * Changing the type clears existing members, since they belong to the old
+   * type. Editing only the label leaves them alone.
    */
   private function updateGroup(int $groupId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    try {
+      $validated = V::validate(
+        $this->requestBody(),
+        $this->groupAttributeRules()
+      );
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $newType = $validated['type'];
+    $hasTypeChanged = $newType !== $group->getGroupType();
+
+    $group->setGroupLabel($validated['label']);
+
+    if ($hasTypeChanged) {
+      $group->setGroupType($newType);
+
+      // a type change invalidates old members, so clear them. toArray() copies
+      // first so removing entries does not mutate the list mid-loop.
+      foreach ($group->getGroupValues()->toArray() as $entry) {
+        $group->removeGroupValue($entry); // orphanRemoval deletes on flush
+      }
+      $group->setGroupValue($this->ignoresGroupValues($newType) ? 1 : null);
+    }
+
+    $this->doctrine->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['group' => $group]);
   }
 
   /**
@@ -202,22 +232,37 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
+   * Shared validation rules for a group's editable attributes (label +
+   * type). createGroup adds its own `values` rule on top of these.
+   */
+  private function groupAttributeRules(): array {
+    $validTypes = array_keys($this->getGroupTypes());
+    return [
+      'type' => [
+        V::required(),
+        fn($v) => !isset($v) || in_array($v, $validTypes, true)
+          ? true
+          : 'Unknown group type',
+      ],
+      'label' => [
+        V::required(),
+        V::maxLength(255),
+        // reject `< > "` to prevent HTML injection, while still allowing
+        // names like `R&D` and `Bob's Team`.
+        fn($v) => !isset($v) || !preg_match('/[<>"]/', $v)
+          ? true
+          : 'Label cannot contain < > or " characters',
+      ],
+    ];
+  }
+
+  /**
    * Validate the posted payload and persist a new InstanceGroup.
    */
   private function createGroup() {
-    $post = $this->input->post() ?? [];
-
-    $validTypes = array_keys($this->getGroupTypes());
-
     try {
-      $validated = V::validate($post, [
-        'type' => [
-          V::required(),
-          fn($v) => !isset($v) || in_array($v, $validTypes, true)
-            ? true
-            : 'Unknown group type',
-        ],
-        'label' => [V::required(), V::maxLength(255)],
+      $validated = V::validate($this->requestBody(), [
+        ...$this->groupAttributeRules(),
         'values' => [V::array(), $this->groupValuesValidator()],
       ]);
     } catch (ValidationException $e) {

@@ -10,7 +10,7 @@ class Instance_Controller extends MY_Controller
     function __construct()
     {
         parent::__construct();
-        
+
         if($this->config->item('site_open') === FALSE)
         {
             show_error('Elevator is Temporarily Unavailable.');
@@ -27,7 +27,7 @@ class Instance_Controller extends MY_Controller
 
         $this->writeOutAssets();
 
-        
+
         if($this->input->get('apiHandoff', TRUE)) {
 			$signedString = $this->input->get('apiHandoff');
 			$authKey = $this->input->get('authKey');
@@ -43,7 +43,7 @@ class Instance_Controller extends MY_Controller
         $this->config->set_item("instance_relative", $this->getRelativePath());
         $this->config->set_item("instance_absolute", $this->getAbsolutePath());
 
-        
+
         if(!$this->instance && !$this->noRedirect) {
             if($this->config->item('missingSiteURL') != '') {
                 redirect($this->config->item('missingSiteURL'));
@@ -59,7 +59,7 @@ class Instance_Controller extends MY_Controller
 
 
     static function setInstance($selfReference) {
-        
+
         if(!isset($selfReference)) {
             $CI =& get_instance();
         }
