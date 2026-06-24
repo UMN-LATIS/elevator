@@ -94,8 +94,17 @@ class AdminPermissions extends Instance_Controller {
       return render_json(['matches' => []]);
     }
 
-    // autocompleteUsername returns an associative array, so convert to a plain array
-    $matches = array_values($this->authHelper->autocompleteUsername($query));
+    // reshape each match for the new UI: a plain list, with the id named
+    // localUserId instead of the legacy completionId
+    $matches = array_map(
+      fn($match) => [
+        "name" => $match["name"],
+        "email" => $match["email"],
+        "localUserId" => $match["completionId"],
+        "username" => $match["username"],
+      ],
+      array_values($this->authHelper->autocompleteUsername($query))
+    );
 
     return render_json(['matches' => $matches]);
   }
