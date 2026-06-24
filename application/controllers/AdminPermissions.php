@@ -115,7 +115,7 @@ class AdminPermissions extends Instance_Controller {
    * Trailing URL segments arrive as method args, so a request to
    * /adminPermissions/groups/5 calls this with $groupId = "5".
    */
-  public function groups($groupId = null, $subResource = null) {
+  public function groups($groupId = null, $subResource = null, $memberId = null) {
     $this->abortUnlessAdmin();
 
     $method = $this->input->server('REQUEST_METHOD');
@@ -123,18 +123,22 @@ class AdminPermissions extends Instance_Controller {
     $groupId = $groupId === null
       ? null
       : filter_var($groupId, FILTER_VALIDATE_INT);
+    $memberId = $memberId === null
+      ? null
+      : filter_var($memberId, FILTER_VALIDATE_INT);
 
-    // if groupId is not a valid int, filter_var will return false
-    if ($groupId === false) {
-      return abort_json(['error' => 'Invalid group ID'], 400);
+    // a non-numeric id segment becomes false
+    if ($groupId === false || $memberId === false) {
+      return abort_json(['error' => 'Invalid ID'], 400);
     }
 
     // which resource does the URL address?
     $route = match (true) {
       $groupId === null => '/groups',
       $subResource === null => '/groups/{id}',
-      $subResource === 'members' => '/groups/{id}/members',
-      default => 'unknown',
+      $subResource !== 'members' => 'unknown',
+      $memberId === null => '/groups/{id}/members',
+      default => '/groups/{id}/members/{userId}',
     };
 
     switch ($route) {
@@ -163,6 +167,12 @@ class AdminPermissions extends Instance_Controller {
             return $this->listGroupMembers($groupId);
           case 'POST':
             return $this->addGroupMember($groupId);
+        }
+        break;
+      case '/groups/{id}/members/{userId}':
+        switch ($method) {
+          case 'DELETE':
+            return $this->removeGroupMember($groupId, $memberId);
         }
         break;
       case 'unknown':
@@ -322,6 +332,42 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
+   * DELETE /adminPermissions/groups/{id}/members/{userId} — drop a member.
+   */
+  private function removeGroupMember(int $groupId, int $userId) {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if ($group->getGroupType() !== USER_TYPE) {
+      return abort_json(
+        ['error' => 'Only Specific People groups take members'],
+        422
+      );
+    }
+
+    $entry = null;
+    foreach ($group->getGroupValues() as $candidate) {
+      if ((int) $candidate->getGroupValue() === $userId) {
+        $entry = $candidate;
+        break;
+      }
+    }
+    if (!$entry) {
+      return abort_json(['error' => 'User is not a member'], 404);
+    }
+
+    $group->removeGroupValue($entry); // orphanRemoval deletes on flush
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['removed' => $userId]);
+  }
+
+  /**
    * Resolve a group's entries to member display data. Only User groups hold
    * user ids; other types store raw attribute strings and have no members.
    */
@@ -351,6 +397,9 @@ class AdminPermissions extends Instance_Controller {
       'userId' => $user->getId(),
       'name' => $user->getDisplayName(),
       'email' => $user->getEmail(),
+      'username' => $user->getUsername(),
+      'userType' => $user->getUserType(),
+      'createdAt' => $user->getCreatedAt()?->format('c'),
     ];
   }
 
