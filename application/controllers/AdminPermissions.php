@@ -115,42 +115,62 @@ class AdminPermissions extends Instance_Controller {
    * Trailing URL segments arrive as method args, so a request to
    * /adminPermissions/groups/5 calls this with $groupId = "5".
    */
-  public function groups($groupId = null) {
+  public function groups($groupId = null, $subResource = null) {
     $this->abortUnlessAdmin();
 
-    // use HTTP verb to determine action
     $method = $this->input->server('REQUEST_METHOD');
 
+    $groupId = $groupId === null
+      ? null
+      : filter_var($groupId, FILTER_VALIDATE_INT);
 
-    // /adminPermissions/groups
-    if ($groupId === null) {
-      switch ($method) {
-        case 'GET':
-          return $this->listGroups();
-        case 'POST':
-          return $this->createGroup();
-        default:
-          return abort_json(['error' => 'Method Not Allowed'], 405);
-      }
-    }
-
-    // /adminPermissions/groups/{id}
-    $groupId = filter_var($groupId, FILTER_VALIDATE_INT);
+    // if groupId is not a valid int, filter_var will return false
     if ($groupId === false) {
       return abort_json(['error' => 'Invalid group ID'], 400);
     }
 
-    switch ($method) {
-      case 'GET':
-        return $this->showGroup($groupId);
-      case 'PUT':
-      case 'PATCH':
-        return $this->updateGroup($groupId);
-      case 'DELETE':
-        return $this->deleteGroup($groupId);
-      default:
-        return abort_json(['error' => 'Method Not Allowed'], 405);
+    // which resource does the URL address?
+    $route = match (true) {
+      $groupId === null => '/groups',
+      $subResource === null => '/groups/{id}',
+      $subResource === 'members' => '/groups/{id}/members',
+      default => 'unknown',
+    };
+
+    switch ($route) {
+      case '/groups':
+        switch ($method) {
+          case 'GET':
+            return $this->listGroups();
+          case 'POST':
+            return $this->createGroup();
+        }
+        break;
+      case '/groups/{id}':
+        switch ($method) {
+          case 'GET':
+            return $this->showGroup($groupId);
+          case 'PUT':
+          case 'PATCH':
+            return $this->updateGroup($groupId);
+          case 'DELETE':
+            return $this->deleteGroup($groupId);
+        }
+        break;
+      case '/groups/{id}/members':
+        switch ($method) {
+          case 'GET':
+            return $this->listGroupMembers($groupId);
+          case 'POST':
+            return $this->addGroupMember($groupId);
+        }
+        break;
+      case 'unknown':
+        return abort_json(['error' => 'Not Found'], 404);
     }
+
+    // a known route, but the verb isn't allowed on it
+    return abort_json(['error' => 'Method Not Allowed'], 405);
   }
 
   private function listGroups() {
@@ -231,6 +251,107 @@ class AdminPermissions extends Instance_Controller {
    */
   private function deleteGroup(int $groupId) {
     return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  /**
+   * GET /adminPermissions/groups/{id}/members — the group's members,
+   * resolved to names so the UI can show who belongs.
+   */
+  private function listGroupMembers(int $groupId) {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    return render_json(['members' => $this->resolveMembers($group)]);
+  }
+
+  /**
+   * POST /adminPermissions/groups/{id}/members — add one existing user.
+   *
+   * Existing only: the user id must already resolve to a local row. Creating
+   * brand-new users is a later slice.
+   */
+  private function addGroupMember(int $groupId) {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if ($group->getGroupType() !== USER_TYPE) {
+      return abort_json(
+        ['error' => 'Only Specific People groups take members'],
+        422
+      );
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'userId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+    $userId = (int) $validated['userId'];
+
+    $user = $this->doctrine->em
+      ->getRepository("Entity\User")
+      ->find($userId);
+    if (!$user) {
+      return abort_json(['error' => 'User not found'], 422);
+    }
+
+    foreach ($group->getGroupValues() as $entry) {
+      if ((int) $entry->getGroupValue() === $userId) {
+        return abort_json(['error' => 'User is already a member'], 409);
+      }
+    }
+
+    $entry = new Entity\GroupEntry();
+    $entry->setGroupValue($userId);
+    $group->addGroupValue($entry);
+
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['member' => $this->memberPayload($user)], 201);
+  }
+
+  /**
+   * Resolve a group's entries to member display data. Only User groups hold
+   * user ids; other types store raw attribute strings and have no members.
+   */
+  private function resolveMembers(InstanceGroup $group): array {
+    if ($group->getGroupType() !== USER_TYPE) {
+      return [];
+    }
+
+    $userIds = array_map(
+      fn($entry) => (int) $entry->getGroupValue(),
+      $group->getGroupValues()->toArray()
+    );
+    if (count($userIds) === 0) {
+      return [];
+    }
+
+    // one query for every member, not one query per member
+    $users = $this->doctrine->em
+      ->getRepository("Entity\User")
+      ->findBy(['id' => $userIds], ['displayName' => 'ASC']);
+
+    return array_map(fn($user) => $this->memberPayload($user), $users);
+  }
+
+  private function memberPayload(Entity\User $user): array {
+    return [
+      'userId' => $user->getId(),
+      'name' => $user->getDisplayName(),
+      'email' => $user->getEmail(),
+    ];
   }
 
   private function getGroupTypes(): array {
