@@ -328,15 +328,11 @@ class AdminPermissions extends Instance_Controller {
         return abort_json(['error' => 'User not found'], 422);
       }
     } else {
-      // not local yet: verify (schools with a directory) or fabricate
-      // (schools without) the remote id, then persist as a Remote user
-      $remoteUserId = trim((string) $body['remoteUserId']);
-      $user = $this->firstOrCreateLocalUser($remoteUserId);
-      if (!$user) {
-        return abort_json(
-          ['error' => "Could not find a user matching '{$remoteUserId}'"],
-          422
-        );
+      // not local yet: provision a Remote user from the typed username
+      try {
+        $user = $this->firstOrProvisionRemoteUser((string) $body['remoteUserId']);
+      } catch (RemoteUserNotFoundException $e) {
+        return abort_json(['error' => $e->getMessage()], 404);
       }
     }
 
@@ -498,14 +494,13 @@ class AdminPermissions extends Instance_Controller {
         // a non-numeric User value is a remote auth-system id; resolve
         // it to a local user id. other types store their value as-is
         if ($type === USER_TYPE && !is_numeric($value)) {
-          $user = $this->firstOrCreateLocalUser($value);
-          if (!$user) {
-            return abort_json(
-              ['error' => "Could not find a user matching '{$value}'"],
-              422
-            );
+          // a non-numeric value is a remote username; provision its
+          // local row and store the resulting user id
+          try {
+            $value = $this->firstOrProvisionRemoteUser($value)->getId();
+          } catch (RemoteUserNotFoundException $e) {
+            return abort_json(['error' => $e->getMessage()], 404);
           }
-          $value = $user->getId();
         }
 
         $entry = new Entity\GroupEntry();
@@ -551,27 +546,44 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * First-or-create the local User for a remote auth-system id (e.g. a
-   * umndid, not a username). Null if the auth helper doesn't know them.
+   * Find a remote user within the local DB by their remote id
+   * (e.g. username, umndid). If not found, creates a new
+   * user in the local DB with the remoteUserId set.
+   *
+   * @throws RemoteUserNotFoundException if the user cannot be found or
+   *   provisioned.
+   * @return Entity\User the user record matching the remote id
    */
-  private function firstOrCreateLocalUser(string $remoteUserId): ?Entity\User {
-    $matches = $this->authHelper->findById($remoteUserId, true);
-    if (count($matches) === 0) {
-      return null;
-    }
-    $remoteUser = $matches[0];
+  private function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
 
-    $existing = $this->doctrine->em
-      ->getRepository("Entity\User")
-      ->findOneBy(['username' => $remoteUser->getUsername()]);
-    if ($existing) {
-      return $existing;
+    /** @var AuthHelper $authHelper */
+    $authHelper = $this->user_model->getAuthHelper();
+
+    // findById($id, true) will make new (unsaved) an Entity\User record with
+    // the given remote id if nothing is found.
+    /** @var ?Entity\User $remoteUser */
+    $remoteUser = $authHelper->findById($remoteUserId, true)[0] ?? null;
+
+    if ($remoteUser === null) {
+      throw new RemoteUserNotFoundException($remoteUserId);
     }
 
-    // first time we've seen them — persist as a Remote user
-    $remoteUser->setUserType('Remote');
-    $remoteUser->setCreatedAt(new \DateTime('now'));
+    // does a user already exist in the local DB with this username?
+    /** @var ?Entity\User $existingUser */
+    $existingUser = $this->doctrine->em->getRepository(Entity\User::class)
+      ->findOneBy(["username" => $remoteUser->getUsername()]);
+
+    // if so, return it instead of the new unsaved one
+    if ($existingUser !== null) {
+      return $existingUser;
+    }
+
+    // otherwise, fill in some blanks in the new record
+    $remoteUser->setUserType("Remote");
+    $remoteUser->setCreatedAt(new \DateTime("now"));
     $remoteUser->setInstance($this->instance);
+
+    // and then save it
     $this->doctrine->em->persist($remoteUser);
     $this->doctrine->em->flush();
 
