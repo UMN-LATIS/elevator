@@ -279,10 +279,11 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * POST /adminPermissions/groups/{id}/members — add one existing user.
+   * POST /adminPermissions/groups/{id}/members — add one member.
    *
-   * Existing only: the user id must already resolve to a local row. Creating
-   * brand-new users is a later slice.
+   * Exactly one of two fields per request: `localUserId` for someone who
+   * already has a local row, or `remoteUserId` (a netid/username) for someone
+   * not local yet, who we provision on the spot via firstOrCreateLocalUser.
    */
   private function addGroupMember(int $groupId) {
     $group = $this->doctrine->em
@@ -299,21 +300,47 @@ class AdminPermissions extends Instance_Controller {
       );
     }
 
-    try {
-      $validated = V::validate($this->requestBody(), [
-        'userId' => [V::required(), V::integer()],
-      ]);
-    } catch (ValidationException $e) {
-      return abort_json(['errors' => $e->getErrors()], 422);
-    }
-    $userId = (int) $validated['userId'];
+    $body = $this->requestBody();
+    $hasLocalId = isset($body['localUserId']) && $body['localUserId'] !== '';
+    $hasRemoteId = isset($body['remoteUserId'])
+      && trim((string) $body['remoteUserId']) !== '';
 
-    $user = $this->doctrine->em
-      ->getRepository("Entity\User")
-      ->find($userId);
-    if (!$user) {
-      return abort_json(['error' => 'User not found'], 422);
+    // the field name carries the intent, so require exactly one
+    if ($hasLocalId === $hasRemoteId) {
+      return abort_json(
+        ['error' => 'Provide exactly one of localUserId or remoteUserId'],
+        422
+      );
     }
+
+    if ($hasLocalId) {
+      try {
+        $validated = V::validate($body, [
+          'localUserId' => [V::required(), V::integer()],
+        ]);
+      } catch (ValidationException $e) {
+        return abort_json(['errors' => $e->getErrors()], 422);
+      }
+      $user = $this->doctrine->em
+        ->getRepository("Entity\User")
+        ->find((int) $validated['localUserId']);
+      if (!$user) {
+        return abort_json(['error' => 'User not found'], 422);
+      }
+    } else {
+      // not local yet: verify (schools with a directory) or fabricate
+      // (schools without) the remote id, then persist as a Remote user
+      $remoteUserId = trim((string) $body['remoteUserId']);
+      $user = $this->firstOrCreateLocalUser($remoteUserId);
+      if (!$user) {
+        return abort_json(
+          ['error' => "Could not find a user matching '{$remoteUserId}'"],
+          422
+        );
+      }
+    }
+
+    $userId = $user->getId();
 
     foreach ($group->getGroupValues() as $entry) {
       if ((int) $entry->getGroupValue() === $userId) {
