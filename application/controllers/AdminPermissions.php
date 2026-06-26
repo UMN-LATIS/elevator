@@ -256,11 +256,21 @@ class AdminPermissions extends Instance_Controller {
 
   /**
    * DELETE /adminPermissions/groups/{id} — remove a group.
-   *
-   * TODO: remove the group (and its GroupEntry rows) and clearUserCache().
    */
   private function deleteGroup(int $groupId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    $this->doctrine->em->remove($group);
+    $this->doctrine->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $groupId]);
   }
 
   /**
