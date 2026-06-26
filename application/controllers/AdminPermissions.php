@@ -15,23 +15,27 @@ class AdminPermissions extends Instance_Controller {
     ALL_TYPE => [
       "name" => ALL_TYPE,
       "label" => "All",
-      "helpText" => "Matches everyone, including signed-out visitors.",
+      "helpText" => "Everyone, including signed-out visitors.",
       // vestigial group_value
       "ignoresGroupValues" => true,
     ],
     AUTHED_TYPE => [
       "name" => AUTHED_TYPE,
       "label" => "Authenticated Users",
+      "helpText" => "Anyone signed in, by any login method.",
       "ignoresGroupValues" => true,
     ],
     REMOTE_TYPE => [
       "name" => REMOTE_TYPE,
       "label" => "Centrally Authenticated Users",
+      "helpText" => "Users signed in through central "
+        . "single sign-on (SSO).",
       "ignoresGroupValues" => true,
     ],
     USER_TYPE => [
       "name" => USER_TYPE,
-      "label" => "Specific People"
+      "label" => "Specific People",
+      "helpText" => "Specific people you choose. Add by name, email, or username.",
     ],
   ];
 
