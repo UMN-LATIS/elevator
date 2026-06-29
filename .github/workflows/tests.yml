@@ -91,16 +91,22 @@ jobs:
           echo "==================== sample 500 body ===================="
           # Reproduce a failing request and print the raw HTML error page,
           # which carries the real PHP fatal that the test discards.
+          # With CI_ENV=local, display_errors is on, so the body has the trace.
           docker compose exec -T php-fpm sh -c '
             cookie=$(mktemp)
+            echo "--- login ---"
             curl -sk -c "$cookie" -X POST \
               -d "username=admin&password=admin" \
+              -w "login HTTP %{http_code}\n" \
               https://localhost/defaultinstance/loginManager/localLoginAsync \
-              -o /dev/null
-            curl -sk -b "$cookie" \
-              -H "Accept: application/json" \
-              https://localhost/defaultinstance/collectionManager/save \
-              -d "title=ci-debug&parent=0" | head -c 4000
+              -o /tmp/login.out
+            head -c 500 /tmp/login.out; echo
+            echo "--- GET /templates/ (authed) ---"
+            curl -sk -b "$cookie" -H "Accept: application/json" \
+              -w "\ntemplates HTTP %{http_code}\n" \
+              https://localhost/defaultinstance/templates/ \
+              -o /tmp/tmpl.out
+            cat /tmp/tmpl.out; echo
           ' || true
 
       - name: Upload test results
