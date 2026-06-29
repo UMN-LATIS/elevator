@@ -125,12 +125,7 @@ test.describe("templates", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+    await loginUser(page, "admin");
   });
 
   test.afterEach(() => {
@@ -248,12 +243,7 @@ test.describe("templates", () => {
 
 test.describe("GET getFieldTypes", () => {
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+    await loginUser(page, "admin");
   });
 
   // F1: returns a non-empty array of field types with the expected shape
@@ -318,12 +308,7 @@ test.describe("GET getFieldTypes", () => {
 
 test.describe("templates API", () => {
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+    await loginUser(page, "admin");
   });
 
   test.afterEach(() => {
