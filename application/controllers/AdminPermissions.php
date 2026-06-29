@@ -43,6 +43,7 @@ class AdminPermissions extends Instance_Controller {
 
   public function __construct() {
     parent::__construct();
+    $this->load->library('SimpleValidator');
     $this->authHelper = $this->user_model->getAuthHelper();
   }
 
@@ -189,7 +190,7 @@ class AdminPermissions extends Instance_Controller {
 
   private function listGroups() {
     $groups = $this->doctrine->em
-      ->getRepository("Entity\InstanceGroup")
+      ->getRepository(InstanceGroup::class)
       ->findBy(['instance' => $this->instance]);
 
     return render_json([
@@ -342,9 +343,12 @@ class AdminPermissions extends Instance_Controller {
         return abort_json(['error' => 'User not found'], 422);
       }
     } else {
-      // not local yet: provision a Remote user from the typed username
+      // not local yet: provision a Remote user from the typed username.
+      // trim to match the presence check above, so surrounding whitespace
+      // doesn't turn a valid username into a lookup miss
+      $remoteUserId = trim((string) $body['remoteUserId']);
       try {
-        $user = $this->firstOrProvisionRemoteUser((string) $body['remoteUserId']);
+        $user = $this->firstOrProvisionRemoteUser($remoteUserId);
       } catch (RemoteUserNotFoundException $e) {
         return abort_json(['error' => $e->getMessage()], 404);
       }
@@ -546,7 +550,11 @@ class AdminPermissions extends Instance_Controller {
           : 'This group type does not accept values';
       }
 
-      return true;
+      // a value-based group with no members is meaningless; require at
+      // least one so we don't silently create an empty group
+      return count($entries) > 0
+        ? true
+        : 'This group type requires at least one value';
     };
   }
 
