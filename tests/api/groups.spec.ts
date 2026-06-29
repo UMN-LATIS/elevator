@@ -5,7 +5,7 @@ import { loginUser, refreshDatabase, baseURL } from "../helpers";
 // All require an admin session (abortUnlessAdmin -> 401 when not).
 
 async function loginAdmin(page: import("@playwright/test").Page) {
-  await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", process.env.DEFAULT_ADMIN_PASSWORD ?? 'admin');
+  await loginUser(page, "admin");
 }
 
 test.describe("adminPermissions", () => {
