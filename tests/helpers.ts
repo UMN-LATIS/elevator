@@ -25,12 +25,12 @@ export const baseURL = (): string =>
 export async function loginUser(
   page: Page,
   username: string,
-  password: string,
+  password?: string,
 ): Promise<void> {
   const response = await page.request.post(
     `${baseURL()}/loginmanager/localLoginAsync`,
     {
-      form: { username, password },
+      form: { username, password: password || username },
     },
   );
 
