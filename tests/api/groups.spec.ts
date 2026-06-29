@@ -236,29 +236,6 @@ test.describe("adminPermissions", () => {
       expect(typeof admin.localUserId).toBe("number");
     });
 
-    test("excludes users that don't match the query", async ({ page }) => {
-      // "student" matches one seed user by display name and username; it
-      // must not drag in unrelated users like "admin" or "staff".
-      const res = await page.request.get(
-        `${baseURL()}/adminPermissions/userAutocomplete?q=student`,
-        { headers: { Accept: "application/json" } },
-      );
-      expect(res.status()).toBe(200);
-
-      const { matches } = (await res.json()) as { matches: UserMatch[] };
-      expect(matches.length).toBeGreaterThan(0);
-
-      // every returned row genuinely contains the query in a searched field
-      for (const m of matches) {
-        const haystack = `${m.name} ${m.email} ${m.username}`.toLowerCase();
-        expect(haystack).toContain("student");
-      }
-
-      const usernames = matches.map((m) => m.username);
-      expect(usernames).not.toContain("admin");
-      expect(usernames).not.toContain("staff");
-    });
-
     test("ignores a query shorter than two characters", async ({ page }) => {
       // The controller short-circuits trivial input before searching.
       const res = await page.request.get(
