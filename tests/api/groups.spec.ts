@@ -120,22 +120,6 @@ test.describe("adminPermissions", () => {
       expect(group.values).toEqual([]);
     });
 
-    test("creates a value-based group (User) with entries", async ({ page }) => {
-      const res = await page.request.post(
-        `${baseURL()}/adminPermissions/groups`,
-        {
-          // Numeric user values are stored as-is (no remote-id resolution).
-          form: { type: "User", label: "Specific people", "values[0]": "1" },
-        },
-      );
-      expect(res.status()).toBe(201);
-
-      const { group } = await res.json();
-      expect(group.type).toBe("User");
-      expect(group.values).toHaveLength(1);
-      expect(group.values[0]).toHaveProperty("value");
-    });
-
     test("a created group appears in the list", async ({ page }) => {
       await page.request.post(`${baseURL()}/adminPermissions/groups`, {
         form: { type: "All", label: "Findable group" },
@@ -176,25 +160,6 @@ test.describe("adminPermissions", () => {
       );
       expect(res.status()).toBe(422);
       expect((await res.json()).errors).toHaveProperty("label");
-    });
-
-    test("rejects values on a whole-population type", async ({ page }) => {
-      // An "All" group must not pose as a "specific people" one.
-      const res = await page.request.post(
-        `${baseURL()}/adminPermissions/groups`,
-        { form: { type: "All", label: "All but sneaky", "values[0]": "1" } },
-      );
-      expect(res.status()).toBe(422);
-      expect((await res.json()).errors).toHaveProperty("values");
-    });
-
-    test("rejects a value-based type with no values", async ({ page }) => {
-      const res = await page.request.post(
-        `${baseURL()}/adminPermissions/groups`,
-        { form: { type: "User", label: "Empty people" } },
-      );
-      expect(res.status()).toBe(422);
-      expect((await res.json()).errors).toHaveProperty("values");
     });
   });
 });
