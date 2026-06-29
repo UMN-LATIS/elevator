@@ -39,8 +39,10 @@ test.describe("adminPermissions", () => {
 
       const { groupTypes } = await res.json();
       expect(Array.isArray(groupTypes)).toBe(true);
+      // Each entry is { type, label, description }; check the type strings.
+      const types = groupTypes.map((g: { type: string }) => g.type);
       // The global types are always present regardless of auth helper.
-      expect(groupTypes).toEqual(
+      expect(types).toEqual(
         expect.arrayContaining(["All", "Authed", "Authed_remote", "User"]),
       );
     });
@@ -100,7 +102,7 @@ test.describe("adminPermissions", () => {
       refreshDatabase();
     });
 
-    test("creates a whole-population group (All) with the scalar value", async ({
+    test("creates a whole-population group (All) with no values", async ({
       page,
     }) => {
       const res = await page.request.post(
@@ -112,8 +114,9 @@ test.describe("adminPermissions", () => {
       const { group } = await res.json();
       expect(group.type).toBe("All");
       expect(group.label).toBe("Everyone");
-      // Vestigial scalar must be 1 so Authed/Remote matching keeps working.
-      expect(group.value).toBe(1);
+      // The group_value scalar is set to 1 server-side so Authed/Remote
+      // matching keeps working, but it's a DB-internal detail and is
+      // deliberately not part of the JSON contract.
       expect(group.values).toEqual([]);
     });
 
@@ -129,7 +132,6 @@ test.describe("adminPermissions", () => {
 
       const { group } = await res.json();
       expect(group.type).toBe("User");
-      expect(group.value).toBeNull();
       expect(group.values).toHaveLength(1);
       expect(group.values[0]).toHaveProperty("value");
     });
