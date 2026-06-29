@@ -76,7 +76,9 @@ jobs:
       - name: Run API tests
         env:
           BASE_URL: https://localhost/defaultinstance
-        run: npm run test:api
+        # -x stops after the first failure so we surface the error fast
+        # instead of grinding through every dependent failure.
+        run: npm run test:api -- -x
 
       - name: Dump server logs on failure
         if: always()
