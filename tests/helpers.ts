@@ -19,7 +19,7 @@ export interface TemplateResponse {
 export const baseURL = (): string =>
   process.env.BASE_URL ?? "http://localhost/defaultinstance";
 
-// POST /{instance}/loginmanager/localLoginAsync
+// POST /{instance}/loginManager/localLoginAsync
 // Fields: username, password (application/x-www-form-urlencoded)
 // Sets ci_session cookie on the page context on success.
 export async function loginUser(
@@ -28,7 +28,7 @@ export async function loginUser(
   password?: string,
 ): Promise<void> {
   const response = await page.request.post(
-    `${baseURL()}/loginmanager/localLoginAsync`,
+    `${baseURL()}/loginManager/localLoginAsync`,
     {
       form: { username, password: password || username },
     },
