@@ -78,6 +78,31 @@ jobs:
           BASE_URL: https://localhost/defaultinstance
         run: npm run test:api
 
+      - name: Dump server logs on failure
+        if: always()
+        run: |
+          echo "==================== php-fpm logs ===================="
+          docker compose logs --no-color --tail=400 php-fpm || true
+          echo "==================== web (nginx) logs ===================="
+          docker compose logs --no-color --tail=200 web || true
+          echo "==================== CodeIgniter app logs ===================="
+          docker compose exec -T php-fpm sh -c \
+            'tail -n 400 /var/www/html/application/logs/*.php 2>/dev/null' || true
+          echo "==================== sample 500 body ===================="
+          # Reproduce a failing request and print the raw HTML error page,
+          # which carries the real PHP fatal that the test discards.
+          docker compose exec -T php-fpm sh -c '
+            cookie=$(mktemp)
+            curl -sk -c "$cookie" -X POST \
+              -d "username=admin&password=admin" \
+              https://localhost/defaultinstance/loginManager/localLoginAsync \
+              -o /dev/null
+            curl -sk -b "$cookie" \
+              -H "Accept: application/json" \
+              https://localhost/defaultinstance/collectionManager/save \
+              -d "title=ci-debug&parent=0" | head -c 4000
+          ' || true
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
