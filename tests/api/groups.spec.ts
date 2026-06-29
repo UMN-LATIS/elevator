@@ -1,11 +1,57 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loginUser, refreshDatabase, baseURL } from "../helpers";
 
 // Endpoints under AdminPermissions.php, routed at /{instance}/adminPermissions.
 // All require an admin session (abortUnlessAdmin -> 401 when not).
 
-async function loginAdmin(page: import("@playwright/test").Page) {
+async function loginAdmin(page: Page) {
   await loginUser(page, "admin");
+}
+
+type Group = {
+  id: number;
+  type: string;
+  label: string;
+  values: unknown[];
+};
+
+// Create a group through the public endpoint and return its parsed record,
+// so per-resource tests have a real id to act on.
+async function createGroup(
+  page: Page,
+  form: Record<string, string>,
+): Promise<Group> {
+  const res = await page.request.post(`${baseURL()}/adminPermissions/groups`, {
+    form,
+  });
+  expect(res.status()).toBe(201);
+  return (await res.json()).group as Group;
+}
+
+type UserMatch = {
+  name: string;
+  email: string;
+  localUserId: number;
+  username: string;
+};
+
+// Resolve a real local user id via the autocomplete endpoint, so member
+// tests don't depend on hard-coded seed ids.
+async function findUserByUsername(
+  page: Page,
+  username: string,
+): Promise<UserMatch> {
+  const res = await page.request.get(
+    `${baseURL()}/adminPermissions/userAutocomplete?q=${encodeURIComponent(
+      username,
+    )}`,
+    { headers: { Accept: "application/json" } },
+  );
+  expect(res.status()).toBe(200);
+  const { matches } = (await res.json()) as { matches: UserMatch[] };
+  const match = matches.find((m) => m.username === username);
+  expect(match, `no autocomplete match for "${username}"`).toBeTruthy();
+  return match as UserMatch;
 }
 
 test.describe("adminPermissions", () => {
@@ -15,6 +61,9 @@ test.describe("adminPermissions", () => {
       "/adminPermissions/groupTypes",
       "/adminPermissions/permissionLevels",
       "/adminPermissions/groups",
+      "/adminPermissions/groups/1",
+      "/adminPermissions/groups/1/members",
+      "/adminPermissions/userAutocomplete?q=ab",
     ]) {
       test(`GET ${path} returns 401`, async ({ page }) => {
         const res = await page.request.get(`${baseURL()}${path}`, {
@@ -160,6 +209,334 @@ test.describe("adminPermissions", () => {
       );
       expect(res.status()).toBe(422);
       expect((await res.json()).errors).toHaveProperty("label");
+    });
+  });
+
+  test.describe("GET /userAutocomplete", () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
+    test("returns matches for a known user", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/userAutocomplete?q=admin`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+
+      const { matches } = await res.json();
+      expect(Array.isArray(matches)).toBe(true);
+      // Each match is reshaped for the new UI: a local id named localUserId.
+      const admin = matches.find(
+        (m: { username: string }) => m.username === "admin",
+      );
+      expect(admin).toBeTruthy();
+      expect(admin).toHaveProperty("name");
+      expect(admin).toHaveProperty("email");
+      expect(typeof admin.localUserId).toBe("number");
+    });
+
+    test("excludes users that don't match the query", async ({ page }) => {
+      // "student" matches one seed user by display name and username; it
+      // must not drag in unrelated users like "admin" or "staff".
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/userAutocomplete?q=student`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+
+      const { matches } = (await res.json()) as { matches: UserMatch[] };
+      expect(matches.length).toBeGreaterThan(0);
+
+      // every returned row genuinely contains the query in a searched field
+      for (const m of matches) {
+        const haystack = `${m.name} ${m.email} ${m.username}`.toLowerCase();
+        expect(haystack).toContain("student");
+      }
+
+      const usernames = matches.map((m) => m.username);
+      expect(usernames).not.toContain("admin");
+      expect(usernames).not.toContain("staff");
+    });
+
+    test("ignores a query shorter than two characters", async ({ page }) => {
+      // The controller short-circuits trivial input before searching.
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/userAutocomplete?q=a`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+      expect((await res.json()).matches).toEqual([]);
+    });
+
+    test("rejects a non-GET verb with 405", async ({ page }) => {
+      const res = await page.request.post(
+        `${baseURL()}/adminPermissions/userAutocomplete`,
+        { form: { q: "admin" } },
+      );
+      expect(res.status()).toBe(405);
+    });
+  });
+
+  test.describe("GET /groups/{id} (show)", () => {
+    test.beforeAll(() => {
+      refreshDatabase();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
+    test.afterEach(() => {
+      refreshDatabase();
+    });
+
+    test("returns a single group by id", async ({ page }) => {
+      const created = await createGroup(page, {
+        type: "All",
+        label: "Showable",
+      });
+
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/${created.id}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+
+      const { group } = await res.json();
+      expect(group.id).toBe(created.id);
+      expect(group.label).toBe("Showable");
+    });
+
+    test("returns 404 for a missing group", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/99999999`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(404);
+    });
+
+    test("returns 400 for a non-numeric id", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/not-a-number`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(400);
+    });
+  });
+
+  test.describe("PATCH/PUT /groups/{id} (update)", () => {
+    test.beforeAll(() => {
+      refreshDatabase();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
+    test.afterEach(() => {
+      refreshDatabase();
+    });
+
+    test("renames a group, keeping its type", async ({ page }) => {
+      const created = await createGroup(page, {
+        type: "All",
+        label: "Before",
+      });
+
+      const res = await page.request.patch(
+        `${baseURL()}/adminPermissions/groups/${created.id}`,
+        { form: { type: "All", label: "After" } },
+      );
+      expect(res.status()).toBe(200);
+
+      const { group } = await res.json();
+      expect(group.label).toBe("After");
+      expect(group.type).toBe("All");
+    });
+
+    test("changing the type clears existing members", async ({ page }) => {
+      // A User group with a member; switching its type invalidates members.
+      const group = await createGroup(page, { type: "User", label: "Movers" });
+      const admin = await findUserByUsername(page, "admin");
+      await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { form: { localUserId: String(admin.localUserId) } },
+      );
+
+      const res = await page.request.put(
+        `${baseURL()}/adminPermissions/groups/${group.id}`,
+        { form: { type: "Authed", label: "Movers" } },
+      );
+      expect(res.status()).toBe(200);
+
+      const { group: updated } = await res.json();
+      expect(updated.type).toBe("Authed");
+      expect(updated.values).toEqual([]);
+    });
+
+    test("returns 404 for a missing group", async ({ page }) => {
+      const res = await page.request.patch(
+        `${baseURL()}/adminPermissions/groups/99999999`,
+        { form: { type: "All", label: "Nope" } },
+      );
+      expect(res.status()).toBe(404);
+    });
+
+    test("rejects an invalid label with 422", async ({ page }) => {
+      const created = await createGroup(page, {
+        type: "All",
+        label: "Valid",
+      });
+
+      const res = await page.request.patch(
+        `${baseURL()}/adminPermissions/groups/${created.id}`,
+        { form: { type: "All", label: 'bad <script>' } },
+      );
+      expect(res.status()).toBe(422);
+      expect((await res.json()).errors).toHaveProperty("label");
+    });
+  });
+
+  test.describe("DELETE /groups/{id} (delete)", () => {
+    test.beforeAll(() => {
+      refreshDatabase();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
+    test.afterEach(() => {
+      refreshDatabase();
+    });
+
+    test("removes a group, which is then gone", async ({ page }) => {
+      const created = await createGroup(page, {
+        type: "All",
+        label: "Doomed",
+      });
+
+      const del = await page.request.delete(
+        `${baseURL()}/adminPermissions/groups/${created.id}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(del.status()).toBe(200);
+      expect((await del.json()).deleted).toBe(created.id);
+
+      const show = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/${created.id}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(show.status()).toBe(404);
+    });
+
+    test("returns 404 for a missing group", async ({ page }) => {
+      const res = await page.request.delete(
+        `${baseURL()}/adminPermissions/groups/99999999`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(404);
+    });
+  });
+
+  test.describe("group members", () => {
+    test.beforeAll(() => {
+      refreshDatabase();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
+    test.afterEach(() => {
+      refreshDatabase();
+    });
+
+    test("adds, lists, and removes a member", async ({ page }) => {
+      const group = await createGroup(page, { type: "User", label: "People" });
+      const admin = await findUserByUsername(page, "admin");
+
+      const add = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { form: { localUserId: String(admin.localUserId) } },
+      );
+      expect(add.status()).toBe(201);
+      expect((await add.json()).member.userId).toBe(admin.localUserId);
+
+      const list = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(list.status()).toBe(200);
+      const { members } = await list.json();
+      expect(
+        members.some((m: { userId: number }) => m.userId === admin.localUserId),
+      ).toBe(true);
+
+      const remove = await page.request.delete(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members/${admin.localUserId}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(remove.status()).toBe(200);
+      expect((await remove.json()).removed).toBe(admin.localUserId);
+    });
+
+    test("rejects a duplicate member with 409", async ({ page }) => {
+      const group = await createGroup(page, { type: "User", label: "Dupes" });
+      const admin = await findUserByUsername(page, "admin");
+
+      const first = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { form: { localUserId: String(admin.localUserId) } },
+      );
+      expect(first.status()).toBe(201);
+
+      const second = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { form: { localUserId: String(admin.localUserId) } },
+      );
+      expect(second.status()).toBe(409);
+    });
+
+    test("requires exactly one of localUserId or remoteUserId", async ({
+      page,
+    }) => {
+      const group = await createGroup(page, { type: "User", label: "OneOf" });
+
+      const res = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { form: {} },
+      );
+      expect(res.status()).toBe(422);
+    });
+
+    test("only User groups take members", async ({ page }) => {
+      const group = await createGroup(page, { type: "All", label: "NoMembers" });
+
+      const res = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members`,
+        { form: { localUserId: "1" } },
+      );
+      expect(res.status()).toBe(422);
+    });
+
+    test("removing a non-member returns 404", async ({ page }) => {
+      const group = await createGroup(page, { type: "User", label: "Empty" });
+
+      const res = await page.request.delete(
+        `${baseURL()}/adminPermissions/groups/${group.id}/members/99999999`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(404);
+    });
+
+    test("listing members of a missing group returns 404", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/99999999/members`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(404);
     });
   });
 });
