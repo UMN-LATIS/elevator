@@ -483,7 +483,6 @@ class AdminPermissions extends Instance_Controller {
     try {
       $validated = V::validate($this->requestBody(), [
         ...$this->groupAttributeRules(),
-        'values' => [V::array(), $this->groupValuesValidator()],
       ]);
     } catch (ValidationException $e) {
       return abort_json(['errors' => $e->getErrors()], 422);
@@ -533,29 +532,6 @@ class AdminPermissions extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['group' => $group], 201);
-  }
-
-  /**
-   * Validator for the `values` field, keyed off the group `type`.
-   */
-  private function groupValuesValidator(): \Closure {
-    return function ($v, $data) {
-      $entries = array_filter((array) $v, fn($x) => $x !== '');
-
-      // reject stray values so an "All" group can't pose as a
-      // "specific people" one
-      if ($this->ignoresGroupValues($data['type'] ?? '')) {
-        return count($entries) === 0
-          ? true
-          : 'This group type does not accept values';
-      }
-
-      // a value-based group with no members is meaningless; require at
-      // least one so we don't silently create an empty group
-      return count($entries) > 0
-        ? true
-        : 'This group type requires at least one value';
-    };
   }
 
   /**
