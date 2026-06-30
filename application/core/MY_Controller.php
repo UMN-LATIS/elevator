@@ -4,6 +4,13 @@ use OpenTelemetry\API\Logs\Map\Psr3;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 
+/**
+ * @property Logging $logging
+ * @property User_model $user_model
+ * @property CI_Loader $load
+ * @property CI_Config $config
+ * @property CI_Session $session
+ */
 class MY_Controller extends CI_Controller {
 
 	public ?Psr16Cache $userCache= null;

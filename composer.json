@@ -12,7 +12,7 @@
       "type": "vcs",
       "url": "https://github.com/cmcfadden/php-box-view.git"
     },
-     {
+    {
       "type": "vcs",
       "url": "https://github.com/UMNLibraries/umn-shib-php.git"
     }
@@ -47,8 +47,8 @@
     }
   },
   "autoload": {
-      "psr-4": {
-        "Entity\\": "application/models/Entity/"
-      }
+    "psr-4": {
+      "Entity\\": "application/models/Entity/"
     }
+  }
 }

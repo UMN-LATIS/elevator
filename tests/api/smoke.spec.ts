@@ -11,15 +11,7 @@ test.describe("smoke", () => {
     page,
     context,
   }) => {
-    const adminUsername = process.env.ADMIN_USERNAME ?? "admin";
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-
-    await loginUser(page, adminUsername, adminPassword);
+    await loginUser(page, "admin");
 
     const cookies = await context.cookies();
     const sessionCookie = cookies.find((c) => c.name === "ci_session");

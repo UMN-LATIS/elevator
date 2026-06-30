@@ -62,7 +62,7 @@ define("PERM_ORIGINALS", 40);
 define("PERM_ADDASSETS", 50);
 define("PERM_ADMIN", 60);
 
-
+// Instance group types
 define("USER_TYPE", "User");
 define("REMOTE_TYPE", "Authed_remote");
 define("AUTHED_TYPE", "Authed");
