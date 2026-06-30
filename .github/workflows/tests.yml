@@ -30,8 +30,7 @@ jobs:
           cp .env.example .env
 
       - name: Create REVISION file
-        # Template.php reads ./REVISION on every render to cache-bust asset
-        # URLs. If it's missing, app with throw 500 errors.
+        # Template.php reads ./REVISION to cache-bust assets
         run: echo "${{ github.sha }}" > REVISION
 
       - name: Generate SSL certs
@@ -84,64 +83,10 @@ jobs:
           docker compose exec -T postgres psql -U elevator -d elevator \
             -c "UPDATE users SET password = '${_hash}' WHERE username = 'admin';"
 
-      - name: Diagnose app state
-        if: always()
-        run: |
-          mkdir -p ci-logs
-          echo "######## proxy dir ownership / perms ########"
-          docker compose exec -T php-fpm sh -c '
-            echo "exec user: $(id)"
-            echo "worker user: $(id www-data)"
-            echo "--- application/models (parent) ---"
-            ls -lan application/models/ | grep -iE "proxies|total"
-            echo "--- application/models/Proxies ---"
-            ls -lan application/models/Proxies/ 2>&1 | head
-            echo "--- can www-data write to Proxies? ---"
-            su -s /bin/sh www-data -c "touch application/models/Proxies/__probe 2>&1 && echo WRITABLE || echo NOT-WRITABLE"
-            rm -f application/models/Proxies/__probe
-          ' 2>&1 | tee ci-logs/proxy-perms.txt || true
-
-          echo "######## HTTP probes (body saved to ci-logs/) ########"
-          probe() { # name url [cookiefile]
-            local name=$1 url=$2 ck=${3:-}
-            if [ -n "$ck" ]; then
-              curl -sk -m 20 -b "$ck" -H "Accept: application/json" "$url" \
-                -o "ci-logs/probe-$name.html" -w "%{http_code}" > /tmp/code || true
-            else
-              curl -sk -m 20 "$url" \
-                -o "ci-logs/probe-$name.html" -w "%{http_code}" > /tmp/code || true
-            fi
-            echo ">>> $name HTTP $(cat /tmp/code)"
-            grep -iE "exception|severity|message:|must be writable|fatal|error was encountered|type:" \
-              "ci-logs/probe-$name.html" | head -20 || true
-          }
-
-          probe homepage https://localhost/defaultinstance
-
-          cookie=$(mktemp)
-          curl -sk -m 20 -c "$cookie" -X POST -d "username=admin&password=admin" \
-            https://localhost/defaultinstance/loginManager/localLoginAsync \
-            -o ci-logs/probe-login.html -w "%{http_code}" > /tmp/code || true
-          echo ">>> login HTTP $(cat /tmp/code)"
-
-          probe templates https://localhost/defaultinstance/templates/ "$cookie"
-          probe groups https://localhost/defaultinstance/adminPermissions/groups "$cookie"
-
       - name: Run API tests
         env:
           BASE_URL: https://localhost/defaultinstance
         run: npm run test:api
-
-      - name: Collect container + app logs
-        if: always()
-        run: |
-          mkdir -p ci-logs
-          docker compose logs --no-color --no-log-prefix php-fpm > ci-logs/php-fpm.log 2>&1 || true
-          docker compose logs --no-color --no-log-prefix web > ci-logs/nginx.log 2>&1 || true
-          docker compose logs --no-color --no-log-prefix postgres > ci-logs/postgres.log 2>&1 || true
-          docker compose exec -T php-fpm sh -c 'cat application/logs/*.php 2>/dev/null' \
-            > ci-logs/codeigniter.log 2>&1 || true
-          docker compose ps > ci-logs/compose-ps.txt 2>&1 || true
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -151,5 +96,4 @@ jobs:
           path: |
             playwright-report/
             test-results/
-            ci-logs/
           retention-days: 30
