@@ -197,10 +197,22 @@ $needsGeoTiffScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 
 				var layerAdded = startEnabled;
 				var forceLoad = function(l) {
-					// addLayer is synchronous but Leaflet finishes wiring the tile grid
-					// asynchronously; fire moveend after yielding so tiles are requested
-					// for the current viewport immediately without needing to pan/zoom.
-					setTimeout(function() { map.fire('moveend'); }, 0);
+					// The elevator onAdd calls L.TileLayer.prototype.onAdd (which fires _resetView)
+					// BEFORE _computeImageAndGridSize() sets up bounds/grid. If fitBoundsExactly
+					// doesn't trigger a zoom change, tiles from the premature _resetView are stale
+					// and nothing re-triggers loading. Fix: call _resetView again after onAdd
+					// fully completes. Listen for the zoomend fitBoundsExactly may fire; if no
+					// zoom change occurs, two rAFs are enough to be past the synchronous onAdd.
+					var done = false;
+					var doReset = function() {
+						if (done) { return; }
+						done = true;
+						if (l._map) { l._resetView(); }
+					};
+					map.once('zoomend', doReset);
+					requestAnimationFrame(function() {
+						requestAnimationFrame(doReset);
+					});
 				};
 				L.DomEvent.on(cb, 'change', function() {
 					if (cb.checked) {
