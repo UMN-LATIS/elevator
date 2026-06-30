@@ -29,6 +29,11 @@ jobs:
         run: |
           cp .env.example .env
 
+      - name: Create REVISION file
+        # Template.php reads ./REVISION on every render to cache-bust asset
+        # URLs. If it's missing, app with throw 500 errors.
+        run: echo "${{ github.sha }}" > REVISION
+
       - name: Generate SSL certs
         run: |
           mkdir -p certs
