@@ -317,14 +317,26 @@ class S3 extends Instance_Controller
 
   private function getUploadParts($uploadId)
   {
-    $command = $this->s3Client->getCommand('ListParts', [
-      'Bucket' => $this->collection->getBucket(),
-      'Key' => $this->buildAWSFilePath($this->fileObjectId),
+    $parts = [];
+    $params = [
+      'Bucket'   => $this->collection->getBucket(),
+      'Key'      => $this->buildAWSFilePath($this->fileObjectId),
       'UploadId' => $uploadId,
-    ]);
+    ];
 
-    $result = $this->s3Client->execute($command);
-    return $result['Parts'] ?? [];
+    do {
+      $result = $this->s3Client->execute(
+        $this->s3Client->getCommand('ListParts', $params)
+      );
+
+      $parts = array_merge($parts, $result['Parts'] ?? []);
+
+      if ($result['IsTruncated']) {
+        $params['PartNumberMarker'] = $result['NextPartNumberMarker'];
+      }
+    } while ($result['IsTruncated']);
+
+    return $parts;
   }
 
 

@@ -12,7 +12,6 @@ class ImageHandler extends FileHandlerBase {
 						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
-							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
 							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
 							3=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
 							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
@@ -334,46 +333,6 @@ class ImageHandler extends FileHandlerBase {
 		$this->getAltTextForMedia("", $debugMode);
 		$this->queueTask(4);
 	}
-
-	// public function clarifyTag($args) {
-
-
-	// 	if(strlen($this->instance->getClarifaiId())<5) {
-	// 		$this->queueTask(3);
-	// 		return JOB_SUCCESS;
-	// 	}
-	// 	$this->load->library("Clarifai");
-
-	// 	$clarifai = new Clarifai($this->instance->getClarifaiId(), $this->instance->getClarifaiSecret(), $this->instance->getDomain());
-	// 	if(!$clarifai->collectionExists($this->instance->getDomain())) {
-	// 		$clarifai->addCollection($this->instance->getDomain());
-	// 	}
-
-	// 	if(!isset($this->derivatives["screen"])) {
-	// 		return JOB_FAILED;
-	// 	}
-
-	// 	$targetURL= $this->derivatives["screen"]->getProtectedURLForFile();
-
-	// 	if(!$clarifai->addDocument($targetURL, $this->getObjectId())) {
-	// 		return JOB_POSTPONE;
-	// 	}
-
-	// 	$document = $clarifai->getDocument($this->getObjectId());
-
-	// 	$resultTags = array();
-	// 	foreach($document->document->annotation_sets[0]->annotations as $tagCluster) {
-
-	// 		$resultTags[] = ["tag"=>$tagCluster->tag->cname, "score"=>$tagCluster->score];
-
-	// 	}
-
-	// 	$this->globalMetadata["tags"] = $resultTags;
-
-	// 	$this->queueTask(3);
-	// 	return JOB_SUCCESS;
-
-	// }
 
 	function unlinkLocalSwap() {
 		if(isWholeSlideImage($this->sourceFile)) {

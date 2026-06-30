@@ -23,10 +23,17 @@ class Shibboleth extends MY_Controller {
     }
 
     public function localSPACS() {
+        if ($this->input->method() !== 'post') {
+            return show_error('Invalid request method', 405);
+        }
         
         Utils::setProxyVars(true);
         $auth = new OneLogin_Saml2_Auth($this->config->item('shib_local_settings'));
-        $auth->processResponse();
+        try {
+            $auth->processResponse();
+        } catch (Exception $e) {
+            return render_json(array('error' => 'Error processing SAML response'));
+        }
         $lastResponse = $auth->getLastResponseXML();
         if(str_contains($lastResponse, "NoPassive")) {
             if($_REQUEST['RelayState']) {
