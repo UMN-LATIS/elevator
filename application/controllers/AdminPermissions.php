@@ -120,7 +120,7 @@ class AdminPermissions extends Instance_Controller {
    * Trailing URL segments arrive as method args, so a request to
    * /adminPermissions/groups/5 calls this with $groupId = "5".
    */
-  public function groups($groupId = null, $subResource = null, $memberId = null) {
+  public function groups($groupId = null, $subresource = null, $subresourceId = null) {
     $this->abortUnlessAdmin();
 
     $method = $this->input->server('REQUEST_METHOD');
@@ -128,60 +128,74 @@ class AdminPermissions extends Instance_Controller {
     $groupId = $groupId === null
       ? null
       : filter_var($groupId, FILTER_VALIDATE_INT);
-    $memberId = $memberId === null
+    $subresourceId = $subresourceId === null
       ? null
-      : filter_var($memberId, FILTER_VALIDATE_INT);
+      : filter_var($subresourceId, FILTER_VALIDATE_INT);
 
     // a non-numeric id segment becomes false
-    if ($groupId === false || $memberId === false) {
+    if ($groupId === false || $subresourceId === false) {
       return abort_json(['error' => 'Invalid ID'], 400);
     }
 
     // which resource does the URL address?
     $route = match (true) {
-      $groupId === null => '/groups',
-      $subResource === null => '/groups/{id}',
-      $subResource !== 'members' => 'unknown',
-      $memberId === null => '/groups/{id}/members',
-      default => '/groups/{id}/members/{userId}',
+      $subresource === null && $groupId === null
+        => '/groups',
+      $subresource === null && $groupId !== null
+        => '/groups/{id}',
+      $subresource === 'members' && $subresourceId === null
+        => '/groups/{id}/members',
+      $subresource === 'members'&& $subresourceId !== null
+        => '/groups/{id}/members/{userId}',
+      $subresource === 'values' && $subresourceId === null
+        => '/groups/{id}/values',
+      $subresource === 'values' && $subresourceId !== null
+        => '/groups/{id}/values/{valueId}',
+      default
+        => null,
     };
 
-    switch ($route) {
-      case '/groups':
-        switch ($method) {
-          case 'GET':
-            return $this->listGroups();
-          case 'POST':
-            return $this->createGroup();
-        }
-        break;
-      case '/groups/{id}':
-        switch ($method) {
-          case 'GET':
-            return $this->showGroup($groupId);
-          case 'PUT':
-          case 'PATCH':
-            return $this->updateGroup($groupId);
-          case 'DELETE':
-            return $this->deleteGroup($groupId);
-        }
-        break;
-      case '/groups/{id}/members':
-        switch ($method) {
-          case 'GET':
-            return $this->listGroupMembers($groupId);
-          case 'POST':
-            return $this->addGroupMember($groupId);
-        }
-        break;
-      case '/groups/{id}/members/{userId}':
-        switch ($method) {
-          case 'DELETE':
-            return $this->removeGroupMember($groupId, $memberId);
-        }
-        break;
-      case 'unknown':
-        return abort_json(['error' => 'Not Found'], 404);
+    if ($route === null) {
+      // unknown route
+      return abort_json(['error' => 'Not Found'], 404);
+    }
+
+    $table = [
+      '/groups' => [
+        'GET' => fn() => $this->listGroups(),
+        'POST' => fn() => $this->createGroup(),
+      ],
+      '/groups/{id}' => [
+        'GET' => fn() => $this->showGroup($groupId),
+        'PUT' => fn() => $this->updateGroup($groupId),
+        'PATCH' => fn() => $this->updateGroup($groupId),
+        'DELETE' => fn() => $this->deleteGroup($groupId),
+      ],
+      '/groups/{id}/members' => [
+        'GET' => fn() => $this->listGroupMembers($groupId),
+        'POST' => fn() => $this->addGroupMember($groupId),
+      ],
+      '/groups/{id}/members/{userId}' => [
+        'DELETE' => fn() => $this->removeGroupMember($groupId, $subresourceId),
+      ],
+      '/groups/{id}/values' => [
+        'GET' => fn() => $this->listGroupValues($groupId),
+        'POST' => fn() => $this->addGroupValue($groupId),
+      ],
+      '/groups/{id}/values/{valueId}' => [
+        'DELETE' => fn() => $this->removeGroupValue($groupId, $subresourceId),
+      ],
+    ];
+
+    if (!isset($table[$route])) {
+      // unknown route
+      return abort_json(['error' => 'Not Found'], 404);
+    }
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
     }
 
     // a known route, but the verb isn't allowed on it
