@@ -66,6 +66,11 @@ class SimpleValidator
     return fn($v) => !isset($v) || is_array($v) ? true : 'Must be an array';
   }
 
+  public static function string(): \Closure
+  {
+    return fn($v) => !isset($v) || is_string($v) ? true : 'Must be a string';
+  }
+
   public static function min(int $min): \Closure
   {
     return fn($v) => !isset($v) || (is_numeric($v) && $v >= $min)
