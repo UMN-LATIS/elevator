@@ -326,7 +326,7 @@ class InstanceGroup implements \JsonSerializable
             'id'         => $this->id,
             'type'       => $this->group_type,
             'label'      => $this->group_label,
-            'values'     => array_values($this->group_values->toArray()),
+            'entries_count' => count($this->group_values->toArray()),
         ];
     }
 }
