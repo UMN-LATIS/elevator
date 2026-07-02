@@ -137,27 +137,17 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Invalid ID'], 400);
     }
 
-    // which resource does the URL address?
-    $route = match (true) {
-      $subresource === null && $groupId === null
-        => '/groups',
-      $subresource === null && $groupId !== null
-        => '/groups/{id}',
-      $subresource === 'members' && $subresourceId === null
-        => '/groups/{id}/members',
-      $subresource === 'members'&& $subresourceId !== null
-        => '/groups/{id}/members/{userId}',
-      $subresource === 'values' && $subresourceId === null
-        => '/groups/{id}/values',
-      $subresource === 'values' && $subresourceId !== null
-        => '/groups/{id}/values/{valueId}',
-      default
-        => null,
-    };
-
-    if ($route === null) {
-      // unknown route
-      return abort_json(['error' => 'Not Found'], 404);
+    // Build the route pattern straight from the URL shape, so the $table
+    // keys below are the single list of known routes.
+    $route = '/groups';
+    if ($groupId !== null) {
+      $route .= '/{id}';
+    }
+    if ($subresource !== null) {
+      $route .= '/' . $subresource;
+    }
+    if ($subresourceId !== null) {
+      $route .= '/{subresourceId}';
     }
 
     $table = [
@@ -175,20 +165,19 @@ class AdminPermissions extends Instance_Controller {
         'GET' => fn() => $this->listGroupMembers($groupId),
         'POST' => fn() => $this->addGroupMember($groupId),
       ],
-      '/groups/{id}/members/{userId}' => [
+      '/groups/{id}/members/{subresourceId}' => [
         'DELETE' => fn() => $this->removeGroupMember($groupId, $subresourceId),
       ],
-      '/groups/{id}/values' => [
-        'GET' => fn() => $this->listGroupValues($groupId),
-        'POST' => fn() => $this->addGroupValue($groupId),
+      '/groups/{id}/entries' => [
+        'GET' => fn() => $this->listGroupEntries($groupId),
+        'POST' => fn() => $this->addGroupEntry($groupId),
       ],
-      '/groups/{id}/values/{valueId}' => [
-        'DELETE' => fn() => $this->removeGroupValue($groupId, $subresourceId),
+      '/groups/{id}/entries/{subresourceId}' => [
+        'DELETE' => fn() => $this->removeGroupEntry($groupId, $subresourceId),
       ],
     ];
 
     if (!isset($table[$route])) {
-      // unknown route
       return abort_json(['error' => 'Not Found'], 404);
     }
 
@@ -213,7 +202,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /adminPermissions/groups/{id} — the full group record.
+   * GET /adminPermissions/groups/{id}: the full group record.
    */
   private function showGroup(int $groupId) {
     $group = $this->doctrine->em
@@ -228,7 +217,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /adminPermissions/groups/{id} — edit a group's label and type.
+   * PUT|PATCH /adminPermissions/groups/{id}: edit a group's label and type.
    *
    * Changing the type clears existing members, since they belong to the old
    * type. Editing only the label leaves them alone.
@@ -274,7 +263,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * DELETE /adminPermissions/groups/{id} — remove a group.
+   * DELETE /adminPermissions/groups/{id}: remove a group.
    */
   private function deleteGroup(int $groupId) {
     $group = $this->doctrine->em
@@ -293,7 +282,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /adminPermissions/groups/{id}/members — the group's members,
+   * GET /adminPermissions/groups/{id}/members: the group's members,
    * resolved to names so the UI can show who belongs.
    */
   private function listGroupMembers(int $groupId) {
@@ -308,7 +297,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * POST /adminPermissions/groups/{id}/members — add one member.
+   * POST /adminPermissions/groups/{id}/members: add one member.
    *
    * Exactly one of two fields per request: `localUserId` for someone who
    * already has a local row, or `remoteUserId` (a netid/username) for someone
@@ -387,7 +376,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * DELETE /adminPermissions/groups/{id}/members/{userId} — drop a member.
+   * DELETE /adminPermissions/groups/{id}/members/{userId}: drop a member.
    */
   private function removeGroupMember(int $groupId, int $userId) {
     $group = $this->doctrine->em
@@ -510,7 +499,7 @@ class AdminPermissions extends Instance_Controller {
     $group->setGroupLabel($validated['label']);
 
     if ($this->ignoresGroupValues($type)) {
-      // vestigial scalar; must be 1 — Authed/Authed_remote match on it
+      // vestigial scalar, must be 1: Authed/Authed_remote match on it
       $group->setGroupValue(1);
     } else {
       $group->setGroupValue(null);
@@ -567,14 +556,10 @@ class AdminPermissions extends Instance_Controller {
    * @return Entity\User the user record matching the remote id
    */
   private function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
-
-    /** @var AuthHelper $authHelper */
-    $authHelper = $this->user_model->getAuthHelper();
-
     // findById($id, true) will make new (unsaved) an Entity\User record with
     // the given remote id if nothing is found.
     /** @var ?Entity\User $remoteUser */
-    $remoteUser = $authHelper->findById($remoteUserId, true)[0] ?? null;
+    $remoteUser = $this->authHelper->findById($remoteUserId, true)[0] ?? null;
 
     if ($remoteUser === null) {
       throw new RemoteUserNotFoundException($remoteUserId);
@@ -600,6 +585,67 @@ class AdminPermissions extends Instance_Controller {
     $this->doctrine->em->flush();
 
     return $remoteUser;
+  }
+
+  /**
+   * GET /adminPermissions/groups/{id}/entries: a group's raw match values.
+   */
+  private function listGroupEntries(int $groupId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    return render_json([
+      'entries' => $group->getGroupValues()->toArray(),
+    ]);
+  }
+
+  /**
+   * POST /adminPermissions/groups/{id}/entries: add one match value.
+   */
+  private function addGroupEntry(int $groupId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    // User groups manage entries through /members, and global types
+    // ignore their values entirely
+    $type = $group->getGroupType();
+    if ($type === USER_TYPE || $this->ignoresGroupValues($type)) {
+      return abort_json(
+        ['error' => 'Only value-matched groups take entries'],
+        422
+      );
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'value' => [V::required(), V::string(), V::maxLength(255)],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $entry = new Entity\GroupEntry();
+    $entry->setGroupValue($validated['value']);
+    $group->addGroupValue($entry);
+
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['entry' => $entry], 201);
+  }
+
+  private function removeGroupEntry(int $groupId, int $entryId): CI_Output {
+    return abort_json(['error' => 'Not Implemented'], 501);
   }
 
   /**

@@ -6,11 +6,11 @@ class SimpleValidator
   /**
    * Validates $data against $schema (array of field => closure[])
    * Returns filtered data or throws ValidationException
-   * 
+   *
    * @example
    * ```php
    * use SimpleValidator as V;
-   * 
+   *
    * $data = [
    *  'name' => 'John Doe',
    *  'age' => 30,
@@ -19,7 +19,7 @@ class SimpleValidator
    *  'name' => [V::required(), V::minLength(3)],
    *  'age' => [V::required(), V::integer(), V::min(18)],
    * ];
-   * 
+   *
    * try {
    *  $validatedData = V::validate($data, $schema);
    * } catch (ValidationException $e) {
@@ -49,7 +49,7 @@ class SimpleValidator
     return array_intersect_key($data, $schema);
   }
 
-  // —–––– Validators —––––
+  // ----- Validators
 
   public static function required(): \Closure
   {
