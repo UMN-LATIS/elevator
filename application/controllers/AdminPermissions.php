@@ -538,6 +538,16 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
+   * Whether `$type` comes from the instance's AuthHelper rather than the
+   * built-in GLOBAL_GROUP_TYPES. Auth-helper groups match users on their
+   * value entries; the built-ins never do (User matches member ids, the
+   * rest match whole populations).
+   */
+  private function isAuthHelperGroupType(string $type): bool {
+    return !isset(self::GLOBAL_GROUP_TYPES[$type]);
+  }
+
+  /**
    * Whether `$type` matches a whole population instead of a values
    * list (All/Authed/Authed_remote).
    */
@@ -616,12 +626,9 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    // User groups manage entries through /members, and global types
-    // ignore their values entirely
-    $type = $group->getGroupType();
-    if ($type === USER_TYPE || $this->ignoresGroupValues($type)) {
+    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
       return abort_json(
-        ['error' => 'Only value-matched groups take entries'],
+        ['error' => 'Only auth-helper group types take entries'],
         422
       );
     }
