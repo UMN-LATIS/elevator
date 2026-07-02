@@ -8,7 +8,6 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet-annotation/tooltip.css">
 <script src="/assets/js/aws-s3.js"></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
-<script type="text/javascript" src='/assets/leaflet/leaflet-rotate.js'></script>
 <script type="text/javascript" src='/assets/leaflet-annotation/leaflet.draw.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Leaflet.elevator.js?cachebust=99999'></script>
@@ -139,7 +138,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
     var s3;
     var AWS;
     var pixelsPerMillimeter = <?=((isset($widgetObject->sidecars) && array_key_exists("ppm", $widgetObject->sidecars) && strlen($widgetObject->sidecars['ppm'])>0))?$widgetObject->sidecars['ppm']:0?>;
-    var rotationValue = <?=(isset($widgetObject->parentWidget->rotationValue) && is_numeric($widgetObject->parentWidget->rotationValue)) ? (float)$widgetObject->parentWidget->rotationValue : 0?>;
     var layer;
 
     var saveURL = null;
@@ -176,9 +174,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             layers: [],
             keyboard: false,
             detectRetina: false,
-            rotate: rotationValue !== 0,
-            bearing: rotationValue,
-            rotateControl: false,
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
 
@@ -219,20 +214,9 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                         toggleDisplay: true,
                         zoomAnimation: false,
                         zoomLevelOffset: -3,
-                        zoomLevelFixed: -3,
-                        mapOptions: { rotateControl: false }
+                        zoomLevelFixed: -3
                     });
         miniMap.addTo(imageMap);
-
-        // CSS-rotate the minimap container. The minimap is a passive thumbnail so
-        // coordinate accuracy isn't needed — CSS rotation is sufficient and avoids
-        // the rendering conflicts that occur when leaflet-rotate restructures panes
-        // inside the minimap's own internal L.Map instance.
-        if (rotationValue !== 0) {
-            var miniMapEl = miniMap.getContainer();
-            miniMapEl.style.transform = 'rotate(' + rotationValue + 'deg)';
-            miniMapEl.style.transformOrigin = 'center center';
-        }
 
         if(pixelsPerMillimeter > 10) {
 
@@ -273,10 +257,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         }
         
         leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
-
-        if (rotationValue !== 0) {
-            imageMap.setBearing(rotationValue);
-        }
 
     };
 

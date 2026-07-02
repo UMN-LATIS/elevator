@@ -172,7 +172,12 @@ class ImageHandler extends FileHandlerBase {
 		
 		$sourceFile = $this->makeCZIProxy();
 		$sourceFile = $this->swapLocalForPNG($sourceFile);
-		
+
+		$uploadWidget = $this->getUploadWidget();
+		$widgetRotationValue = (isset($uploadWidget->parentWidget->rotationValue) && is_numeric($uploadWidget->parentWidget->rotationValue))
+			? (int)$uploadWidget->parentWidget->rotationValue : 0;
+		$forceRotation = [90 => imagick_internal_ORIENTATION_RIGHTTOP, 180 => imagick_internal_ORIENTATION_BOTTOMRIGHT, 270 => imagick_internal_ORIENTATION_LEFTBOTTOM][$widgetRotationValue] ?? null;
+
 		foreach($args as $key=>$derivativeSetting) {
 			if(!is_numeric($key)) {
 				continue;
@@ -207,7 +212,7 @@ class ImageHandler extends FileHandlerBase {
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
 			echo "Compressing " . $width . " x " . $height . "\n";
-			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height)) {
+			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height, 80, $forceRotation)) {
 				$derivativeContainer->ready = true;
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
@@ -278,6 +283,28 @@ class ImageHandler extends FileHandlerBase {
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
 			$rotationAppend = "[autorotate]";
 		}
+
+		$widgetRotationValue = (isset($uploadWidget->parentWidget->rotationValue) && is_numeric($uploadWidget->parentWidget->rotationValue))
+			? (float)$uploadWidget->parentWidget->rotationValue : 0;
+
+		$rotatedPath = null;
+		if ($widgetRotationValue != 0) {
+			$rotAngleMap = [90 => 'd90', 180 => 'd180', 270 => 'd270'];
+			$rotAngle = $rotAngleMap[(int)$widgetRotationValue] ?? null;
+			if ($rotAngle) {
+				$rotatedPath = $localPath . '_rotated.tiff';
+				$rotateString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $rotatedPath . " " . $rotAngle;
+				$rotateProcess = new Cocur\BackgroundProcess\BackgroundProcess($rotateString);
+				$rotateProcess->run();
+				while ($rotateProcess->isRunning()) {
+					sleep(5);
+					echo ".";
+				}
+				$localPath = $rotatedPath;
+				$rotationAppend = "";
+			}
+		}
+
 		$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 		$process->run();
@@ -288,6 +315,16 @@ class ImageHandler extends FileHandlerBase {
 
 		$this->sourceFile->metadata["dziWidth"] = $this->sourceFile->metadata["width"];
 		$this->sourceFile->metadata["dziHeight"] = $this->sourceFile->metadata["height"];
+
+		// Swap dziWidth/dziHeight for 90/270-degree widget rotations since the output canvas is transposed
+		if ($widgetRotationValue != 0) {
+			$normalizedAngle = fmod(abs($widgetRotationValue), 180);
+			if ($normalizedAngle > 45 && $normalizedAngle < 135) {
+				[$this->sourceFile->metadata["dziWidth"], $this->sourceFile->metadata["dziHeight"]] =
+					[$this->sourceFile->metadata["dziHeight"], $this->sourceFile->metadata["dziWidth"]];
+			}
+		}
+
 		$this->sourceFile->metadata["dziOverlap"] = 0;
 		$this->sourceFile->metadata["dziTilesize"] = 256;
 
@@ -316,6 +353,10 @@ class ImageHandler extends FileHandlerBase {
 
 		$this->derivatives[$derivativeContainerIIIF->derivativeType] = $derivativeContainerIIIF;
 		$this->unlinkLocalSwap();
+
+		if ($rotatedPath && file_exists($rotatedPath)) {
+			unlink($rotatedPath);
+		}
 
 		$this->queueTask(3);
 		return JOB_SUCCESS;
