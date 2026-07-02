@@ -326,7 +326,8 @@ class InstanceGroup implements \JsonSerializable
             'id'         => $this->id,
             'type'       => $this->group_type,
             'label'      => $this->group_label,
-            'entries_count' => count($this->group_values->toArray()),
+            // n+1 query, but prob fine at our scale
+            'entries_count' => $this->group_values->count(),
         ];
     }
 }
