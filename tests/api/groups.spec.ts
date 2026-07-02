@@ -60,9 +60,9 @@ type GroupEntry = {
 };
 
 // Entries only exist on auth-helper group types, and the instance's helper
-// may define none (the base AuthHelper is empty, and CI runs with it).
-// Discover a type at runtime so entry tests can skip on a bare instance
-// instead of failing.
+// may define none (the base AuthHelper is empty). CI runs MockAuthHelper,
+// which defines the UMN types. Discover a type at runtime so entry tests
+// can skip on a bare instance instead of failing.
 async function findAuthHelperGroupType(page: Page): Promise<string | null> {
   const res = await page.request.get(
     `${baseURL()}/adminPermissions/groupTypes`,
@@ -140,11 +140,10 @@ test.describe("adminPermissions", () => {
       for (const groupType of groupTypes) {
         expect(Array.isArray(groupType.entryHints)).toBe(true);
 
-        // Hints come from the admin's own session data, so they are
-        // usually empty here (CI logs in a local admin against the bare
-        // AuthHelper). When present, pin the {value, label} string shape
-        // the combobox consumes. PHP coerces numeric hint keys to ints,
-        // so value being a string is the assertion that matters.
+        // Hints come from the admin's own session data, and this suite
+        // logs in a local admin, who has none. The populated case lives
+        // in mockAuth.spec.ts. When present, pin the {value, label}
+        // string shape the combobox consumes.
         for (const hint of groupType.entryHints) {
           expect(typeof hint.value).toBe("string");
           expect(typeof hint.label).toBe("string");
