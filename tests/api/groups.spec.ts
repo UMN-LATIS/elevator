@@ -112,12 +112,51 @@ test.describe("adminPermissions", () => {
 
       const { groupTypes } = await res.json();
       expect(Array.isArray(groupTypes)).toBe(true);
-      // Each entry is { type, label, description }; check the type strings.
+      // Each entry is { type, label, description, entryHints }; check
+      // the type strings here, entryHints has its own test below.
       const types = groupTypes.map((g: { type: string }) => g.type);
       // The global types are always present regardless of auth helper.
       expect(types).toEqual(
         expect.arrayContaining(["All", "Authed", "Authed_remote", "User"]),
       );
+    });
+
+    test("GET /groupTypes includes entryHints on every type", async ({
+      page,
+    }) => {
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/groupTypes`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(200);
+
+      const { groupTypes } = (await res.json()) as {
+        groupTypes: {
+          type: string;
+          entryHints: { value: string; label: string }[];
+        }[];
+      };
+
+      for (const groupType of groupTypes) {
+        expect(Array.isArray(groupType.entryHints)).toBe(true);
+
+        // Hints come from the admin's own session data, so they are
+        // usually empty here (CI logs in a local admin against the bare
+        // AuthHelper). When present, pin the {value, label} string shape
+        // the combobox consumes. PHP coerces numeric hint keys to ints,
+        // so value being a string is the assertion that matters.
+        for (const hint of groupType.entryHints) {
+          expect(typeof hint.value).toBe("string");
+          expect(typeof hint.label).toBe("string");
+        }
+      }
+
+      // Global types never take entries, so they never suggest any.
+      const globalTypes = ["All", "Authed", "Authed_remote", "User"];
+      const globalEntryHints = groupTypes
+        .filter((g) => globalTypes.includes(g.type))
+        .flatMap((g) => g.entryHints);
+      expect(globalEntryHints).toEqual([]);
     });
 
     test("GET /permissionLevels returns levels sorted ascending", async ({

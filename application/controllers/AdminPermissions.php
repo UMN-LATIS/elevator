@@ -56,11 +56,43 @@ class AdminPermissions extends Instance_Controller {
         "type" => $t["name"],
         "label" => $t["label"],
         "description" => $t["helpText"] ?? "",
+        "entryHints" => $this->entryHintsForType($t["name"]),
       ],
       array_values($this->getGroupTypes())
     );
 
     return render_json(["groupTypes" => $groupTypes]);
+  }
+
+  /**
+   * Suggested entry values for one group type, from the signed-in
+   * admin's session userData.
+   *
+   * Auth helpers key hints by raw value with a human label, and PHP
+   * coerces numeric keys to ints, so each pair is recast to a
+   * {value, label} string object for the UI combobox. Local admins
+   * and helperless instances have no userData, so an empty list is
+   * normal, not an error.
+   */
+  private function entryHintsForType(string $type): array {
+    // Global types never take entries. Guard by type category rather
+    // than trusting that no auth helper ever keys its userData by a
+    // global type name, since helpers pick their keys independently.
+    if (!$this->isAuthHelperGroupType($type)) {
+      return [];
+    }
+
+    $hints = $this->user_model->userData[$type]["hints"] ?? [];
+
+    $entryHints = [];
+    foreach ($hints as $rawValue => $label) {
+      $entryHints[] = [
+        "value" => (string) $rawValue,
+        "label" => (string) $label,
+      ];
+    }
+
+    return $entryHints;
   }
 
   public function permissionLevels() {
