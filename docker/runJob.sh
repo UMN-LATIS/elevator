@@ -31,5 +31,5 @@ mkdir -p $targetPath
 $command index.php beltdrive processAWSBatchJob $targetJobID $jobType
 
 # delete the job directory
-#rm -rf $targetPath
+rm -rf $targetPath
 
