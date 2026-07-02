@@ -173,6 +173,8 @@ class AdminPermissions extends Instance_Controller {
         'POST' => fn() => $this->addGroupEntry($groupId),
       ],
       '/groups/{id}/entries/{subresourceId}' => [
+        'PUT' => fn() => $this->updateGroupEntry($groupId, $subresourceId),
+        'PATCH' => fn() => $this->updateGroupEntry($groupId, $subresourceId),
         'DELETE' => fn() => $this->removeGroupEntry($groupId, $subresourceId),
       ],
     ];
@@ -651,8 +653,100 @@ class AdminPermissions extends Instance_Controller {
     return render_json(['entry' => $entry], 201);
   }
 
+  /**
+   * PUT|PATCH /adminPermissions/groups/{id}/entries/{entryId}: edit one
+   * match value in place.
+   */
+  private function updateGroupEntry(int $groupId, int $entryId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
+    }
+
+    $entry = $this->findEntryInGroup($group, $entryId);
+    if (!$entry) {
+      return abort_json(['error' => 'Entry not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'value' => [V::required(), V::string(), V::maxLength(255)],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $entry->setGroupValue($validated['value']);
+
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['entry' => $entry]);
+  }
+
+  /**
+   * DELETE /adminPermissions/groups/{id}/entries/{entryId}: drop one
+   * match value.
+   */
   private function removeGroupEntry(int $groupId, int $entryId): CI_Output {
-    return abort_json(['error' => 'Not Implemented'], 501);
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
+    }
+
+    $entry = $this->findEntryInGroup($group, $entryId);
+    if (!$entry) {
+      return abort_json(['error' => 'Entry not found'], 404);
+    }
+
+    $group->removeGroupValue($entry); // orphanRemoval deletes on flush
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['removed' => $entryId]);
+  }
+
+  /**
+   * Find the entry with `$entryId` among `$group`'s own entries.
+   *
+   * Entry ids are global, so fetching one straight from the repository
+   * would let an admin address an entry belonging to another group, or
+   * another instance. Scanning the group's collection enforces ownership.
+   * The scan is cheap: the collection loads in one query and groups hold
+   * few entries.
+   *
+   * @return ?Entity\GroupEntry null when the group has no such entry
+   */
+  private function findEntryInGroup(
+    InstanceGroup $group,
+    int $entryId
+  ): ?Entity\GroupEntry {
+    foreach ($group->getGroupValues() as $candidate) {
+      if ($candidate->getId() === $entryId) {
+        return $candidate;
+      }
+    }
+    return null;
   }
 
   /**

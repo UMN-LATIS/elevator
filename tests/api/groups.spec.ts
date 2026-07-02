@@ -12,7 +12,7 @@ type Group = {
   id: number;
   type: string;
   label: string;
-  values: unknown[];
+  entries_count: number;
 };
 
 // Create a group through the public endpoint and return its parsed record,
@@ -52,6 +52,30 @@ async function findUserByUsername(
   const match = matches.find((m) => m.username === username);
   expect(match, `no autocomplete match for "${username}"`).toBeTruthy();
   return match as UserMatch;
+}
+
+type GroupEntry = {
+  id: number;
+  value: string;
+};
+
+// Entries only exist on auth-helper group types, and the instance's helper
+// may define none (the base AuthHelper is empty, and CI runs with it).
+// Discover a type at runtime so entry tests can skip on a bare instance
+// instead of failing.
+async function findAuthHelperGroupType(page: Page): Promise<string | null> {
+  const res = await page.request.get(
+    `${baseURL()}/adminPermissions/groupTypes`,
+    { headers: { Accept: "application/json" } },
+  );
+  expect(res.status()).toBe(200);
+  const { groupTypes } = (await res.json()) as {
+    groupTypes: { type: string }[];
+  };
+  const globalTypes = ["All", "Authed", "Authed_remote", "User"];
+  const isAuthHelperType = (g: { type: string }) =>
+    !globalTypes.includes(g.type);
+  return groupTypes.find(isAuthHelperType)?.type ?? null;
 }
 
 test.describe("adminPermissions", () => {
@@ -166,7 +190,7 @@ test.describe("adminPermissions", () => {
       // The group_value scalar is set to 1 server-side so Authed/Remote
       // matching keeps working, but it's a DB-internal detail and is
       // deliberately not part of the JSON contract.
-      expect(group.values).toEqual([]);
+      expect(group.entries_count).toBe(0);
     });
 
     test("a created group appears in the list", async ({ page }) => {
@@ -349,7 +373,7 @@ test.describe("adminPermissions", () => {
 
       const { group: updated } = await res.json();
       expect(updated.type).toBe("Authed");
-      expect(updated.values).toEqual([]);
+      expect(updated.entries_count).toBe(0);
     });
 
     test("returns 404 for a missing group", async ({ page }) => {
@@ -511,6 +535,106 @@ test.describe("adminPermissions", () => {
     test("listing members of a missing group returns 404", async ({ page }) => {
       const res = await page.request.get(
         `${baseURL()}/adminPermissions/groups/99999999/members`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(res.status()).toBe(404);
+    });
+  });
+
+  test.describe("group entries", () => {
+    test.beforeAll(() => {
+      refreshDatabase();
+    });
+
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
+    test.afterEach(() => {
+      refreshDatabase();
+    });
+
+    test("adds, lists, updates, and removes an entry", async ({ page }) => {
+      const type = await findAuthHelperGroupType(page);
+      if (type === null) {
+        test.skip(true, "the instance's auth helper defines no group types");
+        return;
+      }
+
+      const group = await createGroup(page, { type, label: "Attributes" });
+
+      const add = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries`,
+        { form: { value: "CSCI.1001" } },
+      );
+      expect(add.status()).toBe(201);
+      const { entry } = (await add.json()) as { entry: GroupEntry };
+      expect(entry.value).toBe("CSCI.1001");
+
+      const list = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(list.status()).toBe(200);
+      const { entries } = (await list.json()) as { entries: GroupEntry[] };
+      expect(entries.some((e) => e.id === entry.id)).toBe(true);
+
+      const update = await page.request.put(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries/${entry.id}`,
+        { form: { value: "CSCI.2001" } },
+      );
+      expect(update.status()).toBe(200);
+      const updated = (await update.json()) as { entry: GroupEntry };
+      expect(updated.entry.value).toBe("CSCI.2001");
+
+      const remove = await page.request.delete(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries/${entry.id}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(remove.status()).toBe(200);
+      expect((await remove.json()).removed).toBe(entry.id);
+    });
+
+    test("only auth-helper group types take entries", async ({ page }) => {
+      const group = await createGroup(page, {
+        type: "User",
+        label: "NoEntries",
+      });
+
+      const res = await page.request.post(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries`,
+        { form: { value: "anything" } },
+      );
+      expect(res.status()).toBe(422);
+    });
+
+    test("updating or removing a missing entry returns 404", async ({
+      page,
+    }) => {
+      const type = await findAuthHelperGroupType(page);
+      if (type === null) {
+        test.skip(true, "the instance's auth helper defines no group types");
+        return;
+      }
+
+      const group = await createGroup(page, { type, label: "NoSuchEntry" });
+
+      const update = await page.request.put(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries/99999999`,
+        { form: { value: "anything" } },
+      );
+      expect(update.status()).toBe(404);
+
+      const remove = await page.request.delete(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries/99999999`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(remove.status()).toBe(404);
+    });
+
+    test("listing entries of a missing group returns 404", async ({ page }) => {
+      const res = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/99999999/entries`,
         { headers: { Accept: "application/json" } },
       );
       expect(res.status()).toBe(404);
