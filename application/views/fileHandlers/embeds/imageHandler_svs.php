@@ -242,7 +242,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         
         leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
 
-
     };
 
     var leafletAnnotate;
