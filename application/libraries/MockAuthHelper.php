@@ -147,7 +147,11 @@ class MockAuthHelper extends AuthHelper
           "CSCI.2021.010" => "Machine Architecture",
         ],
       ],
-      JOB_TYPE => ["values" => ["9403"], "hints" => []],
+      JOB_TYPE => ["values" => ["9403"], "hints" => [
+        '9403' => "Instructor",
+        '9404' => "TA",
+        '9405' => "Grader",
+      ]],
       UNIT_TYPE => [
         "values" => ["CLA-ART", "CSE-CSCI"],
         "hints" => ["CLA-ART" => "CLA-ART", "CSE-CSCI" => "CSE-CSCI"],

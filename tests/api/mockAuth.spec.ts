@@ -88,9 +88,11 @@ test.describe("mock remote auth", () => {
       label: "ART.1234.001",
     });
 
-    // JobCode has values but no hints, the empty case must survive a
-    // populated session too.
-    expect(byType.get("JobCode")?.entryHints).toEqual([]);
+    // JobCode hints are keyed by string codes in the mock.
+    expect(byType.get("JobCode")?.entryHints).toContainEqual({
+      value: "9403",
+      label: "Instructor",
+    });
 
     // Global types stay empty even when the session has userData.
     expect(byType.get("User")?.entryHints).toEqual([]);
