@@ -277,7 +277,7 @@ class ImageHandler extends FileHandlerBase {
 		$derivativeContainerIIIF->setParent($this->sourceFile->getParent());
 		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tiff";
 
-		$outputFile = $derivativeContainerIIIF->getPathToLocalFile();
+		$outputFile = $derivativeContainerIIIF->getPathToLocalFile() . ".tiff";
 
 		$rotationAppend = "";
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
@@ -300,7 +300,7 @@ class ImageHandler extends FileHandlerBase {
 		if($useRotForExtract) {
 			$outputWithOptions = $outputFile . "[tile,pyramid,compression=jpeg,Q=90,tile-width=256,tile-height=256,bigtiff,depth=onepixel]";
 			$extractString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $outputWithOptions . " " . $rotAngle;
-			echo $extractString . "\n";
+
 		}
 		else {
 			$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
@@ -340,7 +340,7 @@ class ImageHandler extends FileHandlerBase {
 		$this->sourceFile->metadata["dziMaxZoom"] = $zoom;
 
 		echo "\n";
-
+		rename($outputFile, $derivativeContainerIIIF->getPathToLocalFile());
 		if($derivativeContainerIIIF->copyToRemoteStorage()) {
 			echo "Success\n";
 			unlink($derivativeContainerIIIF->getPathToLocalFile());
