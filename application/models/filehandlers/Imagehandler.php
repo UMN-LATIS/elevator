@@ -300,16 +300,18 @@ class ImageHandler extends FileHandlerBase {
 		if($useRotForExtract) {
 			$outputWithOptions = $outputFile . "[tile,pyramid,compression=jpeg,Q=90,tile-width=256,tile-height=256,bigtiff,depth=onepixel]";
 			$extractString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $outputWithOptions . " " . $rotAngle;
+			echo $extractString . "\n";
 		}
 		else {
 			$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
 		}
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
-		$process->run();
+		$process->run( );
 		while($process->isRunning()) {
 			sleep(5);
 			echo ".";
 		}
+
 
 		$this->sourceFile->metadata["dziWidth"] = $this->sourceFile->metadata["width"];
 		$this->sourceFile->metadata["dziHeight"] = $this->sourceFile->metadata["height"];
@@ -345,7 +347,8 @@ class ImageHandler extends FileHandlerBase {
 			$derivativeContainerIIIF->ready = true;
 		}
 		else {
-			echo "Fail";
+			echo "Fail uploading\n";
+			die();
 		}
 
 
@@ -431,7 +434,7 @@ class ImageHandler extends FileHandlerBase {
 
 	private function getVipsShrinkValuesForSource($sourceFile) {
 		$defaultShrink = ['x' => 10, 'y' => 10];
-		if(!isset($sourceFile->metadata) || !isset($sourceFile->metadata['width']) || !isset($sourceFile->metadata['height']) || !is_numeric($sourceFile->metadata['width']) || !is_numeric($sourceFile->metadata['height'])) {
+		if(!isset($sourceFile->metadata) || !isset($sourceFile->metadata['width']) || !isset($sourceFile->metadata['height']) || !is_numeric($sourceFile->metadata['width']) || !is_numeric($sourceFile->metadata['height'])) {			
 			return $defaultShrink;
 		}
 
@@ -445,10 +448,10 @@ class ImageHandler extends FileHandlerBase {
 		$targetWidth = max(1, $maxDerivativeDimensions['width'] * 2);
 		$targetHeight = max(1, $maxDerivativeDimensions['height'] * 2);
 
-		$xShrink = max(1, (int)round($sourceWidth / $targetWidth));
-		$yShrink = max(1, (int)round($sourceHeight / $targetHeight));
+		// Use a single shrink factor so the intermediate image keeps its aspect ratio.
+		$shrinkFactor = max(1, (int)ceil(max($sourceWidth / $targetWidth, $sourceHeight / $targetHeight)));
 
-		return ['x' => $xShrink, 'y' => $yShrink];
+		return ['x' => $shrinkFactor, 'y' => $shrinkFactor];
 	}
 
 	function swapLocalForPNG($sourceFile= null) {
@@ -464,7 +467,9 @@ class ImageHandler extends FileHandlerBase {
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
-			$shrinkValues = $this->getVipsShrinkValuesForSource($sourceFile);
+			// also pass in the real source in case we got an intermediate.
+			$shrinkValues = $this->getVipsShrinkValuesForSource($this->sourceFile);
+			echo "Shrinking whole slide image to " . $shrinkValues['x'] . " x " . $shrinkValues['y'] . "\n";
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
