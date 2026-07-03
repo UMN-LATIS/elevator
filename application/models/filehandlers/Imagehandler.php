@@ -12,7 +12,6 @@ class ImageHandler extends FileHandlerBase {
 						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
 						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
 						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
-							// 2=>["taskType"=>"clarifyTag", "config"=>array()],
 							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
 							3=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
 							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
@@ -173,7 +172,12 @@ class ImageHandler extends FileHandlerBase {
 		
 		$sourceFile = $this->makeCZIProxy();
 		$sourceFile = $this->swapLocalForPNG($sourceFile);
-		
+
+		$uploadWidget = $this->getUploadWidget();
+		$widgetRotationValue = (isset($uploadWidget->parentWidget->rotationValue) && is_numeric($uploadWidget->parentWidget->rotationValue))
+			? (int)$uploadWidget->parentWidget->rotationValue : 0;
+		$forceRotation = [90 => imagick_internal_ORIENTATION_RIGHTTOP, 180 => imagick_internal_ORIENTATION_BOTTOMRIGHT, 270 => imagick_internal_ORIENTATION_LEFTBOTTOM][$widgetRotationValue] ?? null;
+
 		foreach($args as $key=>$derivativeSetting) {
 			if(!is_numeric($key)) {
 				continue;
@@ -208,7 +212,7 @@ class ImageHandler extends FileHandlerBase {
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
 			echo "Compressing " . $width . " x " . $height . "\n";
-			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height)) {
+			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height, 80, $forceRotation)) {
 				$derivativeContainer->ready = true;
 				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
@@ -279,6 +283,28 @@ class ImageHandler extends FileHandlerBase {
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
 			$rotationAppend = "[autorotate]";
 		}
+
+		$widgetRotationValue = (isset($uploadWidget->parentWidget->rotationValue) && is_numeric($uploadWidget->parentWidget->rotationValue))
+			? (float)$uploadWidget->parentWidget->rotationValue : 0;
+
+		$rotatedPath = null;
+		if ($widgetRotationValue != 0) {
+			$rotAngleMap = [90 => 'd90', 180 => 'd180', 270 => 'd270'];
+			$rotAngle = $rotAngleMap[(int)$widgetRotationValue] ?? null;
+			if ($rotAngle) {
+				$rotatedPath = $localPath . '_rotated.tiff';
+				$rotateString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $rotatedPath . " " . $rotAngle;
+				$rotateProcess = new Cocur\BackgroundProcess\BackgroundProcess($rotateString);
+				$rotateProcess->run();
+				while ($rotateProcess->isRunning()) {
+					sleep(5);
+					echo ".";
+				}
+				$localPath = $rotatedPath;
+				$rotationAppend = "";
+			}
+		}
+
 		$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
 		$process->run();
@@ -289,6 +315,16 @@ class ImageHandler extends FileHandlerBase {
 
 		$this->sourceFile->metadata["dziWidth"] = $this->sourceFile->metadata["width"];
 		$this->sourceFile->metadata["dziHeight"] = $this->sourceFile->metadata["height"];
+
+		// Swap dziWidth/dziHeight for 90/270-degree widget rotations since the output canvas is transposed
+		if ($widgetRotationValue != 0) {
+			$normalizedAngle = fmod(abs($widgetRotationValue), 180);
+			if ($normalizedAngle > 45 && $normalizedAngle < 135) {
+				[$this->sourceFile->metadata["dziWidth"], $this->sourceFile->metadata["dziHeight"]] =
+					[$this->sourceFile->metadata["dziHeight"], $this->sourceFile->metadata["dziWidth"]];
+			}
+		}
+
 		$this->sourceFile->metadata["dziOverlap"] = 0;
 		$this->sourceFile->metadata["dziTilesize"] = 256;
 
@@ -318,6 +354,10 @@ class ImageHandler extends FileHandlerBase {
 		$this->derivatives[$derivativeContainerIIIF->derivativeType] = $derivativeContainerIIIF;
 		$this->unlinkLocalSwap();
 
+		if ($rotatedPath && file_exists($rotatedPath)) {
+			unlink($rotatedPath);
+		}
+
 		$this->queueTask(3);
 		return JOB_SUCCESS;
 
@@ -334,46 +374,6 @@ class ImageHandler extends FileHandlerBase {
 		$this->getAltTextForMedia("", $debugMode);
 		$this->queueTask(4);
 	}
-
-	// public function clarifyTag($args) {
-
-
-	// 	if(strlen($this->instance->getClarifaiId())<5) {
-	// 		$this->queueTask(3);
-	// 		return JOB_SUCCESS;
-	// 	}
-	// 	$this->load->library("Clarifai");
-
-	// 	$clarifai = new Clarifai($this->instance->getClarifaiId(), $this->instance->getClarifaiSecret(), $this->instance->getDomain());
-	// 	if(!$clarifai->collectionExists($this->instance->getDomain())) {
-	// 		$clarifai->addCollection($this->instance->getDomain());
-	// 	}
-
-	// 	if(!isset($this->derivatives["screen"])) {
-	// 		return JOB_FAILED;
-	// 	}
-
-	// 	$targetURL= $this->derivatives["screen"]->getProtectedURLForFile();
-
-	// 	if(!$clarifai->addDocument($targetURL, $this->getObjectId())) {
-	// 		return JOB_POSTPONE;
-	// 	}
-
-	// 	$document = $clarifai->getDocument($this->getObjectId());
-
-	// 	$resultTags = array();
-	// 	foreach($document->document->annotation_sets[0]->annotations as $tagCluster) {
-
-	// 		$resultTags[] = ["tag"=>$tagCluster->tag->cname, "score"=>$tagCluster->score];
-
-	// 	}
-
-	// 	$this->globalMetadata["tags"] = $resultTags;
-
-	// 	$this->queueTask(3);
-	// 	return JOB_SUCCESS;
-
-	// }
 
 	function unlinkLocalSwap() {
 		if(isWholeSlideImage($this->sourceFile)) {
