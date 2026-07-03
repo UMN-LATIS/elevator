@@ -403,6 +403,60 @@ class ImageHandler extends FileHandlerBase {
 
 	}
 
+	private function getLargestDerivativeDimensions() {
+		$maxWidth = 0;
+		$maxHeight = 0;
+
+		foreach($this->taskArray as $taskConfig) {
+			if(!isset($taskConfig['taskType']) || $taskConfig['taskType'] !== 'createDerivative' || !isset($taskConfig['config']) || !is_array($taskConfig['config'])) {
+				continue;
+			}
+
+			foreach($taskConfig['config'] as $derivativeConfig) {
+				if(!is_array($derivativeConfig)) {
+					continue;
+				}
+				if(isset($derivativeConfig['width']) && is_numeric($derivativeConfig['width'])) {
+					$maxWidth = max($maxWidth, (int)$derivativeConfig['width']);
+				}
+				if(isset($derivativeConfig['height']) && is_numeric($derivativeConfig['height'])) {
+					$maxHeight = max($maxHeight, (int)$derivativeConfig['height']);
+				}
+			}
+		}
+
+		if($maxWidth <= 0) {
+			$maxWidth = 2048;
+		}
+		if($maxHeight <= 0) {
+			$maxHeight = 2048;
+		}
+
+		return ['width' => $maxWidth, 'height' => $maxHeight];
+	}
+
+	private function getVipsShrinkValuesForSource($sourceFile) {
+		$defaultShrink = ['x' => 10, 'y' => 10];
+		if(!isset($sourceFile->metadata) || !isset($sourceFile->metadata['width']) || !isset($sourceFile->metadata['height']) || !is_numeric($sourceFile->metadata['width']) || !is_numeric($sourceFile->metadata['height'])) {
+			return $defaultShrink;
+		}
+
+		$sourceWidth = (int)$sourceFile->metadata['width'];
+		$sourceHeight = (int)$sourceFile->metadata['height'];
+		if($sourceWidth <= 0 || $sourceHeight <= 0) {
+			return $defaultShrink;
+		}
+
+		$maxDerivativeDimensions = $this->getLargestDerivativeDimensions();
+		$targetWidth = max(1, $maxDerivativeDimensions['width'] * 2);
+		$targetHeight = max(1, $maxDerivativeDimensions['height'] * 2);
+
+		$xShrink = max(1, (int)round($sourceWidth / $targetWidth));
+		$yShrink = max(1, (int)round($sourceHeight / $targetHeight));
+
+		return ['x' => $xShrink, 'y' => $yShrink];
+	}
+
 	function swapLocalForPNG($sourceFile= null) {
 		if(!$sourceFile) {
 			$sourceFile = $this->sourceFile;
@@ -416,7 +470,8 @@ class ImageHandler extends FileHandlerBase {
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
-			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+			$shrinkValues = $this->getVipsShrinkValuesForSource($sourceFile);
+			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
 			while($process->isRunning()) {
@@ -438,7 +493,8 @@ class ImageHandler extends FileHandlerBase {
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
-			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+			$shrinkValues = $this->getVipsShrinkValuesForSource($sourceFile);
+			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
 			while($process->isRunning()) {
