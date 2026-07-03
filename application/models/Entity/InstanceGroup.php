@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(name: 0, columns: ['group_type'])]
 #[ORM\Index(name: 1, columns: ['group_value'])]
 #[ORM\Entity]
-class InstanceGroup
+class InstanceGroup implements \JsonSerializable
 {
     /**
      * @var string|null
@@ -319,5 +319,19 @@ class InstanceGroup
     public function getGroupValues()
     {
         return $this->group_values;
+    }
+
+    public function jsonSerialize(): array {
+        return [
+            'id'         => $this->id,
+            'type'       => $this->group_type,
+            // the `group_value` col is vestigial for
+            // auth types that don't have a value-based
+            // match like `Authed` or `Authed_remote`
+            // 'ignoresGroupValues'      => isset($this->group_value),
+            'label'      => $this->group_label,
+            'expiration' => $this->expiration?->format(\DateTime::ATOM),
+            'values'     => array_values($this->group_values->toArray()),
+        ];
     }
 }

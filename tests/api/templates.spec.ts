@@ -125,12 +125,7 @@ test.describe("templates", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+    await loginUser(page, "admin");
   });
 
   test.afterEach(() => {
@@ -248,12 +243,7 @@ test.describe("templates", () => {
 
 test.describe("GET getFieldTypes", () => {
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+    await loginUser(page, "admin");
   });
 
   // F1: returns a non-empty array of field types with the expected shape
@@ -318,12 +308,7 @@ test.describe("GET getFieldTypes", () => {
 
 test.describe("templates API", () => {
   test.beforeEach(async ({ page }) => {
-    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-    if (!adminPassword) {
-      test.skip(true, "DEFAULT_ADMIN_PASSWORD env var not set");
-      return;
-    }
-    await loginUser(page, process.env.ADMIN_USERNAME ?? "admin", adminPassword);
+    await loginUser(page, "admin");
   });
 
   test.afterEach(() => {
@@ -624,8 +609,8 @@ test.describe("templates API", () => {
       expect(res.status()).toBe(422);
     });
 
-    // V5: widget tooltip > 255 chars → 422
-    test("returns 422 when a widget tooltip exceeds 255 characters", async ({
+    // V5: widget tooltip > 2000 chars → 422
+    test("returns 422 when a widget tooltip exceeds 2000 characters", async ({
       page,
     }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
@@ -634,7 +619,7 @@ test.describe("templates API", () => {
           name: "Tooltip Overflow",
           ...templateBaseFields,
           ...newWidgetFields(0, "My Field", {
-            "widget[0][tooltip]": TOO_LONG,
+            "widget[0][tooltip]": "x".repeat(2001),
           }),
         },
       });
@@ -731,7 +716,7 @@ test.describe("templates API", () => {
             ...templateBaseFields,
             ...newWidgetFields(0, "Original Field", {
               "widget[0][fieldTitle]": "original_field",
-              "widget[0][tooltip]": TOO_LONG,
+              "widget[0][tooltip]": "x".repeat(2001),
             }),
           },
         },

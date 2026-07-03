@@ -28,8 +28,10 @@ jobs:
       - name: Copy env file
         run: |
           cp .env.example .env
-          # Replace values in-place to avoid duplicate keys in .env.
-          sed -i "s/^DEFAULT_ADMIN_PASSWORD=.*/DEFAULT_ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}/" .env
+
+      - name: Create REVISION file
+        # Template.php reads ./REVISION to cache-bust assets
+        run: echo "${{ github.sha }}" > REVISION
 
       - name: Generate SSL certs
         run: |
@@ -67,19 +69,23 @@ jobs:
         run: |
           docker compose exec -T php-fpm composer install --no-interaction --no-progress
           docker compose exec -T php-fpm php doctrine.php orm:schema-tool:update --force
+          # The ./:/var/www/html bind mount shadows the image's writable Proxies
+          # dir with the (empty, gitignored) host one, so the www-data worker
+          # can't generate Doctrine proxies at request time. Make the runtime
+          # dir writable so on-demand generation works.
+          docker compose exec -T php-fpm sh -c \
+            'mkdir -p application/models/Proxies && chmod 777 application/models/Proxies'
           docker compose exec -T postgres psql -U elevator -d elevator < docker/postgresQueries
-          # Sync admin password hash from .env so seed hash doesn't need to match.
+          # Set the admin password to "admin" so tests can log in as admin:admin.
+          # Hash is sha1(ENCRYPTION_KEY + password), matching the app's scheme.
           _enc_key=$(grep -E '^ENCRYPTION_KEY=' .env | cut -d= -f2)
-          _admin_pw=$(grep -E '^DEFAULT_ADMIN_PASSWORD=' .env | cut -d= -f2)
-          _hash=$(echo -n "${_enc_key}${_admin_pw}" | shasum -a 1 | cut -d' ' -f1)
+          _hash=$(echo -n "${_enc_key}admin" | shasum -a 1 | cut -d' ' -f1)
           docker compose exec -T postgres psql -U elevator -d elevator \
             -c "UPDATE users SET password = '${_hash}' WHERE username = 'admin';"
 
       - name: Run API tests
         env:
           BASE_URL: https://localhost/defaultinstance
-          ADMIN_USERNAME: admin
-          DEFAULT_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:api
 
       - name: Upload test results

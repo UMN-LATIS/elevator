@@ -13,17 +13,7 @@ test.describe("permissions", () => {
 
     test.describe("when authenticated", () => {
       test.beforeEach(async ({ page }) => {
-        const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-        test.skip(
-          !adminPassword,
-          "DEFAULT_ADMIN_PASSWORD must be set for authenticated permissions tests",
-        );
-
-        await loginUser(
-          page,
-          process.env.ADMIN_USERNAME ?? "admin",
-          adminPassword,
-        );
+        await loginUser(page, "admin");
       });
 
       test("returns 200 with permissionLevels array", async ({ page }) => {

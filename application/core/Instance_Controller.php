@@ -10,7 +10,7 @@ class Instance_Controller extends MY_Controller
     function __construct()
     {
         parent::__construct();
-        
+
         if($this->config->item('site_open') === FALSE)
         {
             show_error('Elevator is Temporarily Unavailable.');
@@ -27,7 +27,7 @@ class Instance_Controller extends MY_Controller
 
         $this->writeOutAssets();
 
-        
+
         if($this->input->get('apiHandoff', TRUE)) {
 			$signedString = $this->input->get('apiHandoff');
 			$authKey = $this->input->get('authKey');
@@ -43,7 +43,7 @@ class Instance_Controller extends MY_Controller
         $this->config->set_item("instance_relative", $this->getRelativePath());
         $this->config->set_item("instance_absolute", $this->getAbsolutePath());
 
-        
+
         if(!$this->instance && !$this->noRedirect) {
             if($this->config->item('missingSiteURL') != '') {
                 redirect($this->config->item('missingSiteURL'));
@@ -59,7 +59,7 @@ class Instance_Controller extends MY_Controller
 
 
     static function setInstance($selfReference) {
-        
+
         if(!isset($selfReference)) {
             $CI =& get_instance();
         }
@@ -188,5 +188,19 @@ class Instance_Controller extends MY_Controller
         if (!$this->isCurrentUserAdmin()) {
             abort_json(['error' => 'Forbidden'], 403);
         }
+    }
+
+    /**
+     * Read a form-encoded request body regardless of HTTP verb.
+     *
+     * POST populates $_POST, but PUT/PATCH/DELETE bodies live unparsed
+     * in php://input.
+     * Clients MUST send "application/x-www-form-urlencoded".
+     */
+    protected function requestBody(): array {
+        $method = $this->input->server('REQUEST_METHOD');
+        return ($method === 'POST'
+            ? $this->input->post()
+            : $this->input->input_stream()) ?? [];
     }
 }
