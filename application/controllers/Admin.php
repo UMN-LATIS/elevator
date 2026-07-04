@@ -369,7 +369,7 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function regenerateFilesOfType($handlerClass, $inCollection = null, $batchSize = 200) {
+	public function regenerateFilesOfType($handlerClass, $inCollection = null, $batchSize = 200, $startId = 0, $maxToProcess = 0) {
 		if (!$handlerClass) {
 			echo "need handler class\n";
 			return;
@@ -380,11 +380,38 @@ class admin extends Admin_Controller {
 			$batchSize = 200;
 		}
 
+		if ($startId === "false" || $startId === "null" || $startId === "") {
+			$startId = 0;
+		}
+		$startId = (int) $startId;
+		if ($startId < 0) {
+			$startId = 0;
+		}
+
+		if ($maxToProcess === "false" || $maxToProcess === "null" || $maxToProcess === "") {
+			$maxToProcess = 0;
+		}
+		$maxToProcess = (int) $maxToProcess;
+		if ($maxToProcess < 0) {
+			$maxToProcess = 0;
+		}
+
 		echo "starting " . ($inCollection !== null ? $inCollection : "all collections") . "\n";
-		$lastId = 0;
+		echo "resuming after id: " . $startId . "\n";
+		if ($maxToProcess > 0) {
+			echo "max to process this run: " . $maxToProcess . "\n";
+		}
+
+		$lastId = $startId;
 		$processed = 0;
+		$reachedLimit = false;
 
 		while (true) {
+			if ($maxToProcess > 0 && $processed >= $maxToProcess) {
+				$reachedLimit = true;
+				break;
+			}
+
 			$qb = $this->doctrine->em->createQueryBuilder();
 			$qb->select("f.id AS id", "f.fileObjectId AS fileObjectId", "f.collectionId AS collectionId")
 				->from("Entity\FileHandler", "f")
@@ -407,6 +434,11 @@ class admin extends Admin_Controller {
 			}
 
 			foreach ($rows as $row) {
+				if ($maxToProcess > 0 && $processed >= $maxToProcess) {
+					$reachedLimit = true;
+					break;
+				}
+
 				$lastId = (int) $row["id"];
 				$collection = $this->collection_model->getCollection((int) $row["collectionId"]);
 				if (!$collection) {
@@ -449,9 +481,14 @@ class admin extends Admin_Controller {
 			$this->doctrine->em->clear();
 			gc_collect_cycles();
 			echo "Processed " . $processed . "\n";
+
+			if ($reachedLimit) {
+				break;
+			}
 		}
 
 		echo "done. total processed: " . $processed . "\n";
+		echo "last filehandler id visited: " . $lastId . "\n";
 	}
 
 	public function recacheFilesFromCollection($collectionId, $skip = 0) {
