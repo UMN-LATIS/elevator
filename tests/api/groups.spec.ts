@@ -430,7 +430,7 @@ test.describe("adminPermissions", () => {
 
       const res = await page.request.patch(
         `${baseURL()}/adminPermissions/groups/${created.id}`,
-        { form: { type: "All", label: 'bad <script>' } },
+        { form: { type: "All", label: "bad <script>" } },
       );
       expect(res.status()).toBe(422);
       expect((await res.json()).errors).toHaveProperty("label");
@@ -514,7 +514,9 @@ test.describe("adminPermissions", () => {
       ).toBe(true);
 
       const remove = await page.request.delete(
-        `${baseURL()}/adminPermissions/groups/${group.id}/members/${admin.localUserId}`,
+        `${baseURL()}/adminPermissions/groups/${group.id}/members/${
+          admin.localUserId
+        }`,
         { headers: { Accept: "application/json" } },
       );
       expect(remove.status()).toBe(200);
@@ -551,7 +553,10 @@ test.describe("adminPermissions", () => {
     });
 
     test("only User groups take members", async ({ page }) => {
-      const group = await createGroup(page, { type: "All", label: "NoMembers" });
+      const group = await createGroup(page, {
+        type: "All",
+        label: "NoMembers",
+      });
 
       const res = await page.request.post(
         `${baseURL()}/adminPermissions/groups/${group.id}/members`,
@@ -644,6 +649,14 @@ test.describe("adminPermissions", () => {
         { form: { value: "anything" } },
       );
       expect(res.status()).toBe(422);
+
+      // The read side too: User groups store membership in the same
+      // group_values rows, so listing must not serve member ids as entries.
+      const list = await page.request.get(
+        `${baseURL()}/adminPermissions/groups/${group.id}/entries`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(list.status()).toBe(422);
     });
 
     test("updating or removing a missing entry returns 404", async ({

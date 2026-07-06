@@ -643,6 +643,13 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
+    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
+    }
+
     return render_json([
       'entries' => $group->getGroupValues()->toArray(),
     ]);

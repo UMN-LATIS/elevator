@@ -12,6 +12,8 @@ class Upload extends Widget_base {
 	public $forceTiling = false;
 	public $enableDendro = false;
 	public $enableAnnotation = false;
+	public $enableMultilayer = false;
+	public $rotationValue = 0;
 	
 	public function __construct()
 	{
