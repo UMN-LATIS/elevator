@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Canned-data auth helper for local dev and CI, modeled on UMNHelper.
  *
@@ -8,15 +9,14 @@
  * credentials, and populateUserData() returns fixed values and hints for
  * the UMN group types. Select it with AUTH_HELPER=MockAuthHelper.
  *
- * SECURITY: this helper signs in anyone who asks, as a superadmin. The
- * constructor refuses to run when ENVIRONMENT is production, but do not
- * point any shared or internet-facing instance at it.
+ * SECURITY: This should NEVER be run in production since it skips legit auth.
+ * As a safeguard, the constructor refuses to run when ENVIRONMENT is
+ * production (if somehow the ENV was set).
  */
 
 require_once("AuthHelper.php");
 
-class MockAuthHelper extends AuthHelper
-{
+class MockAuthHelper extends AuthHelper {
   public $authTypes = [
     UNIT_TYPE => [
       "name" => UNIT_TYPE,
@@ -65,8 +65,7 @@ class MockAuthHelper extends AuthHelper
   // development when CI_ENV is unset).
   const ALLOWED_ENVIRONMENTS = ['development', 'local', 'testing'];
 
-  public function __construct()
-  {
+  public function __construct() {
     if (!in_array(ENVIRONMENT, self::ALLOWED_ENVIRONMENTS, true)) {
       show_error('MockAuthHelper grants credential-less login and only runs in development, local, or testing environments. Set AUTH_HELPER to your real auth helper.', 500);
     }
@@ -78,8 +77,7 @@ class MockAuthHelper extends AuthHelper
    * of LoginManager::remoteLogin reads, then return false so it continues
    * into user lookup and provisioning instead of redirecting.
    */
-  public function remoteLogin($redirectURL, $noForcedAuth = false): bool
-  {
+  public function remoteLogin($redirectURL, $noForcedAuth = false): bool {
     $this->CI->session->set_userdata([
       'userAuthField' => self::MOCK_REMOTE_USER['username'],
       'userAttributesCache' => [
@@ -90,8 +88,7 @@ class MockAuthHelper extends AuthHelper
     return false;
   }
 
-  public function getUserIdFromRemote($map = null): ?string
-  {
+  public function getUserIdFromRemote($map = null): ?string {
     if ($map) {
       return $map["uniqueIdentifier"];
     }
@@ -105,8 +102,7 @@ class MockAuthHelper extends AuthHelper
    * seeded permission rows. Safe only because the production guard
    * keeps this class out of real deployments.
    */
-  public function createUserFromRemote($userOverride = null, $map = null)
-  {
+  public function createUserFromRemote($userOverride = null, $map = null) {
     $user = new Entity\User;
     $user->setUsername(self::MOCK_REMOTE_USER['username']);
     $user->setDisplayName(self::MOCK_REMOTE_USER['displayName']);
@@ -124,14 +120,8 @@ class MockAuthHelper extends AuthHelper
 
   /**
    * Canned values and hints for every type, in UMNHelper's exact shape.
-   *
-   * Class Number hints keep numeric keys and JobCode keeps empty hints
-   * on purpose, both are real UMN quirks downstream code must handle.
-   * Cached per user for 4 hours in the Redis userCache, so edits here
-   * need a cache clear (any group mutation, or a docker restart).
    */
-  public function populateUserData($user): array
-  {
+  public function populateUserData($user): array {
     return [
       COURSE_TYPE => [
         "values" => ["12345", "23456"],
@@ -171,8 +161,7 @@ class MockAuthHelper extends AuthHelper
     ];
   }
 
-  public function getGroupMapping($userData): array
-  {
+  public function getGroupMapping($userData): array {
     $outputArray = [];
     if (!$userData || !is_array($userData)) {
       return $outputArray;
@@ -183,23 +172,19 @@ class MockAuthHelper extends AuthHelper
     return $outputArray;
   }
 
-  public function findById($key, $createMissing = false): array
-  {
+  public function findById($key, $createMissing = false): array {
     return $this->findInMockDirectory($key);
   }
 
-  public function findUserByUsername($key, $createMissing = false): array
-  {
+  public function findUserByUsername($key, $createMissing = false): array {
     return $this->findInMockDirectory($key);
   }
 
-  public function findUserByName($key, $createMissing = false): array
-  {
+  public function findUserByName($key, $createMissing = false): array {
     return $this->findInMockDirectory($key);
   }
 
-  public function autocompleteUsername($partialUsername): array
-  {
+  public function autocompleteUsername($partialUsername): array {
     $outputArray = parent::autocompleteUsername($partialUsername);
 
     foreach ($this->findInMockDirectory($partialUsername) as $user) {
@@ -228,8 +213,7 @@ class MockAuthHelper extends AuthHelper
    * @return Entity\User[] unsaved records, the same convention as
    * UMNHelper::findUser, callers persist them on first use
    */
-  private function findInMockDirectory(string $key): array
-  {
+  private function findInMockDirectory(string $key): array {
     $matches = [];
     foreach (self::MOCK_DIRECTORY as $person) {
       $haystack = strtolower($person["username"] . " " . $person["displayName"]);
