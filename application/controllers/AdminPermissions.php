@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityManager;
 use Entity\InstanceGroup;
 use Entity\Permission;
 use Entity\CollectionPermission;
+use Entity\Instance;
 use Entity\InstancePermission;
 use SimpleValidator as V;
 
@@ -971,8 +972,22 @@ class AdminPermissions extends Instance_Controller {
     return abort_json(['error' => 'Not Implemented'], 501);
   }
 
-  private function listCollectionGrants() {
-    return abort_json(['error' => 'Not Implemented'], 501);
+  /**
+   * GET /adminPermissions/collectionGrants: every stored collection
+   * grant in this instance.
+   *
+   * CollectionPermission has no instance column, so rows are scoped by
+   * membership in the instance's collections. Collections are shared
+   * many-to-many, so a shared collection's rows also surface in its
+   * other instances.
+   */
+  private function listCollectionGrants(): CI_Output {
+    $instanceCollections = $this->instance->getCollections()->toArray();
+    $grants = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findBy(['collection' => $instanceCollections]);
+
+    return render_json(['collectionGrants' => $grants]);
   }
 
   private function createCollectionGrant() {
