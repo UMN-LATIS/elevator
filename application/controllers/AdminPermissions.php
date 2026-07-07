@@ -964,8 +964,42 @@ class AdminPermissions extends Instance_Controller {
     return abort_json(['error' => 'Not Implemented'], 501);
   }
 
-  private function updateInstanceGrant(int $grantId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
+  /**
+   * PUT|PATCH /adminPermissions/instanceGrants/{id}: change a grant's
+   * level.
+   *
+   * The level is the only mutable field. Moving a grant to another
+   * group is a delete + create, which keeps the endpoint trivial and
+   * the audit story simple.
+   */
+  private function updateInstanceGrant(int $grantId): CI_Output {
+    $grant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['id' => $grantId, 'instance' => $this->instance]);
+    if (!$grant) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $grant->setPermission($level);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['instanceGrant' => $grant]);
   }
 
   private function deleteInstanceGrant(int $grantId) {
@@ -990,16 +1024,133 @@ class AdminPermissions extends Instance_Controller {
     return render_json(['collectionGrants' => $grants]);
   }
 
-  private function createCollectionGrant() {
-    return abort_json(['error' => 'Not Implemented'], 501);
+  /**
+   * POST /adminPermissions/collectionGrants: grant a group a level on
+   * one collection and its descendants.
+   *
+   * One grant per (group, collection) pair, same duplicate contract as
+   * createInstanceGrant: 409 with the existing row's id.
+   */
+  private function createCollectionGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'collectionId' => [V::required(), V::integer()],
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $collection = $this->findCollectionInInstance(
+      (int) $validated['collectionId']
+    );
+    if (!$collection) {
+      return abort_json(['error' => 'Collection not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findOneBy(['group' => $group, 'collection' => $collection]);
+    if ($existingGrant) {
+      return abort_json([
+        'error' => 'Group already has a grant on this collection',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant = new CollectionPermission();
+    $grant->setGroup($group);
+    $grant->setCollection($collection);
+    $grant->setPermission($level);
+
+    $this->em->persist($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['collectionGrant' => $grant], 201);
+  }
+
+  /**
+   * Find the collection with `$collectionId` among this instance's own
+   * collections.
+   *
+   * Collection ids are global, so fetching one straight from the
+   * repository would let an admin grant on another instance's
+   * collection. Scanning the instance's collection list enforces
+   * membership, the same ownership pattern as findEntryInGroup.
+   *
+   * @return ?Entity\Collection null when the instance has no such
+   *   collection
+   */
+  private function findCollectionInInstance(int $collectionId): ?Entity\Collection {
+    foreach ($this->instance->getCollections() as $candidate) {
+      if ($candidate->getId() === $collectionId) {
+        return $candidate;
+      }
+    }
+    return null;
   }
 
   private function showCollectionGrant(int $grantId) {
     return abort_json(['error' => 'Not Implemented'], 501);
   }
 
-  private function updateCollectionGrant(int $grantId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
+  /**
+   * PUT|PATCH /adminPermissions/collectionGrants/{id}: change a grant's
+   * level.
+   *
+   * The level is the only mutable field, same contract as
+   * updateInstanceGrant.
+   */
+  private function updateCollectionGrant(int $grantId): CI_Output {
+    $grant = $this->em->find(CollectionPermission::class, $grantId);
+
+    // Grant ids are global, so ownership comes from the grant's
+    // collection belonging to this instance. An orphaned grant (null
+    // collection) is unreachable for the same reason.
+    $collectionId = $grant?->getCollection()?->getId();
+    if ($collectionId === null || !$this->findCollectionInInstance($collectionId)) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $grant->setPermission($level);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['collectionGrant' => $grant]);
   }
 
   private function deleteCollectionGrant(int $grantId) {
