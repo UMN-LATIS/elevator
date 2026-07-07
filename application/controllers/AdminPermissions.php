@@ -1,8 +1,11 @@
 <?php
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
+use Doctrine\ORM\EntityManager;
 use Entity\InstanceGroup;
 use Entity\Permission;
+use Entity\CollectionPermission;
+use Entity\InstancePermission;
 use SimpleValidator as V;
 
 /**
@@ -40,11 +43,13 @@ class AdminPermissions extends Instance_Controller {
   ];
 
   private AuthHelper $authHelper;
+  private EntityManager $em;
 
   public function __construct() {
     parent::__construct();
     $this->load->library('SimpleValidator');
     $this->authHelper = $this->user_model->getAuthHelper();
+    $this->em = $this->doctrine->em;
   }
 
 
@@ -796,5 +801,193 @@ class AdminPermissions extends Instance_Controller {
     if ($this->config->item('enableCaching')) {
       $this->userCache->clear();
     }
+  }
+
+  /**
+   * REST entry point for /adminPermissions/instanceGrants[/{id}].
+   *
+   * An instance grant gives a group a level across every collection
+   * in this instance, and level 60 additionally confers instance-admin
+   * powers.
+   */
+  public function instanceGrants($grantId = null) {
+    $this->abortUnlessAdmin();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    if ($grantId !== null) {
+      $grantId = filter_var($grantId, FILTER_VALIDATE_INT);
+      if ($grantId === false) {
+        return abort_json(['error' => 'Invalid ID'], 400);
+      }
+    }
+
+    $route = $grantId === null
+      ? '/instanceGrants'
+      : '/instanceGrants/{id}';
+
+    $table = [
+      '/instanceGrants' => [
+        'GET' => fn() => $this->listInstanceGrants(),
+        'POST' => fn() => $this->createInstanceGrant(),
+      ],
+      '/instanceGrants/{id}' => [
+        'GET' => fn() => $this->showInstanceGrant($grantId),
+        'PUT' => fn() => $this->updateInstanceGrant($grantId),
+        'PATCH' => fn() => $this->updateInstanceGrant($grantId),
+        'DELETE' => fn() => $this->deleteInstanceGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  /**
+   * REST entry point for /adminPermissions/collectionGrants[/{id}].
+   *
+   * A collection grant gives a group a level on one collection and
+   * its descendants. Rows are shared state: a collection shared into
+   * other instances is governed by these same rows there.
+   */
+  public function collectionGrants($grantId = null) {
+    $this->abortUnlessAdmin();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    if ($grantId !== null) {
+      $grantId = filter_var($grantId, FILTER_VALIDATE_INT);
+      if ($grantId === false) {
+        return abort_json(['error' => 'Invalid ID'], 400);
+      }
+    }
+
+    $route = $grantId === null
+      ? '/collectionGrants'
+      : '/collectionGrants/{id}';
+
+    $table = [
+      '/collectionGrants' => [
+        'GET' => fn() => $this->listCollectionGrants(),
+        'POST' => fn() => $this->createCollectionGrant(),
+      ],
+      '/collectionGrants/{id}' => [
+        'GET' => fn() => $this->showCollectionGrant($grantId),
+        'PUT' => fn() => $this->updateCollectionGrant($grantId),
+        'PATCH' => fn() => $this->updateCollectionGrant($grantId),
+        'DELETE' => fn() => $this->deleteCollectionGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  private function listInstanceGrants() {
+    $grants = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findBy(['instance' => $this->instance]);
+
+    return render_json(['instanceGrants' => $grants]);
+  }
+
+  /**
+   * POST /adminPermissions/instanceGrants: grant a group a level across
+   * the whole instance.
+   *
+   * One grant per (group, instance) pair. Resolution takes the max
+   * level, so a second row for the same group would be dead weight,
+   * respond 409 with the existing row's id so the UI can offer to edit
+   * it instead.
+   */
+  private function createInstanceGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['group' => $group, 'instance' => $this->instance]);
+    if ($existingGrant) {
+      return abort_json([
+        'error' => 'Group already has an instance grant',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant = new InstancePermission();
+    $grant->setGroup($group);
+    $grant->setInstance($this->instance);
+    $grant->setPermission($level);
+
+    $this->em->persist($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['instanceGrant' => $grant], 201);
+  }
+
+  private function showInstanceGrant(int $grantId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function updateInstanceGrant(int $grantId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function deleteInstanceGrant(int $grantId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function listCollectionGrants() {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function createCollectionGrant() {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function showCollectionGrant(int $grantId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function updateCollectionGrant(int $grantId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
+  }
+
+  private function deleteCollectionGrant(int $grantId) {
+    return abort_json(['error' => 'Not Implemented'], 501);
   }
 }
