@@ -1002,8 +1002,26 @@ class AdminPermissions extends Instance_Controller {
     return render_json(['instanceGrant' => $grant]);
   }
 
-  private function deleteInstanceGrant(int $grantId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
+  /**
+   * DELETE /adminPermissions/instanceGrants/{id}: remove one grant.
+   *
+   * Deleting a grant never deletes the group; that lives on the groups
+   * resource.
+   */
+  private function deleteInstanceGrant(int $grantId): CI_Output {
+    $grant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['id' => $grantId, 'instance' => $this->instance]);
+    if (!$grant) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    $this->em->remove($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $grantId]);
   }
 
   /**
@@ -1153,7 +1171,24 @@ class AdminPermissions extends Instance_Controller {
     return render_json(['collectionGrant' => $grant]);
   }
 
-  private function deleteCollectionGrant(int $grantId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
+  /**
+   * DELETE /adminPermissions/collectionGrants/{id}: remove one grant.
+   */
+  private function deleteCollectionGrant(int $grantId): CI_Output {
+    $grant = $this->em->find(CollectionPermission::class, $grantId);
+
+    // same ownership rule as updateCollectionGrant: reachable only
+    // through a collection belonging to this instance
+    $collectionId = $grant?->getCollection()?->getId();
+    if ($collectionId === null || !$this->findCollectionInInstance($collectionId)) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    $this->em->remove($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $grantId]);
   }
 }
