@@ -5,7 +5,6 @@ use Doctrine\ORM\EntityManager;
 use Entity\InstanceGroup;
 use Entity\Permission;
 use Entity\CollectionPermission;
-use Entity\Instance;
 use Entity\InstancePermission;
 use SimpleValidator as V;
 
@@ -806,10 +805,6 @@ class AdminPermissions extends Instance_Controller {
 
   /**
    * REST entry point for /adminPermissions/instanceGrants[/{id}].
-   *
-   * An instance grant gives a group a level across every collection
-   * in this instance, and level 60 additionally confers instance-admin
-   * powers.
    */
   public function instanceGrants($grantId = null) {
     $this->abortUnlessAdmin();
@@ -851,10 +846,6 @@ class AdminPermissions extends Instance_Controller {
 
   /**
    * REST entry point for /adminPermissions/collectionGrants[/{id}].
-   *
-   * A collection grant gives a group a level on one collection and
-   * its descendants. Rows are shared state: a collection shared into
-   * other instances is governed by these same rows there.
    */
   public function collectionGrants($grantId = null) {
     $this->abortUnlessAdmin();
@@ -902,10 +893,9 @@ class AdminPermissions extends Instance_Controller {
     return render_json(['instanceGrants' => $grants]);
   }
 
+
   /**
-   * POST /adminPermissions/instanceGrants: grant a group a level across
-   * the whole instance.
-   *
+   * POST /adminPermissions/instanceGrants
    */
   private function createInstanceGrant(): CI_Output {
     try {
@@ -961,8 +951,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /adminPermissions/instanceGrants/{id}: replace a grant's
-   * group and level.
+   * PUT|PATCH /adminPermissions/instanceGrants/{id}
    */
   private function updateInstanceGrant(int $grantId): CI_Output {
     $grant = $this->em
@@ -1037,11 +1026,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /adminPermissions/collectionGrants: every stored collection
-   * grant in this instance.
-   *
-   * CollectionPermission has no instance column, so rows are scoped by
-   * membership in the instance's collections.
+   * GET /adminPermissions/collectionGrants
    */
   private function listCollectionGrants(): CI_Output {
     $instanceCollections = $this->instance->getCollections()->toArray();
@@ -1053,11 +1038,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * POST /adminPermissions/collectionGrants: grant a group a level on
-   * one collection and its descendants.
-   *
-   * One grant per (group, collection) pair, same duplicate contract as
-   * createInstanceGrant: 409 with the existing row's id.
+   * POST /adminPermissions/collectionGrants
    */
   private function createCollectionGrant(): CI_Output {
     try {
@@ -1142,10 +1123,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /adminPermissions/collectionGrants/{id}: replace a
-   * grant's collection, group, and level.
-   *
-   * Same duplicate contract as updateInstanceGrant.
+   * PUT|PATCH /adminPermissions/collectionGrants/{id}
    */
   private function updateCollectionGrant(int $grantId): CI_Output {
     $grant = $this->em->find(CollectionPermission::class, $grantId);
@@ -1230,48 +1208,5 @@ class AdminPermissions extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['deleted' => $grantId]);
-  }
-
-  /**
-   * GET /adminPermissions/collections: every collection in this
-   * instance, flat with parentId so the client builds the tree.
-   *
-   * This is the admin's view, so non-browsable collections are
-   * included. instanceCount above 1 means the collection is shared
-   * with other instances.
-   */
-  public function collections() {
-    $this->abortUnlessAdmin();
-
-    if ($this->input->server('REQUEST_METHOD') !== 'GET') {
-      return abort_json(['error' => 'Method Not Allowed'], 405);
-    }
-
-    // Two joins on the same association: one filters to this
-    // instance's collections, the other counts every instance each
-    // collection belongs to.
-    $rows = $this->em->createQuery(
-      'SELECT c.id, c.title, IDENTITY(c.parent) AS parentId,
-              COUNT(anyInstance.id) AS instanceCount
-       FROM Entity\Collection c
-       JOIN c.instances thisInstance
-       LEFT JOIN c.instances anyInstance
-       WHERE thisInstance = :instance
-       GROUP BY c.id
-       ORDER BY c.title ASC'
-    )->setParameter('instance', $this->instance)->getArrayResult();
-
-    // COUNT and IDENTITY come back as strings from the driver
-    $collections = array_map(
-      fn($row) => [
-        'id' => (int) $row['id'],
-        'title' => $row['title'],
-        'parentId' => $row['parentId'] === null ? null : (int) $row['parentId'],
-        'instanceCount' => (int) $row['instanceCount'],
-      ],
-      $rows
-    );
-
-    return render_json(['collections' => $collections]);
   }
 }
