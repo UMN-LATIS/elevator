@@ -828,7 +828,6 @@ class AdminPermissions extends Instance_Controller {
         'POST' => fn() => $this->createInstanceGrant(),
       ],
       '/instanceGrants/{id}' => [
-        'GET' => fn() => $this->showInstanceGrant($grantId),
         'PUT' => fn() => $this->updateInstanceGrant($grantId),
         'PATCH' => fn() => $this->updateInstanceGrant($grantId),
         'DELETE' => fn() => $this->deleteInstanceGrant($grantId),
@@ -869,7 +868,6 @@ class AdminPermissions extends Instance_Controller {
         'POST' => fn() => $this->createCollectionGrant(),
       ],
       '/collectionGrants/{id}' => [
-        'GET' => fn() => $this->showCollectionGrant($grantId),
         'PUT' => fn() => $this->updateCollectionGrant($grantId),
         'PATCH' => fn() => $this->updateCollectionGrant($grantId),
         'DELETE' => fn() => $this->deleteCollectionGrant($grantId),
@@ -944,10 +942,6 @@ class AdminPermissions extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['instanceGrant' => $grant], 201);
-  }
-
-  private function showInstanceGrant(int $grantId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
   }
 
   /**
@@ -1030,6 +1024,13 @@ class AdminPermissions extends Instance_Controller {
    */
   private function listCollectionGrants(): CI_Output {
     $instanceCollections = $this->instance->getCollections()->toArray();
+
+    // findBy with an empty array builds an IN () clause, so an instance
+    // with no collections answers directly instead of querying
+    if (count($instanceCollections) === 0) {
+      return render_json(['collectionGrants' => []]);
+    }
+
     $grants = $this->em
       ->getRepository(CollectionPermission::class)
       ->findBy(['collection' => $instanceCollections]);
@@ -1116,10 +1117,6 @@ class AdminPermissions extends Instance_Controller {
       }
     }
     return null;
-  }
-
-  private function showCollectionGrant(int $grantId) {
-    return abort_json(['error' => 'Not Implemented'], 501);
   }
 
   /**
