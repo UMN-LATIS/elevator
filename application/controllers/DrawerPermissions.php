@@ -241,9 +241,8 @@ class DrawerPermissions extends Instance_Controller {
     return [
       'label' => [
         V::required(),
-        V::string(),
         V::maxLength(255),
-        V::regex('/[<>"]/', 'Label cannot contain < > or " characters')
+        V::notRegex('/[<>"]/', 'Label cannot contain < > or " characters')
       ],
     ];
   }

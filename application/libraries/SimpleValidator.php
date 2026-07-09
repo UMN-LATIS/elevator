@@ -78,9 +78,33 @@ class SimpleValidator {
   }
 
   public static function regex(string $pattern, $errorMessage = 'Invalid format.'): \Closure {
-    return fn($v) => !isset($v) || preg_match($pattern, $v)
-      ? true
-      : $errorMessage;
+    return function ($v) use ($pattern, $errorMessage) {
+      // absent stays valid, use required() to enforce presence
+      if (!isset($v)) {
+        return true;
+      }
+      // a non-string can't match a pattern, so report it rather than
+      // letting preg_match throw a TypeError
+      if (!is_string($v)) {
+        return $errorMessage;
+      }
+      return preg_match($pattern, $v) ? true : $errorMessage;
+    };
+  }
+
+  public static function notRegex(string $pattern, $errorMessage = 'String is invalid format.'): \Closure {
+    return function ($v) use ($pattern, $errorMessage) {
+      // absent stays valid, use required() to enforce presence
+      if (!isset($v)) {
+        return true;
+      }
+      // a non-string has no forbidden content to match, but the wrong
+      // type is still a failure, so report it rather than let it pass
+      if (!is_string($v)) {
+        return $errorMessage;
+      }
+      return preg_match($pattern, $v) ? $errorMessage : true;
+    };
   }
 
   public static function minLength(int $length): \Closure {
