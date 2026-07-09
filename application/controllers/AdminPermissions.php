@@ -1,8 +1,11 @@
 <?php
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
+use Doctrine\ORM\EntityManager;
 use Entity\InstanceGroup;
 use Entity\Permission;
+use Entity\CollectionPermission;
+use Entity\InstancePermission;
 use SimpleValidator as V;
 
 /**
@@ -40,11 +43,13 @@ class AdminPermissions extends Instance_Controller {
   ];
 
   private AuthHelper $authHelper;
+  private EntityManager $em;
 
   public function __construct() {
     parent::__construct();
     $this->load->library('SimpleValidator');
     $this->authHelper = $this->user_model->getAuthHelper();
+    $this->em = $this->doctrine->em;
   }
 
 
@@ -796,5 +801,409 @@ class AdminPermissions extends Instance_Controller {
     if ($this->config->item('enableCaching')) {
       $this->userCache->clear();
     }
+  }
+
+  /**
+   * REST entry point for /adminPermissions/instanceGrants[/{id}].
+   */
+  public function instanceGrants($grantId = null) {
+    $this->abortUnlessAdmin();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    if ($grantId !== null) {
+      $grantId = filter_var($grantId, FILTER_VALIDATE_INT);
+      if ($grantId === false) {
+        return abort_json(['error' => 'Invalid ID'], 400);
+      }
+    }
+
+    $route = $grantId === null
+      ? '/instanceGrants'
+      : '/instanceGrants/{id}';
+
+    $table = [
+      '/instanceGrants' => [
+        'GET' => fn() => $this->listInstanceGrants(),
+        'POST' => fn() => $this->createInstanceGrant(),
+      ],
+      '/instanceGrants/{id}' => [
+        'PUT' => fn() => $this->updateInstanceGrant($grantId),
+        'PATCH' => fn() => $this->updateInstanceGrant($grantId),
+        'DELETE' => fn() => $this->deleteInstanceGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  /**
+   * REST entry point for /adminPermissions/collectionGrants[/{id}].
+   */
+  public function collectionGrants($grantId = null) {
+    $this->abortUnlessAdmin();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    if ($grantId !== null) {
+      $grantId = filter_var($grantId, FILTER_VALIDATE_INT);
+      if ($grantId === false) {
+        return abort_json(['error' => 'Invalid ID'], 400);
+      }
+    }
+
+    $route = $grantId === null
+      ? '/collectionGrants'
+      : '/collectionGrants/{id}';
+
+    $table = [
+      '/collectionGrants' => [
+        'GET' => fn() => $this->listCollectionGrants(),
+        'POST' => fn() => $this->createCollectionGrant(),
+      ],
+      '/collectionGrants/{id}' => [
+        'PUT' => fn() => $this->updateCollectionGrant($grantId),
+        'PATCH' => fn() => $this->updateCollectionGrant($grantId),
+        'DELETE' => fn() => $this->deleteCollectionGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  private function listInstanceGrants() {
+    $grants = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findBy(['instance' => $this->instance]);
+
+    return render_json(['instanceGrants' => $grants]);
+  }
+
+
+  /**
+   * POST /adminPermissions/instanceGrants
+   */
+  private function createInstanceGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['group' => $group, 'instance' => $this->instance]);
+    if ($existingGrant) {
+      return abort_json([
+        'error' => 'Group already has an instance grant',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant = new InstancePermission();
+    $grant->setGroup($group);
+    $grant->setInstance($this->instance);
+    $grant->setPermission($level);
+
+    $this->em->persist($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['instanceGrant' => $grant], 201);
+  }
+
+  /**
+   * PUT|PATCH /adminPermissions/instanceGrants/{id}
+   */
+  private function updateInstanceGrant(int $grantId): CI_Output {
+    $grant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['id' => $grantId, 'instance' => $this->instance]);
+    if (!$grant) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['group' => $group, 'instance' => $this->instance]);
+    if ($existingGrant && $existingGrant->getId() !== $grantId) {
+      return abort_json([
+        'error' => 'Group already has an instance grant',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant->setGroup($group);
+    $grant->setPermission($level);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['instanceGrant' => $grant]);
+  }
+
+  /**
+   * DELETE /adminPermissions/instanceGrants/{id}: remove one grant.
+   * The group itself is untouched.
+   */
+  private function deleteInstanceGrant(int $grantId): CI_Output {
+    $grant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['id' => $grantId, 'instance' => $this->instance]);
+    if (!$grant) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    $this->em->remove($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $grantId]);
+  }
+
+  /**
+   * GET /adminPermissions/collectionGrants
+   */
+  private function listCollectionGrants(): CI_Output {
+    $instanceCollections = $this->instance->getCollections()->toArray();
+
+    // findBy with an empty array builds an IN () clause, so an instance
+    // with no collections answers directly instead of querying
+    if (count($instanceCollections) === 0) {
+      return render_json(['collectionGrants' => []]);
+    }
+
+    $grants = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findBy(['collection' => $instanceCollections]);
+
+    return render_json(['collectionGrants' => $grants]);
+  }
+
+  /**
+   * POST /adminPermissions/collectionGrants
+   */
+  private function createCollectionGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'collectionId' => [V::required(), V::integer()],
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $collection = $this->findCollectionInInstance(
+      (int) $validated['collectionId']
+    );
+    if (!$collection) {
+      return abort_json(['error' => 'Collection not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findOneBy(['group' => $group, 'collection' => $collection]);
+    if ($existingGrant) {
+      return abort_json([
+        'error' => 'Group already has a grant on this collection',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant = new CollectionPermission();
+    $grant->setGroup($group);
+    $grant->setCollection($collection);
+    $grant->setPermission($level);
+
+    $this->em->persist($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['collectionGrant' => $grant], 201);
+  }
+
+  /**
+   * Find the collection with `$collectionId` among this instance's own
+   * collections.
+   *
+   * Collection ids are global, so fetching one straight from the
+   * repository would let an admin reach another instance's collection.
+   * Scanning the instance's collection list enforces membership, the
+   * same ownership pattern as findEntryInGroup.
+   *
+   * @return ?Entity\Collection null when the instance has no such
+   *   collection
+   */
+  private function findCollectionInInstance(int $collectionId): ?Entity\Collection {
+    foreach ($this->instance->getCollections() as $candidate) {
+      if ($candidate->getId() === $collectionId) {
+        return $candidate;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * PUT|PATCH /adminPermissions/collectionGrants/{id}
+   */
+  private function updateCollectionGrant(int $grantId): CI_Output {
+    $grant = $this->em->find(CollectionPermission::class, $grantId);
+
+    // Grant ids are global, so ownership comes from the grant's
+    // collection belonging to this instance. An orphaned grant (null
+    // collection) is unreachable for the same reason.
+    $currentCollectionId = $grant?->getCollection()?->getId();
+    if ($currentCollectionId === null || !$this->findCollectionInInstance($currentCollectionId)) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'collectionId' => [V::required(), V::integer()],
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $collection = $this->findCollectionInInstance(
+      (int) $validated['collectionId']
+    );
+    if (!$collection) {
+      return abort_json(['error' => 'Collection not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findOneBy(['group' => $group, 'collection' => $collection]);
+    if ($existingGrant && $existingGrant->getId() !== $grantId) {
+      return abort_json([
+        'error' => 'Group already has a grant on this collection',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant->setGroup($group);
+    $grant->setCollection($collection);
+    $grant->setPermission($level);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['collectionGrant' => $grant]);
+  }
+
+  /**
+   * DELETE /adminPermissions/collectionGrants/{id}: remove one grant.
+   */
+  private function deleteCollectionGrant(int $grantId): CI_Output {
+    $grant = $this->em->find(CollectionPermission::class, $grantId);
+
+    // same ownership rule as updateCollectionGrant: reachable only
+    // through a collection belonging to this instance
+    $collectionId = $grant?->getCollection()?->getId();
+    if ($collectionId === null || !$this->findCollectionInInstance($collectionId)) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    $this->em->remove($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $grantId]);
   }
 }

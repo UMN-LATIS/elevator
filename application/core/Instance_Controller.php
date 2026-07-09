@@ -1,8 +1,12 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use Entity\Instance;
+
+if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Instance_Controller extends MY_Controller
 {
-    public $instance = null;
+    public ?Instance $instance = null;
     public $instanceType;
     public $noRedirect = false;
     public $useUnauthenticatedTemplate;
