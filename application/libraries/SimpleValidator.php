@@ -1,8 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class SimpleValidator
-{
+class SimpleValidator {
   /**
    * Validates $data against $schema (array of field => closure[])
    * Returns filtered data or throws ValidationException
@@ -26,8 +25,7 @@ class SimpleValidator
    *  $errors = $e->getErrors();
    * }
    */
-  public static function validate(array $data, array $schema): array
-  {
+  public static function validate(array $data, array $schema): array {
     $errors = [];
 
     foreach ($schema as $field => $checkers) {
@@ -51,63 +49,53 @@ class SimpleValidator
 
   // ----- Validators
 
-  public static function required(): \Closure
-  {
+  public static function required(): \Closure {
     return fn($v) => (isset($v) && $v !== '') ? true : 'This field is required';
   }
 
-  public static function integer(): \Closure
-  {
+  public static function integer(): \Closure {
     return fn($v) => !isset($v) || filter_var($v, FILTER_VALIDATE_INT) !== false ? true : 'Must be an integer';
   }
 
-  public static function array(): \Closure
-  {
+  public static function array(): \Closure {
     return fn($v) => !isset($v) || is_array($v) ? true : 'Must be an array';
   }
 
-  public static function string(): \Closure
-  {
+  public static function string(): \Closure {
     return fn($v) => !isset($v) || is_string($v) ? true : 'Must be a string';
   }
 
-  public static function min(int $min): \Closure
-  {
+  public static function min(int $min): \Closure {
     return fn($v) => !isset($v) || (is_numeric($v) && $v >= $min)
       ? true
       : "Must be at least {$min}";
   }
 
-  public static function max(int $max): \Closure
-  {
+  public static function max(int $max): \Closure {
     return fn($v) => !isset($v) || (is_numeric($v) && $v <= $max)
       ? true
       : "Must not exceed {$max}";
   }
 
-  public static function regex(string $pattern): \Closure
-  {
+  public static function regex(string $pattern, $errorMessage = 'Invalid format.'): \Closure {
     return fn($v) => !isset($v) || preg_match($pattern, $v)
       ? true
-      : "Invalid format.";
+      : $errorMessage;
   }
 
-  public static function minLength(int $length): \Closure
-  {
+  public static function minLength(int $length): \Closure {
     return fn($v) => !isset($v) || (is_string($v) && mb_strlen($v) >= $length)
       ? true
       : "Must be at least {$length} characters long";
   }
 
-  public static function maxLength(int $length): \Closure
-  {
+  public static function maxLength(int $length): \Closure {
     return fn($v) => !isset($v) || (is_string($v) && mb_strlen($v) <= $length)
       ? true
       : "Must be {$length} characters or fewer";
   }
 
-  public static function json(): \Closure
-  {
+  public static function json(): \Closure {
     return function ($v) {
       if (!isset($v)) return true;
       if (!is_string($v)) return 'Must be valid JSON';
