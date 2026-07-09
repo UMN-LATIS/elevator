@@ -2,7 +2,6 @@
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Query\Expr;
 use Entity\DrawerGroup;
 use SimpleValidator as V;
 
