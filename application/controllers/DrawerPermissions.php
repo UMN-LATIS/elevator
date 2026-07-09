@@ -94,7 +94,7 @@ class DrawerPermissions extends Instance_Controller {
   private function showGroup(int $groupId): CI_Output {
     $this->abortIfPersonalGroup($groupId);
 
-    $group = $this->findOwnGroup($groupId);
+    $group = $this->findCurrentUserDrawerGroup($groupId);
     if (!$group) {
       return abort_json(['error' => 'Group not found'], 404);
     }
@@ -124,7 +124,7 @@ class DrawerPermissions extends Instance_Controller {
     $this->em->persist($group);
     $this->em->flush();
 
-    $this->clearUserCache();
+    $this->removeCurrentUserCache();
 
     return render_json(['group' => $group], 201);
   }
@@ -136,7 +136,7 @@ class DrawerPermissions extends Instance_Controller {
   private function updateGroup(int $groupId): CI_Output {
     $this->abortIfPersonalGroup($groupId);
 
-    $group = $this->findOwnGroup($groupId);
+    $group = $this->findCurrentUserDrawerGroup($groupId);
     if (!$group) {
       return abort_json(['error' => 'Group not found'], 404);
     }
@@ -150,7 +150,7 @@ class DrawerPermissions extends Instance_Controller {
     $group->setGroupLabel($validated['label']);
     $this->em->flush();
 
-    $this->clearUserCache();
+    $this->removeCurrentUserCache();
 
     return render_json(['group' => $group]);
   }
@@ -161,7 +161,7 @@ class DrawerPermissions extends Instance_Controller {
   private function deleteGroup(int $groupId): CI_Output {
     $this->abortIfPersonalGroup($groupId);
 
-    $group = $this->findOwnGroup($groupId);
+    $group = $this->findCurrentUserDrawerGroup($groupId);
     if (!$group) {
       return abort_json(['error' => 'Group not found'], 404);
     }
@@ -169,7 +169,9 @@ class DrawerPermissions extends Instance_Controller {
     $this->em->remove($group);
     $this->em->flush();
 
-    $this->clearUserCache();
+    // deleting a group, will cascade deletes to members and entries
+    // changing multiple user permissions. Clear it all.
+    $this->clearAllUserCache();
 
     return render_json(['deleted' => $groupId]);
   }
@@ -224,7 +226,7 @@ class DrawerPermissions extends Instance_Controller {
   /**
    * Find a group by id only when the signed-in user owns it.
    */
-  private function findOwnGroup(int $groupId): ?DrawerGroup {
+  private function findCurrentUserDrawerGroup(int $groupId): ?DrawerGroup {
     return $this->em
       ->getRepository(DrawerGroup::class)
       ->findOneBy([
@@ -273,13 +275,13 @@ class DrawerPermissions extends Instance_Controller {
     return ($this->user_model->getMaxCollectionPermission() ?? 0) >= PERM_CREATEDRAWERS;
   }
 
-  /**
-   * Clear cached user permissions after a group mutation so the change
-   * takes effect immediately.
-   */
-  private function clearUserCache(): void {
-    if ($this->config->item('enableCaching')) {
-      $this->userCache->clear();
-    }
+  private function removeCurrentUserCache(): void {
+    if (!$this->config->item('enableCaching')) return;
+    $this->userCache->delete($this->user_model->userId);
+  }
+
+  private function clearAllUserCache(): void {
+    if (!$this->config->item('enableCaching')) return;
+    $this->userCache->clear();
   }
 }
