@@ -7,7 +7,7 @@ use Entity\DrawerGroup;
 use SimpleValidator as V;
 
 /**
- * pure json api for the new drawer groups ui.
+ * JSON api for the drawer group/permission management ui.
  *
  * Drawer groups are owned by a user, unlike instance groups which belong
  * to the instance. So every action is scoped to the signed-in user's own
@@ -39,6 +39,8 @@ class DrawerPermissions extends Instance_Controller {
         "type" => $type["name"],
         "label" => $type["label"],
         "description" => $type["helpText"] ?? "",
+        // TODO: real hints, see AdminPermissions::entryHintsForType
+        "entryHints" => [],
         "adminOnly" => $this->groupTypeCatalog->isAdminOnly($type["name"]),
       ],
       array_values($this->groupTypeCatalog->all())
@@ -113,7 +115,6 @@ class DrawerPermissions extends Instance_Controller {
       return $handler();
     }
 
-    // a known route, but the verb isn't allowed on it
     return abort_json(['error' => 'Method Not Allowed'], 405);
   }
 
@@ -147,8 +148,7 @@ class DrawerPermissions extends Instance_Controller {
 
   /**
    * POST /drawerPermissions/groups: create a group owned by the
-   * signed-in user. Members and value entries arrive in later slices,
-   * so the group starts empty.
+   * signed-in user, with any initial member or match values.
    */
   private function createGroup(): CI_Output {
     try {
@@ -172,9 +172,35 @@ class DrawerPermissions extends Instance_Controller {
     $group->setUser($this->user_model->user);
     $group->setGroupType($type);
     $group->setGroupLabel($validated['label']);
-    // population types match on the vestigial scalar (must be 1), every
-    // other type carries its members or values as entries
-    $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($type) ? 1 : null);
+
+    if ($this->groupTypeCatalog->ignoresGroupValues($type)) {
+      // must be 1 for legacy reasons
+      $group->setGroupValue(1);
+    } else {
+      $group->setGroupValue(null);
+
+      $nonEmptyValues = array_filter(
+        (array) ($validated['values'] ?? []),
+        fn($value) => $value !== ''
+      );
+
+      foreach ($nonEmptyValues as $value) {
+        // a non-numeric User value is a remote username. Provision its
+        // local row and store the resulting user id. Other types store
+        // their value as-is.
+        if ($type === USER_TYPE && !is_numeric($value)) {
+          try {
+            $value = $this->firstOrProvisionRemoteUser($value)->getId();
+          } catch (RemoteUserNotFoundException $e) {
+            return abort_json(['error' => $e->getMessage()], 404);
+          }
+        }
+
+        $entry = new \Entity\GroupEntry();
+        $entry->setGroupValue($value);
+        $group->addGroupValue($entry);
+      }
+    }
 
     $this->em->persist($group);
     $this->em->flush();
@@ -225,9 +251,8 @@ class DrawerPermissions extends Instance_Controller {
     if ($hasTypeChanged) {
       $group->setGroupType($newType);
 
-      // a type change invalidates old entries, so clear them. toArray()
-      // copies first so removing entries does not mutate the list
-      // mid-loop.
+      // toArray() copies first so removing entries does not mutate the
+      // list mid-loop
       foreach ($group->getGroupValues()->toArray() as $entry) {
         $group->removeGroupValue($entry);
       }
@@ -261,8 +286,8 @@ class DrawerPermissions extends Instance_Controller {
     $this->em->remove($group);
     $this->em->flush();
 
-    // deleting a group, will cascade deletes to members and entries
-    // changing multiple user permissions. Clear it all.
+    // deleting a group cascades to its members and entries, changing
+    // many users' permissions, so clear every user's cache
     $this->clearAllUserCache();
 
     return render_json(['deleted' => $groupId]);
@@ -290,24 +315,17 @@ class DrawerPermissions extends Instance_Controller {
       return null;
     }
 
-    // we use a heuristic to find the personal drawer group.
-    // since the personal drawer group is created automatically the first
-    // time a user creates a drawer, we find the oldest user-owned group
-    // with the current user as a member
+    // heuristic: the oldest User-type group the user owns that lists
+    // the user's own id as a member
     $query = $this->em
       ->getRepository(DrawerGroup::class)
       ->createQueryBuilder('drawerGroup')
       ->join('drawerGroup.group_values', 'entry')
-      // 1. group owned by the current user
       ->where('drawerGroup.user = :ownUserId')
-      // 2. is a `User` type group
       ->andWhere('drawerGroup.group_type = :groupType')
-      // 3. includes the user's own id as a member entry
       ->andWhere('entry.groupValue = :ownUserId')
       ->setParameter('ownUserId', $ownUserId)
       ->setParameter('groupType', USER_TYPE)
-      // The personal group is created the first time a user makes a drawer,
-      // so get the oldest one
       ->orderBy('drawerGroup.id', 'ASC')
       ->setMaxResults(1)
       ->getQuery();
@@ -315,9 +333,6 @@ class DrawerPermissions extends Instance_Controller {
     return $query->getOneOrNullResult();
   }
 
-  /**
-   * Find a group by id only when the signed-in user owns it.
-   */
   private function findCurrentUserDrawerGroup(int $groupId): ?DrawerGroup {
     return $this->em
       ->getRepository(DrawerGroup::class)
@@ -364,9 +379,9 @@ class DrawerPermissions extends Instance_Controller {
   /**
    * Drawers the signed-in user holds at least PERM_CREATEDRAWERS on.
    *
-   * Instance admins hold 60 on every drawer in their instance through a
-   * fallback in getAccessLevel, not through the drawerPermissions map,
-   * so they get the whole instance's drawers here.
+   * Instance admins hold PERM_ADMIN on every drawer in their instance
+   * through a fallback in getAccessLevel, not through the
+   * drawerPermissions map, so they get the whole instance's drawers here.
    */
   private function manageableDrawers(): array {
     $drawerRepository = $this->em->getRepository(Drawer::class);
@@ -416,8 +431,7 @@ class DrawerPermissions extends Instance_Controller {
     if (($this->user_model->getMaxCollectionPermission() ?? 0) >= PERM_CREATEDRAWERS) {
       return true;
     }
-    // the leading 0 keeps max() legal when the user holds no drawer
-    // grants at all
+    // max() errors on an empty array, so seed a 0
     $drawerGrantLevels = array_values($this->user_model->drawerPermissions);
     return max([0, ...$drawerGrantLevels]) >= PERM_CREATEDRAWERS;
   }

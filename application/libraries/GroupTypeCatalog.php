@@ -69,8 +69,7 @@ class GroupTypeCatalog {
 
   /**
    * Whether $type matches a whole population instead of a values list
-   * (All/Authed/Authed_remote). Such a group carries a vestigial scalar
-   * group_value of 1 and holds no entries.
+   * (All/Authed/Authed_remote). The group holds no entries.
    */
   public function ignoresGroupValues(string $type): bool {
     return self::GLOBAL_TYPES[$type]["populationWide"] ?? false;

@@ -34,6 +34,7 @@ class AdminPermissions extends Instance_Controller {
         "label" => $t["label"],
         "description" => $t["helpText"] ?? "",
         "entryHints" => $this->entryHintsForType($t["name"]),
+        "adminOnly" => $this->groupTypeCatalog->isAdminOnly($t["name"]),
       ],
       array_values($this->groupTypeCatalog->all())
     );
@@ -460,7 +461,7 @@ class AdminPermissions extends Instance_Controller {
 
   /**
    * Shared validation rules for a group's editable attributes (label +
-   * type). createGroup adds its own `values` rule on top of these.
+   * type), used by both createGroup and updateGroup.
    */
   private function groupAttributeRules(): array {
     $validTypes = array_keys($this->groupTypeCatalog->all());
@@ -503,34 +504,10 @@ class AdminPermissions extends Instance_Controller {
     $group->setGroupLabel($validated['label']);
 
     if ($this->groupTypeCatalog->ignoresGroupValues($type)) {
-      // vestigial scalar, must be 1: Authed/Authed_remote match on it
+      // must be 1 for legacy reasons
       $group->setGroupValue(1);
     } else {
       $group->setGroupValue(null);
-
-      $nonEmptyValues = array_filter(
-        (array) ($validated['values'] ?? []),
-        fn($v) => $v !== ''
-      );
-
-      // create a GroupEntry for each value
-      foreach ($nonEmptyValues as $value) {
-        // a non-numeric User value is a remote auth-system id; resolve
-        // it to a local user id. other types store their value as-is
-        if ($type === USER_TYPE && !is_numeric($value)) {
-          // a non-numeric value is a remote username; provision its
-          // local row and store the resulting user id
-          try {
-            $value = $this->firstOrProvisionRemoteUser($value)->getId();
-          } catch (RemoteUserNotFoundException $e) {
-            return abort_json(['error' => $e->getMessage()], 404);
-          }
-        }
-
-        $entry = new Entity\GroupEntry();
-        $entry->setGroupValue($value);
-        $group->addGroupValue($entry);
-      }
     }
 
     $this->doctrine->em->persist($group);
@@ -539,47 +516,6 @@ class AdminPermissions extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['group' => $group], 201);
-  }
-
-  /**
-   * Find a remote user within the local DB by their remote id
-   * (e.g. username, umndid). If not found, creates a new
-   * user in the local DB with the remoteUserId set.
-   *
-   * @throws RemoteUserNotFoundException if the user cannot be found or
-   *   provisioned.
-   * @return Entity\User the user record matching the remote id
-   */
-  private function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
-    // findById($id, true) will make new (unsaved) an Entity\User record with
-    // the given remote id if nothing is found.
-    /** @var ?Entity\User $remoteUser */
-    $remoteUser = $this->authHelper->findById($remoteUserId, true)[0] ?? null;
-
-    if ($remoteUser === null) {
-      throw new RemoteUserNotFoundException($remoteUserId);
-    }
-
-    // does a user already exist in the local DB with this username?
-    /** @var ?Entity\User $existingUser */
-    $existingUser = $this->doctrine->em->getRepository(Entity\User::class)
-      ->findOneBy(["username" => $remoteUser->getUsername()]);
-
-    // if so, return it instead of the new unsaved one
-    if ($existingUser !== null) {
-      return $existingUser;
-    }
-
-    // otherwise, fill in some blanks in the new record
-    $remoteUser->setUserType("Remote");
-    $remoteUser->setCreatedAt(new \DateTime("now"));
-    $remoteUser->setInstance($this->instance);
-
-    // and then save it
-    $this->doctrine->em->persist($remoteUser);
-    $this->doctrine->em->flush();
-
-    return $remoteUser;
   }
 
   /**
