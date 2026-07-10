@@ -125,11 +125,11 @@ class DrawerPermissions extends Instance_Controller {
       ->getRepository(DrawerGroup::class)
       ->findBy(['user' => $this->user_model->user]);
 
-    $isNotPersonalGroup = fn(DrawerGroup $group): bool =>
-    $group->getId() !== $personalGroupId;
-    $visibleGroups = array_values(array_filter($groups, $isNotPersonalGroup));
 
-    return render_json(['groups' => $visibleGroups]);
+    $withPersonalFlag = fn(DrawerGroup $group): array =>
+    $group->jsonSerialize() + ['is_personal' => $group->getId() === $personalGroupId];
+
+    return render_json(['groups' => array_map($withPersonalFlag, $groups)]);
   }
 
   /**
