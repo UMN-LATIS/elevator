@@ -2,6 +2,7 @@
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
 use Doctrine\ORM\EntityManager;
+use Entity\Drawer;
 use Entity\DrawerGroup;
 use SimpleValidator as V;
 
@@ -10,15 +11,58 @@ use SimpleValidator as V;
  *
  * Drawer groups are owned by a user, unlike instance groups which belong
  * to the instance. So every action is scoped to the signed-in user's own
- * groups and gated on "can create drawers", not instance admin.
+ * groups and gated on "can manage drawers", not instance admin.
  */
 class DrawerPermissions extends Instance_Controller {
+  private GroupTypeCatalog $groupTypeCatalog;
   private EntityManager $em;
 
   public function __construct() {
     parent::__construct();
     $this->load->library('SimpleValidator');
+    $this->groupTypeCatalog = new GroupTypeCatalog(
+      $this->user_model->getAuthHelper()->authTypes
+    );
     $this->em = $this->doctrine->em;
+  }
+
+  /**
+   * GET /drawerPermissions/groupTypes: the catalog for the type selector.
+   * Admin-only types stay in the list so non-admin UIs can show them
+   * disabled, matching the legacy form.
+   */
+  public function groupTypes(): CI_Output {
+    $this->abortUnlessCanManageDrawers();
+
+    $groupTypes = array_map(
+      fn($type) => [
+        "type" => $type["name"],
+        "label" => $type["label"],
+        "description" => $type["helpText"] ?? "",
+        "adminOnly" => $this->groupTypeCatalog->isAdminOnly($type["name"]),
+      ],
+      array_values($this->groupTypeCatalog->all())
+    );
+
+    return render_json(["groupTypes" => $groupTypes]);
+  }
+
+  /**
+   * GET /drawerPermissions/drawers: drawers the signed-in user can
+   * manage, for the management page's Drawers tab.
+   */
+  public function drawers(): CI_Output {
+    $this->abortUnlessCanManageDrawers();
+
+    $drawerPayload = array_map(
+      fn(Drawer $drawer) => [
+        'id' => $drawer->getId(),
+        'title' => $drawer->getTitle(),
+      ],
+      $this->manageableDrawers()
+    );
+
+    return render_json(['drawers' => $drawerPayload]);
   }
 
   /**
@@ -28,7 +72,7 @@ class DrawerPermissions extends Instance_Controller {
    * /drawerPermissions/groups/5 calls this with $groupId = "5".
    */
   public function groups($groupId = null): CI_Output {
-    $this->abortUnlessCanCreateDrawers();
+    $this->abortUnlessCanManageDrawers();
 
     $method = $this->input->server('REQUEST_METHOD');
 
@@ -102,23 +146,35 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * POST /drawerPermissions/groups: create a "Specific People" group owned
-   * by the signed-in user. Members and other group types arrive in later
-   * slices, so the type is fixed to User here.
+   * POST /drawerPermissions/groups: create a group owned by the
+   * signed-in user. Members and value entries arrive in later slices,
+   * so the group starts empty.
    */
   private function createGroup(): CI_Output {
     try {
-      $validated = V::validate($this->requestBody(), $this->groupLabelRules());
+      $validated = V::validate(
+        $this->requestBody(),
+        $this->groupAttributeRules()
+      );
     } catch (ValidationException $e) {
       return abort_json(['errors' => $e->getErrors()], 422);
     }
 
+    $type = $validated['type'];
+    if (!$this->canUseGroupType($type)) {
+      return abort_json(
+        ['error' => 'Only instance admins can use instance-wide group types'],
+        403
+      );
+    }
+
     $group = new DrawerGroup();
     $group->setUser($this->user_model->user);
-    $group->setGroupType(USER_TYPE);
+    $group->setGroupType($type);
     $group->setGroupLabel($validated['label']);
-    // User groups carry members as entries, so the scalar flag stays null
-    $group->setGroupValue(null);
+    // population types match on the vestigial scalar (must be 1), every
+    // other type carries its members or values as entries
+    $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($type) ? 1 : null);
 
     $this->em->persist($group);
     $this->em->flush();
@@ -129,8 +185,11 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /drawerPermissions/groups/{id}: rename a group. Type changes
-   * come with the type selector in a later slice.
+   * PUT|PATCH /drawerPermissions/groups/{id}: edit a group's label and
+   * type.
+   *
+   * Changing the type clears existing entries, since they belong to the
+   * old type. Editing only the label leaves them alone.
    */
   private function updateGroup(int $groupId): CI_Output {
     $this->abortIfPersonalGroup($groupId);
@@ -141,15 +200,49 @@ class DrawerPermissions extends Instance_Controller {
     }
 
     try {
-      $validated = V::validate($this->requestBody(), $this->groupLabelRules());
+      $validated = V::validate(
+        $this->requestBody(),
+        $this->groupAttributeRules()
+      );
     } catch (ValidationException $e) {
       return abort_json(['errors' => $e->getErrors()], 422);
     }
 
+    $newType = $validated['type'];
+    $hasTypeChanged = $newType !== $group->getGroupType();
+
+    // a non-admin may keep an admin-only type it already has (rename
+    // only), but may not switch a group onto one
+    if ($hasTypeChanged && !$this->canUseGroupType($newType)) {
+      return abort_json(
+        ['error' => 'Only instance admins can use instance-wide group types'],
+        403
+      );
+    }
+
     $group->setGroupLabel($validated['label']);
+
+    if ($hasTypeChanged) {
+      $group->setGroupType($newType);
+
+      // a type change invalidates old entries, so clear them. toArray()
+      // copies first so removing entries does not mutate the list
+      // mid-loop.
+      foreach ($group->getGroupValues()->toArray() as $entry) {
+        $group->removeGroupValue($entry);
+      }
+      $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($newType) ? 1 : null);
+    }
+
     $this->em->flush();
 
-    $this->removeCurrentUserCache();
+    if ($hasTypeChanged) {
+      // clearing the members revokes their drawer access, so their
+      // cached permissions are stale too, not just the owner's
+      $this->clearAllUserCache();
+    } else {
+      $this->removeCurrentUserCache();
+    }
 
     return render_json(['group' => $group]);
   }
@@ -235,11 +328,19 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * Validation for a group's label. Rejects `< > "` to prevent HTML
-   * injection while still allowing names like `R&D` and `Bob's Team`.
+   * Validation rules for a group's editable attributes (label + type).
+   * The label rejects `< > "` to prevent HTML injection while still
+   * allowing names like `R&D` and `Bob's Team`.
    */
-  private function groupLabelRules(): array {
+  private function groupAttributeRules(): array {
+    $validTypes = array_keys($this->groupTypeCatalog->all());
     return [
+      'type' => [
+        V::required(),
+        fn($value) => !isset($value) || in_array($value, $validTypes, true)
+          ? true
+          : 'Unknown group type',
+      ],
       'label' => [
         V::required(),
         V::maxLength(255),
@@ -249,20 +350,61 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * Abort unless the signed-in user can create drawers. Mirrors the
-   * capability Home exposes as userCanCreateDrawers: a super admin, an
-   * instance grant of at least PERM_CREATEDRAWERS, or edit access on any
-   * collection. Drawer groups are user-owned, so this is the gate rather
-   * than instance admin.
+   * Whether the signed-in user may put a group on `$type`:
+   * population-wide types are reserved for instance admins.
    */
-  private function abortUnlessCanCreateDrawers(): void {
+  private function canUseGroupType(string $type): bool {
+    if (!$this->groupTypeCatalog->isAdminOnly($type)) {
+      return true;
+    }
+    return $this->user_model->isInstanceAdmin()
+      || $this->user_model->getIsSuperAdmin();
+  }
+
+  /**
+   * Drawers the signed-in user holds at least PERM_CREATEDRAWERS on.
+   *
+   * Instance admins hold 60 on every drawer in their instance through a
+   * fallback in getAccessLevel, not through the drawerPermissions map,
+   * so they get the whole instance's drawers here.
+   */
+  private function manageableDrawers(): array {
+    $drawerRepository = $this->em->getRepository(Drawer::class);
+
+    $isEveryDrawerManageable = $this->user_model->isInstanceAdmin()
+      || $this->user_model->getIsSuperAdmin();
+    if ($isEveryDrawerManageable) {
+      return $drawerRepository->findBy(
+        ['instance' => $this->instance],
+        ['title' => 'ASC']
+      );
+    }
+
+    $manageableDrawerIds = array_keys(array_filter(
+      $this->user_model->drawerPermissions,
+      fn($level) => $level >= PERM_CREATEDRAWERS
+    ));
+    if (count($manageableDrawerIds) === 0) {
+      return [];
+    }
+
+    return $drawerRepository->findBy(
+      ['id' => $manageableDrawerIds, 'instance' => $this->instance],
+      ['title' => 'ASC']
+    );
+  }
+
+  /**
+   * Abort unless the signed-in user can manage at least one drawer.
+   */
+  private function abortUnlessCanManageDrawers(): void {
     $this->abortUnlessAuthed();
-    if (!$this->canCreateDrawers()) {
+    if (!$this->canManageDrawers()) {
       abort_json(['error' => 'Forbidden'], 403);
     }
   }
 
-  private function canCreateDrawers(): bool {
+  private function canManageDrawers(): bool {
     if ($this->user_model->getIsSuperAdmin()) {
       return true;
     }
@@ -271,7 +413,13 @@ class DrawerPermissions extends Instance_Controller {
     }
     // getMaxCollectionPermission returns null when the user has no
     // collection grants at all
-    return ($this->user_model->getMaxCollectionPermission() ?? 0) >= PERM_CREATEDRAWERS;
+    if (($this->user_model->getMaxCollectionPermission() ?? 0) >= PERM_CREATEDRAWERS) {
+      return true;
+    }
+    // the leading 0 keeps max() legal when the user holds no drawer
+    // grants at all
+    $drawerGrantLevels = array_values($this->user_model->drawerPermissions);
+    return max([0, ...$drawerGrantLevels]) >= PERM_CREATEDRAWERS;
   }
 
   private function removeCurrentUserCache(): void {

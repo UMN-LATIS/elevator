@@ -1,26 +1,10 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-/**
- * The group types an instance offers: the built-in globals plus the
- * instance auth helper's own types, with the predicates callers ask about
- * each type. One definition shared by AdminPermissions (instance groups)
- * and DrawerPermissions (drawer groups) so the catalog does not drift
- * between them.
- *
- * @example
- * ```php
- * $catalog = new GroupTypeCatalog($this->user_model->getAuthHelper()->authTypes);
- * if (!$catalog->isValid($type)) { ... }
- * $group->setGroupValue($catalog->ignoresGroupValues($type) ? 1 : null);
- * ```
- */
 class GroupTypeCatalog {
   // The built-in types every instance has. `populationWide` marks the
-  // types that match a whole population rather than a chosen list. That
-  // single fact drives two predicates: such a group ignores group values
-  // (it has no entries), and only an instance admin may create one
-  // (sharing across a whole population is an admin decision).
+  // types that match a whole population rather than a chosen list, which
+  // means they have no entries.
   private const GLOBAL_TYPES = [
     ALL_TYPE => [
       "name" => ALL_TYPE,

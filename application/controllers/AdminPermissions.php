@@ -12,43 +12,15 @@ use SimpleValidator as V;
  * pure json api for new ui
  */
 class AdminPermissions extends Instance_Controller {
-  // mirrors the structure of AuthHelpers::$authTypes,
-  // @see UMNHelper:$authTypes for an example
-  const GLOBAL_GROUP_TYPES = [
-    ALL_TYPE => [
-      "name" => ALL_TYPE,
-      "label" => "All",
-      "helpText" => "Everyone, including signed-out visitors.",
-      // vestigial group_value
-      "ignoresGroupValues" => true,
-    ],
-    AUTHED_TYPE => [
-      "name" => AUTHED_TYPE,
-      "label" => "Authenticated Users",
-      "helpText" => "Anyone signed in, by any login method.",
-      "ignoresGroupValues" => true,
-    ],
-    REMOTE_TYPE => [
-      "name" => REMOTE_TYPE,
-      "label" => "Centrally Authenticated Users",
-      "helpText" => "Users signed in through central "
-        . "single sign-on (SSO).",
-      "ignoresGroupValues" => true,
-    ],
-    USER_TYPE => [
-      "name" => USER_TYPE,
-      "label" => "Specific People",
-      "helpText" => "Specific people you choose. Add by name, email, or username.",
-    ],
-  ];
-
   private AuthHelper $authHelper;
+  private GroupTypeCatalog $groupTypeCatalog;
   private EntityManager $em;
 
   public function __construct() {
     parent::__construct();
     $this->load->library('SimpleValidator');
     $this->authHelper = $this->user_model->getAuthHelper();
+    $this->groupTypeCatalog = new GroupTypeCatalog($this->authHelper->authTypes);
     $this->em = $this->doctrine->em;
   }
 
@@ -63,7 +35,7 @@ class AdminPermissions extends Instance_Controller {
         "description" => $t["helpText"] ?? "",
         "entryHints" => $this->entryHintsForType($t["name"]),
       ],
-      array_values($this->getGroupTypes())
+      array_values($this->groupTypeCatalog->all())
     );
 
     return render_json(["groupTypes" => $groupTypes]);
@@ -83,7 +55,7 @@ class AdminPermissions extends Instance_Controller {
     // Global types never take entries. Guard by type category rather
     // than trusting that no auth helper ever keys its userData by a
     // global type name, since helpers pick their keys independently.
-    if (!$this->isAuthHelperGroupType($type)) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($type)) {
       return [];
     }
 
@@ -291,7 +263,7 @@ class AdminPermissions extends Instance_Controller {
       foreach ($group->getGroupValues()->toArray() as $entry) {
         $group->removeGroupValue($entry); // orphanRemoval deletes on flush
       }
-      $group->setGroupValue($this->ignoresGroupValues($newType) ? 1 : null);
+      $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($newType) ? 1 : null);
     }
 
     $this->doctrine->em->flush();
@@ -486,19 +458,12 @@ class AdminPermissions extends Instance_Controller {
     ];
   }
 
-  private function getGroupTypes(): array {
-    return [
-      ...self::GLOBAL_GROUP_TYPES,
-      ...$this->authHelper->authTypes,
-    ];
-  }
-
   /**
    * Shared validation rules for a group's editable attributes (label +
    * type). createGroup adds its own `values` rule on top of these.
    */
   private function groupAttributeRules(): array {
-    $validTypes = array_keys($this->getGroupTypes());
+    $validTypes = array_keys($this->groupTypeCatalog->all());
     return [
       'type' => [
         V::required(),
@@ -537,7 +502,7 @@ class AdminPermissions extends Instance_Controller {
     $group->setGroupType($type);
     $group->setGroupLabel($validated['label']);
 
-    if ($this->ignoresGroupValues($type)) {
+    if ($this->groupTypeCatalog->ignoresGroupValues($type)) {
       // vestigial scalar, must be 1: Authed/Authed_remote match on it
       $group->setGroupValue(1);
     } else {
@@ -574,25 +539,6 @@ class AdminPermissions extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['group' => $group], 201);
-  }
-
-  /**
-   * Whether `$type` comes from the instance's AuthHelper rather than the
-   * built-in GLOBAL_GROUP_TYPES. Auth-helper groups match users on their
-   * value entries; the built-ins never do (User matches member ids, the
-   * rest match whole populations).
-   */
-  private function isAuthHelperGroupType(string $type): bool {
-    return !isset(self::GLOBAL_GROUP_TYPES[$type]);
-  }
-
-  /**
-   * Whether `$type` matches a whole population instead of a values
-   * list (All/Authed/Authed_remote).
-   */
-  private function ignoresGroupValues(string $type): bool {
-    // auth-helper types always carry values, so absence means false
-    return self::GLOBAL_GROUP_TYPES[$type]['ignoresGroupValues'] ?? false;
   }
 
   /**
@@ -648,7 +594,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
@@ -672,7 +618,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
@@ -710,7 +656,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
@@ -751,7 +697,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
