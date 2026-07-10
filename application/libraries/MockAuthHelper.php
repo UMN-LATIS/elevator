@@ -111,7 +111,6 @@ class MockAuthHelper extends AuthHelper {
     $user->setHasExpiry(false);
     $user->setCreatedAt(new \DateTime("now"));
     $user->setInstance($this->CI->instance);
-    $user->setIsSuperAdmin(true);
     $user->setFastUpload(false);
     $this->CI->doctrine->em->persist($user);
     $this->CI->doctrine->em->flush();
