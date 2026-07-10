@@ -147,8 +147,8 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * POST /drawerPermissions/groups: create a group owned by the
-   * signed-in user, with any initial member or match values.
+   * POST /drawerPermissions/groups: create an empty group owned by the
+   * signed-in user. Members and match values are added separately.
    */
   private function createGroup(): CI_Output {
     try {
@@ -178,28 +178,6 @@ class DrawerPermissions extends Instance_Controller {
       $group->setGroupValue(1);
     } else {
       $group->setGroupValue(null);
-
-      $nonEmptyValues = array_filter(
-        (array) ($validated['values'] ?? []),
-        fn($value) => $value !== ''
-      );
-
-      foreach ($nonEmptyValues as $value) {
-        // a non-numeric User value is a remote username. Provision its
-        // local row and store the resulting user id. Other types store
-        // their value as-is.
-        if ($type === USER_TYPE && !is_numeric($value)) {
-          try {
-            $value = $this->firstOrProvisionRemoteUser($value)->getId();
-          } catch (RemoteUserNotFoundException $e) {
-            return abort_json(['error' => $e->getMessage()], 404);
-          }
-        }
-
-        $entry = new \Entity\GroupEntry();
-        $entry->setGroupValue($value);
-        $group->addGroupValue($entry);
-      }
     }
 
     $this->em->persist($group);
