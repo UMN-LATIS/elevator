@@ -83,4 +83,35 @@ class GroupTypeCatalog {
   public function isAdminOnly(string $type): bool {
     return $this->ignoresGroupValues($type);
   }
+
+  /**
+   * Suggested entry values for one group type, drawn from the signed-in
+   * user's session userData.
+   *
+   * Auth helpers key hints by raw value with a human label, and PHP
+   * coerces numeric keys to ints, so each pair is recast to a
+   * {value, label} string object for the UI combobox. Local users and
+   * helperless instances have no userData, so an empty list is normal,
+   * not an error.
+   */
+  public function entryHintsFor(string $type, array $userData): array {
+    // Built-in types never take entries. Guard by type category rather
+    // than trusting that no auth helper ever keys its userData by a
+    // built-in type name, since helpers pick their keys independently.
+    if (!$this->isAuthHelperType($type)) {
+      return [];
+    }
+
+    $hints = $userData[$type]["hints"] ?? [];
+
+    $entryHints = [];
+    foreach ($hints as $rawValue => $label) {
+      $entryHints[] = [
+        "value" => (string) $rawValue,
+        "label" => (string) $label,
+      ];
+    }
+
+    return $entryHints;
+  }
 }
