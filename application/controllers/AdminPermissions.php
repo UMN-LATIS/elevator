@@ -12,43 +12,15 @@ use SimpleValidator as V;
  * pure json api for new ui
  */
 class AdminPermissions extends Instance_Controller {
-  // mirrors the structure of AuthHelpers::$authTypes,
-  // @see UMNHelper:$authTypes for an example
-  const GLOBAL_GROUP_TYPES = [
-    ALL_TYPE => [
-      "name" => ALL_TYPE,
-      "label" => "All",
-      "helpText" => "Everyone, including signed-out visitors.",
-      // vestigial group_value
-      "ignoresGroupValues" => true,
-    ],
-    AUTHED_TYPE => [
-      "name" => AUTHED_TYPE,
-      "label" => "Authenticated Users",
-      "helpText" => "Anyone signed in, by any login method.",
-      "ignoresGroupValues" => true,
-    ],
-    REMOTE_TYPE => [
-      "name" => REMOTE_TYPE,
-      "label" => "Centrally Authenticated Users",
-      "helpText" => "Users signed in through central "
-        . "single sign-on (SSO).",
-      "ignoresGroupValues" => true,
-    ],
-    USER_TYPE => [
-      "name" => USER_TYPE,
-      "label" => "Specific People",
-      "helpText" => "Specific people you choose. Add by name, email, or username.",
-    ],
-  ];
-
   private AuthHelper $authHelper;
+  private GroupTypeCatalog $groupTypeCatalog;
   private EntityManager $em;
 
   public function __construct() {
     parent::__construct();
     $this->load->library('SimpleValidator');
     $this->authHelper = $this->user_model->getAuthHelper();
+    $this->groupTypeCatalog = new GroupTypeCatalog($this->authHelper->authTypes);
     $this->em = $this->doctrine->em;
   }
 
@@ -62,8 +34,9 @@ class AdminPermissions extends Instance_Controller {
         "label" => $t["label"],
         "description" => $t["helpText"] ?? "",
         "entryHints" => $this->entryHintsForType($t["name"]),
+        "adminOnly" => $this->groupTypeCatalog->isAdminOnly($t["name"]),
       ],
-      array_values($this->getGroupTypes())
+      array_values($this->groupTypeCatalog->all())
     );
 
     return render_json(["groupTypes" => $groupTypes]);
@@ -83,7 +56,7 @@ class AdminPermissions extends Instance_Controller {
     // Global types never take entries. Guard by type category rather
     // than trusting that no auth helper ever keys its userData by a
     // global type name, since helpers pick their keys independently.
-    if (!$this->isAuthHelperGroupType($type)) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($type)) {
       return [];
     }
 
@@ -291,7 +264,7 @@ class AdminPermissions extends Instance_Controller {
       foreach ($group->getGroupValues()->toArray() as $entry) {
         $group->removeGroupValue($entry); // orphanRemoval deletes on flush
       }
-      $group->setGroupValue($this->ignoresGroupValues($newType) ? 1 : null);
+      $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($newType) ? 1 : null);
     }
 
     $this->doctrine->em->flush();
@@ -486,19 +459,12 @@ class AdminPermissions extends Instance_Controller {
     ];
   }
 
-  private function getGroupTypes(): array {
-    return [
-      ...self::GLOBAL_GROUP_TYPES,
-      ...$this->authHelper->authTypes,
-    ];
-  }
-
   /**
    * Shared validation rules for a group's editable attributes (label +
-   * type). createGroup adds its own `values` rule on top of these.
+   * type), used by both createGroup and updateGroup.
    */
   private function groupAttributeRules(): array {
-    $validTypes = array_keys($this->getGroupTypes());
+    $validTypes = array_keys($this->groupTypeCatalog->all());
     return [
       'type' => [
         V::required(),
@@ -537,35 +503,11 @@ class AdminPermissions extends Instance_Controller {
     $group->setGroupType($type);
     $group->setGroupLabel($validated['label']);
 
-    if ($this->ignoresGroupValues($type)) {
-      // vestigial scalar, must be 1: Authed/Authed_remote match on it
+    if ($this->groupTypeCatalog->ignoresGroupValues($type)) {
+      // must be 1 for legacy reasons
       $group->setGroupValue(1);
     } else {
       $group->setGroupValue(null);
-
-      $nonEmptyValues = array_filter(
-        (array) ($validated['values'] ?? []),
-        fn($v) => $v !== ''
-      );
-
-      // create a GroupEntry for each value
-      foreach ($nonEmptyValues as $value) {
-        // a non-numeric User value is a remote auth-system id; resolve
-        // it to a local user id. other types store their value as-is
-        if ($type === USER_TYPE && !is_numeric($value)) {
-          // a non-numeric value is a remote username; provision its
-          // local row and store the resulting user id
-          try {
-            $value = $this->firstOrProvisionRemoteUser($value)->getId();
-          } catch (RemoteUserNotFoundException $e) {
-            return abort_json(['error' => $e->getMessage()], 404);
-          }
-        }
-
-        $entry = new Entity\GroupEntry();
-        $entry->setGroupValue($value);
-        $group->addGroupValue($entry);
-      }
     }
 
     $this->doctrine->em->persist($group);
@@ -574,66 +516,6 @@ class AdminPermissions extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['group' => $group], 201);
-  }
-
-  /**
-   * Whether `$type` comes from the instance's AuthHelper rather than the
-   * built-in GLOBAL_GROUP_TYPES. Auth-helper groups match users on their
-   * value entries; the built-ins never do (User matches member ids, the
-   * rest match whole populations).
-   */
-  private function isAuthHelperGroupType(string $type): bool {
-    return !isset(self::GLOBAL_GROUP_TYPES[$type]);
-  }
-
-  /**
-   * Whether `$type` matches a whole population instead of a values
-   * list (All/Authed/Authed_remote).
-   */
-  private function ignoresGroupValues(string $type): bool {
-    // auth-helper types always carry values, so absence means false
-    return self::GLOBAL_GROUP_TYPES[$type]['ignoresGroupValues'] ?? false;
-  }
-
-  /**
-   * Find a remote user within the local DB by their remote id
-   * (e.g. username, umndid). If not found, creates a new
-   * user in the local DB with the remoteUserId set.
-   *
-   * @throws RemoteUserNotFoundException if the user cannot be found or
-   *   provisioned.
-   * @return Entity\User the user record matching the remote id
-   */
-  private function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
-    // findById($id, true) will make new (unsaved) an Entity\User record with
-    // the given remote id if nothing is found.
-    /** @var ?Entity\User $remoteUser */
-    $remoteUser = $this->authHelper->findById($remoteUserId, true)[0] ?? null;
-
-    if ($remoteUser === null) {
-      throw new RemoteUserNotFoundException($remoteUserId);
-    }
-
-    // does a user already exist in the local DB with this username?
-    /** @var ?Entity\User $existingUser */
-    $existingUser = $this->doctrine->em->getRepository(Entity\User::class)
-      ->findOneBy(["username" => $remoteUser->getUsername()]);
-
-    // if so, return it instead of the new unsaved one
-    if ($existingUser !== null) {
-      return $existingUser;
-    }
-
-    // otherwise, fill in some blanks in the new record
-    $remoteUser->setUserType("Remote");
-    $remoteUser->setCreatedAt(new \DateTime("now"));
-    $remoteUser->setInstance($this->instance);
-
-    // and then save it
-    $this->doctrine->em->persist($remoteUser);
-    $this->doctrine->em->flush();
-
-    return $remoteUser;
   }
 
   /**
@@ -648,7 +530,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
@@ -672,7 +554,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
@@ -710,7 +592,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422
@@ -751,7 +633,7 @@ class AdminPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 404);
     }
 
-    if (!$this->isAuthHelperGroupType($group->getGroupType())) {
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
       return abort_json(
         ['error' => 'Only auth-helper group types take entries'],
         422

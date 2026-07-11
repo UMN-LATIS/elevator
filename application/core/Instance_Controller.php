@@ -207,4 +207,43 @@ class Instance_Controller extends MY_Controller
             ? $this->input->post()
             : $this->input->input_stream()) ?? [];
     }
+
+    /**
+     * Find a remote user within the local DB by their remote id
+     * (e.g. username, umndid). If not found, creates a new
+     * user in the local DB with the remoteUserId set.
+     *
+     * @throws RemoteUserNotFoundException if the user cannot be found or
+     *   provisioned.
+     * @return Entity\User the user record matching the remote id
+     */
+    protected function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
+        // findById($id, true) builds a new unsaved Entity\User with the
+        // given remote id when nothing is found.
+        /** @var ?Entity\User $remoteUser */
+        $remoteUser = $this->user_model->getAuthHelper()
+            ->findById($remoteUserId, true)[0] ?? null;
+
+        if ($remoteUser === null) {
+            throw new RemoteUserNotFoundException($remoteUserId);
+        }
+
+        /** @var ?Entity\User $existingUser */
+        $existingUser = $this->doctrine->em->getRepository(Entity\User::class)
+            ->findOneBy(["username" => $remoteUser->getUsername()]);
+
+        // prefer an existing local user over the new unsaved record
+        if ($existingUser !== null) {
+            return $existingUser;
+        }
+
+        $remoteUser->setUserType("Remote");
+        $remoteUser->setCreatedAt(new \DateTime("now"));
+        $remoteUser->setInstance($this->instance);
+
+        $this->doctrine->em->persist($remoteUser);
+        $this->doctrine->em->flush();
+
+        return $remoteUser;
+    }
 }
