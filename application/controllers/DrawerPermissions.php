@@ -660,7 +660,8 @@ class DrawerPermissions extends Instance_Controller {
     }
 
     // heuristic: the oldest User-type group the user owns that lists
-    // the user's own id as a member
+    // the user's own id as a member and is named after the user, matching
+    // how Drawers.php labels the group it auto-creates
     $query = $this->em
       ->getRepository(DrawerGroup::class)
       ->createQueryBuilder('drawerGroup')
@@ -668,8 +669,10 @@ class DrawerPermissions extends Instance_Controller {
       ->where('drawerGroup.user = :ownUserId')
       ->andWhere('drawerGroup.group_type = :groupType')
       ->andWhere('entry.groupValue = :ownUserId')
+      ->andWhere('drawerGroup.group_label = :ownDisplayName')
       ->setParameter('ownUserId', $ownUserId)
       ->setParameter('groupType', USER_TYPE)
+      ->setParameter('ownDisplayName', $this->user_model->getDisplayName())
       ->orderBy('drawerGroup.id', 'ASC')
       ->setMaxResults(1)
       ->getQuery();
