@@ -622,25 +622,15 @@ class DrawerPermissions extends Instance_Controller {
 
   /**
    * Find one of the signed-in user's groups for a detail read or
-   * mutation, aborting with 404 when it does not exist. The personal
-   * group 404s too: the API pretends it does not exist rather than
-   * revealing an unmodifiable group.
+   * mutation, aborting with 404 when it does not exist.
    */
   private function findEditableGroupOrAbort(int $groupId): DrawerGroup {
-    $this->abortIfPersonalGroup($groupId);
-
     $group = $this->findCurrentUserDrawerGroup($groupId);
     if (!$group) {
       abort_json(['error' => 'Group not found'], 404);
     }
 
     return $group;
-  }
-
-  private function abortIfPersonalGroup(int $groupId): void {
-    if ($groupId === $this->getPersonalDrawerGroup()?->getId()) {
-      abort_json(['error' => 'Group not found'], 404);
-    }
   }
 
   /**
