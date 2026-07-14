@@ -635,12 +635,8 @@ class DrawerPermissions extends Instance_Controller {
 
   /**
    * The auto-created "personal" drawer group: a User-type group that
-   * includes the owner's own id as a member entry, created in Drawers.php
-   * the first time a user makes a drawer. It backs the user's access to
-   * their own drawers, so the groups API hides it and refuses to mutate it.
-   *
-   * Returns null when the user has never created a drawer, so no personal
-   * group exists yet.
+   * includes the owner's own id as a member entry, created
+   * the first time a user makes a drawer.
    */
   private function getPersonalDrawerGroup(): ?DrawerGroup {
     $ownUserId = $this->user_model?->userId;
