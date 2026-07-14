@@ -4,16 +4,14 @@ if (! defined('BASEPATH')) exit('No direct script access allowed');
 use Doctrine\ORM\EntityManager;
 use Entity\Drawer;
 use Entity\DrawerGroup;
+use Entity\DrawerPermission;
 use Entity\GroupEntry;
+use Entity\Permission;
 use Entity\User;
 use SimpleValidator as V;
 
 /**
  * JSON api for the drawer group/permission management ui.
- *
- * Drawer groups are owned by a user, unlike instance groups which belong
- * to the instance. So every action is scoped to the signed-in user's own
- * groups and gated on "can manage drawers", not instance admin.
  */
 class DrawerPermissions extends Instance_Controller {
   private AuthHelper $authHelper;
@@ -29,9 +27,9 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /drawerPermissions/groupTypes: the catalog for the type selector.
-   * Admin-only types stay in the list so non-admin UIs can show them
-   * disabled, matching the legacy form.
+   * GET /drawerPermissions/groupTypes
+   * List of group types the signed-in user can create.
+   * Some are admin-only.
    */
   public function groupTypes(): CI_Output {
     $this->abortUnlessCanManageDrawers();
@@ -54,13 +52,10 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /drawerPermissions/userAutocomplete?q=... suggests people for a
-   * "Specific People" group's member field. Read only. The twin of
-   * AdminPermissions::userAutocomplete, open to any drawer manager
+   * GET /drawerPermissions/userAutocomplete?q=...
+   * suggests people for a "Specific People" group's member field. The twin of
+   * AdminPermissions::userAutocomplete, except open to any drawer manager
    * instead of instance admins only.
-   *
-   * Every school searches local users. Schools with an external directory
-   * (UMN, St. Olaf) also return matches from central auth.
    */
   public function userAutocomplete(): CI_Output {
     $this->abortUnlessCanManageDrawers();
@@ -76,8 +71,6 @@ class DrawerPermissions extends Instance_Controller {
       return render_json(['matches' => []]);
     }
 
-    // reshape each match for the new UI: a plain list, with the id named
-    // localUserId instead of the legacy completionId
     $matches = array_map(
       fn($match) => [
         "name" => $match["name"],
@@ -92,21 +85,227 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /drawerPermissions/drawers: drawers the signed-in user can
-   * manage, for the management page's Drawers tab.
+   * GET /drawerPermissions/manageableDrawers
+   * Drawers the signed-in user can manage, for the management page's Drawers
+   * tab and the rule editor's drawer picker.
    */
-  public function drawers(): CI_Output {
+  public function manageableDrawers(): CI_Output {
     $this->abortUnlessCanManageDrawers();
+
+    if ($this->input->server('REQUEST_METHOD') !== 'GET') {
+      return abort_json(['error' => 'Method Not Allowed'], 405);
+    }
 
     $drawerPayload = array_map(
       fn(Drawer $drawer) => [
         'id' => $drawer->getId(),
         'title' => $drawer->getTitle(),
       ],
-      $this->manageableDrawers()
+      $this->getManageableDrawers()
     );
 
-    return render_json(['drawers' => $drawerPayload]);
+    return render_json(['manageableDrawers' => $drawerPayload]);
+  }
+
+  /**
+   * /drawerPermissions/grants[/{id}].
+   *
+   * Entry point for ops on a permission grant (aka rule).
+   * A grant is a combination of a drawer, drawergroup, and permission level.
+   *
+   * A user with PERM_CREATEDRAWERS level access on a given drawer
+   * can modify any grant on that drawer, **including grants for groups owned
+   * by other users**. (Same as legacy Drawers::editDrawerPermissions.)
+   */
+  public function grants($grantId = null): CI_Output {
+    $this->abortUnlessCanManageDrawers();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    $grantId = $grantId === null
+      ? null
+      : filter_var($grantId, FILTER_VALIDATE_INT);
+
+    // a non-numeric id segment becomes false
+    if ($grantId === false) {
+      return abort_json(['error' => 'Invalid ID'], 400);
+    }
+
+    $route = $grantId === null ? '/grants' : '/grants/{id}';
+
+    $table = [
+      '/grants' => [
+        'GET' => fn() => $this->listGrants(),
+        'POST' => fn() => $this->createGrant(),
+      ],
+      '/grants/{id}' => [
+        'PUT' => fn() => $this->updateGrant($grantId),
+        'PATCH' => fn() => $this->updateGrant($grantId),
+        'DELETE' => fn() => $this->deleteGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  /**
+   * GET /drawerPermissions/grants: every grant on every drawer the
+   * caller can manage, for the management page's Rules tab.
+   */
+  private function listGrants(): CI_Output {
+    // grantPayload reads each grant's group and that group's owner, so
+    // select both here rather than let Doctrine lazy-load them one grant
+    // at a time. Left joins: a grant can outlive its group, and a global
+    // group type has no owner.
+    $query = $this->em
+      ->getRepository(DrawerPermission::class)
+      ->createQueryBuilder('drawerGrant')
+      ->addSelect('grantGroup', 'owner')
+      ->join('drawerGrant.drawer', 'drawer')
+      ->leftJoin('drawerGrant.group', 'grantGroup')
+      ->leftJoin('grantGroup.user', 'owner')
+      ->where('drawer.instance = :instance')
+      ->setParameter('instance', $this->instance);
+
+    // if user doesn't manage every drawer (non-admin), limit to only
+    // the drawers they manage
+    if (!$this->canManageEveryDrawer()) {
+      $manageableDrawerIds = $this->manageableDrawerIdsFromPermissionMap();
+
+      // bail early if user manages no drawers
+      if (count($manageableDrawerIds) === 0) {
+        return render_json(['grants' => []]);
+      }
+      $query
+        ->andWhere('drawer.id IN (:manageableDrawerIds)')
+        ->setParameter('manageableDrawerIds', $manageableDrawerIds);
+    }
+
+    return render_json([
+      'grants' => array_map(
+        fn(DrawerPermission $grant) => $this->grantPayload($grant),
+        $query->getQuery()->getResult()
+      ),
+    ]);
+  }
+
+  /**
+   * POST /drawerPermissions/grants: give one of the caller's own groups
+   * a permission level on a drawer they manage.
+   */
+  private function createGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'drawerId' => [V::required(), V::integer()],
+        'drawerGroupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $drawer = $this->findManageableDrawerOrAbort((int) $validated['drawerId']);
+
+    // sharing is limited to the caller's own groups
+    $group = $this->findCurrentUserDrawerGroup((int) $validated['drawerGroupId']);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $existing = $this->findDrawerPermissionForGroup($drawer, $group);
+    if ($existing) {
+      return abort_json([
+        'error' => 'Group already has a grant on this drawer',
+        'existingGrantId' => $existing->getId(),
+      ], 409);
+    }
+
+    $grant = new DrawerPermission();
+    $grant->setDrawer($drawer);
+    $grant->setGroup($group);
+    $grant->setPermission($level);
+    $this->em->persist($grant);
+
+    // Access computation reads DrawerPermission, but legacy listing paths
+    // still read the drawergroup_drawer M2M, so keep them in sync,
+    // matching Drawers::addDrawer.
+    if (!$this->groupLinksDrawer($group, $drawer)) {
+      $group->addDrawer($drawer);
+    }
+
+    $this->em->flush();
+
+    // the group can match arbitrary users, so their cached permissions
+    // are stale, not just the owner's
+    $this->clearAllUserCache();
+
+    return render_json(['grant' => $this->grantPayload($grant)], 201);
+  }
+
+  /**
+   * PUT|PATCH /drawerPermissions/grants/{id}: change a grant's level.
+   * Drawer manage access is the whole gate, so grants for other owners'
+   * groups are editable too.
+   */
+  private function updateGrant(int $grantId): CI_Output {
+    $grant = $this->findManageableGrantOrAbort($grantId);
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $level = $this->em->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    // re-level only, the M2M link already exists and stays put
+    $grant->setPermission($level);
+    $this->em->flush();
+    $this->clearAllUserCache();
+
+    return render_json(['grant' => $this->grantPayload($grant)]);
+  }
+
+  /**
+   * DELETE /drawerPermissions/grants/{id}: revoke a grant. Drawer manage
+   * access is the whole gate, matching updateGrant.
+   */
+  private function deleteGrant(int $grantId): CI_Output {
+    $grant = $this->findManageableGrantOrAbort($grantId);
+
+    $drawer = $grant->getDrawer();
+    $group = $grant->getGroup();
+
+    $this->em->remove($grant);
+
+    // The drawergroup_drawer link exists so the group can reach the drawer.
+    // Drop it only when no other grant keeps that true. A stray duplicate
+    // grant (no unique constraint guards concurrent creates) would otherwise
+    // leave a DrawerPermission with its M2M link gone.
+    if ($group && !$this->groupHasOtherGrantOnDrawer($group, $drawer, $grant)) {
+      $group->removeDrawer($drawer);
+    }
+
+    $this->em->flush();
+    $this->clearAllUserCache();
+
+    return render_json(['removed' => $grantId]);
   }
 
   /**
@@ -598,6 +797,129 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
+   * One grant as the Rules tab consumes it: drawerId and
+   * permissionLevelId are id references the caller joins against
+   * /drawers and the permission level catalog. The group rides along
+   * inline because /groups only lists the caller's own groups, so a
+   * grant for another owner's group could not be joined client-side.
+   */
+  private function grantPayload(DrawerPermission $grant): array {
+    $group = $grant->getGroup();
+
+    $groupPayload = null;
+    if ($group !== null) {
+      $groupPayload = [
+        'id' => $group->getId(),
+        'label' => $group->getGroupLabel(),
+        'type' => $group->getGroupType(),
+        'ownedByCurrentUser' => $this->isOwnGroup($group),
+      ];
+    }
+
+    return [
+      'id' => $grant->getId(),
+      'drawerId' => $grant->getDrawer()?->getId(),
+      'permissionLevelId' => $grant->getPermission()?->getId(),
+      'group' => $groupPayload,
+    ];
+  }
+
+  /**
+   * The drawer with `$drawerId` in this instance, aborting 404 when it
+   * does not exist and 403 when the caller cannot manage it.
+   */
+  private function findManageableDrawerOrAbort(int $drawerId): Drawer {
+    $drawer = $this->em
+      ->getRepository(Drawer::class)
+      ->findOneBy(['id' => $drawerId, 'instance' => $this->instance]);
+    if (!$drawer) {
+      abort_json(['error' => 'Drawer not found'], 404);
+    }
+
+    if ($this->user_model->getAccessLevel(DRAWER_PERMISSION, $drawer) < PERM_CREATEDRAWERS) {
+      abort_json(['error' => 'Forbidden'], 403);
+    }
+
+    return $drawer;
+  }
+
+  /**
+   * Find the grant for `$group` on `$drawer`, scanning the drawer's own
+   * permissions so a request cannot address a grant on another drawer.
+   */
+  private function findDrawerPermissionForGroup(
+    Drawer $drawer,
+    DrawerGroup $group
+  ): ?DrawerPermission {
+    foreach ($drawer->getPermissions() as $candidate) {
+      if ($candidate->getGroup()?->getId() === $group->getId()) {
+        return $candidate;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The grant with `$grantId`, aborting 404 when it does not exist in
+   * this instance and 403 when the caller cannot manage its drawer.
+   */
+  private function findManageableGrantOrAbort(int $grantId): DrawerPermission {
+    $grant = $this->em->find(DrawerPermission::class, $grantId);
+
+    $drawer = $grant?->getDrawer();
+    if (!$drawer) {
+      abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    // the drawer gate owns both the instance scope and the manage level,
+    // so a grant on another instance's drawer aborts 404 there
+    $this->findManageableDrawerOrAbort($drawer->getId());
+
+    return $grant;
+  }
+
+  /**
+   * Whether `$group` still holds a grant on `$drawer` other than
+   * `$excluding`, so delete keeps the M2M link when a stray duplicate
+   * grant remains.
+   */
+  private function groupHasOtherGrantOnDrawer(
+    DrawerGroup $group,
+    Drawer $drawer,
+    DrawerPermission $excluding
+  ): bool {
+    foreach ($drawer->getPermissions() as $candidate) {
+      if ($candidate->getId() === $excluding->getId()) {
+        continue;
+      }
+      if ($candidate->getGroup()?->getId() === $group->getId()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Whether the group already links the drawer through the
+   * drawergroup_drawer M2M, so create adds the link only once.
+   */
+  private function groupLinksDrawer(DrawerGroup $group, Drawer $drawer): bool {
+    foreach ($group->getDrawer() as $candidate) {
+      if ($candidate->getId() === $drawer->getId()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private function isOwnGroup(?DrawerGroup $group): bool {
+    $ownerId = $group?->getUser()?->getId();
+    // compare entity ids on both sides: user_model->userId comes from the
+    // session as a string, so it would never === an int id
+    return $ownerId !== null && $ownerId === $this->user_model->user?->getId();
+  }
+
+  /**
    * Find the entry with `$entryId` among `$group`'s own entries.
    *
    * Entry ids are global, so fetching one straight from the repository
@@ -710,28 +1032,46 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * Drawers the signed-in user holds at least PERM_CREATEDRAWERS on.
+   * Whether the caller manages every drawer in the instance.
    *
    * Instance admins hold PERM_ADMIN on every drawer in their instance
    * through a fallback in getAccessLevel, not through the
-   * drawerPermissions map, so they get the whole instance's drawers here.
+   * drawerPermissions map, so no id list describes their reach.
    */
-  private function manageableDrawers(): array {
+  private function canManageEveryDrawer(): bool {
+    return $this->user_model->isInstanceAdmin()
+      || $this->user_model->getIsSuperAdmin();
+  }
+
+  /**
+   * Ids of the drawers the caller holds at least PERM_CREATEDRAWERS on.
+   * Empty for an instance admin, whose reach comes from the
+   * getAccessLevel fallback instead of the map.
+   */
+  private function manageableDrawerIdsFromPermissionMap(): array {
+    // $this->user_model->drawerPermissions is an assoc. array of
+    // [drawerId => accessLevel], so pluck the ids at manage level
+    return array_keys(array_filter(
+      $this->user_model->drawerPermissions,
+      fn($level) => $level >= PERM_CREATEDRAWERS
+    ));
+  }
+
+  /**
+   * Drawers the signed-in user holds at least PERM_CREATEDRAWERS on,
+   * sorted by title.
+   */
+  private function getManageableDrawers(): array {
     $drawerRepository = $this->em->getRepository(Drawer::class);
 
-    $isEveryDrawerManageable = $this->user_model->isInstanceAdmin()
-      || $this->user_model->getIsSuperAdmin();
-    if ($isEveryDrawerManageable) {
+    if ($this->canManageEveryDrawer()) {
       return $drawerRepository->findBy(
         ['instance' => $this->instance],
         ['title' => 'ASC']
       );
     }
 
-    $manageableDrawerIds = array_keys(array_filter(
-      $this->user_model->drawerPermissions,
-      fn($level) => $level >= PERM_CREATEDRAWERS
-    ));
+    $manageableDrawerIds = $this->manageableDrawerIdsFromPermissionMap();
     if (count($manageableDrawerIds) === 0) {
       return [];
     }
