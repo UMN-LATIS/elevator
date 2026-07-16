@@ -410,7 +410,7 @@ test.describe("drawerPermissions", () => {
       expect(res.status()).toBe(403);
     });
 
-    test("may not switch a group onto an admin-only type", async ({ page }) => {
+    test("cannot move a group onto an admin-only type", async ({ page }) => {
       const label = uniqueLabel("Switcher");
       const group = await createDrawerGroup(page, { type: "User", label });
 
@@ -418,7 +418,10 @@ test.describe("drawerPermissions", () => {
         `${baseURL()}/drawerPermissions/groups/${group.id}`,
         { form: { type: "Authed", label } }
       );
-      expect(res.status()).toBe(403);
+      expect(res.status()).toBe(200);
+
+      const { group: updated } = await res.json();
+      expect(updated.type).toBe("User");
     });
 
     test("cannot see or mutate another user's group", async ({
@@ -505,7 +508,7 @@ test.describe("drawerPermissions", () => {
       await loginAdmin(page);
     });
 
-    test("renames a group, keeping its type", async ({ page }) => {
+    test("renames a group", async ({ page }) => {
       const group = await createDrawerGroup(page, {
         type: "User",
         label: uniqueLabel("Before"),
@@ -514,7 +517,7 @@ test.describe("drawerPermissions", () => {
       const after = uniqueLabel("After");
       const res = await page.request.patch(
         `${baseURL()}/drawerPermissions/groups/${group.id}`,
-        { form: { type: "User", label: after } }
+        { form: { label: after } }
       );
       expect(res.status()).toBe(200);
 
@@ -523,7 +526,7 @@ test.describe("drawerPermissions", () => {
       expect(updated.type).toBe("User");
     });
 
-    test("changing the type clears existing members", async ({ page }) => {
+    test("ignores a type in the body, keeping members", async ({ page }) => {
       const label = uniqueLabel("Movers");
       const group = await createDrawerGroup(page, { type: "User", label });
       const admin = await findUserByUsername(page, "admin");
@@ -539,14 +542,14 @@ test.describe("drawerPermissions", () => {
       expect(res.status()).toBe(200);
 
       const { group: updated } = await res.json();
-      expect(updated.type).toBe("Authed");
-      expect(updated.entries_count).toBe(0);
+      expect(updated.type).toBe("User");
+      expect(updated.entries_count).toBe(1);
     });
 
     test("returns 404 for a missing group", async ({ page }) => {
       const res = await page.request.patch(
         `${baseURL()}/drawerPermissions/groups/99999999`,
-        { form: { type: "User", label: "Nope" } }
+        { form: { label: "Nope" } }
       );
       expect(res.status()).toBe(404);
     });
@@ -559,7 +562,7 @@ test.describe("drawerPermissions", () => {
 
       const res = await page.request.patch(
         `${baseURL()}/drawerPermissions/groups/${group.id}`,
-        { form: { type: "User", label: "bad <script>" } }
+        { form: { label: "bad <script>" } }
       );
       expect(res.status()).toBe(422);
       expect((await res.json()).errors).toHaveProperty("label");

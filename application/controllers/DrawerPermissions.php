@@ -476,58 +476,24 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /drawerPermissions/groups/{id}: edit a group's label and
-   * type.
+   * PUT|PATCH /drawerPermissions/groups/{id}: rename a group.
    *
-   * Changing the type clears existing entries, since they belong to the
-   * old type. Editing only the label leaves them alone.
+   * A group's type is fixed at creation, since its entries and members
+   * belong to that type. Use a new group to match on something else.
    */
   private function updateGroup(int $groupId): CI_Output {
     $group = $this->findEditableGroupOrAbort($groupId);
 
     try {
-      $validated = V::validate(
-        $this->requestBody(),
-        $this->groupAttributeRules()
-      );
+      $validated = V::validate($this->requestBody(), $this->groupLabelRules());
     } catch (ValidationException $e) {
       return abort_json(['errors' => $e->getErrors()], 422);
     }
 
-    $newType = $validated['type'];
-    $hasTypeChanged = $newType !== $group->getGroupType();
-
-    // a non-admin may keep an admin-only type it already has (rename
-    // only), but may not switch a group onto one
-    if ($hasTypeChanged && !$this->canUseGroupType($newType)) {
-      return abort_json(
-        ['error' => 'Only instance admins can use instance-wide group types'],
-        403
-      );
-    }
-
     $group->setGroupLabel($validated['label']);
-
-    if ($hasTypeChanged) {
-      $group->setGroupType($newType);
-
-      // toArray() copies first so removing entries does not mutate the
-      // list mid-loop
-      foreach ($group->getGroupValues()->toArray() as $entry) {
-        $group->removeGroupValue($entry);
-      }
-      $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($newType) ? 1 : null);
-    }
-
     $this->em->flush();
 
-    if ($hasTypeChanged) {
-      // clearing the members revokes their drawer access, so their
-      // cached permissions are stale too, not just the owner's
-      $this->clearAllUserCache();
-    } else {
-      $this->removeCurrentUserCache();
-    }
+    $this->removeCurrentUserCache();
 
     return render_json(['group' => $group]);
   }
@@ -1025,9 +991,7 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * Validation rules for a group's editable attributes (label + type).
-   * The label rejects `< > "` to prevent HTML injection while still
-   * allowing names like `R&D` and `Bob's Team`.
+   * Validation rules for the attributes a group is created with.
    */
   private function groupAttributeRules(): array {
     $validTypes = array_keys($this->groupTypeCatalog->all());
@@ -1038,6 +1002,16 @@ class DrawerPermissions extends Instance_Controller {
           ? true
           : 'Unknown group type',
       ],
+    ] + $this->groupLabelRules();
+  }
+
+  /**
+   * Validation rules for a group's label, which rejects `< > "` to
+   * prevent HTML injection while still allowing names like `R&D` and
+   * `Bob's Team`.
+   */
+  private function groupLabelRules(): array {
+    return [
       'label' => [
         V::required(),
         V::maxLength(255),
