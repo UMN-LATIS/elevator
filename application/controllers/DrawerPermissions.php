@@ -288,7 +288,7 @@ class DrawerPermissions extends Instance_Controller {
   /**
    * DELETE /drawerPermissions/grants/{id}: revoke a grant, which drawer
    * manage access alone does not permit. Unlike updateGrant, the group
-   * must be the caller's own.
+   * must be the caller's own, unless they are an admin.
    */
   private function deleteGrant(int $grantId): CI_Output {
     $grant = $this->findManageableGrantOrAbort($grantId);
@@ -300,12 +300,14 @@ class DrawerPermissions extends Instance_Controller {
     // groups, so a grant deleted off someone else's group could not be
     // put back by the manager who deleted it. Re-levelling it to
     // PERM_NOPERM revokes the access and leaves the grant for its owner,
-    // so that is the path the Rules tab offers instead. This is a
-    // deliberate break from Permissions::edit, which lets a drawer
+    // so that is the path the Rules tab offers a manager instead. This is
+    // a deliberate break from Permissions::edit, which lets a drawer
     // manager delete any grant on their drawer.
-    // A grant that outlived its group belongs to nobody, so it stays
-    // deletable as cleanup.
-    if ($group !== null && !$this->isOwnGroup($group)) {
+    // Admins reach every drawer and are trusted with the cleanup, so the
+    // rule binds managers only. A grant that outlived its group belongs
+    // to nobody, so it stays deletable too.
+    $isAnotherOwnersGrant = $group !== null && !$this->isOwnGroup($group);
+    if ($isAnotherOwnersGrant && !$this->canManageEveryDrawer()) {
       return abort_json(
         ['error' => "Cannot delete another owner's grant"],
         403

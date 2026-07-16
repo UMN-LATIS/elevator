@@ -343,6 +343,40 @@ test.describe("drawerPermissions grants", () => {
       expect(survivor?.permissionLevelId).toBe(newLevel.id);
     });
 
+    test("lets an admin delete a grant on someone else's group", async ({
+      page,
+      browser,
+    }) => {
+      // the manager grants their own group access to their own drawer
+      const drawerId = await createDrawer(page, uniqueLabel("Managed Drawer"));
+      const groupId = await createDrawerGroup(page, uniqueLabel("Their Group"));
+      const levels = await getPermissionLevels(page);
+      const created = await createGrant(page, drawerId, groupId, levels[0].id);
+      expect(created.status()).toBe(201);
+      const managerGrant = (await created.json()).grant as Grant;
+
+      // the admin does not own that group, but reaches every drawer
+      const adminContext = await browser.newContext();
+      const adminPage = await adminContext.newPage();
+      await loginAdmin(adminPage);
+
+      const listed = (await listGrants(adminPage)).find(
+        (g) => g.id === managerGrant.id,
+      );
+      expect(listed?.group?.ownedByCurrentUser).toBe(false);
+
+      const removed = await adminPage.request.delete(
+        `${baseURL()}/drawerPermissions/grants/${managerGrant.id}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(removed.status()).toBe(200);
+      await adminContext.close();
+
+      expect((await listGrants(page)).some((g) => g.id === managerGrant.id)).toBe(
+        false,
+      );
+    });
+
     // The flat /grants/{id} route makes every grant id addressable, so the
     // per-drawer check is the only thing scoping a manager to their own
     // drawers. The route gate passes anyone who manages any drawer at all.
