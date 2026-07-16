@@ -285,7 +285,7 @@ test.describe("drawerPermissions grants", () => {
       expect(afterDelete.some((g) => g.id === grant.id)).toBe(false);
     });
 
-    test("re-levels and deletes another owner's grant on a managed drawer", async ({
+    test("re-levels but cannot delete another owner's grant on a managed drawer", async ({
       page,
       browser,
     }) => {
@@ -320,7 +320,7 @@ test.describe("drawerPermissions grants", () => {
       expect(listed?.group?.ownedByCurrentUser).toBe(false);
       expect(listed?.group?.ownerName).toBe(adminName);
 
-      // and can re-level and revoke it despite not owning the group
+      // and can re-level it despite not owning the group
       const newLevel = levels[levels.length - 1];
       const updated = await page.request.put(
         `${baseURL()}/drawerPermissions/grants/${adminGrant.id}`,
@@ -328,11 +328,19 @@ test.describe("drawerPermissions grants", () => {
       );
       expect(updated.status()).toBe(200);
 
+      // but not delete it, which they could not undo: a new grant can
+      // only name a group they own. Re-levelling to noperm is the revoke.
       const removed = await page.request.delete(
         `${baseURL()}/drawerPermissions/grants/${adminGrant.id}`,
         { headers: { Accept: "application/json" } },
       );
-      expect(removed.status()).toBe(200);
+      expect(removed.status()).toBe(403);
+
+      // the grant survives the refused delete
+      const survivor = (await listGrants(page)).find(
+        (g) => g.id === adminGrant.id,
+      );
+      expect(survivor?.permissionLevelId).toBe(newLevel.id);
     });
 
     // The flat /grants/{id} route makes every grant id addressable, so the

@@ -114,8 +114,11 @@ class DrawerPermissions extends Instance_Controller {
    * A grant is a combination of a drawer, drawergroup, and permission level.
    *
    * A user with PERM_CREATEDRAWERS level access on a given drawer
-   * can modify any grant on that drawer, **including grants for groups owned
+   * can re-level any grant on that drawer, **including grants for groups owned
    * by other users**. (Same as legacy Drawers::editDrawerPermissions.)
+   *
+   * Deleting is the exception: it needs the group to be the caller's own.
+   * See deleteGrant.
    */
   public function grants($grantId = null): CI_Output {
     $this->abortUnlessCanManageDrawers();
@@ -283,14 +286,31 @@ class DrawerPermissions extends Instance_Controller {
   }
 
   /**
-   * DELETE /drawerPermissions/grants/{id}: revoke a grant. Drawer manage
-   * access is the whole gate, matching updateGrant.
+   * DELETE /drawerPermissions/grants/{id}: revoke a grant, which drawer
+   * manage access alone does not permit. Unlike updateGrant, the group
+   * must be the caller's own.
    */
   private function deleteGrant(int $grantId): CI_Output {
     $grant = $this->findManageableGrantOrAbort($grantId);
 
     $drawer = $grant->getDrawer();
     $group = $grant->getGroup();
+
+    // Deleting is one-way: createGrant takes only the caller's own
+    // groups, so a grant deleted off someone else's group could not be
+    // put back by the manager who deleted it. Re-levelling it to
+    // PERM_NOPERM revokes the access and leaves the grant for its owner,
+    // so that is the path the Rules tab offers instead. This is a
+    // deliberate break from legacy Drawers::editDrawerPermissions, which
+    // let a drawer manager delete any grant on their drawer.
+    // A grant that outlived its group belongs to nobody, so it stays
+    // deletable as cleanup.
+    if ($group !== null && !$this->isOwnGroup($group)) {
+      return abort_json(
+        ['error' => "Cannot delete another owner's grant"],
+        403
+      );
+    }
 
     $this->em->remove($grant);
 
