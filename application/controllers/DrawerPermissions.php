@@ -813,6 +813,8 @@ class DrawerPermissions extends Instance_Controller {
         'label' => $group->getGroupLabel(),
         'type' => $group->getGroupType(),
         'ownedByCurrentUser' => $this->isOwnGroup($group),
+        // null for a global group type, which has no owner
+        'ownerName' => $group->getUser()?->getDisplayName(),
       ];
     }
 

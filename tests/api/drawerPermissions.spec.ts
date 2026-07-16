@@ -171,6 +171,7 @@ type Grant = {
     label: string;
     type: string;
     ownedByCurrentUser: boolean;
+    ownerName: string | null;
   } | null;
 };
 
@@ -308,14 +309,16 @@ test.describe("drawerPermissions grants", () => {
       );
       expect(created.status()).toBe(201);
       const adminGrant = (await created.json()).grant as Grant;
+      const adminName = (await findUserByUsername(adminPage, "admin")).name;
       await adminContext.close();
 
-      // the manager sees the grant, labeled as another owner's group
+      // the manager sees the grant, labeled with the owner it belongs to
       const listed = (await listGrants(page)).find(
         (g) => g.id === adminGrant.id,
       );
       expect(listed).toBeTruthy();
       expect(listed?.group?.ownedByCurrentUser).toBe(false);
+      expect(listed?.group?.ownerName).toBe(adminName);
 
       // and can re-level and revoke it despite not owning the group
       const newLevel = levels[levels.length - 1];
