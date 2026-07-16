@@ -115,7 +115,7 @@ class DrawerPermissions extends Instance_Controller {
    *
    * A user with PERM_CREATEDRAWERS level access on a given drawer
    * can re-level any grant on that drawer, **including grants for groups owned
-   * by other users**. (Same as legacy Drawers::editDrawerPermissions.)
+   * by other users**. (Same as Permissions::edit under DRAWER_PERMISSION.)
    *
    * Deleting is the exception: it needs the group to be the caller's own.
    * See deleteGrant.
@@ -301,8 +301,8 @@ class DrawerPermissions extends Instance_Controller {
     // put back by the manager who deleted it. Re-levelling it to
     // PERM_NOPERM revokes the access and leaves the grant for its owner,
     // so that is the path the Rules tab offers instead. This is a
-    // deliberate break from legacy Drawers::editDrawerPermissions, which
-    // let a drawer manager delete any grant on their drawer.
+    // deliberate break from Permissions::edit, which lets a drawer
+    // manager delete any grant on their drawer.
     // A grant that outlived its group belongs to nobody, so it stays
     // deletable as cleanup.
     if ($group !== null && !$this->isOwnGroup($group)) {
