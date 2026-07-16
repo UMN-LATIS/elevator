@@ -837,6 +837,9 @@ class DrawerPermissions extends Instance_Controller {
         'ownedByCurrentUser' => $this->isOwnGroup($group),
         // null for a global group type, which has no owner
         'ownerName' => $group->getUser()?->getDisplayName(),
+        // A User group stores its members as entries, so one count
+        // covers both. A global group type stores neither and counts 0.
+        'entries_count' => $group->getGroupValues()->count(),
       ];
     }
 
