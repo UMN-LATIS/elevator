@@ -157,19 +157,17 @@ elseif(isset($fileContainers['tiled-iiif'])) {
     var loadedCallback = async function() {
 
         if(typeof AWS === 'undefined') {
-            console.log("[SVS-HANDLER] pausing for aws");
+            console.log("pausing for aws");
             setTimeout(loadedCallback, 200);
             return;
         }
-        console.log('[SVS-HANDLER] AWS available, starting initialization', { time: Date.now() });
+        console.log('[SVS-HANDLER] AWS available, starting initialization');
         AWS.config = new AWS.Config();
         AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
         AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
         s3 = new AWS.S3({Bucket: '<?=$fileObject->collection->getBucket()?>'});
 
-        console.log('[SVS-HANDLER] About to call loadIndex', { time: Date.now() });
         await loadIndex();
-        console.log('[SVS-HANDLER] loadIndex complete', { time: Date.now() });
         imageMap = L.map('imageMap', {
             fullscreenControl: true,
             zoomSnap: 0,
@@ -202,12 +200,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         layer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
         layer.addTo(imageMap);
 
-        console.log('[SVS-HANDLER] Main layer added, waiting for tile load...', {
-            time: Date.now(),
-            tileCount: imageMap._layers ? Object.keys(imageMap._layers).length : 0,
-            zoom: imageMap._zoom
-        });
-
         var minimapRatio = <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>;
         if(minimapRatio > 4 || minimapRatio < 1) {
             minimapRatio = 1;
@@ -230,27 +222,15 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                         toggleDisplay: true,
                         zoomAnimation: false,
                         zoomLevelOffset: -3,
-                        zoomLevelFixed: -3,
-                        mapOptions: { crs: L.CRS.Simple }
+                        zoomLevelFixed: -3
                     });
         miniMap.addTo(imageMap);
-        
-        // Listen for minimap tile load events
-        miniLayer.on('load', () => {
-            console.log('[MINIMAP] Tile load event fired', { time: Date.now() });
-        });
-        miniLayer.on('tileerror', (err) => {
-            console.error('[MINIMAP] Tile error', { time: Date.now(), error: err });
-        });
-        
         console.log('[SVS-HANDLER] minimap created', {
             width: 140 * widthScale,
             height: 140 * heightScale,
             widthScale: widthScale,
             heightScale: heightScale,
-            imageAspect: <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>,
-            miniMapHasMap: miniMap._miniMap ? true : false,
-            miniMapLayerCount: miniMap._miniMap && miniMap._miniMap._layers ? Object.keys(miniMap._miniMap._layers).length : 0
+            imageAspect: <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>
         });
 
         if(pixelsPerMillimeter > 10) {
@@ -299,15 +279,7 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         
         leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
         
-        console.log('[SVS-HANDLER] LAnnotate created successfully', { time: Date.now() });
-        
-        // Listen for main layer tile load events to track timing
-        layer.on('load', () => {
-            console.log('[SVS-HANDLER] Main layer load event', { time: Date.now() });
-        });
-        layer.on('tileerror', (err) => {
-            console.error('[SVS-HANDLER] Main layer tile error', { time: Date.now(), error: err });
-        });
+        console.log('[SVS-HANDLER] LAnnotate created successfully');
 
     };
 
