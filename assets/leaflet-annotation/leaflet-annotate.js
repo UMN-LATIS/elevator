@@ -172,12 +172,15 @@ function LocationPreview(La) {
     mouseConversionDebugCounter++;
     if (mouseConversionDebugCounter % 10 === 0) {
       console.log('[MOUSE-TO-LATLNG]', {
-        result: result,
+        result: {lat: result.lat, lng: result.lng},
         containerPoint: this.mouseEventToContainerPoint(e),
         layerPoint: this.mouseEventToLayerPoint(e),
         mapCenter: this.getCenter(),
         mapZoom: this._zoom,
-        crs: this.options.crs.code
+        crs: this.options.crs.code,
+        mapSize: this.getSize(),
+        pixelOrigin: this._getPixelOrigin ? this._getPixelOrigin() : 'N/A',
+        mapPane: this._getMapPanePos()
       });
     }
     return result;
@@ -430,12 +433,16 @@ function ArrowButton(La) {
       this.inflightArrowData = jQuery.extend({}, this.arrowData); // clone the object so this arrow can keep a reference
       this.inflightArrowData.latlng = this.viewer.mouseEventToLatLng(e)
       console.log('[ARROW-START]', {
-        startLatlng: this.inflightArrowData.latlng,
+        startLatlng: {lat: this.inflightArrowData.latlng.lat, lng: this.inflightArrowData.latlng.lng},
         containerPoint: this.viewer.mouseEventToContainerPoint(e),
         layerPoint: this.viewer.mouseEventToLayerPoint(e),
-        mapCenter: this.viewer.getCenter(),
+        mapCenter: {lat: this.viewer.getCenter().lat, lng: this.viewer.getCenter().lng},
         mapZoom: this.viewer._zoom,
-        mapPane: this.viewer._getMapPanePos()
+        mapPane: this.viewer._getMapPanePos(),
+        imageSize: this.leafletAnnotate.options.layerOptions ? {
+          width: this.leafletAnnotate.options.layerOptions.width,
+          height: this.leafletAnnotate.options.layerOptions.height
+        } : 'N/A'
       });
       this.arrow = new L.Arrow(this.inflightArrowData, this.arrowOptions) //add arrow head to page
       this.arrow.addTo(this.leafletAnnotate.layerGroup) //add to layerGroup because this is a non-permanent feature
@@ -459,8 +466,10 @@ function ArrowButton(La) {
       this._arrowDebugCounter++;
       if (this._arrowDebugCounter % 5 === 0) {
         console.log('[ARROW-UPDATE]', {
-          start: this.inflightArrowData.latlng,
-          end: arrowEnd,
+          start: {lat: this.inflightArrowData.latlng.lat, lng: this.inflightArrowData.latlng.lng},
+          end: {lat: arrowEnd.lat, lng: arrowEnd.lng},
+          dLat: arrowEnd.lat - this.inflightArrowData.latlng.lat,
+          dLng: arrowEnd.lng - this.inflightArrowData.latlng.lng,
           degree: this.inflightArrowData.degree,
           distance: this.inflightArrowData.distance,
           rawDistance: this.viewer.distance(arrowEnd, this.inflightArrowData.latlng),
@@ -517,20 +526,21 @@ function ArrowButton(La) {
     brng = (brng + 360) % 360
     brng = 360 - brng // count degrees counter-clockwise - remove to make clockwise
 
-    // DEBUG: Log detailed bearing calculation
+    // DEBUG: Log detailed bearing calculation with NUMERIC values
     if (!this._degreeDebugCounter) this._degreeDebugCounter = 0;
     this._degreeDebugCounter++;
     if (this._degreeDebugCounter % 5 === 0) {
       console.log('[DEGREE-CALC]', {
-        latlng1: latlng1,
-        latlng2: latlng2,
+        latlng1: {lat: latlng1.lat, lng: latlng1.lng},
+        latlng2: {lat: latlng2.lat, lng: latlng2.lng},
         dLon: dLon,
+        dLat: latlng1.lat - latlng2.lat,
         sin_dLon: Math.sin(dLon),
-        cos_lat2: Math.cos(latlng2.lat),
-        y_component: y,
         cos_lat1: Math.cos(latlng1.lat),
+        cos_lat2: Math.cos(latlng2.lat),
         sin_lat2: Math.sin(latlng2.lat),
         sin_lat1: Math.sin(latlng1.lat),
+        y_component: y,
         x_component: x,
         atan2_raw: Math.atan2(y, x),
         brng_degrees: brng
