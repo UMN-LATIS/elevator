@@ -270,7 +270,7 @@ class S3_model extends CI_Model {
 			}
 			if ($result['Contents'][0]['StorageClass'] == "GLACIER") {
 				$objectInfo = $this->objectInfo($targetKey);
-				if (isset($objectInfo) && isset($objectInfo['Restore']) && strlen($objectInfo['Restore']) > 0) {
+				if (strlen($objectInfo['Restore']) > 0) {
 					$explodedInfo = explode(",", $objectInfo['Restore']);
 					if ($explodedInfo[0] == 'ongoing-request="false"') {
 						return "RESTORED";
