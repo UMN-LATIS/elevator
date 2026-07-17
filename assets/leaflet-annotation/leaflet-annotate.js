@@ -1,13 +1,15 @@
 function LAnnotate (viewer, options,sidecar) {
   // DEBUG: Log initialization state
-  console.log('[ANNOTATE-INIT]', {
+  console.log('[ANNOTATE-INIT] Start', {
+    time: Date.now(),
     mapZoom: viewer._zoom,
     mapCenter: viewer.getCenter(),
     mapBounds: viewer.getBounds(),
-    crs: viewer.options.crs.code,
+    crs: viewer.options.crs ? viewer.options.crs.code : 'MISSING',
     mapMaxBounds: viewer.options.maxBounds,
     hasRotate: viewer._rotate !== undefined ? viewer._rotate : 'N/A',
-    hasBearing: viewer._bearing !== undefined ? viewer._bearing : 'N/A'
+    hasBearing: viewer._bearing !== undefined ? viewer._bearing : 'N/A',
+    layers: viewer._layers ? Object.keys(viewer._layers).length : 0
   });
 
   this.viewer = viewer;
@@ -66,6 +68,13 @@ function LAnnotate (viewer, options,sidecar) {
     this.setJSON(this.sidecar);
   }
 
+  console.log('[ANNOTATE-INIT] Complete', {
+    time: Date.now(),
+    hasSidecar: this.sidecar ? true : false,
+    mapZoom: this.viewer._zoom,
+    layers: this.viewer._layers ? Object.keys(this.viewer._layers).length : 0,
+    layerGroupSize: this.layerGroup._layers ? Object.keys(this.layerGroup._layers).length : 0
+  });
 }
 
 LAnnotate.prototype.setTargetColor = function(color) {
