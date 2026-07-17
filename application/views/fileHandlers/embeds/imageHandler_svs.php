@@ -206,20 +206,8 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             widthScale = minimapRatio;
         }
 
-        // Only the minimap needs to zoom out below the smallest overview, so scope
-        // minNativeZoom to the MINIMAP layer alone. The IIIF/geotiff pyramid can have
-        // fewer levels than dziMaxZoom implies (hence "Overriding computed max zoom");
-        // minNativeZoom tells Leaflet the real pyramid floor so under-zoom loads the
-        // smallest real tile and AUTO-SCALES it (fixes the blank/corner-cropped minimap).
-        // It must NOT go on the main map: the main map starts at zoom 0, and clamping
-        // its tileZoom up to the overview level there makes Leaflet request a full-res-
-        // sized grid of empty tiles (~90k) before it settles at its fit zoom.
-        var miniMapOptions = Object.assign({}, mapOptions);
-        if(typeof imageCount !== 'undefined' && imageCount > 0) {
-            miniMapOptions.minNativeZoom = miniMapOptions.maxNativeZoom - (imageCount - 1);
-        }
-        var miniLayer = L.tileLayer.elevator(tileLoadFunction, miniMapOptions);
-        
+        var miniLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
+
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,
             height: 140 * heightScale,
@@ -236,22 +224,16 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         // measures that container via map.getSize() -- whose result Leaflet CACHES.
         // Depending on load timing the size can be measured (and cached) before the
         // container is laid out, so it comes back [0,0], the fit zoom / minZoom are
-        // computed wrong, and the minimap renders blank. (An incidental await such as
-        // tiff.getImageCount() previously only masked this by delaying work until
-        // after layout.) Now that the container IS in the DOM, force a synchronous
-        // size recalculation and refit so the result is deterministic regardless of
-        // timing. invalidateSize() clears the cached size and re-reads the container;
-        // fitBoundsExactly() then recomputes the fit zoom from the real dimensions.
+        // computed wrong, and the minimap renders blank. Now that the container IS in
+        // the DOM, force a synchronous size recalculation and refit so the result is
+        // deterministic regardless of timing. invalidateSize() clears the cached size
+        // and re-reads the container; fitBoundsExactly() then recomputes the fit zoom
+        // from the real dimensions.
         var innerMiniMap = miniMap._miniMap;
         if(innerMiniMap) {
-            var __mmSizeBefore = innerMiniMap.getSize();
             innerMiniMap.invalidateSize({animate: false, pan: false});
-            var __mmSizeAfter = innerMiniMap.getSize();
             miniLayer.fitBoundsExactly();
             innerMiniMap.setView(imageMap.getCenter(), miniMap._decideZoom(true));
-            console.log("[minimap-fix] sizeBefore =", JSON.stringify(__mmSizeBefore),
-                "sizeAfter =", JSON.stringify(__mmSizeAfter),
-                "zoom =", innerMiniMap.getZoom(), "minZoom =", innerMiniMap.getMinZoom());
         }
 
         if(pixelsPerMillimeter > 10) {

@@ -66,16 +66,12 @@ if (isset($fileContainers['tiled-tar'])) {
         var tiff;
         var image;
         var count;
-        var imageCount;
         var subimages = {};
         var tileType = "iiif";
         var maxZoom = <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1;
         var loadIndex = async function() {
             tiff = await GeoTIFF.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>");
             image = await tiff.getImage();
-            // Number of real overview levels in the geotiff pyramid. Needed to scope
-            // the minimap's minNativeZoom and to clamp tile requests to a real level.
-            imageCount = await tiff.getImageCount();
         }
 
         function hexStringToUint8Array(hexString) {
@@ -95,20 +91,16 @@ if (isset($fileContainers['tiled-tar'])) {
             return arrayBuffer;
         }
         var tileLoadFunction = async function(coords, tile, done) {
-            // The geotiff pyramid can have fewer overview levels than dziMaxZoom
-            // implies (the elevator layer logs "Overriding computed max zoom" for this
-            // mismatch). When zoomed out past the smallest overview -- e.g. the
-            // minimap's fit zoom -- (maxZoom - coords.z) points one level beyond the
-            // pyramid and tiff.getImage() throws "No image at index N", leaving the
-            // tile blank. imageCount is loaded up front in loadIndex; clamp to the
-            // smallest real overview so the tile still resolves.
+            // Derivatives are generated with vips `--depth onepixel`, so the geotiff
+            // pyramid has a real overview page at every zoom level. That means
+            // (maxZoom - coords.z) always maps directly to a valid subimage index --
+            // no clamping or getImageCount() lookup is needed.
             var requestedIndex = maxZoom - coords.z;
-            var subimageIndex = Math.max(0, Math.min(requestedIndex, imageCount - 1));
-            if(subimages[subimageIndex] == undefined) {
-                subimages[subimageIndex] = await tiff.getImage(subimageIndex);
+            if(subimages[requestedIndex] == undefined) {
+                subimages[requestedIndex] = await tiff.getImage(requestedIndex);
             }
             const tileSize = this.options.tileSize;;
-            const subimage = subimages[subimageIndex];
+            const subimage = subimages[requestedIndex];
             async function getData() {
                 
                 const numTilesPerRow = Math.ceil(subimage.getWidth() / subimage.getTileWidth());
