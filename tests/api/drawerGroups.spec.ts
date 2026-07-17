@@ -176,7 +176,7 @@ test.describe("drawerPermissions", () => {
     for (const path of [
       "/drawerPermissions/groupTypes",
       "/drawerPermissions/userAutocomplete?q=ab",
-      "/drawerPermissions/drawers",
+      "/drawerPermissions/manageableDrawers",
       "/drawerPermissions/groups",
       "/drawerPermissions/groups/1",
       "/drawerPermissions/groups/1/members",
@@ -276,15 +276,6 @@ test.describe("drawerPermissions", () => {
       for (const group of groups) {
         expect(typeof group.is_personal).toBe("boolean");
       }
-    });
-
-    test("GET /drawers returns a drawers array", async ({ page }) => {
-      const res = await page.request.get(
-        `${baseURL()}/drawerPermissions/drawers`,
-        { headers: { Accept: "application/json" } }
-      );
-      expect(res.status()).toBe(200);
-      expect(Array.isArray((await res.json()).drawers)).toBe(true);
     });
 
     test("unsupported verb on /groups returns 405", async ({ page }) => {

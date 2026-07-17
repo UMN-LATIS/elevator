@@ -52,7 +52,7 @@ async function findUserByUsername(
   username: string,
 ): Promise<UserMatch> {
   const res = await page.request.get(
-    `${baseURL()}/adminPermissions/userAutocomplete?q=${encodeURIComponent(
+    `${baseURL()}/drawerPermissions/userAutocomplete?q=${encodeURIComponent(
       username,
     )}`,
     { headers: { Accept: "application/json" } },
@@ -234,6 +234,7 @@ test.describe("drawerPermissions grants", () => {
   test.describe("as a drawer manager", () => {
     test.beforeAll(async ({ browser }) => {
       await ensureDrawerManagerUser(browser);
+      await ensureNonManagerUser(browser);
     });
 
     test.beforeEach(async ({ page }) => {
@@ -455,6 +456,32 @@ test.describe("drawerPermissions grants", () => {
       expect(badDrawer.status()).toBe(404);
     });
 
+    test("rejects a grant naming another user's real group with 422", async ({
+      page,
+      browser,
+    }) => {
+      const drawerId = await createDrawer(page, uniqueLabel("Own Drawer"));
+      const levels = await getPermissionLevels(page);
+
+      const adminContext = await browser.newContext();
+      const adminPage = await adminContext.newPage();
+      await loginAdmin(adminPage);
+      const foreignGroupId = await createDrawerGroup(
+        adminPage,
+        uniqueLabel("Foreign Group"),
+      );
+      await adminContext.close();
+
+      // same refusal as a bogus id: another owner's group is not findable
+      const res = await createGrant(
+        page,
+        drawerId,
+        foreignGroupId,
+        levels[0].id,
+      );
+      expect(res.status()).toBe(422);
+    });
+
     test("updating or deleting a missing grant returns 404", async ({
       page,
     }) => {
@@ -480,5 +507,167 @@ test.describe("drawerPermissions grants", () => {
       );
       expect(res.status()).toBe(400);
     });
+
+    test("a grant opens the drawer to the group's members until deleted", async ({
+      page,
+      browser,
+    }) => {
+      const drawerId = await createDrawer(page, uniqueLabel("Access Drawer"));
+      const groupId = await createDrawerGroup(page, uniqueLabel("Access Group"));
+
+      const member = await findUserByUsername(page, NON_MANAGER.username);
+      const memberRes = await page.request.post(
+        `${baseURL()}/drawerPermissions/groups/${groupId}/members`,
+        { form: { localUserId: String(member.localUserId) } },
+      );
+      expect(memberRes.status()).toBe(201);
+
+      // a viewing level, so the member gains the drawer without becoming
+      // a drawer manager and breaking the without-drawer-access tests
+      const levels = await getPermissionLevels(page);
+      const viewLevel = levels.find(
+        (l) => Number(l.level) > 0 && Number(l.level) < 30,
+      );
+      expect(viewLevel, "seed DB lacks a sub-manage level").toBeTruthy();
+
+      const created = await createGrant(
+        page,
+        drawerId,
+        groupId,
+        (viewLevel as PermissionLevel).id,
+      );
+      expect(created.status()).toBe(201);
+      const grantId = (await created.json()).grant.id as number;
+
+      const memberContext = await browser.newContext();
+      const memberPage = await memberContext.newPage();
+      await loginUser(memberPage, NON_MANAGER.username, NON_MANAGER.password);
+
+      const withGrant = await memberPage.request.get(
+        `${baseURL()}/drawers/listDrawers/true`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(withGrant.status()).toBe(200);
+      const visibleDrawers = (await withGrant.json()) as Record<
+        string,
+        { title: string }
+      >;
+      expect(Object.keys(visibleDrawers)).toContain(String(drawerId));
+
+      const removed = await page.request.delete(
+        `${baseURL()}/drawerPermissions/grants/${grantId}`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(removed.status()).toBe(200);
+
+      const withoutGrant = await memberPage.request.get(
+        `${baseURL()}/drawers/listDrawers/true`,
+        { headers: { Accept: "application/json" } },
+      );
+      expect(withoutGrant.status()).toBe(200);
+      const remainingDrawers = (await withoutGrant.json()) as Record<
+        string,
+        { title: string }
+      >;
+      expect(Object.keys(remainingDrawers)).not.toContain(String(drawerId));
+      await memberContext.close();
+    });
+  });
+});
+
+test.describe("drawerPermissions manageableDrawers", () => {
+  test.beforeAll(async ({ browser }) => {
+    await ensureDrawerManagerUser(browser);
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await loginUser(page, DRAWER_MANAGER.username, DRAWER_MANAGER.password);
+  });
+
+  test("lists the caller's manageable drawers", async ({ page }) => {
+    const title = uniqueLabel("Listable Drawer");
+    const drawerId = await createDrawer(page, title);
+
+    const res = await page.request.get(
+      `${baseURL()}/drawerPermissions/manageableDrawers`,
+      { headers: { Accept: "application/json" } },
+    );
+    expect(res.status()).toBe(200);
+
+    const { manageableDrawers } = (await res.json()) as {
+      manageableDrawers: { id: number; title: string }[];
+    };
+    const created = manageableDrawers.find((d) => d.id === drawerId);
+    expect(created?.title).toBe(title);
+  });
+
+  test("rejects a non-GET verb with 405", async ({ page }) => {
+    const res = await page.request.post(
+      `${baseURL()}/drawerPermissions/manageableDrawers`,
+      { form: {} },
+    );
+    expect(res.status()).toBe(405);
+  });
+
+  test("an admin sees drawers beyond their own", async ({ page, browser }) => {
+    const managerDrawerId = await createDrawer(
+      page,
+      uniqueLabel("Manager Reach Drawer"),
+    );
+
+    const adminContext = await browser.newContext();
+    const adminPage = await adminContext.newPage();
+    await loginAdmin(adminPage);
+    const adminDrawerId = await createDrawer(
+      adminPage,
+      uniqueLabel("Admin Reach Drawer"),
+    );
+
+    const adminRes = await adminPage.request.get(
+      `${baseURL()}/drawerPermissions/manageableDrawers`,
+      { headers: { Accept: "application/json" } },
+    );
+    expect(adminRes.status()).toBe(200);
+    const adminList = (await adminRes.json()) as {
+      manageableDrawers: { id: number }[];
+    };
+    expect(
+      adminList.manageableDrawers.some((d) => d.id === managerDrawerId),
+    ).toBe(true);
+    await adminContext.close();
+
+    // the manager's reach stays limited to their own drawers
+    const managerRes = await page.request.get(
+      `${baseURL()}/drawerPermissions/manageableDrawers`,
+      { headers: { Accept: "application/json" } },
+    );
+    expect(managerRes.status()).toBe(200);
+    const managerList = (await managerRes.json()) as {
+      manageableDrawers: { id: number }[];
+    };
+    expect(
+      managerList.manageableDrawers.some((d) => d.id === adminDrawerId),
+    ).toBe(false);
+  });
+});
+
+test.describe("permission levels", () => {
+  test.beforeAll(async ({ browser }) => {
+    await ensureDrawerManagerUser(browser);
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await loginUser(page, DRAWER_MANAGER.username, DRAWER_MANAGER.password);
+  });
+
+  // level is a string column upstream, so "10" would sort before "5"
+  // without the numeric comparison
+  test("arrive in ascending numeric order", async ({ page }) => {
+    const levels = await getPermissionLevels(page);
+    expect(levels.length).toBeGreaterThan(1);
+
+    const numericLevels = levels.map((l) => Number(l.level));
+    const ascending = [...numericLevels].sort((a, b) => a - b);
+    expect(numericLevels).toEqual(ascending);
   });
 });
