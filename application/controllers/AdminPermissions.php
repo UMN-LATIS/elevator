@@ -1,50 +1,27 @@
 <?php
 if (! defined('BASEPATH')) exit('No direct script access allowed');
 
+use Doctrine\ORM\EntityManager;
 use Entity\InstanceGroup;
 use Entity\Permission;
+use Entity\CollectionPermission;
+use Entity\InstancePermission;
 use SimpleValidator as V;
 
 /**
  * pure json api for new ui
  */
 class AdminPermissions extends Instance_Controller {
-  // mirrors the structure of AuthHelpers::$authTypes,
-  // @see UMNHelper:$authTypes for an example
-  const GLOBAL_GROUP_TYPES = [
-    ALL_TYPE => [
-      "name" => ALL_TYPE,
-      "label" => "All",
-      "helpText" => "Everyone, including signed-out visitors.",
-      // vestigial group_value
-      "ignoresGroupValues" => true,
-    ],
-    AUTHED_TYPE => [
-      "name" => AUTHED_TYPE,
-      "label" => "Authenticated Users",
-      "helpText" => "Anyone signed in, by any login method.",
-      "ignoresGroupValues" => true,
-    ],
-    REMOTE_TYPE => [
-      "name" => REMOTE_TYPE,
-      "label" => "Centrally Authenticated Users",
-      "helpText" => "Users signed in through central "
-        . "single sign-on (SSO).",
-      "ignoresGroupValues" => true,
-    ],
-    USER_TYPE => [
-      "name" => USER_TYPE,
-      "label" => "Specific People",
-      "helpText" => "Specific people you choose. Add by name, email, or username.",
-    ],
-  ];
-
   private AuthHelper $authHelper;
+  private GroupTypeCatalog $groupTypeCatalog;
+  private EntityManager $em;
 
   public function __construct() {
     parent::__construct();
     $this->load->library('SimpleValidator');
     $this->authHelper = $this->user_model->getAuthHelper();
+    $this->groupTypeCatalog = new GroupTypeCatalog($this->authHelper->authTypes);
+    $this->em = $this->doctrine->em;
   }
 
 
@@ -56,8 +33,13 @@ class AdminPermissions extends Instance_Controller {
         "type" => $t["name"],
         "label" => $t["label"],
         "description" => $t["helpText"] ?? "",
+        "entryHints" => $this->groupTypeCatalog->entryHintsFor(
+          $t["name"],
+          $this->user_model->userData
+        ),
+        "adminOnly" => $this->groupTypeCatalog->isAdminOnly($t["name"]),
       ],
-      array_values($this->getGroupTypes())
+      array_values($this->groupTypeCatalog->all())
     );
 
     return render_json(["groupTypes" => $groupTypes]);
@@ -120,7 +102,7 @@ class AdminPermissions extends Instance_Controller {
    * Trailing URL segments arrive as method args, so a request to
    * /adminPermissions/groups/5 calls this with $groupId = "5".
    */
-  public function groups($groupId = null, $subResource = null, $memberId = null) {
+  public function groups($groupId = null, $subresource = null, $subresourceId = null) {
     $this->abortUnlessAdmin();
 
     $method = $this->input->server('REQUEST_METHOD');
@@ -128,60 +110,65 @@ class AdminPermissions extends Instance_Controller {
     $groupId = $groupId === null
       ? null
       : filter_var($groupId, FILTER_VALIDATE_INT);
-    $memberId = $memberId === null
+    $subresourceId = $subresourceId === null
       ? null
-      : filter_var($memberId, FILTER_VALIDATE_INT);
+      : filter_var($subresourceId, FILTER_VALIDATE_INT);
 
     // a non-numeric id segment becomes false
-    if ($groupId === false || $memberId === false) {
+    if ($groupId === false || $subresourceId === false) {
       return abort_json(['error' => 'Invalid ID'], 400);
     }
 
-    // which resource does the URL address?
-    $route = match (true) {
-      $groupId === null => '/groups',
-      $subResource === null => '/groups/{id}',
-      $subResource !== 'members' => 'unknown',
-      $memberId === null => '/groups/{id}/members',
-      default => '/groups/{id}/members/{userId}',
-    };
+    // Build the route pattern straight from the URL shape, so the $table
+    // keys below are the single list of known routes.
+    $route = '/groups';
+    if ($groupId !== null) {
+      $route .= '/{id}';
+    }
+    if ($subresource !== null) {
+      $route .= '/' . $subresource;
+    }
+    if ($subresourceId !== null) {
+      $route .= '/{subresourceId}';
+    }
 
-    switch ($route) {
-      case '/groups':
-        switch ($method) {
-          case 'GET':
-            return $this->listGroups();
-          case 'POST':
-            return $this->createGroup();
-        }
-        break;
-      case '/groups/{id}':
-        switch ($method) {
-          case 'GET':
-            return $this->showGroup($groupId);
-          case 'PUT':
-          case 'PATCH':
-            return $this->updateGroup($groupId);
-          case 'DELETE':
-            return $this->deleteGroup($groupId);
-        }
-        break;
-      case '/groups/{id}/members':
-        switch ($method) {
-          case 'GET':
-            return $this->listGroupMembers($groupId);
-          case 'POST':
-            return $this->addGroupMember($groupId);
-        }
-        break;
-      case '/groups/{id}/members/{userId}':
-        switch ($method) {
-          case 'DELETE':
-            return $this->removeGroupMember($groupId, $memberId);
-        }
-        break;
-      case 'unknown':
-        return abort_json(['error' => 'Not Found'], 404);
+    $table = [
+      '/groups' => [
+        'GET' => fn() => $this->listGroups(),
+        'POST' => fn() => $this->createGroup(),
+      ],
+      '/groups/{id}' => [
+        'GET' => fn() => $this->showGroup($groupId),
+        'PUT' => fn() => $this->updateGroup($groupId),
+        'PATCH' => fn() => $this->updateGroup($groupId),
+        'DELETE' => fn() => $this->deleteGroup($groupId),
+      ],
+      '/groups/{id}/members' => [
+        'GET' => fn() => $this->listGroupMembers($groupId),
+        'POST' => fn() => $this->addGroupMember($groupId),
+      ],
+      '/groups/{id}/members/{subresourceId}' => [
+        'DELETE' => fn() => $this->removeGroupMember($groupId, $subresourceId),
+      ],
+      '/groups/{id}/entries' => [
+        'GET' => fn() => $this->listGroupEntries($groupId),
+        'POST' => fn() => $this->addGroupEntry($groupId),
+      ],
+      '/groups/{id}/entries/{subresourceId}' => [
+        'PUT' => fn() => $this->updateGroupEntry($groupId, $subresourceId),
+        'PATCH' => fn() => $this->updateGroupEntry($groupId, $subresourceId),
+        'DELETE' => fn() => $this->removeGroupEntry($groupId, $subresourceId),
+      ],
+    ];
+
+    if (!isset($table[$route])) {
+      return abort_json(['error' => 'Not Found'], 404);
+    }
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
     }
 
     // a known route, but the verb isn't allowed on it
@@ -199,7 +186,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /adminPermissions/groups/{id} — the full group record.
+   * GET /adminPermissions/groups/{id}: the full group record.
    */
   private function showGroup(int $groupId) {
     $group = $this->doctrine->em
@@ -214,7 +201,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * PUT|PATCH /adminPermissions/groups/{id} — edit a group's label and type.
+   * PUT|PATCH /adminPermissions/groups/{id}: edit a group's label and type.
    *
    * Changing the type clears existing members, since they belong to the old
    * type. Editing only the label leaves them alone.
@@ -249,7 +236,7 @@ class AdminPermissions extends Instance_Controller {
       foreach ($group->getGroupValues()->toArray() as $entry) {
         $group->removeGroupValue($entry); // orphanRemoval deletes on flush
       }
-      $group->setGroupValue($this->ignoresGroupValues($newType) ? 1 : null);
+      $group->setGroupValue($this->groupTypeCatalog->ignoresGroupValues($newType) ? 1 : null);
     }
 
     $this->doctrine->em->flush();
@@ -260,7 +247,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * DELETE /adminPermissions/groups/{id} — remove a group.
+   * DELETE /adminPermissions/groups/{id}: remove a group.
    */
   private function deleteGroup(int $groupId) {
     $group = $this->doctrine->em
@@ -279,7 +266,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * GET /adminPermissions/groups/{id}/members — the group's members,
+   * GET /adminPermissions/groups/{id}/members: the group's members,
    * resolved to names so the UI can show who belongs.
    */
   private function listGroupMembers(int $groupId) {
@@ -294,7 +281,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * POST /adminPermissions/groups/{id}/members — add one member.
+   * POST /adminPermissions/groups/{id}/members: add one member.
    *
    * Exactly one of two fields per request: `localUserId` for someone who
    * already has a local row, or `remoteUserId` (a netid/username) for someone
@@ -373,7 +360,7 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * DELETE /adminPermissions/groups/{id}/members/{userId} — drop a member.
+   * DELETE /adminPermissions/groups/{id}/members/{userId}: drop a member.
    */
   private function removeGroupMember(int $groupId, int $userId) {
     $group = $this->doctrine->em
@@ -444,19 +431,12 @@ class AdminPermissions extends Instance_Controller {
     ];
   }
 
-  private function getGroupTypes(): array {
-    return [
-      ...self::GLOBAL_GROUP_TYPES,
-      ...$this->authHelper->authTypes,
-    ];
-  }
-
   /**
    * Shared validation rules for a group's editable attributes (label +
-   * type). createGroup adds its own `values` rule on top of these.
+   * type), used by both createGroup and updateGroup.
    */
   private function groupAttributeRules(): array {
-    $validTypes = array_keys($this->getGroupTypes());
+    $validTypes = array_keys($this->groupTypeCatalog->all());
     return [
       'type' => [
         V::required(),
@@ -495,35 +475,11 @@ class AdminPermissions extends Instance_Controller {
     $group->setGroupType($type);
     $group->setGroupLabel($validated['label']);
 
-    if ($this->ignoresGroupValues($type)) {
-      // vestigial scalar; must be 1 — Authed/Authed_remote match on it
+    if ($this->groupTypeCatalog->ignoresGroupValues($type)) {
+      // must be 1 for legacy reasons
       $group->setGroupValue(1);
     } else {
       $group->setGroupValue(null);
-
-      $nonEmptyValues = array_filter(
-        (array) ($validated['values'] ?? []),
-        fn($v) => $v !== ''
-      );
-
-      // create a GroupEntry for each value
-      foreach ($nonEmptyValues as $value) {
-        // a non-numeric User value is a remote auth-system id; resolve
-        // it to a local user id. other types store their value as-is
-        if ($type === USER_TYPE && !is_numeric($value)) {
-          // a non-numeric value is a remote username; provision its
-          // local row and store the resulting user id
-          try {
-            $value = $this->firstOrProvisionRemoteUser($value)->getId();
-          } catch (RemoteUserNotFoundException $e) {
-            return abort_json(['error' => $e->getMessage()], 404);
-          }
-        }
-
-        $entry = new Entity\GroupEntry();
-        $entry->setGroupValue($value);
-        $group->addGroupValue($entry);
-      }
     }
 
     $this->doctrine->em->persist($group);
@@ -535,57 +491,160 @@ class AdminPermissions extends Instance_Controller {
   }
 
   /**
-   * Whether `$type` matches a whole population instead of a values
-   * list (All/Authed/Authed_remote).
+   * GET /adminPermissions/groups/{id}/entries: a group's raw match values.
    */
-  private function ignoresGroupValues(string $type): bool {
-    // auth-helper types always carry values, so absence means false
-    return self::GLOBAL_GROUP_TYPES[$type]['ignoresGroupValues'] ?? false;
+  private function listGroupEntries(int $groupId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
+    }
+
+    return render_json([
+      'entries' => $group->getGroupValues()->toArray(),
+    ]);
   }
 
   /**
-   * Find a remote user within the local DB by their remote id
-   * (e.g. username, umndid). If not found, creates a new
-   * user in the local DB with the remoteUserId set.
-   *
-   * @throws RemoteUserNotFoundException if the user cannot be found or
-   *   provisioned.
-   * @return Entity\User the user record matching the remote id
+   * POST /adminPermissions/groups/{id}/entries: add one match value.
    */
-  private function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
+  private function addGroupEntry(int $groupId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
 
-    /** @var AuthHelper $authHelper */
-    $authHelper = $this->user_model->getAuthHelper();
-
-    // findById($id, true) will make new (unsaved) an Entity\User record with
-    // the given remote id if nothing is found.
-    /** @var ?Entity\User $remoteUser */
-    $remoteUser = $authHelper->findById($remoteUserId, true)[0] ?? null;
-
-    if ($remoteUser === null) {
-      throw new RemoteUserNotFoundException($remoteUserId);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
     }
 
-    // does a user already exist in the local DB with this username?
-    /** @var ?Entity\User $existingUser */
-    $existingUser = $this->doctrine->em->getRepository(Entity\User::class)
-      ->findOneBy(["username" => $remoteUser->getUsername()]);
-
-    // if so, return it instead of the new unsaved one
-    if ($existingUser !== null) {
-      return $existingUser;
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
     }
 
-    // otherwise, fill in some blanks in the new record
-    $remoteUser->setUserType("Remote");
-    $remoteUser->setCreatedAt(new \DateTime("now"));
-    $remoteUser->setInstance($this->instance);
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'value' => [V::required(), V::string(), V::maxLength(255)],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
 
-    // and then save it
-    $this->doctrine->em->persist($remoteUser);
+    $entry = new Entity\GroupEntry();
+    $entry->setGroupValue($validated['value']);
+    $group->addGroupValue($entry);
+
     $this->doctrine->em->flush();
+    $this->clearUserCache();
 
-    return $remoteUser;
+    return render_json(['entry' => $entry], 201);
+  }
+
+  /**
+   * PUT|PATCH /adminPermissions/groups/{id}/entries/{entryId}: edit one
+   * match value in place.
+   */
+  private function updateGroupEntry(int $groupId, int $entryId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
+    }
+
+    $entry = $this->findEntryInGroup($group, $entryId);
+    if (!$entry) {
+      return abort_json(['error' => 'Entry not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'value' => [V::required(), V::string(), V::maxLength(255)],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $entry->setGroupValue($validated['value']);
+
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['entry' => $entry]);
+  }
+
+  /**
+   * DELETE /adminPermissions/groups/{id}/entries/{entryId}: drop one
+   * match value.
+   */
+  private function removeGroupEntry(int $groupId, int $entryId): CI_Output {
+    $group = $this->doctrine->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy(['id' => $groupId, 'instance' => $this->instance]);
+
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 404);
+    }
+
+    if (!$this->groupTypeCatalog->isAuthHelperType($group->getGroupType())) {
+      return abort_json(
+        ['error' => 'Only auth-helper group types take entries'],
+        422
+      );
+    }
+
+    $entry = $this->findEntryInGroup($group, $entryId);
+    if (!$entry) {
+      return abort_json(['error' => 'Entry not found'], 404);
+    }
+
+    $group->removeGroupValue($entry); // orphanRemoval deletes on flush
+    $this->doctrine->em->flush();
+    $this->clearUserCache();
+
+    return render_json(['removed' => $entryId]);
+  }
+
+  /**
+   * Find the entry with `$entryId` among `$group`'s own entries.
+   *
+   * Entry ids are global, so fetching one straight from the repository
+   * would let an admin address an entry belonging to another group, or
+   * another instance. Scanning the group's collection enforces ownership.
+   * The scan is cheap: the collection loads in one query and groups hold
+   * few entries.
+   *
+   * @return ?Entity\GroupEntry null when the group has no such entry
+   */
+  private function findEntryInGroup(
+    InstanceGroup $group,
+    int $entryId
+  ): ?Entity\GroupEntry {
+    foreach ($group->getGroupValues() as $candidate) {
+      if ($candidate->getId() === $entryId) {
+        return $candidate;
+      }
+    }
+    return null;
   }
 
   /**
@@ -596,5 +655,409 @@ class AdminPermissions extends Instance_Controller {
     if ($this->config->item('enableCaching')) {
       $this->userCache->clear();
     }
+  }
+
+  /**
+   * REST entry point for /adminPermissions/instanceGrants[/{id}].
+   */
+  public function instanceGrants($grantId = null) {
+    $this->abortUnlessAdmin();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    if ($grantId !== null) {
+      $grantId = filter_var($grantId, FILTER_VALIDATE_INT);
+      if ($grantId === false) {
+        return abort_json(['error' => 'Invalid ID'], 400);
+      }
+    }
+
+    $route = $grantId === null
+      ? '/instanceGrants'
+      : '/instanceGrants/{id}';
+
+    $table = [
+      '/instanceGrants' => [
+        'GET' => fn() => $this->listInstanceGrants(),
+        'POST' => fn() => $this->createInstanceGrant(),
+      ],
+      '/instanceGrants/{id}' => [
+        'PUT' => fn() => $this->updateInstanceGrant($grantId),
+        'PATCH' => fn() => $this->updateInstanceGrant($grantId),
+        'DELETE' => fn() => $this->deleteInstanceGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  /**
+   * REST entry point for /adminPermissions/collectionGrants[/{id}].
+   */
+  public function collectionGrants($grantId = null) {
+    $this->abortUnlessAdmin();
+
+    $method = $this->input->server('REQUEST_METHOD');
+
+    if ($grantId !== null) {
+      $grantId = filter_var($grantId, FILTER_VALIDATE_INT);
+      if ($grantId === false) {
+        return abort_json(['error' => 'Invalid ID'], 400);
+      }
+    }
+
+    $route = $grantId === null
+      ? '/collectionGrants'
+      : '/collectionGrants/{id}';
+
+    $table = [
+      '/collectionGrants' => [
+        'GET' => fn() => $this->listCollectionGrants(),
+        'POST' => fn() => $this->createCollectionGrant(),
+      ],
+      '/collectionGrants/{id}' => [
+        'PUT' => fn() => $this->updateCollectionGrant($grantId),
+        'PATCH' => fn() => $this->updateCollectionGrant($grantId),
+        'DELETE' => fn() => $this->deleteCollectionGrant($grantId),
+      ],
+    ];
+
+    $handler = $table[$route][$method] ?? null;
+
+    if ($handler) {
+      return $handler();
+    }
+
+    return abort_json(['error' => 'Method Not Allowed'], 405);
+  }
+
+  private function listInstanceGrants() {
+    $grants = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findBy(['instance' => $this->instance]);
+
+    return render_json(['instanceGrants' => $grants]);
+  }
+
+
+  /**
+   * POST /adminPermissions/instanceGrants
+   */
+  private function createInstanceGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['group' => $group, 'instance' => $this->instance]);
+    if ($existingGrant) {
+      return abort_json([
+        'error' => 'Group already has an instance grant',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant = new InstancePermission();
+    $grant->setGroup($group);
+    $grant->setInstance($this->instance);
+    $grant->setPermission($level);
+
+    $this->em->persist($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['instanceGrant' => $grant], 201);
+  }
+
+  /**
+   * PUT|PATCH /adminPermissions/instanceGrants/{id}
+   */
+  private function updateInstanceGrant(int $grantId): CI_Output {
+    $grant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['id' => $grantId, 'instance' => $this->instance]);
+    if (!$grant) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['group' => $group, 'instance' => $this->instance]);
+    if ($existingGrant && $existingGrant->getId() !== $grantId) {
+      return abort_json([
+        'error' => 'Group already has an instance grant',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant->setGroup($group);
+    $grant->setPermission($level);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['instanceGrant' => $grant]);
+  }
+
+  /**
+   * DELETE /adminPermissions/instanceGrants/{id}: remove one grant.
+   * The group itself is untouched.
+   */
+  private function deleteInstanceGrant(int $grantId): CI_Output {
+    $grant = $this->em
+      ->getRepository(InstancePermission::class)
+      ->findOneBy(['id' => $grantId, 'instance' => $this->instance]);
+    if (!$grant) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    $this->em->remove($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $grantId]);
+  }
+
+  /**
+   * GET /adminPermissions/collectionGrants
+   */
+  private function listCollectionGrants(): CI_Output {
+    $instanceCollections = $this->instance->getCollections()->toArray();
+
+    // findBy with an empty array builds an IN () clause, so an instance
+    // with no collections answers directly instead of querying
+    if (count($instanceCollections) === 0) {
+      return render_json(['collectionGrants' => []]);
+    }
+
+    $grants = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findBy(['collection' => $instanceCollections]);
+
+    return render_json(['collectionGrants' => $grants]);
+  }
+
+  /**
+   * POST /adminPermissions/collectionGrants
+   */
+  private function createCollectionGrant(): CI_Output {
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'collectionId' => [V::required(), V::integer()],
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $collection = $this->findCollectionInInstance(
+      (int) $validated['collectionId']
+    );
+    if (!$collection) {
+      return abort_json(['error' => 'Collection not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findOneBy(['group' => $group, 'collection' => $collection]);
+    if ($existingGrant) {
+      return abort_json([
+        'error' => 'Group already has a grant on this collection',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant = new CollectionPermission();
+    $grant->setGroup($group);
+    $grant->setCollection($collection);
+    $grant->setPermission($level);
+
+    $this->em->persist($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['collectionGrant' => $grant], 201);
+  }
+
+  /**
+   * Find the collection with `$collectionId` among this instance's own
+   * collections.
+   *
+   * Collection ids are global, so fetching one straight from the
+   * repository would let an admin reach another instance's collection.
+   * Scanning the instance's collection list enforces membership, the
+   * same ownership pattern as findEntryInGroup.
+   *
+   * @return ?Entity\Collection null when the instance has no such
+   *   collection
+   */
+  private function findCollectionInInstance(int $collectionId): ?Entity\Collection {
+    foreach ($this->instance->getCollections() as $candidate) {
+      if ($candidate->getId() === $collectionId) {
+        return $candidate;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * PUT|PATCH /adminPermissions/collectionGrants/{id}
+   */
+  private function updateCollectionGrant(int $grantId): CI_Output {
+    $grant = $this->em->find(CollectionPermission::class, $grantId);
+
+    // Grant ids are global, so ownership comes from the grant's
+    // collection belonging to this instance. An orphaned grant (null
+    // collection) is unreachable for the same reason.
+    $currentCollectionId = $grant?->getCollection()?->getId();
+    if ($currentCollectionId === null || !$this->findCollectionInInstance($currentCollectionId)) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    try {
+      $validated = V::validate($this->requestBody(), [
+        'collectionId' => [V::required(), V::integer()],
+        'groupId' => [V::required(), V::integer()],
+        'permissionLevelId' => [V::required(), V::integer()],
+      ]);
+    } catch (ValidationException $e) {
+      return abort_json(['errors' => $e->getErrors()], 422);
+    }
+
+    $group = $this->em
+      ->getRepository(InstanceGroup::class)
+      ->findOneBy([
+        'id' => (int) $validated['groupId'],
+        'instance' => $this->instance,
+      ]);
+    if (!$group) {
+      return abort_json(['error' => 'Group not found'], 422);
+    }
+
+    $level = $this->em
+      ->find(Permission::class, (int) $validated['permissionLevelId']);
+    if (!$level) {
+      return abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    $collection = $this->findCollectionInInstance(
+      (int) $validated['collectionId']
+    );
+    if (!$collection) {
+      return abort_json(['error' => 'Collection not found'], 422);
+    }
+
+    $existingGrant = $this->em
+      ->getRepository(CollectionPermission::class)
+      ->findOneBy(['group' => $group, 'collection' => $collection]);
+    if ($existingGrant && $existingGrant->getId() !== $grantId) {
+      return abort_json([
+        'error' => 'Group already has a grant on this collection',
+        'existingGrantId' => $existingGrant->getId(),
+      ], 409);
+    }
+
+    $grant->setGroup($group);
+    $grant->setCollection($collection);
+    $grant->setPermission($level);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['collectionGrant' => $grant]);
+  }
+
+  /**
+   * DELETE /adminPermissions/collectionGrants/{id}: remove one grant.
+   */
+  private function deleteCollectionGrant(int $grantId): CI_Output {
+    $grant = $this->em->find(CollectionPermission::class, $grantId);
+
+    // same ownership rule as updateCollectionGrant: reachable only
+    // through a collection belonging to this instance
+    $collectionId = $grant?->getCollection()?->getId();
+    if ($collectionId === null || !$this->findCollectionInInstance($collectionId)) {
+      return abort_json(['error' => 'Grant not found'], 404);
+    }
+
+    $this->em->remove($grant);
+    $this->em->flush();
+
+    $this->clearUserCache();
+
+    return render_json(['deleted' => $grantId]);
   }
 }

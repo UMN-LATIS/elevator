@@ -325,13 +325,9 @@ class InstanceGroup implements \JsonSerializable
         return [
             'id'         => $this->id,
             'type'       => $this->group_type,
-            // the `group_value` col is vestigial for
-            // auth types that don't have a value-based
-            // match like `Authed` or `Authed_remote`
-            // 'ignoresGroupValues'      => isset($this->group_value),
             'label'      => $this->group_label,
-            'expiration' => $this->expiration?->format(\DateTime::ATOM),
-            'values'     => array_values($this->group_values->toArray()),
+            // n+1 query, but prob fine at our scale
+            'entries_count' => $this->group_values->count(),
         ];
     }
 }

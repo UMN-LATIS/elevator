@@ -134,6 +134,7 @@ export async function createCollection(
 // POST /{instance}/permissions/saveUser
 // Creates a local user via the admin permissions controller.
 // The caller must be logged in as an admin.
+// An already-taken username is a no-op, leaving the existing user untouched.
 export async function createUser(
   page: Page,
   username: string,
