@@ -254,24 +254,38 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,
             height: 140 * heightScale,
-                        //position: "topright",
-                        toggleDisplay: true,
-                        zoomAnimation: false,
-                        zoomLevelOffset: -3,
-                        zoomLevelFixed: -3,
-                        mapOptions: { crs: L.CRS.Simple }
-                    });
+            position: "topright",
+            toggleDisplay: false,  // Don't hide by default
+            zoomAnimation: false,
+            zoomLevelOffset: -3,
+            mapOptions: { crs: L.CRS.Simple }
+        });
         miniMap.addTo(imageMap);
         
         console.log('[SVS-HANDLER] minimap added to map', {
             time: Date.now(),
             miniMapExists: miniMap ? true : false,
+            miniMapIsHidden: miniMap._container ? (miniMap._container.style.display === 'none' ? 'hidden' : 'visible') : 'no-container',
             miniMapInternalMapExists: miniMap._miniMap ? true : false,
             miniMapInternalMapZoom: miniMap._miniMap ? miniMap._miniMap._zoom : null,
+            miniMapInternalMapCenter: miniMap._miniMap ? miniMap._miniMap.getCenter() : null,
+            miniMapInternalMapSize: miniMap._miniMap ? miniMap._miniMap.getSize() : null,
             miniMapInternalMapLayers: miniMap._miniMap ? Object.keys(miniMap._miniMap._layers).length : 0,
             miniLayerLoading: miniLayer._loading ? true : false,
             miniLayerHasUrl: miniLayer._url ? true : false
         });
+        
+        // Track zoom changes on the minimap's internal map
+        if (miniMap._miniMap) {
+            miniMap._miniMap.on('zoomend', () => {
+                console.log('[MINIMAP-INTERNAL] Zoom changed', { 
+                    time: Date.now(),
+                    zoom: miniMap._miniMap._zoom,
+                    center: miniMap._miniMap.getCenter(),
+                    bounds: miniMap._miniMap.getBounds()
+                });
+            });
+        }
         
         console.log('[SVS-HANDLER] minimap created', {
             width: 140 * widthScale,
@@ -328,6 +342,15 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         });
         layer.on('tileerror', (err) => {
             console.error('[SVS-HANDLER] Main layer tile error', { time: Date.now(), error: err });
+        });
+        
+        // Track zoom changes on main map
+        imageMap.on('zoomend', () => {
+            console.log('[SVS-HANDLER] Main map zoom changed', { 
+                time: Date.now(),
+                zoom: imageMap._zoom,
+                miniMapInternalZoom: miniMap._miniMap ? miniMap._miniMap._zoom : null
+            });
         });
         
         // Also initialize after a timeout in case tiles never fire load event
