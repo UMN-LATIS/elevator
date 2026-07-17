@@ -231,6 +231,29 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                     });
         miniMap.addTo(imageMap);
 
+        // The MiniMap plugin builds its inner L.Map on a container that is not yet
+        // attached to the page, and the elevator layer's onAdd -> fitBoundsExactly
+        // measures that container via map.getSize() -- whose result Leaflet CACHES.
+        // Depending on load timing the size can be measured (and cached) before the
+        // container is laid out, so it comes back [0,0], the fit zoom / minZoom are
+        // computed wrong, and the minimap renders blank. (An incidental await such as
+        // tiff.getImageCount() previously only masked this by delaying work until
+        // after layout.) Now that the container IS in the DOM, force a synchronous
+        // size recalculation and refit so the result is deterministic regardless of
+        // timing. invalidateSize() clears the cached size and re-reads the container;
+        // fitBoundsExactly() then recomputes the fit zoom from the real dimensions.
+        var innerMiniMap = miniMap._miniMap;
+        if(innerMiniMap) {
+            var __mmSizeBefore = innerMiniMap.getSize();
+            innerMiniMap.invalidateSize({animate: false, pan: false});
+            var __mmSizeAfter = innerMiniMap.getSize();
+            miniLayer.fitBoundsExactly();
+            innerMiniMap.setView(imageMap.getCenter(), miniMap._decideZoom(true));
+            console.log("[minimap-fix] sizeBefore =", JSON.stringify(__mmSizeBefore),
+                "sizeAfter =", JSON.stringify(__mmSizeAfter),
+                "zoom =", innerMiniMap.getZoom(), "minZoom =", innerMiniMap.getMinZoom());
+        }
+
         if(pixelsPerMillimeter > 10) {
 
             var measureControl = new L.Control.Measure(

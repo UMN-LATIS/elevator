@@ -73,6 +73,8 @@ if (isset($fileContainers['tiled-tar'])) {
         var loadIndex = async function() {
             tiff = await GeoTIFF.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>");
             image = await tiff.getImage();
+            // Number of real overview levels in the geotiff pyramid. Needed to scope
+            // the minimap's minNativeZoom and to clamp tile requests to a real level.
             imageCount = await tiff.getImageCount();
         }
 
@@ -93,16 +95,13 @@ if (isset($fileContainers['tiled-tar'])) {
             return arrayBuffer;
         }
         var tileLoadFunction = async function(coords, tile, done) {
-            // The pyramid may have fewer levels than dziMaxZoom implies (the elevator
-            // layer logs "Overriding computed max zoom" for exactly this mismatch).
-            // When zoomed out past the smallest available level -- e.g. the minimap's
-            // fixed zoom -- (maxZoom - coords.z) points one level beyond the pyramid,
-            // and tiff.getImage() throws "No image at index N". That throw happens on
-            // the awaited assignment below, so the tile's src is never set and it
-            // renders blank. Clamp to the smallest available image so it still renders.
-            if(imageCount === undefined) {
-                imageCount = await tiff.getImageCount();
-            }
+            // The geotiff pyramid can have fewer overview levels than dziMaxZoom
+            // implies (the elevator layer logs "Overriding computed max zoom" for this
+            // mismatch). When zoomed out past the smallest overview -- e.g. the
+            // minimap's fit zoom -- (maxZoom - coords.z) points one level beyond the
+            // pyramid and tiff.getImage() throws "No image at index N", leaving the
+            // tile blank. imageCount is loaded up front in loadIndex; clamp to the
+            // smallest real overview so the tile still resolves.
             var requestedIndex = maxZoom - coords.z;
             var subimageIndex = Math.max(0, Math.min(requestedIndex, imageCount - 1));
             if(subimages[subimageIndex] == undefined) {
