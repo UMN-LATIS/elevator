@@ -514,13 +514,13 @@ function ArrowButton(La) {
   }
 
   this.degreeBetweenTwoLatLngs = (latlng1, latlng2) => { //calculates degree between the head of the arrow and where your mouse is because this plugin uses polar coordinates
-    var dLon = (latlng1.lng - latlng2.lng)
+    // IMPORTANT: CRS.Simple uses flat pixel-space coordinates, not geographic lat/lng.
+    // The old spherical bearing formula (sin/cos of lat/lng) oscillates wildly with large
+    // pixel values like dLng=69.7, causing the arrow to spin. Use simple Cartesian atan2 instead.
+    var dx = latlng2.lng - latlng1.lng;
+    var dy = latlng2.lat - latlng1.lat;
 
-    var y = Math.sin(dLon) * Math.cos(latlng2.lat)
-    var x = Math.cos(latlng1.lat) * Math.sin(latlng2.lat) - Math.sin(latlng1.lat)
-    * Math.cos(latlng2.lat) * Math.cos(dLon)
-
-    var brng = Math.atan2(y, x)
+    var brng = Math.atan2(-dx, dy)
 
     brng = (180 / Math.PI) * brng
     brng = (brng + 360) % 360
@@ -533,16 +533,10 @@ function ArrowButton(La) {
       console.log('[DEGREE-CALC]', {
         latlng1: {lat: latlng1.lat, lng: latlng1.lng},
         latlng2: {lat: latlng2.lat, lng: latlng2.lng},
-        dLon: dLon,
-        dLat: latlng1.lat - latlng2.lat,
-        sin_dLon: Math.sin(dLon),
-        cos_lat1: Math.cos(latlng1.lat),
-        cos_lat2: Math.cos(latlng2.lat),
-        sin_lat2: Math.sin(latlng2.lat),
-        sin_lat1: Math.sin(latlng1.lat),
-        y_component: y,
-        x_component: x,
-        atan2_raw: Math.atan2(y, x),
+        dx: dx,
+        dy: dy,
+        atan2_input: {x: -dx, y: dy},
+        atan2_raw: Math.atan2(-dx, dy),
         brng_degrees: brng
       });
     }
