@@ -411,7 +411,11 @@ function ArrowButton(La) {
       this.viewer.removeLayer(this.arrow)
       var arrowEnd = this.viewer.mouseEventToLatLng(e)
       this.inflightArrowData.degree = this.degreeBetweenTwoLatLngs(this.inflightArrowData.latlng, arrowEnd) //calculate degree between mouse and arrow head
-      this.inflightArrowData.distance = this.viewer.distance(arrowEnd, this.inflightArrowData.latlng) * 100 + .001 //calculate distance between mouse and arrow head
+      // The 'km' _calculateEndPoint formula recovers coordinate offset via dist/R*(180/π).
+      // Multiplying by R*π/180 (≈111.32) makes the arrow tip land exactly on the cursor.
+      // The old factor of 100 caused the tip to land ~10% short, which was unnoticeable
+      // on small square images but visually obvious on wide images with large lng extents.
+      this.inflightArrowData.distance = this.viewer.distance(arrowEnd, this.inflightArrowData.latlng) * (Math.PI * 6378.137 / 180) + .001 //calculate distance between mouse and arrow head
       this.arrow.setData(this.inflightArrowData)
       this.arrow.addTo(this.leafletAnnotate.layerGroup) //place updated arrow back on page
       $(this.viewer._container).click(this.stopArrow)
