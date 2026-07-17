@@ -69,7 +69,7 @@ class API_Controller extends MY_Controller {
 		$this->apiKey = $apiKey;
 		if($authUser) {
 			if($this->config->item('enableCaching')) {
-				if($storedObject = $this->userCache->get($authUser)) {
+				if($storedObject = $this->userCache->get((string)$authUser)) {
 					$user_model = $storedObject;
 					if(!$user_model) {
 						$this->user_model->loadUser($authUser);

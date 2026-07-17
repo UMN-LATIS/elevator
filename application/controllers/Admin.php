@@ -460,7 +460,7 @@ class admin extends Admin_Controller {
 				}
 
 				$this->instance = $instance;
-				echo "Regenerating " . $row["fileObjectId"] . "\n";
+				echo "Regenerating " . $row["fileObjectId"] . " " . $row['id'] . "\n";
 				$fileHandler = $this->filehandler_router->getHandledObject($row["fileObjectId"]);
 				if (!$fileHandler) {
 					echo "Could not load handler for: " . $row["fileObjectId"] . "\n";
