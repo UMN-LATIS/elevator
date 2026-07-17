@@ -277,7 +277,7 @@ class ImageHandler extends FileHandlerBase {
 		$derivativeContainerIIIF->setParent($this->sourceFile->getParent());
 		$derivativeContainerIIIF->originalFilename = $pathparts['filename'] . "_" . $derivativeType . ".tiff";
 
-		$outputFile = $derivativeContainerIIIF->getPathToLocalFile();
+		$outputFile = $derivativeContainerIIIF->getPathToLocalFile() . ".tiff";
 
 		$rotationAppend = "";
 		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
@@ -287,31 +287,31 @@ class ImageHandler extends FileHandlerBase {
 		$widgetRotationValue = (isset($uploadWidget->parentWidget->rotationValue) && is_numeric($uploadWidget->parentWidget->rotationValue))
 			? (float)$uploadWidget->parentWidget->rotationValue : 0;
 
-		$rotatedPath = null;
+		$useRotForExtract = false;
+		$rotAngle = null;
 		if ($widgetRotationValue != 0) {
 			$rotAngleMap = [90 => 'd90', 180 => 'd180', 270 => 'd270'];
 			$rotAngle = $rotAngleMap[(int)$widgetRotationValue] ?? null;
 			if ($rotAngle) {
-				$rotatedPath = $localPath . '_rotated.tiff';
-				$rotateString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $rotatedPath . " " . $rotAngle;
-				$rotateProcess = new Cocur\BackgroundProcess\BackgroundProcess($rotateString);
-				$rotateProcess->run();
-				while ($rotateProcess->isRunning()) {
-					sleep(5);
-					echo ".";
-				}
-				$localPath = $rotatedPath;
-				$rotationAppend = "";
+				$useRotForExtract = true;
 			}
 		}
 
-		$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
+		if($useRotForExtract) {
+			$outputWithOptions = $outputFile . "[tile,pyramid,compression=jpeg,Q=90,tile-width=256,tile-height=256,bigtiff,depth=onepixel]";
+			$extractString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $outputWithOptions . " " . $rotAngle;
+
+		}
+		else {
+			$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
+		}
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
-		$process->run();
+		$process->run( );
 		while($process->isRunning()) {
 			sleep(5);
 			echo ".";
 		}
+
 
 		$this->sourceFile->metadata["dziWidth"] = $this->sourceFile->metadata["width"];
 		$this->sourceFile->metadata["dziHeight"] = $this->sourceFile->metadata["height"];
@@ -340,23 +340,20 @@ class ImageHandler extends FileHandlerBase {
 		$this->sourceFile->metadata["dziMaxZoom"] = $zoom;
 
 		echo "\n";
-
+		rename($outputFile, $derivativeContainerIIIF->getPathToLocalFile());
 		if($derivativeContainerIIIF->copyToRemoteStorage()) {
 			echo "Success\n";
 			unlink($derivativeContainerIIIF->getPathToLocalFile());
 			$derivativeContainerIIIF->ready = true;
 		}
 		else {
-			echo "Fail";
+			echo "Fail uploading\n";
+			die();
 		}
 
 
 		$this->derivatives[$derivativeContainerIIIF->derivativeType] = $derivativeContainerIIIF;
 		$this->unlinkLocalSwap();
-
-		if ($rotatedPath && file_exists($rotatedPath)) {
-			unlink($rotatedPath);
-		}
 
 		$this->queueTask(3);
 		return JOB_SUCCESS;
@@ -403,6 +400,60 @@ class ImageHandler extends FileHandlerBase {
 
 	}
 
+	private function getLargestDerivativeDimensions() {
+		$maxWidth = 0;
+		$maxHeight = 0;
+
+		foreach($this->taskArray as $taskConfig) {
+			if(!isset($taskConfig['taskType']) || $taskConfig['taskType'] !== 'createDerivative' || !isset($taskConfig['config']) || !is_array($taskConfig['config'])) {
+				continue;
+			}
+
+			foreach($taskConfig['config'] as $derivativeConfig) {
+				if(!is_array($derivativeConfig)) {
+					continue;
+				}
+				if(isset($derivativeConfig['width']) && is_numeric($derivativeConfig['width'])) {
+					$maxWidth = max($maxWidth, (int)$derivativeConfig['width']);
+				}
+				if(isset($derivativeConfig['height']) && is_numeric($derivativeConfig['height'])) {
+					$maxHeight = max($maxHeight, (int)$derivativeConfig['height']);
+				}
+			}
+		}
+
+		if($maxWidth <= 0) {
+			$maxWidth = 2048;
+		}
+		if($maxHeight <= 0) {
+			$maxHeight = 2048;
+		}
+
+		return ['width' => $maxWidth, 'height' => $maxHeight];
+	}
+
+	private function getVipsShrinkValuesForSource($sourceFile) {
+		$defaultShrink = ['x' => 10, 'y' => 10];
+		if(!isset($sourceFile->metadata) || !isset($sourceFile->metadata['width']) || !isset($sourceFile->metadata['height']) || !is_numeric($sourceFile->metadata['width']) || !is_numeric($sourceFile->metadata['height'])) {			
+			return $defaultShrink;
+		}
+
+		$sourceWidth = (int)$sourceFile->metadata['width'];
+		$sourceHeight = (int)$sourceFile->metadata['height'];
+		if($sourceWidth <= 0 || $sourceHeight <= 0) {
+			return $defaultShrink;
+		}
+
+		$maxDerivativeDimensions = $this->getLargestDerivativeDimensions();
+		$targetWidth = max(1, $maxDerivativeDimensions['width'] * 2);
+		$targetHeight = max(1, $maxDerivativeDimensions['height'] * 2);
+
+		// Use a single shrink factor so the intermediate image keeps its aspect ratio.
+		$shrinkFactor = max(1, (int)ceil(max($sourceWidth / $targetWidth, $sourceHeight / $targetHeight)));
+
+		return ['x' => $shrinkFactor, 'y' => $shrinkFactor];
+	}
+
 	function swapLocalForPNG($sourceFile= null) {
 		if(!$sourceFile) {
 			$sourceFile = $this->sourceFile;
@@ -416,7 +467,10 @@ class ImageHandler extends FileHandlerBase {
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
-			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+			// also pass in the real source in case we got an intermediate.
+			$shrinkValues = $this->getVipsShrinkValuesForSource($this->sourceFile);
+			echo "Shrinking whole slide image to " . $shrinkValues['x'] . " x " . $shrinkValues['y'] . "\n";
+			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
 			while($process->isRunning()) {
@@ -438,7 +492,8 @@ class ImageHandler extends FileHandlerBase {
 			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
-			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . "10 10";
+			$shrinkValues = $this->getVipsShrinkValuesForSource($sourceFile);
+			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
 			while($process->isRunning()) {
