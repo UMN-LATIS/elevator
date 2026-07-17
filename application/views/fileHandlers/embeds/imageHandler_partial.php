@@ -66,12 +66,14 @@ if (isset($fileContainers['tiled-tar'])) {
         var tiff;
         var image;
         var count;
+        var imageCount;
         var subimages = {};
         var tileType = "iiif";
         var maxZoom = <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1;
         var loadIndex = async function() {
             tiff = await GeoTIFF.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>");
             image = await tiff.getImage();
+            imageCount = await tiff.getImageCount();
         }
 
         function hexStringToUint8Array(hexString) {
@@ -91,11 +93,23 @@ if (isset($fileContainers['tiled-tar'])) {
             return arrayBuffer;
         }
         var tileLoadFunction = async function(coords, tile, done) {
-            if(subimages[coords.z] == undefined) {
-                subimages[coords.z] = await tiff.getImage(maxZoom - coords.z);
+            // The pyramid may have fewer levels than dziMaxZoom implies (the elevator
+            // layer logs "Overriding computed max zoom" for exactly this mismatch).
+            // When zoomed out past the smallest available level -- e.g. the minimap's
+            // fixed zoom -- (maxZoom - coords.z) points one level beyond the pyramid,
+            // and tiff.getImage() throws "No image at index N". That throw happens on
+            // the awaited assignment below, so the tile's src is never set and it
+            // renders blank. Clamp to the smallest available image so it still renders.
+            if(imageCount === undefined) {
+                imageCount = await tiff.getImageCount();
+            }
+            var requestedIndex = maxZoom - coords.z;
+            var subimageIndex = Math.max(0, Math.min(requestedIndex, imageCount - 1));
+            if(subimages[subimageIndex] == undefined) {
+                subimages[subimageIndex] = await tiff.getImage(subimageIndex);
             }
             const tileSize = this.options.tileSize;;
-            const subimage = subimages[coords.z];
+            const subimage = subimages[subimageIndex];
             async function getData() {
                 
                 const numTilesPerRow = Math.ceil(subimage.getWidth() / subimage.getTileWidth());
@@ -124,7 +138,14 @@ if (isset($fileContainers['tiled-tar'])) {
                 return buffer
             }
             getData().then(function (data) {
-                // const rawData = await subimage.source.fetch([{offset,length: byteCount}]);
+                // getData() returns undefined for tiles with no backing data (offset
+                // not finite -- e.g. out-of-grid / edge-buffer coords, common now that
+                // under-zoom requests the smallest overview). Without this guard the
+                // merge below builds a Uint8Array from empty data and overflows with
+                // "RangeError: offset is out of bounds". Skip: nothing to render.
+                if (!data || data.byteLength === 0 || !subimage.fileDirectory || !subimage.fileDirectory.JPEGTables) {
+                    return;
+                }
                 const uintRaw = new Uint8Array(data);
                 
                 // magic adobe header which forces the jpeg to be interpreted as RGB instead of YCbCr

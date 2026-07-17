@@ -205,7 +205,20 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             heightScale = 1;
             widthScale = minimapRatio;
         }
-        var miniLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
+
+        // Only the minimap needs to zoom out below the smallest overview, so scope
+        // minNativeZoom to the MINIMAP layer alone. The IIIF/geotiff pyramid can have
+        // fewer levels than dziMaxZoom implies (hence "Overriding computed max zoom");
+        // minNativeZoom tells Leaflet the real pyramid floor so under-zoom loads the
+        // smallest real tile and AUTO-SCALES it (fixes the blank/corner-cropped minimap).
+        // It must NOT go on the main map: the main map starts at zoom 0, and clamping
+        // its tileZoom up to the overview level there makes Leaflet request a full-res-
+        // sized grid of empty tiles (~90k) before it settles at its fit zoom.
+        var miniMapOptions = Object.assign({}, mapOptions);
+        if(typeof imageCount !== 'undefined' && imageCount > 0) {
+            miniMapOptions.minNativeZoom = miniMapOptions.maxNativeZoom - (imageCount - 1);
+        }
+        var miniLayer = L.tileLayer.elevator(tileLoadFunction, miniMapOptions);
         
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,

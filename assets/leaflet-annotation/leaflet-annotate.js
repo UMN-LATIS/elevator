@@ -439,13 +439,10 @@ function ArrowButton(La) {
   }
 
   this.degreeBetweenTwoLatLngs = (latlng1, latlng2) => { //calculates degree between the head of the arrow and where your mouse is because this plugin uses polar coordinates
-    var dLon = (latlng1.lng - latlng2.lng)
-
-    var y = Math.sin(dLon) * Math.cos(latlng2.lat)
-    var x = Math.cos(latlng1.lat) * Math.sin(latlng2.lat) - Math.sin(latlng1.lat)
-    * Math.cos(latlng2.lat) * Math.cos(dLon)
-
-    var brng = Math.atan2(y, x)
+    var dx = latlng2.lng - latlng1.lng;
+    var dy = latlng2.lat - latlng1.lat;
+    // CRS.Simple is planar image space, so use cartesian deltas instead of spherical trig.
+    var brng = Math.atan2(-dx, dy)
 
     brng = (180 / Math.PI) * brng
     brng = (brng + 360) % 360
