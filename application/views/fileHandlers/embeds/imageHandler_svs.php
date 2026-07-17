@@ -161,7 +161,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             setTimeout(loadedCallback, 200);
             return;
         }
-        console.log('[SVS-HANDLER] AWS available, starting initialization');
         AWS.config = new AWS.Config();
         AWS.config.update({accessKeyId: "<?=$token['AccessKeyId']?>", secretAccessKey: "<?=$token['SecretAccessKey']?>", sessionToken: "<?=$token['SessionToken']?>"});
         AWS.config.region = '<?=$fileObject->collection->getBucketRegion()?>';
@@ -177,13 +176,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             detectRetina: false,
             crs: L.CRS.Simple //Set a flat projection, as we are projecting an image
          }).setView([0, 0], 0);
-
-        console.log('[SVS-HANDLER] imageMap created', {
-            zoom: imageMap._zoom,
-            center: imageMap.getCenter(),
-            crs: imageMap.options.crs.code,
-            size: imageMap.getSize()
-        });
 
         var mapOptions = {width: <?=$fileObject->sourceFile->metadata["dziWidth"]?>,
             height: <?=$fileObject->sourceFile->metadata["dziHeight"]?>,
@@ -225,13 +217,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                         zoomLevelFixed: -3
                     });
         miniMap.addTo(imageMap);
-        console.log('[SVS-HANDLER] minimap created', {
-            width: 140 * widthScale,
-            height: 140 * heightScale,
-            widthScale: widthScale,
-            heightScale: heightScale,
-            imageAspect: <?=$fileObject->sourceFile->metadata["dziWidth"] / $fileObject->sourceFile->metadata["dziHeight"]?>
-        });
 
         if(pixelsPerMillimeter > 10) {
 
@@ -271,15 +256,7 @@ elseif(isset($fileContainers['tiled-iiif'])) {
 
         }
         
-        console.log('[SVS-HANDLER] about to create LAnnotate', {
-            mapZoom: imageMap._zoom,
-            mapCenter: imageMap.getCenter(),
-            mapSize: imageMap.getSize()
-        });
-        
         leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
-        
-        console.log('[SVS-HANDLER] LAnnotate created successfully');
 
     };
 

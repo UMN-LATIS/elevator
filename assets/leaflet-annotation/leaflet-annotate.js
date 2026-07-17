@@ -1,15 +1,4 @@
 function LAnnotate (viewer, options,sidecar) {
-  // DEBUG: Log initialization state
-  console.log('[ANNOTATE-INIT]', {
-    mapZoom: viewer._zoom,
-    mapCenter: viewer.getCenter(),
-    mapBounds: viewer.getBounds(),
-    crs: viewer.options.crs.code,
-    mapMaxBounds: viewer.options.maxBounds,
-    hasRotate: viewer._rotate !== undefined ? viewer._rotate : 'N/A',
-    hasBearing: viewer._bearing !== undefined ? viewer._bearing : 'N/A'
-  });
-
   this.viewer = viewer;
   this.options = {
     'magnification': options.magnification || null,
@@ -163,25 +152,6 @@ function LocationPreview(La) {
   var coordinatesDiv = document.createElement("div")
   coordinatesDiv.innerHTML = "<div class='leaflet-control-attribution leaflet-control'><p id='leaflet-coordinates-tag'></p></div>"
   document.getElementsByClassName("leaflet-bottom leaflet-left")[0].appendChild(coordinatesDiv)
-  
-  // DEBUG: Wrap mouseEventToLatLng to log conversions
-  const originalMouseEventToLatLng = this.leafletAnnotate.viewer.mouseEventToLatLng.bind(this.leafletAnnotate.viewer);
-  let mouseConversionDebugCounter = 0;
-  this.leafletAnnotate.viewer.mouseEventToLatLng = function(e) {
-    const result = originalMouseEventToLatLng(e);
-    mouseConversionDebugCounter++;
-    if (mouseConversionDebugCounter % 10 === 0) {
-      console.log('[MOUSE-TO-LATLNG]', {
-        result: result,
-        containerPoint: this.mouseEventToContainerPoint(e),
-        layerPoint: this.mouseEventToLayerPoint(e),
-        mapCenter: this.getCenter(),
-        mapZoom: this._zoom,
-        crs: this.options.crs.code
-      });
-    }
-    return result;
-  };
   
   $(this.leafletAnnotate.viewer._container).mousemove((e)=> {
     var coords = this.leafletAnnotate.viewer.mouseEventToLatLng(e)
@@ -429,14 +399,6 @@ function ArrowButton(La) {
       this.inflightArrowData = {};
       this.inflightArrowData = jQuery.extend({}, this.arrowData); // clone the object so this arrow can keep a reference
       this.inflightArrowData.latlng = this.viewer.mouseEventToLatLng(e)
-      console.log('[ARROW-START]', {
-        startLatlng: this.inflightArrowData.latlng,
-        containerPoint: this.viewer.mouseEventToContainerPoint(e),
-        layerPoint: this.viewer.mouseEventToLayerPoint(e),
-        mapCenter: this.viewer.getCenter(),
-        mapZoom: this.viewer._zoom,
-        mapPane: this.viewer._getMapPanePos()
-      });
       this.arrow = new L.Arrow(this.inflightArrowData, this.arrowOptions) //add arrow head to page
       this.arrow.addTo(this.leafletAnnotate.layerGroup) //add to layerGroup because this is a non-permanent feature
       this.arrowStarted = true
@@ -448,30 +410,8 @@ function ArrowButton(La) {
     if (this.arrowStarted) {
       this.viewer.removeLayer(this.arrow)
       var arrowEnd = this.viewer.mouseEventToLatLng(e)
-      var containerPoint = this.viewer.mouseEventToContainerPoint(e);
-      var layerPoint = this.viewer.mouseEventToLayerPoint(e);
-      
       this.inflightArrowData.degree = this.degreeBetweenTwoLatLngs(this.inflightArrowData.latlng, arrowEnd) //calculate degree between mouse and arrow head
       this.inflightArrowData.distance = this.viewer.distance(arrowEnd, this.inflightArrowData.latlng) * 100 + .001 //calculate distance between mouse and arrow head
-      
-      // DEBUG: Log every 5th move event to avoid spam
-      if (!this._arrowDebugCounter) this._arrowDebugCounter = 0;
-      this._arrowDebugCounter++;
-      if (this._arrowDebugCounter % 5 === 0) {
-        console.log('[ARROW-UPDATE]', {
-          start: this.inflightArrowData.latlng,
-          end: arrowEnd,
-          degree: this.inflightArrowData.degree,
-          distance: this.inflightArrowData.distance,
-          rawDistance: this.viewer.distance(arrowEnd, this.inflightArrowData.latlng),
-          containerPoint: containerPoint,
-          layerPoint: layerPoint,
-          mapPane: this.viewer._getMapPanePos(),
-          mapZoom: this.viewer._zoom,
-          pixelDist: L.latLng(this.inflightArrowData.latlng).distanceTo(arrowEnd)
-        });
-      }
-      
       this.arrow.setData(this.inflightArrowData)
       this.arrow.addTo(this.leafletAnnotate.layerGroup) //place updated arrow back on page
       $(this.viewer._container).click(this.stopArrow)
@@ -480,12 +420,6 @@ function ArrowButton(La) {
 
   this.stopArrow = (e) => {
     if (this.arrowStarted) {
-      console.log('[ARROW-STOP]', {
-        start: this.inflightArrowData.latlng,
-        degree: this.inflightArrowData.degree,
-        distance: this.inflightArrowData.distance,
-        rawDistance: this.inflightArrowData.distance / 100
-      });
       this.viewer.removeLayer(this.arrow)
       this.arrow.addTo(this.leafletAnnotate.layerGroup)
       this.leafletAnnotate.addToJSON('arrow', {
@@ -516,26 +450,6 @@ function ArrowButton(La) {
     brng = (180 / Math.PI) * brng
     brng = (brng + 360) % 360
     brng = 360 - brng // count degrees counter-clockwise - remove to make clockwise
-
-    // DEBUG: Log detailed bearing calculation
-    if (!this._degreeDebugCounter) this._degreeDebugCounter = 0;
-    this._degreeDebugCounter++;
-    if (this._degreeDebugCounter % 5 === 0) {
-      console.log('[DEGREE-CALC]', {
-        latlng1: latlng1,
-        latlng2: latlng2,
-        dLon: dLon,
-        sin_dLon: Math.sin(dLon),
-        cos_lat2: Math.cos(latlng2.lat),
-        y_component: y,
-        cos_lat1: Math.cos(latlng1.lat),
-        sin_lat2: Math.sin(latlng2.lat),
-        sin_lat1: Math.sin(latlng1.lat),
-        x_component: x,
-        atan2_raw: Math.atan2(y, x),
-        brng_degrees: brng
-      });
-    }
 
     return brng;
   }
