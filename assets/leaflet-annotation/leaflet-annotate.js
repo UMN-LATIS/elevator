@@ -31,7 +31,7 @@ function LAnnotate (viewer, options,sidecar) {
 
 
   this.arrowOptions = {
-    distanceUnit: 'km', //yeah yeah, by default, the distance is in KILOMETERS because this is mapping software...
+    distanceUnit: 'px', //CRS.Simple uses pixel coordinates, not kilometers
     stretchFactor: 1.11,
     popupContent: function(data) {
       return '<em>' + data.title + '</em>'
