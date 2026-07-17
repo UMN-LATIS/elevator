@@ -237,20 +237,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         }
         var miniLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
         
-        // Attach listeners BEFORE adding to minimap
-        miniLayer.on('load', () => {
-            console.log('[MINIMAP] Layer load event fired', { time: Date.now() });
-        });
-        miniLayer.on('tileerror', (err) => {
-            console.error('[MINIMAP] Layer tile error', { time: Date.now(), error: err });
-        });
-        miniLayer.on('tileload', (e) => {
-            console.log('[MINIMAP] Tile loaded', { time: Date.now(), coords: e.coords });
-        });
-        miniLayer.on('tileunload', (e) => {
-            console.log('[MINIMAP] Tile unloaded', { time: Date.now(), coords: e.coords });
-        });
-        
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,
             height: 140 * heightScale,
@@ -263,14 +249,13 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                     });
         miniMap.addTo(imageMap);
         
-        console.log('[SVS-HANDLER] minimap added to map', {
-            time: Date.now(),
-            miniMapExists: miniMap ? true : false,
-            miniMapInternalMapExists: miniMap._miniMap ? true : false,
-            miniMapInternalMapZoom: miniMap._miniMap ? miniMap._miniMap._zoom : null,
-            miniMapInternalMapLayers: miniMap._miniMap ? Object.keys(miniMap._miniMap._layers).length : 0,
-            miniLayerLoading: miniLayer._loading ? true : false,
-            miniLayerHasUrl: miniLayer._url ? true : false
+        // Listen for minimap tile load events
+        miniLayer.on('load', () => {
+            console.log('[MINIMAP] Tile load event fired', { time: Date.now() });
+            initLAnnotate(); // Trigger init when minimap ready
+        });
+        miniLayer.on('tileerror', (err) => {
+            console.error('[MINIMAP] Tile error', { time: Date.now(), error: err });
         });
         
         console.log('[SVS-HANDLER] minimap created', {
