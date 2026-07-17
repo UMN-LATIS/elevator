@@ -199,20 +199,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             tileType: tileType
         };
 
-        // Define LAnnotate initialization function early so it can be referenced by layer load events
-        var lAnnotateReady = false;
-        var initLAnnotate = () => {
-            if (lAnnotateReady) return; // Already initialized
-            lAnnotateReady = true;
-            console.log('[SVS-HANDLER] Initializing LAnnotate after tiles loaded', { 
-                time: Date.now(),
-                mapZoom: imageMap._zoom,
-                mapCenter: imageMap.getCenter()
-            });
-            leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
-            console.log('[SVS-HANDLER] LAnnotate created successfully', { time: Date.now() });
-        };
-
         layer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
         layer.addTo(imageMap);
 
@@ -252,7 +238,6 @@ elseif(isset($fileContainers['tiled-iiif'])) {
         // Listen for minimap tile load events
         miniLayer.on('load', () => {
             console.log('[MINIMAP] Tile load event fired', { time: Date.now() });
-            initLAnnotate(); // Trigger init when minimap ready
         });
         miniLayer.on('tileerror', (err) => {
             console.error('[MINIMAP] Tile error', { time: Date.now(), error: err });
@@ -306,24 +291,23 @@ elseif(isset($fileContainers['tiled-iiif'])) {
 
         }
         
-        // Initialize when main layer tiles load
+        console.log('[SVS-HANDLER] about to create LAnnotate', {
+            mapZoom: imageMap._zoom,
+            mapCenter: imageMap.getCenter(),
+            mapSize: imageMap.getSize()
+        });
+        
+        leafletAnnotate = new LAnnotate(imageMap, {magnification: null, layerOptions: mapOptions, saveURL: saveURL}, sideCar);
+        
+        console.log('[SVS-HANDLER] LAnnotate created successfully', { time: Date.now() });
+        
+        // Listen for main layer tile load events to track timing
         layer.on('load', () => {
-            console.log('[SVS-HANDLER] Main layer load event', { time: Date.now(), zoom: imageMap._zoom });
-            initLAnnotate();
+            console.log('[SVS-HANDLER] Main layer load event', { time: Date.now() });
         });
         layer.on('tileerror', (err) => {
             console.error('[SVS-HANDLER] Main layer tile error', { time: Date.now(), error: err });
         });
-        
-        // Also initialize after a timeout in case tiles never fire load event
-        setTimeout(() => {
-            console.log('[SVS-HANDLER] Timeout check for LAnnotate init', { 
-                time: Date.now(),
-                initialized: lAnnotateReady,
-                zoom: imageMap._zoom 
-            });
-            initLAnnotate();
-        }, 2000);
 
     };
 
