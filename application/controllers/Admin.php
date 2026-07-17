@@ -404,32 +404,126 @@ class admin extends Admin_Controller {
 
 	}
 
-	public function regenerateFilesOfType($handlerClass, $inCollection = null) {
-		$collections = [$inCollection];
-		foreach ($collections as $inCollection) {
-			echo "starting " . $inCollection . "\n";
-			$handlers = $this->doctrine->em->getRepository("Entity\FileHandler")->findBy(["handler" => $handlerClass, "deleted" => false, "collectionId" => $inCollection]);
-			foreach ($handlers as $handler) {
-				$collection = $this->collection_model->getCollection($handler->getCollectionId());
-				if (!$collection) {
-					echo "Bad Item: " . $handler->getFileObjectId() . "\n";
-					continue;
+	public function regenerateFilesOfType($handlerClass, $inCollection = null, $batchSize = 200, $startId = 0, $maxToProcess = 0) {
+		if (!$handlerClass) {
+			echo "need handler class\n";
+			return;
+		}
+
+		$batchSize = (int) $batchSize;
+		if ($batchSize < 1) {
+			$batchSize = 200;
+		}
+
+		if ($startId === "false" || $startId === "null" || $startId === "") {
+			$startId = 0;
+		}
+		$startId = (int) $startId;
+		if ($startId < 0) {
+			$startId = 0;
+		}
+
+		if ($maxToProcess === "false" || $maxToProcess === "null" || $maxToProcess === "") {
+			$maxToProcess = 0;
+		}
+		$maxToProcess = (int) $maxToProcess;
+		if ($maxToProcess < 0) {
+			$maxToProcess = 0;
+		}
+
+		echo "starting " . ($inCollection !== null ? $inCollection : "all collections") . "\n";
+		echo "resuming after id: " . $startId . "\n";
+		if ($maxToProcess > 0) {
+			echo "max to process this run: " . $maxToProcess . "\n";
+		}
+
+		$lastId = $startId;
+		$processed = 0;
+		$reachedLimit = false;
+
+		while (true) {
+			if ($maxToProcess > 0 && $processed >= $maxToProcess) {
+				$reachedLimit = true;
+				break;
+			}
+
+			$qb = $this->doctrine->em->createQueryBuilder();
+			$qb->select("f.id AS id", "f.fileObjectId AS fileObjectId", "f.collectionId AS collectionId")
+				->from("Entity\FileHandler", "f")
+				->where("f.deleted = FALSE")
+				->andWhere("f.handler = ?1")
+				->andWhere("f.id > ?2")
+				->orderBy("f.id", "ASC")
+				->setMaxResults($batchSize)
+				->setParameter(1, $handlerClass)
+				->setParameter(2, $lastId);
+
+			if ($inCollection !== null && $inCollection !== "false" && $inCollection !== "") {
+				$qb->andWhere("f.collectionId = ?3")
+					->setParameter(3, (int) $inCollection);
+			}
+
+			$rows = $qb->getQuery()->getArrayResult();
+			if (!$rows) {
+				break;
+			}
+
+			foreach ($rows as $row) {
+				if ($maxToProcess > 0 && $processed >= $maxToProcess) {
+					$reachedLimit = true;
+					break;
 				}
-				if ($inCollection != $collection->getId()) {
+
+				$lastId = (int) $row["id"];
+				$collection = $this->collection_model->getCollection((int) $row["collectionId"]);
+				if (!$collection) {
+					echo "Bad Item: " . $row["fileObjectId"] . "\n";
 					continue;
 				}
 
-				$instance = $collection->getInstances();
-				$this->instance = $instance[0];
-				echo "Regenerating " . $handler->getFileObjectId() . "\n";
-				$fileHandler = $this->filehandler_router->getHandledObject($handler->getFileObjectId());
-	
+				$instances = $collection->getInstances();
+				$instance = null;
+				if (is_array($instances)) {
+					$instance = isset($instances[0]) ? $instances[0] : null;
+				} elseif ($instances instanceof \Doctrine\Common\Collections\Collection) {
+					$instance = $instances->isEmpty() ? null : $instances->first();
+				}
+
+				if (!$instance) {
+					echo "No instance for: " . $row["fileObjectId"] . "\n";
+					continue;
+				}
+
+				$this->instance = $instance;
+				echo "Regenerating " . $row["fileObjectId"] . " " . $row['id'] . "\n";
+				$fileHandler = $this->filehandler_router->getHandledObject($row["fileObjectId"]);
+				if (!$fileHandler) {
+					echo "Could not load handler for: " . $row["fileObjectId"] . "\n";
+					continue;
+				}
+
 				$fileHandler->regenerate = true;
 				$fileHandler->save();
+				unset($fileHandler, $collection, $instance, $instances);
+				$processed++;
+
+				if ($processed % 50 === 0) {
+					$this->doctrine->em->clear();
+					gc_collect_cycles();
+				}
+			}
+
+			$this->doctrine->em->clear();
+			gc_collect_cycles();
+			echo "Processed " . $processed . "\n";
+
+			if ($reachedLimit) {
+				break;
 			}
 		}
 
-		echo "done.\n";
+		echo "done. total processed: " . $processed . "\n";
+		echo "last filehandler id visited: " . $lastId . "\n";
 	}
 
 	public function recacheFilesFromCollection($collectionId, $skip = 0) {
