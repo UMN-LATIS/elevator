@@ -221,10 +221,7 @@ class DrawerPermissions extends Instance_Controller {
       return abort_json(['error' => 'Group not found'], 422);
     }
 
-    $level = $this->em->find(Permission::class, (int) $validated['permissionLevelId']);
-    if (!$level) {
-      return abort_json(['error' => 'Permission level not found'], 422);
-    }
+    $level = $this->findDrawerGrantLevelOrAbort((int) $validated['permissionLevelId']);
 
     $existing = $this->findDrawerPermissionForGroup($drawer, $group);
     if ($existing) {
@@ -272,10 +269,7 @@ class DrawerPermissions extends Instance_Controller {
       return abort_json(['errors' => $e->getErrors()], 422);
     }
 
-    $level = $this->em->find(Permission::class, (int) $validated['permissionLevelId']);
-    if (!$level) {
-      return abort_json(['error' => 'Permission level not found'], 422);
-    }
+    $level = $this->findDrawerGrantLevelOrAbort((int) $validated['permissionLevelId']);
 
     // re-level only, the M2M link already exists and stays put
     $grant->setPermission($level);
@@ -834,6 +828,25 @@ class DrawerPermissions extends Instance_Controller {
     }
 
     return $drawer;
+  }
+
+  /**
+   * The permission level with `$levelId`, aborting 422 when it does not
+   * exist or sits above PERM_ORIGINALS. Drawer grants cap at originals,
+   * matching the ceiling the legacy permissions editor enforced, so a
+   * drawer manager cannot raise anyone (themselves included) to admin.
+   */
+  private function findDrawerGrantLevelOrAbort(int $levelId): Permission {
+    $level = $this->em->find(Permission::class, $levelId);
+    if (!$level) {
+      abort_json(['error' => 'Permission level not found'], 422);
+    }
+
+    if ((int) $level->getLevel() > PERM_ORIGINALS) {
+      abort_json(['error' => 'Drawer grants cap at the originals level'], 422);
+    }
+
+    return $level;
   }
 
   /**

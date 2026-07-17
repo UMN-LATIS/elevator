@@ -66,6 +66,13 @@ async function findUserByUsername(
 
 type PermissionLevel = { id: number; level: number };
 
+// Levels arrive sorted ascending, so this is the strongest level a drawer
+// grant accepts: grants cap at originals (level 40), matching legacy.
+function highestGrantableLevel(levels: PermissionLevel[]): PermissionLevel {
+  const grantable = levels.filter((l) => Number(l.level) <= 40);
+  return grantable[grantable.length - 1];
+}
+
 // /permissions/permissionLevels is open to any authed user, unlike the
 // admin-only /adminPermissions one, so a drawer manager can read it too.
 async function getPermissionLevels(page: Page): Promise<PermissionLevel[]> {
@@ -267,7 +274,7 @@ test.describe("drawerPermissions grants", () => {
       const afterCreate = await listGrants(page);
       expect(afterCreate.some((g) => g.id === grant.id)).toBe(true);
 
-      const newLevel = levels[levels.length - 1];
+      const newLevel = highestGrantableLevel(levels);
       const updated = await page.request.put(
         `${baseURL()}/drawerPermissions/grants/${grant.id}`,
         { form: { permissionLevelId: String(newLevel.id) } },
@@ -284,6 +291,41 @@ test.describe("drawerPermissions grants", () => {
 
       const afterDelete = await listGrants(page);
       expect(afterDelete.some((g) => g.id === grant.id)).toBe(false);
+    });
+
+    test("rejects a level above originals on create and update", async ({
+      page,
+    }) => {
+      const drawerId = await createDrawer(page, uniqueLabel("Capped Drawer"));
+      const groupId = await createDrawerGroup(page, uniqueLabel("Capped Group"));
+      const levels = await getPermissionLevels(page);
+
+      const found = levels.find((l) => Number(l.level) > 40);
+      expect(found, "seed DB lacks a level above originals").toBeTruthy();
+      const levelAboveOriginals = found as PermissionLevel;
+
+      const created = await createGrant(
+        page,
+        drawerId,
+        groupId,
+        levelAboveOriginals.id,
+      );
+      expect(created.status()).toBe(422);
+
+      const grantable = highestGrantableLevel(levels);
+      const allowed = await createGrant(page, drawerId, groupId, grantable.id);
+      expect(allowed.status()).toBe(201);
+      const grantId = (await allowed.json()).grant.id as number;
+
+      const updated = await page.request.put(
+        `${baseURL()}/drawerPermissions/grants/${grantId}`,
+        { form: { permissionLevelId: String(levelAboveOriginals.id) } },
+      );
+      expect(updated.status()).toBe(422);
+
+      // the refused update leaves the grant at its old level
+      const survivor = (await listGrants(page)).find((g) => g.id === grantId);
+      expect(survivor?.permissionLevelId).toBe(grantable.id);
     });
 
     test("re-levels but cannot delete another owner's grant on a managed drawer", async ({
@@ -322,7 +364,7 @@ test.describe("drawerPermissions grants", () => {
       expect(listed?.group?.ownerName).toBe(adminName);
 
       // and can re-level it despite not owning the group
-      const newLevel = levels[levels.length - 1];
+      const newLevel = highestGrantableLevel(levels);
       const updated = await page.request.put(
         `${baseURL()}/drawerPermissions/grants/${adminGrant.id}`,
         { form: { permissionLevelId: String(newLevel.id) } },
