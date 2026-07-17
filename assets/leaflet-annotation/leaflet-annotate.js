@@ -459,7 +459,7 @@ function ArrowButton(La) {
       var layerPoint = this.viewer.mouseEventToLayerPoint(e);
       
       this.inflightArrowData.degree = this.degreeBetweenTwoLatLngs(this.inflightArrowData.latlng, arrowEnd) //calculate degree between mouse and arrow head
-      this.inflightArrowData.distance = this.viewer.distance(arrowEnd, this.inflightArrowData.latlng) * 100 + .001 //calculate distance between mouse and arrow head
+      this.inflightArrowData.distance = this.viewer.distance(arrowEnd, this.inflightArrowData.latlng) + .001 //calculate distance between mouse and arrow head (raw pixel distance, no scaling)
       
       // DEBUG: Log every 5th move event to avoid spam
       if (!this._arrowDebugCounter) this._arrowDebugCounter = 0;
