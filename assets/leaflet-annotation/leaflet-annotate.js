@@ -439,13 +439,15 @@ function ArrowButton(La) {
   }
 
   this.degreeBetweenTwoLatLngs = (latlng1, latlng2) => { //calculates degree between the head of the arrow and where your mouse is because this plugin uses polar coordinates
-    var dLon = (latlng1.lng - latlng2.lng)
+    // CRS.Simple uses flat pixel-space coordinates, not geographic degrees/radians.
+    // The previous spherical bearing formula only worked accidentally for small coordinate
+    // values (sin(x)≈x, cos(x)≈1). For large values it oscillates, causing the arrow
+    // to spin. Use a direct Cartesian atan2 instead, which is the correct formula for
+    // flat/image coordinate systems and matches the small-angle limit of the old formula.
+    var dx = latlng2.lng - latlng1.lng;
+    var dy = latlng2.lat - latlng1.lat;
 
-    var y = Math.sin(dLon) * Math.cos(latlng2.lat)
-    var x = Math.cos(latlng1.lat) * Math.sin(latlng2.lat) - Math.sin(latlng1.lat)
-    * Math.cos(latlng2.lat) * Math.cos(dLon)
-
-    var brng = Math.atan2(y, x)
+    var brng = Math.atan2(-dx, dy)
 
     brng = (180 / Math.PI) * brng
     brng = (brng + 360) % 360
