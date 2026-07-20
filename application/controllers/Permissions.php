@@ -97,7 +97,10 @@ class Permissions extends Instance_Controller {
 	public function permissionLevels() {
 		$this->abortUnlessAuthed();
 
-		$permissionLevels = $this->doctrine->em->getRepository(Permission::class)->findBy([], ["level" => "ASC"]);
+		$permissionLevels = $this->doctrine->em->getRepository(Permission::class)->findAll();
+
+		// level is a string column, so "10" sorts before "5" unless we compare numerically
+		usort($permissionLevels, fn($a, $b) => (int) $a->getLevel() <=> (int) $b->getLevel());
 
 		return render_json([
 			'permissionLevels' => $permissionLevels,
