@@ -86,7 +86,7 @@ class AdminCollections extends Instance_Controller {
   /**
    * POST /adminCollections/collections
    *
-   * Omitted S3 fields fall back to the instance defaults and
+   * Omitted or blank S3 fields fall back to the instance defaults and
    * showInBrowse defaults to true, matching the legacy new-collection
    * form's pre-filled values.
    */
@@ -96,6 +96,7 @@ class AdminCollections extends Instance_Controller {
     } catch (ValidationException $e) {
       return abort_json(['errors' => $e->getErrors()], 422);
     }
+    $validated = $this->dropBlankS3Overrides($validated);
 
     $parent = null;
     $parentId = (int) ($validated['parentId'] ?? 0);
@@ -131,7 +132,8 @@ class AdminCollections extends Instance_Controller {
    *
    * Title is always required. The other fields change only when
    * present in the body, so both verbs behave like PATCH. A parentId
-   * of 0 moves the collection to the top level.
+   * of 0 moves the collection to the top level, and a blank S3 field
+   * counts as absent.
    */
   private function updateCollection(int $collectionId): CI_Output {
     $collection = $this->findCollectionInInstance($collectionId);
@@ -144,6 +146,7 @@ class AdminCollections extends Instance_Controller {
     } catch (ValidationException $e) {
       return abort_json(['errors' => $e->getErrors()], 422);
     }
+    $validated = $this->dropBlankS3Overrides($validated);
 
     if (array_key_exists('parentId', $validated)) {
       $parentId = (int) $validated['parentId'];
@@ -224,6 +227,20 @@ class AdminCollections extends Instance_Controller {
     $this->clearUserCache();
 
     return render_json(['deleted' => $collectionId]);
+  }
+
+  /**
+   * A blank S3 override means "unset": create then falls back to the
+   * instance defaults, update keeps the stored value. Persisting ""
+   * would break asset storage.
+   */
+  private function dropBlankS3Overrides(array $validated): array {
+    foreach (['bucket', 'bucketRegion', 's3Key', 's3Secret'] as $field) {
+      if (($validated[$field] ?? null) === '') {
+        unset($validated[$field]);
+      }
+    }
+    return $validated;
   }
 
   /**
