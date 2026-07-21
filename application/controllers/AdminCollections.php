@@ -10,9 +10,7 @@ use SimpleValidator as V;
  * pure json api for new ui
  *
  * Collection CRUD for the admin collections page. The legacy
- * CollectionManager keeps serving the old UI (plus share and bucket
- * creation) untouched, so the field assignment here deliberately
- * duplicates its save().
+ * CollectionManager keeps serving the old UI.
  */
 class AdminCollections extends Instance_Controller {
   private EntityManager $em;
@@ -229,9 +227,7 @@ class AdminCollections extends Instance_Controller {
   }
 
   /**
-   * Shared body schema for create and update. Title is always
-   * required, every other field is optional and update only touches
-   * the ones present.
+   * Shared body schema for create and update.
    */
   private function collectionSchema(): array {
     return [
@@ -249,8 +245,7 @@ class AdminCollections extends Instance_Controller {
 
   /**
    * The detail shape: the entity's list fields plus the admin-only
-   * settings, including the S3 secret (parity with the legacy edit
-   * form, which reveals it to instance admins).
+   * settings.
    */
   private function toCollectionDetail(Collection $collection): array {
     return array_merge($collection->jsonSerialize(), [
@@ -268,11 +263,7 @@ class AdminCollections extends Instance_Controller {
    *
    * Collection ids are global, so fetching one straight from the
    * repository would let an admin reach another instance's collection.
-   * Scanning the instance's collection list enforces membership, the
-   * same ownership pattern as AdminPermissions.
-   *
-   * @return ?Entity\Collection null when the instance has no such
-   *   collection
+   * Scanning the instance's collection list enforces membership.
    */
   private function findCollectionInInstance(int $collectionId): ?Collection {
     foreach ($this->instance->getCollections() as $candidate) {
@@ -284,31 +275,44 @@ class AdminCollections extends Instance_Controller {
   }
 
   /**
-   * A collection's parent may not be itself or one of its descendants,
-   * otherwise getFlattenedChildren() would recurse forever. Legacy only
-   * disabled these options client-side, so the API enforces it here.
-   *
-   * The walk is iterative with a visited set because legacy never
-   * guarded cycles, so pre-existing bad data must not hang the check.
+   * Check for cycles. Legacy disabled these options client-side,
+   * this API enforces it here.
    */
   private function wouldCreateParentCycle(Collection $collection, Collection $newParent): bool {
     if ($newParent->getId() === $collection->getId()) {
       return true;
     }
 
+    /** @var array<int, true> $visitedIds Keyed by collection id. */
     $visitedIds = [];
     $toVisit = [$collection];
+
+    // walk the graph of descendents, and check if $newParent
+    // is among them. If so, it would create a cycle.
     while (!empty($toVisit)) {
       $current = array_pop($toVisit);
+
+      // there are 3 possibilities with getChildren()
+      // 1. A plain tree: each collection has one parent, no repeats
+      // 2. A diamond (DAG): a shared descendent. it's possible to see
+      // the same child twice, but it's still acyclic
+      // 3. A cycle: corrupt data. Without a guard, you loop forever.
       foreach ($current->getChildren() as $child) {
         $childId = $child->getId();
+
+        // If we've seen this child, skip it.
+        // this guards against diamonds and cycles
         if (isset($visitedIds[$childId])) {
           continue;
         }
         $visitedIds[$childId] = true;
+
+        // check if this child is the newParent (a cycle)
         if ($childId === $newParent->getId()) {
           return true;
         }
+
+        // add the child to the stack of children to visit
         $toVisit[] = $child;
       }
     }
