@@ -304,14 +304,14 @@ class AdminCollections extends Instance_Controller {
     $visitedIds = [];
     $toVisit = [$collection];
 
-    // walk the graph of descendents, and check if $newParent
+    // walk the graph of descendants, and check if $newParent
     // is among them. If so, it would create a cycle.
     while (!empty($toVisit)) {
       $current = array_pop($toVisit);
 
       // there are 3 possibilities with getChildren()
       // 1. A plain tree: each collection has one parent, no repeats
-      // 2. A diamond (DAG): a shared descendent. it's possible to see
+      // 2. A diamond (DAG): a shared descendant. it's possible to see
       // the same child twice, but it's still acyclic
       // 3. A cycle: corrupt data. Without a guard, you loop forever.
       foreach ($current->getChildren() as $child) {
