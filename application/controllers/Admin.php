@@ -14,6 +14,9 @@ class admin extends Admin_Controller {
 
 	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null, $debugMode = false) {
 
+		// override path to config on web host
+		$this->config->set_item('convert', '/usr/bin/convert');
+
 
 		if ($offsetAssetId === "false" || $offsetAssetId === "null" || $offsetAssetId === "") {
 			$offsetAssetId = null;
@@ -50,6 +53,10 @@ class admin extends Admin_Controller {
 		$result = $qb->getQuery()->toIterable();
 		$this->load->model("asset_model");
 
+		exec("sudo /usr/local/bin/ebs-mount.sh");
+		// make sure we hold an open file on the mount while we're working
+		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
+
 		$count = 0;
 		foreach ($result as $entry) {
 			$this->processAccessibilityForAsset($entry, $debugMode);
@@ -63,6 +70,8 @@ class admin extends Admin_Controller {
 	}
 
 	public function generateAccessibilityMaterialForAssetInInstance($assetId, $instanceId, $debugMode = false) {
+
+		$this->config->set_item('convert', '/usr/bin/convert');
 
 		$debugMode = $this->isTruthyCliValue($debugMode);
 
@@ -95,6 +104,9 @@ class admin extends Admin_Controller {
 		}
 
 		$this->load->model("asset_model");
+
+		exec("sudo /usr/local/bin/ebs-mount.sh");
+		$fp = fopen("/scratch/hold_file_" . uniqid(), "w");
 
 		$this->processAccessibilityForAsset($entry, $debugMode);
 		$this->doctrine->em->clear();
