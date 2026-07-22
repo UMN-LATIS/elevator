@@ -91,11 +91,16 @@ if (isset($fileContainers['tiled-tar'])) {
             return arrayBuffer;
         }
         var tileLoadFunction = async function(coords, tile, done) {
-            if(subimages[coords.z] == undefined) {
-                subimages[coords.z] = await tiff.getImage(maxZoom - coords.z);
+            // Derivatives are generated with vips `--depth onepixel`, so the geotiff
+            // pyramid has a real overview page at every zoom level. That means
+            // (maxZoom - coords.z) always maps directly to a valid subimage index --
+            // no clamping or getImageCount() lookup is needed.
+            var requestedIndex = maxZoom - coords.z;
+            if(subimages[requestedIndex] == undefined) {
+                subimages[requestedIndex] = await tiff.getImage(requestedIndex);
             }
             const tileSize = this.options.tileSize;;
-            const subimage = subimages[coords.z];
+            const subimage = subimages[requestedIndex];
             async function getData() {
                 
                 const numTilesPerRow = Math.ceil(subimage.getWidth() / subimage.getTileWidth());
@@ -124,7 +129,14 @@ if (isset($fileContainers['tiled-tar'])) {
                 return buffer
             }
             getData().then(function (data) {
-                // const rawData = await subimage.source.fetch([{offset,length: byteCount}]);
+                // getData() returns undefined for tiles with no backing data (offset
+                // not finite -- e.g. out-of-grid / edge-buffer coords, common now that
+                // under-zoom requests the smallest overview). Without this guard the
+                // merge below builds a Uint8Array from empty data and overflows with
+                // "RangeError: offset is out of bounds". Skip: nothing to render.
+                if (!data || data.byteLength === 0 || !subimage.fileDirectory || !subimage.fileDirectory.JPEGTables) {
+                    return;
+                }
                 const uintRaw = new Uint8Array(data);
                 
                 // magic adobe header which forces the jpeg to be interpreted as RGB instead of YCbCr
