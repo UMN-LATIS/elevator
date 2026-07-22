@@ -61,17 +61,18 @@ if (isset($fileContainers['tiled-tar'])) {
     <? elseif (isset($fileContainers['tiled-iiif'])) : ?>
 
         </script>
-        <script src="/assets/leaflet/geotiff.js"></script>
+        <script src="/assets/leaflet/pyramidTiff.js"></script>
         <script>
         var tiff;
-        var image;
         var count;
         var subimages = {};
         var tileType = "iiif";
         var maxZoom = <?=isset($fileObject->sourceFile->metadata["dziMaxZoom"])?$fileObject->sourceFile->metadata["dziMaxZoom"]:16?> - 1;
         var loadIndex = async function() {
-            tiff = await GeoTIFF.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>");
-            image = await tiff.getImage();
+            // Minimal BigTIFF pyramid reader (replaces geotiff.js). fileSize lets it grab
+            // the overview levels from a single tail range read instead of walking the
+            // whole IFD chain one blocking request at a time.
+            tiff = await PyramidTiff.fromUrl("<?=$fileContainers["tiled-iiif"]->getProtectedURLForFile()?>", <?=(int)$fileContainers["tiled-iiif"]->getFileSize()?>);
         }
 
         function hexStringToUint8Array(hexString) {

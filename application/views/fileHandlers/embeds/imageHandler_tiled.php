@@ -72,6 +72,7 @@ if ($enableMultilayer && isset($widgetObject->parentWidget->fieldContentsArray))
 			'type'          => $siblingTiledKey,
 			'url'           => $siblingContainer->getProtectedURLForFile(),
 			'compositeName' => $siblingContainer->getCompositeName(),
+			'fileSize'      => $siblingTiledKey === 'tiled-iiif' ? (int)$siblingContainer->getFileSize() : 0,
 			'bucket'        => $siblingHandler->collection->getBucket(),
 			'region'        => $siblingHandler->collection->getBucketRegion(),
 			'credentials'   => [
@@ -90,13 +91,15 @@ if ($enableMultilayer && isset($widgetObject->parentWidget->fieldContentsArray))
 }
 
 $hasSiblingIIIF = !empty(array_filter($multilayerLayers, fn($l) => $l['type'] === 'tiled-iiif'));
-$needsGeoTiffScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
+// Load the pyramid TIFF reader for sibling iiif layers when the base handler didn't
+// already pull it in (the partial only includes it when the base is itself tiled-iiif).
+$needsPyramidScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 
 ?>
 
 <div class="fixedHeightContainer"><div style="height:100%; width:100%" id="mapElement"></div></div>
 <?=$this->load->view("fileHandlers/embeds/imageHandler_partial.php",array("fileContainers"=>$fileContainers),true)?>
-<?php if ($needsGeoTiffScript): ?><script src="/assets/leaflet/geotiff.js"></script><?php endif; ?>
+<?php if ($needsPyramidScript): ?><script src="/assets/leaflet/pyramidTiff.js"></script><?php endif; ?>
 
 <script type="application/javascript">
 	var imageMap;
@@ -145,7 +148,7 @@ $needsGeoTiffScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 		<?php if ($enableMultilayer && count($multilayerLayers) > 0): ?>
 		var multilayerData = <?=json_encode($multilayerLayers)?>;
 
-		<?php if ($needsGeoTiffScript): ?>
+		<?php if ($needsPyramidScript): ?>
 		// hexStringToUint8Array is only defined by imageHandler_partial when the base is tiled-iiif;
 		// define it here when siblings need it but the base doesn't.
 		if (typeof hexStringToUint8Array === 'undefined') {
@@ -250,6 +253,8 @@ $needsGeoTiffScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 				var layerTiff = null;
 				var layerSubimages = {};
 				var layerMaxZoom = layerDef.maxNativeZoom;
+				// Note: sibling tiles are still range-fetched via the sibling's own STS-signed
+				// S3 URLs below; layerTiff is only used to read per-level tile offsets/tables.
 				var layerTileLoadFunction = async function(coords, tile, done) {
 					if (layerSubimages[coords.z] === undefined) {
 						layerSubimages[coords.z] = await layerTiff.getImage(layerMaxZoom - coords.z);
@@ -281,7 +286,7 @@ $needsGeoTiffScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 						tile.src = URL.createObjectURL(new Blob([merged], {type: 'image/jpeg'}));
 					});
 				};
-				GeoTIFF.fromUrl(layerDef.url).then(function(tiffObj) {
+				PyramidTiff.fromUrl(layerDef.url, layerDef.fileSize).then(function(tiffObj) {
 					layerTiff = tiffObj;
 					var newLayer = new L.tileLayer.elevator(layerTileLoadFunction, {
 						width: layerDef.width,
