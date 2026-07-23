@@ -54,7 +54,8 @@ class Instances extends Instance_Controller
 			'enableTheming' => $instance->getEnableThemes(),
 			'defaultTheme' => $instance->getDefaultTheme(),
 			'availableThemes' => $instance->getAvailableThemes(),
-			'showChildCollections' => $instance->getAdditionalSettings()['showChildCollections'],
+			'showChildCollections' => $instance->getShowChildCollections(),
+			'showThumbnailDescription' => $instance->getShowThumbnailDescription(),
 			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
 			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
 			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
@@ -154,9 +155,8 @@ class Instances extends Instance_Controller
 		$instance->setEnableThemes($this->input->post('enableTheming'));
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
 		$instance->setAvailableThemes($this->input->post('availableThemes'));
-		$instance->setAdditionalSettings([
-			'showChildCollections' => $this->input->post('showChildCollections') ? true : false,
-		]);
+		$instance->setShowChildCollections($this->input->post('showChildCollections') ? true : false);
+		$instance->setShowThumbnailDescription($this->input->post('showThumbnailDescription') ? true : false);
 		$instance->setCustomHomeRedirect($this->input->post('customHomeRedirect'));
 		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
 		$instance->setDefaultTextTruncationHeight($this->input->post('defaultTextTruncationHeight'));
@@ -168,7 +168,7 @@ class Instances extends Instance_Controller
 		if($instance->getUseHeaderLogo()) {
 			if (! $this->upload->do_upload('customHeaderImage')) {
 				$error = array('error' => $this->upload->display_errors());
-			// var_dump($error); // TODO: draw this in a view 
+			// var_dump($error); // TODO: draw this in a view
 			// return;
 			}
 			else {
@@ -180,8 +180,8 @@ class Instances extends Instance_Controller
 			}
 		}
 
-		
-		
+
+
 
 
 		if($instance->getUseCustomHeader()) {
@@ -603,8 +603,8 @@ class Instances extends Instance_Controller
 			}
 
 			$result = $s3Client->putBucketVersioning([
-			    'Bucket' => $bucketName, 
-			    'VersioningConfiguration' => [ 
+			    'Bucket' => $bucketName,
+			    'VersioningConfiguration' => [
 			        'MFADelete' => 'Disabled',
 			        'Status' => 'Enabled',
 			    ],
@@ -639,7 +639,7 @@ class Instances extends Instance_Controller
     				],
 				]);
 			}
-			
+
 			$result = $s3Client->DeletePublicAccessBlock([
 				'Bucket'=>$bucketName
 			]);
@@ -704,7 +704,7 @@ class Instances extends Instance_Controller
 				}'
 			]);
 
-			
+
 
 
 			$newUser = "elevator-bucket_user" . $s3InstanceName;

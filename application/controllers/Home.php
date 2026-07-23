@@ -168,6 +168,7 @@ class Home extends Instance_Controller {
 		$headerData["instanceShowTemplateInSearchResults"] = $this->instance->getShowTemplateInSearchResults();
 		$headerData["featuredAssetId"] = $this->instance->getFeaturedAsset();
 		$headerData["featuredAssetText"] = $this->instance->getFeaturedAssetText();
+		$headerData['showThumbnailDescription'] = $this->instance->getShowThumbnailDescription();
 
 		// load prefs for a logged in user
 		if ($this->user_model->userLoaded && !$this->user_model->assetOverride) {
@@ -268,7 +269,7 @@ class Home extends Instance_Controller {
 
 		$headerData['useVoyagerViewer'] = $this->instance->getUseVoyagerViewer() ?? false;
 
-		$headerData['showChildCollections'] = $this->instance->getAdditionalSettings()['showChildCollections'];
+		$headerData['showChildCollections'] = $this->instance->getShowChildCollections();
 
 		$headerData['theming'] = [
 			'availableThemes' => $this->instance->getAvailableThemes(),
