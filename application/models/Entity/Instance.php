@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class Instance
 {
-    /** 
+    /**
      * Elevator
      * @var array|null
      */
@@ -262,6 +262,14 @@ class Instance
      */
     #[ORM\Column(name: 'availableThemes', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $availableThemes;
+
+    /**
+     * Instance settings for the new ui in json blob
+     * This replaces the old setting-per-column approach.
+     * @var array<string, mixed>|null
+     */
+    #[ORM\Column(name: 'additionalSettings', type: 'json', nullable: true, options: ['jsonb' => true])]
+    private $additionalSettings = [];
 
     /**
      * @var int
@@ -1297,6 +1305,33 @@ class Instance
     public function getAvailableThemes()
     {
         return $this->availableThemes;
+    }
+
+    /**
+     * Set additionalSettings.
+     *
+     * @param array<string, mixed>|null $additionalSettings
+     */
+    public function setAdditionalSettings(?array $additionalSettings = null): self
+    {
+        $this->additionalSettings = $additionalSettings ?? [];
+
+        return $this;
+    }
+
+    /**
+     * Get all additional settings, filling in defaults for any keys the
+     * stored blob is missing.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAdditionalSettings(): array
+    {
+        $defaults = [
+            'showChildCollections' => true,
+        ];
+
+        return array_merge($defaults, $this->additionalSettings ?? []);
     }
 
     /**

@@ -54,6 +54,7 @@ class Instances extends Instance_Controller
 			'enableTheming' => $instance->getEnableThemes(),
 			'defaultTheme' => $instance->getDefaultTheme(),
 			'availableThemes' => $instance->getAvailableThemes(),
+			'showChildCollections' => $instance->getAdditionalSettings()['showChildCollections'],
 			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
 			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
 			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
@@ -153,6 +154,9 @@ class Instances extends Instance_Controller
 		$instance->setEnableThemes($this->input->post('enableTheming'));
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
 		$instance->setAvailableThemes($this->input->post('availableThemes'));
+		$instance->setAdditionalSettings([
+			'showChildCollections' => $this->input->post('showChildCollections') ? true : false,
+		]);
 		$instance->setCustomHomeRedirect($this->input->post('customHomeRedirect'));
 		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
 		$instance->setDefaultTextTruncationHeight($this->input->post('defaultTextTruncationHeight'));
