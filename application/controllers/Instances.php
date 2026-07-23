@@ -155,10 +155,8 @@ class Instances extends Instance_Controller
 		$instance->setEnableThemes($this->input->post('enableTheming'));
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
 		$instance->setAvailableThemes($this->input->post('availableThemes'));
-		$instance->setAdditionalSettings([
-			'showChildCollections' => $this->input->post('showChildCollections') ? true : false,
-      'showThumbnailDescription' => $this->input->post('showThumbnailDescription') ? true : false
-		]);
+		$instance->setShowChildCollections($this->input->post('showChildCollections') ? true : false);
+		$instance->setShowThumbnailDescription($this->input->post('showThumbnailDescription') ? true : false);
 		$instance->setCustomHomeRedirect($this->input->post('customHomeRedirect'));
 		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
 		$instance->setDefaultTextTruncationHeight($this->input->post('defaultTextTruncationHeight'));

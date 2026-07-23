@@ -1308,18 +1308,6 @@ class Instance
     }
 
     /**
-     * Set additionalSettings.
-     *
-     * @param array<string, mixed>|null $additionalSettings
-     */
-    public function setAdditionalSettings(?array $additionalSettings = null): self
-    {
-        $this->additionalSettings = $additionalSettings ?? [];
-
-        return $this;
-    }
-
-    /**
      * Get all additional settings, filling in defaults for any keys the
      * stored blob is missing.
      *
@@ -1344,11 +1332,37 @@ class Instance
     }
 
     /**
+     * Write showChildCollections into the stored blob, preserving sibling keys.
+     */
+    public function setShowChildCollections(bool $value): self
+    {
+        $this->additionalSettings = array_merge(
+            $this->additionalSettings ?? [],
+            ['showChildCollections' => $value]
+        );
+
+        return $this;
+    }
+
+    /**
      * Whether the description text appears below an asset's thumbnail.
      */
     public function getShowThumbnailDescription(): bool
     {
         return (bool) $this->getAdditionalSettings()['showThumbnailDescription'];
+    }
+
+    /**
+     * Write showThumbnailDescription into the stored blob, preserving sibling keys.
+     */
+    public function setShowThumbnailDescription(bool $value): self
+    {
+        $this->additionalSettings = array_merge(
+            $this->additionalSettings ?? [],
+            ['showThumbnailDescription' => $value]
+        );
+
+        return $this;
     }
 
     /**
