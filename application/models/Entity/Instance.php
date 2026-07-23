@@ -1329,9 +1329,26 @@ class Instance
     {
         $defaults = [
             'showChildCollections' => true,
+            'showThumbnailDescription' => false,
         ];
 
         return array_merge($defaults, $this->additionalSettings ?? []);
+    }
+
+    /**
+     * Whether the collection page lists a collection's child collections.
+     */
+    public function getShowChildCollections(): bool
+    {
+        return (bool) $this->getAdditionalSettings()['showChildCollections'];
+    }
+
+    /**
+     * Whether the description text appears below an asset's thumbnail.
+     */
+    public function getShowThumbnailDescription(): bool
+    {
+        return (bool) $this->getAdditionalSettings()['showThumbnailDescription'];
     }
 
     /**

@@ -168,6 +168,8 @@ class Home extends Instance_Controller {
 		$headerData["instanceShowTemplateInSearchResults"] = $this->instance->getShowTemplateInSearchResults();
 		$headerData["featuredAssetId"] = $this->instance->getFeaturedAsset();
 		$headerData["featuredAssetText"] = $this->instance->getFeaturedAssetText();
+    $headerData['showChildCollections'] = $this->instance->getShowChildCollections();
+    $headerData['showThumbnailDescription'] = $this->instance->getShowThumbnailDescription();
 
 		// load prefs for a logged in user
 		if ($this->user_model->userLoaded && !$this->user_model->assetOverride) {
