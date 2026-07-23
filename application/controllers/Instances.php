@@ -55,7 +55,7 @@ class Instances extends Instance_Controller
 			'defaultTheme' => $instance->getDefaultTheme(),
 			'availableThemes' => $instance->getAvailableThemes(),
 			'showChildCollections' => $instance->getShowChildCollections(),
-      'showThumbnailDescription' => $instance->getShowThumbnailDescription(),
+			'showThumbnailDescription' => $instance->getShowThumbnailDescription(),
 			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
 			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
 			'defaultTextTruncationHeight' => $instance->getDefaultTextTruncationHeight(),
