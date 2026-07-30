@@ -3,6 +3,7 @@
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/Control.MiniMap.min.css">
 <link rel="stylesheet" type="text/css" href="/assets/leaflet/leaflet-measure.css">
 <script type="text/javascript" src='/assets/leaflet/leaflet.js'></script>
+<script type="text/javascript" src='/assets/leaflet/Leaflet.fullscreen.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/Control.MiniMap.min.js'></script>
 <script type="text/javascript" src='/assets/leaflet/leaflet-measure.min.js'></script>
 <script src="/assets/leaflet/Leaflet.elevator.js"></script>
