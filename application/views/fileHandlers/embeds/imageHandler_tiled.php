@@ -241,7 +241,7 @@ $needsPyramidScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 		var multilayerControl = new MultilayerControl().addTo(imageMap);
 		multilayerControl.addLayerRow(layer, <?=json_encode($fileObject->sourceFile->originalFilename)?>, imageMap);
 
-		multilayerData.forEach(function(layerDef) {
+		var layerBuildPromises = multilayerData.map(function(layerDef) {
 			// Each sibling has its own STS token scoped to its S3 key — pass credentials directly
 			var layerS3 = new AWS.S3({
 				accessKeyId: layerDef.credentials.accessKeyId,
@@ -287,7 +287,8 @@ $needsPyramidScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 						tile.src = URL.createObjectURL(new Blob([merged], {type: 'image/jpeg'}));
 					});
 				};
-				PyramidTiff.fromUrl(layerDef.url, layerDef.fileSize).then(function(tiffObj) {
+
+				return PyramidTiff.fromUrl(layerDef.url, layerDef.fileSize).then(function(tiffObj) {
 					layerTiff = tiffObj;
 					var newLayer = new L.tileLayer.elevator(layerTileLoadFunction, {
 						width: layerDef.width,
@@ -298,7 +299,11 @@ $needsPyramidScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 						overlap: layerDef.overlap,
 						tileType: 'iiif'
 					});
-					multilayerControl.addLayerRow(newLayer, layerDef.title, imageMap, false);
+					return {
+						layer: newLayer,
+						title: layerDef.title,
+						startEnabled: false
+					};
 				});
 			} else if (layerDef.type === 'tiled') {
 				var layerTileLoadFunction = function(coords, tile, done) {
@@ -318,8 +323,23 @@ $needsPyramidScript = $hasSiblingIIIF && !isset($fileContainers['tiled-iiif']);
 					overlap: layerDef.overlap,
 					tileType: 'tiled'
 				});
-				multilayerControl.addLayerRow(newLayer, layerDef.title, imageMap, false);
+				return Promise.resolve({
+					layer: newLayer,
+					title: layerDef.title,
+					startEnabled: false
+				});
 			}
+
+			return Promise.resolve(null);
+		});
+
+		Promise.allSettled(layerBuildPromises).then(function(results) {
+			results.forEach(function(result) {
+				if (result.status !== 'fulfilled' || !result.value || !result.value.layer) {
+					return;
+				}
+				multilayerControl.addLayerRow(result.value.layer, result.value.title, imageMap, result.value.startEnabled);
+			});
 		});
 		<?php endif; ?>
 
