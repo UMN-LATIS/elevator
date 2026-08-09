@@ -27,7 +27,7 @@ class Related_asset_contents extends Widget_contents_base {
 
 
 	public function getAsArray($nestedObjectDepth=0) {
-		return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary];
+		return ["targetAssetId"=>$this->targetAssetId, "label"=>$this->label, "isPrimary"=>$this->isPrimary, "uuid"=>$this->uuid];
 	}
 
 	public function getRelatedObjectId() {
