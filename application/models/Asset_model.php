@@ -301,8 +301,11 @@ class Asset_model extends CI_Model {
 			$foundPrimary = FALSE;
 			if(!$uploadContents = $this->findPrimaryWithinAsset($this, "Upload")) {
 				// no first tier primary, try nested - first see if the primary related has an image.
-
-				if($depth < 2) {
+				
+				// 2 is set arbitrarily - it more or less mirrors our
+				// default traversal in related recods
+				$maxRelatedDepth = 2;
+				if($depth < $maxRelatedDepth) {
 					$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
 					foreach($relatedArray as $asset) {
 						$primaries = array_column($asset->fieldContentsArray, "isPrimary");
