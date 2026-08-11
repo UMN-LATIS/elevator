@@ -113,9 +113,10 @@ class Templates extends Instance_Controller
 			'id'              => $ft->getId(),
 			'name'            => $ft->getName(),
 			'modelName'       => $ft->getModelName(),
-			'sampleFieldData' => $ft->getSampleFieldData() !== null
-				? json_decode($ft->getSampleFieldData())
-				: null,
+			// do not use json_decode here because the
+      // sample may be invalid json (e.g. includes
+      // comments) and we want to preserve as-is
+      'sampleFieldData' => $ft->getSampleFieldData(),
 		], $fieldTypes));
 	}
 
@@ -223,7 +224,7 @@ class Templates extends Instance_Controller
 
 		if (is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
-		
+
 			// 404 (not 403) to avoid leaking template IDs across instances.
 			if ($template !== null && !$template->getInstances()->contains($this->instance)) {
 				return $isJson
@@ -470,12 +471,12 @@ class Templates extends Instance_Controller
 	}
 
 	public function forceRecache($templateId=null) {
-		
+
 
 		if($templateId) {
 			$this->reindexTemplate($templateId);
 		}
-		
+
 		$this->template->title = 'Reindex';
 
     	// $this->template->loadCSS(['template']);
@@ -494,7 +495,7 @@ class Templates extends Instance_Controller
 
 		$newTask = json_encode(["templateId"=>$templateId,"instance"=>$this->instance->getId()]);
 		$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
-		
+
 	}
 
 
