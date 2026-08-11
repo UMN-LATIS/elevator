@@ -113,6 +113,7 @@ class Templates extends Instance_Controller
 			'id'              => $ft->getId(),
 			'name'            => $ft->getName(),
 			'modelName'       => $ft->getModelName(),
+      'hasFieldData'      => $ft->getHasFieldData(),
 			// do not use json_decode here because the
       // sample may be invalid json (e.g. includes
       // comments) and we want to preserve as-is

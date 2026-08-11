@@ -112,6 +112,20 @@ class Field_type
     }
 
     /**
+     * Widgets which use the field data json
+     **/
+    public function getHasFieldData() {
+      $WIDGETS_USING_FIELD_DATA = [
+        'upload',
+        'select',
+        'related_asset',
+        'multiselect',
+      ];
+
+      return in_array($this->getModelName(), $WIDGETS_USING_FIELD_DATA);
+    }
+
+    /**
      * Get id.
      *
      * @return int
