@@ -105,6 +105,13 @@ class Templates extends Instance_Controller
 		];
 	}
 
+  // treat the escaped string as a JSON string literal
+  // and decode it, which will unescape it
+	private static function unescapeJsStringLiteral(string $escaped): string
+	{
+		return json_decode('"' . $escaped . '"') ?? $escaped;
+	}
+
 	public function getFieldTypes()
 	{
 		$fieldTypes = $this->doctrine->em->getRepository('Entity\Field_type')->findBy([], ['name' => 'ASC']);
@@ -113,11 +120,10 @@ class Templates extends Instance_Controller
 			'id'              => $ft->getId(),
 			'name'            => $ft->getName(),
 			'modelName'       => $ft->getModelName(),
-      'hasFieldData'      => $ft->getHasFieldData(),
-			// do not use json_decode here because the
-      // sample may be invalid json (e.g. includes
-      // comments) and we want to preserve as-is
-      'sampleFieldData' => $ft->getSampleFieldData(),
+			'hasFieldData'    => $ft->getHasFieldData(),
+			'sampleFieldData' => $ft->getSampleFieldData() === null
+				? null
+				: self::unescapeJsStringLiteral($ft->getSampleFieldData()),
 		], $fieldTypes));
 	}
 
