@@ -2,13 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 import {
   loginUser,
   refreshDatabase,
-  // Aliased to avoid conflict with the richer local createTemplate below,
-  // which tests the widgetArray/fieldTitle surface of the new editor API.
   createTemplate as createBasicTemplate,
   baseURL,
 } from "../helpers";
-
-// ─── Types (richer API surface) ───────────────────────────────────────────────
 
 interface WidgetShape {
   widgetId: number;
@@ -46,11 +42,6 @@ interface TemplateShape {
   widgetArray: WidgetShape[];
 }
 
-// ─── Helpers (richer API surface) ─────────────────────────────────────────────
-
-// Required NOT NULL fields that update() does not default itself when the POST
-// key is absent (it calls setX(false) which Doctrine persists as null → violates
-// NOT NULL constraint). Sending explicit zeros satisfies the DB.
 const templateBaseFields = {
   templateColor: "0",
   recursiveIndexDepth: "1",
@@ -91,8 +82,6 @@ function newWidgetFields(
   };
 }
 
-// Shared matchers ─────────────────────────────────────────────────────────────
-
 const templateShape = {
   id: expect.any(Number),
   name: expect.any(String),
@@ -117,7 +106,6 @@ const widgetShape = {
   clickToSearchType: expect.any(Number),
 };
 
-// ─── Baseline CRUD tests (develop API surface) ───────────────────────────────
 
 test.describe("templates", () => {
   test.beforeAll(() => {
@@ -239,14 +227,11 @@ test.describe("templates", () => {
   });
 });
 
-// ─── GET /templates/getFieldTypes ────────────────────────────────────────────
-
 test.describe("GET getFieldTypes", () => {
   test.beforeEach(async ({ page }) => {
     await loginUser(page, "admin");
   });
 
-  // F1: returns a non-empty array of field types with the expected shape
   test("returns an array of field type objects", async ({ page }) => {
     const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
       headers: { Accept: "application/json" },
@@ -258,7 +243,6 @@ test.describe("GET getFieldTypes", () => {
     expect(body.length).toBeGreaterThan(0);
   });
 
-  // F2: each entry has id, name, modelName, sampleFieldData keys
   test("each field type has the expected shape", async ({ page }) => {
     const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
       headers: { Accept: "application/json" },
@@ -281,7 +265,6 @@ test.describe("GET getFieldTypes", () => {
     }
   });
 
-  // F3: results are sorted alphabetically by name
   test("returns field types sorted by name", async ({ page }) => {
     const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
       headers: { Accept: "application/json" },
@@ -292,19 +275,79 @@ test.describe("GET getFieldTypes", () => {
     expect(names).toEqual([...names].sort());
   });
 
-  // F4: unauthenticated — returns 401
   test("returns 401 for unauthenticated requests", async ({ request }) => {
     const res = await request.get(`${baseURL()}/templates/getFieldTypes`, {
       headers: { Accept: "application/json" },
     });
     expect(res.status()).toBe(401);
   });
-});
 
-// ─── Richer API tests (feat-update-template-api-for-editor) ──────────────────
-//
-// Tests for the getTemplate() endpoint and widgetArray / fieldTitle behaviour
-// introduced by this branch for the Vue template editor.
+  // Field types the backend flags as carrying JSON config (getHasFieldData()).
+  const FIELD_DATA_TYPE_NAMES = [
+    "upload",
+    "select",
+    "multiselect",
+    "related asset",
+  ];
+
+  interface FieldTypeEntry {
+    name: string;
+    hasFieldData: unknown;
+    sampleFieldData: unknown;
+  }
+
+  async function fetchFieldTypesByName(
+    page: Page,
+  ): Promise<Map<string, FieldTypeEntry>> {
+    const res = await page.request.get(`${baseURL()}/templates/getFieldTypes`, {
+      headers: { Accept: "application/json" },
+    });
+    expect(res.status()).toBe(200);
+    const body = (await res.json()) as FieldTypeEntry[];
+    return new Map(body.map((ft) => [ft.name, ft]));
+  }
+
+  test("sampleFieldData is a string or null for every field type", async ({
+    page,
+  }) => {
+    const byName = await fetchFieldTypesByName(page);
+    for (const ft of byName.values()) {
+      const isStringOrNull =
+        typeof ft.sampleFieldData === "string" || ft.sampleFieldData === null;
+      expect(isStringOrNull, `${ft.name} sampleFieldData`).toBe(true);
+    }
+  });
+
+  test("hasFieldData is a boolean flagged for config-carrying types", async ({
+    page,
+  }) => {
+    const byName = await fetchFieldTypesByName(page);
+    for (const ft of byName.values()) {
+      expect(typeof ft.hasFieldData, `${ft.name} hasFieldData`).toBe("boolean");
+    }
+    for (const name of FIELD_DATA_TYPE_NAMES) {
+      expect(byName.get(name)?.hasFieldData, name).toBe(true);
+    }
+    expect(byName.get("text")?.hasFieldData, "text").toBe(false);
+  });
+
+  test("unescapes a valid-JSON sample into parseable text", async ({ page }) => {
+    const upload = await fetchFieldTypesByName(page).then((m) => m.get("upload"));
+    const sample = upload?.sampleFieldData;
+    expect(typeof sample).toBe("string");
+    const sampleText = sample as string;
+    expect(sampleText.includes("\\n"), "no literal backslash-n").toBe(false);
+    expect(sampleText.includes('\\"'), "no literal backslash-quote").toBe(false);
+    const parsed = JSON.parse(sampleText) as Record<string, unknown>;
+    expect(parsed.enableTiling).toBe(true);
+  });
+
+  test("serves a non-JSON sample without breaking", async ({ page }) => {
+    const select = await fetchFieldTypesByName(page).then((m) => m.get("select"));
+    expect(typeof select?.sampleFieldData).toBe("string");
+    expect(() => JSON.parse(select?.sampleFieldData as string)).toThrow();
+  });
+});
 
 test.describe("templates API", () => {
   test.beforeEach(async ({ page }) => {
@@ -315,10 +358,7 @@ test.describe("templates API", () => {
     refreshDatabase();
   });
 
-  // ── GET /templates/getTemplate/{id} ─────────────────────────────────────────
-
   test.describe("GET getTemplate", () => {
-    // G1: happy path — returns full template shape
     test("returns full template shape for a valid template", async ({
       page,
     }) => {
@@ -337,7 +377,6 @@ test.describe("templates API", () => {
       expect(Array.isArray(body.widgetArray)).toBe(true);
     });
 
-    // G2: unauthenticated — returns 401
     test("returns 401 for unauthenticated requests", async ({ request }) => {
       // `request` fixture is a fresh context with no session cookies.
       const res = await request.get(`${baseURL()}/templates/getTemplate/1`, {
@@ -346,7 +385,6 @@ test.describe("templates API", () => {
       expect(res.status()).toBe(401);
     });
 
-    // G3: non-existent ID — returns 404
     test("returns 404 for a non-existent template ID", async ({ page }) => {
       const res = await page.request.get(
         `${baseURL()}/templates/getTemplate/999999`,
@@ -356,10 +394,7 @@ test.describe("templates API", () => {
     });
   });
 
-  // ── POST /templates/update ───────────────────────────────────────────────────
-
   test.describe("POST update", () => {
-    // U1: create new template (no templateId) — returns toArray() shape with empty widgetArray
     test("creates a new template and returns toArray shape", async ({
       page,
     }) => {
@@ -378,7 +413,6 @@ test.describe("templates API", () => {
       expect(body.widgetArray).toHaveLength(0);
     });
 
-    // U2: update existing template — name is reflected in response
     test("updates an existing template and returns updated data", async ({
       page,
     }) => {
@@ -399,7 +433,6 @@ test.describe("templates API", () => {
       expect(body.name).toBe("Updated Name");
     });
 
-    // U3: widget with empty fieldTitle is rejected — fieldTitle is required
     test("returns 422 when a widget fieldTitle is empty", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
@@ -415,7 +448,6 @@ test.describe("templates API", () => {
       expect(body.details.some((d) => d.includes("fieldTitle"))).toBe(true);
     });
 
-    // U4: existing widget fieldTitle is round-tripped unchanged
     test("preserves an existing widget fieldTitle on re-save", async ({
       page,
     }) => {
@@ -452,7 +484,6 @@ test.describe("templates API", () => {
       expect(body.widgetArray[0].fieldTitle).toBe(lockedFieldTitle);
     });
 
-    // U5: two new widgets with the same label get distinct, deduplicated fieldTitles
     test.skip("deduplicates fieldTitles for two new widgets with the same label", async ({
       page,
     }) => {
@@ -474,7 +505,6 @@ test.describe("templates API", () => {
       expect(second.fieldTitle).toBe("title_1_2");
     });
 
-    // U6: label made entirely of non-alphanumeric characters falls back to field_<instanceId>
     test.skip("falls back to field_<instanceId> for non-alphanumeric label", async ({
       page,
     }) => {
@@ -493,7 +523,6 @@ test.describe("templates API", () => {
       expect(body.widgetArray[0].fieldTitle).toBe("field_1");
     });
 
-    // U7: fieldTypeId is present, numeric, and matches the fieldType name lookup
     test("includes both fieldType name and fieldTypeId for round-trip safety", async ({
       page,
     }) => {
@@ -514,7 +543,6 @@ test.describe("templates API", () => {
       expect(widget.fieldTypeId).toBe(1);
     });
 
-    // U8: clickToSearchType defaults to 1 when not supplied (controller uses ?? 1)
     test("clickToSearchType defaults to 1 when omitted", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
@@ -537,7 +565,6 @@ test.describe("templates API", () => {
       expect(body.widgetArray[0].clickToSearchType).toBe(1); // controller defaults to 1 via ??1
     });
 
-    // U9: widget with a blank label is rejected — label is required
     test("returns 422 when a widget label is blank", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
@@ -555,12 +582,9 @@ test.describe("templates API", () => {
     });
   });
 
-  // ── POST /templates/update – validation ──────────────────────────────────────
-
   test.describe("POST update – validation", () => {
     const TOO_LONG = "x".repeat(256);
 
-    // V1: missing name → 422
     test("returns 422 when name is missing", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
@@ -571,7 +595,6 @@ test.describe("templates API", () => {
       expect(body.error).toBe("Validation failed");
     });
 
-    // V2: name > 255 chars → 422
     test("returns 422 when name exceeds 255 characters", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
@@ -583,7 +606,6 @@ test.describe("templates API", () => {
       expect(body.details.some((d) => d.includes("name"))).toBe(true);
     });
 
-    // V3: non-integer templateColor → 422
     test("returns 422 when templateColor is not an integer", async ({
       page,
     }) => {
@@ -594,7 +616,6 @@ test.describe("templates API", () => {
       expect(res.status()).toBe(422);
     });
 
-    // V4: non-integer recursiveIndexDepth → 422
     test("returns 422 when recursiveIndexDepth is not an integer", async ({
       page,
     }) => {
@@ -609,7 +630,6 @@ test.describe("templates API", () => {
       expect(res.status()).toBe(422);
     });
 
-    // V5: widget tooltip > 2000 chars → 422
     test("returns 422 when a widget tooltip exceeds 2000 characters", async ({
       page,
     }) => {
@@ -628,7 +648,6 @@ test.describe("templates API", () => {
       expect(body.details.some((d) => d.includes("tooltip"))).toBe(true);
     });
 
-    // V6: widget label > 255 chars → 422
     test("returns 422 when a widget label exceeds 255 characters", async ({
       page,
     }) => {
@@ -645,7 +664,6 @@ test.describe("templates API", () => {
       expect(body.details.some((d) => d.includes("label"))).toBe(true);
     });
 
-    // V7: widget fieldData is not valid JSON → 422
     test("returns 422 when a widget fieldData is invalid JSON", async ({
       page,
     }) => {
@@ -664,7 +682,6 @@ test.describe("templates API", () => {
       expect(body.details.some((d) => d.includes("fieldData"))).toBe(true);
     });
 
-    // V8: widget fieldType missing → 422
     test("returns 422 when a widget fieldType is missing", async ({ page }) => {
       const res = await page.request.post(`${baseURL()}/templates/update`, {
         headers: { Accept: "application/json" },
@@ -685,7 +702,6 @@ test.describe("templates API", () => {
       expect(body.details.some((d) => d.includes("fieldType"))).toBe(true);
     });
 
-    // V9: validation fires before any DB writes — existing widgets are preserved
     test("does not destroy existing widgets when validation fails", async ({
       page,
     }) => {
