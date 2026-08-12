@@ -11,6 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class Field_type
 {
+    private const WIDGETS_USING_FIELD_DATA = [
+        'upload',
+        'select',
+        'related_asset',
+        'multiselect',
+    ];
+
     /**
      * @var string
      */
@@ -111,18 +118,9 @@ class Field_type
         return $this->sample_field_data;
     }
 
-    /**
-     * Widgets which use the field data json
-     **/
-    public function getHasFieldData() {
-      $WIDGETS_USING_FIELD_DATA = [
-        'upload',
-        'select',
-        'related_asset',
-        'multiselect',
-      ];
-
-      return in_array($this->getModelName(), $WIDGETS_USING_FIELD_DATA);
+    public function getHasFieldData(): bool
+    {
+        return in_array($this->getModelName(), self::WIDGETS_USING_FIELD_DATA, true);
     }
 
     /**

@@ -105,8 +105,8 @@ class Templates extends Instance_Controller
 		];
 	}
 
-  // treat the escaped string as a JSON string literal
-  // and decode it, which will unescape it
+	// treat the escaped string as a JSON string literal
+	// and decode it, which will unescape it
 	private static function unescapeJsStringLiteral(string $escaped): string
 	{
 		return json_decode('"' . $escaped . '"') ?? $escaped;
