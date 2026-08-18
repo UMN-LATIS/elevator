@@ -1344,6 +1344,21 @@ class Instance
         return $this;
     }
 
+    public function getShowAssetLastModifiedDate(): bool
+    {
+        return (bool) $this->getAdditionalSettings()['showAssetLastModifiedDate'] ?? false;
+    }
+
+    public function setShowAssetLastModifiedDate(bool $value): self
+    {
+        $this->additionalSettings = array_merge(
+            $this->additionalSettings ?? [],
+            ['showAssetLastModifiedDate' => $value]
+        );
+
+        return $this;
+    }
+
     /**
      * Whether the description text appears below an asset's thumbnail.
      */
