@@ -271,6 +271,8 @@ class Home extends Instance_Controller {
 
 		$headerData['showChildCollections'] = $this->instance->getShowChildCollections();
 
+		$headerData['showAssetLastModifiedDate'] = $this->instance->getShowAssetLastModifiedDate();
+
 		$headerData['theming'] = [
 			'availableThemes' => $this->instance->getAvailableThemes(),
 			'enabled' => $this->instance->getEnableThemes(),

@@ -55,6 +55,7 @@ class Instances extends Instance_Controller
 			'defaultTheme' => $instance->getDefaultTheme(),
 			'availableThemes' => $instance->getAvailableThemes(),
 			'showChildCollections' => $instance->getShowChildCollections(),
+			'showAssetLastModifiedDate' => $instance->getShowAssetLastModifiedDate(),
 			'showThumbnailDescription' => $instance->getShowThumbnailDescription(),
 			'customHomeRedirect' => $instance->getCustomHomeRedirect(),
 			'maximumMoreLikeThis' => $instance->getMaximumMoreLikeThis(),
@@ -156,6 +157,7 @@ class Instances extends Instance_Controller
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
 		$instance->setAvailableThemes($this->input->post('availableThemes'));
 		$instance->setShowChildCollections($this->input->post('showChildCollections') ? true : false);
+		$instance->setShowAssetLastModifiedDate($this->input->post('showAssetLastModifiedDate') ? true : false);
 		$instance->setShowThumbnailDescription($this->input->post('showThumbnailDescription') ? true : false);
 		$instance->setCustomHomeRedirect($this->input->post('customHomeRedirect'));
 		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
