@@ -1318,6 +1318,7 @@ class Instance
         $defaults = [
             'showChildCollections' => true,
             'showThumbnailDescription' => false,
+            'showAssetLastModifiedDate' => false,
         ];
 
         return array_merge($defaults, $this->additionalSettings ?? []);
@@ -1344,11 +1345,17 @@ class Instance
         return $this;
     }
 
+    /**
+     * Whether an asset's last-modified date appears alongside it.
+     */
     public function getShowAssetLastModifiedDate(): bool
     {
-        return (bool) $this->getAdditionalSettings()['showAssetLastModifiedDate'] ?? false;
+        return (bool) $this->getAdditionalSettings()['showAssetLastModifiedDate'];
     }
 
+    /**
+     * Write showAssetLastModifiedDate into the stored blob, preserving sibling keys.
+     */
     public function setShowAssetLastModifiedDate(bool $value): self
     {
         $this->additionalSettings = array_merge(
