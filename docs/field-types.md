@@ -120,7 +120,7 @@ A file-attachment field.  This allows users to upload a file their computer.  JS
     "enableAnnotation":false,
     "forceTiling": false,
     "interactiveTranscript": false,
-    "rotationValue": 0,
+    "rotationValue": 0
     "enableMultilayer": false
 }
 ```

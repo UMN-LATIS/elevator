@@ -284,7 +284,7 @@ class Asset_model extends CI_Model {
 	 * complain too much.)
 	 * @return [type] [description]
 	 */
-	public function getPrimaryFilehandler($tryCache = true, &$parentArray = array()) {
+	public function getPrimaryFilehandler($tryCache = true, &$parentArray = array(), $depth = 0) {
 		$fileHandler = NULL;
 
 		if($tryCache && $this->assetObject->getAssetCache() && ($this->useStaleCaches || !$this->assetObject->getAssetCache()->getNeedsRebuild())) {
@@ -301,34 +301,39 @@ class Asset_model extends CI_Model {
 			$foundPrimary = FALSE;
 			if(!$uploadContents = $this->findPrimaryWithinAsset($this, "Upload")) {
 				// no first tier primary, try nested - first see if the primary related has an image.
-
-				$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
-				foreach($relatedArray as $asset) {
-					$primaries = array_column($asset->fieldContentsArray, "isPrimary");
-					$noPrimaries = !in_array(true, $primaries);
-					// if this related asset has the ignoreForDigitalAsset flag marked as true, we don't even consider it.
-					if(isset($asset->ignoreForDigitalAsset) && $asset->ignoreForDigitalAsset == true) {
-						continue;
-					}
-					
-					foreach($asset->fieldContentsArray as $fieldContents) {
+				
+				// 2 is set arbitrarily - it more or less mirrors our
+				// default traversal in related recods
+				$maxRelatedDepth = 2;
+				if($depth < $maxRelatedDepth) {
+					$relatedArray = $this->getAllWithinAsset("Related_asset", $this);
+					foreach($relatedArray as $asset) {
+						$primaries = array_column($asset->fieldContentsArray, "isPrimary");
+						$noPrimaries = !in_array(true, $primaries);
+						// if this related asset has the ignoreForDigitalAsset flag marked as true, we don't even consider it.
+						if(isset($asset->ignoreForDigitalAsset) && $asset->ignoreForDigitalAsset == true) {
+							continue;
+						}
 						
-						if((!$asset->getAllowMultiple() || ($fieldContents->isPrimary || $noPrimaries) || count($asset->fieldContentsArray)==1) && !in_array($fieldContents->getRelatedObjectId(), $parentArray)) {
-							try {
-								$fileHandler = $fieldContents->getPrimaryFilehandler($parentArray);
-							}
-							catch (Exception $e) {
+						foreach($asset->fieldContentsArray as $fieldContents) {
+							
+							if((!$asset->getAllowMultiple() || ($fieldContents->isPrimary || $noPrimaries) || count($asset->fieldContentsArray)==1) && !in_array($fieldContents->getRelatedObjectId(), $parentArray)) {
+								try {
+									$fileHandler = $fieldContents->getPrimaryFilehandler($parentArray, $depth + 1);
+								}
+								catch (Exception $e) {
 
-							}
+								}
 
-							if($fileHandler) {
-								$foundPrimary = true;
-								break;
+								if($fileHandler) {
+									$foundPrimary = true;
+									break;
+								}
 							}
 						}
-					}
-					if($foundPrimary) {
-						break;
+						if($foundPrimary) {
+							break;
+						}
 					}
 				}
 

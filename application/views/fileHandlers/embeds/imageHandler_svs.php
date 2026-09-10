@@ -107,6 +107,22 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             display:none;
         }
         <?endif?>
+
+        /* Leaflet 1.9 sets font-size: 0.75rem on .leaflet-container.
+           bootstrap_stthomas.css sets html { font-size: 10px }, which causes
+           0.75rem to resolve to 7.5px instead of 12px, shrinking all controls.
+           Override with an absolute value to restore correct sizing. */
+        #imageMap.leaflet-container {
+            font-size: 12px;
+        }
+
+        /* Leaflet 1.9 added mix-blend-mode: plus-lighter to img.leaflet-tile
+           to fix a Chrome translucency bug (crbug.com/600120). For opaque
+           tiled images with overlap, the additive blending makes tile edges
+           appear as bright seams. Reset to normal for this viewer. */
+        #imageMap img.leaflet-tile {
+            mix-blend-mode: normal;
+        }
     </style>
 
 
@@ -189,8 +205,9 @@ elseif(isset($fileContainers['tiled-iiif'])) {
             heightScale = 1;
             widthScale = minimapRatio;
         }
+
         var miniLayer = L.tileLayer.elevator(tileLoadFunction, mapOptions);
-        
+
         var miniMap = new L.Control.MiniMap(miniLayer, {
             width: 140 * widthScale,
             height: 140 * heightScale,
@@ -201,6 +218,23 @@ elseif(isset($fileContainers['tiled-iiif'])) {
                         zoomLevelFixed: -3
                     });
         miniMap.addTo(imageMap);
+
+        // The MiniMap plugin builds its inner L.Map on a container that is not yet
+        // attached to the page, and the elevator layer's onAdd -> fitBoundsExactly
+        // measures that container via map.getSize() -- whose result Leaflet CACHES.
+        // Depending on load timing the size can be measured (and cached) before the
+        // container is laid out, so it comes back [0,0], the fit zoom / minZoom are
+        // computed wrong, and the minimap renders blank. Now that the container IS in
+        // the DOM, force a synchronous size recalculation and refit so the result is
+        // deterministic regardless of timing. invalidateSize() clears the cached size
+        // and re-reads the container; fitBoundsExactly() then recomputes the fit zoom
+        // from the real dimensions.
+        var innerMiniMap = miniMap._miniMap;
+        if(innerMiniMap) {
+            innerMiniMap.invalidateSize({animate: false, pan: false});
+            miniLayer.fitBoundsExactly();
+            innerMiniMap.setView(imageMap.getCenter(), miniMap._decideZoom(true));
+        }
 
         if(pixelsPerMillimeter > 10) {
 

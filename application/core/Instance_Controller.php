@@ -136,7 +136,7 @@ class Instance_Controller extends MY_Controller
     }
 
     function getAbsolutePath() {
-        if($this->instanceType == "subdirectory") {
+        if($this->instanceType == "subdirectory" && $this->instance) {
             return site_url($this->instance->getDomain() . "/");
         }
         else {
@@ -145,7 +145,7 @@ class Instance_Controller extends MY_Controller
     }
 
     public function getRelativePath() {
-        if($this->instanceType == "subdirectory") {
+        if($this->instanceType == "subdirectory" && $this->instance) {
             return "/". $this->instance->getDomain() . "/";
         }
         else {
