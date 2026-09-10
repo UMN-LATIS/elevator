@@ -105,6 +105,13 @@ class Templates extends Instance_Controller
 		];
 	}
 
+	// treat the escaped string as a JSON string literal
+	// and decode it, which will unescape it
+	private static function unescapeJsStringLiteral(string $escaped): string
+	{
+		return json_decode('"' . $escaped . '"') ?? $escaped;
+	}
+
 	public function getFieldTypes()
 	{
 		$fieldTypes = $this->doctrine->em->getRepository('Entity\Field_type')->findBy([], ['name' => 'ASC']);
@@ -113,9 +120,10 @@ class Templates extends Instance_Controller
 			'id'              => $ft->getId(),
 			'name'            => $ft->getName(),
 			'modelName'       => $ft->getModelName(),
-			'sampleFieldData' => $ft->getSampleFieldData() !== null
-				? json_decode($ft->getSampleFieldData())
-				: null,
+			'hasFieldData'    => $ft->getHasFieldData(),
+			'sampleFieldData' => $ft->getSampleFieldData() === null
+				? null
+				: self::unescapeJsStringLiteral($ft->getSampleFieldData()),
 		], $fieldTypes));
 	}
 
@@ -223,7 +231,7 @@ class Templates extends Instance_Controller
 
 		if (is_numeric($this->input->post('templateId'))) {
 			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
-		
+
 			// 404 (not 403) to avoid leaking template IDs across instances.
 			if ($template !== null && !$template->getInstances()->contains($this->instance)) {
 				return $isJson
@@ -470,12 +478,12 @@ class Templates extends Instance_Controller
 	}
 
 	public function forceRecache($templateId=null) {
-		
+
 
 		if($templateId) {
 			$this->reindexTemplate($templateId);
 		}
-		
+
 		$this->template->title = 'Reindex';
 
     	// $this->template->loadCSS(['template']);
@@ -494,7 +502,7 @@ class Templates extends Instance_Controller
 
 		$newTask = json_encode(["templateId"=>$templateId,"instance"=>$this->instance->getId()]);
 		$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
-		
+
 	}
 
 

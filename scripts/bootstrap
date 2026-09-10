@@ -139,19 +139,31 @@ _elastic_index=$(grep -E '^ELASTIC_INDEX=' .env 2>/dev/null | cut -d= -f2 | tr -
 _elastic_index="${_elastic_index:-elevator}"
 _elastic_internal="${_elastic_index}_1"
 
+# Reach Elasticsearch from inside the compose network: its port is not always
+# published to the host in local dev.
+elastic_curl() {
+    docker compose exec -T php-fpm curl "$@"
+}
+
 info "Waiting for Elasticsearch to be ready..."
-until curl -sf "http://localhost:9200/_cluster/health" > /dev/null 2>&1; do
+_waited_seconds=0
+until elastic_curl -sf "http://elasticsearch:9200/_cluster/health" > /dev/null 2>&1; do
+    if (( _waited_seconds >= 120 )); then
+        fatal "Elasticsearch was not ready after 120s. Check 'docker compose logs elasticsearch'."
+    fi
     sleep 2
+    _waited_seconds=$(( _waited_seconds + 2 ))
 done
 success "Elasticsearch is ready."
 
 info "Wiping existing Elasticsearch index (if any)..."
-curl -sf -XDELETE "http://localhost:9200/${_elastic_internal}" > /dev/null 2>&1 || true
-curl -sf -XDELETE "http://localhost:9200/${_elastic_index}" > /dev/null 2>&1 || true
+elastic_curl -sf -XDELETE "http://elasticsearch:9200/${_elastic_internal}" > /dev/null 2>&1 || true
+elastic_curl -sf -XDELETE "http://elasticsearch:9200/${_elastic_index}" > /dev/null 2>&1 || true
 
 info "Creating Elasticsearch index and applying mapping..."
-bash scripts/elastic_setup.sh localhost "$_elastic_internal" "$_elastic_index" \
-    || fatal "Elasticsearch setup failed — is Elasticsearch running?"
+docker compose exec -T php-fpm bash scripts/elastic_setup.sh \
+    elasticsearch "$_elastic_internal" "$_elastic_index" \
+    || fatal "Elasticsearch setup failed. Check 'docker compose logs elasticsearch'."
 success "Elasticsearch index and mapping created."
 
 info "Indexing assets into Elasticsearch..."
