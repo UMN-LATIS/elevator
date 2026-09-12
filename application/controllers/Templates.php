@@ -18,7 +18,7 @@ class Templates extends Instance_Controller
 				: instance_redirect('/errorHandler/error/noPermission');
 		}
 
-		if (!$this->isCurrentUserAdmin()) {
+		if (!$this->isCurrentUserTemplateEditor()) {
 			return $isJson
 				? abort_json(['error' => 'Forbidden'], 403)
 				: instance_redirect('/errorHandler/error/noPermission');
