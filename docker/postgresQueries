@@ -13,7 +13,8 @@ VALUES
 (7,E'originals',E'Download Originals',E'40',NULL,NULL),
 (8,E'addassets',E'Add Assets to Instance',E'50',NULL,NULL),
 (9,E'admin',E'Administer Instance',E'60',NULL,NULL),
-(10,E'originalsWithoutDerivatives',E'View Derivatives (Groups 1 & 2)',E'25',NULL,NULL);
+(10,E'originalsWithoutDerivatives',E'View Derivatives (Groups 1 & 2)',E'25',NULL,NULL),
+(11,E'edittemplates',E'Edit Templates',E'57',NULL,NULL);
 
 INSERT INTO "users"("id","instance_id","emplid","username","usertype","email","displayname","fastupload","password","issuperadmin","hasexpiry","expires","createdat","modifiedat","createdby_id","apiinstance_id")
 VALUES

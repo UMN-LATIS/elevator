@@ -160,6 +160,7 @@ class Home extends Instance_Controller {
 		$headerData["userDisplayName"] = null;
 		$headerData["userIsAdmin"] = false;
 		$headerData["userIsSuperAdmin"] = false;
+		$headerData["userCanEditTemplates"] = false;
 		$headerData["instanceName"] = $this->instance->getName();
 		$headerData["instanceId"] = $this->instance->getId();
 		$headerData["instanceHasLogo"] = $this->instance->getUseHeaderLogo();
@@ -207,6 +208,9 @@ class Home extends Instance_Controller {
 			}
 			if ($this->user_model->getIsSuperAdmin()) {
 				$headerData["userIsSuperAdmin"] = true;
+			}
+			if ($this->user_model->canEditTemplates()) {
+				$headerData["userCanEditTemplates"] = true;
 			}
 
 		}
