@@ -17,18 +17,11 @@ final class Version20260915061713 extends AbstractMigration {
 
     public function up(Schema $schema): void {
 
-        $schema->getConnection()->executeStatement('
-            INSERT INTO "public"."permissions"("name","label","level","createdat","modifiedat","id")
-            VALUES
-            (\'edittemplates\',\'Edit Templates\',\'57\',NULL,NULL,11);
-        ');
-        // this up() migration is auto-generated, please modify it to your needs
-
+        $this->addSql('INSERT INTO "public"."permissions"("name","label","level","createdat","modifiedat","id") VALUES
+            (\'edittemplates\',\'Edit Templates\',\'57\',NULL,NULL,11)');
     }
 
     public function down(Schema $schema): void {
-        $schema->getConnection()->executeStatement('
-            DELETE FROM "public"."permissions" WHERE "id" = 11;
-        ');
+        $this->addSql('DELETE FROM "public"."permissions" WHERE "id" = 11');
     }
 }
