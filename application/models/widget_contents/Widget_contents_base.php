@@ -5,6 +5,8 @@ class Widget_contents_base extends CI_Model {
 
 	public $fieldContents = NULL;
 	public $isPrimary = FALSE;
+	// client-minted identity for a content entry, stable across saves
+	public $uuid = NULL;
 	public $parentObjectId = NULL;
 	public $parentWidget = NULL;
 	public $parentObject = NULL;
@@ -16,7 +18,7 @@ class Widget_contents_base extends CI_Model {
 		}
 
 	public function getAsArray($serializeNestedObjects=false) {
-		return ["fieldContents"=>$this->fieldContents, "isPrimary"=>$this->isPrimary];
+		return ["fieldContents"=>$this->fieldContents, "isPrimary"=>$this->isPrimary, "uuid"=>$this->uuid];
 	}
 
 	public function getAsText($serializeNestedObjects=false) {
