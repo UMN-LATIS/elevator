@@ -101,6 +101,7 @@ after('deploy:git:submodules', 'elevator:build-ui');
 task('elevator:build-ui', function () {
     run('cd {{release_path}}/assets/elevator-ui && yarn install');
     run('cd {{release_path}}/assets/elevator-ui && yarn build:prod');
+    run('rm -rf {{release_path}}/assets/elevator-ui/node_modules');
 });
 
 after('elevator:build-ui', 'elevator:create_instance_assets');
