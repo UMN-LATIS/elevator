@@ -27,12 +27,18 @@ services:
       - ${DOCKER_SCRATCH_DIR}:/scratch
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - redis
-      - postgres
-      - elasticsearch
-      - beanstalkd
-    links:
-      - php-fpm
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+      beanstalkd:
+        condition: service_started
+      php-fpm:
+        condition: service_started
+        restart: true
+
   beanstalkd:
     image: maateen/docker-beanstalkd
     ports:
@@ -70,35 +76,8 @@ services:
       - ./:/var/www/html
       - ${DOCKER_SCRATCH_DIR}:/scratch
       - /var/run/docker.sock:/var/run/docker.sock
-    # develop:
-    #   watch:
-    #     - action: sync
-    #       path: ./
-    #       target: /var/www/html/
-    #       ignore:
-    #         - vendor/
-  # apache:
-  #   platform: linux/x86_64
-  #   build:
-  #     context: .
-  #     args:
-  #       - DOCKER_SCRATCH_DIR=${DOCKER_SCRATCH_DIR}
-  #       - DOCKER_ENVIRONMENT=${ENVIRONMENT}
-  #       - ENVIRONMENT=${ENVIRONMENT}
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - .:/var/www/html
-  #     - ${DOCKER_SCRATCH_DIR}:/scratch
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   depends_on:
-  #     - redis
-  #     - postgres
-  #     - beanstalkd
-  #     - elasticsearch
 
   elasticsearch:
-    # platform: linux/x86_64
     image: elasticsearch:8.17.1
     environment:
       - discovery.type=single-node
@@ -107,7 +86,6 @@ services:
       - xpack.security.http.ssl.enabled=false
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
-      # - bootstrap.system_call_filter=false
     ports:
       - "${ELASTICSEARCH_PORT:-9200}:9200"
       - "${ELASTICSEARCH_TRANSPORT_PORT:-9300}:9300"
