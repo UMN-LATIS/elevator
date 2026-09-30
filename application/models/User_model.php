@@ -310,6 +310,16 @@ class User_model extends CI_Model {
 		return false;
 	}
 
+	public function canEditTemplates() {
+		if($this->getIsSuperAdmin() || $this->isInstanceAdmin()) {
+			return true;
+		}
+		if(!is_null($this->instance) && isset($this->instancePermissions[$this->instance->getId()])) {
+			return $this->instancePermissions[$this->instance->getId()]>=PERM_EDIT_TEMPLATES;
+		}
+		return false;
+	}
+
 	/**
 	 * FIFO capped
 	 * TODO: store to a recentDrawers table?

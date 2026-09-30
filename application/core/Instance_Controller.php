@@ -173,6 +173,12 @@ class Instance_Controller extends MY_Controller
         return  $accessLevel >= PERM_ADMIN;
     }
 
+    protected function isCurrentUserTemplateEditor(): bool
+    {
+        $accessLevel = $this->user_model?->getAccessLevel('instance', $this->instance) ?? 0;
+        return  $accessLevel >= PERM_EDIT_TEMPLATES;
+    }
+
     /**
      * Abort a JSON request with 401 if the session user isn't authenticated.
      * Use at the top of controller actions that require authentication.
@@ -190,6 +196,17 @@ class Instance_Controller extends MY_Controller
     protected function abortUnlessAdmin(): void {
         $this->abortUnlessAuthed();
         if (!$this->isCurrentUserAdmin()) {
+            abort_json(['error' => 'Forbidden'], 403);
+        }
+    }
+
+    /**
+     * Abort a JSON request with 401/403 unless the session user can edit
+     * templates (instance admin or PERM_EDIT_TEMPLATES). Implies `abortUnlessAuthed()`.
+     */
+    protected function abortUnlessTemplateEditor(): void {
+        $this->abortUnlessAuthed();
+        if (!$this->isCurrentUserTemplateEditor()) {
             abort_json(['error' => 'Forbidden'], 403);
         }
     }
