@@ -19,6 +19,7 @@ assets/instanceAssets/*
 .phpintel
 docs/.vitepress/dist
 docs/.vitepress/cache
+# node_modules/* above matches only the repo root, so without this line docs/node_modules shows up as untracked
 docs/node_modules
 .htaccess
 .vscode

@@ -5,9 +5,10 @@
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
-    "docs:deploy": "vitepress build && npx gh-pages -d .vitepress/dist"
+    "docs:deploy": "vitepress build && gh-pages -d .vitepress/dist"
   },
   "devDependencies": {
+    "gh-pages": "^6.3.0",
     "vitepress": "^1.6.4"
   }
 }
