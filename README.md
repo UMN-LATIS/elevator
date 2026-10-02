@@ -206,9 +206,14 @@ Assets are automatically re-indexed on save, so a full reindex is only needed af
 
 ## Documentation
 
-Docs use [VuePress](https://vuepress.vuejs.org/) and live in `./docs`.
+Docs use [VitePress](https://vitepress.dev/) and live in `./docs`, with their own `package.json`.
 
 ```bash
+cd docs
+
+# install docs dependencies
+npm install
+
 # develop docs locally
 npm run docs:dev
 

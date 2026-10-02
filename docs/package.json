@@ -1,0 +1,13 @@
+{
+  "name": "elevator-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:deploy": "vitepress build && npx gh-pages -d .vitepress/dist"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}
