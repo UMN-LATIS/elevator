@@ -1,0 +1,119 @@
+name: Release Tag
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-tag
+  cancel-in-progress: false
+
+jobs:
+  check-already-released:
+    runs-on: ubuntu-latest
+    outputs:
+      is_released: ${{ steps.check.outputs.is_released }}
+
+    steps:
+      - name: Checkout with full history and tags
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Look for a YYYY.M.N tag on the pushed commit
+        id: check
+        run: |
+          existing_tag=$(git tag --points-at "$GITHUB_SHA" --list '20[0-9][0-9].*.*' | head -n 1)
+          echo "is_released=$([ -n "$existing_tag" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  tag-and-release:
+    needs: check-already-released
+    if: needs.check-already-released.outputs.is_released == 'false'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout with full history and tags
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Pick next YYYY.M.N tag in Central time and the elevator-ui commits it spans
+        id: version
+        run: |
+          month_prefix=$(TZ=America/Chicago date +%Y.%-m)
+          last_tag_this_month=$(git tag --list "$month_prefix.*" --sort=-version:refname | head -n 1)
+          if [ -z "$last_tag_this_month" ]; then
+            next_tag="$month_prefix.0"
+          else
+            next_tag="$month_prefix.$(( ${last_tag_this_month##*.} + 1 ))"
+          fi
+          previous_tag=$(git tag --list '20[0-9][0-9].*.*' --sort=-version:refname | head -n 1)
+          previous_tag=${previous_tag:-4.0.0}
+          ui_before=$(git ls-tree "$previous_tag" assets/elevator-ui | awk '$2 == "commit" { print $3 }')
+          ui_after=$(git ls-tree "$GITHUB_SHA" assets/elevator-ui | awk '$2 == "commit" { print $3 }')
+          {
+            echo "next_tag=$next_tag"
+            echo "previous_tag=$previous_tag"
+            echo "ui_before=$ui_before"
+            echo "ui_after=$ui_after"
+            echo "ui_changed=$([ "$ui_before" != "$ui_after" ] && echo true || echo false)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write release notes for elevator and elevator-ui
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+          UI_BEFORE: ${{ steps.version.outputs.ui_before }}
+          UI_AFTER: ${{ steps.version.outputs.ui_after }}
+        run: |
+          {
+            echo "## elevator commits"
+            echo
+            git log --no-merges --format='- %h %s (%an)' "$PREVIOUS_TAG..$GITHUB_SHA"
+            echo
+            echo "## elevator-ui"
+            echo
+            echo "Pinned at [\`${UI_AFTER:0:8}\`](https://github.com/UMN-LATIS/elevator-ui/commit/$UI_AFTER)."
+            if [ -n "$UI_BEFORE" ] && [ "$UI_BEFORE" != "$UI_AFTER" ]; then
+              echo
+              gh api "repos/UMN-LATIS/elevator-ui/compare/$UI_BEFORE...$UI_AFTER" \
+                --jq '.commits[] | select(.parents | length == 1) | "- \(.sha[0:8]) \(.commit.message | split("\n")[0]) (\(.commit.author.name))"'
+              echo
+              echo "Full changelog: https://github.com/UMN-LATIS/elevator-ui/compare/$UI_BEFORE...$UI_AFTER"
+            fi
+          } > release-notes.md
+
+      - name: Create tag and GitHub release with generated PR notes appended
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+        run: |
+          gh release create "$NEXT_TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$NEXT_TAG" \
+            --notes-file release-notes.md \
+            --generate-notes \
+            --notes-start-tag "$PREVIOUS_TAG" \
+            --latest
+
+      - name: Checkout the pinned elevator-ui commit
+        if: steps.version.outputs.ui_changed == 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: UMN-LATIS/elevator-ui
+          ref: ${{ steps.version.outputs.ui_after }}
+          ssh-key: ${{ secrets.ELEVATOR_UI_DEPLOY_KEY }}
+          path: elevator-ui-release
+          fetch-depth: 1
+
+      - name: Tag elevator-ui with the same version
+        if: steps.version.outputs.ui_changed == 'true'
+        working-directory: elevator-ui-release
+        env:
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+        run: git push origin "HEAD:refs/tags/$NEXT_TAG"
