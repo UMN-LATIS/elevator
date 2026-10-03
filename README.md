@@ -206,12 +206,19 @@ Assets are automatically re-indexed on save, so a full reindex is only needed af
 
 ## Documentation
 
-Docs use [VuePress](https://vuepress.vuejs.org/) and live in `./docs`.
+Docs use [VitePress](https://vitepress.dev/) and live in `./docs`, with their own `package.json`.
 
 ```bash
+# docs/ has its own package.json, so VitePress and the docs:* scripts install and run from there, not the repo root
+cd docs
+npm install
+
 # develop docs locally
 npm run docs:dev
 
-# deploy docs
+# build the static site into docs/.vitepress/dist without publishing it
+npm run docs:build
+
+# build, then push docs/.vitepress/dist to the gh-pages branch, which serves www.elevatorapp.net (needs push access)
 npm run docs:deploy
 ```
