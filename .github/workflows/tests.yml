@@ -28,6 +28,7 @@ jobs:
       - name: Copy env file
         run: |
           cp .env.example .env
+          sed -i 's/^AUTH_HELPER=.*/AUTH_HELPER=MockAuthHelper/' .env
 
       - name: Create REVISION file
         # Template.php reads ./REVISION to cache-bust assets

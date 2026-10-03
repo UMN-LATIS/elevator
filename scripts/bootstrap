@@ -41,7 +41,8 @@ if [[ -f .env ]]; then
     info ".env already exists — skipping copy."
 else
     cp .env.example .env
-    success "Copied .env.example → .env"
+    sed -i.bak 's/^AUTH_HELPER=.*/AUTH_HELPER=MockAuthHelper/' .env && rm -f .env.bak
+    success "Copied .env.example → .env, with AUTH_HELPER=MockAuthHelper for local dev"
     warn "Review .env and set DEFAULT_ADMIN_PASSWORD, S3 credentials, etc. before continuing."
     echo
     read -r -p "  Press enter to continue after editing .env, or Ctrl-C to stop..."
