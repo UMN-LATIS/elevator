@@ -12,6 +12,299 @@ class admin extends Admin_Controller {
 		}
 	}
 
+	/**
+	 * One-off migration: on the "set" template, the parts_2 / score_2 related_asset fields point at
+	 * file-template assets.  Pull the file and its title off those related assets and write them into the
+	 * parts_file_2 / score_file_2 upload fields, then drop the related_asset references.
+	 *
+	 * Usage: php index.php admin remapMadisonElevatorAssets <instanceId> [dryRun=true] [limit=0]
+	 */
+	public function remapMadisonElevatorAssets($instanceId = null, $dryRun = true, $limit = 0) {
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
+		$this->doctrine->extendTimeout();
+
+		$setTemplateId = 7;
+		$fileTemplateId = 15;
+		$fieldMap = ["parts_2" => "partsfile_2", "score_2" => "scorefile_2"];
+		$fileAssetFileField = "file_2";
+		$fileAssetTitleField = "title_2";
+
+		$dryRun = !in_array(strtolower(trim((string)$dryRun)), ["0", "false", "no", "n", "off"], true);
+		$limit = (int)$limit;
+
+		if (!$instanceId || !is_numeric($instanceId)) {
+			echo "need an instance id\n";
+			echo "usage: php index.php admin remapMadisonElevatorAssets <instanceId> [dryRun=true] [limit=0]\n";
+			return;
+		}
+
+		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
+		if (!$this->instance) {
+			echo "invalid instance id\n";
+			return;
+		}
+
+		$this->load->model("asset_model");
+		$this->load->model("asset_template");
+
+		$collectionIds = [];
+		foreach ($this->instance->getCollections() as $collection) {
+			$collectionIds[] = $collection->getId();
+		}
+		if (!$collectionIds) {
+			echo "instance has no collections\n";
+			return;
+		}
+
+		$template = $this->asset_template->getTemplate($setTemplateId);
+		if (!$template) {
+			echo "could not load template " . $setTemplateId . "\n";
+			return;
+		}
+		foreach ($fieldMap as $sourceField => $targetField) {
+			if (!isset($template->widgetArray[$targetField])) {
+				echo "template " . $setTemplateId . " has no field '" . $targetField . "' - it will be silently dropped on save. Aborting.\n";
+				return;
+			}
+			if (get_class($template->widgetArray[$targetField]) !== "Upload") {
+				echo "field '" . $targetField . "' is a " . get_class($template->widgetArray[$targetField]) . ", expected Upload. Aborting.\n";
+				return;
+			}
+		}
+
+		echo ($dryRun ? "DRY RUN" : "LIVE RUN") . " - instance " . $instanceId . ", template " . $setTemplateId . "\n\n";
+
+		$qb = $this->doctrine->em->createQueryBuilder();
+		$qb->from("Entity\Asset", 'a')
+			->select("a")
+			->where("a.assetId IS NOT NULL")
+			->andWhere("a.templateId = :templateId")
+			->andWhere("a.revisionSource IS NULL")
+			->andWhere("a.deleted = FALSE OR a.deleted IS NULL")
+			->andWhere("a.collectionId IN (:collections)")
+			->setParameter("templateId", $setTemplateId)
+			->setParameter("collections", $collectionIds)
+			->orderBy("a.id", "asc");
+
+		if ($limit > 0) {
+			$qb->setMaxResults($limit);
+		}
+
+		$stats = [
+			"assetsScanned" => 0,
+			"assetsWithReferences" => 0,
+			"assetsChanged" => 0,
+			"assetsSkippedUnresolved" => 0,
+			"assetsSaveFailed" => 0,
+			"referencesSeen" => 0,
+			"filesMapped" => 0,
+			"relatedAssetMissing" => 0,
+			"relatedAssetDeleted" => 0,
+			"relatedAssetWrongTemplate" => 0,
+			"relatedAssetNoFile" => 0,
+			"relatedAssetNoTitle" => 0,
+			"targetFieldAlreadyPopulated" => 0,
+			"fileInOtherCollection" => 0,
+		];
+		$perField = [];
+		foreach ($fieldMap as $sourceField => $targetField) {
+			$perField[$sourceField] = ["references" => 0, "mapped" => 0, "unresolved" => 0];
+		}
+
+		$assetRepository = $this->doctrine->em->getRepository("Entity\Asset");
+		$result = $qb->getQuery()->toIterable();
+
+		foreach ($result as $record) {
+			$stats["assetsScanned"]++;
+			$objectId = $record->getAssetId();
+			$widgets = $record->getWidgets();
+			$setCollectionId = $record->getCollectionId();
+
+			$hasReferences = false;
+			foreach ($fieldMap as $sourceField => $targetField) {
+				if (!empty($widgets[$sourceField])) {
+					$hasReferences = true;
+				}
+			}
+			if (!$hasReferences) {
+				$this->doctrine->em->clear();
+				continue;
+			}
+			$stats["assetsWithReferences"]++;
+
+			// field => list of new upload entries; only fields that fully resolved get written
+			$plannedEntries = [];
+			$assetHadFailure = false;
+
+			foreach ($fieldMap as $sourceField => $targetField) {
+				if (empty($widgets[$sourceField]) || !is_array($widgets[$sourceField])) {
+					continue;
+				}
+
+				if (!empty($widgets[$targetField])) {
+					$stats["targetFieldAlreadyPopulated"]++;
+					echo "[WARN] " . $objectId . " - " . $targetField . " already has " . count($widgets[$targetField]) . " entries, appending\n";
+				}
+
+				$resolved = [];
+				$fieldFailed = false;
+
+				foreach ($widgets[$sourceField] as $reference) {
+					if (!is_array($reference) || empty($reference["targetAssetId"])) {
+						continue;
+					}
+					$stats["referencesSeen"]++;
+					$perField[$sourceField]["references"]++;
+					$relatedId = $reference["targetAssetId"];
+
+					$relatedRecord = $assetRepository->findOneBy(["assetId" => $relatedId]);
+					if (!$relatedRecord) {
+						echo "[MISS] " . $objectId . " - " . $sourceField . " -> " . $relatedId . " not found\n";
+						$stats["relatedAssetMissing"]++;
+						$fieldFailed = true;
+						continue;
+					}
+					if ($relatedRecord->getDeleted()) {
+						echo "[MISS] " . $objectId . " - " . $sourceField . " -> " . $relatedId . " is deleted\n";
+						$stats["relatedAssetDeleted"]++;
+						$fieldFailed = true;
+						continue;
+					}
+					if ((int)$relatedRecord->getTemplateId() !== $fileTemplateId) {
+						echo "[MISS] " . $objectId . " - " . $sourceField . " -> " . $relatedId . " is template " . $relatedRecord->getTemplateId() . ", expected " . $fileTemplateId . "\n";
+						$stats["relatedAssetWrongTemplate"]++;
+						$fieldFailed = true;
+						continue;
+					}
+
+					$relatedWidgets = $relatedRecord->getWidgets();
+					$fileEntry = null;
+					if (!empty($relatedWidgets[$fileAssetFileField]) && is_array($relatedWidgets[$fileAssetFileField])) {
+						foreach ($relatedWidgets[$fileAssetFileField] as $candidate) {
+							if (is_array($candidate) && !empty($candidate["fileId"]) && !empty($candidate["fileType"])) {
+								$fileEntry = $candidate;
+								break;
+							}
+						}
+					}
+					if (!$fileEntry) {
+						echo "[MISS] " . $objectId . " - " . $sourceField . " -> " . $relatedId . " has no usable " . $fileAssetFileField . "\n";
+						$stats["relatedAssetNoFile"]++;
+						$fieldFailed = true;
+						continue;
+					}
+
+					$title = $this->extractFirstFieldContents($relatedWidgets, $fileAssetTitleField);
+					if ($title === null) {
+						$stats["relatedAssetNoTitle"]++;
+						// fall back to whatever description the file already carried
+						$title = isset($fileEntry["fileDescription"]) ? $fileEntry["fileDescription"] : "";
+					}
+
+					if ((int)$relatedRecord->getCollectionId() !== (int)$setCollectionId) {
+						$stats["fileInOtherCollection"]++;
+					}
+
+					$resolved[] = [
+						"fileId" => $fileEntry["fileId"],
+						"fileType" => $fileEntry["fileType"],
+						"fileDescription" => $title,
+						"isPrimary" => false,
+					];
+
+					echo "[MAP ] " . $objectId . " - " . $sourceField . " -> " . $targetField . " : " . $fileEntry["fileId"] . " (" . $fileEntry["fileType"] . ") \"" . $title . "\"\n";
+					$stats["filesMapped"]++;
+					$perField[$sourceField]["mapped"]++;
+				}
+
+				if ($fieldFailed) {
+					$perField[$sourceField]["unresolved"]++;
+					$assetHadFailure = true;
+					continue;
+				}
+				if ($resolved) {
+					$plannedEntries[$sourceField] = ["target" => $targetField, "entries" => $resolved];
+				}
+			}
+
+			if ($assetHadFailure) {
+				// leave the whole asset alone so nothing gets half-migrated
+				echo "[SKIP] " . $objectId . " - unresolved references, leaving untouched\n";
+				$stats["assetsSkippedUnresolved"]++;
+				$this->doctrine->em->clear();
+				continue;
+			}
+
+			if (!$plannedEntries) {
+				$this->doctrine->em->clear();
+				continue;
+			}
+
+			if ($dryRun) {
+				$stats["assetsChanged"]++;
+				$this->doctrine->em->clear();
+				continue;
+			}
+
+			$asset = new Asset_model();
+			if (!$asset->loadAssetFromRecord($record)) {
+				echo "[FAIL] " . $objectId . " - could not hydrate asset\n";
+				$stats["assetsSaveFailed"]++;
+				$this->doctrine->em->clear();
+				continue;
+			}
+
+			$json = $asset->getAsArray();
+			foreach ($plannedEntries as $sourceField => $plan) {
+				$existing = (!empty($json[$plan["target"]]) && is_array($json[$plan["target"]])) ? $json[$plan["target"]] : [];
+				$json[$plan["target"]] = array_merge($existing, $plan["entries"]);
+				unset($json[$sourceField]);
+			}
+
+			try {
+				$asset->loadWidgetsFromArray($json);
+				$asset->save();
+				echo "[SAVE] " . $objectId . "\n";
+				$stats["assetsChanged"]++;
+			} catch (Exception $e) {
+				echo "[FAIL] " . $objectId . " - " . $e->getMessage() . "\n";
+				$this->logging->logError("remapMadisonElevatorAssets", $objectId . ": " . $e->getMessage());
+				$stats["assetsSaveFailed"]++;
+			}
+
+			unset($asset);
+			$this->doctrine->em->clear();
+			if ($stats["assetsScanned"] % 100 == 0) {
+				gc_collect_cycles();
+			}
+		}
+
+		echo "\n=== " . ($dryRun ? "DRY RUN SUMMARY (nothing was written)" : "SUMMARY") . " ===\n";
+		foreach ($stats as $key => $value) {
+			echo str_pad($key, 32) . $value . "\n";
+		}
+		echo "\n--- per field ---\n";
+		foreach ($perField as $sourceField => $counts) {
+			echo $sourceField . " -> " . $fieldMap[$sourceField] . ": " . $counts["references"] . " references, " . $counts["mapped"] . " mappable, " . $counts["unresolved"] . " fields blocked\n";
+		}
+		if ($dryRun) {
+			echo "\nRe-run with dryRun=false to apply.\n";
+		}
+	}
+
+	private function extractFirstFieldContents($widgets, $fieldName) {
+		if (empty($widgets[$fieldName]) || !is_array($widgets[$fieldName])) {
+			return null;
+		}
+		foreach ($widgets[$fieldName] as $entry) {
+			if (is_array($entry) && isset($entry["fieldContents"]) && is_string($entry["fieldContents"]) && trim($entry["fieldContents"]) !== "") {
+				return trim($entry["fieldContents"]);
+			}
+		}
+		return null;
+	}
+
 	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null, $debugMode = false) {
 
 		// override path to config on web host
@@ -29,7 +322,7 @@ class admin extends Admin_Controller {
 			return;
 		}
 		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-		if(!$this->instance) {
+		if (!$this->instance) {
 			echo "invalid instance id\n";
 			return;
 		}
@@ -43,7 +336,7 @@ class admin extends Admin_Controller {
 			->andWhere("a.assetId IS NOT NULL")
 			->orderby("a.id", "desc");
 		$qb->andWhere("a.collectionId = ?1");
-		if($offsetAssetId) {
+		if ($offsetAssetId) {
 			$qb->andWhere("a.id < ?2");
 			$qb->setParameter(2, $offsetAssetId);
 		}
@@ -81,7 +374,7 @@ class admin extends Admin_Controller {
 		}
 
 		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-		if(!$this->instance) {
+		if (!$this->instance) {
 			echo "invalid instance id\n";
 			return;
 		}
@@ -98,7 +391,7 @@ class admin extends Admin_Controller {
 			->setParameter(1, $assetId);
 
 		$entry = $qb->getQuery()->getOneOrNullResult();
-		if(!$entry) {
+		if (!$entry) {
 			echo "Asset not found: " . $assetId . "\n";
 			return;
 		}
@@ -139,10 +432,9 @@ class admin extends Admin_Controller {
 
 
 				echo "Requesting Alt Text\n";
-				if($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
+				if ($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
 					$fileHandler->generateAltText($debugMode);
-				}
-				else {
+				} else {
 					echo "File not ready for Alt Text generation\n";
 				}
 
@@ -260,7 +552,7 @@ class admin extends Admin_Controller {
 
 
 		$count = $startValue;
-		foreach($result as $entry) {
+		foreach ($result as $entry) {
 			$assetModel = new asset_model();
 			$searchModel = new search_model();
 			// $before = microtime(true);
@@ -336,7 +628,7 @@ class admin extends Admin_Controller {
 
 		$count = $startValue;
 		$searchModel = new search_model();
-		foreach($result as $entry) {
+		foreach ($result as $entry) {
 			$assetModel = new asset_model();
 			// $searchModel = new search_model();
 			// $before = microtime(true);
@@ -523,8 +815,8 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		$countStart = $skip;
-		foreach($assets as $assetRecord) {
-			if(!$assetRecord->getAssetId()) {
+		foreach ($assets as $assetRecord) {
+			if (!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
@@ -575,8 +867,8 @@ class admin extends Admin_Controller {
 
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
-		foreach($result as $entry) {
-			if($entry->getAssetId() === NULL) {
+		foreach ($result as $entry) {
+			if ($entry->getAssetId() === NULL) {
 				continue;
 			}
 			$asset = new Asset_model();
@@ -788,8 +1080,8 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_template");
 		$this->load->model("search_model");
 		$countStart = $skip;
-		foreach($assets as $assetRecord) {
-			if(!$assetRecord->getAssetId()) {
+		foreach ($assets as $assetRecord) {
+			if (!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
