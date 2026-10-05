@@ -651,6 +651,8 @@ class Permissions extends Instance_Controller {
 
 
 	public function editUser($userId = null) {
+		$this->abortUnlessAuthed();
+
 		if(!$userId) {
 			instance_redirect("/");
 		}
@@ -682,9 +684,7 @@ class Permissions extends Instance_Controller {
 		// 	return;
 		// }
 
-		$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION,$this->instance);
-
-		if($accessLevel < PERM_ADMIN && $user->getCreatedBy() != $this->user_model->user && $user->getId() != $this->user_model->user->getId()) {
+		if(!$this->canEditUser($user)) {
 			$this->logging->logError("editUser", "User " . $this->user_model->user->getId() . " tried to edit" . $userId);
 			instance_redirect("errorHandler/error/noPermission");
 		}
@@ -770,8 +770,17 @@ class Permissions extends Instance_Controller {
 	{
 		// TODO: manually clean up permission groups
 		//
+		$this->abortUnlessAuthed();
+
 		if(is_numeric($this->input->post("userId"))) {
 			$user = $this->doctrine->em->find("Entity\User", $this->input->post("userId"));
+			if($user === null) {
+				show_404();
+			}
+			if(!$this->canEditUser($user)) {
+				$this->logging->logError("removeUser", "User " . $this->user_model->user->getId() . " tried to delete user " . $user->getId());
+				instance_redirect("errorHandler/error/noPermission");
+			}
 
 			$results = $this->doctrine->em->getRepository("Entity\Log")->findBy(["user"=>$user]);
 			foreach($results as $result) {
@@ -789,14 +798,27 @@ class Permissions extends Instance_Controller {
 
 	public function saveUser()
 	{
+		$this->abortUnlessAuthed();
+
 		if(is_numeric($this->input->post("userId"))) {
 			if($this->config->item('enableCaching')) {
 				$this->userCache->delete($this->input->post("userId"));
 			}
 			$user = $this->doctrine->em->find("Entity\User", $this->input->post("userId"));
+			if($user === null) {
+				show_404();
+			}
+			if(!$this->canEditUser($user)) {
+				$this->logging->logError("saveUser", "User " . $this->user_model->user->getId() . " tried to edit user " . $user->getId());
+				instance_redirect("errorHandler/error/noPermission");
+			}
 			$this->template->content = "User Updated.";
 		}
 		else {
+			if(!$this->isCurrentUserAdmin()) {
+				$this->logging->logError("saveUser", "User " . $this->user_model->user->getId() . " tried to create a user");
+				instance_redirect("errorHandler/error/noPermission");
+			}
 			$user = $this->doctrine->em->getRepository("Entity\User")->findBy(["username"=>$this->input->post("username"), "userType"=>"Local"]);
 			if($user && count($user) >0){
 				$this->template->content = "Username not available, please go back and try again.";
@@ -818,13 +840,6 @@ class Permissions extends Instance_Controller {
 		if($this->input->post("password") != "dontchangeme") {
 			$user->setPassword(sha1($this->config->item('encryption_key').$this->input->post("password")));
 		}
-		$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION,$this->instance);
-
-		if($accessLevel < PERM_ADMIN && $user->getCreatedBy() != $this->user_model->user && $user->getId() != $this->user_model->user->getId()) {
-			$this->logging->logError("editUser", "User " . $this->user_model->user->getId() . " tried to edit" . $userId);
-			instance_redirect("errorHandler/error/noPermission");
-		}
-
 		if($this->input->post("username")) {
 			$user->setUsername($this->input->post("username"));
 		}
@@ -841,24 +856,32 @@ class Permissions extends Instance_Controller {
 		}
 
 
-		if($this->input->post("expires")) {
+		if($this->isCurrentUserAdmin() && $this->input->post("expires")) {
 			$user->setHasExpiry(($this->input->post("hasExpiry")=="On")?true:false);
 			$expiration = new \DateTime($this->input->post("expires"));
 			$user->setExpires($expiration);
 		}
 
 
-		if($this->input->post("isSuperAdmin")) {
+		if($this->user_model->getIsSuperAdmin()) {
 			$user->setIsSuperAdmin($this->input->post("isSuperAdmin")?true:false);
-		}
-		else {
-			$user->setIsSuperAdmin(false);
 		}
 		$user->setFastUpload($this->input->post("fastUpload")?true:false);
 		$this->doctrine->em->persist($user);
 		$this->doctrine->em->flush();
 
 		$this->template->publish();
+	}
+
+	private function canEditUser(Entity\User $user): bool
+	{
+		$currentUserId = $this->user_model->user->getId();
+		if($user->getIsSuperAdmin() && !$this->user_model->getIsSuperAdmin()) {
+			return false;
+		}
+		return $this->isCurrentUserAdmin()
+			|| $user->getId() === $currentUserId
+			|| $user->getCreatedBy()?->getId() === $currentUserId;
 	}
 
 	public function userAutocompleter() {
