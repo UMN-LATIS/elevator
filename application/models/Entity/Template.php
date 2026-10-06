@@ -559,4 +559,27 @@ class Template
     {
         return $this->instances;
     }
+
+    public function toArray(): array
+    {
+        $widgets = $this->getWidgets()->toArray();
+        usort($widgets, fn($a, $b) => $a->getTemplateOrder() <=> $b->getTemplateOrder());
+
+        return [
+            'id'                     => $this->getId(),
+            'name'                   => $this->getName(),
+            'createdAt'              => $this->getCreatedAt()?->format('c'),
+            'modifiedAt'             => $this->getModifiedAt()?->format('c'),
+            'showCollection'         => (bool) $this->getShowCollection(),
+            'showCollectionPosition' => (int)  $this->getCollectionPosition(),
+            'showTemplate'           => (bool) $this->getShowTemplate(),
+            'showTemplatePosition'   => (int)  $this->getTemplatePosition(),
+            'includeInSearch'        => (bool) $this->getIncludeInSearch(),
+            'indexForSearching'      => (bool) $this->getIndexForSearching(),
+            'isHidden'               => (bool) $this->getIsHidden(),
+            'templateColor'          => (int)  ($this->getTemplateColor() ?? 0),
+            'recursiveIndexDepth'    => (int)  ($this->getRecursiveIndexDepth() ?? 1),
+            'widgetArray'            => array_map(fn($w) => $w->toArray(), $widgets),
+        ];
+    }
 }

@@ -39,7 +39,7 @@
 */
 
 $route['default_controller'] = "home";
-$route['404_override'] = '';
+$route['404_override'] = 'errorHandler/notFound';
 $route['robots.txt'] = "home/robots";
 $route['Shibboleth.sso/SAML2/POST']  = "Shibboleth/localSPACS";
 

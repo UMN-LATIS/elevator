@@ -1,4 +1,8 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use Entity\Permission;
+
+if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Permissions extends Instance_Controller {
 
@@ -84,6 +88,23 @@ class Permissions extends Instance_Controller {
 		$this->template->content->view('permissions/edit', $data);
 		$this->template->publish();
 
+	}
+
+	/**
+	 * Returns every `Permission` record sorted by `level` ascending. Effectively
+	 * static reference data, which the frontend can cache aggressively.
+	 */
+	public function permissionLevels() {
+		$this->abortUnlessAuthed();
+
+		$permissionLevels = $this->doctrine->em->getRepository(Permission::class)->findAll();
+
+		// level is a string column, so "10" sorts before "5" unless we compare numerically
+		usort($permissionLevels, fn($a, $b) => (int) $a->getLevel() <=> (int) $b->getLevel());
+
+		return render_json([
+			'permissionLevels' => $permissionLevels,
+		]);
 	}
 
 	public function update()
@@ -351,13 +372,13 @@ class Permissions extends Instance_Controller {
 		//		Class, User, JobCode.
 
 		// There's probably a better way to do this separation, but this seems to make the most sense currently.
-		
+
 		$authHelper = $this->user_model->getAuthHelper();
 
 		$availablePermissions = $authHelper->authTypes;
 
 		$data["authHelper"] = $authHelper;
-		
+
 		$data['groupUser'] = $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => USER_TYPE, 'instance' => $this->instance]);
 
 		foreach($availablePermissions as $key=>$value) {
@@ -739,7 +760,7 @@ class Permissions extends Instance_Controller {
 		}
 
 		$authHelper = $this->user_model->getAuthHelper();
-		
+
 		$user = $authHelper->createUserFromRemote($umndid);
 		if(!$user) {return false;}
 		return $user->getId();

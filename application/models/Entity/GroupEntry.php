@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Table(name: 'group_entry')]
 #[ORM\Entity]
-class GroupEntry
+class GroupEntry implements \JsonSerializable
 {
     /**
      * @var string|null
@@ -59,5 +59,12 @@ class GroupEntry
     public function getId()
     {
         return $this->id;
+    }
+
+    public function jsonSerialize(): array {
+        return [
+            'id'    => $this->id,
+            'value' => $this->groupValue,
+        ];
     }
 }

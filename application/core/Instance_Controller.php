@@ -1,22 +1,23 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
 
-class Instance_Controller extends MY_Controller
-{
-    public $instance = null;
+use Entity\Instance;
+
+if (! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Instance_Controller extends MY_Controller {
+    public ?Instance $instance = null;
     public $instanceType;
     public $noRedirect = false;
     public $useUnauthenticatedTemplate;
 
-    function __construct()
-    {
+    function __construct() {
         parent::__construct();
-        
-        if($this->config->item('site_open') === FALSE)
-        {
+
+        if ($this->config->item('site_open') === FALSE) {
             show_error('Elevator is Temporarily Unavailable.');
         }
 
-        if(php_sapi_name() == 'cli') {
+        if (php_sapi_name() == 'cli') {
             $this->config->set_item("instance_name", "defaultinstance");
             return;
         }
@@ -27,53 +28,45 @@ class Instance_Controller extends MY_Controller
 
         $this->writeOutAssets();
 
-        
-        if($this->input->get('apiHandoff', TRUE)) {
-			$signedString = $this->input->get('apiHandoff');
-			$authKey = $this->input->get('authKey');
-			$timestamp = $this->input->get('timestamp');
+
+        if ($this->input->get('apiHandoff', TRUE)) {
+            $signedString = $this->input->get('apiHandoff');
+            $authKey = $this->input->get('authKey');
+            $timestamp = $this->input->get('timestamp');
             $targetObject = $this->input->get('targetObject');
 
-            $this->instance->queryHandoff = ["apiHandoff"=>$signedString, "authKey"=>$authKey, "timestamp"=>$timestamp, "targetObject"=>$targetObject];
-
-
+            $this->instance->queryHandoff = ["apiHandoff" => $signedString, "authKey" => $authKey, "timestamp" => $timestamp, "targetObject" => $targetObject];
         }
 
         $this->template->relativePath = $this->getRelativePath();
         $this->config->set_item("instance_relative", $this->getRelativePath());
         $this->config->set_item("instance_absolute", $this->getAbsolutePath());
 
-        
-        if(!$this->instance && !$this->noRedirect) {
-            if($this->config->item('missingSiteURL') != '') {
+
+        if (!$this->instance && !$this->noRedirect) {
+            if ($this->config->item('missingSiteURL') != '') {
                 redirect($this->config->item('missingSiteURL'));
-            }
-            else {
+            } else {
                 redirect("/errorHandler/error/specifyInstance");
             }
         }
-
-
-
     }
 
 
     static function setInstance($selfReference) {
-        
-        if(!isset($selfReference)) {
-            $CI =& get_instance();
-        }
-        else {
+
+        if (!isset($selfReference)) {
+            $CI = &get_instance();
+        } else {
             $CI = $selfReference;
         }
         $instanceName = $CI->config->item("instance_name");
-        if($instanceName != FALSE) {
+        if ($instanceName != FALSE) {
             $CI->instance = $CI->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
-            if(!$CI->instance && !$CI->noRedirect) {
-                if($CI->config->item('missingSiteURL') != '') {
+            if (!$CI->instance && !$CI->noRedirect) {
+                if ($CI->config->item('missingSiteURL') != '') {
                     redirect($CI->config->item('missingSiteURL'));
-                }
-                else {
+                } else {
                     redirect("/errorHandler/error/specifyInstance");
                 }
             }
@@ -82,15 +75,14 @@ class Instance_Controller extends MY_Controller
             return;
         }
 
-        if(isset($_SERVER['HTTP_HOST'])) {
+        if (isset($_SERVER['HTTP_HOST'])) {
             $subdomain_arr = $_SERVER['HTTP_HOST'];
             $instanceName = $subdomain_arr;
             $CI->instance = $CI->doctrine->em->getRepository("Entity\Instance")->findOneBy(array('domain' => $instanceName));
-            if(!$CI->instance && !$CI->noRedirect) {
-                if($CI->config->item('missingSiteURL') != '') {
-                   redirect($CI->config->item('missingSiteURL'));
-                }
-                else {
+            if (!$CI->instance && !$CI->noRedirect) {
+                if ($CI->config->item('missingSiteURL') != '') {
+                    redirect($CI->config->item('missingSiteURL'));
+                } else {
                     redirect("/errorHandler/error/specifyInstance");
                 }
             }
@@ -98,80 +90,158 @@ class Instance_Controller extends MY_Controller
 
             return;
         }
-
     }
 
     function writeOutAssets() {
-        if(!$this->instance) {
+        if (!$this->instance) {
             return;
         }
-        if($this->instance->getUseCustomHeader()) {
-            if(!file_exists("assets/instanceAssets")) {
+        if ($this->instance->getUseCustomHeader()) {
+            if (!file_exists("assets/instanceAssets")) {
                 mkdir("assets/instanceAssets");
             }
-            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".html")) {
+            if (!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".html")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".html", $this->instance->getCustomHeaderText());
             }
-            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . "_footer.html")) {
+            if (!file_exists("assets/instanceAssets/" . $this->instance->getId() . "_footer.html")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . "_footer.html", $this->instance->getCustomFooterText());
             }
         }
 
-        if($this->instance->getUseCustomCSS()) {
-            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".css")) {
+        if ($this->instance->getUseCustomCSS()) {
+            if (!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".css")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".css", $this->instance->getCustomHeaderCSS());
             }
         }
 
-        if($this->instance->getUseHeaderLogo()) {
-            if(!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".png")) {
+        if ($this->instance->getUseHeaderLogo()) {
+            if (!file_exists("assets/instanceAssets/" . $this->instance->getId() . ".png")) {
                 file_put_contents("assets/instanceAssets/" . $this->instance->getId() . ".png", $this->instance->getCustomHeaderImage());
             }
         }
-
     }
 
     function getAbsolutePath() {
-        if($this->instanceType == "subdirectory" && $this->instance) {
+        if ($this->instanceType == "subdirectory" && $this->instance) {
             return site_url($this->instance->getDomain() . "/");
-        }
-        else {
+        } else {
             return site_url();
         }
     }
 
     public function getRelativePath() {
-        if($this->instanceType == "subdirectory" && $this->instance) {
-            return "/". $this->instance->getDomain() . "/";
-        }
-        else {
+        if ($this->instanceType == "subdirectory" && $this->instance) {
+            return "/" . $this->instance->getDomain() . "/";
+        } else {
             return "/";
         }
-
     }
 
     protected function isUsingVueUI() {
-        if($this->session->userdata('forceOldUI')) {
+        if ($this->session->userdata('forceOldUI')) {
             return false;
         }
-        return $this->session->userdata('useVueUI') || ($this->instance && $this->instance->getInterfaceVersion() == 1); }
+        return $this->session->userdata('useVueUI') || ($this->instance && $this->instance->getInterfaceVersion() == 1);
+    }
 
 
-    protected function isCurrentUserAuthed(): bool
-    {
+    protected function isCurrentUserAuthed(): bool {
         return $this->user_model?->userLoaded ?? false;
     }
 
-    protected function isCurrentUserAdmin(): bool
-    {
+    protected function isCurrentUserAdmin(): bool {
 
         $accessLevel = $this->user_model?->getAccessLevel('instance', $this->instance) ?? 0;
         return  $accessLevel >= PERM_ADMIN;
     }
 
+    protected function isCurrentUserTemplateEditor(): bool {
+        $accessLevel = $this->user_model?->getAccessLevel('instance', $this->instance) ?? 0;
+        return  $accessLevel >= PERM_EDIT_TEMPLATES;
+    }
+
+    /**
+     * Abort a JSON request with 401 if the session user isn't authenticated.
+     * Use at the top of controller actions that require authentication.
+     */
     protected function abortUnlessAuthed(): void {
         if (!$this->isCurrentUserAuthed()) {
             abort_json(['error' => 'Unauthorized'], 401);
         }
+    }
+
+    /**
+     * Abort a JSON request with 401/403 unless the session user is an
+     * instance admin. Implies `abortUnlessAuthed()`.
+     */
+    protected function abortUnlessAdmin(): void {
+        $this->abortUnlessAuthed();
+        if (!$this->isCurrentUserAdmin()) {
+            abort_json(['error' => 'Forbidden'], 403);
+        }
+    }
+
+    /**
+     * Abort a JSON request with 401/403 unless the session user can edit
+     * templates (instance admin or PERM_EDIT_TEMPLATES). Implies `abortUnlessAuthed()`.
+     */
+    protected function abortUnlessTemplateEditor(): void {
+        $this->abortUnlessAuthed();
+        if (!$this->isCurrentUserTemplateEditor()) {
+            abort_json(['error' => 'Forbidden'], 403);
+        }
+    }
+
+    /**
+     * Read a form-encoded request body regardless of HTTP verb.
+     *
+     * POST populates $_POST, but PUT/PATCH/DELETE bodies live unparsed
+     * in php://input.
+     * Clients MUST send "application/x-www-form-urlencoded".
+     */
+    protected function requestBody(): array {
+        $method = $this->input->server('REQUEST_METHOD');
+        return ($method === 'POST'
+            ? $this->input->post()
+            : $this->input->input_stream()) ?? [];
+    }
+
+    /**
+     * Find a remote user within the local DB by their remote id
+     * (e.g. username, umndid). If not found, creates a new
+     * user in the local DB with the remoteUserId set.
+     *
+     * @throws RemoteUserNotFoundException if the user cannot be found or
+     *   provisioned.
+     * @return Entity\User the user record matching the remote id
+     */
+    protected function firstOrProvisionRemoteUser(string $remoteUserId): Entity\User {
+        // findById($id, true) builds a new unsaved Entity\User with the
+        // given remote id when nothing is found.
+        /** @var ?Entity\User $remoteUser */
+        $remoteUser = $this->user_model->getAuthHelper()
+            ->findById($remoteUserId, true)[0] ?? null;
+
+        if ($remoteUser === null) {
+            throw new RemoteUserNotFoundException($remoteUserId);
+        }
+
+        /** @var ?Entity\User $existingUser */
+        $existingUser = $this->doctrine->em->getRepository(Entity\User::class)
+            ->findOneBy(["username" => $remoteUser->getUsername()]);
+
+        // prefer an existing local user over the new unsaved record
+        if ($existingUser !== null) {
+            return $existingUser;
+        }
+
+        $remoteUser->setUserType("Remote");
+        $remoteUser->setCreatedAt(new \DateTime("now"));
+        $remoteUser->setInstance($this->instance);
+
+        $this->doctrine->em->persist($remoteUser);
+        $this->doctrine->em->flush();
+
+        return $remoteUser;
     }
 }

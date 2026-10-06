@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(name: 0, columns: ['group_type'])]
 #[ORM\Index(name: 1, columns: ['group_value'])]
 #[ORM\Entity]
-class InstanceGroup
+class InstanceGroup implements \JsonSerializable
 {
     /**
      * @var string|null
@@ -319,5 +319,15 @@ class InstanceGroup
     public function getGroupValues()
     {
         return $this->group_values;
+    }
+
+    public function jsonSerialize(): array {
+        return [
+            'id'         => $this->id,
+            'type'       => $this->group_type,
+            'label'      => $this->group_label,
+            // n+1 query, but prob fine at our scale
+            'entries_count' => $this->group_values->count(),
+        ];
     }
 }

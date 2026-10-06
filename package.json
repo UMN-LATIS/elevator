@@ -1,15 +1,20 @@
 {
+  "name": "elevator",
   "scripts": {
+    "test": "node --env-file=.env ./node_modules/.bin/playwright test",
     "dev": "npm run development",
-    "docs:build": "cd docs; vuepress build",
-    "docs:dev": "cd docs; vuepress dev",
-    "docs:deploy": "npm run docs:build && npx gh-pages -d docs/.vuepress/dist",
     "ui:build": "(cd assets/elevator-ui && yarn build)",
     "ui:build:watch": "(cd assets/elevator-ui && yarn build:watch)",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "test:api": "node --env-file=.env node_modules/.bin/playwright test",
+    "test:api:ui": "node --env-file=.env node_modules/.bin/playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^22.19.13",
+    "dotenv": "^17.3.1"
   },
   "dependencies": {
-    "@vuepress/plugin-blog": "^1.9.4",
     "del": "^8.0.0",
     "gulp": "^5.0.0",
     "gulp-changed": "^5.0.2",
@@ -18,8 +23,6 @@
     "gulp-rename": "^2.0.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
-    "gulp-uglifycss": "^1.1.0",
-    "vue": "^2.7.16",
-    "vuepress": "^1.9.10"
+    "gulp-uglifycss": "^1.1.0"
   }
 }

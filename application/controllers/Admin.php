@@ -12,6 +12,36 @@ class admin extends Admin_Controller {
 		}
 	}
 
+
+	public function createdSignedLinksForOriginals($filename) { 
+		$fp = fopen($filename, "r");
+		$haveSomeGlacierFiles = false;
+		while (($line = fgets($fp)) !== false) {
+				$line = trim($line);
+				if ($line) {
+						$fileHandler = $this->filehandler_router->getHandledObject($line);
+						if ($fileHandler) {
+								if($fileHandler->sourceFile->isArchived()) {
+
+										echo "File is archived, initiating restore: " . $line. "\n";
+										$fileHandler->sourceFile->restoreFromArchive();
+										$haveSomeGlacierFiles = true;
+								}
+								else  {
+									echo $fileHandler->sourceFile->getProtectedURLForFile() . "\n";
+								}
+						} else {
+								echo "no handler for " . $line . "\n";
+						}
+				}
+		}
+		if($haveSomeGlacierFiles) {
+				echo "Some files were in Glacier, you may need to run this again in a few hours to get signed links for those files\n";
+		}
+
+	}
+
+
 	public function generateAccessibilityMaterialForCollectionInInstance($collectionId, $instanceId, $offsetAssetId = null, $debugMode = false) {
 
 		// override path to config on web host
@@ -222,8 +252,13 @@ class admin extends Admin_Controller {
 		foreach ($matchArray["searchResults"] as $match) {
 			echo $match . "\n";
 			$asset = new Asset_model($match);
-
-			$this->search_model->remove($asset);
+			if($asset->getGlobalValue("deleted") == true) {
+				$this->search_model->remove($asset);
+			}
+			else {
+				continue;
+			}
+			
 			// $params['index'] = $this->config->item('elasticIndex');
 			// $params['id']    = $match;
 			// if(!$params['id'] || strlen($params['id']<5)) {

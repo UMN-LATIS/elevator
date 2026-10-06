@@ -33,20 +33,24 @@ A select dropdown.  The items in the drop down are defined in the template, usin
 
 The “more text” is the text that will be displayed to the viewer of an asset.  The “option” entry is what will be displayed to the person adding the asset.
 
-The “more text” section can be omitted.    Sample JSON is displayed when adding this field to a template.
+The “more text” section can be omitted.    Choosing this field type fills **Field data (JSON)** with sample JSON to edit.
 
-## Multi-Select
- A multiselect is a cascading select.  For example, you may first select a country, then a state, then a city.
+::: warning Select's sample JSON
+The sample holds two examples separated by a line reading `alt:`: a plain list of options, and options with "more text". Until you keep one example and delete the other along with the `alt:` line, the editor shows **Invalid JSON** and won't save the template.
+:::
 
-These are complicated structures and it’s recommended that you define the JSON for them using a JSON editor.  Sample JSON is displayed when selecting this field in the template.
+## Cascade Select
+ A cascade select is a series of linked dropdowns.  For example, you may first select a country, then a state, then a city.
+
+These are complicated structures and it’s recommended that you define the JSON for them using a JSON editor.  Choosing this field type fills **Field data (JSON)** with sample JSON to edit.
 
 ## Tag List
 A tag list is a comma separated set of tags. Each tag will automatically be linked to a search for that term.
 
-## CheckBox
+## Checkbox
 A simple on/off checkbox
 
-## Related Assets
+## Related Asset
 This field allows you to link or embed other assets within one asset.  For example, you may create a “person” template for defining content creators, and then nest those records within records describing their content.  This type of field can be customized using some additional JSON, as follows.
 
 ``` js
@@ -120,7 +124,7 @@ A file-attachment field.  This allows users to upload a file their computer.  JS
     "enableAnnotation":false,
     "forceTiling": false,
     "interactiveTranscript": false,
-    "rotationValue": 0
+    "rotationValue": 0,
     "enableMultilayer": false
 }
 ```

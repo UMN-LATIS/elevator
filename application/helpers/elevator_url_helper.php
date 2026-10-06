@@ -112,13 +112,16 @@ function getFinalURL($url)
 }
 
 
-function render_json($source, $status = 200)
+function render_json($source, $status = 200, $headers = [])
 {
 	$CI = &get_instance();
-	return $CI->output
+	$output = $CI->output
 		->set_content_type('application/json')
-		->set_status_header($status)
-		->set_output(json_encode($source));
+		->set_status_header($status);
+	foreach ($headers as $key => $value) {
+		$output->set_header("$key: $value");
+	}
+	return $output->set_output(json_encode($source));
 }
 
 

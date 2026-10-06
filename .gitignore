@@ -17,7 +17,10 @@ assets/instanceAssets/*
 .tags_sorted_by_file
 .DS_Store
 .phpintel
-docs/.vuepress/dist
+docs/.vitepress/dist
+docs/.vitepress/cache
+# node_modules/* above matches only the repo root, so without this line docs/node_modules shows up as untracked
+docs/node_modules
 .htaccess
 .vscode
 .env
@@ -27,3 +30,8 @@ assets/elevator-ui/*
 !assets/elevator-ui/dist
 certs
 REVISION
+
+# Playwright output
+/test-results/
+/playwright-report/
+scripts/elastic_setup.sh

@@ -160,6 +160,7 @@ class Home extends Instance_Controller {
 		$headerData["userDisplayName"] = null;
 		$headerData["userIsAdmin"] = false;
 		$headerData["userIsSuperAdmin"] = false;
+		$headerData["userCanEditTemplates"] = false;
 		$headerData["instanceName"] = $this->instance->getName();
 		$headerData["instanceId"] = $this->instance->getId();
 		$headerData["instanceHasLogo"] = $this->instance->getUseHeaderLogo();
@@ -168,6 +169,7 @@ class Home extends Instance_Controller {
 		$headerData["instanceShowTemplateInSearchResults"] = $this->instance->getShowTemplateInSearchResults();
 		$headerData["featuredAssetId"] = $this->instance->getFeaturedAsset();
 		$headerData["featuredAssetText"] = $this->instance->getFeaturedAssetText();
+		$headerData['showThumbnailDescription'] = $this->instance->getShowThumbnailDescription();
 
 		// load prefs for a logged in user
 		if ($this->user_model->userLoaded && !$this->user_model->assetOverride) {
@@ -206,6 +208,9 @@ class Home extends Instance_Controller {
 			}
 			if ($this->user_model->getIsSuperAdmin()) {
 				$headerData["userIsSuperAdmin"] = true;
+			}
+			if ($this->user_model->canEditTemplates()) {
+				$headerData["userCanEditTemplates"] = true;
 			}
 
 		}
@@ -259,13 +264,24 @@ class Home extends Instance_Controller {
 		// useCustomHeader also controls whether or not to show the custom footer
 		$headerData['customHeaderMode'] = $this->instance->getUseCustomHeader();
 		if ($this->instance->getUseCustomHeader()) {
-			$headerData['customHeader'] = $this->instance->getCustomHeaderText();
-			$headerData['customFooter'] = $this->instance->getCustomFooterText();
+			$headerData['customHeaderText'] = $this->instance->getCustomHeaderText();
+			$headerData['customFooterText'] = $this->instance->getCustomFooterText();
 		}
 
 		$headerData['useCustomCSS'] = $this->instance->getUseCustomCSS() ?? false;
+		$headerData['customHeaderCSS'] = $this->instance->getCustomHeaderCSS() ?? "";
 
 		$headerData['useVoyagerViewer'] = $this->instance->getUseVoyagerViewer() ?? false;
+
+		$headerData['showChildCollections'] = $this->instance->getShowChildCollections();
+
+		$headerData['showAssetLastModifiedDate'] = $this->instance->getShowAssetLastModifiedDate();
+
+		$headerData['theming'] = [
+			'availableThemes' => $this->instance->getAvailableThemes(),
+			'enabled' => $this->instance->getEnableThemes(),
+			'defaultTheme' => $this->instance->getDefaultTheme(),
+		];
 
 		return render_json($headerData);
 	}

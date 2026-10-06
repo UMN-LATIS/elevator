@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class Instance
 {
-    /** 
+    /**
      * Elevator
      * @var array|null
      */
@@ -262,6 +262,14 @@ class Instance
      */
     #[ORM\Column(name: 'availableThemes', type: 'json', nullable: true, options: ['jsonb' => true])]
     private $availableThemes;
+
+    /**
+     * Instance settings for the new ui in json blob
+     * This replaces the old setting-per-column approach.
+     * @var array<string, mixed>|null
+     */
+    #[ORM\Column(name: 'additionalSettings', type: 'json', nullable: true, options: ['jsonb' => true])]
+    private $additionalSettings = [];
 
     /**
      * @var int
@@ -1297,6 +1305,86 @@ class Instance
     public function getAvailableThemes()
     {
         return $this->availableThemes;
+    }
+
+    /**
+     * Get all additional settings, filling in defaults for any keys the
+     * stored blob is missing.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAdditionalSettings(): array
+    {
+        $defaults = [
+            'showChildCollections' => true,
+            'showThumbnailDescription' => false,
+            'showAssetLastModifiedDate' => false,
+        ];
+
+        return array_merge($defaults, $this->additionalSettings ?? []);
+    }
+
+    /**
+     * Whether the collection page lists a collection's child collections.
+     */
+    public function getShowChildCollections(): bool
+    {
+        return (bool) $this->getAdditionalSettings()['showChildCollections'];
+    }
+
+    /**
+     * Write showChildCollections into the stored blob, preserving sibling keys.
+     */
+    public function setShowChildCollections(bool $value): self
+    {
+        $this->additionalSettings = array_merge(
+            $this->additionalSettings ?? [],
+            ['showChildCollections' => $value]
+        );
+
+        return $this;
+    }
+
+    /**
+     * Whether an asset's last-modified date appears alongside it.
+     */
+    public function getShowAssetLastModifiedDate(): bool
+    {
+        return (bool) $this->getAdditionalSettings()['showAssetLastModifiedDate'];
+    }
+
+    /**
+     * Write showAssetLastModifiedDate into the stored blob, preserving sibling keys.
+     */
+    public function setShowAssetLastModifiedDate(bool $value): self
+    {
+        $this->additionalSettings = array_merge(
+            $this->additionalSettings ?? [],
+            ['showAssetLastModifiedDate' => $value]
+        );
+
+        return $this;
+    }
+
+    /**
+     * Whether the description text appears below an asset's thumbnail.
+     */
+    public function getShowThumbnailDescription(): bool
+    {
+        return (bool) $this->getAdditionalSettings()['showThumbnailDescription'];
+    }
+
+    /**
+     * Write showThumbnailDescription into the stored blob, preserving sibling keys.
+     */
+    public function setShowThumbnailDescription(bool $value): self
+    {
+        $this->additionalSettings = array_merge(
+            $this->additionalSettings ?? [],
+            ['showThumbnailDescription' => $value]
+        );
+
+        return $this;
     }
 
     /**

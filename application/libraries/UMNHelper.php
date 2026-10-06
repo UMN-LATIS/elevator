@@ -10,7 +10,21 @@
 require_once("AuthHelper.php");
 class UMNHelper extends AuthHelper
 {
-	public $authTypes = [UNIT_TYPE=>["name"=>UNIT_TYPE, "label"=>UNIT_TYPE], JOB_TYPE=>["name"=>JOB_TYPE, "label"=>"Job Code"], COURSE_TYPE=>["name"=>COURSE_TYPE, "label"=>COURSE_TYPE], DEPT_COURSE_TYPE=>["name"=>DEPT_COURSE_TYPE, "label"=>DEPT_COURSE_TYPE, "helpText"=>"Use % for wildcard, like DEPT.NUMBER% to include all sections."], STATUS_TYPE=>["name"=>STATUS_TYPE, "label"=>"Student Status"], EMPLOYEE_TYPE=>["name"=>EMPLOYEE_TYPE, "label"=>"Employee Type"]];
+  public $authTypes = [
+    UNIT_TYPE => [
+      "name" => UNIT_TYPE,
+      "label" => UNIT_TYPE
+    ],
+    JOB_TYPE => ["name" => JOB_TYPE, "label" => "Job Code"],
+    COURSE_TYPE => ["name" => COURSE_TYPE, "label" => COURSE_TYPE],
+    DEPT_COURSE_TYPE => [
+      "name" => DEPT_COURSE_TYPE,
+      "label" => DEPT_COURSE_TYPE,
+      "helpText" => "Use % for wildcard, like DEPT.NUMBER% to include all sections."
+    ],
+    STATUS_TYPE => ["name" => STATUS_TYPE, "label" => "Student Status"],
+    EMPLOYEE_TYPE => ["name" => EMPLOYEE_TYPE, "label" => "Employee Type"]
+  ];
 
 	public function __construct()
 	{
@@ -55,7 +69,7 @@ class UMNHelper extends AuthHelper
 			$userAuthField = $this->CI->session->userdata('userAuthField');
 			return $userAuthField;
 		}
-		
+
 		if($map) {
 			return $map["uniqueIdentifier"];
 		}
@@ -68,7 +82,7 @@ class UMNHelper extends AuthHelper
 
 	public function autocompleteUsername($partialUsername) {
 		$CI =& get_instance();
-		
+
 		$outputArray = parent::autocompleteUsername($partialUsername);
 
 
@@ -115,7 +129,7 @@ class UMNHelper extends AuthHelper
 		$map = $CI->session->userdata("userAttributesCache");
 
 		if (isset($map) && is_array($map)) {
-			
+
 			$emplId = $map['emplId'];
 			if($emplId) {
 				$enrollment = $this->fetchBandaidResult("/api/enrollment/student/" . $emplId);
@@ -125,17 +139,17 @@ class UMNHelper extends AuthHelper
 						$courses[] = $entry->CLASS_NBR;
 					}
 				}
-				
+
 
 				$instructed = $this->fetchBandaidResult("/api/enrollment/instructor/" . $emplId);
 				if(is_array($instructed)) {
 					foreach($instructed as $entry) {
 						$courseName = join(".", [$entry->SUBJECT, $entry->CATALOG_NUMBER, $entry->CLASS_SECTION]);
 						$deptCoursesTaught[$courseName] = $entry->DESCRIPTION;
-						$coursesTaught[$entry->CLASS_NUMBER] = $courseName; 
+						$coursesTaught[$entry->CLASS_NUMBER] = $courseName;
 					}
 				}
-				
+
 
 				$jobs = $this->fetchBandaidResult("/api/employment/employee/" . $emplId);
 				if(is_array($jobs)) {
@@ -151,11 +165,11 @@ class UMNHelper extends AuthHelper
 					if(isset($reg->ACAD_CAREER)) {
 						$studentStatus[] = $reg->ACAD_CAREER;
 					}
-					
+
 				}
-				
-				
-				
+
+
+
 				if($map['umnRegSummary']) {
 					$regSummary = explode(";",$map['umnRegSummary']);
 					foreach($regSummary as $studentCode) {
@@ -163,7 +177,7 @@ class UMNHelper extends AuthHelper
 						if(isset($studentStatusArray[12]) && strlen($studentStatusArray[12]) == 4) {
 							$studentStatus[] = $studentStatusArray[12];
 						}
-					}	
+					}
 				}
 				if($map['eduPersonAffiliation']) {
 					$employeeType = $map['eduPersonAffiliation'];
@@ -172,7 +186,7 @@ class UMNHelper extends AuthHelper
 					}
 				}
 			}
-			
+
 		}
 		else {
 			return false;
@@ -232,7 +246,7 @@ class UMNHelper extends AuthHelper
 		return $this->findUser($key);
 	}
 
-	public function findUser($key) {		
+	public function findUser($key) {
 		$results = $this->fetchBandaidResult("/api/names/autocomplete/" . urlencode($key));
 
 		if(!is_array($results)) {
@@ -257,7 +271,7 @@ class UMNHelper extends AuthHelper
 
 
 	private function fetchBandaidResult($apiPath) {
-		
+
 		$CI =& get_instance();
 		if(!$CI->config->item('umn_bearer_token')) {
 			return [];

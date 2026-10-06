@@ -1,0 +1,60 @@
+import { test, expect } from "@playwright/test";
+import { loginUser, refreshDatabase, baseURL } from "../helpers";
+
+test.describe("collections", () => {
+  // Reset DB before suite starts so stale data from previous runs doesn't
+  // interfere (bootstrap inserts base data without truncating first).
+  test.beforeAll(() => {
+    refreshDatabase();
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await loginUser(page, "admin");
+  });
+
+  test.afterEach(() => {
+    // Ensure DB is clean even if the test fails before the in-test reset.
+    refreshDatabase();
+  });
+
+  test("db reset removes created collection", async ({ page }) => {
+    // Create a collection via the admin form endpoint.
+    // POST /{instance}/collectionManager/save — redirects to collectionManager/ on success.
+    const createResponse = await page.request.post(
+      `${baseURL()}/collectionManager/save`,
+      {
+        form: {
+          title: "Test Collection (should be reset)",
+          bucket: "",
+          bucketRegion: "",
+          S3Key: "",
+          S3Secret: "",
+          showInBrowse: "on",
+          collectionDescription: "",
+          previewImage: "",
+          parent: "0",
+        },
+      },
+    );
+    expect(createResponse.status()).toBeLessThan(400);
+
+    // Verify it exists via the admin collection manager page (session-auth HTML).
+    const beforeReset = await page.request.get(
+      `${baseURL()}/collectionManager/`,
+    );
+    expect(await beforeReset.text()).toContain(
+      "Test Collection (should be reset)",
+    );
+
+    // Reset DB.
+    refreshDatabase();
+
+    // Verify it is gone.
+    const afterReset = await page.request.get(
+      `${baseURL()}/collectionManager/`,
+    );
+    expect(await afterReset.text()).not.toContain(
+      "Test Collection (should be reset)",
+    );
+  });
+});

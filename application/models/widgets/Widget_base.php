@@ -64,6 +64,7 @@ class Widget_base extends CI_Model {
 		$widgetArray = [];
 		$widgetArray["widgetId"] = $this->fieldId;
 		$widgetArray["type"] = $this->widgetObject->getFieldType()->getName();
+		$widgetArray["fieldTypeId"] = $this->widgetObject->getFieldType()->getId();
 		$widgetArray["allowMultiple"] = $this->widgetObject->getAllowMultiple();
 		$widgetArray["attemptAutocomplete"] = $this->widgetObject->getAttemptAutocomplete();
 		$widgetArray["fieldTitle"] = $this->widgetObject->getFieldTitle();

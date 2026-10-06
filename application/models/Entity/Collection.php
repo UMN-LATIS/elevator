@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Table(name: 'collections')]
 #[ORM\Entity]
-class Collection
+class Collection implements \JsonSerializable
 {
     /**
      * Elevator addition
@@ -624,5 +624,22 @@ class Collection
     public function getInstances()
     {
         return $this->instances;
+    }
+
+    /**
+     * The list shape for the new UI. Admin-only settings (S3 config,
+     * description) are added by AdminCollections::toCollectionDetail so
+     * a stray json_encode of a collection can't leak credentials.
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id'             => $this->id,
+            // legacy rows can have a null title, the UI contract says string
+            'title'          => $this->title ?? '',
+            'parentId'       => $this->parent?->getId(),
+            'showInBrowse'   => (bool) $this->showInBrowse,
+            'previewImageId' => $this->previewImage,
+        ];
     }
 }

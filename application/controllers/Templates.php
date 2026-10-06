@@ -1,24 +1,169 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Templates extends Instance_Controller {
+use SimpleValidator as V;
+
+class Templates extends Instance_Controller
+{
 
 	public function __construct()
 	{
-
 		parent::__construct();
-		$this->template->loadCSS(['template']);
-		$accessLevel = $this->user_model->getAccessLevel("instance", $this->instance);
-		if($accessLevel<PERM_ADMIN) {
-			instance_redirect("/errorHandler/error/noPermission");
-			return;
+		$this->load->library('SimpleValidator');
+
+		$isJson = $this->isJsonRequest();
+
+		if (!$this->isCurrentUserAuthed()) {
+			return $isJson
+				? abort_json(['error' => 'Unauthorized'], 401)
+				: instance_redirect('/errorHandler/error/noPermission');
 		}
+
+		if (!$this->isCurrentUserTemplateEditor()) {
+			return $isJson
+				? abort_json(['error' => 'Forbidden'], 403)
+				: instance_redirect('/errorHandler/error/noPermission');
+		}
+
+		if (!$isJson) {
+			$this->template->loadCSS(['template']);
+		}
+	}
+
+	private static function flattenErrors(array $errors, string $prefix): array
+	{
+		$flat = [];
+		foreach ($errors as $field => $messages) {
+			foreach ($messages as $msg) {
+				$flat[] = "{$prefix} {$field}: {$msg}";
+			}
+		}
+		return $flat;
+	}
+
+	private function normalizeWidget(array $widget): array
+	{
+		if (($widget['fieldData'] ?? null) === '') {
+			$widget['fieldData'] = null;
+		}
+		if (($widget['templateOrder'] ?? null) === '') {
+			$widget['templateOrder'] = null;
+		}
+		if (($widget['viewOrder'] ?? null) === '') {
+			$widget['viewOrder'] = null;
+		}
+		return $widget;
+	}
+
+	private function validateTemplate(array $post): array
+	{
+		$errors = [];
+		try {
+			V::validate($post, [
+				'name'                => [V::required(), V::maxLength(255)],
+				'templateColor'       => [V::integer()],
+				'recursiveIndexDepth' => [V::integer()],
+				'collectionPosition'  => [V::integer()],
+				'templatePosition'    => [V::integer()],
+			]);
+		} catch (ValidationException $e) {
+			$errors = self::flattenErrors($e->getErrors(), 'Template');
+		}
+
+		foreach ($post['widget'] ?? [] as $i => $widget) {
+			$errors = array_merge($errors, $this->validateWidget($widget, $i + 1));
+		}
+
+		return $errors;
+	}
+
+	private function validateWidget(array $widget, int $position): array
+	{
+		try {
+			V::validate($this->normalizeWidget($widget), [
+				'fieldTitle'        => [V::required(), V::maxLength(255)],
+				'label'             => [V::required(), V::maxLength(255)],
+				'tooltip'           => [V::maxLength(2000)],
+				'fieldData'         => [V::json()],
+				'fieldType'         => [V::required(), V::integer()],
+				'templateOrder'     => [V::integer()],
+				'viewOrder'         => [V::integer()],
+				'clickToSearchType' => [V::integer()],
+			]);
+			return [];
+		} catch (ValidationException $e) {
+			return self::flattenErrors($e->getErrors(), "Widget {$position}");
+		}
+	}
+
+	private function toTemplateSummary(Entity\Template $template): array
+	{
+		return [
+			'id'         => $template->getId(),
+			'name'       => $template->getName(),
+			'createdAt'  => $template->getCreatedAt()?->format('c'),
+			'modifiedAt' => $template->getModifiedAt()?->format('c'),
+		];
+	}
+
+	// treat the escaped string as a JSON string literal
+	// and decode it, which will unescape it
+	private static function unescapeJsStringLiteral(string $escaped): string
+	{
+		return json_decode('"' . $escaped . '"') ?? $escaped;
+	}
+
+	public function getFieldTypes()
+	{
+		$fieldTypes = $this->doctrine->em->getRepository('Entity\Field_type')->findBy([], ['name' => 'ASC']);
+
+		return render_json(array_map(fn($ft) => [
+			'id'              => $ft->getId(),
+			'name'            => $ft->getName(),
+			'modelName'       => $ft->getModelName(),
+			'hasFieldData'    => $ft->getHasFieldData(),
+			'sampleFieldData' => $ft->getSampleFieldData() === null
+				? null
+				: self::unescapeJsStringLiteral($ft->getSampleFieldData()),
+		], $fieldTypes));
+	}
+
+	public function getTemplate($id = null)
+	{
+		if ($id === null) {
+			return render_json(['error' => 'Template ID required'], 400);
+		}
+
+		$template = $this->doctrine->em->find('Entity\Template', $id);
+
+		// 404 (not 403) to avoid leaking template IDs across instances.
+		if ($template === null || !$template->getInstances()->contains($this->instance)) {
+			return render_json(['error' => 'Template not found'], 404);
+		}
+
+		return render_json($template->toArray());
 	}
 
 	public function index()
 	{
+		$isJson = $this->isJsonRequest();
 
-		//TODO Permissions checking
+		if ($this->isUsingVueUI() && !$isJson) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
+		}
+
 		$data['templates'] = $this->instance->getTemplates();
+
+		if ($isJson) {
+			$templatesArray = array_map(
+				fn($t) => $this->toTemplateSummary($t),
+				$data['templates']->toArray()
+			);
+
+			return render_json($templatesArray);
+		}
+
 		$this->template->title = 'Template Index';
 		$this->template->javascript->add("assets/datatables/datatables.min.js");
 		$this->template->stylesheet->add("assets/datatables/datatables.min.css");
@@ -47,19 +192,22 @@ class Templates extends Instance_Controller {
 		instance_redirect("templates/");
 	}
 
-	public function edit($id=null)
+	public function edit($id = null)
 	{
-		//TODO Permissions checki
-		if($id == null) {
-			$data['template'] = new Entity\Template;
+		if ($this->isUsingVueUI()) {
+			$this->template->set_template("vueTemplate");
+			$this->template->publish();
+			return;
 		}
-		else {
+
+		if ($id == null) {
+			$data['template'] = new Entity\Template;
+		} else {
 			$data['template'] = $this->doctrine->em->find('Entity\Template', $id);
 		}
 		$data['field_types'] = $this->doctrine->em->getRepository("Entity\Field_type")->findBy([], ['name' => 'ASC']);;
 
-		if (empty($data['template']))
-		{
+		if (empty($data['template'])) {
 			show_404();
 		}
 
@@ -71,98 +219,139 @@ class Templates extends Instance_Controller {
 
 	public function update()
 	{
-		if(is_numeric($this->input->post('templateId'))) {
-			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
+		$isJson = $this->isJsonRequest();
+
+		$errors = $this->validateTemplate($this->input->post());
+
+		if (!empty($errors)) {
+			return $isJson
+				? render_json(['error' => 'Validation failed', 'details' => $errors], 422)
+				: show_error(implode('<br>', $errors), 422);
 		}
-		else {
+
+		if (is_numeric($this->input->post('templateId'))) {
+			$template = $this->doctrine->em->find('Entity\Template', $this->input->post('templateId'));
+
+			// 404 (not 403) to avoid leaking template IDs across instances.
+			if ($template !== null && !$template->getInstances()->contains($this->instance)) {
+				return $isJson
+					? render_json(['error' => 'Template not found'], 404)
+					: show_404();
+			}
+		} else {
 			$template = new Entity\Template();
 			$template->setCreatedAt(new \DateTime('now'));
 			$template->addInstance($this->instance);
-
 		}
 
 		if ($template === null) {
-		    show_404();
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
 		}
 
-		// Question: I think the most efficient way in code to do this is to delete all the widgets and re-create them
-		// It seems like the easist way to handle the order of things, at least, rather than trying to place something in the middle.
-		// It could probably be done better but this is fine for development, at least.
+		// Widgets are deleted and re-created on every save. The transaction ensures
+		// that if anything fails mid-write, the DELETE is rolled back along with the
+		// failed inserts — leaving the template in its previous state.
+		$em = $this->doctrine->em;
+		$em->beginTransaction();
+		try {
+			// Question: I think the most efficient way in code to do this is to delete all the widgets and re-create them
+			// It seems like the easist way to handle the order of things, at least, rather than trying to place something in the middle.
+			// It could probably be done better but this is fine for development, at least.
 
-		if($template->getId()) {
-			$deleteQuery = $this->doctrine->em->createQuery("delete from Entity\Widget w where w.template = " . $template->getId());
-			$deleteQuery->execute();
-		}
-
-		$template->setName($this->input->post('name'));
-		$template->setModifiedAt(new \DateTime('now'));
-		$template->setIncludeInSearch(($this->input->post("includeInSearch")=="On")?1:0);
-		$template->setIndexForSearching(($this->input->post("indexforSearching")=="On")?1:0);
-		$template->setIsHidden(($this->input->post("isHidden")=="On")?1:0);
-		$template->setShowCollection(($this->input->post("showCollection")=="On")?1:0);
-		$template->setShowTemplate(($this->input->post("showTemplate")=="On")?1:0);
-		$template->setCollectionPosition($this->input->post("collectionPosition"));
-		$template->setTemplatePosition($this->input->post("templatePosition"));
-		
-		$template->setTemplateColor($this->input->post("templateColor"));
-		$template->setRecursiveIndexDepth($this->input->post("recursiveIndexDepth"));
-		$this->doctrine->em->persist($template);
-		$this->doctrine->em->flush();
-
-		$orderIndex = 0;
-		if(is_array($this->input->post('widget'))) {
-			foreach ($this->input->post('widget') as $key => $widget) {
-				$display = $orderIndex + 1;
-
-				if($widget["viewOrder"] == "") {
-					$widget["viewOrder"] = $display;
-				}
-				if($widget["templateOrder"] == "") {
-					$widget["templateOrder"] = $display;
-				}
-
-				if(strlen(trim($widget['fieldTitle'])) == 0 || strlen(trim($widget['label'])) == 0) {
-					continue;
-				}
-
-				// Create new widget
-				$newWidget = new Entity\Widget();
-
-				// Set parameters
-				$newWidget->setDisplay(isset($widget['display'])?1:0);
-				$newWidget->setRequired(isset($widget['required'])?1:0);
-				$newWidget->setAllowMultiple(isset($widget['allowMultiple'])?1:0);
-				$newWidget->setFieldTitle($widget['fieldTitle']);
-				$newWidget->setLabel($widget['label']);
-				$newWidget->setTooltip($widget['tooltip']);
-
-				$fieldData = json_decode($widget['fieldData']);
-
-				if($fieldData) {
-					$newWidget->setFieldData($fieldData);
-				}
-
-				$newWidget->setTemplate($template);
-				$newWidget->setTemplateOrder($widget["templateOrder"]);
-				$newWidget->setViewOrder($widget["viewOrder"]);
-				$newWidget->setDisplayInPreview(isset($widget['displayInPreview'])?1:0);
-				$newWidget->setSearchable(isset($widget['searchable'])?1:0);
-				$newWidget->setAttemptAutocomplete(isset($widget['attemptAutocomplete'])?1:0);
-				$newWidget->setFieldType($this->doctrine->em->find('Entity\Field_type', $widget['fieldType']));
-				$newWidget->setDirectSearch(isset($widget['directSearch'])?1:0);
-				$newWidget->setClickToSearch(isset($widget['clickToSearch'])?1:0);
-				$newWidget->setClickToSearchType($widget['clickToSearchType']??1);
-
-
-				// Persist
-				$this->doctrine->em->persist($newWidget);
-
-				$orderIndex++;
+			if($template->getId()) {
+				$em->createQuery('delete from Entity\Widget w where w.template = :templateId')
+					->setParameter('templateId', $template->getId())
+					->execute();
 			}
+
+			$template->setName($this->input->post('name'));
+			$template->setModifiedAt(new \DateTime('now'));
+			$template->setIncludeInSearch(($this->input->post("includeInSearch")=="On")?1:0);
+			$template->setIndexForSearching(($this->input->post("indexforSearching")=="On")?1:0);
+			$template->setIsHidden(($this->input->post("isHidden")=="On")?1:0);
+			$template->setShowCollection(($this->input->post("showCollection")=="On")?1:0);
+			$template->setShowTemplate(($this->input->post("showTemplate")=="On")?1:0);
+			$template->setCollectionPosition($this->input->post("collectionPosition"));
+			$template->setTemplatePosition($this->input->post("templatePosition"));
+
+			$template->setTemplateColor($this->input->post("templateColor"));
+			$template->setRecursiveIndexDepth($this->input->post("recursiveIndexDepth"));
+			$em->persist($template);
+			$em->flush();
+
+			$orderIndex = 0;
+			if(is_array($this->input->post('widget'))) {
+				foreach ($this->input->post('widget') as $key => $widget) {
+					$display = $orderIndex + 1;
+
+					if($widget["viewOrder"] == "") {
+						$widget["viewOrder"] = $display;
+					}
+					if($widget["templateOrder"] == "") {
+						$widget["templateOrder"] = $display;
+					}
+
+					if(strlen(trim($widget['fieldTitle'])) == 0 || strlen(trim($widget['label'])) == 0) {
+						continue;
+					}
+
+					// Create new widget
+					$newWidget = new Entity\Widget();
+
+					// Set parameters
+					$newWidget->setDisplay(isset($widget['display'])?1:0);
+					$newWidget->setRequired(isset($widget['required'])?1:0);
+					$newWidget->setAllowMultiple(isset($widget['allowMultiple'])?1:0);
+					$newWidget->setFieldTitle($widget['fieldTitle']);
+					$newWidget->setLabel($widget['label']);
+					$newWidget->setTooltip($widget['tooltip'] ?? '');
+
+					$rawFieldData = $widget['fieldData'] ?? null;
+					if ($rawFieldData !== null && $rawFieldData !== '') {
+						$decoded = json_decode($rawFieldData, true);
+						if (json_last_error() === JSON_ERROR_NONE) {
+							$newWidget->setFieldData($decoded);
+						}
+					}
+
+					$newWidget->setTemplate($template);
+					$newWidget->setTemplateOrder($widget["templateOrder"]);
+					$newWidget->setViewOrder($widget["viewOrder"]);
+					$newWidget->setDisplayInPreview(isset($widget['displayInPreview'])?1:0);
+					$newWidget->setSearchable(isset($widget['searchable'])?1:0);
+					$newWidget->setAttemptAutocomplete(isset($widget['attemptAutocomplete'])?1:0);
+					$newWidget->setFieldType($em->find('Entity\Field_type', $widget['fieldType']));
+					$newWidget->setDirectSearch(isset($widget['directSearch'])?1:0);
+					$newWidget->setClickToSearch(isset($widget['clickToSearch'])?1:0);
+					$newWidget->setClickToSearchType($widget['clickToSearchType']??1);
+
+					$em->persist($newWidget);
+
+					$orderIndex++;
+				}
+			}
+			$em->flush();
+			$em->commit();
+		} catch (\Throwable $e) {
+			$em->rollback();
+			return $isJson
+				? render_json(['error' => 'Failed to save template. No changes were made.'], 500)
+				: show_error('Failed to save template. No changes were made.', 500);
 		}
-		$this->doctrine->em->flush();
 
-
+// The bulk DQL DELETE above runs a raw SQL DELETE that bypasses
+		// Doctrine's Unit of Work. Doctrine never updates its in-memory identity map,
+		// so $template->getWidgets() still returns the old (now-deleted) widget
+		// collection even though the new widgets were just flushed to the database.
+		// Calling refresh() discards Doctrine's cached state for $template and reloads
+		// it from the DB, so the JSON response contains the correct widget list.
+		// The non-JSON path redirects away and reloads data independently, so it
+		// doesn't need this.
+		if ($isJson) {
+			$this->doctrine->em->refresh($template);
+		}
 
 		/**
 		 * HACK HACK HACK
@@ -182,6 +371,9 @@ class Templates extends Instance_Controller {
 	   		$this->reindexTemplate($template->getId());
 	   	}
 
+		if ($isJson) {
+			return render_json($template->toArray());
+		}
 
 		instance_redirect('templates/');
 
@@ -189,10 +381,16 @@ class Templates extends Instance_Controller {
 
 	public function delete($id)
 	{
-		//TODO Permissions checking
+
+		$isJson = $this->isJsonRequest();
+
 		$template = $this->doctrine->em->find('Entity\Template', $id);
-		if ($template === null) {
-			show_404();
+
+		// 404 (not 403) to avoid leaking template IDs across instances.
+		if ($template === null || !$template->getInstances()->contains($this->instance)) {
+			return $isJson
+				? render_json(['error' => 'Template not found'], 404)
+				: show_404();
 		}
 
 
@@ -210,6 +408,13 @@ class Templates extends Instance_Controller {
 		$this->doctrine->em->remove($template);
 		$this->doctrine->em->flush();
 
+		if ($isJson) {
+			return render_json([
+				'success' => true,
+				'message' => 'Template deleted successfully'
+			], 200);
+		}
+
 		instance_redirect('templates');
 
 	}
@@ -222,13 +427,13 @@ class Templates extends Instance_Controller {
 		// This seems like the easiest way to get the widgets in their display order
 		$data['widgetsViewOrder'] = $this->doctrine->em->getRepository('Entity\Widget')
           ->findBy(
-             array('template'=> $data['template']),
+             array('template' => $data['template']),
              array('view_order' => 'ASC')
            );
 
     $data['widgetsTemplateOrder'] = $this->doctrine->em->getRepository('Entity\Widget')
           ->findBy(
-             array('template'=> $data['template']),
+             array('template' => $data['template']),
              array('template_order' => 'ASC')
            );
 
@@ -273,12 +478,12 @@ class Templates extends Instance_Controller {
 	}
 
 	public function forceRecache($templateId=null) {
-		
+
 
 		if($templateId) {
 			$this->reindexTemplate($templateId);
 		}
-		
+
 		$this->template->title = 'Reindex';
 
     	// $this->template->loadCSS(['template']);
@@ -297,7 +502,7 @@ class Templates extends Instance_Controller {
 
 		$newTask = json_encode(["templateId"=>$templateId,"instance"=>$this->instance->getId()]);
 		$jobId= $pheanstalk->put($newTask, Pheanstalk\Pheanstalk::DEFAULT_PRIORITY, 1);
-		
+
 	}
 
 

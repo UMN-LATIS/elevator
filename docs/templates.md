@@ -1,102 +1,157 @@
 # Working with Templates
 
-## Creating Templates
-Templates that define which type of metadata you’d like to collect, and  are the key to adding assets to your Elevator instance.  You can create as many templates as you’d like, and you may nest templates within other templates.  
+Templates define which metadata you collect for each asset, and they're the key to adding assets to your Elevator instance. You can create as many templates as you like, and you can nest templates within other templates.
 
-::: tip Gotcha
-Even file attachments are a type of field within a metadata template.  If you don’t have an “upload” field, you won’t be able to attach files to your record.
+<iframe src="https://www.youtube.com/embed/S54sySvBRRk" title="Creating Templates and Assets in Elevator" style="width: 100%; aspect-ratio: 16 / 9; border: 0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+## The Templates List
+
+Open the **Admin** menu and choose **Edit Templates**, or choose **Templates** in the sidebar on any admin page. You need the **Edit Templates** or **Administer Instance** permission on the instance. See [Permission Levels](/permissions#permission-levels).
+
+![The Templates list, showing one template named Simple](./templates-list.png)
+
+The list shows each template's ID, name, and when it was created and last modified. Type in **Search templates** to narrow the list. Click a template's name to edit it.
+
+Each row's **⋮** menu has **Edit**, **Duplicate**, **Reindex**, and **Delete**. See [Duplicating, Reindexing, and Deleting](#duplicating-reindexing-and-deleting).
+
+## Creating a Template
+
+1. On the Templates list, click **Create Template**.
+2. Enter a **Name** that makes clear what the template is for.
+3. Optionally, set the [Advanced Options](#advanced-options).
+4. Add fields with **+ Add Field**. See [Adding a Field](#adding-a-field).
+5. Click **Save**.
+
+The new template starts with an empty **Fields** section. Here, the template is named "Photographs" and is ready for its first field.
+
+![A new Photographs template with the Name filled in, an empty Fields section, and the Add Field and Save buttons](./template-create.png)
+
+**Save** keeps you in the editor, so you can go on making changes. The sidebar shows when the template was last saved, and "No unsaved changes" once everything is saved. **Cancel** returns to the Templates list.
+
+## Advanced Options
+
+Click **Advanced options** below the template's name to show these settings. Elevator sets sensible defaults for them.
+
+![The template editor, with Advanced options expanded and the Field order lists in the sidebar](./template-editor.png)
+
+### Hide from 'Add new asset' menu
+
+When on, this template doesn't appear in the list of templates when creating new assets, but it's still available for editing existing assets. This is useful for templates you want to retire without removing their assets.
+
+### Index for searching
+
+When off, this template isn't indexed for searching at all. Assets using this template can only be reached by their unique identifier, or by links from other assets. This is meant for "join" templates: templates that connect one asset to another with some descriptive data, but have no value on their own.
+
+### Include in public search results
+
+Sometimes you want to add assets but keep them out of public search results. For example, if this template is meant to be nested within other templates rather than stand on its own, turn this off.
+
+### Recursive index depth
+
+When a template uses a **Related Asset** field to point to other assets, Elevator's search engine also indexes those related values. Choose **None**, **Shallow**, or **Deep**.
+
+For example, suppose a template lists classrooms, and each classroom points to a "building" asset through a Related Asset field. To make a search for a building's name return every classroom in it, choose **Shallow**. If each building also points to a "campus" asset, **Deep** lets a search for the campus return all of its classrooms.
+
+### Show collection name on asset page
+
+Adds the asset's collection to the asset page, so viewers can click it and browse every asset in that collection. Choose **Off**, **Bottom** (with the asset's other fields), or **Top** (as a breadcrumb).
+
+### Show template name on asset page
+
+Templates usually matter only to administrators and curators. If you want viewers to see and browse by template, this adds the asset's template to the asset page, so viewers can click it and browse every asset that uses it. Choose **Off**, **Bottom**, or **Top**, the same as for the collection name.
+
+## Adding a Field
+
+Each field in a template appears as a card in the **Fields** section. Click **+ Add Field** to add one, then set:
+
+- **Field type**: what kind of data the field holds, such as Text, Date, or Upload. See [Types of Fields](/field-types).
+- **Label**: the name viewers see for this field.
+- **Field data (JSON)**: settings for the field, shown only for field types that use them. Elevator fills it with sample JSON when you choose the type. If the JSON isn't valid, the box shows **Invalid JSON** and **Save** stays disabled until you fix it.
+
+The field type is the dropdown on the left of the card. For a title, choose **Text** and enter "Title" in the label box beside it. Click **+ Add Field** again for each additional field.
+
+::: tip
+There's no special "title" field. The first field in a template's **Viewer** order becomes the asset's title. See [Field Order](#field-order).
 :::
 
-When adding an asset, template fields that are left empty won’t be displayed, so it’s ok to have “sometimes” fields in the template.
+![The field type dropdown open on a field labeled Title, showing Text selected and other types including Text Area and Date](./template-field-type.png)
 
-There’s no special “title” field in a template – whichever field you make the first field in a template will become a title.
-### Creating a Template
-Select “Edit Templates” from the Admin pulldown.  Click “Create New Template.”
+To remove a field, click its trash icon and confirm. Any data already saved in that field will no longer be visible or editable.
 
-Begin by giving your template a title that will make it clear what this template is for.
+::: tip
+When adding an asset, template fields left empty aren't displayed, so it's fine to have "sometimes" fields in a template.
+:::
 
-## Advanced Settings
+::: tip
+Even file attachments are a type of field within a template. Don't forget to add an **Upload** field to your template so that you can add files to assets.
+:::
 
-Many features in Elevator are controlled on a template-by-template basis via the advanced settings. We try to set sensible defaults for these. 
+### Field Options
 
-### Include in Public search Results
-Sometimes you want to add assets, but not have them included in public search results.  For example, if this template is intended to be nested within other templates (rather than existing on its own) you would leave this box unchecked.
+Click **Options** on a field's card to show its settings. The expand button next to **Field order** opens or closes the options on every card at once.
 
-### Index For Searching
-When unchecked, this template will not be indexed for searching at all.  Assets using this template can only be accessed via their unique identifier, or via links from other assets.  This is intended to be used for “join” templates – templates that join one asset to another asset with some descriptive data, but which have no value on their own.
-
-### Hide from “Add”
-When checked, this template will not appear in the list of options when creating new assets, but still remains available for editing existing assets.  This is useful for templates you wish to deprecate, without removing their assets.
-
-### Show Collection when Viewing Asset
-
-This will add a synthetic "collection" value to assets, allowing users to click and browse all of the assets in that collection. You can control whether this appears at the bottom of the asset, or at the top (in a more traditional breadcrumb format)
-### Show Template when Viewing Asset
-
-In most instances, templates are only relevant for administrators and curators. However, if you wish to allow your users to view and search by templates, this options allows you to add a synthetic "template" value to assets, allowing users to click and browse all of the assets which use that template. You can control whether this appears at the bottom of the asset, or at the top (in a more traditional breadcrumb format)
-
-### Indexing Depth
-
-When templates use the "related asset" widget type to point to other assets, the Elevator search engine attempts to deep-index these related values. For example, if you had a template with a list of classrooms, and each of those pointed to a "building" record via a related asset field, you may wish for a search for the building name to return all of the classrooms in that building. That would involve an indexing depth of 1. If your building assets had a related asset pointing to a "campus" asset, an indexing depth of 2 would allow a search for the campus to return all of the associated classrooms. 
-
-### Color
-
-This dropdown allows you to pick a highlight color for each template. This can be helpful if you often have many templates open at once. 
-
-## Adding a Widget
-Each field in your template is defined by a “widget”.  A widget has a variety of fields.
-
-!["Adding a Widget"](./add-widget.png)
-
-#### Field Label
-The label that will be shown to viewers of this asset.
-
-#### Field Type
-See types of fields.
-
-#### Tool Tip
-Helpful text shown to users who are adding assets.  This can explain what should go in the field, or how it should be formatted.
-
-#### Field Data
-Custom JSON to define attributes about the field.  Only some fields contain this option.
+![The options for a Text field named Title](./template-field.png)
 
 #### Display
-Controls whether the field is displayed when viewing an asset.  Some fields may be for internal use only.
 
-#### Required
-If this box is checked, the user will not be able to save an asset until this field is populated.
+- **Display on asset page**: whether viewers see this field on the asset page. Some fields may be for internal use only.
+- **Display in preview**: whether this field appears in the asset preview, which is used in search results, in drawers, and in related asset views. After changing this, [reindex](#reindexing) the template.
 
-#### Searchable
-Controls whether the field is indexed for searching.  If this field is likely to contain data of low relevance (numbers without context for example), exclude it from the search.
+#### Behavior
 
-#### Attempt Autocomplete
-If checked, the field will attempt to autocomplete as the user types, filling in results from other assets of the same template.
+- **Required**: when on, an asset can't be saved until this field has a value.
+- **Allow multiple**: when on, curators can add more than one value. For example, an item might need several dates.
+- **Attempt autocomplete**: when on, the field suggests values as curators type, drawn from other assets that use the same template.
+- **Show tooltip**: when on, enter **Tooltip text** to help curators adding assets. It can explain what belongs in the field, or how to format it.
 
-#### Display in Preview
-Should this field be shown in the asset preview?  The asset preview is used on the search results page, in drawers, and in “related asset” views.
+#### Search
 
-#### Allow Multiple
-When enabled, users will be able to add multiple copies of this field.  For example, they may wish to add multiple dates to a single item.
+- **Searchable**: whether this field is indexed for searching. If a field is likely to hold data of low relevance, such as numbers without context, turn this off.
+- **Direct search**: whether this field appears in **Advanced Search** as a field that can be searched on its own.
+- **Click to search**: makes the field's value a link that starts a new search. **Global** searches every field for that value. **Field-specific** searches only this field.
 
-#### Directly Searchable
-This box controls whether this field will appear within the “Advanced search” box, as a field that can be searched exclusively.
+#### Advanced
 
-#### Click to Search
-When enabled, this will make the contents of the field into a link, which will trigger a new search.
+- **Field Title**: the field's internal name, which field-specific searches use. Elevator creates it from the label, such as `title_1`. To change it, click the pencil icon. It may contain only lowercase letters, numbers, underscores, and hyphens, and no two fields in a template can share one. Changing a field title can break saved data.
 
-### Saving a Template
-After clicking “submit” you’ll be returned to the list of templates.  From here, you should adjust the display order for your newly created template.
+## Field Order
 
-## Other Template Controls
+Each template has two field orders:
 
-### Sort Order
-The sort order for a template controls the order in which fields are shown to curators (those adding assets) and viewers (this viewing assets).  The first item in the “view” sort order will be the title for the asset.  Just drag and drop to rearrange.
+- **Editor**: the order curators see when adding or editing an asset.
+- **Viewer**: the order viewers see on the asset page. The first field in this order is the asset's title.
 
-### Duplicating Templates
-You may wish to create a “Base” template, and then create an advanced version.  To do this, create the base template, then use the “duplicate” feature to clone the template, and add your “advanced” fields.
+To change an order, use either of these:
 
-### Deleting Templates
-Deleting templates will cause assets that use this template to be displayed incorrectly.  **Use with caution!**
+- Choose **Editor** or **Viewer** next to **Field order** above the field cards, then drag cards by their handles. Dragging changes the order you chose.
+- Drag a field's name in the sidebar's **Editor** or **Viewer** list.
 
-### Reindex
-Some of the changes you make a template may require Elevator to reindex all of the assets that use that template. Normally, that happens automatically via a background process. However, you can force that to happen by clicking the "reindex" link. For large sets of assets, it can still take a few minutes to fully reindex.
+In this example, **Viewer** is selected above the cards. "Title" is first in the sidebar's **Viewer** list, so its value will become each asset's title. The template also has a **Text Area** field labeled "Description" and a **Date** field labeled "Date taken".
+
+![The Photographs template with Title, Description, and Date taken fields, Viewer order selected, and Title first in both sidebar lists](./template-field-order.png)
+
+Then click **Save**. If you moved a field that appears in previews, [reindex](#reindexing) the template.
+
+## Duplicating, Reindexing, and Deleting
+
+![Templates page with the more actions menu open revealing choices to edit, duplicate, reindex, or delete](./templates-more-menu.png)
+
+These actions are in each template's **⋮** menu on the Templates list, and each asks you to confirm.
+
+### Duplicating
+
+You may want a "base" template and a more detailed version of it. Create the base template, choose **Duplicate** to copy it, and then add the extra fields to the copy.
+
+### Reindexing
+
+Some template changes require Elevator to reindex every asset that uses the template. The template editor doesn't start a reindex when you save, so choose **Reindex** after any of these changes:
+
+- Turning **Display in preview** on or off for a field.
+- Changing the **Field Title** of a field that appears in previews.
+- Moving a field that appears in previews.
+
+Reindexing also covers any related templates. For large sets of assets, it can take a few minutes to finish.
+
+### Deleting
+
+Deleting a template causes assets that use it to display incorrectly, and it can't be undone. **Use with caution!**

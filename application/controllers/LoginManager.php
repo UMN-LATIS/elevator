@@ -71,7 +71,7 @@ class LoginManager extends Instance_Controller {
 	}
 
 	public function localLogin() {
-		if ($this->isUsingVueUI()) {
+		if ($this->isUsingVueUI() && ($this->input->method() !== 'post')) {
 				return $this->template->publish('vueTemplate');
 		}
 
@@ -133,7 +133,7 @@ class LoginManager extends Instance_Controller {
 			$authHelper->remoteLogout();
 		}
 
-		if ($this->isUsingVueUI()) {
+		if ($this->isUsingVueUI() && $this->isJsonRequest()) {
 			return render_json([
 				'status' => 'success',
 				'message' => 'logout successful'

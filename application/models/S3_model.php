@@ -7,7 +7,7 @@ use Aws\Exception\MultipartUploadException;
 
 class S3_model extends CI_Model {
 
-	public $s3Client;
+	public \Aws\S3\S3Client $s3Client;
 	private $secret;
 	private $key;
 	public $bucket;
@@ -270,7 +270,7 @@ class S3_model extends CI_Model {
 			}
 			if ($result['Contents'][0]['StorageClass'] == "GLACIER") {
 				$objectInfo = $this->objectInfo($targetKey);
-				if (strlen($objectInfo['Restore']) > 0) {
+				if (strlen($objectInfo['Restore'] ?? "") > 0) {
 					$explodedInfo = explode(",", $objectInfo['Restore']);
 					if ($explodedInfo[0] == 'ongoing-request="false"') {
 						return "RESTORED";

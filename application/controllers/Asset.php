@@ -28,12 +28,16 @@ class asset extends Instance_Controller {
 	}
 
 	function getAsset($objectId) {
+		$isJson = $this->isJsonRequest();
+
 		$assetModel = new Asset_model;
 		if(!$objectId) {
-			show_404();
+			return $isJson
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
-		
+
 		if(!$assetModel->loadAssetById($objectId, $noHydrate = true)) {
 			show_404();
 		}
@@ -41,8 +45,29 @@ class asset extends Instance_Controller {
 		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
 			show_404();
 		}
-		
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
+
+		if ($assetModel->assetObject->getDeleted()) {
+			if (!$isJson) {
+				return show_404();
+			}
+
+			$canRestore = $this->accessLevel >= PERM_ADDASSETS;
+			if (!$canRestore) {
+				return abort_json(["error" => "not found"], 404);
+			}
+
+			// if user can restore, send a 410 with some info about the
+			// deleted asset so the frontend can offer restore options.
+			// set cache-control to no-store to prevent aggressive browsercaching
+			// of deleted status, which could interfere with restore/undelete actions.
+			return render_json([
+					'error' => 'deleted',
+					'objectId' => $objectId,
+					'deletedAt' => $assetModel->assetObject->getDeletedAt()?->format('c'),
+					'deletedBy' => $assetModel->assetObject->getDeletedBy(),
+				], 410, ['Cache-Control' => 'no-store']);
+		}
 
 		if($this->accessLevel == PERM_NOPERM) {
 			$this->errorhandler_helper->callJsonError("noPermission");
@@ -74,16 +99,21 @@ class asset extends Instance_Controller {
 
 		$assetModel = new Asset_model;
 		if(!$objectId) {
-			show_404();
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
-		
 		if(!$assetModel->loadAssetById($objectId)) {
-			show_404();
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if(!$this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"))) {
-			show_404();
+			return $returnJson == "true"
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if ($parentObjectId && $parentObjectId != "null" && $parentObjectId != $objectId) {
@@ -119,6 +149,28 @@ class asset extends Instance_Controller {
 
 		if($this->instance->getFeaturedAsset() && $this->instance->getFeaturedAsset() == $objectId) {
 			$this->accessLevel = PERM_SEARCH;
+		}
+
+		if ($assetModel->assetObject->getDeleted()) {
+			if ($returnJson != "true") {
+				return show_404();
+			}
+
+			$canRestore = $this->accessLevel >= PERM_ADDASSETS;
+			if (!$canRestore) {
+				return abort_json(["error" => "not found"], 404);
+			}
+
+			// if user can restore, send a 410 with some info about the
+			// deleted asset so the frontend can offer restore options.
+			// set cache-control to no-store to prevent aggressive browser caching
+			// of deleted status, which could interfere with restore/undelete actions.
+			return render_json([
+					'error' => 'deleted',
+					'objectId' => $objectId,
+					'deletedAt' => $assetModel->assetObject->getDeletedAt()?->format('c'),
+					'deletedBy' => $assetModel->assetObject->getDeletedBy(),
+				], 410, ['Cache-Control' => 'no-store']);
 		}
 
 		if($this->accessLevel == PERM_NOPERM) {
@@ -565,7 +617,9 @@ class asset extends Instance_Controller {
 
 	public function getAssetPreview($objectId) {
 		$assetModel = new Asset_model();
-		$assetModel->loadAssetById($objectId);
+		if(!$assetModel->loadAssetById($objectId) || $assetModel->assetObject->getDeleted() === true) {
+			show_404();
+		}
 		$result = $assetModel->getSearchResultEntry();
 		echo json_encode($result);
 	}
