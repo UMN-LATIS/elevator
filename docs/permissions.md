@@ -136,7 +136,7 @@ A group's type can't be changed after it's created. Removing a permission and de
 
 ## Creating a Local Account <Badge type="info" text="Classic UI" />
 
-A local account signs in with a username and password stored in Elevator, rather than through your institution's login. On the **Instance Permissions** page, click **Create a local user** and fill in the form.
+A local account signs in with a username and password stored in Elevator, rather than through your institution's login. Open **Admin** › **Instance Permissions (Classic)**, click **Create a local user**, and fill in the form.
 
 ![The classic Add/Edit a User form](./create-local.png)
 
