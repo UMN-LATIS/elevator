@@ -4,38 +4,48 @@
 
 Once you’ve created at least one template, you can begin adding assets.
 
-Select “Add Asset” from the “Edit” menu.  You’ll be presented with a popup that allows you to select the type of template you’ll be using.  You’ll then be presented with the “add asset” view for that specific template.
+Open the main menu and choose **Manage Assets** › **Add Asset**.  Choose the **Template** you’ll be using and the **Collection** the asset belongs to, then click **Continue**.  You’ll then be presented with the asset editor for that template.
 
-!["Add an Asset"](./add-asset.png)
+![The Add Asset page, with Template and Collection chosen and a Continue button](./add-asset-start.png)
 
-### General
+To edit an existing asset, open it and click the pencil icon (**Edit Asset**).
 
-All assets contain a “general” tab which contains a handful of settings about the asset.  
+![The asset editor, with the template's fields on the left and the asset settings and Contents list in the right-hand sidebar](./add-asset.png)
+
+### Asset Settings
+
+The right-hand sidebar holds a handful of settings about the asset, along with its **Asset ID** once it has been saved.
 
 #### Collection
 
-The collection not only defines how the asset will be grouped, but also defines where it will be stored in the cloud.  This must be set before you can upload assets.
+The collection not only defines how the asset will be grouped, but also defines where it will be stored in the cloud.  You choose it before the editor opens.  Changing it later in the sidebar asks you to confirm, then saves the asset and moves it to the new collection.  The asset is unavailable while it moves.
 
-#### Available After / Ready For Display
+#### Template
 
-If “ready for display” is not checked, or “available after” is set to a date in the future, the asset will be hidden and not available within the search results.  Available after will automatically make the asset available in the future.
+The **Template** menu changes which template the asset uses.  Elevator first warns that switching templates may lose data and lists the fields that will be dropped, then saves the asset.  If you can edit templates, the **View** link next to the menu opens the template in the template editor.
+
+#### Status / Available After
+
+If **Status** is **Not Ready**, or **Available After** is set to a date in the future, the asset will be hidden and not available within the search results.  **Available After** will automatically make the asset available in the future.  New assets start as **Ready**.
 
 ### Populating Fields
 
-All of the fields from your template will appear along the left side of the window.  Click on each to see the individual field.  As you populate fields, a checkmark will appear next to it in the sidebar.
+All of the fields from your template appear in the main column, each in its own section that you can expand or collapse.  The button above the fields (**Expand All** or **Collapse All**) opens or closes every section at once.
 
-If a field allows multiple entries, click the plus sign to add additional fields.
+The **Contents** list in the sidebar shows every field.  Click a field's name to jump to it.  A check mark appears next to each field you've filled in, and a warning icon marks a required field that's still empty.
+
+If a field allows multiple entries, click the button below the field, labeled with the field's name and a plus sign, to add another entry.
 
 ### Saving
 
-You may save at any time by clicking the “save” button.  If you have unsaved changes on the page, the save button will turn yellow.
+Click **Save** at the top of the sidebar to save.  When you have unsaved changes, **Save** changes from an outlined button to a filled one.  The text below it says "No unsaved changes" once everything is saved, and lists any **Missing required** or **Invalid** fields.  An asset marked **Ready** can't be saved while fields are listed there.  An asset marked **Not Ready** can be saved at any time.
 
 ### Uploading Files
 
-You may select multiple files at the same time when uploading assets.  After starting a file uploading, you may move on to other tabs in the sidebar – the file upload will continue.  You will be prompted before leaving the page if the upload is incomplete.
+To attach files, drag them onto an **Upload** field, or click **browse files**.  If the field accepts only one file, it says "1 file maximum", and the drop area disappears once a file is attached.  To accept more than one, turn on **Allow multiple** for that field in the template.  See [Field Options](/templates#field-options).
 
-If an upload fails for some reason, simply refresh the asset and select the file again.  It will resume where you left off.
+After starting a file upload, you may keep working on other fields, and the upload will continue.  You will be prompted before leaving the page if the upload is incomplete or you have unsaved changes.
 
-After a file is uploaded, a small preview will be displayed.  You may add an additional description about the file if you’d like.
+If an upload fails for some reason, save your other changes, refresh the asset, and select the file again.
 
-
+After a file is uploaded, a small preview will be displayed.  You may add **Alt Text** for the file if you’d like.  If **Show Description below Thumbnails** is turned on in **Instance Settings**, the field is labeled **Description / Alt Text** and the text also appears below the file's thumbnail.

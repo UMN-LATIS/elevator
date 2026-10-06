@@ -33,7 +33,6 @@ export default defineConfig({
         items: [
           { text: "Terms and Topics", link: "/terms" },
           { text: "Working with Templates", link: "/templates" },
-          { text: "Other Template Controls", link: "/other-template-controls" },
           { text: "Types of Fields", link: "/field-types" },
           { text: "Permissions", link: "/permissions" },
           { text: "Collections", link: "/collections" },
