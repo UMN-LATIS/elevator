@@ -134,15 +134,9 @@ Each row in the **Groups** table has a **⋮** menu:
 
 A group's type can't be changed after it's created. Removing a permission and deleting a group can't be undone.
 
-## Tasks in the Classic Interface
+## Creating a Local Account <Badge type="info" text="Classic UI" />
 
-A few user-management tasks are only available in the classic interface: creating local accounts, granting SuperAdmin, and setting an account to expire.
-
-To get there, open **Instance Settings** and click **Try Classic**, then open **Admin** › **Instance Permissions**. To return to the new interface, open **Admin** › **Instance Settings** and click **Preview VueJS Interface**. Both buttons switch only your own browser session. They don't change the interface other people see.
-
-### Creating a Local Account
-
-A local account signs in with a username and password stored in Elevator, rather than through your institution's login. On the classic **Instance Permissions** page, click **Create a local user** and fill in the form.
+A local account signs in with a username and password stored in Elevator, rather than through your institution's login. On the **Instance Permissions** page, click **Create a local user** and fill in the form.
 
 ![The classic Add/Edit a User form](./create-local.png)
 
