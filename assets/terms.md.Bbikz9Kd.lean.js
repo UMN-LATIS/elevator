@@ -1,0 +1,1 @@
+import{_ as a,o as t,c as s,a2 as n}from"./chunks/framework.D66Xq0Kv.js";const m=JSON.parse('{"title":"Terms and Topics","description":"","frontmatter":{},"headers":[],"relativePath":"terms.md","filePath":"terms.md"}'),o={name:"terms.md"};function i(r,e,l,c,d,p){return t(),s("div",null,[...e[0]||(e[0]=[n("",12)])])}const u=a(o,[["render",i]]);export{m as __pageData,u as default};
