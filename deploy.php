@@ -1,4 +1,5 @@
 <?php
+
 namespace Deployer;
 
 require 'recipe/codeigniter.php';
@@ -22,7 +23,7 @@ set('branch', 'main');
 
 host('cla-dev')
     ->setHostname('cla-dev.elevatorapp.net')
-->setLabels(['stage' => 'cla_dev'])
+    ->setLabels(['stage' => 'cla_dev'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
@@ -34,38 +35,38 @@ host('dev')
 
 host('umn')
     ->setHostname('umn-prod-ssh.elevatorapp.net')
-    ->setLabels(['stage'=>'production'])
+    ->setLabels(['stage' => 'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('olaf')
     ->setHostname('stolaf-ssh.elevatorapp.net')
-    ->setLabels(['stage'=>'production'])
+    ->setLabels(['stage' => 'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
-    host('ou')
+host('ou')
     ->setHostname('ou-ssh.elevatorapp.net')
-    ->setLabels(['stage'=>'production'])
+    ->setLabels(['stage' => 'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('bennington')
     ->setHostname('bennington-ssh.elevatorapp.net')
-    ->setLabels(['stage'=>'production'])
+    ->setLabels(['stage' => 'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 host('stthomas')
     ->setHostname('stthomas-ssh.elevatorapp.net')
-    ->setLabels(['stage'=>'production'])
+    ->setLabels(['stage' => 'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
 
 host('wisc')
     ->setHostname('wisc-ssh.elevatorapp.net')
-    ->setLabels(['stage'=>'production'])
+    ->setLabels(['stage' => 'production'])
     ->set('remote_user', 'latis_deploy')
     ->set('deploy_path', '/var/www/elevator');
 
@@ -85,7 +86,7 @@ task('deploy:assets', function () {
 });
 after('deploy:vendors', 'deploy:assets');
 
-task('elevator:restart_systemd', function() {
+task('elevator:restart_systemd', function () {
     run('sudo /usr/local/bin/restart_services.sh restart');
 });
 
@@ -123,8 +124,14 @@ task('elevator:create_proxies', function () {
 after('deploy:symlink', 'elevator:restart_systemd');
 
 
-// TODO: consider logic that runs migrations and if migrations have run, flushdb for redis. or at least clear all the doctrine cachines?
 after('deploy:symlink', 'cachetool:clear:opcache');
+task('elevator:migrate', function () {
+    $output = run('cd {{release_path}} && php doctrine.php migrations:migrate --no-interaction --no-ansi');
+    if (strpos($output, 'Successfully migrated to version:') !== false) {
+        run('redis-cli flushdb');
+    }
+});
+after('cachetool:clear:opcache', 'elevator:migrate');
 // after('deploy:symlink', 'elevator:clear_cache');
 // task('elevator:clear_cache', function () {
 //     runLocally('curl -s {{reset_path}}' . get('cache_secret'));
