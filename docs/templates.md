@@ -2,13 +2,7 @@
 
 Templates define which metadata you collect for each asset, and they're the key to adding assets to your Elevator instance. You can create as many templates as you like, and you can nest templates within other templates.
 
-::: tip Gotcha
-Even file attachments are a type of field within a template. If a template has no **Upload** field, you can't attach files to its assets.
-:::
-
-When adding an asset, template fields left empty aren't displayed, so it's fine to have "sometimes" fields in a template.
-
-There's no special "title" field. The first field in a template's **Viewer** order becomes the asset's title. See [Field Order](#field-order).
+<iframe src="https://www.youtube.com/embed/S54sySvBRRk" title="Creating Templates and Assets in Elevator" style="width: 100%; aspect-ratio: 16 / 9; border: 0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## The Templates List
 
@@ -28,13 +22,17 @@ Each row's **⋮** menu has **Edit**, **Duplicate**, **Reindex**, and **Delete**
 4. Add fields with **+ Add Field**. See [Adding a Field](#adding-a-field).
 5. Click **Save**.
 
-**Save** keeps you in the editor, so you can go on making changes. The sidebar shows when the template was last saved, and "No unsaved changes" once everything is saved. **Cancel** returns to the Templates list.
+The new template starts with an empty **Fields** section. Here, the template is named "Photographs" and is ready for its first field.
 
-![The template editor, with Advanced options expanded and the Field order lists in the sidebar](./template-editor.png)
+![A new Photographs template with the Name filled in, an empty Fields section, and the Add Field and Save buttons](./template-create.png)
+
+**Save** keeps you in the editor, so you can go on making changes. The sidebar shows when the template was last saved, and "No unsaved changes" once everything is saved. **Cancel** returns to the Templates list.
 
 ## Advanced Options
 
 Click **Advanced options** below the template's name to show these settings. Elevator sets sensible defaults for them.
+
+![The template editor, with Advanced options expanded and the Field order lists in the sidebar](./template-editor.png)
 
 ### Hide from 'Add new asset' menu
 
@@ -70,7 +68,23 @@ Each field in a template appears as a card in the **Fields** section. Click **+ 
 - **Label**: the name viewers see for this field.
 - **Field data (JSON)**: settings for the field, shown only for field types that use them. Elevator fills it with sample JSON when you choose the type. If the JSON isn't valid, the box shows **Invalid JSON** and **Save** stays disabled until you fix it.
 
+The field type is the dropdown on the left of the card. For a title, choose **Text** and enter "Title" in the label box beside it. Click **+ Add Field** again for each additional field.
+
+::: tip
+There's no special "title" field. The first field in a template's **Viewer** order becomes the asset's title. See [Field Order](#field-order).
+:::
+
+![The field type dropdown open on a field labeled Title, showing Text selected and other types including Text Area and Date](./template-field-type.png)
+
 To remove a field, click its trash icon and confirm. Any data already saved in that field will no longer be visible or editable.
+
+::: tip
+When adding an asset, template fields left empty aren't displayed, so it's fine to have "sometimes" fields in a template.
+:::
+
+::: tip
+Even file attachments are a type of field within a template. Don't forget to add an **Upload** field to your template so that you can add files to assets.
+:::
 
 ### Field Options
 
@@ -112,9 +126,15 @@ To change an order, use either of these:
 - Choose **Editor** or **Viewer** next to **Field order** above the field cards, then drag cards by their handles. Dragging changes the order you chose.
 - Drag a field's name in the sidebar's **Editor** or **Viewer** list.
 
+In this example, **Viewer** is selected above the cards. "Title" is first in the sidebar's **Viewer** list, so its value will become each asset's title. The template also has a **Text Area** field labeled "Description" and a **Date** field labeled "Date taken".
+
+![The Photographs template with Title, Description, and Date taken fields, Viewer order selected, and Title first in both sidebar lists](./template-field-order.png)
+
 Then click **Save**. If you moved a field that appears in previews, [reindex](#reindexing) the template.
 
 ## Duplicating, Reindexing, and Deleting
+
+![Templates page with the more actions menu open revealing choices to edit, duplicate, reindex, or delete](./templates-more-menu.png)
 
 These actions are in each template's **⋮** menu on the Templates list, and each asks you to confirm.
 
