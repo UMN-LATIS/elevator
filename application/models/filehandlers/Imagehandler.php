@@ -1,42 +1,36 @@
-<?php if (! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 
 class ImageHandler extends FileHandlerBase {
 
-	protected $supportedTypes = array("jpg", "jpeg", "gif", "png", "tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic", "jfif", "jp2", 'ndpi', 'jpf', 'bmp', 'czi');
+	protected $supportedTypes = array("jpg","jpeg", "gif","png","tiff", "tif", "tga", "crw", "cr2", "nef", "svs", "psd", "cr2", "heic", "jfif", "jp2", 'ndpi', 'jpf', 'bmp', 'czi');
 	protected $noDerivatives = false;
 
-	public $taskArray = [
-		0 => ["taskType" => "extractMetadata", "config" => ["continue" => true, "ttr" => 600]],
-		1 => ["taskType" => "createDerivative", "config" => [
-			"ttr" => 600,
-			["width" => 250, "height" => 250, "type" => "thumbnail", "path" => "thumbnail"],
-			["width" => 500, "height" => 500, "type" => "thumbnail2x", "path" => "thumbnail"],
-			["width" => 75, "height" => 75, "type" => "tiny", "path" => "thumbnail"],
-			["width" => 150, "height" => 150, "type" => "tiny2x", "path" => "thumbnail"],
-			["width" => 2048, "height" => 2048, "type" => "screen", "path" => "derivative"]
-		]],
-		2 => ["taskType" => "tileImage", "config" => array("ttr" => 1800, "minimumMegapixels" => 30)],
-		3 => ["taskType" => "generateAltText", "config" => array("ttr" => 600)],
-		4 => ["taskType" => "cleanupOriginal", "config" => array()]
-	];
+	public $taskArray = [0=>["taskType"=>"extractMetadata", "config"=>["continue"=>true, "ttr"=>600]],
+						  1=>["taskType"=>"createDerivative", "config"=>["ttr"=>600, ["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
+						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
+						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
+						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
+						  											    ["width"=>2048, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
+							2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
+							3=>["taskType"=>"generateAltText", "config"=>array("ttr"=>600)],
+							4=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							];
 
 	public $sphericalTaskArray = [
-		1 => ["taskType" => "createDerivative", "config" => [
-			"ttr" => 600,
-			["width" => 250, "height" => 250, "type" => "thumbnail", "path" => "thumbnail"],
-			["width" => 500, "height" => 500, "type" => "thumbnail2x", "path" => "thumbnail"],
-			["width" => 75, "height" => 75, "type" => "tiny", "path" => "thumbnail"],
-			["width" => 150, "height" => 150, "type" => "tiny2x", "path" => "thumbnail"],
-			["width" => 4096, "height" => 2048, "type" => "screen", "path" => "derivative"]
-		]],
-		2 => ["taskType" => "tileImage", "config" => array("ttr" => 1800, "minimumMegapixels" => 30)],
-		3 => ["taskType" => "cleanupOriginal", "config" => array()]
-	];
+						  1=>["taskType"=>"createDerivative", "config"=>["ttr"=>600, ["width"=>250, "height"=>250, "type"=>"thumbnail", "path"=>"thumbnail"],
+						  												["width"=>500, "height"=>500, "type"=>"thumbnail2x", "path"=>"thumbnail"],
+						  												["width"=>75, "height"=>75, "type"=>"tiny", "path"=>"thumbnail"],
+						  												["width"=>150, "height"=>150, "type"=>"tiny2x", "path"=>"thumbnail"],
+						  											    ["width"=>4096, "height"=>2048, "type"=>"screen", "path"=>"derivative"]]],
+						2=>["taskType"=>"tileImage", "config"=>array("ttr"=>1800, "minimumMegapixels"=>30)],
+							3=>["taskType"=>"cleanupOriginal", "config"=>array()]
+							];
 
 
 
-	public function __construct() {
+	public function __construct()
+	{
 		parent::__construct();
 		$this->load->helper("media");
 		//Do your magic here
@@ -45,23 +39,23 @@ class ImageHandler extends FileHandlerBase {
 	public function allDerivativesForAccessLevel($accessLevel) {
 		$derivative = array();
 
-		if ($accessLevel >= $this->getPermission()) {
+		if($accessLevel>=$this->getPermission()) {
 			$derivative[] = "screen";
-			if (array_key_exists("tiled", $this->derivatives)) {
+			if(array_key_exists("tiled", $this->derivatives)) {
 				$derivative[] = "tiled";
 			}
-			if (array_key_exists("tiled-tar", $this->derivatives)) {
+			if(array_key_exists("tiled-tar", $this->derivatives)) {
 				$derivative[] = "tiled-tar";
 			}
-			if (array_key_exists("tiled-iiif", $this->derivatives)) {
+			if(array_key_exists("tiled-iiif", $this->derivatives)) {
 				$derivative[] = "tiled-iiif";
 			}
-			if (array_key_exists("tiled-index", $this->derivatives)) {
+			if(array_key_exists("tiled-index", $this->derivatives)) {
 				$derivative[] = "tiled-index";
 			}
 		}
 
-		if ($accessLevel > PERM_NOPERM) {
+		if($accessLevel>PERM_NOPERM) {
 			$derivative[] = "thumbnail";
 			$derivative[] = "thumbnail2x";
 			$derivative[] = "tiny";
@@ -69,103 +63,105 @@ class ImageHandler extends FileHandlerBase {
 		}
 
 		$returnArray = array();
-		foreach ($derivative as $entry) {
-			if (isset($this->derivatives[$entry])) {
+		foreach($derivative as $entry) {
+			if(isset($this->derivatives[$entry])) {
 				$returnArray[$entry] = $this->derivatives[$entry];
 				$returnArray[$entry]->downloadable = true;
-				if (in_array($entry, ['tiled', 'tiled-iiif', 'tiled-index'])) {
+				if(in_array($entry, ['tiled', 'tiled-iiif', 'tiled-index'])) {
 					$returnArray[$entry]->downloadable = false;
 				}
 			}
 		}
-		if (count($returnArray) > 0) {
+		if(count($returnArray)>0) {
 			return $returnArray;
-		} else {
+		}
+		else {
 			throw new Exception("Derivative not found");
 		}
 	}
 
 	public function extractMetadata($args) {
 		$analyzingDerivative = false;
-		echo "test 0\n";
-		if (!isset($args['fileObject'])) {
+		if(!isset($args['fileObject'])) {
 			$fileObject = $this->sourceFile;
-		} else {
+		}
+		else {
 			$fileObject = $args['fileObject'];
 			$analyzingDerivative = true;
 		}
-		echo "test\n";
+
 		$fileObject->metadata = array(); // clear metadata in case we're regenerating.
-		echo "test2\n";
-		if (!$analyzingDerivative) {
+
+		if(!$analyzingDerivative) {
 			$fileStatus = $fileObject->makeLocal();
 
-			if ($fileStatus == FILE_GLACIER_RESTORING) {
+			if($fileStatus == FILE_GLACIER_RESTORING) {
 				$this->postponeTime = 900;
 				return JOB_POSTPONE;
-			} elseif ($fileStatus == FILE_ERROR) {
+			}
+			elseif($fileStatus == FILE_ERROR) {
 				return JOB_FAILED;
 			}
 		}
-		echo "test 3\n";
-		if (!file_exists($fileObject->getPathToLocalFile())) {
+
+		if(!file_exists($fileObject->getPathToLocalFile())) {
 			return JOB_FAILED;
 		}
-		echo "test 4\n";
+
 
 		$fileObject->metadata = getImageMetadata($fileObject);
-		echo "test 5\n";
-		if ($analyzingDerivative) {
+
+		if($analyzingDerivative) { 
 			$sourceFile = $fileObject;
-		} else {
+		}
+		else {
 			$sourceFile = $this->makeCZIProxy();
 			$sourceFile = $this->swapLocalForPNG($sourceFile);
 		}
+		
 
-		echo "test 6\n";
-		if (!$fileObject->metadata) {
-			if ($fileFormat = identifyImage($sourceFile)) {
+		if(!$fileObject->metadata) {
+			if($fileFormat = identifyImage($sourceFile)) {
 				$originalName = $sourceFile->originalFilename;
 				$originalExtension = pathinfo($originalName, PATHINFO_EXTENSION);
 				$originalName = str_replace($originalExtension, $fileFormat, $originalName);
 
 				$sourceFile->originalFilename = $originalName;
-				if (false === ($fileObject->metadata = getImageMetadata($sourceFile))) {
+				if(false === ($fileObject->metadata = getImageMetadata($sourceFile))) {
 					return JOB_FAILED;
 				}
-			} else {
+			}
+			else {
 				return JOB_FAILED;
 			}
 		}
-		echo "test 7\n";
+
 		/**
 		 * As these standards evolve this should be refactored
 		 */
 		$uploadWidget = $this->getUploadWidget();
-
-		if ((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["XMP"]) && isset($fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"]) && $fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"] == true) || (isset($uploadWidget) && stristr($uploadWidget->fileDescription, "spherical"))) {
+		
+		if((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["XMP"]) && isset($fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"]) && $fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"] == true) || (isset($uploadWidget) && stristr($uploadWidget->fileDescription, "spherical"))) {
 			$fileObject->metadata["spherical"] = true;
 			$this->taskArray = $this->sphericalTaskArray; // swap out our task array to get a bigger max size for our derivatives in this case.
-
-			if (stristr($uploadWidget->fileDescription, "stereo")) {
+			
+			if(stristr($uploadWidget->fileDescription, "stereo")) {
 				$fileObject->metadata["stereo"] = true;
 			}
 		}
-		echo "test 8\n";
 
 
-		if (!$fileObject->metadata) {
+		if(!$fileObject->metadata) {
 
 			return JOB_FAILED;
 		}
-		echo "test 9\n";
+
 		$fileObject->metadata["filesize"] = $sourceFile->getFileSize();
-		echo "test 10\n";
 
 
 
-		if ($args['continue'] == true) {
-			$this->queueTask(1, ["ttr" => 1200]);
+		if($args['continue'] == true) {
+			$this->queueTask(1, ["ttr"=>1200]);
 		}
 
 		return JOB_SUCCESS;
@@ -173,7 +169,7 @@ class ImageHandler extends FileHandlerBase {
 
 	public function createDerivative($args) {
 		$success = true;
-
+		
 		$sourceFile = $this->makeCZIProxy();
 		$sourceFile = $this->swapLocalForPNG($sourceFile);
 
@@ -182,8 +178,8 @@ class ImageHandler extends FileHandlerBase {
 			? (int)$uploadWidget->parentWidget->rotationValue : 0;
 		$forceRotation = [90 => imagick_internal_ORIENTATION_RIGHTTOP, 180 => imagick_internal_ORIENTATION_BOTTOMRIGHT, 270 => imagick_internal_ORIENTATION_LEFTBOTTOM][$widgetRotationValue] ?? null;
 
-		foreach ($args as $key => $derivativeSetting) {
-			if (!is_numeric($key)) {
+		foreach($args as $key=>$derivativeSetting) {
+			if(!is_numeric($key)) {
 				continue;
 			}
 			$derivativeType = $derivativeSetting['type'];
@@ -192,16 +188,17 @@ class ImageHandler extends FileHandlerBase {
 
 			$fileStatus = $sourceFile->makeLocal();
 
-			if ($fileStatus == FILE_GLACIER_RESTORING) {
+			if($fileStatus == FILE_GLACIER_RESTORING) {
 				$this->postponeTime = 900;
 				return JOB_POSTPONE;
-			} elseif ($fileStatus == FILE_ERROR) {
+			}
+			elseif($fileStatus == FILE_ERROR) {
 				return JOB_FAILED;
 			}
 
 
-			if (!file_exists($sourceFile->getPathToLocalFile())) {
-				$this->logging->processingInfo("createDerivative", "imageHandler", "Local File Not Found", $this->getObjectId(), 0);
+			if(!file_exists($sourceFile->getPathToLocalFile())) {
+				$this->logging->processingInfo("createDerivative","imageHandler","Local File Not Found",$this->getObjectId(),0);
 				return JOB_FAILED;
 			}
 
@@ -215,50 +212,54 @@ class ImageHandler extends FileHandlerBase {
 			$derivativeContainer->originalFilename = $pathparts['filename'] . "_" . $derivativeType . '.jpg';
 			//TODO: catch errors here
 			echo "Compressing " . $width . " x " . $height . "\n";
-			if (compressImageAndSave($sourceFile, $derivativeContainer, $width, $height, 80, $forceRotation)) {
+			if(compressImageAndSave($sourceFile, $derivativeContainer, $width, $height, 80, $forceRotation)) {
 				$derivativeContainer->ready = true;
-				if (!$derivativeContainer->copyToRemoteStorage()) {
+				if(!$derivativeContainer->copyToRemoteStorage()) {
 					//TODO: log
 					//TODO: remove derivative
 					echo "Error copying to remote" . $derivativeContainer->getPathToLocalFile();
-					$this->logging->processingInfo("createDerivative", "imageHandler", "Error copying to remote", $this->getObjectId(), 0);
-					$success = false;
-				} else {
-					if (!unlink($derivativeContainer->getPathToLocalFile())) {
-						$this->logging->processingInfo("createDerivative", "imageHandler", "Error deleting source", $this->getObjectId(), 0);
+					$this->logging->processingInfo("createDerivative","imageHandler","Error copying to remote",$this->getObjectId(),0);
+					$success=false;
+				}
+				else {
+					if(!unlink($derivativeContainer->getPathToLocalFile())) {
+						$this->logging->processingInfo("createDerivative","imageHandler","Error deleting source",$this->getObjectId(),0);
 						echo "Error deleting source" . $derivativeContainer->getPathToLocalFile();
-						$success = false;
+						$success=false;
 					}
 				}
-				$this->extractMetadata(['fileObject' => $derivativeContainer, "continue" => false]);
+				$this->extractMetadata(['fileObject'=>$derivativeContainer, "continue"=>false]);
 				$this->derivatives[$derivativeType] = $derivativeContainer;
-			} else {
-				$this->logging->processingInfo("createDerivative", "imageHandler", "Error generating derivative", $this->getObjectId(), 0);
+			}
+			else {
+				$this->logging->processingInfo("createDerivative","imageHandler","Error generating derivative",$this->getObjectId(),0);
 				echo "Error generating deriative" . $derivativeContainer->getPathToLocalFile();
-				$success = false;
+				$success=false;
 			}
 		}
 
 		$this->triggerReindex();
-		if ($success) {
-			$this->queueTask(2, ["ttr" => 1800]);
+		if($success) {
+			$this->queueTask(2, ["ttr"=>1800]);
 			return JOB_SUCCESS;
-		} else {
+		}
+		else {
 			return JOB_FAILED;
 		}
+
 	}
 
 	public function tileImage($args) {
 		$uploadWidget = $this->getUploadWidget();
 
-		if (!isset($uploadWidget) || !isset($uploadWidget->parentWidget) || !$uploadWidget->parentWidget->enableTiling) {
+		if(!isset($uploadWidget) || !isset($uploadWidget->parentWidget) || !$uploadWidget->parentWidget->enableTiling) {
 			$this->queueTask(3);
 			return JOB_SUCCESS;
 		}
 
 		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
 
-		if ($megapixels < $args["minimumMegapixels"] && !$this->forceTiling()) {
+		if($megapixels < $args["minimumMegapixels"] && !$this->forceTiling()) {
 			$this->queueTask(3);
 			return JOB_SUCCESS;
 		}
@@ -268,7 +269,7 @@ class ImageHandler extends FileHandlerBase {
 
 
 		$localPath = $sourceFile->getPathToLocalFile();
-		$pathparts = pathinfo($localPath);
+		$pathparts = pathinfo($localPath);		
 		$derivativeType = "tiled-iiif";
 		$derivativeContainerIIIF = new fileContainerS3();
 		$derivativeContainerIIIF->derivativeType = $derivativeType;
@@ -279,7 +280,7 @@ class ImageHandler extends FileHandlerBase {
 		$outputFile = $derivativeContainerIIIF->getPathToLocalFile() . ".tiff";
 
 		$rotationAppend = "";
-		if (isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
+		if(isset($sourceFile->metadata["rotation"]) && $sourceFile->metadata["rotation"] > 1) {
 			$rotationAppend = "[autorotate]";
 		}
 
@@ -296,15 +297,17 @@ class ImageHandler extends FileHandlerBase {
 			}
 		}
 
-		if ($useRotForExtract) {
+		if($useRotForExtract) {
 			$outputWithOptions = $outputFile . "[tile,pyramid,compression=jpeg,Q=90,tile-width=256,tile-height=256,bigtiff,depth=onepixel]";
 			$extractString = $this->config->item('vipsBinary') . " rot " . $localPath . $rotationAppend . " " . $outputWithOptions . " " . $rotAngle;
-		} else {
+
+		}
+		else {
 			$extractString = $this->config->item('vipsBinary') . " tiffsave " . $localPath . $rotationAppend . "  --tile --pyramid --compression jpeg --Q 90 --tile-width 256 --tile-height 256 --bigtiff --depth onepixel " . $outputFile;
 		}
 		$process = new Cocur\BackgroundProcess\BackgroundProcess($extractString);
-		$process->run();
-		while ($process->isRunning()) {
+		$process->run( );
+		while($process->isRunning()) {
 			sleep(5);
 			echo ".";
 		}
@@ -329,7 +332,7 @@ class ImageHandler extends FileHandlerBase {
 		$width = $this->sourceFile->metadata["width"];
 		$height = $this->sourceFile->metadata["height"];
 		$zoom = 0;
-		while ($width > 1 || $height > 1) {
+		while($width > 1 || $height > 1) {
 			$width = $width / 2;
 			$height = $height / 2;
 			$zoom++;
@@ -338,11 +341,12 @@ class ImageHandler extends FileHandlerBase {
 
 		echo "\n";
 		rename($outputFile, $derivativeContainerIIIF->getPathToLocalFile());
-		if ($derivativeContainerIIIF->copyToRemoteStorage()) {
+		if($derivativeContainerIIIF->copyToRemoteStorage()) {
 			echo "Success\n";
 			unlink($derivativeContainerIIIF->getPathToLocalFile());
 			$derivativeContainerIIIF->ready = true;
-		} else {
+		}
+		else {
 			echo "Fail uploading\n";
 			die();
 		}
@@ -353,6 +357,7 @@ class ImageHandler extends FileHandlerBase {
 
 		$this->queueTask(3);
 		return JOB_SUCCESS;
+
 	}
 
 
@@ -360,7 +365,7 @@ class ImageHandler extends FileHandlerBase {
 		$this->derivativeForAltText = "screen";
 		$this->metadataTypeForAltText = "image";
 		$uploadWidget = $this->getUploadWidget();
-		if (isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro == true) {
+		if(isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro == true) {
 			$this->metadataTypeForAltText = "tree core";
 		}
 		$this->getAltTextForMedia("", $debugMode);
@@ -368,14 +373,14 @@ class ImageHandler extends FileHandlerBase {
 	}
 
 	function unlinkLocalSwap() {
-		if (isWholeSlideImage($this->sourceFile)) {
+		if(isWholeSlideImage($this->sourceFile)) {
 			$source = $this->sourceFile->getPathToLocalFile();
 			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
-			if (file_exists($dest)) {
+			if(file_exists($dest)) {
 				unlink($dest);
 			}
 			$dest = $this->sourceFile->getPathToLocalFile() . ".tiff";
-			if (file_exists($dest)) {
+			if(file_exists($dest)) {
 				unlink($dest);
 			}
 		}
@@ -383,43 +388,44 @@ class ImageHandler extends FileHandlerBase {
 	}
 
 	function forceTiling() {
-		if (isWholeSlideImage($this->sourceFile)) {
+		if(isWholeSlideImage($this->sourceFile)) {
 			return TRUE;
-		}
-		$uploadWidget = $this->getUploadWidget();
-		if ((isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation) || (isset($uploadWidget->parentWidget->forceTiling) && $uploadWidget->parentWidget->forceTiling)) {
-			return TRUE;
-		}
+		 }
+		 $uploadWidget = $this->getUploadWidget();
+		 if((isset($uploadWidget->parentWidget->enableDendro) && $uploadWidget->parentWidget->enableDendro) || (isset($uploadWidget->parentWidget->enableAnnotation) && $uploadWidget->parentWidget->enableAnnotation) || (isset($uploadWidget->parentWidget->forceTiling) && $uploadWidget->parentWidget->forceTiling)) {
+			 return TRUE;
+		 }
 
-		return FALSE;
+ 		return FALSE;
+
 	}
 
 	private function getLargestDerivativeDimensions() {
 		$maxWidth = 0;
 		$maxHeight = 0;
 
-		foreach ($this->taskArray as $taskConfig) {
-			if (!isset($taskConfig['taskType']) || $taskConfig['taskType'] !== 'createDerivative' || !isset($taskConfig['config']) || !is_array($taskConfig['config'])) {
+		foreach($this->taskArray as $taskConfig) {
+			if(!isset($taskConfig['taskType']) || $taskConfig['taskType'] !== 'createDerivative' || !isset($taskConfig['config']) || !is_array($taskConfig['config'])) {
 				continue;
 			}
 
-			foreach ($taskConfig['config'] as $derivativeConfig) {
-				if (!is_array($derivativeConfig)) {
+			foreach($taskConfig['config'] as $derivativeConfig) {
+				if(!is_array($derivativeConfig)) {
 					continue;
 				}
-				if (isset($derivativeConfig['width']) && is_numeric($derivativeConfig['width'])) {
+				if(isset($derivativeConfig['width']) && is_numeric($derivativeConfig['width'])) {
 					$maxWidth = max($maxWidth, (int)$derivativeConfig['width']);
 				}
-				if (isset($derivativeConfig['height']) && is_numeric($derivativeConfig['height'])) {
+				if(isset($derivativeConfig['height']) && is_numeric($derivativeConfig['height'])) {
 					$maxHeight = max($maxHeight, (int)$derivativeConfig['height']);
 				}
 			}
 		}
 
-		if ($maxWidth <= 0) {
+		if($maxWidth <= 0) {
 			$maxWidth = 2048;
 		}
-		if ($maxHeight <= 0) {
+		if($maxHeight <= 0) {
 			$maxHeight = 2048;
 		}
 
@@ -428,13 +434,13 @@ class ImageHandler extends FileHandlerBase {
 
 	private function getVipsShrinkValuesForSource($sourceFile) {
 		$defaultShrink = ['x' => 10, 'y' => 10];
-		if (!isset($sourceFile->metadata) || !isset($sourceFile->metadata['width']) || !isset($sourceFile->metadata['height']) || !is_numeric($sourceFile->metadata['width']) || !is_numeric($sourceFile->metadata['height'])) {
+		if(!isset($sourceFile->metadata) || !isset($sourceFile->metadata['width']) || !isset($sourceFile->metadata['height']) || !is_numeric($sourceFile->metadata['width']) || !is_numeric($sourceFile->metadata['height'])) {			
 			return $defaultShrink;
 		}
 
 		$sourceWidth = (int)$sourceFile->metadata['width'];
 		$sourceHeight = (int)$sourceFile->metadata['height'];
-		if ($sourceWidth <= 0 || $sourceHeight <= 0) {
+		if($sourceWidth <= 0 || $sourceHeight <= 0) {
 			return $defaultShrink;
 		}
 
@@ -448,17 +454,17 @@ class ImageHandler extends FileHandlerBase {
 		return ['x' => $shrinkFactor, 'y' => $shrinkFactor];
 	}
 
-	function swapLocalForPNG($sourceFile = null) {
-		if (!$sourceFile) {
+	function swapLocalForPNG($sourceFile= null) {
+		if(!$sourceFile) {
 			$sourceFile = $this->sourceFile;
 		}
 		// this is ugly, but we might get passed in an intermediate. We need to look at the original to see if 
 		// it was a whole slide
-		if (isWholeSlideImage($this->sourceFile)) {
+		if(isWholeSlideImage($this->sourceFile)) {
 			$source = $sourceFile->getPathToLocalFile();
 			// use the original filename as well to keep extensions sane
 			$dest = $this->sourceFile->getPathToLocalFile() . ".png";
-			if (file_exists($dest)) {
+			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
 			// also pass in the real source in case we got an intermediate.
@@ -467,7 +473,7 @@ class ImageHandler extends FileHandlerBase {
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
-			while ($process->isRunning()) {
+			while($process->isRunning()) {
 				sleep(5);
 				echo ".";
 			}
@@ -476,44 +482,46 @@ class ImageHandler extends FileHandlerBase {
 		}
 
 		$megapixels = 0;
-		if (isset($sourceFile->metadata) && isset($sourceFile->metadata["width"])) {
+		if(isset($sourceFile->metadata) && isset($sourceFile->metadata["width"])) {
 			$megapixels = ($sourceFile->metadata["width"] * $sourceFile->metadata["height"]) / 1000000;
 		}
-
-		if ($megapixels > 100) {
+		
+		if($megapixels > 100) {
 			$source = $sourceFile->getPathToLocalFile();
 			$dest = $sourceFile->getPathToLocalFile() . ".png";
-			if (file_exists($dest)) {
+			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
 			$shrinkValues = $this->getVipsShrinkValuesForSource($sourceFile);
 			$convertString = $this->config->item('vipsBinary') . " shrink " . $source . " " . $dest . " " . $shrinkValues['x'] . " " . $shrinkValues['y'];
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
-			while ($process->isRunning()) {
+			while($process->isRunning()) {
 				sleep(5);
 				echo ".";
 			}
 
 			return new FileContainer($dest);
+
+
 		}
 
 
-
+		
 		return $sourceFile;
 	}
 
 	public function makeCZIProxy() {
-		if ($this->sourceFile->getType() == "czi") {
+		if($this->sourceFile->getType() == "czi") {
 			$source = $this->sourceFile->getPathToLocalFile();
 			$dest = $this->sourceFile->getPathToLocalFile() . ".tiff";
-			if (file_exists($dest)) {
+			if(file_exists($dest)) {
 				return new FileContainer($dest);
 			}
 			$convertString = $this->config->item('cziutils') . " " . $source . " " . $dest;
 			$process = new Cocur\BackgroundProcess\BackgroundProcess($convertString);
 			$process->run();
-			while ($process->isRunning()) {
+			while($process->isRunning()) {
 				sleep(5);
 				echo ".";
 			}
@@ -525,11 +533,11 @@ class ImageHandler extends FileHandlerBase {
 
 	public function priority() {
 		// if we're a tiled image, we give it a lower priority
-		if (!isset($this->sourceFile->metadata["width"]) || !isset($this->sourceFile->metadata["height"])) {
+		if(!isset($this->sourceFile->metadata["width"]) || !isset($this->sourceFile->metadata["height"])) {
 			return 0;
 		}
 		$megapixels = ($this->sourceFile->metadata["width"] * $this->sourceFile->metadata["height"]) / 1000000;
-		if ($megapixels > 50 || $this->forceTiling()) {
+		if($megapixels > 50 || $this->forceTiling()) {
 			return 50;
 		}
 		return 0;
@@ -537,17 +545,18 @@ class ImageHandler extends FileHandlerBase {
 
 	public function getCustomJobOverrides() {
 		//if the file type is czi bump the memory
-		if ($this->sourceFile->getType() == "czi") {
+		if($this->sourceFile->getType() == "czi") {
 			return [
-				[
-					"type" => "MEMORY",
-					"value" => "4096"
-				]
-			];
-		} else {
+				["type"=>"MEMORY",
+						"value"=>"4096"]
+					];
+		}
+		else {
 			return [];
 		}
 	}
+
+
 }
 
 /* End of file imageHandler.php */
