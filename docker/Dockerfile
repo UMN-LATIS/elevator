@@ -39,6 +39,7 @@ ENV DOCKER_SCRATCH_DIR $DOCKER_SCRATCH_DIR
 COPY . /var/www/html/
 RUN composer dump-autoload
 WORKDIR /var/www/html
+ENV DOCTRINE_AUTO_GENERATE_PROXIES=1
 RUN mkdir -p /var/www/html/application/models/Proxies
 RUN chmod -R 777 /var/www/html/application/models/Proxies
 # append "short_open_tag" to php.ini
