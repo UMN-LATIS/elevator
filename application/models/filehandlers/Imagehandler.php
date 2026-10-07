@@ -141,15 +141,22 @@ class ImageHandler extends FileHandlerBase {
 		/**
 		 * As these standards evolve this should be refactored
 		 */
-		$uploadWidget = $this->getUploadWidget();
+		try {
+			$uploadWidget = $this->getUploadWidget();
+			echo "test 7.5\n";
+			if ((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["XMP"]) && isset($fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"]) && $fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"] == true) || (isset($uploadWidget) && stristr($uploadWidget->fileDescription, "spherical"))) {
+				$fileObject->metadata["spherical"] = true;
+				$this->taskArray = $this->sphericalTaskArray; // swap out our task array to get a bigger max size for our derivatives in this case.
 
-		if ((isset($fileObject->metadata["exif"]) && isset($fileObject->metadata["exif"]["XMP"]) && isset($fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"]) && $fileObject->metadata["exif"]["XMP"]["UsePanoramaViewer"] == true) || (isset($uploadWidget) && stristr($uploadWidget->fileDescription, "spherical"))) {
-			$fileObject->metadata["spherical"] = true;
-			$this->taskArray = $this->sphericalTaskArray; // swap out our task array to get a bigger max size for our derivatives in this case.
-
-			if (stristr($uploadWidget->fileDescription, "stereo")) {
-				$fileObject->metadata["stereo"] = true;
+				if (stristr($uploadWidget->fileDescription, "stereo")) {
+					$fileObject->metadata["stereo"] = true;
 			}
+			}
+		} catch (\Throwable $error) {
+			if (PHP_SAPI === 'cli') {
+				echo "ImageHandler panorama detection failed:\n", (string)$error, "\n";
+			}
+			throw $error;
 		}
 		echo "test 8\n";
 
