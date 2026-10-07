@@ -82,7 +82,7 @@ class Doctrine {
         $proxyStrategy = ($useCache && getenv('DOCTRINE_AUTO_GENERATE_PROXIES') !== '1')
             ? \Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_NEVER
             : \Doctrine\ORM\Proxy\ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS;
-        echo $proxyStrategy;
+
         $doctrineConfig->setAutoGenerateProxyClasses($proxyStrategy);
         $config = new Configuration();
         // $config->setMiddlewares([$middleware]);

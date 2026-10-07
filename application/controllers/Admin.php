@@ -13,32 +13,111 @@ class admin extends Admin_Controller {
 	}
 
 
-	public function createdSignedLinksForOriginals($filename) { 
+	public function enqueueDerivatives($filename = null) {
+		if (!$this->input->is_cli_request()) {
+			echo "This command is CLI only\n";
+			return false;
+		}
+
+		if (!is_string($filename) || !is_file($filename) || !is_readable($filename)) {
+			echo "Provide a readable CSV file with a fileobjectid header\n";
+			return false;
+		}
+
+		$fp = fopen($filename, 'r');
+		if (!$fp) {
+			echo "Could not open CSV file: " . $filename . "\n";
+			return false;
+		}
+
+		try {
+			$header = fgetcsv($fp, 0, ',', '"', '\\');
+			$columns = array_map(static function ($column) {
+				return strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', (string)$column)));
+			}, $header ?: []);
+			$fileObjectIdColumn = array_search('fileobjectid', $columns, true);
+			if ($fileObjectIdColumn === false) {
+				echo "CSV must contain a fileobjectid header\n";
+				return false;
+			}
+
+			$requested = 0;
+			$failed = 0;
+			$rowNumber = 1;
+			while (($row = fgetcsv($fp, 0, ',', '"', '\\')) !== false) {
+				$rowNumber++;
+				$fileObjectId = trim((string)($row[$fileObjectIdColumn] ?? ''));
+				if ($fileObjectId === '') {
+					continue;
+				}
+
+				try {
+					if ($this->enqueueDerivativesForFile($fileObjectId)) {
+						$requested++;
+					} else {
+						$failed++;
+					}
+				} catch (\Throwable $error) {
+					echo "Row " . $rowNumber . " (" . $fileObjectId . "): " . $error->getMessage() . "\n";
+					$failed++;
+				}
+			}
+
+			echo "Requested: " . $requested . "; failed: " . $failed . "\n";
+			return $failed === 0;
+		} finally {
+			fclose($fp);
+		}
+	}
+
+
+	private function enqueueDerivativesForFile($fileObjectId) {
+		if (!is_string($fileObjectId) || !preg_match('/^[a-f0-9]{24}$/i', $fileObjectId)) {
+			echo "Invalid file object ID: " . $fileObjectId . "\n";
+			return false;
+		}
+
+		$fileHandler = $this->filehandler_router->getHandledObject($fileObjectId);
+		if (!$fileHandler) {
+			echo "Could not load handler for: " . $fileObjectId . "\n";
+			return false;
+		}
+
+		if (!$fileHandler->taskArray) {
+			echo "No processing tasks for: " . $fileObjectId . "\n";
+			return false;
+		}
+
+		$fileHandler->queueBatchItem();
+		echo "Derivative processing requested for: " . $fileObjectId . "\n";
+		return true;
+	}
+
+
+	public function createdSignedLinksForOriginals($filename) {
 		$fp = fopen($filename, "r");
 		$haveSomeGlacierFiles = false;
 		while (($line = fgets($fp)) !== false) {
-				$line = trim($line);
-				if ($line) {
-						$fileHandler = $this->filehandler_router->getHandledObject($line);
-						if ($fileHandler) {
-								if($fileHandler->sourceFile->isArchived()) {
+			$line = trim($line);
+			if ($line) {
+				$fileHandler = $this->filehandler_router->getHandledObject($line);
+				if ($fileHandler) {
+					if ($fileHandler->sourceFile->isArchived()) {
 
-										echo "File is archived, initiating restore: " . $line. "\n";
-										$fileHandler->sourceFile->restoreFromArchive();
-										$haveSomeGlacierFiles = true;
-								}
-								else  {
-									echo $fileHandler->sourceFile->getProtectedURLForFile() . "\n";
-								}
-						} else {
-								echo "no handler for " . $line . "\n";
-						}
+						echo "File is archived, initiating restore: " . $line . "\n";
+						$fileHandler->sourceFile->restoreFromArchive();
+						$haveSomeGlacierFiles = true;
+					} else {
+						echo $fileHandler->sourceFile->getProtectedURLForFile() . "\n";
+					}
+				} else {
+					echo "no handler for " . $line . "\n";
 				}
+			}
 		}
-		if($haveSomeGlacierFiles) {
-				echo "Some files were in Glacier, you may need to run this again in a few hours to get signed links for those files\n";
+		if ($haveSomeGlacierFiles) {
+			echo "Some files were in Glacier, you may need to run this again in a few hours to get signed links for those files\n";
 		}
-
 	}
 
 
@@ -59,7 +138,7 @@ class admin extends Admin_Controller {
 			return;
 		}
 		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-		if(!$this->instance) {
+		if (!$this->instance) {
 			echo "invalid instance id\n";
 			return;
 		}
@@ -73,7 +152,7 @@ class admin extends Admin_Controller {
 			->andWhere("a.assetId IS NOT NULL")
 			->orderby("a.id", "desc");
 		$qb->andWhere("a.collectionId = ?1");
-		if($offsetAssetId) {
+		if ($offsetAssetId) {
 			$qb->andWhere("a.id < ?2");
 			$qb->setParameter(2, $offsetAssetId);
 		}
@@ -111,7 +190,7 @@ class admin extends Admin_Controller {
 		}
 
 		$this->instance = $this->doctrine->em->find("Entity\Instance", $instanceId);
-		if(!$this->instance) {
+		if (!$this->instance) {
 			echo "invalid instance id\n";
 			return;
 		}
@@ -128,7 +207,7 @@ class admin extends Admin_Controller {
 			->setParameter(1, $assetId);
 
 		$entry = $qb->getQuery()->getOneOrNullResult();
-		if(!$entry) {
+		if (!$entry) {
 			echo "Asset not found: " . $assetId . "\n";
 			return;
 		}
@@ -169,10 +248,9 @@ class admin extends Admin_Controller {
 
 
 				echo "Requesting Alt Text\n";
-				if($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
+				if ($fileHandler->sourceFile && $fileHandler->sourceFile->ready && $fileHandler->derivatives && count($fileHandler->derivatives) > 0) {
 					$fileHandler->generateAltText($debugMode);
-				}
-				else {
+				} else {
 					echo "File not ready for Alt Text generation\n";
 				}
 
@@ -252,13 +330,12 @@ class admin extends Admin_Controller {
 		foreach ($matchArray["searchResults"] as $match) {
 			echo $match . "\n";
 			$asset = new Asset_model($match);
-			if($asset->getGlobalValue("deleted") == true) {
+			if ($asset->getGlobalValue("deleted") == true) {
 				$this->search_model->remove($asset);
-			}
-			else {
+			} else {
 				continue;
 			}
-			
+
 			// $params['index'] = $this->config->item('elasticIndex');
 			// $params['id']    = $match;
 			// if(!$params['id'] || strlen($params['id']<5)) {
@@ -295,7 +372,7 @@ class admin extends Admin_Controller {
 
 
 		$count = $startValue;
-		foreach($result as $entry) {
+		foreach ($result as $entry) {
 			$assetModel = new asset_model();
 			$searchModel = new search_model();
 			// $before = microtime(true);
@@ -371,7 +448,7 @@ class admin extends Admin_Controller {
 
 		$count = $startValue;
 		$searchModel = new search_model();
-		foreach($result as $entry) {
+		foreach ($result as $entry) {
 			$assetModel = new asset_model();
 			// $searchModel = new search_model();
 			// $before = microtime(true);
@@ -558,8 +635,8 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
 		$countStart = $skip;
-		foreach($assets as $assetRecord) {
-			if(!$assetRecord->getAssetId()) {
+		foreach ($assets as $assetRecord) {
+			if (!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
@@ -610,8 +687,8 @@ class admin extends Admin_Controller {
 
 		$this->load->model("asset_model");
 		$this->load->model("asset_template");
-		foreach($result as $entry) {
-			if($entry->getAssetId() === NULL) {
+		foreach ($result as $entry) {
+			if ($entry->getAssetId() === NULL) {
 				continue;
 			}
 			$asset = new Asset_model();
@@ -823,8 +900,8 @@ class admin extends Admin_Controller {
 		$this->load->model("asset_template");
 		$this->load->model("search_model");
 		$countStart = $skip;
-		foreach($assets as $assetRecord) {
-			if(!$assetRecord->getAssetId()) {
+		foreach ($assets as $assetRecord) {
+			if (!$assetRecord->getAssetId()) {
 				continue;
 			}
 			$asset = new Asset_model();
