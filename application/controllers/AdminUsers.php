@@ -8,7 +8,7 @@ use SimpleValidator as V;
 
 class AdminUsers extends Instance_Controller {
   private const PER_PAGE_OPTIONS = [25, 50, 100];
-  private const DEFAULT_PER_PAGE = 100;
+  private const DEFAULT_PER_PAGE = 25;
 
   private EntityManager $em;
 

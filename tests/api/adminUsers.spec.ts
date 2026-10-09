@@ -314,7 +314,7 @@ test.describe("adminUsers", () => {
         expect(largestPage.total).toBe(26);
       });
 
-      test("invalid page and perPage fall back to page 1 and 100", async ({
+      test("invalid page and perPage fall back to page 1 and 25", async ({
         page,
       }) => {
         const list = await listUsers(page, {
@@ -323,8 +323,8 @@ test.describe("adminUsers", () => {
           page: "abc",
         });
 
-        expect(list).toMatchObject({ page: 1, perPage: 100, total: 26 });
-        expect(list.users).toHaveLength(26);
+        expect(list).toMatchObject({ page: 1, perPage: 25, total: 26 });
+        expect(list.users).toHaveLength(25);
       });
     });
   });
