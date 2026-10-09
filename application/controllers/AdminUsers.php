@@ -29,12 +29,12 @@ class AdminUsers extends Instance_Controller {
   }
 
   private function listUsers(): CI_Output {
-    $params = $this->input->get() ?? [];
+    $params = $this->input->get();
 
     try {
       $validated = V::validate($params, [
         'search' => [V::string()],
-        'userType' => [V::regex('/\A(Local|Remote)\z/', 'Must be Local or Remote.')],
+        'userType' => [V::regex('/\A(Local|Remote|Remote-Guest)\z/', 'Must be Local, Remote, or Remote-Guest.')],
         'isSuperAdmin' => [V::regex('/\A(true|false)\z/', 'Must be true or false.')],
       ]);
     } catch (ValidationException $e) {
@@ -48,11 +48,12 @@ class AdminUsers extends Instance_Controller {
       ? $validated['isSuperAdmin'] === 'true'
       : null;
 
-    $page = filter_var(
+    $requestedPage = filter_var(
       $params['page'] ?? null,
       FILTER_VALIDATE_INT,
       ['options' => ['min_range' => 1]]
-    ) ?: 1;
+    );
+    $page = $requestedPage === false ? 1 : $requestedPage;
     $requestedPerPage = filter_var($params['perPage'] ?? null, FILTER_VALIDATE_INT);
     $perPage = in_array($requestedPerPage, self::PER_PAGE_OPTIONS, true)
       ? $requestedPerPage
@@ -64,19 +65,29 @@ class AdminUsers extends Instance_Controller {
       ->getSingleScalarResult();
 
     $offset = ($page - 1) * $perPage;
-    $users = $offset < $total
-      ? $this->filteredUsersQuery($search, $userType, $isSuperAdmin)
-        ->select('u', 'i')
+    $userResults = [];
+    // Keep this guard: a huge `page` overflows `$offset`
+    // to a float, and setFirstResult() throws a TypeError.
+    if ($offset < $total) {
+      $userResults = $this->filteredUsersQuery($search, $userType, $isSuperAdmin)
+        ->select('u', 'i.id AS instanceId', 'i.name AS instanceName')
         ->leftJoin('u.instance', 'i')
         ->orderBy('u.id', 'DESC')
         ->setFirstResult($offset)
         ->setMaxResults($perPage)
         ->getQuery()
-        ->getResult()
-      : [];
+        ->getResult();
+    }
 
     return render_json([
-      'users' => array_map(fn(User $user) => $this->toUserRow($user), $users),
+      'users' => array_map(
+        fn(array $userResult) => $this->toUserRow(
+          $userResult[0],
+          $userResult['instanceId'],
+          $userResult['instanceName']
+        ),
+        $userResults
+      ),
       'page' => $page,
       'perPage' => $perPage,
       'total' => $total,
@@ -116,9 +127,7 @@ class AdminUsers extends Instance_Controller {
     return addcslashes($text, '%_\\');
   }
 
-  private function toUserRow(User $user): array {
-    $instance = $user->getInstance();
-
+  private function toUserRow(User $user, ?int $instanceId, ?string $instanceName): array {
     return [
       'id' => $user->getId(),
       'username' => $user->getUsername(),
@@ -130,9 +139,9 @@ class AdminUsers extends Instance_Controller {
       'hasExpiry' => (bool) $user->getHasExpiry(),
       'expires' => $user->getExpires()?->format('c'),
       'createdAt' => $user->getCreatedAt()?->format('c'),
-      'instance' => $instance
-        ? ['id' => $instance->getId(), 'name' => $instance->getName()]
-        : null,
+      'instance' => $instanceId === null
+        ? null
+        : ['id' => $instanceId, 'name' => $instanceName],
     ];
   }
 }

@@ -185,7 +185,7 @@ export async function createAsset(
   return body.objectId;
 }
 
-export const PERM_ADMIN = 60;
+const PERM_ADMIN = 60;
 
 export function queryDb(sql: string): string {
   return execSync(

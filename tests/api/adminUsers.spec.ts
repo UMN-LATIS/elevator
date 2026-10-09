@@ -15,13 +15,15 @@ const SEARCH_TOKEN = `us${RUN}`;
 const FILTER_TOKEN = `uf${RUN}`;
 const PAGE_TOKEN = `up${RUN}`;
 
+type UserType = "Local" | "Remote" | "Remote-Guest";
+
 type UserRow = {
   id: number;
   username: string;
   displayName: string | null;
   email: string | null;
   emplid: string | null;
-  userType: "Local" | "Remote";
+  userType: UserType;
   isSuperAdmin: boolean;
   hasExpiry: boolean;
   expires: string | null;
@@ -41,8 +43,9 @@ type UserSeed = {
   displayName?: string;
   email?: string;
   emplid?: string;
-  userType?: "Local" | "Remote";
+  userType?: UserType;
   isSuperAdmin?: boolean | null;
+  instanceId?: number;
 };
 
 function insertUsers(seeds: UserSeed[]): void {
@@ -50,17 +53,36 @@ function insertUsers(seeds: UserSeed[]): void {
     value === undefined ? "NULL" : `'${value.replace(/'/g, "''")}'`;
   const sqlBoolean = (value: boolean | null) =>
     value === null ? "NULL" : String(value);
+  const sqlInteger = (value: number | undefined) =>
+    value === undefined ? "NULL" : String(value);
 
   const rows = seeds.map(
-    (seed) =>
-      `(${sqlText(seed.username)}, ${sqlText(seed.userType ?? "Local")}, ` +
-      `${sqlText(seed.displayName)}, ${sqlText(seed.email)}, ` +
-      `${sqlText(seed.emplid)}, ${sqlBoolean(seed.isSuperAdmin === undefined ? false : seed.isSuperAdmin)}, ` +
-      `false, now())`,
+    ({
+      username,
+      userType = "Local",
+      displayName,
+      email,
+      emplid,
+      isSuperAdmin = false,
+      instanceId,
+    }) => {
+      const values = [
+        sqlText(username),
+        sqlText(userType),
+        sqlText(displayName),
+        sqlText(email),
+        sqlText(emplid),
+        sqlBoolean(isSuperAdmin),
+        "false",
+        "now()",
+        sqlInteger(instanceId),
+      ];
+      return `(${values.join(", ")})`;
+    },
   );
 
   queryDb(
-    `INSERT INTO users (username, usertype, displayname, email, emplid, issuperadmin, hasexpiry, createdat) VALUES ${rows.join(", ")}`,
+    `INSERT INTO users (username, usertype, displayname, email, emplid, issuperadmin, hasexpiry, createdat, instance_id) VALUES ${rows.join(", ")}`,
   );
 }
 
@@ -95,6 +117,7 @@ test.describe("adminUsers", () => {
     insertUsers([
       { username: `e2e-${FILTER_TOKEN}-local` },
       { username: `e2e-${FILTER_TOKEN}-remote`, userType: "Remote" },
+      { username: `e2e-${FILTER_TOKEN}-guest`, userType: "Remote-Guest" },
       { username: `e2e-${FILTER_TOKEN}-super`, isSuperAdmin: true },
       { username: `e2e-${FILTER_TOKEN}-null`, isSuperAdmin: null },
     ]);
@@ -123,6 +146,7 @@ test.describe("adminUsers", () => {
         headers: { Accept: "application/json" },
       });
       expect(res.status()).toBe(403);
+      await userPage.context().close();
     });
 
     test("an instance admin gets 403", async ({ browser, page }) => {
@@ -138,6 +162,7 @@ test.describe("adminUsers", () => {
         headers: { Accept: "application/json" },
       });
       expect(res.status()).toBe(403);
+      await instanceAdminPage.context().close();
     });
 
     test("a non-GET request gets 405", async ({ page }) => {
@@ -152,7 +177,7 @@ test.describe("adminUsers", () => {
       await loginUser(page, "admin");
     });
 
-    test("rows have the documented shape and never include password", async ({
+    test("rows have exactly the documented fields, so no password", async ({
       page,
     }) => {
       const list = await listUsers(page, { search: `${SEARCH_TOKEN}EMPLID` });
@@ -171,27 +196,37 @@ test.describe("adminUsers", () => {
         createdAt: expect.any(String),
         instance: null,
       });
+    });
 
-      const everyone = await listUsers(page);
-      for (const user of everyone.users) {
-        expect(user).not.toHaveProperty("password");
-      }
+    test("a user with a home instance includes its id and name", async ({
+      page,
+    }) => {
+      const [id, name] = queryDb(
+        "SELECT id, name FROM instances ORDER BY id LIMIT 1",
+      ).split("|");
+      const username = `e2e-${RUN}-with-instance`;
+      insertUsers([{ username, instanceId: Number(id) }]);
+
+      const list = await listUsers(page, { search: username });
+
+      expect(list.users).toHaveLength(1);
+      expect(list.users[0].instance).toEqual({ id: Number(id), name });
     });
 
     test.describe("search", () => {
       const cases = [
-        { field: "displayName", search: `${SEARCH_TOKEN}name`, expected: 1 },
-        { field: "email", search: `${SEARCH_TOKEN}mail`, expected: 2 },
-        { field: "emplid", search: `${SEARCH_TOKEN}emplid`, expected: 3 },
-        { field: "username", search: `e2e-${SEARCH_TOKEN}-4`, expected: 4 },
+        { field: "displayName", search: `${SEARCH_TOKEN}name`, expectedUsernameSuffix: 1 },
+        { field: "email", search: `${SEARCH_TOKEN}mail`, expectedUsernameSuffix: 2 },
+        { field: "emplid", search: `${SEARCH_TOKEN}emplid`, expectedUsernameSuffix: 3 },
+        { field: "username", search: `e2e-${SEARCH_TOKEN}-4`, expectedUsernameSuffix: 4 },
       ];
 
-      for (const { field, search, expected } of cases) {
+      for (const { field, search, expectedUsernameSuffix } of cases) {
         test(`matches ${field} regardless of letter case`, async ({ page }) => {
           const list = await listUsers(page, { search });
 
           expect(list.users.map((user) => user.username.toLowerCase())).toEqual([
-            `e2e-${SEARCH_TOKEN}-${expected}`,
+            `e2e-${SEARCH_TOKEN}-${expectedUsernameSuffix}`,
           ]);
           expect(list.total).toBe(1);
         });
@@ -224,6 +259,16 @@ test.describe("adminUsers", () => {
         expect(list.total).toBe(1);
       });
 
+      test("userType=Remote-Guest returns only guest users", async ({ page }) => {
+        const list = await listUsers(page, {
+          search: `e2e-${FILTER_TOKEN}`,
+          userType: "Remote-Guest",
+        });
+
+        expect(sortedUsernames(list)).toEqual([`e2e-${FILTER_TOKEN}-guest`]);
+        expect(list.total).toBe(1);
+      });
+
       test("isSuperAdmin=true returns only super admins", async ({ page }) => {
         const list = await listUsers(page, {
           search: `e2e-${FILTER_TOKEN}`,
@@ -243,12 +288,13 @@ test.describe("adminUsers", () => {
 
         expect(sortedUsernames(list)).toEqual(
           [
+            `e2e-${FILTER_TOKEN}-guest`,
             `e2e-${FILTER_TOKEN}-local`,
             `e2e-${FILTER_TOKEN}-null`,
             `e2e-${FILTER_TOKEN}-remote`,
           ].sort(),
         );
-        expect(list.total).toBe(3);
+        expect(list.total).toBe(4);
       });
 
       test("filters and search combine with AND", async ({ page }) => {
