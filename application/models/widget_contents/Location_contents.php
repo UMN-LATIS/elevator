@@ -19,7 +19,7 @@ class Location_contents extends Widget_contents_base {
 	 */
 	public function getAsArray($serializeNestedObjects=false) {
 
-		return ["locationLabel"=>$this->locationLabel, "address"=>$this->address, "loc"=>array("type"=>"Point","coordinates"=>[(float)$this->longitude,(float)$this->latitude]), "isPrimary"=>$this->isPrimary];
+		return ["locationLabel"=>$this->locationLabel, "address"=>$this->address, "loc"=>array("type"=>"Point","coordinates"=>[(float)$this->longitude,(float)$this->latitude]), "isPrimary"=>$this->isPrimary, "uuid"=>$this->uuid];
 	}
 
 	public function getAsText($serializeNestedObjects=false) {
