@@ -10,8 +10,6 @@
  * the UMN group types. Select it with AUTH_HELPER=MockAuthHelper.
  *
  * SECURITY: This should NEVER be run in production since it skips legit auth.
- * As a safeguard, the constructor refuses to run when ENVIRONMENT is
- * production (if somehow the ENV was set).
  */
 
 require_once("AuthHelper.php");
@@ -60,13 +58,13 @@ class MockAuthHelper extends AuthHelper {
     ],
   ];
 
-  // The guard is an allowlist so an unexpected or missing CI_ENV fails
-  // closed rather than open (index.php defaults ENVIRONMENT to
-  // development when CI_ENV is unset).
   const ALLOWED_ENVIRONMENTS = ['development', 'local', 'testing'];
 
   public function __construct() {
-    if (!in_array(ENVIRONMENT, self::ALLOWED_ENVIRONMENTS, true)) {
+    // Read CI_ENV, not ENVIRONMENT: index.php sets
+    // ENVIRONMENT to development when CI_ENV is
+    // unset, so a server without CI_ENV would pass.
+    if (!in_array($_SERVER['CI_ENV'] ?? null, self::ALLOWED_ENVIRONMENTS, true)) {
       show_error('MockAuthHelper grants credential-less login and only runs in development, local, or testing environments. Set AUTH_HELPER to your real auth helper.', 500);
     }
     parent::__construct();
