@@ -1,6 +1,7 @@
 <?php
 
 use Entity\Permission;
+use SimpleValidator as V;
 
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
@@ -109,52 +110,43 @@ class Permissions extends Instance_Controller {
 
 	public function update()
 	{
-		//TODO Permissions checking
-		if($this->config->item('enableCaching')) {
-			$this->userCache->clear();
+		try {
+			$validated = V::validate($this->input->post(), [
+				'permissionType' => [V::required(), V::in([INSTANCE_PERMISSION, COLLECTION_PERMISSION, DRAWER_PERMISSION])],
+				'permissionTypeId' => [V::integer()],
+				'permission' => [V::eachKey(V::integer()), V::each(V::integer())],
+			]);
+		} catch (ValidationException $e) {
+			return show_error(implode('<br>', array_map('html_escape', $e->getErrorMessages())), 422);
 		}
-		$permissionTypeId = $this->input->post('permissionTypeId');
-		$permissionType = $this->input->post('permissionType');
+		$permissionType = $validated['permissionType'];
+		$permissionTypeId = $validated['permissionTypeId'] ?? null;
 
-
-		if($permissionType == INSTANCE_PERMISSION || $permissionType == COLLECTION_PERMISSION) {
-
-			$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION, $this->instance);
-			if($accessLevel < PERM_ADMIN) {
-				instance_redirect("errorHandler/error/noPermission");
-			}
-		}
-		elseif($permissionType == DRAWER_PERMISSION) {
-			$accessLevel = $this->user_model->getAccessLevel(DRAWER_PERMISSION, $this->doctrine->em->find('Entity\Drawer', $permissionTypeId));
-			if($accessLevel < PERM_CREATEDRAWERS) {
-				instance_redirect("errorHandler/error/noPermission");
-			}
-		}
-
-
-
-		if($permissionTypeId == null || $permissionType == INSTANCE_PERMISSION) {
-			if ($permissionType != INSTANCE_PERMISSION) {
-				show_404();
-			}
-			$permissionableObject = $this->instance;
-		} else {
-			$permissionableObject = $this->doctrine->em->find("Entity\\$permissionType", $permissionTypeId);
-		}
-
+		$permissionableObject = $this->findPermissionableObject($permissionType, $permissionTypeId);
 		if ($permissionableObject === null) {
 			show_404();
 		}
+		if (!$this->canEditPermissionsOf($permissionableObject)) {
+			instance_redirect("errorHandler/error/noPermission");
+		}
 
-		$permissions = $permissionableObject->getPermissions();
-		$permissionArray = $this->input->post('permission');
-		foreach ($permissions as $permissionObject) {
+		$levelsByGrantId = $this->findPermissionLevels($validated['permission'] ?? []);
+		if ($levelsByGrantId === null) {
+			return show_error("Unknown permission level", 422);
+		}
+		if ($permissionableObject instanceof Entity\Drawer && $this->includesLevelAboveOriginals($levelsByGrantId)) {
+			return show_error("Drawer grants can't be higher than Download Originals", 422);
+		}
 
-			if(isset($permissionArray[$permissionObject->getId()])) {
-				$permission = $this->doctrine->em->find('Entity\Permission', $permissionArray[$permissionObject->getId()]);
-				$permissionObject->setPermission($permission);
+		if($this->config->item('enableCaching')) {
+			$this->userCache->clear();
+		}
+
+		foreach ($permissionableObject->getPermissions() as $grant) {
+			$grantId = $grant->getId();
+			if (isset($levelsByGrantId[$grantId])) {
+				$grant->setPermission($levelsByGrantId[$grantId]);
 			}
-
 		}
 
 		$this->doctrine->em->flush();
@@ -165,6 +157,54 @@ class Permissions extends Instance_Controller {
 			instance_redirect("permissions/edit/$permissionType/$permissionTypeId");
 		}
 
+	}
+
+	private function findPermissionableObject(string $permissionType, ?string $permissionTypeId): Entity\Instance|Entity\Collection|Entity\Drawer|null {
+		return match ($permissionType) {
+			INSTANCE_PERMISSION => $this->instance,
+			COLLECTION_PERMISSION => $this->findCollectionInInstance($permissionTypeId),
+			DRAWER_PERMISSION => $this->doctrine->em->find('Entity\Drawer', (int) $permissionTypeId),
+			default => null,
+		};
+	}
+
+	private function findCollectionInInstance(?string $collectionId): ?Entity\Collection {
+		$collection = $this->doctrine->em->find('Entity\Collection', (int) $collectionId);
+		if ($collection === null || !$collection->getInstances()->contains($this->instance)) {
+			return null;
+		}
+		return $collection;
+	}
+
+	/**
+	 * Returns null if any level id doesn't exist.
+	 */
+	private function findPermissionLevels(array $levelIdsByGrantId): ?array {
+		$levelsByGrantId = [];
+		foreach ($levelIdsByGrantId as $grantId => $levelId) {
+			$level = $this->doctrine->em->find('Entity\Permission', (int) $levelId);
+			if ($level === null) {
+				return null;
+			}
+			$levelsByGrantId[$grantId] = $level;
+		}
+		return $levelsByGrantId;
+	}
+
+	private function includesLevelAboveOriginals(array $levelsByGrantId): bool {
+		foreach ($levelsByGrantId as $level) {
+			if ((int) $level->getLevel() > PERM_ORIGINALS) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private function canEditPermissionsOf(Entity\Instance|Entity\Collection|Entity\Drawer $permissionableObject): bool {
+		if ($permissionableObject instanceof Entity\Drawer) {
+			return $this->user_model->getAccessLevel(DRAWER_PERMISSION, $permissionableObject) >= PERM_CREATEDRAWERS;
+		}
+		return $this->isCurrentUserAdmin();
 	}
 
 	private function addGroup($permissionType=null, $permissionTypeId=null, $groupId=null) {

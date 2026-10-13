@@ -65,6 +65,66 @@ class SimpleValidator {
     return fn($v) => !isset($v) || is_string($v) ? true : 'Must be a string';
   }
 
+  public static function in(array $allowedValues): \Closure {
+    return fn($v) => !isset($v) || in_array($v, $allowedValues, true)
+      ? true
+      : 'Must be one of: ' . implode(', ', $allowedValues);
+  }
+
+  /**
+   * Applies $checkers to every value of an array field.
+   *
+   * @example
+   * // permission[12]=9 checks '9'
+   * 'permission' => [V::each(V::integer())]
+   */
+  public static function each(\Closure ...$checkers): \Closure {
+    return function ($v, $data = []) use ($checkers) {
+      if (!isset($v)) {
+        return true;
+      }
+      if (!is_array($v)) {
+        return 'Must be an array';
+      }
+      foreach ($v as $key => $item) {
+        foreach ($checkers as $checker) {
+          $result = $checker($item, $data);
+          if ($result !== true) {
+            return "Item {$key}: {$result}";
+          }
+        }
+      }
+      return true;
+    };
+  }
+
+  /**
+   * Applies $checkers to every key of an array field.
+   *
+   * @example
+   * // permission[12]=9 checks the int 12
+   * 'permission' => [V::eachKey(V::integer())]
+   */
+  public static function eachKey(\Closure ...$checkers): \Closure {
+    return function ($v, $data = []) use ($checkers) {
+      if (!isset($v)) {
+        return true;
+      }
+      if (!is_array($v)) {
+        return 'Must be an array';
+      }
+      foreach (array_keys($v) as $key) {
+        foreach ($checkers as $checker) {
+          $result = $checker($key, $data);
+          if ($result !== true) {
+            return "Key {$key}: {$result}";
+          }
+        }
+      }
+      return true;
+    };
+  }
+
   public static function min(int $min): \Closure {
     return fn($v) => !isset($v) || (is_numeric($v) && $v >= $min)
       ? true
