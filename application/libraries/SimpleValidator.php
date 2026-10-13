@@ -76,9 +76,9 @@ class SimpleValidator {
    *
    * @example
    * // permission[12]=9 checks '9'
-   * 'permission' => [V::each(V::integer())]
+   * 'permission' => [V::eachValue(V::integer())]
    */
-  public static function each(\Closure ...$checkers): \Closure {
+  public static function eachValue(\Closure ...$checkers): \Closure {
     return function ($v, $data = []) use ($checkers) {
       if (!isset($v)) {
         return true;

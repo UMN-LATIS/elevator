@@ -114,7 +114,7 @@ class Permissions extends Instance_Controller {
 			$validated = V::validate($this->input->post(), [
 				'permissionType' => [V::required(), V::in([INSTANCE_PERMISSION, COLLECTION_PERMISSION, DRAWER_PERMISSION])],
 				'permissionTypeId' => [V::integer()],
-				'permission' => [V::eachKey(V::integer()), V::each(V::integer())],
+				'permission' => [V::eachKey(V::integer()), V::eachValue(V::integer())],
 			]);
 		} catch (ValidationException $e) {
 			return show_error(implode('<br>', array_map('html_escape', $e->getErrorMessages())), 422);
@@ -639,40 +639,76 @@ class Permissions extends Instance_Controller {
 
 
 
-	public function delete($permissionType, $permissionId, $permissionTypeId = null)
+	public function delete($permissionType, $grantId)
 	{
-		//TODO Permissions checking
-		$upperDrawer = ucfirst($permissionType);
-		$permission = $this->doctrine->em->find("Entity\\{$upperDrawer}Permission", $permissionId);
-		if ($permission === null) {
+		if ($this->input->method() !== 'delete') {
+			$this->output->set_header('Allow: DELETE');
+			return abort_json(['error' => 'Method Not Allowed'], 405);
+		}
+
+		try {
+			$validated = V::validate([
+				'permissionType' => $permissionType,
+				'grantId' => $grantId,
+			], [
+				'permissionType' => [V::required(), V::in([INSTANCE_PERMISSION, COLLECTION_PERMISSION, DRAWER_PERMISSION])],
+				'grantId' => [V::required(), V::integer()],
+			]);
+		} catch (ValidationException $e) {
+			return show_error(implode('<br>', array_map('html_escape', $e->getErrorMessages())), 422);
+		}
+
+		$grant = $this->findGrant($validated['permissionType'], (int) $validated['grantId']);
+		if ($grant === null) {
 			show_404();
 		}
-
-
-		if($permissionType == INSTANCE_PERMISSION || $permissionType == COLLECTION_PERMISSION) {
-
-			$accessLevel = $this->user_model->getAccessLevel(INSTANCE_PERMISSION, $this->instance);
-			if($accessLevel < PERM_ADMIN) {
-				instance_redirect("errorHandler/error/noPermission");
-			}
+		$permissionableObject = $this->findPermissionableObjectForGrant($grant);
+		if ($permissionableObject === null) {
+			show_404();
 		}
-		elseif($permissionType == DRAWER_PERMISSION) {
-			$accessLevel = $this->user_model->getAccessLevel(DRAWER_PERMISSION, $this->doctrine->em->find('Entity\Drawer', $permissionTypeId));
-			if($accessLevel < PERM_CREATEDRAWERS) {
-				instance_redirect("errorHandler/error/noPermission");
-			}
+		if (!$this->canEditPermissionsOf($permissionableObject)) {
+			instance_redirect("errorHandler/error/noPermission");
 		}
 
-
-
-		$this->doctrine->em->remove($permission);
+		$this->doctrine->em->remove($grant);
 		$this->doctrine->em->flush();
 
-		if($permissionTypeId == null) {
-			instance_redirect("permissions/edit/$permissionType");
-		} else {
-			instance_redirect("permissions/edit/$permissionType/$permissionTypeId");
+		if($this->config->item('enableCaching')) {
+			$this->userCache->clear();
 		}
+
+		instance_redirect($this->permissionsPagePathFor($permissionableObject));
+	}
+
+	private function findGrant(string $permissionType, int $grantId): Entity\InstancePermission|Entity\CollectionPermission|Entity\DrawerPermission|null {
+		$grantClass = match ($permissionType) {
+			INSTANCE_PERMISSION => 'Entity\InstancePermission',
+			COLLECTION_PERMISSION => 'Entity\CollectionPermission',
+			DRAWER_PERMISSION => 'Entity\DrawerPermission',
+		};
+		return $this->doctrine->em->find($grantClass, $grantId);
+	}
+
+	private function findPermissionableObjectForGrant(Entity\InstancePermission|Entity\CollectionPermission|Entity\DrawerPermission $grant): Entity\Instance|Entity\Collection|Entity\Drawer|null {
+		if ($grant instanceof Entity\InstancePermission) {
+			return $grant->getInstance() === $this->instance ? $this->instance : null;
+		}
+		if ($grant instanceof Entity\CollectionPermission) {
+			$collection = $grant->getCollection();
+			if ($collection === null) {
+				return null;
+			}
+			return $this->findCollectionInInstance((string) $collection->getId());
+		}
+		return $grant->getDrawer();
+	}
+
+	private function permissionsPagePathFor(Entity\Instance|Entity\Collection|Entity\Drawer $permissionableObject): string {
+		return match (true) {
+			$permissionableObject instanceof Entity\Instance => "permissions/edit/" . INSTANCE_PERMISSION,
+			$permissionableObject instanceof Entity\Collection => "permissions/edit/" . COLLECTION_PERMISSION . "/" . $permissionableObject->getId(),
+			$permissionableObject instanceof Entity\Drawer => "permissions/edit/" . DRAWER_PERMISSION . "/" . $permissionableObject->getId(),
+		};
 	}
 
 	public function addUser()

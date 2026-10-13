@@ -1010,8 +1010,8 @@ class AssetManager extends Admin_Controller {
 					'filename' => [V::required(), V::string()],
 					'templateId' => [V::required(), V::integer()],
 					'collectionId' => [V::required(), V::integer()],
-					'targetField' => [V::required(), V::eachKey(V::integer()), V::each(V::string())],
-					'delimiter' => [V::eachKey(V::integer()), V::each(V::string())],
+					'targetField' => [V::required(), V::eachKey(V::integer()), V::eachValue(V::string())],
+					'delimiter' => [V::eachKey(V::integer()), V::eachValue(V::string())],
 					'parentObject' => [V::string()],
 					'targetFieldSelect' => [V::string()],
 				]);
@@ -1057,7 +1057,7 @@ class AssetManager extends Admin_Controller {
 
 			try {
 				$mappingTargets = $this->csvMappingTargets($templateModel);
-				V::validate($cacheArray, ['mapping' => [V::each(V::in($mappingTargets))]]);
+				V::validate($cacheArray, ['mapping' => [V::eachValue(V::in($mappingTargets))]]);
 			} catch (ValidationException $e) {
 				return show_error("CSV columns can only map to fields on the chosen template", 422);
 			}
