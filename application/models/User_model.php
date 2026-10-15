@@ -534,17 +534,11 @@ class User_model extends CI_Model {
 
 
 	public function generateKeys() {
-
-		$salt = $this->config->item('encryption_key');
-		if (!$salt) {
-			throw new RuntimeException('ENCRYPTION_KEY must be configured to generate API keys.');
-		}
-
 		$apiKey = new Entity\ApiKey;
 
 		$apiKey->setLabel("Generated Key");
-		$apiKey->setApiKey(sha1($this->userId . "secretHash" . $salt));
-		$apiKey->setApiSecret(sha1($this->userId . "secretKey" . $salt));
+		$apiKey->setApiKey(bin2hex(random_bytes(32)));
+		$apiKey->setApiSecret(bin2hex(random_bytes(32)));
 		$apiKey->setOwner($this->user);
 		$apiKey->setAllowsRead(true);
 		$this->doctrine->em->persist($apiKey);
