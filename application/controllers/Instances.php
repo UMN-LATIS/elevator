@@ -153,7 +153,7 @@ class Instances extends Instance_Controller
 		$instance->setNotes($this->input->post('notes'));
 		$instance->setModifiedAt(new DateTime);
 		$instance->setInterfaceVersion($this->input->post('interfaceVersion'));
-		$instance->setEnableThemes($this->input->post('enableTheming'));
+		$instance->setEnableThemes($this->input->post('enableTheming') ? true : false);
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
 		$instance->setAvailableThemes($this->input->post('availableThemes'));
 		$instance->setShowChildCollections($this->input->post('showChildCollections') ? true : false);
