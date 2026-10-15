@@ -246,7 +246,10 @@ class Instances extends Instance_Controller
 	public function edit($id = null, $returnJson = false)
 	{
 
-		if ($this->isUsingVueUI() && !$returnJson) {
+		// Keep the $id check. The Vue router has no
+		// instance create route, so without the check
+		// Create New Instance shows a 404 (#271).
+		if ($id && $this->isUsingVueUI() && !$returnJson) {
 			return $this->template->publish('vueTemplate');
 		}
 
