@@ -9,6 +9,32 @@ import {
   createUser,
 } from "../helpers";
 
+test.describe("getAsset missing asset", () => {
+  test.beforeEach(() => {
+    refreshDatabase();
+  });
+
+  test("returns JSON 404 when JSON is requested", async ({ request }) => {
+    const res = await request.get(
+      `${baseURL()}/asset/getAsset/000000000000000000000000`,
+      { headers: { Accept: "application/json" } },
+    );
+
+    expect(res.status()).toBe(404);
+    expect(res.headers()["content-type"]).toContain("application/json");
+    expect(await res.json()).toEqual({ error: "not found" });
+  });
+
+  test("keeps the legacy HTML 404 response", async ({ request }) => {
+    const res = await request.get(
+      `${baseURL()}/asset/getAsset/000000000000000000000000`,
+    );
+
+    expect(res.status()).toBe(404);
+    expect(res.headers()["content-type"]).toContain("text/html");
+  });
+});
+
 test.describe("assets", () => {
   test.beforeAll(() => {
     refreshDatabase();

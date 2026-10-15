@@ -39,11 +39,15 @@ class asset extends Instance_Controller {
 
 
 		if(!$assetModel->loadAssetById($objectId, $noHydrate = true)) {
-			show_404();
+			return $isJson
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 
 		if(!$this->collection_model->getCollection($assetModel->assetObject->getCollectionId())) {
-			show_404();
+			return $isJson
+				? render_json(["error" => "not found"], 404)
+				: show_404();
 		}
 		$this->accessLevel = $this->user_model->getAccessLevel("asset", $assetModel);
 
