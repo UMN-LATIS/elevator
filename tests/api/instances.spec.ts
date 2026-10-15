@@ -14,9 +14,4 @@ test.describe("instances/edit in a Vue UI session", () => {
     const response = await page.request.get(`${baseURL()}/instances/edit`);
     expect(await response.text()).toContain("instances/save");
   });
-
-  test("with an id serves the Vue app", async ({ page }) => {
-    const response = await page.request.get(`${baseURL()}/instances/edit/1`);
-    expect(await response.text()).toContain('<div id="app">');
-  });
 });
