@@ -59,8 +59,7 @@ class API_Controller extends MY_Controller {
 			exit;
 		}
 
-		$secret = $apiKey->getApiSecret();
-		if(sha1($authTimestamp . $secret) != $authHash) {
+		if(!$apiKey->validateSignature($authTimestamp, $authHash)) {
 			header('HTTP/1.0 401 Unauthorized');
 			exit;
 		}
