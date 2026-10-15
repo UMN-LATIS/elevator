@@ -157,9 +157,8 @@ class MY_Controller extends CI_Controller {
 		if($authKey) {
 			$apiKey = $this->doctrine->em->getRepository("Entity\ApiKey")->findOneBy(["apiKey"=>$authKey]);
 			if($apiKey) {
-				$secret = $apiKey->getApiSecret();
 				
-				if(sha1($timestamp . $targetObject . $secret) == $signedString) {	
+				if($apiKey->validateSignature($timestamp . $targetObject, $signedString)) {
 					if(!$this->user_model->userLoaded) {
 						$this->user_model->assetOverride = true; // set a flag that this isn't a fully loaded user
 					}
