@@ -18,7 +18,7 @@ class Date_contents extends Widget_contents_base {
 	 * @return [type] [description]
 	 */
 	public function getAsArray($serializeNestedObjects=false) {
-		return ["label"=>$this->label, "start"=>["text"=>$this->start["text"], "numeric"=>$this->start["numeric"]], "end"=>["text"=>$this->end["text"], "numeric"=>$this->end["numeric"]],"isPrimary"=>$this->isPrimary];
+		return ["label"=>$this->label, "start"=>["text"=>$this->start["text"], "numeric"=>$this->start["numeric"]], "end"=>["text"=>$this->end["text"], "numeric"=>$this->end["numeric"]],"isPrimary"=>$this->isPrimary, "uuid"=>$this->uuid];
 	}
 
 	public function getAsText($serializeNestedObjects=false) {

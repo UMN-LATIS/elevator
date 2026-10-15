@@ -13,7 +13,7 @@ class Tags_contents extends Widget_contents_base {
 
 
 	public function getAsArray($serializeNestedObjects=false) {
-		return ["tags"=>$this->tags, "isPrimary"=>$this->isPrimary];
+		return ["tags"=>$this->tags, "isPrimary"=>$this->isPrimary, "uuid"=>$this->uuid];
 	}
 
 	public function getAsText($serializeNestedObjects=false) {
