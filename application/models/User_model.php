@@ -1,4 +1,4 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (! defined('BASEPATH')) exit('No direct script access allowed');
 
 class User_model extends CI_Model {
 
@@ -18,33 +18,26 @@ class User_model extends CI_Model {
 
 	public $nonGlobalDrawerPermissions = array(); // drawers that are only available to this user due to specific perms, show up in their list
 
-	public function __construct()
-	{
+	public function __construct() {
 		parent::__construct();
-
-
 	}
 
 	public function getDisplayNameForUserId($userId) {
-			$user = $this->doctrine->em->find('Entity\User', $userId);
-			if($user) {
-				return $user->getDisplayName();	
-			}
-			else {
-				return $userId;
-			}
-			
+		$user = $this->doctrine->em->find('Entity\User', $userId);
+		if ($user) {
+			return $user->getDisplayName();
+		} else {
+			return $userId;
+		}
 	}
 
 	public function getUsernameForUserId($userId) {
-			$user = $this->doctrine->em->find('Entity\User', $userId);
-			if($user) {
-				return $user->getUsername();	
-			}
-			else {
-				return $userId;
-			}
-			
+		$user = $this->doctrine->em->find('Entity\User', $userId);
+		if ($user) {
+			return $user->getUsername();
+		} else {
+			return $userId;
+		}
 	}
 
 	// convenience function, so that we know if they have edit access to any collection,
@@ -52,17 +45,17 @@ class User_model extends CI_Model {
 	public function getMaxCollectionPermission() {
 		$maxPermission = 0;
 
-		if(count($this->collectionPermissions) == 0) {
+		if (count($this->collectionPermissions) == 0) {
 			return;
 		}
 
-		foreach($this->instance->getCollections() as $collection) {
+		foreach ($this->instance->getCollections() as $collection) {
 			$collections[$collection->getId()] = 1;
 		}
-		foreach($this->collectionPermissions as $collection=>$permission) {
-			if(isset($collections[$collection])) {
-				$maxPermission = max($permission, $maxPermission);	
-			}	
+		foreach ($this->collectionPermissions as $collection => $permission) {
+			if (isset($collections[$collection])) {
+				$maxPermission = max($permission, $maxPermission);
+			}
 		}
 		return $maxPermission;
 	}
@@ -71,60 +64,60 @@ class User_model extends CI_Model {
 	/**
 	 * use permissions to get the max access level for specific object
 	 */
-	public function getAccessLevel($type, $object, $includeExcerpts=false) {
+	public function getAccessLevel($type, $object, $includeExcerpts = false) {
 
 
-		if(isset($this->user) && $this->getIsSuperAdmin()) {
+		if (isset($this->user) && $this->getIsSuperAdmin()) {
 			return 70;
 		}
 
-		switch($type) {
+		switch ($type) {
 			case "collection":
-				if(array_key_exists($object->getId(),$this->collectionPermissions)) {
+				if (array_key_exists($object->getId(), $this->collectionPermissions)) {
 					return $this->collectionPermissions[$object->getId()];
 				}
 				break;
 			case "instance":
-				if(array_key_exists($object->getId(),$this->instancePermissions)) {
+				if (array_key_exists($object->getId(), $this->instancePermissions)) {
 					return $this->instancePermissions[$object->getId()];
 				}
 				break;
 			case "drawer":
-				if(array_key_exists($object->getId(),$this->drawerPermissions)) {
+				if (array_key_exists($object->getId(), $this->drawerPermissions)) {
 					return $this->drawerPermissions[$object->getId()];
 				}
-				if($this->isInstanceAdmin() && $object->getInstance() == $this->instance) {
+				if ($this->isInstanceAdmin() && $object->getInstance() == $this->instance) {
 					return 60;
 				}
 				break;
 			case "asset":
 				$assetDrawers = $object->getDrawers($includeExcerpts);
-				
+
 				$perm = 0;
-				foreach($assetDrawers as $drawer) {
-					if(array_key_exists($drawer, $this->drawerPermissions)) {
+				foreach ($assetDrawers as $drawer) {
+					if (array_key_exists($drawer, $this->drawerPermissions)) {
 						$perm = max($this->drawerPermissions[$drawer], $perm);
 					}
 				}
-				
+
 
 				$assetCollection = (int)$object->getGlobalValue("collectionId");
-				if(array_key_exists($assetCollection, $this->collectionPermissions)) {
+				if (array_key_exists($assetCollection, $this->collectionPermissions)) {
 					$perm = max($perm, $this->collectionPermissions[$assetCollection]);
 				}
 
 				$collection = $this->collection_model->getCollection($assetCollection);
-				if($collection) {
-					foreach($collection->getInstances() as $instance) {
-						if(array_key_exists($instance->getId(), $this->instancePermissions)) {
+				if ($collection) {
+					foreach ($collection->getInstances() as $instance) {
+						if (array_key_exists($instance->getId(), $this->instancePermissions)) {
 							$perm = max($perm, $this->instancePermissions[$instance->getId()]);
 						}
 					}
-					if(array_key_exists($object->getObjectId(),$this->assetPermissions)) {
+					if (array_key_exists($object->getObjectId(), $this->assetPermissions)) {
 						$perm = max($perm, $this->assetPermissions[$object->getObjectId()]);
 					}
 				}
-				
+
 
 				return $perm;
 				break;
@@ -133,7 +126,6 @@ class User_model extends CI_Model {
 		}
 
 		return 0;
-
 	}
 
 
@@ -144,51 +136,48 @@ class User_model extends CI_Model {
 	 * @param  [type] $type     [description]
 	 * @return [type]           [description]
 	 */
-	public function loadUser($userId=null) {
+	public function loadUser($userId = null) {
 
-		if($userId) {
+		if ($userId) {
 			$this->userId = $userId;
 			$this->user = $this->doctrine->em->find('Entity\User', $userId);
-			if($this->user === null) {
+			if ($this->user === null) {
 				$this->userLoaded = false;
 				// TOOD: if this is a real user create one
 				return;
-
 			}
 
-			if($this->user->getUserType() == "Remote") {
+			if ($this->user->getUserType() == "Remote") {
 				$authHelper = $this->getAuthHelper();
-				$this->userData = $authHelper->populateUserData($this->user);	
-				if($this->userData === false) {
+				$this->userData = $authHelper->populateUserData($this->user);
+				if ($this->userData === false) {
 					$this->userLoaded = false;
 					return;
 				}
 			}
-			
 
-			
+
+
 			$this->userLoaded = true;
 			$this->resolvePermissions();
 		}
-
-
 	}
 
-	function getPermissions($entityType, $groupType, $groupValue, $limit=null) {
+	function getPermissions($entityType, $groupType, $groupValue, $limit = null) {
 		$result = $this->doctrine->em->getRepository("Entity\\" . $entityType)->createQueryBuilder('i')
 
-   			->join("i.group_values", "r", "with", "i.group_type = :group_type")
-   			->where(":group_value_number LIKE r.groupValue")
-   			->setParameter('group_type', $groupType)
-   			->setParameter('group_value_number', $groupValue);
+			->join("i.group_values", "r", "with", "i.group_type = :group_type")
+			->where(":group_value_number LIKE r.groupValue")
+			->setParameter('group_type', $groupType)
+			->setParameter('group_value_number', $groupValue);
 
-		if($limit != null && $entityType == "DrawerGroup") {
+		if ($limit != null && $entityType == "DrawerGroup") {
 			$result = $result->andWhere("i.user = :user")
 				->setParameter("user", $limit);
 		}
 
 		$result = $result->getQuery();
-   		return $result->getResult();
+		return $result->getResult();
 	}
 
 	public function resolvePermissions() {
@@ -201,24 +190,23 @@ class User_model extends CI_Model {
 
 		$instance_groups = array_merge($instance_groups, $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => 'All']));
 
-		if($this->userLoaded) {
+		if ($this->userLoaded) {
 			$instance_groups = array_merge($instance_groups, $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => 'Authed', 'group_value' => 1]));
 		}
-		if($this->user && $this->user->getUserType() == "Remote") {
+		if ($this->user && $this->user->getUserType() == "Remote") {
 			$instance_groups = array_merge($instance_groups, $this->doctrine->em->getRepository("Entity\InstanceGroup")->findBy(['group_type' => 'Authed_remote', 'group_value' => 1]));
 		}
-		if($this->user) {
+		if ($this->user) {
 			$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", USER_TYPE, $this->user->getId()));
-
 		}
 
 		$authHelper = $this->getAuthHelper();
-		
+
 		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($groupLookups as $type=>$values) {
-			foreach($values as $value) {
-				$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));	
+		foreach ($groupLookups as $type => $values) {
+			foreach ($values as $value) {
+				$instance_groups = array_merge($instance_groups, $this->getPermissions("InstanceGroup", $type, $value));
 			}
 		}
 
@@ -226,23 +214,20 @@ class User_model extends CI_Model {
 			foreach ($instance_group->getInstancePermissions() as $instancePermission) {
 				if (array_key_exists($instancePermission->getInstance()->getId(), $this->instancePermissions)) {
 					$this->instancePermissions[$instancePermission->getInstance()->getId()] = max($this->instancePermissions[$instancePermission->getInstance()->getId()], $instancePermission->getPermission()->getLevel());
-				}
-				else {
+				} else {
 					$this->instancePermissions[$instancePermission->getInstance()->getId()] = $instancePermission->getPermission()->getLevel();
 				}
 			}
 
 			foreach ($instance_group->getCollectionPermissions() as $collectionPermission) {
 				$collectionArray = array_merge([$collectionPermission->getCollection()], $collectionPermission->getCollection()->getFlattenedChildren());
-				foreach($collectionArray as $collection) {
+				foreach ($collectionArray as $collection) {
 					if (array_key_exists($collection->getId(), $this->collectionPermissions)) {
 						$this->collectionPermissions[$collection->getId()] = max($this->collectionPermissions[$collection->getId()], $collectionPermission->getPermission()->getLevel());
-					}
-					else {
+					} else {
 						$this->collectionPermissions[$collection->getId()] = $collectionPermission->getPermission()->getLevel();
 					}
 				}
-
 			}
 		}
 
@@ -250,17 +235,17 @@ class User_model extends CI_Model {
 		$drawer_groups = array();
 
 		$drawer_groups = array_merge($drawer_groups, $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(['group_type' => 'All']));
-		if($this->userLoaded) {
+		if ($this->userLoaded) {
 			$drawer_groups = array_merge($drawer_groups, $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(['group_type' => 'Authed', 'group_value' => 1]));
 		}
 
-		if($this->user && $this->user->getUserType() == "Remote") {
+		if ($this->user && $this->user->getUserType() == "Remote") {
 			$drawer_groups = array_merge($drawer_groups, $this->doctrine->em->getRepository("Entity\DrawerGroup")->findBy(['group_type' => 'Authed_remote', 'group_value' => 1]));
 		}
 
 		$nonGlobalDrawers = array();
 
-		if($this->user) {
+		if ($this->user) {
 			$userDrawers = $this->getPermissions("DrawerGroup", USER_TYPE, $this->user->getId());
 			$drawer_groups = array_merge($drawer_groups, $userDrawers);
 			$nonGlobalDrawers = array_merge($nonGlobalDrawers, $userDrawers);
@@ -269,9 +254,9 @@ class User_model extends CI_Model {
 
 		$groupLookups = $authHelper->getGroupMapping($this->userData);
 
-		foreach($groupLookups as $type=>$values) {
-			foreach($values as $value) {
-				$localPermDrawers = $this->getPermissions("DrawerGroup", $type,$value);
+		foreach ($groupLookups as $type => $values) {
+			foreach ($values as $value) {
+				$localPermDrawers = $this->getPermissions("DrawerGroup", $type, $value);
 				$drawer_groups = array_merge($drawer_groups, $localPermDrawers);
 				$nonGlobalDrawers = array_merge($nonGlobalDrawers, $localPermDrawers);
 			}
@@ -283,8 +268,7 @@ class User_model extends CI_Model {
 			foreach ($drawer_group->getPermissions() as $drawerPermission) {
 				if (array_key_exists($drawerPermission->getDrawer()->getId(), $this->drawerPermissions)) {
 					$this->drawerPermissions[$drawerPermission->getDrawer()->getId()] = max($this->drawerPermissions[$drawerPermission->getDrawer()->getId()], $drawerPermission->getPermission()->getLevel());
-				}
-				else {
+				} else {
 					$this->drawerPermissions[$drawerPermission->getDrawer()->getId()] = $drawerPermission->getPermission()->getLevel();
 				}
 			}
@@ -294,28 +278,26 @@ class User_model extends CI_Model {
 			foreach ($drawer_group->getPermissions() as $drawerPermission) {
 				if (array_key_exists($drawerPermission->getDrawer()->getId(), $this->drawerPermissions)) {
 					$this->nonGlobalDrawerPermissions[$drawerPermission->getDrawer()->getId()] = max($this->drawerPermissions[$drawerPermission->getDrawer()->getId()], $drawerPermission->getPermission()->getLevel());
-				}
-				else {
+				} else {
 					$this->nonGlobalDrawerPermissions[$drawerPermission->getDrawer()->getId()] = $drawerPermission->getPermission()->getLevel();
 				}
 			}
 		}
-
 	}
 
 	public function isInstanceAdmin() {
-		if(!is_null($this->instance) && isset($this->instancePermissions[$this->instance->getId()])) {
-			return ($this->instancePermissions[$this->instance->getId()]>=60)?true:false;
+		if (!is_null($this->instance) && isset($this->instancePermissions[$this->instance->getId()])) {
+			return ($this->instancePermissions[$this->instance->getId()] >= 60) ? true : false;
 		}
 		return false;
 	}
 
 	public function canEditTemplates() {
-		if($this->getIsSuperAdmin() || $this->isInstanceAdmin()) {
+		if ($this->getIsSuperAdmin() || $this->isInstanceAdmin()) {
 			return true;
 		}
-		if(!is_null($this->instance) && isset($this->instancePermissions[$this->instance->getId()])) {
-			return $this->instancePermissions[$this->instance->getId()]>=PERM_EDIT_TEMPLATES;
+		if (!is_null($this->instance) && isset($this->instancePermissions[$this->instance->getId()])) {
+			return $this->instancePermissions[$this->instance->getId()] >= PERM_EDIT_TEMPLATES;
 		}
 		return false;
 	}
@@ -327,23 +309,23 @@ class User_model extends CI_Model {
 	 */
 	public function addRecentDrawer($drawer) {
 
-		if(!$this->user) {
+		if (!$this->user) {
 			return;
 		}
 
 
-		if(!is_array($this->recentDrawers)) {
+		if (!is_array($this->recentDrawers)) {
 			$this->getRecentDrawers();
 		}
 
-		foreach($this->recentDrawers as $recent) {
-			if($drawer->getId() == $recent->getDrawer()->getId()) {
+		foreach ($this->recentDrawers as $recent) {
+			if ($drawer->getId() == $recent->getDrawer()->getId()) {
 				return;
 			}
 		}
 
-		if(count($this->recentDrawers)>=$this->maxRecents) {
-			$oldDrawer= reset($this->recentDrawers);
+		if (count($this->recentDrawers) >= $this->maxRecents) {
+			$oldDrawer = reset($this->recentDrawers);
 			$this->user->removeRecentDrawer($oldDrawer);
 		}
 
@@ -360,13 +342,12 @@ class User_model extends CI_Model {
 
 		$this->doctrine->em->flush();
 
-		if($this->config->item('enableCaching')) {
+		if ($this->config->item('enableCaching')) {
 			$this->userCache->delete($this->userId);
 		}
 
 		$this->recentDrawers = null;
 		$this->getRecentDrawers();
-
 	}
 
 
@@ -376,22 +357,22 @@ class User_model extends CI_Model {
 	 * @param [collection entity] $collection [description]
 	 */
 	public function addRecentCollection($collection) {
-		if(!is_array($this->recentCollections)) {
+		if (!is_array($this->recentCollections)) {
 			$this->getRecentCollections();
 		}
 
-		foreach($this->recentCollections as $recent) {
-			if($collection->getId() == $recent->getCollection()->getId()) {
+		foreach ($this->recentCollections as $recent) {
+			if ($collection->getId() == $recent->getCollection()->getId()) {
 				return;
 			}
 		}
 
-		if(!$this->user) {
+		if (!$this->user) {
 			return;
 		}
 
-		if(count($this->recentCollections)>=$this->maxRecents) {
-			$oldCollection= reset($this->recentCollections);
+		if (count($this->recentCollections) >= $this->maxRecents) {
+			$oldCollection = reset($this->recentCollections);
 			$this->user->removeRecentCollection($oldCollection);
 		}
 
@@ -407,83 +388,77 @@ class User_model extends CI_Model {
 
 		$this->doctrine->em->flush();
 
-		if($this->config->item('enableCaching')) {
+		if ($this->config->item('enableCaching')) {
 			$this->userCache->delete($this->userId);
 		}
 
-		$this->recentCollections= null;
+		$this->recentCollections = null;
 		$this->getRecentCollections();
 	}
 
 
-	public function getDrawers($adminOnly=false, $nonGlobalDrawers=false)
-	{
+	public function getDrawers($adminOnly = false, $nonGlobalDrawers = false) {
 		$targetArray = array();
 
 		$targetArray = $this->drawerPermissions;
-		if($nonGlobalDrawers) {
+		if ($nonGlobalDrawers) {
 			$targetArray = $this->nonGlobalDrawerPermissions;
 		}
 
-		foreach($targetArray as $drawerId=>$perm) {
-			if(!$adminOnly && $perm>PERM_NOPERM) {
+		foreach ($targetArray as $drawerId => $perm) {
+			if (!$adminOnly && $perm > PERM_NOPERM) {
 				$targetArray[] = $drawerId;
-			}
-			elseif($adminOnly && $perm>=PERM_CREATEDRAWERS) {
+			} elseif ($adminOnly && $perm >= PERM_CREATEDRAWERS) {
 				$targetArray[] = $drawerId;
 			}
 		}
 
-		if(count($targetArray)>0) {
-			$drawerList = $this->doctrine->em->getRepository("Entity\Drawer")->findBy(['id' => $targetArray, 'instance'=>$this->instance]);
+		if (count($targetArray) > 0) {
+			$drawerList = $this->doctrine->em->getRepository("Entity\Drawer")->findBy(['id' => $targetArray, 'instance' => $this->instance]);
 			return $drawerList;
-		}
-		else {
+		} else {
 			return array();
 		}
-
 	}
 
-	public function getAllowedCollections($permLevel=false) {
-		if(!$permLevel) {
+	public function getAllowedCollections($permLevel = false) {
+		if (!$permLevel) {
 			return array();
 		}
 		$instanceCollections = $this->instance->getCollections()->toArray();
 		$allowedCollections = array();
-		if($this->user_model && $this->user_model->getAccessLevel("instance",$this->instance) < $permLevel) {
-			foreach($instanceCollections as $collection) {
-				if($this->user_model->getAccessLevel("collection", $collection) >= $permLevel) {
+		if ($this->user_model && $this->user_model->getAccessLevel("instance", $this->instance) < $permLevel) {
+			foreach ($instanceCollections as $collection) {
+				if ($this->user_model->getAccessLevel("collection", $collection) >= $permLevel) {
 					$allowedCollections[] = $collection;
-					foreach($collection->getFlattenedChildren() as $child) {
+					foreach ($collection->getFlattenedChildren() as $child) {
 						$allowedCollections[] = $child;
 					}
 				}
 			}
-		}
-		else if($this->user_model->getAccessLevel("instance",$this->instance) >= $permLevel) {
+		} else if ($this->user_model->getAccessLevel("instance", $this->instance) >= $permLevel) {
 			$allowedCollections = $instanceCollections;
 		}
 
 		return $allowedCollections;
 	}
 
-	public function havePermForCollection($permLevel=false, $collectionId=false) {
-		if(!$permLevel) {
+	public function havePermForCollection($permLevel = false, $collectionId = false) {
+		if (!$permLevel) {
 			return array();
 		}
-		if(!$collectionId) {
+		if (!$collectionId) {
 			return array();
 		}
 		$allowedCollections = $this->getAllowedCollections($permLevel);
 
-		foreach($allowedCollections as $collection) {
-			if($collection->getId() == $collectionId) {
+		foreach ($allowedCollections as $collection) {
+			if ($collection->getId() == $collectionId) {
 				return true;
 			}
 		}
 
 		return false;
-
 	}
 
 	/**
@@ -491,15 +466,14 @@ class User_model extends CI_Model {
 	 * this way we aren't loading them for page loads that don't have UI
 	 * @return [type] [description]
 	 */
-	public function getRecentDrawers()
-	{
-		if($this->recentDrawers == null && $this->user) {
+	public function getRecentDrawers() {
+		if ($this->recentDrawers == null && $this->user) {
 
 			$recentDrawers = $this->user->getRecentDrawers();
 			$this->recentDrawers = array();
-			if($recentDrawers->count()  > 0) {
-				foreach($recentDrawers as $drawer) {
-					if($drawer->getInstance() == $this->instance) {
+			if ($recentDrawers->count()  > 0) {
+				foreach ($recentDrawers as $drawer) {
+					if ($drawer->getInstance() == $this->instance) {
 						$this->recentDrawers[] = $drawer;
 					}
 				}
@@ -513,17 +487,15 @@ class User_model extends CI_Model {
 	 * this way we aren't loading them for page loads that don't have UI
 	 * @return [type] [description]
 	 */
-	public function getRecentSearches()
-	{
-		if($this->recentSearches == null && $this->user) {
+	public function getRecentSearches() {
+		if ($this->recentSearches == null && $this->user) {
 
-			$recentSearches = $this->doctrine->em->getRepository("Entity\SearchEntry")->findBy(["instance"=>$this->instance, "user"=>$this->user_model->user, "userInitiated"=>true], ["createdAt"=>"desc"], 5,0);
+			$recentSearches = $this->doctrine->em->getRepository("Entity\SearchEntry")->findBy(["instance" => $this->instance, "user" => $this->user_model->user, "userInitiated" => true], ["createdAt" => "desc"], 5, 0);
 
 			$this->recentSearches = array();
-			if(count($recentSearches) > 0) {
+			if (count($recentSearches) > 0) {
 				$this->recentSearches = $recentSearches;
 			}
-
 		}
 		return $this->recentSearches;
 	}
@@ -533,25 +505,22 @@ class User_model extends CI_Model {
 	 * lazy load the collections
 	 * @return [type] [description]
 	 */
-	public function getRecentCollections()
-	{
-		if($this->recentCollections == null) {
-			if(!$this->user) {
+	public function getRecentCollections() {
+		if ($this->recentCollections == null) {
+			if (!$this->user) {
 				$this->recentCollections = array();
-			}
-			else {
+			} else {
 				$recentCollections = $this->user->getRecentCollections();
 				$this->recentCollections = array();
 
-				if(count($recentCollections) > 0) {
-					foreach($recentCollections as $collection) {
-						if($collection->getInstance() == $this->instance) {
+				if (count($recentCollections) > 0) {
+					foreach ($recentCollections as $collection) {
+						if ($collection->getInstance() == $this->instance) {
 							$this->recentCollections[] = $collection;
 						}
 					}
 				}
 			}
-
 		}
 		return $this->recentCollections;
 	}
@@ -565,20 +534,17 @@ class User_model extends CI_Model {
 
 
 	public function generateKeys() {
-
 		$apiKey = new Entity\ApiKey;
 
 		$apiKey->setLabel("Generated Key");
-		$apiKey->setApiKey(sha1($this->userId . "secretHash"));
-		$apiKey->setApiSecret(sha1($this->userId . "secretKey"));
+		$apiKey->setApiKey(bin2hex(random_bytes(32)));
+		$apiKey->setApiSecret(bin2hex(random_bytes(32)));
 		$apiKey->setOwner($this->user);
 		$apiKey->setAllowsRead(true);
 		$this->doctrine->em->persist($apiKey);
 
 		$this->doctrine->em->flush();
 		return $apiKey;
-
-
 	}
 
 	/**
@@ -588,8 +554,8 @@ class User_model extends CI_Model {
 	 */
 	public function __call($method, $args) {
 		if (is_object($this->user)) {
-			if(method_exists($this->user, $method)) {
-				return call_user_func(array($this->user,$method), $args);
+			if (method_exists($this->user, $method)) {
+				return call_user_func(array($this->user, $method), $args);
 			}
 		}
 		$this->logging->logError("backtrace", debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
@@ -598,18 +564,15 @@ class User_model extends CI_Model {
 	}
 
 	public function __sleep() {
-		return ["collectionPermissions","instancePermissions","drawerPermissions","nonGlobalDrawerPermissions","recentDrawers","recentSearches", "recentCollections","userLoaded","userId","userData"];
-
+		return ["collectionPermissions", "instancePermissions", "drawerPermissions", "nonGlobalDrawerPermissions", "recentDrawers", "recentSearches", "recentCollections", "userLoaded", "userId", "userData"];
 	}
 
 	public function __wakeup() {
-		if(!$this->userId) {
+		if (!$this->userId) {
 			return;
 		}
-		$this->user = $this->doctrine->em->find('Entity\User',$this->userId);
-
+		$this->user = $this->doctrine->em->find('Entity\User', $this->userId);
 	}
-
 }
 
 /* End of file  */

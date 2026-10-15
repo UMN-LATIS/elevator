@@ -30,6 +30,9 @@ class ApiKey
     #[ORM\Column(name: 'apiSecret', type: 'string', nullable: true)]
     private $apiSecret;
 
+    #[ORM\Column(name: 'version', type: 'integer', options: ['default' => 2])]
+    private $version = 2;
+
     /**
      * @var bool|null
      */
@@ -135,6 +138,27 @@ class ApiKey
     public function getApiSecret()
     {
         return $this->apiSecret;
+    }
+
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    public function setVersion($version)
+    {
+        $this->version = $version;
+
+        return $this;
+    }
+
+    public function validateSignature($payload, $signature)
+    {
+        if (!in_array($this->version, [1, 2], true)) {
+            return false;
+        }
+
+        return hash_equals(sha1($payload . $this->apiSecret), (string) $signature);
     }
 
     /**

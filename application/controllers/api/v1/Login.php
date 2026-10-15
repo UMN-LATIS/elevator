@@ -22,8 +22,7 @@ class login extends Instance_Controller {
 			header('HTTP/1.0 401 Unauthorized');
 			exit;
 		}
-		$secret = $apiKey->getApiSecret();
-		if(sha1($authTimestamp . $secret) != $authHash) {
+		if(!$apiKey->validateSignature($authTimestamp, $authHash)) {
 			header('HTTP/1.0 401 Unauthorized');
 			exit;
 		}
