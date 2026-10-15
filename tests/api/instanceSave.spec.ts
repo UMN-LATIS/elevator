@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type APIResponse, type Page } from "@playwright/test";
 import { loginUser, baseURL, queryDb } from "../helpers";
 
 const INSTANCE_ID = 1;
@@ -59,6 +59,32 @@ function toUpdateInstanceSettingsFormData(
   return formData;
 }
 
+async function fetchInstanceSettings(
+  page: Page,
+): Promise<Record<string, unknown>> {
+  const response = await page.request.get(
+    `${baseURL()}/instances/getInstance/${INSTANCE_ID}`,
+  );
+  expect(response.ok()).toBe(true);
+  return (await response.json()) as Record<string, unknown>;
+}
+
+function saveInstanceSettings(
+  page: Page,
+  settings: Record<string, unknown>,
+): Promise<APIResponse> {
+  return page.request.post(`${baseURL()}/instances/save/true`, {
+    // Not multipart: Playwright drops "" fields from
+    // multipart bodies, so Instances::save would never
+    // receive the "" that the settings page sends for
+    // null.
+    form: toUpdateInstanceSettingsFormData({
+      ...settings,
+      instanceId: INSTANCE_ID,
+    }),
+  });
+}
+
 test.describe("Instances::save from the instance settings page", () => {
   test.beforeEach(() => {
     snapshotInstanceRow();
@@ -73,29 +99,28 @@ test.describe("Instances::save from the instance settings page", () => {
       setInstanceColumnToNull(column);
       await loginUser(page, "admin");
 
-      const settingsResponse = await page.request.get(
-        `${baseURL()}/instances/getInstance/${INSTANCE_ID}`,
-      );
-      expect(settingsResponse.ok()).toBe(true);
-      const settings = (await settingsResponse.json()) as Record<string, unknown>;
+      const settings = await fetchInstanceSettings(page);
       expect(settings[field]).toBeNull();
 
-      const saveResponse = await page.request.post(
-        `${baseURL()}/instances/save/true`,
-        {
-          // Not multipart: Playwright drops "" fields from
-          // multipart bodies, so Instances::save would
-          // never receive the "" that the settings page
-          // sends for null.
-          form: toUpdateInstanceSettingsFormData({
-            ...settings,
-            instanceId: INSTANCE_ID,
-          }),
-        },
-      );
+      const saveResponse = await saveInstanceSettings(page, settings);
 
       expect(saveResponse.status()).toBe(200);
       expect(instanceColumnInDb(column)).toBe(savedAs);
     });
   }
+
+  test("keeps 0 in integer settings", async ({ page }) => {
+    queryDb(
+      `UPDATE instances SET usecustomheader = 0, maximummorelikethis = 0, defaulttexttruncationheight = 0 WHERE id = ${INSTANCE_ID}`,
+    );
+    await loginUser(page, "admin");
+
+    const settings = await fetchInstanceSettings(page);
+    const saveResponse = await saveInstanceSettings(page, settings);
+
+    expect(saveResponse.status()).toBe(200);
+    expect(instanceColumnInDb("usecustomheader")).toBe("0");
+    expect(instanceColumnInDb("maximummorelikethis")).toBe("0");
+    expect(instanceColumnInDb("defaulttexttruncationheight")).toBe("0");
+  });
 });
