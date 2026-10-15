@@ -55,7 +55,7 @@
 					<option value="<?= $permissionItem->getId(); ?>" <?=($permission->getPermission()->getId() == $permissionItem->getId())?"selected":null?> <?=$disabled?>><?= $permissionItem->getLabel(); ?></option>
 					<?php endforeach; ?>
 			</select>
-			<a class="btn btn-danger btn-sm buttonWithPadding" href="<?= instance_url("permissions/delete/{$permissionType}/{$permission->getId()}/{$permissionTypeId}"); ?>" role="button"><span class="glyphicon glyphicon-remove"></span></a>
+			<button type="button" class="btn btn-danger btn-sm buttonWithPadding deleteGrant" data-delete-url="<?= instance_url("permissions/delete/{$permissionType}/{$permission->getId()}"); ?>"><span class="glyphicon glyphicon-remove"></span></button>
 		</div>
 		<div class="col-md-1">
 
@@ -71,6 +71,27 @@
 		</div>
 	</div>
 </form>
+<script>
+async function sendGrantDelete(deleteUrl) {
+	try {
+		const response = await fetch(deleteUrl, { method: "DELETE" });
+		return response.redirected ? response.url : null;
+	} catch {
+		return null;
+	}
+}
+
+$(".deleteGrant").on("click", async function () {
+	const button = $(this).prop("disabled", true);
+	const nextPageUrl = await sendGrantDelete(button.data("delete-url"));
+	if (nextPageUrl === null) {
+		button.prop("disabled", false);
+		alert("This permission couldn't be removed.");
+		return;
+	}
+	window.location.assign(nextPageUrl);
+});
+</script>
 <hr>
 <div class="row rowContainer">
 	<div class="col-md-2">

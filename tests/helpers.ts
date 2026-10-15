@@ -1,6 +1,6 @@
 import { execSync } from "child_process";
 import path from "path";
-import { type Page } from "@playwright/test";
+import { expect, type Browser, type Page } from "@playwright/test";
 
 export interface CreateTemplateOptions {
   name?: string;
@@ -183,4 +183,95 @@ export async function createAsset(
 
   const body = (await response.json()) as { objectId: string; success: boolean };
   return body.objectId;
+}
+
+const PERM_ADMIN = 60;
+
+export function queryDb(sql: string): string {
+  return execSync(
+    `docker compose exec -T postgres psql -U elevator -d elevator -tA -c "${sql}"`,
+    { cwd: path.resolve(__dirname, ".."), encoding: "utf8" },
+  ).trim();
+}
+
+export function userColumnInDb(username: string, column: string): string {
+  return queryDb(`SELECT ${column} FROM users WHERE username = '${username}'`);
+}
+
+export function isSuperAdminInDb(username: string): boolean {
+  return userColumnInDb(username, "issuperadmin") === "t";
+}
+
+export function userIdInDb(username: string): string {
+  const id = userColumnInDb(username, "id");
+  expect(id, `user ${username} should exist`).not.toBe("");
+  return id;
+}
+
+export async function newLoggedInContext(
+  browser: Browser,
+  username: string,
+  password: string,
+): Promise<Page> {
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  const page = await context.newPage();
+  await loginUser(page, username, password);
+  return page;
+}
+
+export async function newInstanceAdminContext(
+  browser: Browser,
+  superAdminPage: Page,
+  username: string,
+  password: string,
+): Promise<Page> {
+  await createUser(superAdminPage, username, password, { isSuperAdmin: false });
+
+  const group = await superAdminPage.request.post(
+    `${baseURL()}/adminPermissions/groups`,
+    { form: { type: "User", label: `Admins ${username}` } },
+  );
+  expect(group.status()).toBe(201);
+  const groupId = (await group.json()).group.id as number;
+
+  const member = await superAdminPage.request.post(
+    `${baseURL()}/adminPermissions/groups/${groupId}/members`,
+    { form: { localUserId: userIdInDb(username) } },
+  );
+  expect(member.status()).toBe(201);
+
+  const levels = await superAdminPage.request.get(
+    `${baseURL()}/adminPermissions/permissionLevels`,
+    { headers: { Accept: "application/json" } },
+  );
+  const { permissionLevels } = (await levels.json()) as {
+    permissionLevels: { id: number; level: number }[];
+  };
+  const adminLevel = permissionLevels.find((l) => l.level === PERM_ADMIN);
+  expect(
+    adminLevel,
+    "seed should include the admin permission level",
+  ).toBeDefined();
+
+  const grant = await superAdminPage.request.post(
+    `${baseURL()}/adminPermissions/instanceGrants`,
+    {
+      form: {
+        groupId: String(groupId),
+        permissionLevelId: String(adminLevel!.id),
+      },
+    },
+  );
+  expect(grant.status()).toBe(201);
+
+  const page = await newLoggedInContext(browser, username, password);
+  const adminOnly = await page.request.get(
+    `${baseURL()}/adminPermissions/permissionLevels`,
+    { headers: { Accept: "application/json" } },
+  );
+  expect(adminOnly.status(), `${username} should be an instance admin`).toBe(
+    200,
+  );
+  expect(isSuperAdminInDb(username)).toBe(false);
+  return page;
 }

@@ -82,6 +82,12 @@ class Instances extends Instance_Controller
 
 	}
 
+	private function postWithEmptyAsNull(string $field): mixed
+	{
+		$value = $this->input->post($field);
+		return $value === '' ? null : $value;
+	}
+
 	public function save($returnJson = false)
 	{
 		if (!$this->isCurrentUserAuthed()) {
@@ -130,7 +136,7 @@ class Instances extends Instance_Controller
 		$instance->setBucketRegion($this->input->post('bucketRegion'));
 		$instance->setDefaultBucket($this->input->post('defaultBucket'));
 		$instance->setGoogleAnalyticsKey($this->input->post('googleAnalyticsKey'));
-		$instance->setUseCustomHeader($this->input->post('useCustomHeader'));
+		$instance->setUseCustomHeader($this->postWithEmptyAsNull('useCustomHeader'));
 		$instance->setCustomHeaderText($this->input->post("customHeaderText"));
 		$instance->setCustomFooterText($this->input->post("customFooterText"));
 		$instance->setUseHeaderLogo($this->input->post('useHeaderLogo')?1:0);
@@ -153,15 +159,15 @@ class Instances extends Instance_Controller
 		$instance->setNotes($this->input->post('notes'));
 		$instance->setModifiedAt(new DateTime);
 		$instance->setInterfaceVersion($this->input->post('interfaceVersion'));
-		$instance->setEnableThemes($this->input->post('enableTheming'));
+		$instance->setEnableThemes($this->input->post('enableTheming') ? true : false);
 		$instance->setDefaultTheme($this->input->post('defaultTheme'));
-		$instance->setAvailableThemes($this->input->post('availableThemes'));
+		$instance->setAvailableThemes($this->postWithEmptyAsNull('availableThemes'));
 		$instance->setShowChildCollections($this->input->post('showChildCollections') ? true : false);
 		$instance->setShowAssetLastModifiedDate($this->input->post('showAssetLastModifiedDate') ? true : false);
 		$instance->setShowThumbnailDescription($this->input->post('showThumbnailDescription') ? true : false);
 		$instance->setCustomHomeRedirect($this->input->post('customHomeRedirect'));
-		$instance->setMaximumMoreLikeThis($this->input->post('maximumMoreLikeThis'));
-		$instance->setDefaultTextTruncationHeight($this->input->post('defaultTextTruncationHeight'));
+		$instance->setMaximumMoreLikeThis($this->postWithEmptyAsNull('maximumMoreLikeThis'));
+		$instance->setDefaultTextTruncationHeight($this->postWithEmptyAsNull('defaultTextTruncationHeight'));
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
 		$config['allowed_types'] = 'png';
@@ -246,7 +252,10 @@ class Instances extends Instance_Controller
 	public function edit($id = null, $returnJson = false)
 	{
 
-		if ($this->isUsingVueUI() && !$returnJson) {
+		// Keep the $id check. The Vue router has no
+		// instance create route, so without the check
+		// Create New Instance shows a 404 (#271).
+		if ($id && $this->isUsingVueUI() && !$returnJson) {
 			return $this->template->publish('vueTemplate');
 		}
 

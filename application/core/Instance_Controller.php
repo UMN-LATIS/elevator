@@ -192,6 +192,13 @@ class Instance_Controller extends MY_Controller {
         }
     }
 
+    protected function abortUnlessSuperAdmin(): void {
+        $this->abortUnlessAuthed();
+        if (!$this->user_model->getIsSuperAdmin()) {
+            abort_json(['error' => 'Forbidden'], 403);
+        }
+    }
+
     /**
      * Read a form-encoded request body regardless of HTTP verb.
      *
