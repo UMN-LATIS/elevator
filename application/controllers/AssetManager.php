@@ -1,5 +1,6 @@
 <?php
 
+use SimpleValidator as V;
 use Symfony\Component\Cache\Psr16Cache;
 
 if (! defined('BASEPATH')) exit('No direct script access allowed');
@@ -711,9 +712,7 @@ class AssetManager extends Admin_Controller {
 	}
 
 	public function importFromCSV() {
-		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
-
-		if ($accessLevel < PERM_ADMIN) {
+		if (!$this->canImportCSV()) {
 			$this->errorhandler_helper->callError("noPermission");
 		}
 
@@ -726,7 +725,16 @@ class AssetManager extends Admin_Controller {
 			return;
 		}
 
-		$targetTemplate = $this->input->post("templateId");
+		try {
+			$validated = V::validate($this->input->post(), ['templateId' => [V::required(), V::integer()]]);
+		} catch (ValidationException $e) {
+			return show_error(implode('<br>', array_map('html_escape', $e->getErrorMessages())), 422);
+		}
+		$templateModel = $this->doctrine->em->find('Entity\Template', (int) $validated['templateId']);
+		if (!$templateModel || !$this->isInThisInstance($templateModel)) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
+		$targetTemplate = $validated['templateId'];
 
 		$config['upload_path'] = '/tmp/';
 		$config['max_size']	= '0';
@@ -741,6 +749,7 @@ class AssetManager extends Admin_Controller {
 		// TODO: more security here
 		$data = array('upload_data' => $this->upload->data());
 		$filename = $data["upload_data"]["full_path"];
+		$this->rememberUpload($filename);
 
 		if (!$fp = fopen($filename, "r")) {
 			$this->logging->logError("error reading file", $filename);
@@ -991,22 +1000,70 @@ class AssetManager extends Admin_Controller {
 	public function processCSV($hash = null, $offset = null) {
 		set_time_limit(120);
 
-		if ($this->input->post("filename")) {
-			$cacheArray['filename'] = $this->input->post("filename");
-			$cacheArray['templateId'] = $this->input->post("templateId");
-			$cacheArray['collectionId'] = $this->input->post("collectionId");
-			$cacheArray['mapping'] = $this->input->post("targetField");
-			$cacheArray['delimiter'] = $this->input->post("delimiter");
+		if (!$this->canImportCSV()) {
+			$this->errorhandler_helper->callError("noPermission");
+		}
 
-			if (!$this->collection_model->getCollection($cacheArray['collectionId'])) {
+		if ($this->input->post("filename")) {
+			try {
+				$validated = V::validate($this->input->post(), [
+					'filename' => [V::required(), V::string()],
+					'templateId' => [V::required(), V::integer()],
+					'collectionId' => [V::required(), V::integer()],
+					'targetField' => [V::required(), V::eachKey(V::integer()), V::eachValue(V::string())],
+					'delimiter' => [V::eachKey(V::integer()), V::eachValue(V::string())],
+					'parentObject' => [V::string()],
+					'targetFieldSelect' => [V::string()],
+				]);
+			} catch (ValidationException $e) {
+				return show_error(implode('<br>', array_map('html_escape', $e->getErrorMessages())), 422);
+			}
+
+			$cacheArray['filename'] = $validated['filename'];
+			$cacheArray['templateId'] = $validated['templateId'];
+			$cacheArray['collectionId'] = $validated['collectionId'];
+			$cacheArray['mapping'] = $validated['targetField'];
+			$cacheArray['delimiter'] = $validated['delimiter'] ?? null;
+
+			$parentObjectId = $validated['parentObject'] ?? '';
+			$parentTargetField = $validated['targetFieldSelect'] ?? '';
+			if (strlen($parentObjectId) == 24 && strlen($parentTargetField) > 0) {
+				$cacheArray['parentObject'] = $parentObjectId;
+				$cacheArray['targetField'] = $parentTargetField;
+			}
+			$cacheArray['startedBy'] = $this->user_model->userId;
+
+			// Without this, a POST can import any file on
+			// the server and echo its lines back.
+			if (!$this->isOwnUpload($cacheArray['filename'])) {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+
+			$collection = $this->collection_model->getCollection($cacheArray['collectionId']);
+			if (!$collection) {
 				$this->template->content->set("Invalid Collection");
 				$this->template->publish();
 				return;
 			}
 
-			$csvBatch = new Entity\CSVBatch();
-			$csvBatch->setCollection($this->collection_model->getCollection($cacheArray['collectionId']));
+			if (!$this->canAddAssetsTo($collection)) {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+
 			$templateModel = $this->doctrine->em->find('Entity\Template', $cacheArray['templateId']);
+			if (!$templateModel || !$this->isInThisInstance($templateModel)) {
+				$this->errorhandler_helper->callError("noPermission");
+			}
+
+			try {
+				$mappingTargets = $this->csvMappingTargets($templateModel);
+				V::validate($cacheArray, ['mapping' => [V::eachValue(V::in($mappingTargets))]]);
+			} catch (ValidationException $e) {
+				return show_error("CSV columns can only map to fields on the chosen template", 422);
+			}
+
+			$csvBatch = new Entity\CSVBatch();
+			$csvBatch->setCollection($collection);
 			$csvBatch->setTemplate($templateModel);
 			$csvBatch->setCreatedBy($this->user_model->user);
 			$csvBatch->setFilename($cacheArray['filename']);
@@ -1018,15 +1075,9 @@ class AssetManager extends Admin_Controller {
 		} else {
 
 			if ($hash) {
-				if (!$this->importCache) {
-					$this->importCache = $this->doctrine->getCache("importCache");
-				}
-				if ($this->importCache) {
-					$cachedItem = $this->importCache->get($hash);
-					$cacheArray = $cachedItem;
-					if ($cachedItem) {
-						$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cachedItem['importId']);
-					}
+				$cacheArray = $this->getImportCache()->get($hash);
+				if ($cacheArray) {
+					$csvBatch = $this->doctrine->em->find('Entity\CSVBatch', $cacheArray['importId']);
 				}
 			}
 
@@ -1034,6 +1085,10 @@ class AssetManager extends Admin_Controller {
 				$this->logging->logError("Cachine Error");
 				$this->errorhandler_helper->callError("genericError");
 				return;
+			}
+
+			if (!$this->isImportStartedByCurrentUser($cacheArray)) {
+				$this->errorhandler_helper->callError("noPermission");
 			}
 		}
 
@@ -1062,14 +1117,13 @@ class AssetManager extends Admin_Controller {
 		$parentObject = null;
 		$targetField = null;
 
-		if ($this->input->post("parentObject") && strlen($this->input->post("parentObject")) == 24 && $this->input->post("targetFieldSelect") && strlen($this->input->post("targetFieldSelect")) > 0) {
-			$cacheArray['parentObject'] = $this->input->post("parentObject");
-			$cacheArray['targetField'] = $this->input->post("targetFieldSelect");
-		}
 		if (isset($cacheArray['parentObject']) && isset($cacheArray['targetField'])) {
 			$parentObject = new Asset_model;
 			$targetField =  $cacheArray['targetField'];
 			$parentObject->loadAssetById($cacheArray['parentObject']);
+			if (!$this->canEditAsset($parentObject)) {
+				$this->errorhandler_helper->callError("noPermission");
+			}
 
 			$objectArray = $parentObject->getAsArray();
 			if (isset($objectArray[$targetField])) {
@@ -1080,7 +1134,6 @@ class AssetManager extends Admin_Controller {
 		}
 
 		$rowCount = 0;
-		$totalLines = intval(exec("wc -l '" . $cacheArray['filename'] . "'"));
 
 		$convertLines = true;
 		if (mb_check_encoding(file_get_contents($cacheArray['filename']), 'UTF-8')) {
@@ -1109,17 +1162,7 @@ class AssetManager extends Admin_Controller {
 					continue;
 				}
 
-				// confirm that this asset is in the current instance
-				$collection = $assetModel->getGlobalValue("collectionId");
-				$loadedCollection = $this->collection_model->getCollection($collection);
-				$correctInstance = false;
-				foreach ($loadedCollection->getInstances() as $instance) {
-					if ($instance->getId() == $this->instance->getId()) {
-						$correctInstance = true;
-					}
-				}
-
-				if (!$correctInstance) {
+				if (!$this->canEditAsset($assetModel)) {
 					return $this->errorhandler_helper->callError("noPermission");
 				}
 
@@ -1299,10 +1342,7 @@ class AssetManager extends Admin_Controller {
 			$rowCount++;
 
 			if ($rowCount % 400 == 0) {
-				if (!$this->importCache) {
-					$this->importCache = $this->doctrine->getCache("importCache");
-				}
-				$this->importCache->set($hash, $cacheArray, 900);
+				$this->getImportCache()->set($hash, $cacheArray, 900);
 
 				if (isset($parentObject) && isset($targetArray)) {
 					$objectArray = $parentObject->getAsArray();
@@ -1330,6 +1370,68 @@ class AssetManager extends Admin_Controller {
 
 		$this->template->content->set("CSV Imported Successfully<hr>" . implode("<br>", $cacheArray['successArray']));
 		$this->template->publish();
+	}
+
+	private function csvMappingTargets(Entity\Template $template): array {
+		$fieldTitles = [];
+		foreach ($template->getWidgets() as $widget) {
+			$fieldTitles[] = $widget->getFieldTitle();
+		}
+		return array_merge(["ignore", "objectId", "readyForDisplay"], $fieldTitles);
+	}
+
+	private function canImportCSV(): bool {
+		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getMaxCollectionPermission());
+		return $accessLevel >= PERM_ADMIN;
+	}
+
+	private function canAddAssetsTo(Entity\Collection|false $collection): bool {
+		if (!$collection || !$this->isInThisInstance($collection)) {
+			return false;
+		}
+		$accessLevel = max($this->user_model->getAccessLevel("instance", $this->instance), $this->user_model->getAccessLevel("collection", $collection));
+		return $accessLevel >= PERM_ADDASSETS;
+	}
+
+	private function canEditAsset(Asset_model $assetModel): bool {
+		$assetCollection = $this->collection_model->getCollection($assetModel->getGlobalValue("collectionId"));
+		return $this->canAddAssetsTo($assetCollection);
+	}
+
+	private function isInThisInstance(Entity\Collection|Entity\Template $entity): bool {
+		return $entity->getInstances()->contains($this->instance);
+	}
+
+	private function rememberUpload(string $filename): void {
+		// Not the session: MY_Controller closes it
+		// before controllers run, so writes are lost.
+		$this->getImportCache()->set($this->uploadCacheKey($filename), true, 3600);
+	}
+
+	private function isOwnUpload(string $filename): bool {
+		if (!$this->user_model->userId) {
+			return false;
+		}
+		return $this->getImportCache()->get($this->uploadCacheKey($filename)) === true;
+	}
+
+	private function isImportStartedByCurrentUser(array $cacheArray): bool {
+		if (!$this->user_model->userId) {
+			return false;
+		}
+		$startedBy = $cacheArray['startedBy'] ?? null;
+		return $startedBy === $this->user_model->userId;
+	}
+
+	private function uploadCacheKey(string $filename): string {
+		return "upload_" . $this->user_model->userId . "_" . sha1($filename);
+	}
+
+	private function getImportCache(): Psr16Cache {
+		if (!$this->importCache) {
+			$this->importCache = $this->doctrine->getCache("importCache");
+		}
+		return $this->importCache;
 	}
 
 	/**
